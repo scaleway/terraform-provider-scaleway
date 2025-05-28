@@ -13,7 +13,7 @@ see the [API documentation](https://www.scaleway.com/en/developers/api/apple-sil
 ### Basic
 
 ```terraform
-resource scaleway_apple_silicon_server server {
+resource "scaleway_apple_silicon_server" "server" {
   name = "test-m1"
   type = "M1-M"
 }

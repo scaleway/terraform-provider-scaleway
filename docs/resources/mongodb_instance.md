@@ -28,7 +28,7 @@ resource "scaleway_mongodb_instance" "main" {
 ### Private Network
 
 ```terraform
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
 }
@@ -52,7 +52,7 @@ resource "scaleway_mongodb_instance" "main" {
 ### Private Network and Public Network
 
 ```terraform
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
 }

@@ -22,7 +22,7 @@ resource "scaleway_mnq_sqs" "main" {}
 Activate SQS for a specific project
 
 ```terraform
-data scaleway_account_project project {
+data "scaleway_account_project" "project" {
   name = "default"
 }
 

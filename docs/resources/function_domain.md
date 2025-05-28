@@ -23,9 +23,9 @@ resource "scaleway_function_domain" "main" {
   ]
 }
 
-resource scaleway_function_namespace main {}
+resource "scaleway_function_namespace" "main" {}
 
-resource scaleway_function main {
+resource "scaleway_function" "main" {
   namespace_id = scaleway_function_namespace.main.id
   runtime      = "go118"
   privacy      = "private"

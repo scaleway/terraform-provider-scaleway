@@ -17,7 +17,7 @@ our [main documentation](https://www.scaleway.com/en/docs/messaging/reference-co
 // For default project in default region
 resource "scaleway_mnq_sns" "main" {}
 
-resource scaleway_mnq_sns_credentials main {
+resource "scaleway_mnq_sns_credentials" "main" {
   project_id = scaleway_mnq_sns.main.project_id
   permissions {
     can_manage  = true
@@ -33,7 +33,7 @@ resource "scaleway_mnq_sns_topic" "topic" {
   secret_key = scaleway_mnq_sns_credentials.main.secret_key
 }
 
-resource scaleway_mnq_sns_topic_subscription main {
+resource "scaleway_mnq_sns_topic_subscription" "main" {
   project_id = scaleway_mnq_sns.main.project_id
   access_key = scaleway_mnq_sns_credentials.main.access_key
   secret_key = scaleway_mnq_sns_credentials.main.secret_key
