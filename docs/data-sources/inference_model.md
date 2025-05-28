@@ -1,5 +1,5 @@
 ---
-subcategory: "inference"
+subcategory: "Inference"
 page_title: "Scaleway: scaleway_inference_model"
 ---
 
