@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"sort"
 	"strings"
 	"time"
 
@@ -34,27 +33,27 @@ func ResourceGroupMembership() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
+			"group_id": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "The ID of the group to add the users or applications to",
+				ForceNew:    true,
+			},
 			"user_ids": {
 				Type:         schema.TypeList,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				Optional:     true,
-				ExactlyOneOf: []string{"application_ids"},
-				Description:  "The IDs of the users",
+				Description:  "The IDs of the users to add to the group",
+				AtLeastOneOf: []string{"application_ids"},
 				ForceNew:     true,
 			},
 			"application_ids": {
 				Type:         schema.TypeList,
 				Elem:         &schema.Schema{Type: schema.TypeString},
 				Optional:     true,
-				ExactlyOneOf: []string{"user_ids"},
-				Description:  "The IDs of the applications",
+				Description:  "The IDs of the applications to add to the group",
+				AtLeastOneOf: []string{"user_ids"},
 				ForceNew:     true,
-			},
-			"group_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the group to add the user to",
-				ForceNew:    true,
 			},
 		},
 	}
@@ -83,7 +82,7 @@ func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceDat
 func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	groupID, entityKind, entityIDs, err := ExpandGroupMembershipResourceID(d.Id())
+	groupID, entityIDs, err := ExpandGroupMembershipResourceID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,30 +100,28 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	foundEntityIDs := make([]bool, len(entityIDs))
+	foundUserIDs := make([]bool, len(entityIDs[EntityKindUser]))
+	foundApplicationIDs := make([]bool, len(entityIDs[EntityKindApplication]))
 
-	if entityKind == EntityKindUser {
-		for i, groupUserID := range group.UserIDs {
-			if slices.Contains(entityIDs, groupUserID) {
-				foundEntityIDs[i] = true
-			}
-		}
-	} else if entityKind == EntityKindApplication {
-		for i, groupApplicationID := range group.ApplicationIDs {
-			if slices.Contains(entityIDs, groupApplicationID) {
-				foundEntityIDs[i] = true
-			}
+	for i, userID := range entityIDs[EntityKindUser] {
+		if slices.Contains(group.UserIDs, userID) {
+			foundUserIDs[i] = true
+		} else {
+			return diag.FromErr(fmt.Errorf("user %s not found in group %s", userID, groupID))
 		}
 	}
 
-	if slices.Contains(foundEntityIDs, false) {
-		d.SetId("")
-
-		return nil
+	for i, applicationID := range entityIDs[EntityKindApplication] {
+		if slices.Contains(group.ApplicationIDs, applicationID) {
+			foundApplicationIDs[i] = true
+		} else {
+			return diag.FromErr(fmt.Errorf("application %s not found in group %s", applicationID, groupID))
+		}
 	}
 
 	_ = d.Set("group_id", groupID)
-	_ = d.Set(fmt.Sprintf("%s_ids", entityKind), entityIDs)
+	_ = d.Set("user_ids", entityIDs[EntityKindUser])
+	_ = d.Set("application_ids", entityIDs[EntityKindApplication])
 
 	return nil
 }
@@ -132,7 +129,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	groupID, _, _, err := ExpandGroupMembershipResourceID(d.Id())
+	groupID, _, err := ExpandGroupMembershipResourceID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +137,6 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 	_, err = MakeSetGroupMembershipRequest(ctx, api, &iam.SetGroupMembersRequest{
 		GroupID: groupID,
 	})
-
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -154,31 +150,49 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
+// Depending on the kind of entity, it will generate a parsable state like:
+// groupID/user:userID,application:applicationID
 func SetGroupMembershipResourceID(groupID string, userIDs []string, applicationIDs []string) (resourceID string) {
-	sort.Strings(userIDs)
-	sort.Strings(applicationIDs)
+	entityIDs := make([]string, 0)
 
-	if len(userIDs) > 0 {
-		resourceID = fmt.Sprintf("%s/%s/%s", groupID, EntityKindUser, strings.Join(userIDs, ","))
-	} else if len(applicationIDs) > 0 {
-		resourceID = fmt.Sprintf("%s/%s/%s", groupID, EntityKindApplication, strings.Join(applicationIDs, ","))
+	for _, userID := range userIDs {
+		entityIDs = append(entityIDs, fmt.Sprintf("%s:%s", EntityKindUser, userID))
 	}
+
+	for _, applicationID := range applicationIDs {
+		entityIDs = append(entityIDs, fmt.Sprintf("%s:%s", EntityKindApplication, applicationID))
+	}
+
+	resourceID = fmt.Sprintf("%s/%s", groupID, strings.Join(entityIDs, ","))
 
 	return
 }
 
-func ExpandGroupMembershipResourceID(id string) (groupID string, kind EntityKind, entityIDs []string, err error) {
+func ExpandGroupMembershipResourceID(id string) (groupID string, entityIDs map[EntityKind][]string, err error) {
 	elems := strings.Split(id, "/")
-	if len(elems) != 3 {
-		return "", "", []string{}, fmt.Errorf("invalid group membership id format, expected {groupID}/{entityKind}/{entityIDs}, got: %s", id)
+	if len(elems) != 2 {
+		return "", nil, fmt.Errorf("invalid group membership id format, expected {groupID}/{entityKind}:{entityIDs}, got: %s", id)
 	}
 
 	groupID = elems[0]
-	kind = EntityKind(elems[1])
-	if kind != EntityKindUser && kind != EntityKindApplication {
-		return "", "", []string{}, fmt.Errorf("invalid entity kind, expected %s or %s, got: %s", EntityKindUser, EntityKindApplication, kind)
+
+	// entityKind:entityID,entityKind:entityID
+	entityKindAndIDs := strings.Split(elems[1], ",")
+	entityIDs = make(map[EntityKind][]string)
+
+	for _, entityKindAndID := range entityKindAndIDs {
+		splitted := strings.Split(entityKindAndID, ":")
+		if len(splitted) != 2 {
+			return "", nil, fmt.Errorf("invalid entity kind and id format, expected {entityKind}:{entityID}, got: %s", entityKindAndID)
+		}
+
+		entityKind, entityID := EntityKind(splitted[0]), splitted[1]
+		if entityKind != EntityKindUser && entityKind != EntityKindApplication {
+			return "", nil, fmt.Errorf("invalid entity kind, expected %s or %s, got: %s", EntityKindUser, EntityKindApplication, entityKind)
+		}
+
+		entityIDs[entityKind] = append(entityIDs[entityKind], entityID)
 	}
-	entityIDs = strings.Split(elems[2], ",")
 
 	return
 }
@@ -191,15 +205,14 @@ func MakeSetGroupMembershipRequest(ctx context.Context, api *iam.API, request *i
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	var response *iam.Group
-	var err error
-
 	// exponential backoff
-	for i := 0; i < maxRetries; i++ {
-		response, err = api.SetGroupMembers(request, scw.WithContext(ctx))
+	for i := range maxRetries {
+		response, err := api.SetGroupMembers(request, scw.WithContext(ctx))
+
 		if err != nil {
 			if httperrors.Is409(err) && strings.Contains(err.Error(), fmt.Sprintf("resource group with ID %s is in a transient state: updating", request.GroupID)) {
 				time.Sleep(retryInterval * time.Duration(i))
+
 				continue
 			}
 
