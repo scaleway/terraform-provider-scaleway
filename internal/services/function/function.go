@@ -58,6 +58,14 @@ func ResourceFunction() *schema.Resource {
 				Optional:    true,
 				Description: "The description of the function",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the function.",
+			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -198,6 +206,10 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 		Sandbox:                    function.FunctionSandbox(d.Get("sandbox").(string)),
 	}
 
+	if tags, ok := d.GetOk("tags"); ok {
+		req.Tags = types.ExpandStrings(tags)
+	}
+
 	if timeout, ok := d.GetOk("timeout"); ok {
 		req.Timeout = &scw.Duration{Seconds: int64(timeout.(int))}
 	}
@@ -310,6 +322,7 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("namespace_id", f.NamespaceID)
 	_ = d.Set("sandbox", f.Sandbox)
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(f.SecretEnvironmentVariables))
+	_ = d.Set("tags", types.FlattenSliceString(f.Tags))
 
 	return diags
 }
@@ -351,6 +364,10 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("description") {
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 		updated = true
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChange("memory_limit") {

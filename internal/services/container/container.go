@@ -55,6 +55,14 @@ func ResourceContainer() *schema.Resource {
 				Required:    true,
 				Description: "The container namespace associated",
 			},
+			"tags": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the container.",
+			},
 			"environment_variables": {
 				Type:        schema.TypeMap,
 				Optional:    true,
@@ -361,6 +369,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("region", co.Region.String())
 	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
+	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
 
 	return nil
 }
@@ -398,6 +407,10 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if d.HasChanges("secret_environment_variables") {
 		oldEnv, newEnv := d.GetChange("secret_environment_variables")
 		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
 	}
 
 	if d.HasChanges("min_scale") {

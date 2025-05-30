@@ -33,6 +33,7 @@ func TestAccFunction_Basic(t *testing.T) {
 						runtime = "node22"
 						privacy = "private"
 						handler = "handler.handle"
+						tags = ["tag1", "tag2"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -43,6 +44,9 @@ func TestAccFunction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function.main", "handler", "handler.handle"),
 					resource.TestCheckResourceAttrSet("scaleway_function.main", "namespace_id"),
 					resource.TestCheckResourceAttrSet("scaleway_function.main", "region"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_function.main", "tags.1", "tag2"),
 				),
 			},
 		},
