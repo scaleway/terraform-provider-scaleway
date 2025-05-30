@@ -14,7 +14,7 @@ Refer to the Containers triggers [documentation](https://www.scaleway.com/en/doc
 ### SQS
 
 ```terraform
-resource scaleway_container_trigger main {
+resource "scaleway_container_trigger" "main" {
   container_id = scaleway_container.main.id
   name         = "my-trigger"
   sqs {
@@ -29,7 +29,7 @@ resource scaleway_container_trigger main {
 ### NATS
 
 ```terraform
-resource scaleway_container_trigger main {
+resource "scaleway_container_trigger" "main" {
   container_id = scaleway_container.main.id
   name         = "my-trigger"
   nats {

@@ -14,15 +14,15 @@ Refer to the Containers CRON triggers [documentation](https://www.scaleway.com/e
 The following command allows you to add a CRON trigger to a Serverless Container.
 
 ```terraform
-resource scaleway_container_namespace main {
+resource "scaleway_container_namespace" "main" {
 }
 
-resource scaleway_container main {
+resource "scaleway_container" "main" {
   name         = "my-container-with-cron-tf"
   namespace_id = scaleway_container_namespace.main.id
 }
 
-resource scaleway_container_cron main {
+resource "scaleway_container_cron" "main" {
   container_id = scaleway_container.main.id
   name         = "my-cron-name"
   schedule     = "5 4 1 * *" #cron at 04:05 on day-of-month 1

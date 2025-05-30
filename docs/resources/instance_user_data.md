@@ -40,7 +40,7 @@ resource "scaleway_instance_user_data" "main" {
 }
 
 # User Data with many keys.
-resource scaleway_instance_user_data data {
+resource "scaleway_instance_user_data" "data" {
   server_id = scaleway_instance_server.main.id
   for_each  = var.user_data
   key       = each.key

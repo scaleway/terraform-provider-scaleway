@@ -18,10 +18,10 @@ The following commands allow you to:
 - retrieve a container by its ID
 
 ```hcl
-resource scaleway_container_namespace main {
+resource "scaleway_container_namespace" "main" {
 }
 
-resource scaleway_container main {
+resource "scaleway_container" "main" {
   name         = "test-container-data"
   namespace_id = scaleway_container_namespace.main.id
 }

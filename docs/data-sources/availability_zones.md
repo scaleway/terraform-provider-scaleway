@@ -18,7 +18,7 @@ The following command allow you to retrieve a the AZs of a Region.
 
 ```hcl
 # Get info by Region key
-data scaleway_availability_zones main {
+data "scaleway_availability_zones" "main" {
   region = "nl-ams"
 }
 ```

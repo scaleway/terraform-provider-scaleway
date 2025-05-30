@@ -114,7 +114,7 @@ resource "scaleway_instance_server" "web" {
 ### With private network
 
 ```terraform
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name = "private_network_instance"
 }
 

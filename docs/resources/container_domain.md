@@ -16,7 +16,7 @@ The commands below shows how to bind a custom domain name to a container.
 ### Simple
 
 ```terraform
-resource scaleway_container app {}
+resource "scaleway_container" "app" {}
 
 resource scaleway_container_domain "app" {
   container_id = scaleway_container.app.id
@@ -27,12 +27,12 @@ resource scaleway_container_domain "app" {
 ### Complete example with domain
 
 ```terraform
-resource scaleway_container_namespace main {
+resource "scaleway_container_namespace" "main" {
   name        = "my-ns-test"
   description = "test container"
 }
 
-resource scaleway_container app {
+resource "scaleway_container" "app" {
   name            = "app"
   namespace_id    = scaleway_container_namespace.main.id
   registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/nginx:alpine"

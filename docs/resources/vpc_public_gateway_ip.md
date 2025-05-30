@@ -20,7 +20,7 @@ resource "scaleway_domain_record" "tf_A" {
   priority = 1
 }
 
-resource scaleway_vpc_public_gateway_ip main {
+resource "scaleway_vpc_public_gateway_ip" "main" {
   reverse = "tf.example.com"
 }
 ```

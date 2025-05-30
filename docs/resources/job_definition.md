@@ -12,7 +12,7 @@ Creates and manages a Scaleway Serverless Job Definition. For more information, 
 ### Basic
 
 ```terraform
-resource scaleway_job_definition main {
+resource "scaleway_job_definition" "main" {
   name         = "testjob"
   cpu_limit    = 140
   memory_limit = 256
@@ -34,7 +34,7 @@ resource scaleway_job_definition main {
 ### With Secret Reference
 
 ```terraform
-resource scaleway_job_definition main {
+resource "scaleway_job_definition" "main" {
   name         = "testjob"
   cpu_limit    = 140
   memory_limit = 256
