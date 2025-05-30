@@ -3,14 +3,25 @@ package iam
 import (
 	"context"
 	"fmt"
+	"slices"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+)
+
+type EntityKind string
+
+const (
+	EntityKindUser        EntityKind = "user"
+	EntityKindApplication EntityKind = "application"
 )
 
 func ResourceGroupMembership() *schema.Resource {
@@ -23,18 +34,20 @@ func ResourceGroupMembership() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Type:         schema.TypeString,
+			"user_ids": {
+				Type:         schema.TypeList,
+				Elem:         &schema.Schema{Type: schema.TypeString},
 				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"application_id"},
+				ExactlyOneOf: []string{"application_ids"},
+				Description:  "The IDs of the users",
 				ForceNew:     true,
 			},
-			"application_id": {
-				Type:         schema.TypeString,
+			"application_ids": {
+				Type:         schema.TypeList,
+				Elem:         &schema.Schema{Type: schema.TypeString},
 				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"user_id"},
+				ExactlyOneOf: []string{"user_ids"},
+				Description:  "The IDs of the applications",
 				ForceNew:     true,
 			},
 			"group_id": {
@@ -50,19 +63,19 @@ func ResourceGroupMembership() *schema.Resource {
 func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	userID := types.ExpandStringPtr(d.Get("user_id"))
-	applicationID := types.ExpandStringPtr(d.Get("application_id"))
+	userIDs := types.ExpandStrings(d.Get("user_ids"))
+	applicationIDs := types.ExpandStrings(d.Get("application_ids"))
 
-	group, err := api.AddGroupMember(&iam.AddGroupMemberRequest{
-		GroupID:       d.Get("group_id").(string),
-		UserID:        userID,
-		ApplicationID: applicationID,
-	}, scw.WithContext(ctx))
+	group, err := MakeSetGroupMembershipRequest(ctx, api, &iam.SetGroupMembersRequest{
+		GroupID:        d.Get("group_id").(string),
+		UserIDs:        userIDs,
+		ApplicationIDs: applicationIDs,
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(GroupMembershipID(group.ID, userID, applicationID))
+	d.SetId(SetGroupMembershipResourceID(group.ID, userIDs, applicationIDs))
 
 	return resourceIamGroupMembershipRead(ctx, d, m)
 }
@@ -70,7 +83,7 @@ func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceDat
 func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
+	groupID, entityKind, entityIDs, err := ExpandGroupMembershipResourceID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,35 +101,30 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	foundInGroup := false
+	foundEntityIDs := make([]bool, len(entityIDs))
 
-	if userID != "" {
-		for _, groupUserID := range group.UserIDs {
-			if groupUserID == userID {
-				foundInGroup = true
-
-				break
+	if entityKind == EntityKindUser {
+		for i, groupUserID := range group.UserIDs {
+			if slices.Contains(entityIDs, groupUserID) {
+				foundEntityIDs[i] = true
 			}
 		}
-	} else if applicationID != "" {
-		for _, groupApplicationID := range group.ApplicationIDs {
-			if groupApplicationID == applicationID {
-				foundInGroup = true
-
-				break
+	} else if entityKind == EntityKindApplication {
+		for i, groupApplicationID := range group.ApplicationIDs {
+			if slices.Contains(entityIDs, groupApplicationID) {
+				foundEntityIDs[i] = true
 			}
 		}
 	}
 
-	if !foundInGroup {
+	if slices.Contains(foundEntityIDs, false) {
 		d.SetId("")
 
 		return nil
 	}
 
 	_ = d.Set("group_id", groupID)
-	_ = d.Set("user_id", userID)
-	_ = d.Set("application_id", applicationID)
+	_ = d.Set(fmt.Sprintf("%s_ids", entityKind), entityIDs)
 
 	return nil
 }
@@ -124,22 +132,15 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
+	groupID, _, _, err := ExpandGroupMembershipResourceID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req := &iam.RemoveGroupMemberRequest{
+	_, err = MakeSetGroupMembershipRequest(ctx, api, &iam.SetGroupMembersRequest{
 		GroupID: groupID,
-	}
+	})
 
-	if userID != "" {
-		req.UserID = &userID
-	} else if applicationID != "" {
-		req.ApplicationID = &applicationID
-	}
-
-	_, err = api.RemoveGroupMember(req, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -153,28 +154,60 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func GroupMembershipID(groupID string, userID *string, applicationID *string) string {
-	if userID != nil {
-		return fmt.Sprintf("%s/user/%s", groupID, *userID)
-	}
+func SetGroupMembershipResourceID(groupID string, userIDs []string, applicationIDs []string) (resourceID string) {
+	sort.Strings(userIDs)
+	sort.Strings(applicationIDs)
 
-	return fmt.Sprintf("%s/app/%s", groupID, *applicationID)
-}
-
-func ExpandGroupMembershipID(id string) (groupID string, userID string, applicationID string, err error) {
-	elems := strings.Split(id, "/")
-	if len(elems) != 3 {
-		return "", "", "", fmt.Errorf("invalid group member id format, expected {groupID}/{type}/{memberID}, got: %s", id)
-	}
-
-	groupID = elems[0]
-
-	switch elems[1] {
-	case "user":
-		userID = elems[2]
-	case "app":
-		applicationID = elems[2]
+	if len(userIDs) > 0 {
+		resourceID = fmt.Sprintf("%s/%s/%s", groupID, EntityKindUser, strings.Join(userIDs, ","))
+	} else if len(applicationIDs) > 0 {
+		resourceID = fmt.Sprintf("%s/%s/%s", groupID, EntityKindApplication, strings.Join(applicationIDs, ","))
 	}
 
 	return
+}
+
+func ExpandGroupMembershipResourceID(id string) (groupID string, kind EntityKind, entityIDs []string, err error) {
+	elems := strings.Split(id, "/")
+	if len(elems) != 3 {
+		return "", "", []string{}, fmt.Errorf("invalid group membership id format, expected {groupID}/{entityKind}/{entityIDs}, got: %s", id)
+	}
+
+	groupID = elems[0]
+	kind = EntityKind(elems[1])
+	if kind != EntityKindUser && kind != EntityKindApplication {
+		return "", "", []string{}, fmt.Errorf("invalid entity kind, expected %s or %s, got: %s", EntityKindUser, EntityKindApplication, kind)
+	}
+	entityIDs = strings.Split(elems[2], ",")
+
+	return
+}
+
+func MakeSetGroupMembershipRequest(ctx context.Context, api *iam.API, request *iam.SetGroupMembersRequest) (*iam.Group, error) {
+	retryInterval := 250 * time.Millisecond
+	maxRetries := 10
+
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	var response *iam.Group
+	var err error
+
+	// exponential backoff
+	for i := 0; i < maxRetries; i++ {
+		response, err = api.SetGroupMembers(request, scw.WithContext(ctx))
+		if err != nil {
+			if httperrors.Is409(err) && strings.Contains(err.Error(), fmt.Sprintf("resource group with ID %s is in a transient state: updating", request.GroupID)) {
+				time.Sleep(retryInterval * time.Duration(i))
+				continue
+			}
+
+			return nil, err
+		}
+
+		return response, nil
+	}
+
+	return nil, fmt.Errorf("failed to set group membership after %d retries", maxRetries)
 }

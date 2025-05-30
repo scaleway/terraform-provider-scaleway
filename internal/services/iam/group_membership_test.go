@@ -36,7 +36,7 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 
 					resource scaleway_iam_group_membership main {
 						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
+						application_ids = [scaleway_iam_application.main.id]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -57,12 +57,12 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 
 					resource scaleway_iam_group_membership main {
 						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
+						application_ids = [scaleway_iam_application.main.id]
 					}
 
 					resource scaleway_iam_group_membership import {
 						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
+						application_ids = [scaleway_iam_application.main.id]
 					}
 				`,
 				ImportState:  true,
@@ -71,7 +71,7 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 					groupID := state.RootModule().Resources["scaleway_iam_group.main"].Primary.ID
 					applicationID := state.RootModule().Resources["scaleway_iam_application.main"].Primary.ID
 
-					return iam.GroupMembershipID(groupID, nil, &applicationID), nil
+					return iam.SetGroupMembershipResourceID(groupID, nil, []string{applicationID}), nil
 				},
 				ImportStatePersist: true,
 			},
@@ -88,12 +88,12 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 
 					resource scaleway_iam_group_membership main {
 						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
+						application_ids = [scaleway_iam_application.main.id]
 					}
 
 					resource scaleway_iam_group_membership import {
 						group_id = scaleway_iam_group.main.id
-						application_id = scaleway_iam_application.main.id
+						application_ids = [scaleway_iam_application.main.id]
 					}
 				`,
 				PlanOnly: true,
@@ -154,12 +154,12 @@ func testAccCheckIamGroupMembershipApplicationInGroup(tt *acctest.TestTools, n s
 
 		api := iam.NewAPI(tt.Meta)
 
-		groupID, _, applicationID, err := iam.ExpandGroupMembershipID(rs.Primary.ID)
+		groupID, _, applicationID, err := iam.ExpandGroupMembershipResourceID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if applicationID != expectedApplicationID {
+		if applicationID[0] != expectedApplicationID {
 			return fmt.Errorf("group membership id does not contain expected application id, expected %s, got %s", expectedApplicationID, applicationID)
 		}
 
@@ -173,7 +173,7 @@ func testAccCheckIamGroupMembershipApplicationInGroup(tt *acctest.TestTools, n s
 		foundInGroup := false
 
 		for _, groupApplicationID := range group.ApplicationIDs {
-			if groupApplicationID == applicationID {
+			if groupApplicationID == applicationID[0] {
 				foundInGroup = true
 			}
 		}
@@ -202,12 +202,12 @@ func testAccCheckIamGroupMembershipUserInGroup(tt *acctest.TestTools, n string, 
 
 		api := iam.NewAPI(tt.Meta)
 
-		groupID, userID, _, err := iam.ExpandGroupMembershipID(rs.Primary.ID)
+		groupID, _, userID, err := iam.ExpandGroupMembershipResourceID(rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		if userID != expectedUserID {
+		if userID[0] != expectedUserID {
 			return fmt.Errorf("group membership id does not contain expected user id, expected %s, got %s", expectedUserID, userID)
 		}
 
@@ -221,7 +221,7 @@ func testAccCheckIamGroupMembershipUserInGroup(tt *acctest.TestTools, n string, 
 		foundInGroup := false
 
 		for _, groupUserID := range group.UserIDs {
-			if groupUserID == userID {
+			if groupUserID == userID[0] {
 				foundInGroup = true
 			}
 		}
