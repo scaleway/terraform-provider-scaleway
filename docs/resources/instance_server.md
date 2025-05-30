@@ -214,7 +214,7 @@ To retrieve more information by label please use: ```scw marketplace image get l
       To find the right size use [this endpoint](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances) and
       check the `volumes_constraint.{min|max}_size` (in bytes) for your `commercial_type`.
       Depending on `volume_type`, updates to this field may recreate a new resource.
-    - `volume_type` - (Optional) Volume type of root volume, can be `b_ssd`, `l_ssd` or `sbs_volume`, default value depends on server type
+    - `volume_type` - (Optional) Volume type of root volume, can be `l_ssd` or `sbs_volume`, default value depends on server type
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
     - `sbs_iops` - (Optional) Choose IOPS of your sbs volume, has to be used with `sbs_volume` for root volume type.
 
