@@ -10,16 +10,16 @@ Gets information about an RDB backup.
 ## Example Usage
 
 ```hcl
-data scaleway_rdb_database_backup find_by_name {
+data "scaleway_rdb_database_backup" "find_by_name" {
   name = "mybackup"
 }
 
-data scaleway_rdb_database_backup find_by_name_and_instance {
+data "scaleway_rdb_database_backup" "find_by_name_and_instance" {
   name        = "mybackup"
   instance_id = "11111111-1111-1111-1111-111111111111"
 }
 
-data scaleway_rdb_database_backup find_by_id {
+data "scaleway_rdb_database_backup" "find_by_id" {
   backup_id = "11111111-1111-1111-1111-111111111111"
 }
 ```

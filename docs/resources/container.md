@@ -14,12 +14,12 @@ For more information on the limitations of Serverless Containers, refer to the [
 ## Example Usage
 
 ```terraform
-resource scaleway_container_namespace main {
+resource "scaleway_container_namespace" "main" {
   name        = "my-ns-test"
   description = "test container"
 }
 
-resource scaleway_container main {
+resource "scaleway_container" "main" {
   name            = "my-container-02"
   description     = "environment variables test"
   tags            = ["tag1", "tag2"]
@@ -182,7 +182,7 @@ The period between health checks is also configurable.
 Example:
 
 ```terraform
-resource scaleway_container main {
+resource "scaleway_container" "main" {
   name         = "my-container-02"
   namespace_id = scaleway_container_namespace.main.id
 
@@ -209,7 +209,7 @@ It replaces current `max_concurrency` that has been deprecated.
 Example:
 
 ```terraform
-resource scaleway_container main {
+resource "scaleway_container" "main" {
   name         = "my-container-02"
   namespace_id = scaleway_container_namespace.main.id
 

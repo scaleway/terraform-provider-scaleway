@@ -25,22 +25,22 @@ resource "scaleway_lb_frontend" "frontend01" {
 ## With Certificate
 
 ```terraform
-resource scaleway_lb_ip ip01 {}
+resource "scaleway_lb_ip" "ip01" {}
 
-resource scaleway_lb lb01 {
+resource "scaleway_lb" "lb01" {
   ip_id = scaleway_lb_ip.ip01.id
   name  = "test-lb"
   type  = "lb-s"
 }
 
-resource scaleway_lb_backend bkd01 {
+resource "scaleway_lb_backend" "bkd01" {
   lb_id            = scaleway_lb.lb01.id
   forward_protocol = "tcp"
   forward_port     = 443
   proxy_protocol   = "none"
 }
 
-resource scaleway_lb_certificate cert01 {
+resource "scaleway_lb_certificate" "cert01" {
   lb_id = scaleway_lb.lb01.id
   name  = "test-cert-front-end"
   letsencrypt {
@@ -52,7 +52,7 @@ resource scaleway_lb_certificate cert01 {
   }
 }
 
-resource scaleway_lb_frontend frt01 {
+resource "scaleway_lb_frontend" "frt01" {
   lb_id           = scaleway_lb.lb01.id
   backend_id      = scaleway_lb_backend.bkd01.id
   inbound_port    = 443

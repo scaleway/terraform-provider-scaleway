@@ -10,17 +10,17 @@ Gets information about multiple VPC routes.
 ## Example Usage
 
 ```hcl
-resource scaleway_vpc vpc01 {
+resource "scaleway_vpc" "vpc01" {
   name           = "tf-vpc-route"
   enable_routing = true
 }
 
-resource scaleway_vpc_private_network pn01 {
+resource "scaleway_vpc_private_network" "pn01" {
   name   = "tf-pn-route"
   vpc_id = scaleway_vpc.vpc01.id
 }
 
-resource scaleway_vpc_private_network pn02 {
+resource "scaleway_vpc_private_network" "pn02" {
   name   = "tf-pn_route-2"
   vpc_id = scaleway_vpc.vpc01.id
 }

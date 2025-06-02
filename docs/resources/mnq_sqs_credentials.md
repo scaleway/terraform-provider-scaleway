@@ -16,7 +16,7 @@ our [main documentation](https://www.scaleway.com/en/docs/messaging/reference-co
 ```terraform
 resource "scaleway_mnq_sqs" "main" {}
 
-resource scaleway_mnq_sqs_credentials main {
+resource "scaleway_mnq_sqs_credentials" "main" {
   project_id = scaleway_mnq_sqs.main.project_id
   name       = "sqs-credentials"
 
