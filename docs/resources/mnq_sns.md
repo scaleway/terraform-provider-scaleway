@@ -22,7 +22,7 @@ resource scaleway_mnq_sns "main" {}
 Activate SNS in a specific Project
 
 ```terraform
-data scaleway_account_project project {
+data "scaleway_account_project" "project" {
   name = "default"
 }
 

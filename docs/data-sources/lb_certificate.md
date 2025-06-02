@@ -16,16 +16,16 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 ### Let's Encrypt
 
 ```hcl
-resource scaleway_lb_ip main {
+resource "scaleway_lb_ip" "main" {
 }
 
-resource scaleway_lb main {
+resource "scaleway_lb" "main" {
   ip_id = scaleway_lb_ip.main.id
   name  = "data-test-lb-cert"
   type  = "LB-S"
 }
 
-resource scaleway_lb_certificate main {
+resource "scaleway_lb_certificate" "main" {
   lb_id = scaleway_lb.main.id
   name  = "data-test-lb-cert"
   letsencrypt {

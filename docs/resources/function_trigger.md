@@ -14,7 +14,7 @@ Refer to the Functions triggers [documentation](https://www.scaleway.com/en/docs
 ### SQS
 
 ```terraform
-resource scaleway_function_trigger main {
+resource "scaleway_function_trigger" "main" {
   function_id = scaleway_function.main.id
   name        = "my-trigger"
   sqs {
@@ -29,7 +29,7 @@ resource scaleway_function_trigger main {
 ### NATS
 
 ```terraform
-resource scaleway_function_trigger main {
+resource "scaleway_function_trigger" "main" {
   function_id = scaleway_function.main.id
   name        = "my-trigger"
   nats {

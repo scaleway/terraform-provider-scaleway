@@ -126,7 +126,7 @@ provider "scaleway" {
   alias      = "reading-profile"
 }
 
-data scaleway_object_bucket bucket {
+data "scaleway_object_bucket" "bucket" {
   provider   = scaleway.reading-profile
   name       = "some-unique-name"
   depends_on = [scaleway_iam_api_key.reading-api-key]

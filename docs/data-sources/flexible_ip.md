@@ -26,8 +26,8 @@ data "scaleway_flexible_ip" "my_ip" {
 - `ip_address` - (Optional) The IP address.
   Only one of `ip_address` and `ip_id` should be specified.
 
-- `ip_id` - (Optional) The IP ID.
-  Only one of `ip_address` and `ip_id` should be specified.
+- `flexible_ip_id` - (Optional) The IP ID.
+  Only one of `ip_address` and `flexible_ip_id` should be specified.
 
 ## Attributes Reference
 

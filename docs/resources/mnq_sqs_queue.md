@@ -16,7 +16,7 @@ our [main documentation](https://www.scaleway.com/en/docs/messaging/how-to/creat
 ```terraform
 resource "scaleway_mnq_sqs" "main" {}
 
-resource scaleway_mnq_sqs_credentials main {
+resource "scaleway_mnq_sqs_credentials" "main" {
   project_id = scaleway_mnq_sqs.main.project_id
   name       = "sqs-credentials"
 
@@ -27,7 +27,7 @@ resource scaleway_mnq_sqs_credentials main {
   }
 }
 
-resource scaleway_mnq_sqs_queue main {
+resource "scaleway_mnq_sqs_queue" "main" {
   project_id   = scaleway_mnq_sqs.main.project_id
   name         = "my-queue"
   sqs_endpoint = scaleway_mnq_sqs.main.endpoint
