@@ -35,6 +35,7 @@ func TestAccGroupMembership_MultipleEntities(t *testing.T) {
 						email = "foo@scaleway.com"
 						username = "foo"
 					}
+
 					resource scaleway_iam_user bar {
 						email = "bar@scaleway.com"
 						username = "bar"
