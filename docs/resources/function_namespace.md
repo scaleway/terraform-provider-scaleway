@@ -16,6 +16,7 @@ Refer to the Functions namespace [documentation](https://www.scaleway.com/en/doc
 resource "scaleway_function_namespace" "main" {
   name        = "main-function-namespace"
   description = "Main function namespace"
+  tags        = ["tag1", "tag2"]
 }
 ```
 
@@ -29,13 +30,15 @@ The following arguments are supported:
 
 - `description` (Optional) The description of the namespace.
 
+- `tags` - (Optional) The list of tags associated with the namespace.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project that contains the namespace.
 
-- `environment_variables` - The environment variables of the namespace.
+- `environment_variables` - (Optional) The environment variables of the namespace.
 
-- `secret_environment_variables` - The secret environment variables of the namespace.
+- `secret_environment_variables` - (Optional) The secret environment variables of the namespace.
 
 ## Attributes Reference
 

@@ -41,6 +41,8 @@ resource "scaleway_function_namespace" "main" {
 
 resource "scaleway_function" "main" {
   namespace_id = scaleway_function_namespace.main.id
+  description  = "function with zip file"
+  tags         = ["tag1", "tag2"]
   runtime      = "go118"
   handler      = "Handle"
   privacy      = "private"
@@ -63,13 +65,15 @@ The following arguments are supported:
 
 - `description` (Optional) The description of the function.
 
+- `tags` - (Optional) The list of tags associated with the function.
+
 - `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/compute/functions/concepts/#environment-variables) of the function.
 
 - `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/compute/functions/concepts/#secrets) of the function.
 
 - `privacy` - (Optional) The privacy type defines the way to authenticate to your function. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-functions/#protocol-9dd4c8).
 
-- `runtime` - Runtime of the function. Runtimes can be fetched using [specific route](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-get-a-function)
+- `runtime` - (Required) Runtime of the function. Runtimes can be fetched using [specific route](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-get-a-function)
 
 - `min_scale` - (Optional) The minimum number of function instances running continuously. Defaults to 0. Functions are billed when executed, and using a `min_scale` greater than 0 will cause your function to run constantly.
 
@@ -77,15 +81,15 @@ The following arguments are supported:
 
 - `memory_limit` - (Optional) The memory resources in MB to allocate to each function. Defaults to 256 MB.
 
-- `handler` - Handler of the function, depends on the runtime. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-create-a-new-function) for the list of supported runtimes.
+- `handler` - (Required) Handler of the function, depends on the runtime. Refer to the [dedicated documentation](https://www.scaleway.com/en/developers/api/serverless-functions/#path-functions-create-a-new-function) for the list of supported runtimes.
 
 - `timeout` - (Optional) The maximum amount of time your function can spend processing a request before being stopped. Defaults to 300s.
 
-- `zip_file` - Path to the zip file containing your function sources to upload.
+- `zip_file` - (Optional) Path to the zip file containing your function sources to upload.
 
-- `zip_hash` - The hash of your source zip file, changing it will redeploy the function. Can be any string, changing it will simply trigger a state change. You can use any Terraform hash function to trigger a change on your zip change (see examples).
+- `zip_hash` - (Optional) The hash of your source zip file, changing it will redeploy the function. Can be any string, changing it will simply trigger a state change. You can use any Terraform hash function to trigger a change on your zip change (see examples).
 
-- `deploy` - Define whether the function should be deployed. Terraform will wait for the function to be deployed. Your function will be redeployed if you update the source zip file.
+- `deploy` - (Optional, defaults to `false`) Define whether the function should be deployed. Terraform will wait for the function to be deployed. Your function will be redeployed if you update the source zip file.
 
 - `http_option` - (Optional) Allows both HTTP and HTTPS (`enabled`) or redirect HTTP to HTTPS (`redirected`). Defaults to `enabled`.
 

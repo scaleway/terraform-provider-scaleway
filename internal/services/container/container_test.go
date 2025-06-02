@@ -30,6 +30,7 @@ func TestAccContainer_Basic(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						tags = ["tag1", "tag2"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -49,6 +50,9 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "min_scale"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "privacy"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "local_storage_limit"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.1", "tag2"),
 				),
 			},
 			{
@@ -67,6 +71,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						timeout = 300
 						deploy = false
 						local_storage_limit = 1000
+						tags = ["tag"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -84,6 +89,8 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", containerSDK.ContainerPrivacyPublic.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1000"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.0", "tag"),
 				),
 			},
 			{
@@ -118,6 +125,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1500"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "0"),
 				),
 			},
 		},
