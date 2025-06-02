@@ -24,7 +24,7 @@ resource "scaleway_iam_application" "app" {
 
 resource "scaleway_iam_group_membership" "member" {
   group_id       = scaleway_iam_group.group.id
-  application_id = scaleway_iam_application.app.id
+  application_ids = [scaleway_iam_application.app.id]
 }
 ```
 
@@ -51,7 +51,7 @@ resource "scaleway_iam_group" "group" {
 resource "scaleway_iam_group_membership" "members" {
   for_each = data.scaleway_iam_user.users
   group_id = scaleway_iam_group.group.id
-  user_id  = each.value.id
+  user_ids = [each.value.id]
 }
 ```
 
@@ -59,11 +59,11 @@ resource "scaleway_iam_group_membership" "members" {
 
 - `group_id` - (Required) ID of the group to add members to.
 
-- `application_id` - (Optional) The ID of the application that will be added to the group.
+- `application_ids` - (Optional) The IDs of the applications that will be added to the group.
 
-- `user_id` - (Optional) The ID of the user that will be added to the group
+- `user_ids` - (Optional) The IDs of the users that will be added to the group
 
-  -> **Note** You must specify at least one: `application_id` and/or `user_id`.
+  -> **Note** You must specify at least one: `application_ids` and/or `user_ids`.
 
 ## Attributes Reference
 
@@ -71,11 +71,10 @@ No additional attributes are exported.
 
 ## Import
 
-IAM group memberships can be imported using two format:
+IAM group memberships can be imported using the following format:
 
-- For user: `{group_id}/user/{user_id}`
-- For application: `{group_id}/app/{application_id}`
+- For user: `{group_id}/user:userID,application:applicationID,...`
 
 ```bash
-terraform import scaleway_iam_group_membership.app 11111111-1111-1111-1111-111111111111/app/11111111-1111-1111-1111-111111111111
+terraform import scaleway_iam_group_membership.members 11111111-1111-1111-1111-111111111111/user:11111111-1111-1111-1111-111111111111,application:11111111-1111-1111-1111-111111111111
 ```
