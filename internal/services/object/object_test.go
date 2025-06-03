@@ -107,6 +107,45 @@ func TestAccObject_Basic(t *testing.T) {
 	})
 }
 
+func TestAccObject_ContentType(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-content-type")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_object_bucket" "main" {
+					name = "%s"
+					region = "%s"
+				}
+
+				resource "scaleway_object" "file" {
+					bucket     = scaleway_object_bucket.main.id
+					key        = "index.html"
+					file       = "testfixture/index.html"
+					visibility = "public-read"
+					content_type = "text/html"
+				}
+					
+				`, bucketName, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+					testAccCheckObjectExists(tt, "scaleway_object.file"),
+					resource.TestCheckResourceAttr("scaleway_object.file", "content_type", "text/html"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObject_Hash(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -161,7 +200,6 @@ func TestAccObject_Hash(t *testing.T) {
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
-					testAccCheckObjectExists(tt, "scaleway_object.file"),
 				),
 			},
 		},

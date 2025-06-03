@@ -89,6 +89,11 @@ func ResourceObject() *schema.Resource {
 				},
 				ValidateDiagFunc: validateMapKeyLowerCase(),
 			},
+			"content_type": {
+				Type: schema.TypeString,
+				Optional: true,
+				Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
+			},
 			"tags": {
 				Optional:    true,
 				Type:        schema.TypeMap,
@@ -146,11 +151,13 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	storageClassStr := d.Get("storage_class").(string)
 	storageClass := s3Types.StorageClass(storageClassStr)
 
+
 	req := &s3.PutObjectInput{
 		Bucket:       types.ExpandStringPtr(bucket),
 		Key:          types.ExpandStringPtr(key),
 		StorageClass: storageClass,
 		Metadata:     types.ExpandMapStringString(d.Get("metadata")),
+		ContentType: types.ExpandStringPtr(d.Get("content_type")),
 	}
 
 	visibilityStr := types.ExpandStringPtr(d.Get("visibility").(string))
@@ -251,6 +258,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
+			ContentType: types.ExpandStringPtr(d.Get("content_type")),
 		}
 
 		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
@@ -284,6 +292,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
+			ContentType: types.ExpandStringPtr("content_type"),
 		}
 
 		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
@@ -368,6 +377,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	_ = d.Set("metadata", types.FlattenMap(obj.Metadata))
+	_ = d.Set("content_type", &obj.ContentType)
 
 	tags, err := s3Client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
 		Bucket: types.ExpandStringPtr(bucket),
