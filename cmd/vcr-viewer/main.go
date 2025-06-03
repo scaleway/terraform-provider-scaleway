@@ -10,14 +10,14 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatalf("Usage: %s <chemin_du_fichier_yaml>\n", os.Args[0])
+		log.Fatalf("Usage: %s <cassette_file_name_without_yaml>\n", os.Args[0])
 	}
 
 	chemin := os.Args[1]
 
 	data, err := cassette.Load(chemin)
 	if err != nil {
-		log.Fatalf("Erreur de lecture du fichier : %v\n", err)
+		log.Fatalf("Error while reading file: %v\n", err)
 	}
 
 	for i := range len(data.Interactions) {
