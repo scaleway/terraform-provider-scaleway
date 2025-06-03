@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
-	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 	"log"
 	"os"
+
+	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
 var transientStates = map[string]bool{
@@ -24,6 +24,7 @@ func main() {
 	}
 
 	chemin := os.Args[1]
+
 	inputCassette, err := cassette.Load(chemin)
 	if err != nil {
 		log.Fatalf("Erreur de lecture du fichier : %v\n", err)
@@ -31,35 +32,42 @@ func main() {
 
 	outputCassette := cassette.New(chemin)
 	transitioning := false
-	for i := 0; i < len(inputCassette.Interactions); i++ {
+
+	for i := range len(inputCassette.Interactions) {
 		interaction := inputCassette.Interactions[i]
 		responseBody := interaction.Response.Body
 		requestMethod := interaction.Request.Method
 
 		if requestMethod != "GET" {
 			transitioning = false
+
 			log.Printf("Interaction %d is not a GET request. Recording it\n", i)
 			outputCassette.AddInteraction(interaction)
+
 			continue
 		}
 
 		if responseBody == "" {
 			log.Printf("Interaction %d got an empty response body. Recording it\n", i)
 			outputCassette.AddInteraction(interaction)
+
 			continue
 		}
 
 		var m map[string]interface{}
+
 		err := json.Unmarshal([]byte(responseBody), &m)
 		if err != nil {
-			fmt.Printf("Interaction %d have an error with unmarshalling reponse body: %v. Recording it\n", i, err)
+			log.Printf("Interaction %d have an error with unmarshalling response body: %v. Recording it\n", i, err)
 			outputCassette.AddInteraction(interaction)
+
 			continue
 		}
 
 		if m["status"] == nil {
 			log.Printf("Interaction %d does not contain a status field. Recording it\n", i)
 			outputCassette.AddInteraction(interaction)
+
 			continue
 		}
 
@@ -67,26 +75,31 @@ func main() {
 			// We test if the state is transient
 			if _, ok := transientStates[m["status"].(string)]; ok {
 				if transitioning {
-					fmt.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, m["status"])
+					log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, m["status"])
+
 					continue
 				} else {
 					transitioning = true
-					fmt.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, m["status"])
+
+					log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, m["status"])
 					outputCassette.AddInteraction(interaction)
 				}
 			} else {
 				if transitioning {
-					fmt.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, m["status"])
+					log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, m["status"])
 					outputCassette.AddInteraction(interaction)
+
 					transitioning = false
 				} else {
-					fmt.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, m["status"])
+					log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, m["status"])
 					outputCassette.AddInteraction(interaction)
 				}
-
 			}
 		}
 	}
 
-	outputCassette.Save()
+	err = outputCassette.Save()
+	if err != nil {
+		log.Fatalf("error while saving file: %v", err)
+	}
 }
