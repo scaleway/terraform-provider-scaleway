@@ -80,13 +80,17 @@ func main() {
 				continue
 			} else {
 				log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, status)
+
 				transitioning = true
+
 				outputCassette.AddInteraction(interaction)
 			}
 		} else {
 			if transitioning {
 				log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, status)
+
 				outputCassette.AddInteraction(interaction)
+
 				transitioning = false
 			} else {
 				log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, status)
