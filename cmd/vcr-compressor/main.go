@@ -92,8 +92,6 @@ func main() {
 		if _, ok := transientStates[status]; ok {
 			if transitioning {
 				log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, status)
-
-				continue
 			} else {
 				log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, status)
 
