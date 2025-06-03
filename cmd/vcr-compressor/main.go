@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"log"
 	"os"
 
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
