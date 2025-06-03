@@ -62,3 +62,16 @@ Running a single test:
 ```sh
 TF_UPDATE_CASSETTES=true TF_LOG=DEBUG SCW_DEBUG=1 TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayDataSourceRDBInstance_Basic -timeout=120m -parallel=10
 ```
+
+## Compressing the cassettes
+
+We record interactions with the Scaleway API in cassettes, which are stored in the `testdata` directory of each service.
+Each wait function used in the resources will perform several requests to the API for pulling a resource state, which can lead to large cassettes.
+We use a compressor to reduce the size of these cassettes once they are recorded.
+By doing so, tests can run faster and the cassettes are easier to read.
+
+To use the compressor on a given cassette, run the following command:
+
+```sh
+go run -v ./cmd/vcr-compressor internal/services/rdb/testdata/acl-basic.cassette
+```
