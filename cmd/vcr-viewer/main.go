@@ -13,9 +13,9 @@ func main() {
 		log.Fatalf("Usage: %s <cassette_file_name_without_yaml>\n", os.Args[0])
 	}
 
-	chemin := os.Args[1]
+	path := os.Args[1]
 
-	data, err := cassette.Load(chemin)
+	data, err := cassette.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file: %v\n", err)
 	}
@@ -46,7 +46,7 @@ func main() {
 
 		if m["status"] != nil {
 			log.Println("++++++++++++++++")
-			log.Printf("status: %s\n", m["status"]) // Modifie le champ "status" pour qu'il soit "ok"
+			log.Printf("status: %s\n", m["status"])
 			log.Println("++++++++++++++++")
 		}
 

@@ -23,14 +23,14 @@ func main() {
 		log.Fatalf("Usage: %s <cassette_file_name_without_yaml>\n", os.Args[0])
 	}
 
-	chemin := os.Args[1]
+	path := os.Args[1]
 
-	inputCassette, err := cassette.Load(chemin)
+	inputCassette, err := cassette.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
 	}
 
-	outputCassette := cassette.New(chemin)
+	outputCassette := cassette.New(path)
 	transitioning := false
 
 	for i := range len(inputCassette.Interactions) {
@@ -71,29 +71,27 @@ func main() {
 			continue
 		}
 
-		if m["status"] != nil {
-			// We test if the state is transient
-			if _, ok := transientStates[m["status"].(string)]; ok {
-				if transitioning {
-					log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, m["status"])
+		// We test if the state is transient
+		if _, ok := transientStates[m["status"].(string)]; ok {
+			if transitioning {
+				log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, m["status"])
 
-					continue
-				} else {
-					transitioning = true
-
-					log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, m["status"])
-					outputCassette.AddInteraction(interaction)
-				}
+				continue
 			} else {
-				if transitioning {
-					log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, m["status"])
-					outputCassette.AddInteraction(interaction)
+				transitioning = true
 
-					transitioning = false
-				} else {
-					log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, m["status"])
-					outputCassette.AddInteraction(interaction)
-				}
+				log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, m["status"])
+				outputCassette.AddInteraction(interaction)
+			}
+		} else {
+			if transitioning {
+				log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, m["status"])
+				outputCassette.AddInteraction(interaction)
+
+				transitioning = false
+			} else {
+				log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, m["status"])
+				outputCassette.AddInteraction(interaction)
 			}
 		}
 	}
