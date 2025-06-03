@@ -71,26 +71,25 @@ func main() {
 			continue
 		}
 
+		status := m["status"].(string)
 		// We test if the state is transient
-		if _, ok := transientStates[m["status"].(string)]; ok {
+		if _, ok := transientStates[status]; ok {
 			if transitioning {
-				log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, m["status"])
+				log.Printf("Interaction %d is in a transient state while we are already in transitient state. No need to record it: %s\n", i, status)
 
 				continue
 			} else {
+				log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, status)
 				transitioning = true
-
-				log.Printf("Interaction %d is in a transient state: %s, Recording it\n", i, m["status"])
 				outputCassette.AddInteraction(interaction)
 			}
 		} else {
 			if transitioning {
-				log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, m["status"])
+				log.Printf("Interaction %d is not in a transient state anymore: %s, Recording it\n", i, status)
 				outputCassette.AddInteraction(interaction)
-
 				transitioning = false
 			} else {
-				log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, m["status"])
+				log.Printf("Interaction %d is not in a transient state: %s, Recording it\n", i, status)
 				outputCassette.AddInteraction(interaction)
 			}
 		}
