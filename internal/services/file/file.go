@@ -7,25 +7,26 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ResourceFile() *schema.Resource {
+func ResourceFileSystem() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceFileCreate,
-		ReadContext:   ResourceFileRead,
-		UpdateContext: ResourceFileUpdate,
-		DeleteContext: ResourceFileDelete,
+		CreateContext: ResourceFileSystemCreate,
+		ReadContext:   ResourceFileSystemRead,
+		UpdateContext: ResourceFileSystemUpdate,
+		DeleteContext: ResourceFileSystemDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultFileTimeout),
-			Read:    schema.DefaultTimeout(defaultFileTimeout),
-			Delete:  schema.DefaultTimeout(defaultFileTimeout),
-			Default: schema.DefaultTimeout(defaultFileTimeout),
+			Create:  schema.DefaultTimeout(defaultFileSystemTimeout),
+			Read:    schema.DefaultTimeout(defaultFileSystemTimeout),
+			Delete:  schema.DefaultTimeout(defaultFileSystemTimeout),
+			Default: schema.DefaultTimeout(defaultFileSystemTimeout),
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -56,7 +57,7 @@ func ResourceFile() *schema.Resource {
 				Computed:    true,
 				Description: "The Current status of the filesystem (e.g. creating, available, ...)",
 			},
-			"number_of_attachements": {
+			"number_of_attachments": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "The current number of attachments (mounts) that the filesystem has",
@@ -75,18 +76,18 @@ func ResourceFile() *schema.Resource {
 	}
 }
 
-func ResourceFileCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	api, region, err := fileAPIWithZone(d, m)
+func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, err := fileSystemAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := &file.CreateFileSystemRequest{
-		Region: region,
-		Name:   types.ExpandOrGenerateString(d.Get("name").(string), "file"),
+		Region:    region,
+		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "file"),
 		ProjectID: d.Get("project_id").(string),
-		Size: *types.ExpandUint64Ptr(d.Get("size")),
-		Tags: types.ExpandStrings(d.Get("tags")),
+		Size:      *types.ExpandUint64Ptr(d.Get("size")),
+		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
 	file, err := api.CreateFileSystem(req, scw.WithContext(ctx))
@@ -96,22 +97,91 @@ func ResourceFileCreate(ctx context.Context, d *schema.ResourceData, m interface
 
 	d.SetId(regional.NewIDString(region, file.ID))
 
-	//TODO waitForFile
+	_, err = waitForFileSystem(ctx, api, region, file.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceFileRead(ctx, d, m)
+	return ResourceFileSystemRead(ctx, d, m)
 }
 
-func ResourceFileRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	fileSystem, err := waitForFileSystem(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("name", fileSystem.Name)
+	_ = d.Set("project_id", fileSystem.ProjectID)
+	_ = d.Set("region", fileSystem.Region)
+	_ = d.Set("organization_id", fileSystem.OrganizationID)
+	_ = d.Set("status", fileSystem.Status)
+	_ = d.Set("size", fileSystem.Size)
+	_ = d.Set("tags", fileSystem.Tags)
+	_ = d.Set("created_at", fileSystem.CreatedAt)
+	_ = d.Set("updated_at", fileSystem.UpdatedAt)
+	_ = d.Set("number_of_attachments", fileSystem.NumberOfAttachments)
 
 	return nil
 }
 
-func ResourceFileUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceFileRead(ctx, d, m)
+	fileSystem, err := waitForFileSystem(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	req := &file.UpdateFileSystemRequest{
+		Region: region,
+		FilesystemID: fileSystem.ID,
+	}
+
+	if d.HasChange("name") {
+		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
+	}
+
+	// 	// Region: region to target. If none is passed will use default region from the config.
+	// Region scw.Region `json:"-"`
+
+	// // FilesystemID: UUID of the filesystem.
+	// FilesystemID string `json:"-"`
+
+	// // Name: when defined, is the new name of the filesystem.
+	// Name *string `json:"name,omitempty"`
+
+	// // Size: size in bytes, with a granularity of 100 GB (10^11 bytes).
+	// // Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size.
+	// Size *uint64 `json:"size,omitempty"`
+
+	// // Tags: list of tags assigned to the filesystem.
+	// Tags *[]string `json:"tags,omitempty"`
+
+	return ResourceFileSystemRead(ctx, d, m)
 }
 
-func ResourceFileDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 
 	return nil
 }
