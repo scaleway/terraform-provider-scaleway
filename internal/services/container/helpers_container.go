@@ -140,6 +140,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.LocalStorageLimit = scw.Uint32Ptr(uint32(localStorageLimit.(int)))
 	}
 
+	if tags, ok := d.GetOk("tags"); ok {
+		req.Tags = types.ExpandStrings(tags)
+	}
+
 	return req, nil
 }
 
