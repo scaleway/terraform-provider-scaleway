@@ -154,7 +154,7 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	req := &file.UpdateFileSystemRequest{
-		Region: region,
+		Region:       region,
 		FilesystemID: fileSystem.ID,
 	}
 
@@ -162,26 +162,50 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m int
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
-	// 	// Region: region to target. If none is passed will use default region from the config.
-	// Region scw.Region `json:"-"`
+	if d.HasChange("size") {
+		req.Size = types.ExpandUint64Ptr(d.Get("size"))
+	}
 
-	// // FilesystemID: UUID of the filesystem.
-	// FilesystemID string `json:"-"`
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandStringsPtr(d.Get("tags"))
+	}
 
-	// // Name: when defined, is the new name of the filesystem.
-	// Name *string `json:"name,omitempty"`
-
-	// // Size: size in bytes, with a granularity of 100 GB (10^11 bytes).
-	// // Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size.
-	// Size *uint64 `json:"size,omitempty"`
-
-	// // Tags: list of tags assigned to the filesystem.
-	// Tags *[]string `json:"tags,omitempty"`
+	if _, err := api.UpdateFileSystem(req, scw.WithContext(ctx)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceFileSystemRead(ctx, d, m)
 }
 
 func ResourceFileSystemDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForFileSystem(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	err = api.DeleteFileSystem(&file.DeleteFileSystemRequest{
+		Region:       region,
+		FilesystemID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForFileSystem(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
