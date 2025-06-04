@@ -50,6 +50,17 @@ var BodyMatcherIgnore = []string{
 	"mnq_nats_subject",
 }
 
+// removeKeyRecursive removes a key from a map and all its nested maps
+func removeKeyRecursive(m map[string]interface{}, key string) {
+	delete(m, key)
+
+	for _, v := range m {
+		if v, ok := v.(map[string]interface{}); ok {
+			removeKeyRecursive(v, key)
+		}
+	}
+}
+
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
 func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	t.Helper()
@@ -132,24 +143,13 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		// actualRequest contains JSON but cassette may not contain JSON, this doesn't match in this case
 		return false
 	}
-
-	// Remove keys that should be ignored during comparison
+	// remove keys that should be ignored during comparison
 	for _, key := range BodyMatcherIgnore {
 		removeKeyRecursive(requestJSON, key)
 		removeKeyRecursive(cassetteJSON, key)
 	}
 
 	return compareJSONBodies(requestJSON, cassetteJSON)
-}
-
-func removeKeyRecursive(m map[string]interface{}, key string) {
-	delete(m, key)
-
-	for _, v := range m {
-		if v, ok := v.(map[string]interface{}); ok {
-			removeKeyRecursive(v, key)
-		}
-	}
 }
 
 // CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one

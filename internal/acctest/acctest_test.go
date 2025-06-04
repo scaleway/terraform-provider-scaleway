@@ -173,12 +173,169 @@ var simpleSliceOfStringsRequest = `{
   ]
 }
 `
+
 var simpleSliceOfStringsCassette = `{
   "strings": [
     "3",
     "2",
     "1"
   ]
+}
+`
+
+var ludacrisBodyRequest = `{
+  "payload": {
+    "artists": [
+		{
+			"name": "Ludacris",
+			"age": 45,
+			"songs": ["Ludacris", "Ludacris", "Ludacris"]
+		}
+	}
+  }
+}
+`
+
+var jdillaBodyCassette = `{
+  "payload": {
+    "artists": [
+		{
+			"name": "Jdilla",
+			"age": 54,
+			"songs": ["this", "is", "jdilla"]
+		}
+	]
+  }
+}
+`
+
+var requestInstanceSettings = `{
+  "settings": [
+    {
+      "name": "max_connections",
+      "value": "200"
+    },
+    {
+      "name": "max_parallel_workers",
+      "value": "2"
+    },
+    {
+      "name": "effective_cache_size",
+      "value": "1300"
+    },
+    {
+      "name": "maintenance_work_mem",
+      "value": "150"
+    },
+    {
+      "name": "max_parallel_workers_per_gather",
+      "value": "2"
+    },
+    {
+      "name": "work_mem",
+      "value": "4"
+    }
+  ]
+}
+`
+
+var cassetteInstanceSettings = `{
+  "settings": [
+    {
+      "name": "maintenance_work_mem",
+      "value": "150"
+    },
+    {
+      "name": "effective_cache_size",
+      "value": "1300"
+    },
+    {
+      "name": "work_mem",
+      "value": "4"
+    },
+    {
+      "name": "max_parallel_workers",
+      "value": "2"
+    },
+    {
+      "name": "max_parallel_workers_per_gather",
+      "value": "2"
+    },
+    {
+      "name": "max_connections",
+      "value": "200"
+    }
+  ]
+}
+`
+
+var objectBodyRequest = `{
+  "Id": "MyPolicy",
+  "Statement": [
+    {
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Principal": {
+        "SCW": "*"
+      },
+      "Resource": [
+        "tf-tests-scw-obp-basic-4713290580220176511",
+        "tf-tests-scw-obp-basic-4713290580220176511/*"
+      ],
+      "Sid": "GrantToEveryone"
+    },
+    {
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Principal": {
+        "SCW": "*"
+      },
+      "Sid": "GrantToEveryone",
+	  "project_id": "1234567890"
+    }
+  ],
+  "Version": "2012-10-17"
+}
+`
+
+var objectBodyCassette = `{
+  "Id": "MyPolicy",
+  "Statement": [
+    {
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Principal": {
+        "SCW": "*"
+      },
+      "Sid": "GrantToEveryone",
+      "project_id": "9876543210"
+    },
+    {
+      "Action": [
+        "s3:ListBucket",
+        "s3:GetObject"
+      ],
+      "Effect": "Allow",
+      "Principal": {
+        "SCW": "*"
+      },
+      "Sid": "GrantToEveryone",
+      "Resource": [
+        "tf-tests-scw-obp-basic-1234567890",
+        "tf-tests-scw-obp-basic-1234567890/*"
+      ]
+    }
+  ],
+  "Version": "2012-10-17"
 }
 `
 
@@ -197,7 +354,7 @@ var testBodyMatcherCases = []struct {
 	cassetteBody *cassette.Request
 	shouldMatch  bool
 }{
-	// create bar compare with foo
+	// bar does not match foo
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(barMemberCreationBody)),
 		cassetteBody: &cassette.Request{
@@ -208,7 +365,7 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: false,
 	},
-	// create bar compare with bar
+	// bar matches bar
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(barMemberCreationBody)),
 		cassetteBody: &cassette.Request{
@@ -231,8 +388,6 @@ var testBodyMatcherCases = []struct {
 		shouldMatch: true,
 	},
 	// patch secret with nested slices of map[string]interface{} in different order
-	// we cannot user deep equal because the order of the slices is different although the values are the same
-	// it is not possible to sort them because they are not comparable (map[string]interface{})
 	{
 		requestBody: newRequest(http.MethodPatch, "https://api.scaleway.com/secrets/v1/secrets/123", strings.NewReader(secretPatchBodyRequest)),
 		cassetteBody: &cassette.Request{
@@ -243,7 +398,28 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: true,
 	},
-	// compare nested slices of different integers
+	{
+		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(requestInstanceSettings)),
+		cassetteBody: &cassette.Request{
+			URL:           "https://api.scaleway.com/iam/v1alpha1/users",
+			Method:        http.MethodPost,
+			Body:          cassetteInstanceSettings,
+			ContentLength: int64(len(cassetteInstanceSettings)),
+		},
+		shouldMatch: true,
+	},
+	// complex slice of maps case
+	{
+		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/policies", strings.NewReader(objectBodyRequest)),
+		cassetteBody: &cassette.Request{
+			URL:           "https://api.scaleway.com/iam/v1alpha1/policies",
+			Method:        http.MethodPost,
+			Body:          objectBodyCassette,
+			ContentLength: int64(len(objectBodyCassette)),
+		},
+		shouldMatch: true,
+	},
+	// compare slices of different integers
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(integertestBodyRequest)),
 		cassetteBody: &cassette.Request{
@@ -254,7 +430,7 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: false,
 	},
-	// compare nested slices of same integers in different order
+	// compare slices of same integers in different order
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(integerBodyRequestOutOfOrder)),
 		cassetteBody: &cassette.Request{
@@ -265,7 +441,7 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: true,
 	},
-	// compare nested slices of slices of strings
+	// compare slices of slices of strings in different order
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(nestedSliceOfSlicesRequest)),
 		cassetteBody: &cassette.Request{
@@ -286,7 +462,7 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: true,
 	},
-	// compare simple slice of strings
+	// compare slices of strings in different order
 	{
 		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(simpleSliceOfStringsRequest)),
 		cassetteBody: &cassette.Request{
@@ -297,6 +473,17 @@ var testBodyMatcherCases = []struct {
 		},
 		shouldMatch: true,
 	},
+	// ludacris does not match jdilla
+	{
+		requestBody: newRequest(http.MethodPost, "https://api.scaleway.com/iam/v1alpha1/users", strings.NewReader(ludacrisBodyRequest)),
+		cassetteBody: &cassette.Request{
+			URL:           "https://api.scaleway.com/iam/v1alpha1/users",
+			Method:        http.MethodPost,
+			Body:          jdillaBodyCassette,
+			ContentLength: int64(len(jdillaBodyCassette)),
+		},
+		shouldMatch: false,
+	},
 }
 
 func TestCassetteMatcher(t *testing.T) {
@@ -304,6 +491,8 @@ func TestCassetteMatcher(t *testing.T) {
 		shouldMatch := acctest.CassetteMatcher(test.requestBody, *test.cassetteBody)
 		if shouldMatch != test.shouldMatch {
 			t.Errorf("test %d: expected %v, got %v", i, test.shouldMatch, shouldMatch)
+			t.Errorf("requestBody: %s", test.requestBody.Body)
+			t.Errorf("cassetteBody: %s", test.cassetteBody.Body)
 		}
 	}
 }
