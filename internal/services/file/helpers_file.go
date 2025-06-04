@@ -11,11 +11,11 @@ import (
 )
 
 const (
-	defaultFileTimeout       = 5 * time.Minute
-	defaultFileRetryInterval = 5 * time.Second
+	defaultFileSystemTimeout       = 5 * time.Minute
+	defaultFileSystemRetryInterval = 5 * time.Second
 )
 
-func fileAPIWithZone(d *schema.ResourceData, m interface{}) (*file.API, scw.Region, error) {
+func fileSystemAPIWithZone(d *schema.ResourceData, m interface{}) (*file.API, scw.Region, error) {
 	fileAPI := file.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
