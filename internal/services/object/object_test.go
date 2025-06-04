@@ -200,6 +200,7 @@ func TestAccObject_Hash(t *testing.T) {
 				`, bucketName, objectTestsMainRegion),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					testAccCheckObjectExists(tt, "scaleway_object.file"),
 				),
 			},
 		},
