@@ -20,11 +20,9 @@ var transientStates = map[string]bool{
 
 	rdb.DatabaseBackupStatusCreating.String():  true,
 	rdb.DatabaseBackupStatusDeleting.String():  true,
-	rdb.DatabaseBackupStatusDeleting.String():  true,
 	rdb.DatabaseBackupStatusExporting.String(): true,
 	rdb.DatabaseBackupStatusRestoring.String(): true,
 	rdb.InstanceStatusAutohealing.String():     true,
-	rdb.InstanceStatusBackuping.String():       true,
 	rdb.InstanceStatusBackuping.String():       true,
 	rdb.InstanceStatusConfiguring.String():     true,
 	rdb.InstanceStatusDeleting.String():        true,
