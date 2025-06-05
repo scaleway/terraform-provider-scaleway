@@ -2,6 +2,7 @@ package file_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -18,6 +19,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
+	size := int64(100_000_000_000)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -26,32 +28,53 @@ func TestAccFileSystem_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesysten" "fs" {
+					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = 10000000000
+						size = %d
 					}
-
-					
-				`, fileSystemName),
+				`, fileSystemName, size),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", "10000000000"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", fmt.Sprintf("%d", size)),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesysten" "fs" {
+					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = 10000000000
+						size = %d
 					}
-
-					
-				`, fileSystemNameUpdated),
+				`, fileSystemNameUpdated, size),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", "10000000000"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", fmt.Sprintf("%d", size)),
 				),
+			},
+		},
+	})
+}
+
+func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_Basic"
+	size := int64(10_000_000_000)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size = %d
+					}
+				`, fileSystemName, size),
+				ExpectError: regexp.MustCompile("size does not respect constraint, size must be greater or equal to 100000000000"),
 			},
 		},
 	})

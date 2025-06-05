@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -129,8 +130,8 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("status", fileSystem.Status)
 	_ = d.Set("size", fileSystem.Size)
 	_ = d.Set("tags", fileSystem.Tags)
-	_ = d.Set("created_at", fileSystem.CreatedAt)
-	_ = d.Set("updated_at", fileSystem.UpdatedAt)
+	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("number_of_attachments", fileSystem.NumberOfAttachments)
 
 	return nil
