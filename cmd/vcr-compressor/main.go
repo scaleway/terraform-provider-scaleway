@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/scaleway/scaleway-sdk-go/api/lb/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"log"
 	"os"
 
@@ -16,6 +18,18 @@ var transientStates = map[string]bool{
 	k8s.PoolStatusDeleting.String():    true,
 	k8s.PoolStatusScaling.String():     true,
 	k8s.PoolStatusUpgrading.String():   true,
+
+	lb.InstanceStatusPending.String():    true,
+	lb.InstanceStatusMigrating.String():  true,
+	lb.LBStatusPending.String():          true,
+	lb.LBStatusMigrating.String():        true,
+	lb.LBStatusCreating.String():         true,
+	lb.LBStatusDeleting.String():         true,
+	lb.CertificateStatusPending.String(): true,
+
+	vpcgw.GatewayStatusAllocating.String():  true,
+	vpcgw.GatewayStatusStopping.String():    true,
+	vpcgw.GatewayStatusConfiguring.String(): true,
 }
 
 func main() {
