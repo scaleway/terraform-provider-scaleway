@@ -49,6 +49,8 @@ The following arguments are supported:
 
 * `metadata` - (Optional) Map of metadata used for the object (keys must be lowercase).
 
+* `content_type` -  (Optional) The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type
+
 * `tags` - (Optional) Map of tags.
 
 * `sse_customer_key` - (Optional) Customer's encryption keys to encrypt data (SSE-C)
