@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -40,12 +41,12 @@ func ResourceRoute() *schema.Resource {
 				}
 
 				rawID := identity.Get("id").(string)
+
 				regionVal := identity.Get("region").(string)
 				if regionVal == "" {
 					region, err := meta.ExtractRegion(d, m)
 					if err != nil {
-						return nil, fmt.Errorf("identity.region was not set")
-
+						return nil, errors.New("identity.region was not set")
 					}
 					regionVal = region.String()
 				}

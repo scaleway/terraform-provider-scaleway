@@ -40,12 +40,12 @@ func ResourceVPC() *schema.Resource {
 				}
 
 				rawID := identity.Get("id").(string)
+
 				regionVal := identity.Get("region").(string)
 				if regionVal == "" {
 					region, err := meta.ExtractRegion(d, m)
 					if err != nil {
-						return nil, fmt.Errorf("identity.region was not set")
-
+						return nil, errors.New("identity.region was not set")
 					}
 					regionVal = region.String()
 				}
