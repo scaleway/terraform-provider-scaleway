@@ -34,7 +34,7 @@ resource scaleway_file_filesystem file {
 
 ## Attributes Reference
 
-The following arguments are supported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the filesystem.
 - `status` - The current status of the filesystem. Possible values include creating, available, etc.
