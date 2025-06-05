@@ -81,6 +81,31 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	})
 }
 
+func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_Basic"
+	size := int64(25_000_000_000)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size = %d
+					}
+				`, fileSystemName, size),
+				ExpectError: regexp.MustCompile("size does not respect constraint, size must be greater or equal to 100000000000"),
+			},
+		},
+	})
+}
+
 func testAccCheckFileSystemExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

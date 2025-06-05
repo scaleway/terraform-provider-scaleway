@@ -6,13 +6,13 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 105
+        content_length: 115
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"name":"TestAccFileSystem_Basic","project_id":"d3520a52-2c75-4ba0-bda8-82dd087f07f2","size":0,"tags":[]}'
+        body: '{"name":"TestAccFileSystem_Basic","project_id":"d3520a52-2c75-4ba0-bda8-82dd087f07f2","size":25000000000,"tags":[]}'
         form: {}
         headers:
             Content-Type:
@@ -27,18 +27,18 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 162
+        content_length: 182
         uncompressed: false
-        body: '{"details":[{"argument_name":"size","help_message":"value must be greater than 0","reason":"unknown"}],"message":"invalid argument(s)","type":"invalid_arguments"}'
+        body: '{"details":[{"argument_name":"size","help_message":"size must be greater or equal to 100000000000","reason":"constraint"}],"message":"invalid argument(s)","type":"invalid_arguments"}'
         headers:
             Content-Length:
-                - "162"
+                - "182"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Thu, 05 Jun 2025 13:32:55 GMT
+                - Thu, 05 Jun 2025 13:35:31 GMT
             Server:
                 - Scaleway API Gateway (fr-par-1;edge01)
             Strict-Transport-Security:
@@ -48,7 +48,7 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 687cb58a-da9e-410b-9f6d-cbd887db6034
+                - 6e11b07f-c6d7-46c7-a63c-6f8ea283686d
         status: 400 Bad Request
         code: 400
-        duration: 549.836667ms
+        duration: 278.0655ms
