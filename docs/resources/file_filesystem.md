@@ -38,7 +38,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the filesystem.
 - `status` - The current status of the filesystem. Possible values include creating, available, etc.
-- `number_of_attechments` - The number of active attachments (mounts) on the filesystem.
+- `number_of_attachments` - The number of active attachments (mounts) on the filesystem.
 - `created_at` - The date and time when the File Storage filesystem was created.
 - `updated_at` - The date and time of the last update to the File Storage filesystem.
 
