@@ -128,11 +128,11 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("region", fileSystem.Region)
 	_ = d.Set("organization_id", fileSystem.OrganizationID)
 	_ = d.Set("status", fileSystem.Status)
-	_ = d.Set("size", fileSystem.Size)
+	_ = d.Set("size", int64(fileSystem.Size))
 	_ = d.Set("tags", fileSystem.Tags)
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("number_of_attachments", fileSystem.NumberOfAttachments)
+	_ = d.Set("number_of_attachments", int64(fileSystem.NumberOfAttachments))
 
 	return nil
 }

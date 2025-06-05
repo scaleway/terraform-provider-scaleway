@@ -37,7 +37,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(int64(size), 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(size, 10)),
 				),
 			},
 			{
@@ -49,7 +49,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				`, fileSystemNameUpdated, size),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(int64(size), 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(size, 10)),
 				),
 			},
 		},
@@ -60,7 +60,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	fileSystemName := "TestAccFileSystem_Basic"
+	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
 	size := int64(10_000_000_000)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -75,7 +75,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 						size = %d
 					}
 				`, fileSystemName, size),
-				ExpectError: regexp.MustCompile("size does not respect constraint, size must be greater or equal to 100000000000"),
+				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
 			},
 		},
 	})
@@ -85,7 +85,7 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	fileSystemName := "TestAccFileSystem_Basic"
+	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
 	size := int64(25_000_000_000)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -100,7 +100,7 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 						size = %d
 					}
 				`, fileSystemName, size),
-				ExpectError: regexp.MustCompile("size does not respect constraint, size must be greater or equal to 100000000000"),
+				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
 			},
 		},
 	})
