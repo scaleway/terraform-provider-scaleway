@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -21,7 +23,56 @@ func ResourceVPC() *schema.Resource {
 		UpdateContext: ResourceVPCUpdate,
 		DeleteContext: ResourceVPCDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(
+				ctx context.Context,
+				d *schema.ResourceData,
+				m interface{},
+			) ([]*schema.ResourceData, error) {
+				// If importing by ID (e.g. "fr-par/8cef…"), we just set the ID field to state, allowing the read to fill in the rest of the data
+				if d.Id() != "" {
+					return []*schema.ResourceData{d}, nil
+				}
+
+				// Otherwise, we're importing by identity “identity = { id = ..., region = ... }”
+				identity, err := d.Identity()
+				if err != nil {
+					return nil, fmt.Errorf("error retrieving identity: %w", err)
+				}
+
+				rawID := identity.Get("id").(string)
+				regionVal := identity.Get("region").(string)
+				if regionVal == "" {
+					region, err := meta.ExtractRegion(d, m)
+					if err != nil {
+						return nil, fmt.Errorf("identity.region was not set")
+
+					}
+					regionVal = region.String()
+				}
+
+				localizedID := fmt.Sprintf("%s/%s", regionVal, rawID)
+
+				d.SetId(localizedID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+						Description:       "The VPC ID (e.g. `11111111-1111-1111-1111-111111111111`)",
+					},
+					"region": {
+						Type:              schema.TypeString,
+						OptionalForImport: true,
+						Description:       "The region of the VPC. If omitted during import, defaults from provider",
+					},
+				}
+			},
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -129,6 +180,18 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{})
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
+	}
+
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("id", res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = identity.Set("region", region); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

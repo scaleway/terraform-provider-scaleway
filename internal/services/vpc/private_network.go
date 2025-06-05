@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -25,7 +26,56 @@ func ResourcePrivateNetwork() *schema.Resource {
 		UpdateContext: ResourceVPCPrivateNetworkUpdate,
 		DeleteContext: ResourceVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(
+				ctx context.Context,
+				d *schema.ResourceData,
+				m interface{},
+			) ([]*schema.ResourceData, error) {
+				// If importing by ID (e.g. "fr-par/8cef…"), we just set the ID field to state, allowing the read to fill in the rest of the data
+				if d.Id() != "" {
+					return []*schema.ResourceData{d}, nil
+				}
+
+				// Otherwise, we're importing by identity “identity = { id = ..., region = ... }”
+				identity, err := d.Identity()
+				if err != nil {
+					return nil, fmt.Errorf("error retrieving identity: %w", err)
+				}
+
+				rawID := identity.Get("id").(string)
+				regionVal := identity.Get("region").(string)
+				if regionVal == "" {
+					region, err := meta.ExtractRegion(d, m)
+					if err != nil {
+						return nil, fmt.Errorf("identity.region was not set")
+
+					}
+					regionVal = region.String()
+				}
+
+				localizedID := fmt.Sprintf("%s/%s", regionVal, rawID)
+
+				d.SetId(localizedID)
+
+				return []*schema.ResourceData{d}, nil
+			},
+		},
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+						Description:       "The Private Network ID (e.g. `11111111-1111-1111-1111-111111111111`)",
+					},
+					"region": {
+						Type:              schema.TypeString,
+						OptionalForImport: true,
+						Description:       "The region of the VPC. If omitted during import, defaults from provider",
+					},
+				}
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
@@ -265,6 +315,18 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	ipv4Subnet, ipv6Subnets := FlattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
 	_ = d.Set("ipv6_subnets", ipv6Subnets)
+
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("id", pn.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = identity.Set("region", region); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
