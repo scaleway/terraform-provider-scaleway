@@ -3,8 +3,8 @@ package instancetestfuncs
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -52,7 +52,7 @@ func IsServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = instanceAPI.GetServer(&instanceSDK.GetServerRequest{
+			_, err = instanceAPI.WaitForServer(&instanceSDK.WaitForServerRequest{
 				ServerID: ID,
 				Zone:     zone,
 			})
@@ -213,7 +213,7 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
+			_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 				Zone:     zone,
 				VolumeID: id,
 			})

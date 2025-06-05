@@ -3,8 +3,8 @@ package baremetaltestfuncs
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	baremetal2 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -23,7 +23,7 @@ func CheckServerDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = baremetalAPI.GetServer(&baremetal2.GetServerRequest{
+			_, err = baremetalAPI.WaitForServer(&baremetal2.WaitForServerRequest{
 				ServerID: zonedID.ID,
 				Zone:     zonedID.Zone,
 			})

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -326,17 +326,19 @@ func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.GetSecret(&secretSDK.GetSecretRequest{
+			s, err := api.GetSecret(&secretSDK.GetSecretRequest{
 				SecretID: id,
 				Region:   region,
 			})
 
-			if err == nil {
-				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
-			}
-
 			if !httperrors.Is404(err) {
 				return err
+			}
+
+			if s != nil {
+				if s.DeletionRequestedAt == nil {
+					return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
+				}
 			}
 		}
 
