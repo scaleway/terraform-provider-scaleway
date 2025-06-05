@@ -3,6 +3,7 @@ package file_test
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -36,7 +37,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", fmt.Sprintf("%d", size)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(int64(size), 10)),
 				),
 			},
 			{
@@ -48,7 +49,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				`, fileSystemNameUpdated, size),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", fmt.Sprintf("%d", size)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(int64(size), 10)),
 				),
 			},
 		},
