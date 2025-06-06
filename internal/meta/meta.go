@@ -105,9 +105,7 @@ func (m Meta) HasMultipleVariableSources() (bool, string) {
 		}
 	}
 
-	if err := w.Flush(); err != nil {
-		panic(err)
-	}
+	w.Flush() //nolint:errcheck
 
 	return multiple, buf.String()
 }
