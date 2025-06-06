@@ -190,6 +190,16 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
+			"filesystem_ids": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+					DiffSuppressFunc: dsf.Locality,
+				},
+				Optional:    true,
+				Description: "The filesystem IDs attached to the server",
+			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -516,6 +526,22 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	///
+	// Attach Filesystem
+	///
+	if filesystem, ok := d.GetOk("filesystem_ids"); ok {
+		for _, filesystemID := range filesystem.([]interface{}) {
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				FilesystemID: filesystemID.(string),
+				ServerID:     res.Server.ID,
+			})
+			if err != nil {
+				return nil
+			}
+		}
+	}
+
 	////
 	// Set user data
 	////
@@ -640,6 +666,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	if len(server.Tags) > 0 {
 		_ = d.Set("tags", server.Tags)
 	}
+	//_ = d.Set("filesystem_ids", server.filesystems) //TODO when attribut is generated uncomment
 
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
 	// EnableIPv6 is deprecated
