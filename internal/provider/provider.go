@@ -357,7 +357,28 @@ func Provider(config *Config) plugin.ProviderFunc {
 				return nil, diag.FromErr(err)
 			}
 
-			return m, nil
+			var diags diag.Diagnostics
+
+			ok, message, err := m.HasMultipleVariableSources()
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Error,
+					Summary:  "Error checking multiple variable sources",
+					Detail:   err.Error(),
+				})
+
+				return m, diags
+			}
+
+			if ok && err == nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
+					Detail:   message,
+				})
+			}
+
+			return m, diags
 		}
 
 		return p
