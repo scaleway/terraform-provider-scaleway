@@ -190,6 +190,26 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
+			"filesystems": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Filesystems attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filesystem_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The filesystem ID attached to the server",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the filesystem",
+						},
+					},
+				},
+			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -516,6 +536,26 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	///
+	// Attach Filesystem
+	///
+	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for _, filesystem := range filesystems.([]interface{}) {
+			fs := filesystem.(map[string]interface{})
+			filesystemID := fs["filesystem_id"]
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
+				ServerID:     res.Server.ID,
+			})
+
+			if err != nil {
+				return nil
+			}
+		}
+	}
+
 	////
 	// Set user data
 	////
@@ -639,6 +679,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("type", server.CommercialType)
 	if len(server.Tags) > 0 {
 		_ = d.Set("tags", server.Tags)
+	}
+
+	if server.Filesystems != nil {
+		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
 	}
 
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
@@ -1070,6 +1114,38 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
+	// Update server filesystems
+	///
+
+	if d.HasChange("filesystems") {
+		oldRaw, newRaw := d.GetChange("filesystems")
+
+		oldList := oldRaw.([]interface{})
+		newList := newRaw.([]interface{})
+
+		oldIDs := make(map[string]struct{})
+		newIDs := make(map[string]struct{})
+
+		collectFilesystemIDs(oldList, oldIDs)
+		collectFilesystemIDs(newList, newIDs)
+
+		diagnostics, done := detachOlDFileSystem(oldIDs, newIDs, api, zone, server)
+		if done {
+			return diagnostics
+		}
+
+		_, err := waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(defaultFileSystemWaitTimeout))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d2, done2 := attachNewFileSystem(newIDs, oldIDs, api, zone, server)
+		if done2 {
+			return d2
+		}
+	}
+
+	////
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
@@ -1163,6 +1239,48 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
+
+func attachNewFileSystem(newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instanceSDK.Server) (diag.Diagnostics, bool) {
+	for id := range newIDs {
+		if _, alreadyAttached := oldIDs[id]; !alreadyAttached {
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error attaching filesystem %s: %w", id, err)), true
+			}
+		}
+	}
+	return nil, false
+}
+
+func detachOlDFileSystem(oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instanceSDK.Server) (diag.Diagnostics, bool) {
+	for id := range oldIDs {
+		if _, stillPresent := newIDs[id]; !stillPresent {
+			_, err := api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error detaching filesystem %s: %w", id, err)), true
+			}
+		}
+	}
+	return nil, false
+}
+
+func collectFilesystemIDs(fsList []interface{}, target map[string]struct{}) {
+	for _, fs := range fsList {
+		if fsMap, ok := fs.(map[string]interface{}); ok {
+			id := fsMap["filesystem_id"].(string)
+			target[id] = struct{}{}
+		}
+	}
+}
+
 func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -1198,6 +1316,32 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Detach filesystem
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		fsList := filesystems.([]interface{})
+		for i, fsRaw := range fsList {
+			fsMap := fsRaw.(map[string]interface{})
+			fsIDRaw, ok := fsMap["filesystem_id"]
+			if !ok || fsIDRaw == nil {
+				return diag.Errorf("filesystem_id is missing or nil for filesystem at index %d", i)
+			}
+			fsID := fsIDRaw.(string)
+			newFileSystemID := types.ExpandStringPtr(fsID)
+			if newFileSystemID == nil {
+				return diag.Errorf("failed to expand filesystem_id pointer at index %d", i)
+			}
+
+			_, err = api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     id,
+				FilesystemID: locality.ExpandID(*newFileSystemID),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	// Delete private-nic if managed by instance_server resource

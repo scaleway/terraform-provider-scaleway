@@ -33,7 +33,7 @@ const (
 	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
-	DefaultInstanceServerWaitTimeout        = 10 * time.Minute
+	DefaultInstanceServerWaitTimeout        = 15 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
@@ -41,6 +41,7 @@ const (
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
 	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
+	defaultFileSystemWaitTimeout            = 15 * time.Minute
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
