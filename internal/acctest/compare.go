@@ -42,6 +42,14 @@ func compareJSONBodies(request, cassette map[string]interface{}) bool {
 			return false
 		}
 	}
+	for key, cassetteValue := range cassette {
+		if _, ok := request[key]; !ok && cassetteValue != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
+			return false
+		}
+	}
 
 	return true
 }
