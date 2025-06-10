@@ -144,6 +144,132 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.Tags = types.ExpandStrings(tags)
 	}
 
+	if command, ok := d.GetOk("command"); ok {
+		req.Command = types.ExpandStrings(command)
+	}
+
+	if args, ok := d.GetOk("args"); ok {
+		req.Args = types.ExpandStrings(args)
+	}
+
+	return req, nil
+}
+
+func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, containerID string) (*container.UpdateContainerRequest, error) {
+	req := &container.UpdateContainerRequest{
+		Region:      region,
+		ContainerID: containerID,
+	}
+
+	if d.HasChanges("environment_variables") {
+		envVariablesRaw := d.Get("environment_variables")
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChanges("min_scale") {
+		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
+	}
+
+	if d.HasChanges("max_scale") {
+		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
+	}
+
+	if d.HasChanges("memory_limit") {
+		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
+	}
+
+	if d.HasChanges("cpu_limit") {
+		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
+	}
+
+	if d.HasChanges("timeout") {
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
+	}
+
+	if d.HasChanges("privacy") {
+		req.Privacy = container.ContainerPrivacy(*types.ExpandStringPtr(d.Get("privacy")))
+	}
+
+	if d.HasChanges("description") {
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
+	}
+
+	if d.HasChanges("registry_image") {
+		req.RegistryImage = types.ExpandStringPtr(d.Get("registry_image"))
+	}
+
+	if d.HasChanges("max_concurrency") {
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
+	}
+
+	if d.HasChanges("protocol") {
+		req.Protocol = container.ContainerProtocol(*types.ExpandStringPtr(d.Get("protocol")))
+	}
+
+	if d.HasChanges("port") {
+		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
+	}
+
+	if d.HasChanges("http_option") {
+		req.HTTPOption = container.ContainerHTTPOption(d.Get("http_option").(string))
+	}
+
+	if d.HasChanges("deploy") {
+		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
+	}
+
+	if d.HasChanges("sandbox") {
+		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
+	}
+
+	if d.HasChanges("health_check") {
+		healthCheck := d.Get("health_check")
+
+		healthCheckReq, errExpandHealthCheck := expandHealthCheck(healthCheck)
+		if errExpandHealthCheck != nil {
+			return nil, errExpandHealthCheck
+		}
+
+		req.HealthCheck = healthCheckReq
+	}
+
+	if d.HasChanges("scaling_option") {
+		scalingOption := d.Get("scaling_option")
+
+		scalingOptionReq, err := expandScalingOptions(scalingOption)
+		if err != nil {
+			return nil, err
+		}
+
+		req.ScalingOption = scalingOptionReq
+	}
+
+	imageHasChanged := d.HasChanges("registry_sha256")
+	if imageHasChanged {
+		req.Redeploy = &imageHasChanged
+	}
+
+	if d.HasChanges("local_storage_limit") {
+		req.LocalStorageLimit = scw.Uint32Ptr(uint32(d.Get("local_storage_limit").(int)))
+	}
+
+	if d.HasChanges("command") {
+		req.Command = types.ExpandUpdatedStringsPtr(d.Get("command"))
+	}
+
+	if d.HasChanges("args") {
+		req.Args = types.ExpandUpdatedStringsPtr(d.Get("args"))
+	}
+
 	return req, nil
 }
 
