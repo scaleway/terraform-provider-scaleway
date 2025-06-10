@@ -190,15 +190,26 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
-			"filesystem_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-					DiffSuppressFunc: dsf.Locality,
-				},
+			"filesystems": {
+				Type:        schema.TypeList,
 				Optional:    true,
-				Description: "The filesystem IDs attached to the server",
+				Computed:    true,
+				Description: "Filesystems attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filesystem_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The filesystem ID attached to the server",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the filesystem",
+						},
+					},
+				},
 			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
@@ -529,13 +540,17 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	///
 	// Attach Filesystem
 	///
-	if filesystem, ok := d.GetOk("filesystem_ids"); ok {
-		for _, filesystemID := range filesystem.([]interface{}) {
+	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for _, filesystem := range filesystems.([]interface{}) {
+			fs := filesystem.(map[string]interface{})
+			filesystemID := fs["filesystem_id"]
 			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
 				Zone:         zone,
 				FilesystemID: filesystemID.(string),
 				ServerID:     res.Server.ID,
 			})
+
 			if err != nil {
 				return nil
 			}
