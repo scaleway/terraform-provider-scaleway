@@ -9,14 +9,14 @@ import (
 
 // compareJSONFields is the entry point for comparing two interface values
 // handle string with special cases, map[string]interface{} and []interface{} or any other primitive type
-func compareJSONFields(requestValue, cassetteValue interface{}) bool {
+func compareJSONFields(requestValue, cassetteValue any, strict bool) bool {
 	switch requestValue := requestValue.(type) {
 	case string:
 		return compareFieldsStrings(requestValue, cassetteValue.(string))
-	case map[string]interface{}:
-		return compareJSONBodies(requestValue, cassetteValue.(map[string]interface{}))
-	case []interface{}:
-		return compareSlices(requestValue, cassetteValue.([]interface{}))
+	case map[string]any:
+		return compareJSONBodies(requestValue, cassetteValue.(map[string]any), strict)
+	case []any:
+		return compareSlices(requestValue, cassetteValue.([]any))
 	default:
 		return reflect.DeepEqual(requestValue, cassetteValue)
 	}
@@ -24,13 +24,14 @@ func compareJSONFields(requestValue, cassetteValue interface{}) bool {
 
 // compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
-func compareJSONBodies(request, cassette map[string]interface{}) bool {
+func compareJSONBodies(request, cassette map[string]any, strict bool) bool {
 	for key, requestValue := range request {
 		cassetteValue, ok := cassette[key]
 		if !ok {
-			// Actual request may contain a field that does not exist in cassette
-			// New fields can appear in requests with new api features
-			// We do not want to generate new cassettes for each new features
+			if strict {
+				return false
+			}
+
 			continue
 		}
 
@@ -38,7 +39,16 @@ func compareJSONBodies(request, cassette map[string]interface{}) bool {
 			return false
 		}
 
-		if !compareJSONFields(requestValue, cassetteValue) {
+		if !compareJSONFields(requestValue, cassetteValue, strict) {
+			return false
+		}
+	}
+
+	for key, cassetteValue := range cassette {
+		if _, ok := request[key]; !ok && cassetteValue != nil {
+			// Fails match if cassettes contains a field not in actual requests
+			// Fields should not disappear from requests unless a sdk breaking change
+			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
 			return false
 		}
 	}
@@ -141,7 +151,7 @@ func compareStringSlices(request, cassette []string) bool {
 
 // compareSlices compares two slices of interface{}
 // in case of slice of map[string]interface{}, it will attempt to find a match in the other slice without taking into account the order
-func compareSlices(request, cassette []interface{}) bool {
+func compareSlices(request, cassette []any) bool {
 	if len(request) != len(cassette) {
 		return false
 	}
@@ -178,10 +188,31 @@ func compareSlices(request, cassette []interface{}) bool {
 		}
 
 		return true
-	case map[string]interface{}:
-		// compare list of maps[string]interface{} without order and without ignored keys
+	case map[string]any:
+		// first compare assuming that the order is the same, tolerating missing keys in the cassette
 		matched := 0
 
+		for i := range request {
+			// cleanup ignored keys
+			for _, key := range BodyMatcherIgnore {
+				removeKeyRecursive(request[i].(map[string]any), key)
+			}
+
+			for _, key := range BodyMatcherIgnore {
+				removeKeyRecursive(cassette[i].(map[string]any), key)
+			}
+
+			if compareJSONFields(request[i], cassette[i], false) {
+				matched++
+			}
+		}
+
+		if matched == len(request) {
+			return true
+		}
+
+		// if no match try to compare out of order
+		matched = 0
 		reqVisited := make([]bool, len(request))
 		casVisited := make([]bool, len(cassette))
 
@@ -190,22 +221,12 @@ func compareSlices(request, cassette []interface{}) bool {
 				continue
 			}
 
-			// cleanup ignored keys
-			for _, key := range BodyMatcherIgnore {
-				removeKeyRecursive(request[i].(map[string]interface{}), key)
-			}
-
 			for j := range cassette {
 				if casVisited[j] {
 					continue
 				}
 
-				// cleanup ignored keys
-				for _, key := range BodyMatcherIgnore {
-					removeKeyRecursive(cassette[j].(map[string]interface{}), key)
-				}
-
-				if compareJSONFields(request[i], cassette[j]) {
+				if compareJSONFields(request[i], cassette[j], true) {
 					matched++
 					reqVisited[i] = true
 					casVisited[j] = true

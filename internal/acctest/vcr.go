@@ -51,11 +51,11 @@ var BodyMatcherIgnore = []string{
 }
 
 // removeKeyRecursive removes a key from a map and all its nested maps
-func removeKeyRecursive(m map[string]interface{}, key string) {
+func removeKeyRecursive(m map[string]any, key string) {
 	delete(m, key)
 
 	for _, v := range m {
-		if v, ok := v.(map[string]interface{}); ok {
+		if v, ok := v.(map[string]any); ok {
 			removeKeyRecursive(v, key)
 		}
 	}
@@ -110,11 +110,11 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		return true
 	}
 
-	requestJSON := make(map[string]interface{})
-	cassetteJSON := make(map[string]interface{})
+	requestJSON := make(map[string]any)
+	cassetteJSON := make(map[string]any)
 
 	// match if content is xml
-	err = xml.Unmarshal(requestBody, new(interface{}))
+	err = xml.Unmarshal(requestBody, new(any))
 	if err == nil {
 		return true
 	}
@@ -149,7 +149,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		removeKeyRecursive(cassetteJSON, key)
 	}
 
-	return compareJSONBodies(requestJSON, cassetteJSON)
+	return compareJSONBodies(requestJSON, cassetteJSON, false)
 }
 
 // CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
