@@ -51,6 +51,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 					if err != nil {
 						return nil, errors.New("identity.region was not set")
 					}
+
 					regionVal = region.String()
 				}
 
