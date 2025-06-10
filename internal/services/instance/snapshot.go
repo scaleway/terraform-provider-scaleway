@@ -130,6 +130,11 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		req.VolumeType = volumeType
 	}
 
+	diags := handleDeprecatedSnapshotVolumeType(d)
+	if diags.HasError() {
+		return diags
+	}
+
 	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
@@ -181,21 +186,15 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	diags := handleDeprecatedSnapshotVolumeType(d)
+	if diags.HasError() {
+		return diags
+	}
+
 	_ = d.Set("name", snapshot.Snapshot.Name)
 	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Snapshot.Tags)
-
-	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
-		return diag.Diagnostics{
-			{
-				Severity:      diag.Warning,
-				Summary:       "Snapshot type `b_ssd` is deprecated",
-				Detail:        "If you want to migrate existing snapshots, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
-				AttributePath: cty.GetAttrPath("type"),
-			},
-		}
-	}
 
 	return nil
 }
@@ -255,4 +254,30 @@ func ResourceInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return nil
+}
+
+func handleDeprecatedSnapshotVolumeType(d *schema.ResourceData) diag.Diagnostics {
+	if d.Get("type").(string) == instanceSDK.SnapshotVolumeTypeBSSD.String() {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Snapshot type `b_ssd` is deprecated",
+				Detail:        "If you want to migrate existing snapshots, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
+	}
+
+	if d.Get("type").(string) == instanceSDK.SnapshotVolumeTypeUnified.String() {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Snapshot type `unified` is deprecated",
+				Detail:        "If you want to migrate existing snapshots, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
+	}
+
+	return diag.Diagnostics{}
 }
