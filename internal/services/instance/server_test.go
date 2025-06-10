@@ -2094,3 +2094,57 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 		},
 	})
 }
+
+func TestAccServer_AttachDetachFileSystem(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn {}
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size = 100000000000
+					}
+
+					data "scaleway_marketplace_image" "ubuntu" {
+					  instance_type = "DEV1-S"
+					  label         = "ubuntu_focal"
+					}
+					
+					resource "scaleway_instance_server" "base" {
+					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  type  = "DEV1-S"
+					  state = "started"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  root_volume {
+    					size_in_gb = 100
+					  }
+					  filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
+					  }
+					  private_network {
+							pn_id = scaleway_vpc_private_network.pn.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
+				),
+			},
+		},
+	})
+}
