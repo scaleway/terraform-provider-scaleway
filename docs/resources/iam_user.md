@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_iam_user"
 
 # Resource: scaleway_iam_user
 
-Creates and manages Scaleway IAM Users.
+Creates and manages Scaleway IAM [Users](https://www.scaleway.com/en/docs/iam/concepts/#member).
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
 
 ## Example Usage
@@ -13,7 +13,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 ### User
 
 ```terraform
-resource "scaleway_iam_user" "member" {
+resource "scaleway_iam_user" "user" {
   email      = "foo@test.com"
   tags       = ["test-tag"]
   username   = "foo"
@@ -26,15 +26,22 @@ resource "scaleway_iam_user" "member" {
 
 ```terraform
 locals {
-  users = toset([
-    "test@test.com",
-    "test2@test.com"
-  ])
+  users = [
+    {
+      email = "test@test.com"
+      username = "test"
+    },
+    {
+      email = "test2@test.com"
+      username = "test2"
+    }
+  ]
 }
 
-resource "scaleway_iam_user" "user" {
-  for_each = local.users
-  email    = each.key
+resource "scaleway_iam_user" "users" {
+  count    = length(local.users)
+  email    = local.users[count.index].email
+  username = local.users[count.index].username
 }
 ```
 
