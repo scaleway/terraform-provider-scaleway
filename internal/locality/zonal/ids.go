@@ -14,15 +14,15 @@ type ID struct {
 	Zone scw.Zone
 }
 
-func (z ID) String() string {
-	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
-}
-
 func NewID(zone scw.Zone, id string) ID {
 	return ID{
 		ID:   id,
 		Zone: zone,
 	}
+}
+
+func (z ID) String() string {
+	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
 }
 
 func ExpandID(id interface{}) ID {
