@@ -5,24 +5,15 @@ page_title: "Scaleway: scaleway_iam_user"
 
 # Resource: scaleway_iam_user
 
-Creates and manages Scaleway IAM Users.
+Creates and manages Scaleway IAM [Users](https://www.scaleway.com/en/docs/iam/concepts/#member).
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
 
 ## Example Usage
 
-### Guest user
+### User
 
 ```terraform
-resource "scaleway_iam_user" "guest" {
-  email = "foo@test.com"
-  tags  = ["test-tag"]
-}
-```
-
-### Member user
-
-```terraform
-resource "scaleway_iam_user" "member" {
+resource "scaleway_iam_user" "user" {
   email      = "foo@test.com"
   tags       = ["test-tag"]
   username   = "foo"
@@ -31,21 +22,26 @@ resource "scaleway_iam_user" "member" {
 }
 ```
 
-When `username` is set, the user is created as a [Member](https://www.scaleway.com/en/docs/iam/concepts/#member). Otherwise, it is created as a [Guest](https://www.scaleway.com/en/docs/iam/concepts/#guest).
-
 ### Multiple users
 
 ```terraform
 locals {
-  users = toset([
-    "test@test.com",
-    "test2@test.com"
-  ])
+  users = [
+    {
+      email = "test@test.com"
+      username = "test"
+    },
+    {
+      email = "test2@test.com"
+      username = "test2"
+    }
+  ]
 }
 
-resource "scaleway_iam_user" "user" {
-  for_each = local.users
-  email    = each.key
+resource "scaleway_iam_user" "users" {
+  count    = length(local.users)
+  email    = local.users[count.index].email
+  username = local.users[count.index].username
 }
 ```
 
@@ -57,7 +53,7 @@ resource "scaleway_iam_user" "user" {
 
 - `tags` - (Optional) The tags associated with the user.
 
-- `username` - (Optional) The username of the IAM user. When it is set, the user is created as a Member. When it is not set, the user is created as a Guest and the username is set as equal to the email.
+- `username` - (Required) The username of the IAM user.
 
 - `password` - The password for first access.
 
@@ -72,8 +68,6 @@ resource "scaleway_iam_user" "user" {
 - `phone_number` - The user's phone number.
 
 - `locale` - The user's locale (e.g., en_US).
-
-Important: When creating a Guest user, all arguments are ignored, except for `organization_id`, `email` and `tags`.
 
 ## Attributes Reference
 
