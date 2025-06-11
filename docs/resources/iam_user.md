@@ -10,16 +10,7 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 ## Example Usage
 
-### Guest user
-
-```terraform
-resource "scaleway_iam_user" "guest" {
-  email = "foo@test.com"
-  tags  = ["test-tag"]
-}
-```
-
-### Member user
+### User
 
 ```terraform
 resource "scaleway_iam_user" "member" {
@@ -30,8 +21,6 @@ resource "scaleway_iam_user" "member" {
   last_name  = "Bar"
 }
 ```
-
-When `username` is set, the user is created as a [Member](https://www.scaleway.com/en/docs/iam/concepts/#member). Otherwise, it is created as a [Guest](https://www.scaleway.com/en/docs/iam/concepts/#guest).
 
 ### Multiple users
 
@@ -57,7 +46,7 @@ resource "scaleway_iam_user" "user" {
 
 - `tags` - (Optional) The tags associated with the user.
 
-- `username` - (Optional) The username of the IAM user. When it is set, the user is created as a Member. When it is not set, the user is created as a Guest and the username is set as equal to the email.
+- `username` - (Required) The username of the IAM user.
 
 - `password` - The password for first access.
 
@@ -72,8 +61,6 @@ resource "scaleway_iam_user" "user" {
 - `phone_number` - The user's phone number.
 
 - `locale` - The user's locale (e.g., en_US).
-
-Important: When creating a Guest user, all arguments are ignored, except for `organization_id`, `email` and `tags`.
 
 ## Attributes Reference
 

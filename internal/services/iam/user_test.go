@@ -12,68 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
-func TestAccUser_Guest(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isUserDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_iam_user" "guest_user" {
-						email = "foo@scaleway.com"
-						tags = ["tf_tests", "tests"]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIamUserExists(tt, "scaleway_iam_user.guest_user"),
-					acctest.CheckResourceAttrUUID("scaleway_iam_user.guest_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "email", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.0", "tf_tests"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.1", "tests"),
-					// The username is the same as the email for guests.
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "username", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "type", "guest"),
-				),
-			},
-			// Update tags.
-			{
-				Config: `
-					resource "scaleway_iam_user" "guest_user" {
-						email = "foo@scaleway.com"
-						tags = ["tf_tests"]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIamUserExists(tt, "scaleway_iam_user.guest_user"),
-					acctest.CheckResourceAttrUUID("scaleway_iam_user.guest_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "email", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.0", "tf_tests"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "type", "guest"),
-				),
-			},
-			// Remove tags.
-			{
-				Config: `
-					resource "scaleway_iam_user" "guest_user" {
-						email = "foo@scaleway.com"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIamUserExists(tt, "scaleway_iam_user.guest_user"),
-					acctest.CheckResourceAttrUUID("scaleway_iam_user.guest_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "email", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "tags.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.guest_user", "type", "guest"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccUser_Member(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
