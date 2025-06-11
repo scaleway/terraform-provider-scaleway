@@ -28,7 +28,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.7.4
 	github.com/nats-io/nats.go v1.38.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.33.0.20250610081511-58ce335a6dea
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.33.0.20250604134054-a06406d42247
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.38.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
@@ -65,7 +65,7 @@ require (
 	github.com/bgentry/speakeasy v0.1.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.8.1 // indirect
-	github.com/cloudflare/circl v1.6.0 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
