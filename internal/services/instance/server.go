@@ -547,7 +547,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 			filesystemID := fs["filesystem_id"]
 			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
 				Zone:         zone,
-				FilesystemID: filesystemID.(string),
+				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
 				ServerID:     res.Server.ID,
 			})
 
@@ -681,7 +681,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	if len(server.Tags) > 0 {
 		_ = d.Set("tags", server.Tags)
 	}
-	//_ = d.Set("filesystem_ids", server.filesystems) //TODO when attribut is generated uncomment
+
+	if server.Filesystems != nil {
+		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
+	}
 
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
 	// EnableIPv6 is deprecated
@@ -1112,6 +1115,51 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
+	// Update server filesystems
+	///
+
+	if d.HasChange("filesystems") {
+		if fs, ok := d.GetOk("filesystems"); ok {
+			for i := range fs.([]interface{}) {
+				fsKey := fmt.Sprintf("filesystems.%d.filesystem_id", i)
+				if d.HasChange(fsKey) {
+					old, new := d.GetChange(fsKey)
+					if !cmp.Equal(old, new) {
+						_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
+						if err != nil {
+							return diag.FromErr(err)
+						}
+
+						if old != nil {
+							oldFileSystemID := types.ExpandStringPtr(old)
+							_, err = api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+								Zone:         zone,
+								ServerID:     server.ID,
+								FilesystemID: locality.ExpandID(*oldFileSystemID),
+							})
+							if err != nil {
+								return diag.FromErr(err)
+							}
+						}
+
+						if new != nil {
+							newFileSystemID := types.ExpandStringPtr(new)
+							_, err = api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+								Zone:         zone,
+								ServerID:     server.ID,
+								FilesystemID: locality.ExpandID(*newFileSystemID),
+							})
+							if err != nil {
+								return diag.FromErr(err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	////
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
@@ -1240,6 +1288,23 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Detach filesystem
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for index := range filesystems.([]interface{}) {
+			filesystemKey := fmt.Sprintf("filesystem.%d.filesystem_id", index)
+			fs := d.Get(filesystemKey)
+			newFileSystemID := types.ExpandStringPtr(fs)
+			_, err = api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     id,
+				FilesystemID: locality.ExpandID(*newFileSystemID),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	// Delete private-nic if managed by instance_server resource
