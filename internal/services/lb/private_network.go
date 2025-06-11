@@ -123,7 +123,7 @@ func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, m)
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -145,15 +145,18 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var foundPN *lb.PrivateNetwork
+
 	for _, pn := range privateNetworks {
 		if pn.PrivateNetworkID == PNID {
 			foundPN = pn
+
 			break
 		}
 	}
 
 	if foundPN == nil {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -175,7 +178,7 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	lbAPI, zone, err := lbAPIWithZone(d, m)
+	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
