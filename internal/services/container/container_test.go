@@ -563,6 +563,88 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 	})
 }
 
+func TestAccContainer_CommandAndArgs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						command = [ "bash", "-c", "my-script.sh" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.0", "bash"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.1", "-c"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.2", "my-script.sh"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "0"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						command = [ "bash", "-c", "my-script.sh" ]
+						args =    [ "some", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.0", "bash"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.1", "-c"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.2", "my-script.sh"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.0", "some"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.1", "args"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						args =    [ "some", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.0", "some"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.1", "args"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func isContainerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
