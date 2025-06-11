@@ -42,8 +42,8 @@ func TestAccLBPrivateNetwork_Basic(t *testing.T) {
 				}
 
 				resource "scaleway_lb_private_network" "lbpn01" {
-				  lb_id              = scaleway_lb.lb01.id
-				  private_network_id = scaleway_vpc_private_network.pn01.id
+				  lb_id                 = scaleway_lb.lb01.id
+				  private_network_id    = scaleway_vpc_private_network.pn01.id
 				  ipam_ip_ids           = [scaleway_ipam_ip.ip01.id]
 				}
 				`,
