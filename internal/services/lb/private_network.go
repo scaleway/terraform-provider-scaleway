@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -19,7 +20,6 @@ func ResourcePrivateNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceLbPrivateNetworkCreate,
 		ReadContext:   resourceLbPrivateNetworkRead,
-		UpdateContext: resourceLbPrivateNetworkUpdate,
 		DeleteContext: resourceLbPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -84,18 +84,30 @@ func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForLB(ctx, lbAPI, zone, zonal.ExpandID(d.Get("lb_id").(string)).ID, d.Timeout(schema.TimeoutCreate))
+	lbID := zonal.ExpandID(d.Get("lb_id").(string)).ID
+
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	attach, err := lbAPI.AttachPrivateNetwork(&lb.ZonedAPIAttachPrivateNetworkRequest{
 		Zone:             zone,
-		LBID:             zonal.ExpandID(d.Get("lb_id").(string)).ID,
+		LBID:             lbID,
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
-		IpamIDs:          types.ExpandStrings(d.Get("ipam_ip_ids")),
+		IpamIDs:          locality.ExpandIDs(d.Get("ipam_ip_ids")),
 	}, scw.WithContext(ctx))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForLB(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForPrivateNetworks(ctx, lbAPI, zone, lbID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -145,20 +157,21 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	}
 
-	_ = d.Set("private_network_id", foundPN.PrivateNetworkID)
-	_ = d.Set("lb_id", foundPN.LB.ID)
-	_ = d.Set("ipam_ip_ids", foundPN.IpamIDs)
-	_ = d.Set("status", foundPN.Status)
-	_ = d.Set("created_at", foundPN.CreatedAt)
-	_ = d.Set("updated_at", foundPN.UpdatedAt)
+	region, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("private_network_id", regional.NewIDString(region, foundPN.PrivateNetworkID))
+	_ = d.Set("lb_id", zonal.NewIDString(zone, foundPN.LB.ID))
+	_ = d.Set("ipam_ip_ids", regional.NewRegionalIDs(region, foundPN.IpamIDs))
+	_ = d.Set("status", foundPN.Status.String())
+	_ = d.Set("created_at", types.FlattenTime(foundPN.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(foundPN.UpdatedAt))
 	_ = d.Set("zone", zone)
 	_ = d.Set("project_id", foundPN.LB.ProjectID)
 
 	return nil
-}
-
-func resourceLbPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	return resourceLbPrivateNetworkRead(ctx, d, m)
 }
 
 func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -177,6 +190,16 @@ func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData,
 		LBID:             LBID,
 		PrivateNetworkID: PNID,
 	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForLB(ctx, lbAPI, zone, LBID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForPrivateNetworks(ctx, lbAPI, zone, LBID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

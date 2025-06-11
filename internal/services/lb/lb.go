@@ -109,6 +109,7 @@ func ResourceLb() *schema.Resource {
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    8,
 				Set:         lbPrivateNetworkSetHash,
 				Description: "List of private network to connect with your load balancer",
