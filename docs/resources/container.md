@@ -36,6 +36,9 @@ resource "scaleway_container" "main" {
   protocol        = "http1"
   deploy          = true
 
+  command = [ "bash", "-c", "script.sh" ]
+  args =    [ "some", "args" ]
+
   environment_variables = {
     "foo" = "var"
   }
@@ -103,6 +106,10 @@ The following arguments are supported:
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 
 - `local_storage_limit` - (Optional) Local storage limit of the container (in MB)
+
+- `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
+
+- `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
