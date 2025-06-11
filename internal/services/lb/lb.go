@@ -107,11 +107,13 @@ func ResourceLb() *schema.Resource {
 				Deprecated:  "The resource ip will be destroyed by it's own resource. Please set this to `false`",
 			},
 			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				MaxItems:    8,
-				Set:         lbPrivateNetworkSetHash,
-				Description: "List of private network to connect with your load balancer",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				Computed:      true,
+				MaxItems:      8,
+				Set:           lbPrivateNetworkSetHash,
+				ConflictsWith: []string{"external_private_networks"},
+				Description:   "List of private network to connect with your load balancer",
 				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
 					// Check if the key is for the 'private_network_id' attribute
 					if strings.HasSuffix(k, "private_network_id") {
@@ -167,6 +169,13 @@ func ResourceLb() *schema.Resource {
 						},
 					},
 				},
+			},
+			"external_private_networks": {
+				Type:          schema.TypeBool,
+				Optional:      true,
+				Default:       false,
+				Description:   "This boolean determines if private network attachments should be managed externally through the `scaleway_lb_private_network` resource. When set, `private_network` must not be configured in this resource",
+				ConflictsWith: []string{"private_network"},
 			},
 			"ssl_compatibility_level": {
 				Type:             schema.TypeString,
@@ -265,22 +274,24 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	// attach private network
-	pnConfigs, pnExist := d.GetOk("private_network")
-	if pnExist {
-		pnConfigs, err := expandPrivateNetworks(pnConfigs)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if !d.Get("external_private_networks").(bool) {
+		// attach private network
+		pnConfigs, pnExist := d.GetOk("private_network")
+		if pnExist {
+			pnConfigs, err := expandPrivateNetworks(pnConfigs)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, pnConfigs, lb.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+			_, err = attachLBPrivateNetworks(ctx, lbAPI, zone, pnConfigs, lb.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.FromErr(err)
+			_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -352,7 +363,12 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+	external := d.Get("external_private_networks").(bool)
+	if !external {
+		_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
+	} else {
+		_ = d.Set("private_network", schema.NewSet(lbPrivateNetworkSetHash, []any{}))
+	}
 
 	privateNetworkIDs := make([]string, 0, len(privateNetworks))
 	for _, pn := range privateNetworks {
@@ -521,7 +537,8 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	////
 	// Attach / Detach Private Networks
 	////
-	if d.HasChange("private_network") {
+	external := d.Get("external_private_networks").(bool)
+	if !external && d.HasChange("private_network") {
 		// check current lb stability state
 		_, err = waitForLB(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
