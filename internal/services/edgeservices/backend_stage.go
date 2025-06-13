@@ -112,7 +112,10 @@ func ResourceBackendStage() *schema.Resource {
 }
 
 func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewEdgeServicesAPI(m)
+	api, zone, err := edgeServicesAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	req := &edgeservices.CreateBackendStageRequest{
 		PipelineID: d.Get("pipeline_id").(string),
@@ -123,7 +126,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if lbConfig, ok := d.GetOk("lb_backend_config"); ok {
-		req.ScalewayLB = expandLBBackendConfig(lbConfig)
+		req.ScalewayLB = expandLBBackendConfig(zone, lbConfig)
 	}
 
 	backendStage, err := api.CreateBackendStage(req, scw.WithContext(ctx))
@@ -137,7 +140,10 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewEdgeServicesAPI(m)
+	api, zone, err := edgeServicesAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	backendStage, err := api.GetBackendStage(&edgeservices.GetBackendStageRequest{
 		BackendStageID: d.Id(),
@@ -161,14 +167,17 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if backendStage.ScalewayLB != nil {
-		_ = d.Set("lb_backend_config", flattenLBBackendConfig(backendStage.ScalewayLB))
+		_ = d.Set("lb_backend_config", flattenLBBackendConfig(zone, backendStage.ScalewayLB))
 	}
 
 	return nil
 }
 
 func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewEdgeServicesAPI(m)
+	api, zone, err := edgeServicesAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	hasChanged := false
 
@@ -182,7 +191,7 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if d.HasChange("lb_backend_config") {
-		updateRequest.ScalewayLB = expandLBBackendConfig(d.Get("lb_backend_config"))
+		updateRequest.ScalewayLB = expandLBBackendConfig(zone, d.Get("lb_backend_config"))
 		hasChanged = true
 	}
 
