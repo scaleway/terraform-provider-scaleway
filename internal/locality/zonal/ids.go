@@ -25,7 +25,7 @@ func (z ID) String() string {
 	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
 }
 
-func ExpandID(id interface{}) ID {
+func ExpandID(id any) ID {
 	zonedID := ID{}
 	tab := strings.Split(id.(string), "/")
 
