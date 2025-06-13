@@ -115,7 +115,7 @@ func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBack
 	}
 }
 
-func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBackendConfig) any} {
+func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBackendConfig) any {
 	if lbConfigs == nil {
 		return nil
 	}
