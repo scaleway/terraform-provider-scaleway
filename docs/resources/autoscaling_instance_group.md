@@ -137,7 +137,6 @@ resource "scaleway_autoscaling_instance_policy" "down" {
     threshold          = 40
   }
 }
-
 ```
 
 ## Argument Reference

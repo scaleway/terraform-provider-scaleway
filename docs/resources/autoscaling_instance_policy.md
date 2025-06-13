@@ -59,13 +59,13 @@ The following arguments are supported:
 - `value` - (Required) The value representing the magnitude of the scaling action to take for the Instance group. Depending on the `type` parameter, this number could represent a total number of Instances in the group, a number of Instances to add, or a percentage to scale the group by.
 - `priority` - (Required) The priority of this policy compared to all other scaling policies. This determines the processing order. The lower the number, the higher the priority.
 - `metric` - (Optional) Cockpit metric to use when determining whether to trigger a scale up/down action.
-  - `name` - Name or description of the metric policy.
-  - `operator` - Operator used when comparing the threshold value of the chosen `metric` to the actual sampled and aggregated value.
-  - `aggregate` - How the values sampled for the `metric` should be aggregated.
-  - `managed_metric` - The managed metric to use for this policy. These are available by default in Cockpit without any configuration or `node_exporter`. The chosen metric forms the basis of the condition that will be checked to determine whether a scaling action should be triggered.
-  - `cockpit_metric_name` - The custom metric to use for this policy. This must be stored in Scaleway Cockpit. The metric forms the basis of the condition that will be checked to determine whether a scaling action should be triggered
-  - `sampling_range_min` - The Interval of time, in minutes, during which metric is sampled.
-  - `threshold` - The threshold value to measure the aggregated sampled `metric` value against. Combined with the `operator` field, determines whether a scaling action should be triggered.
+    - `name` - Name or description of the metric policy.
+    - `operator` - Operator used when comparing the threshold value of the chosen `metric` to the actual sampled and aggregated value.
+    - `aggregate` - How the values sampled for the `metric` should be aggregated.
+    - `managed_metric` - The managed metric to use for this policy. These are available by default in Cockpit without any configuration or `node_exporter`. The chosen metric forms the basis of the condition that will be checked to determine whether a scaling action should be triggered.
+    - `cockpit_metric_name` - The custom metric to use for this policy. This must be stored in Scaleway Cockpit. The metric forms the basis of the condition that will be checked to determine whether a scaling action should be triggered
+    - `sampling_range_min` - The Interval of time, in minutes, during which metric is sampled.
+    - `threshold` - The threshold value to measure the aggregated sampled `metric` value against. Combined with the `operator` field, determines whether a scaling action should be triggered.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance policy exists.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Instance policy is associated with.
 
