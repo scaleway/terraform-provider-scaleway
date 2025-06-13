@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -170,6 +171,11 @@ func ResourceFunction() *schema.Resource {
 				Computed:    true,
 				Description: "The native function domain name.",
 			},
+			"private_network_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the Private Network the container is connected to",
+			},
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
@@ -212,6 +218,10 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if timeout, ok := d.GetOk("timeout"); ok {
 		req.Timeout = &scw.Duration{Seconds: int64(timeout.(int))}
+	}
+
+	if pnID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(pnID.(string)))
 	}
 
 	f, err := api.CreateFunction(req, scw.WithContext(ctx))
@@ -324,6 +334,10 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(f.SecretEnvironmentVariables))
 	_ = d.Set("tags", types.FlattenSliceString(f.Tags))
 
+	if f.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(f.PrivateNetworkID).(string)).String())
+	}
+
 	return diags
 }
 
@@ -412,6 +426,16 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if d.HasChange("runtime") {
 		req.Runtime = function.FunctionRuntime(d.Get("runtime").(string))
+		updated = true
+	}
+
+	if d.HasChanges("private_network_id") {
+		if _, newPNID := d.GetChange("private_network_id"); newPNID != nil && newPNID.(string) != "" {
+			req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(newPNID.(string)))
+		} else {
+			req.PrivateNetworkID = nil
+		}
+
 		updated = true
 	}
 
