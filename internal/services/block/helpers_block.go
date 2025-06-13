@@ -52,7 +52,7 @@ func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
 		oldValue := oldValueI.(int)
 		newValue := newValueI.(int)
 
-		return oldValue < newValue
+		return oldValue > newValue
 	})
 }
 
