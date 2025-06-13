@@ -22,6 +22,7 @@ resource "scaleway_container_namespace" "main" {
 resource "scaleway_container" "main" {
   name            = "my-container-02"
   description     = "environment variables test"
+  tags            = ["tag1", "tag2"]
   namespace_id    = scaleway_container_namespace.main.id
   registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
   port            = 9997
@@ -34,6 +35,9 @@ resource "scaleway_container" "main" {
   privacy         = "private"
   protocol        = "http1"
   deploy          = true
+
+  command = [ "bash", "-c", "script.sh" ]
+  args =    [ "some", "args" ]
 
   environment_variables = {
     "foo" = "var"
@@ -55,6 +59,8 @@ The following arguments are supported:
 ~> **Important** Updating the `name` argument will recreate the container.
 
 - `description` (Optional) The description of the container.
+
+- `tags` - (Optional) The list of tags associated with the container.
 
 - `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#environment-variables) of the container.
 
@@ -99,7 +105,11 @@ The following arguments are supported:
 
 - `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
 
-- `local_storage_limit` - Local storage limit of the container (in MB)
+- `local_storage_limit` - (Optional) Local storage limit of the container (in MB)
+
+- `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
+
+- `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 

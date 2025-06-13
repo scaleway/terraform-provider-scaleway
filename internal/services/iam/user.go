@@ -2,7 +2,6 @@ package iam
 
 import (
 	"context"
-	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +11,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
-
-var descParameterIgnoredForGuest = " (this parameter is ignored in case of guest users)"
 
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
@@ -31,7 +28,7 @@ func ResourceUser() *schema.Resource {
 			"email": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The email of the user, which is not editable for guests",
+				Description: "The email of the user",
 			},
 			"tags": {
 				Type:        schema.TypeList,
@@ -42,44 +39,44 @@ func ResourceUser() *schema.Resource {
 			"send_password_email": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether or not to send an email containing the member's password" + descParameterIgnoredForGuest,
+				Description: "Whether or not to send an email containing the member's password",
 			},
 			"send_welcome_email": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether or not to send a welcome email that includes onboarding information" + descParameterIgnoredForGuest,
+				Description: "Whether or not to send a welcome email that includes onboarding information",
 			},
 			"username": {
 				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The member's username" + descParameterIgnoredForGuest,
+				Description: "The member's username",
+				Required:    true,
 			},
 			"password": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The member's password for first access" + descParameterIgnoredForGuest,
+				Sensitive:   true,
+				Description: "The member's password for first access",
 			},
 			"first_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The member's first name" + descParameterIgnoredForGuest,
+				Description: "The member's first name",
 			},
 			"last_name": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The member's last name" + descParameterIgnoredForGuest,
+				Description: "The member's last name",
 			},
 			"phone_number": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The member's phone number" + descParameterIgnoredForGuest,
+				Description: "The member's phone number",
 			},
 			"locale": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Computed:    true,
-				Description: "The member's locale" + descParameterIgnoredForGuest,
+				Description: "The member's locale",
 			},
 			// Computed data
 			"created_at": {
@@ -131,49 +128,26 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
-func createUserRequestBody(d *schema.ResourceData, isMember bool) *iam.CreateUserRequest {
-	if isMember {
-		// Create and return a member.
-		return &iam.CreateUserRequest{
-			OrganizationID: d.Get("organization_id").(string),
-			Tags:           types.ExpandStrings(d.Get("tags")),
-			Member: &iam.CreateUserRequestMember{
-				Email:             d.Get("email").(string),
-				SendPasswordEmail: d.Get("send_password_email").(bool),
-				SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
-				Username:          d.Get("username").(string),
-				Password:          d.Get("password").(string),
-				FirstName:         d.Get("first_name").(string),
-				LastName:          d.Get("last_name").(string),
-				PhoneNumber:       d.Get("phone_number").(string),
-				Locale:            d.Get("locale").(string),
-			},
-		}
-	} else {
-		// Create and return a guest.
-		return &iam.CreateUserRequest{
-			OrganizationID: d.Get("organization_id").(string),
-			Email:          scw.StringPtr(d.Get("email").(string)),
-			Tags:           types.ExpandStrings(d.Get("tags")),
-		}
-	}
-}
-
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	api := NewAPI(m)
 
-	var user *iam.User
-
-	var err error
-
-	if d.Get("username").(string) != "" {
-		// Create a member.
-		user, err = api.CreateUser(createUserRequestBody(d, true), scw.WithContext(ctx))
-	} else {
-		// Create a guest.
-		user, err = api.CreateUser(createUserRequestBody(d, false), scw.WithContext(ctx))
+	req := &iam.CreateUserRequest{
+		OrganizationID: d.Get("organization_id").(string),
+		Tags:           types.ExpandStrings(d.Get("tags")),
+		Member: &iam.CreateUserRequestMember{
+			Email:             d.Get("email").(string),
+			SendPasswordEmail: d.Get("send_password_email").(bool),
+			SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
+			Username:          d.Get("username").(string),
+			Password:          d.Get("password").(string),
+			FirstName:         d.Get("first_name").(string),
+			LastName:          d.Get("last_name").(string),
+			PhoneNumber:       d.Get("phone_number").(string),
+			Locale:            d.Get("locale").(string),
+		},
 	}
 
+	user, err := api.CreateUser(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -232,49 +206,32 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	if user.Type == "guest" {
-		// Users of type "guest" only support the update of tags. The update of the email is not supported.
-		if d.HasChanges("tags") {
-			_, err = api.UpdateUser(&iam.UpdateUserRequest{
-				UserID: user.ID,
-				Tags:   types.ExpandUpdatedStringsPtr(d.Get("tags")),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
+	req := &iam.UpdateUserRequest{UserID: user.ID}
 
-		if d.HasChange("email") {
-			return diag.FromErr(errors.New("the email of a guest user cannot be updated, you need to create a new user"))
-		}
-	} else {
-		req := &iam.UpdateUserRequest{UserID: user.ID}
+	if d.HasChanges("tags", "email", "first_name") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+	}
 
-		if d.HasChanges("tags", "email", "first_name") {
-			req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-			req.Email = scw.StringPtr(d.Get("email").(string))
-			req.FirstName = scw.StringPtr(d.Get("first_name").(string))
-		}
+	if d.HasChanges("last_name", "phone_number", "locale") {
+		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.Locale = scw.StringPtr(d.Get("locale").(string))
+	}
 
-		if d.HasChanges("last_name", "phone_number", "locale") {
-			req.LastName = scw.StringPtr(d.Get("last_name").(string))
-			req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
-			req.Locale = scw.StringPtr(d.Get("locale").(string))
-		}
+	_, err = api.UpdateUser(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-		_, err = api.UpdateUser(req, scw.WithContext(ctx))
+	if d.HasChange("username") {
+		_, err = api.UpdateUserUsername(&iam.UpdateUserUsernameRequest{
+			UserID:   user.ID,
+			Username: d.Get("username").(string),
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
-		}
-		// The update of the 'username' field is made through a different endpoint and payload.
-		if d.HasChange("username") {
-			_, err = api.UpdateUserUsername(&iam.UpdateUserUsernameRequest{
-				UserID:   user.ID,
-				Username: d.Get("username").(string),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
 		}
 	}
 

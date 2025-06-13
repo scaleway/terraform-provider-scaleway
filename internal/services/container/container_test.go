@@ -30,6 +30,7 @@ func TestAccContainer_Basic(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						tags = ["tag1", "tag2"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -49,6 +50,9 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "min_scale"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "privacy"),
 					resource.TestCheckResourceAttrSet("scaleway_container.main", "local_storage_limit"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.0", "tag1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.1", "tag2"),
 				),
 			},
 			{
@@ -67,6 +71,7 @@ func TestAccContainer_Basic(t *testing.T) {
 						timeout = 300
 						deploy = false
 						local_storage_limit = 1000
+						tags = ["tag"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -84,6 +89,8 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "privacy", containerSDK.ContainerPrivacyPublic.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1000"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.0", "tag"),
 				),
 			},
 			{
@@ -118,6 +125,7 @@ func TestAccContainer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_container.main", "deploy", "false"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "protocol", containerSDK.ContainerProtocolHTTP1.String()),
 					resource.TestCheckResourceAttr("scaleway_container.main", "local_storage_limit", "1500"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "tags.#", "0"),
 				),
 			},
 		},
@@ -549,6 +557,88 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "scaling_option.0.memory_usage_threshold", "66"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccContainer_CommandAndArgs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						command = [ "bash", "-c", "my-script.sh" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.0", "bash"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.1", "-c"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.2", "my-script.sh"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "0"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						command = [ "bash", "-c", "my-script.sh" ]
+						args =    [ "some", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "3"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.0", "bash"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.1", "-c"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.2", "my-script.sh"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.0", "some"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.1", "args"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						args =    [ "some", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.0", "some"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.1", "args"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "command.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "args.#", "0"),
 				),
 			},
 		},

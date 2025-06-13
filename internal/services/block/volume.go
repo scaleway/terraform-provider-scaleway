@@ -205,8 +205,8 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m in
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
-	if d.HasChange("size") {
-		volumeSizeInBytes := scw.Size(uint64(d.Get("size").(int)) * gb)
+	if d.HasChange("size_in_gb") {
+		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
 		req.Size = &volumeSizeInBytes
 	}
 
