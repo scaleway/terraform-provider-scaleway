@@ -266,6 +266,7 @@ func TestAccNamespace_DestroyRegistry(t *testing.T) {
 		},
 	})
 }
+
 func TestAccNamespace_VPCIntegration(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

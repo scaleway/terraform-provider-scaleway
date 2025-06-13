@@ -275,7 +275,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("private_network_id") {
-		if _, newPNID := d.GetChange("private_network_id"); newPNID != nil && newPNID.(string) != "" {
+		if newPNID, ok := d.GetOk("private_network_id"); ok && newPNID.(string) != "" {
 			req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(newPNID.(string)))
 		} else {
 			req.PrivateNetworkID = nil

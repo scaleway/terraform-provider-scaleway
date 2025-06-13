@@ -680,7 +680,28 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_container.c00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
 				),
 			},
-			//{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn00 {}
+					resource scaleway_vpc_private_network pn01 {}
+			
+					resource scaleway_container_namespace main {
+						activate_vpc_integration = true
+					}
+			
+					resource scaleway_container c00 {
+						namespace_id = scaleway_container_namespace.main.id
+						private_network_id = scaleway_vpc_private_network.pn01.id
+						sandbox = "v1"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.c00"),
+					resource.TestCheckResourceAttr("scaleway_container.c00", "sandbox", "v1"),
+					resource.TestCheckResourceAttrPair("scaleway_container.c00", "private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+				),
+			},
+			// {
 			//	Config: `
 			//		resource scaleway_vpc_private_network pn00 {}
 			//		resource scaleway_vpc_private_network pn01 {}
@@ -691,27 +712,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			//
 			//		resource scaleway_container c00 {
 			//			namespace_id = scaleway_container_namespace.main.id
-			//			private_network_id = scaleway_vpc_private_network.pn01.id
-			//			sandbox = "v1"
-			//		}
-			//	`,
-			//	Check: resource.ComposeTestCheckFunc(
-			//		isContainerPresent(tt, "scaleway_container.c00"),
-			//		resource.TestCheckResourceAttr("scaleway_container.c00", "sandbox", "v1"),
-			//		resource.TestCheckResourceAttrPair("scaleway_container.c00", "private_network_id", "scaleway_vpc_private_network.pn01", "id"),
-			//	),
-			//},
-			//{
-			//	Config: `
-			//		resource scaleway_vpc_private_network pn00 {}
-			//		resource scaleway_vpc_private_network pn01 {}
-			//
-			//		resource scaleway_container_namespace main {
-			//			activate_vpc_integration = true
-			//		}
-			//
-			//		resource scaleway_container c00 {
-			//			namespace_id = scaleway_container_namespace.main.id
+			//			private_network_id = "00000000-0000-0000-0000-000000000000"
 			//			sandbox = "v1"
 			//		}
 			//	`,
@@ -719,7 +720,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			//		isContainerPresent(tt, "scaleway_container.c00"),
 			//		resource.TestCheckResourceAttr("scaleway_container.c00", "private_network_id", ""),
 			//	),
-			//},
+			// },
 		},
 	})
 }
