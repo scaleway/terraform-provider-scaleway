@@ -46,6 +46,7 @@ resource "scaleway_autoscaling_instance_policy" "down" {
     sampling_range_min = 5
     threshold          = 40
   }
+}
 ```
 
 ## Argument Reference

@@ -30,13 +30,15 @@ func AddTestSweepers() {
 func testSweepInstanceGroup(_ string) error {
 	return acctest.SweepZones((&autoscaling.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		autoscalingAPI := autoscaling.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the autoscaling instance groups in (%s)", zone)
+
 		listInstanceGroups, err := autoscalingAPI.ListInstanceGroups(
 			&autoscaling.ListInstanceGroupsRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instancegroup in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing instancegroup in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, instanceGroup := range listInstanceGroups.InstanceGroups {
@@ -45,9 +47,9 @@ func testSweepInstanceGroup(_ string) error {
 				Zone:            zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%w)", err)
 
-				return fmt.Errorf("error deleting instance group in sweeper: %s", err)
+				return fmt.Errorf("error deleting instance group in sweeper: %w", err)
 			}
 		}
 
@@ -58,13 +60,15 @@ func testSweepInstanceGroup(_ string) error {
 func testSweepInstanceTemplate(_ string) error {
 	return acctest.SweepZones((&autoscaling.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		autoscalingAPI := autoscaling.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the autoscaling instance templates in (%s)", zone)
+
 		listInstanceTemplates, err := autoscalingAPI.ListInstanceTemplates(
 			&autoscaling.ListInstanceTemplatesRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance templates in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing instance templates in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, instanceTemplate := range listInstanceTemplates.InstanceTemplates {
@@ -73,9 +77,9 @@ func testSweepInstanceTemplate(_ string) error {
 				Zone:       zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%w)", err)
 
-				return fmt.Errorf("error deleting instance template in sweeper: %s", err)
+				return fmt.Errorf("error deleting instance template in sweeper: %w", err)
 			}
 		}
 
@@ -86,13 +90,14 @@ func testSweepInstanceTemplate(_ string) error {
 func testSweepInstancePolicy(_ string) error {
 	return acctest.SweepZones((&autoscaling.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
 		autoscalingAPI := autoscaling.NewAPI(scwClient)
+
 		logging.L.Debugf("sweeper: destroying the autoscaling instance policies in (%s)", zone)
-		listInstancePolicies, err := autoscalingAPI.ListInstancePolicies(
-			&autoscaling.ListInstancePoliciesRequest{
-				Zone: zone,
-			}, scw.WithAllPages())
+
+		listInstancePolicies, err := autoscalingAPI.ListInstancePolicies(&autoscaling.ListInstancePoliciesRequest{
+			Zone: zone,
+		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing instance policy in (%s) in sweeper: %s", zone, err)
+			return fmt.Errorf("error listing instance policy in (%s) in sweeper: %w", zone, err)
 		}
 
 		for _, instancePolicy := range listInstancePolicies.Policies {
@@ -101,9 +106,9 @@ func testSweepInstancePolicy(_ string) error {
 				Zone:     zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
+				logging.L.Debugf("sweeper: error (%w)", err)
 
-				return fmt.Errorf("error deleting instance policy in sweeper: %s", err)
+				return fmt.Errorf("error deleting instance policy in sweeper: %w", err)
 			}
 		}
 
