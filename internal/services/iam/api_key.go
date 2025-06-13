@@ -89,7 +89,7 @@ func ResourceAPIKey() *schema.Resource {
 	}
 }
 
-func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	res, err := api.CreateAPIKey(&iam.CreateAPIKeyRequest{
@@ -110,7 +110,7 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamAPIKeyRead(ctx, d, m)
 }
 
-func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	res, err := api.GetAPIKey(&iam.GetAPIKeyRequest{
@@ -147,7 +147,7 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	req := &iam.UpdateAPIKeyRequest{
@@ -176,7 +176,7 @@ func resourceIamAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamAPIKeyRead(ctx, d, m)
 }
 
-func resourceIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeleteAPIKey(&iam.DeleteAPIKeyRequest{

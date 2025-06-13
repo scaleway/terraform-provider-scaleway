@@ -39,7 +39,7 @@ func DataSourceApplication() *schema.Resource {
 	}
 }
 
-func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	appID, appIDExists := d.GetOk("application_id")

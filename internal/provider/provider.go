@@ -341,7 +341,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
-		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
 			// If we provide meta in config use it. This is useful for tests

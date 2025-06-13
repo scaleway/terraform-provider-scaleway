@@ -188,7 +188,7 @@ func ResourceRoute() *schema.Resource {
 	}
 }
 
-func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -252,7 +252,7 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceIotRouteRead(ctx, d, m)
 }
 
-func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, routeID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -280,7 +280,7 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	switch response.Type {
 	case iot.RouteRouteTypeDatabase:
-		conf := []map[string]interface{}{{
+		conf := []map[string]any{{
 			"query":    response.DbConfig.Query,
 			"host":     response.DbConfig.Host,
 			"port":     int(response.DbConfig.Port),
@@ -291,14 +291,14 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interfa
 		}}
 		_ = d.Set("database", conf)
 	case iot.RouteRouteTypeRest:
-		conf := []map[string]interface{}{{
+		conf := []map[string]any{{
 			"verb":    response.RestConfig.Verb,
 			"uri":     response.RestConfig.URI,
 			"headers": response.RestConfig.Headers,
 		}}
 		_ = d.Set("rest", conf)
 	case iot.RouteRouteTypeS3:
-		conf := []map[string]interface{}{{
+		conf := []map[string]any{{
 			"bucket_region": response.S3Config.BucketRegion,
 			"bucket_name":   response.S3Config.BucketName,
 			"object_prefix": response.S3Config.ObjectPrefix,
@@ -310,7 +310,7 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, routeID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

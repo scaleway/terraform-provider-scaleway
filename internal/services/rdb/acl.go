@@ -74,7 +74,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -87,7 +87,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,7 +108,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceRdbACLRead(ctx, d, m)
 }
 
-func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,7 +140,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	diags := diag.Diagnostics{}
 
 	if aclRulesRaw, ok := d.GetOk("acl_rules"); ok {
-		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]interface{}))
+		aclRules, mergeErrors := rdbACLRulesFlattenFromSchema(res.Rules, aclRulesRaw.([]any))
 		if len(mergeErrors) > 0 {
 			for _, w := range mergeErrors {
 				diags = append(diags, diag.Diagnostic{
@@ -162,7 +162,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	return diags
 }
 
-func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,7 +179,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 			return diag.FromErr(err)
 		}
 
-		aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
+		aclRules, err := rdbACLExpand(d.Get("acl_rules").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -199,7 +199,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceRdbACLRead(ctx, d, m)
 }
 
-func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -207,7 +207,7 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 
 	aclRuleIPs := make([]string, 0)
 
-	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]interface{}))
+	aclRules, err := rdbACLExpand(d.Get("acl_rules").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -238,11 +238,11 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
+func rdbACLExpand(data []any) ([]*rdb.ACLRuleRequest, error) {
 	var res []*rdb.ACLRuleRequest
 
 	for _, rule := range data {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 
 		ipRaw, ok := r["ip"]
 		if ok {
@@ -269,8 +269,8 @@ func rdbACLExpand(data []interface{}) ([]*rdb.ACLRuleRequest, error) {
 	return res, nil
 }
 
-func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interface{}) ([]map[string]interface{}, []error) {
-	res := make([]map[string]interface{}, 0, len(dataFromSchema))
+func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []any) ([]map[string]any, []error) {
+	res := make([]map[string]any, 0, len(dataFromSchema))
 
 	var errors []error
 
@@ -282,7 +282,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 	ruleMapFromSchema := map[string]struct{}{}
 
 	for _, ruleFromSchema := range dataFromSchema {
-		currentRule := ruleFromSchema.(map[string]interface{})
+		currentRule := ruleFromSchema.(map[string]any)
 
 		ip, err := types.ExpandIPNet(currentRule["ip"].(string))
 		if err != nil {
@@ -299,7 +299,7 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 		}
 
 		ruleMapFromSchema[ip.String()] = struct{}{}
-		r := map[string]interface{}{
+		r := map[string]any{
 			"ip":          aclRule.IP.String(),
 			"description": aclRule.Description,
 		}
@@ -309,14 +309,14 @@ func rdbACLRulesFlattenFromSchema(rules []*rdb.ACLRule, dataFromSchema []interfa
 	return append(res, mergeDiffToSchema(ruleMapFromSchema, ruleMap)...), errors
 }
 
-func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*rdb.ACLRule) []map[string]interface{} {
-	var res []map[string]interface{}
+func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*rdb.ACLRule) []map[string]any {
+	var res []map[string]any
 
 	for ruleIP, info := range ruleMap {
 		_, ok := rulesFromSchema[ruleIP]
 		// check if new rule has been added on config
 		if !ok {
-			r := map[string]interface{}{
+			r := map[string]any{
 				"ip":          info.IP.String(),
 				"description": info.Description,
 			}
@@ -327,11 +327,11 @@ func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*
 	return res
 }
 
-func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]interface{} {
-	res := make([]map[string]interface{}, 0, len(rules))
+func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]any {
+	res := make([]map[string]any, 0, len(rules))
 
 	for _, rule := range rules {
-		r := map[string]interface{}{
+		r := map[string]any{
 			"ip":          rule.IP.String(),
 			"description": rule.Description,
 		}

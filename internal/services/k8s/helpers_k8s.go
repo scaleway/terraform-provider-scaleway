@@ -21,7 +21,7 @@ const (
 	defaultK8SRetryInterval  = 5 * time.Second
 )
 
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*k8s.API, scw.Region, error) {
 	k8sAPI := k8s.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -32,7 +32,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*k8s.API, scw.Regi
 	return k8sAPI, region, nil
 }
 
-func NewAPIWithRegionAndID(m interface{}, id string) (*k8s.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*k8s.API, scw.Region, string, error) {
 	k8sAPI := k8s.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
@@ -81,11 +81,11 @@ func k8sGetLatestVersionFromMinor(ctx context.Context, k8sAPI *k8s.API, region s
 }
 
 // convert a list of nodes to a list of map
-func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
-	result := make([]map[string]interface{}, 0, len(res.Nodes))
+func convertNodes(res *k8s.ListNodesResponse) []map[string]any {
+	result := make([]map[string]any, 0, len(res.Nodes))
 
 	for _, node := range res.Nodes {
-		n := make(map[string]interface{})
+		n := make(map[string]any)
 		n["id"] = node.ID
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
@@ -104,7 +104,7 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]interface{} {
 	return result
 }
 
-func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[string]interface{}, error) {
+func getNodes(ctx context.Context, k8sAPI *k8s.API, pool *k8s.Pool) ([]map[string]any, error) {
 	req := &k8s.ListNodesRequest{
 		Region:    pool.Region,
 		ClusterID: pool.ClusterID,

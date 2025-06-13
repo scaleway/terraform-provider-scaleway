@@ -165,7 +165,7 @@ func ResourceSecret() *schema.Resource {
 	}
 }
 
-func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -212,7 +212,7 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceSecretRead(ctx, d, m)
 }
 
-func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -263,9 +263,9 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
 	_ = d.Set("type", secretResponse.Type)
 
-	versionsList := make([]map[string]interface{}, 0, len(versions.Versions))
+	versionsList := make([]map[string]any, 0, len(versions.Versions))
 	for _, version := range versions.Versions {
-		versionsList = append(versionsList, map[string]interface{}{
+		versionsList = append(versionsList, map[string]any{
 			"revision":    strconv.Itoa(int(version.Revision)),
 			"secret_id":   version.SecretID,
 			"status":      version.Status.String(),
@@ -281,7 +281,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -340,7 +340,7 @@ func ResourceSecretUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceSecretRead(ctx, d, m)
 }
 
-func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

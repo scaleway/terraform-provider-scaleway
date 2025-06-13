@@ -37,7 +37,7 @@ func ResourceHeadStage() *schema.Resource {
 	}
 }
 
-func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.SetHeadStage(&edgeservices.SetHeadStageRequest{
@@ -57,11 +57,11 @@ func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceHeadStageRead(ctx, d, m)
 }
 
-func ResourceHeadStageRead(_ context.Context, _ *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ResourceHeadStageRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	return nil
 }
 
-func ResourceHeadStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceHeadStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	if d.HasChange("head_stage_id") {
@@ -82,7 +82,7 @@ func ResourceHeadStageUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceHeadStageRead(ctx, d, m)
 }
 
-func ResourceHeadStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceHeadStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	_, err := api.SetHeadStage(&edgeservices.SetHeadStageRequest{

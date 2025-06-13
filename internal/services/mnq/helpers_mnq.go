@@ -19,7 +19,7 @@ const (
 	AWSErrNonExistentQueue     = "AWS.SimpleQueueService.NonExistentQueue"
 )
 
-func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Region, error) {
+func newMNQNatsAPI(d *schema.ResourceData, m any) (*mnq.NatsAPI, scw.Region, error) {
 	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -30,7 +30,7 @@ func newMNQNatsAPI(d *schema.ResourceData, m interface{}) (*mnq.NatsAPI, scw.Reg
 	return api, region, nil
 }
 
-func NewNatsAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
+func NewNatsAPIWithRegionAndID(m any, regionalID string) (*mnq.NatsAPI, scw.Region, string, error) {
 	api := mnq.NewNatsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -52,7 +52,7 @@ func newSQSAPI(d *schema.ResourceData, m any) (*mnq.SqsAPI, scw.Region, error) {
 	return api, region, nil
 }
 
-func NewSQSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
+func NewSQSAPIWithRegionAndID(m any, regionalID string) (*mnq.SqsAPI, scw.Region, string, error) {
 	api := mnq.NewSqsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -74,7 +74,7 @@ func newMNQSNSAPI(d *schema.ResourceData, m any) (*mnq.SnsAPI, scw.Region, error
 	return api, region, nil
 }
 
-func NewSNSAPIWithRegionAndID(m interface{}, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
+func NewSNSAPIWithRegionAndID(m any, regionalID string) (*mnq.SnsAPI, scw.Region, string, error) {
 	api := mnq.NewSnsAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -173,15 +173,15 @@ func ComposeSNSARN(region scw.Region, projectID string, resourceName string) str
 }
 
 // Set the value inside values at the resource path (e.g. a.0.b sets b's value)
-func setResourceValue(values map[string]interface{}, resourcePath string, value interface{}, resourceSchemas map[string]*schema.Schema) {
+func setResourceValue(values map[string]any, resourcePath string, value any, resourceSchemas map[string]*schema.Schema) {
 	parts := strings.Split(resourcePath, ".")
 	if len(parts) > 1 {
 		// Terraform's nested objects are represented as slices of maps
 		if _, ok := values[parts[0]]; !ok {
-			values[parts[0]] = []interface{}{make(map[string]interface{})}
+			values[parts[0]] = []any{make(map[string]any)}
 		}
 
-		setResourceValue(values[parts[0]].([]interface{})[0].(map[string]interface{}), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+		setResourceValue(values[parts[0]].([]any)[0].(map[string]any), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
 
 		return
 	}
@@ -204,7 +204,7 @@ func resolveSchemaPath(resourcePath string, resourceSchemas map[string]*schema.S
 }
 
 // Sets a specific SNS attribute from the resource data
-func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute string, resourceValue interface{}, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
+func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute string, resourceValue any, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
 	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
 	if resourceSchema == nil {
 		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
@@ -250,7 +250,7 @@ func awsResourceDataToAttributes(d *schema.ResourceData, resourceSchemas map[str
 }
 
 // awsAttributeToResourceData sets a specific resource data from the given attribute
-func awsAttributeToResourceData(values map[string]interface{}, value string, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
+func awsAttributeToResourceData(values map[string]any, value string, resourcePath string, resourceSchemas map[string]*schema.Schema) error {
 	resourceSchema := resolveSchemaPath(resourcePath, resourceSchemas)
 	if resourceSchema == nil {
 		return fmt.Errorf("unable to resolve schema for %s", resourcePath)
@@ -273,8 +273,8 @@ func awsAttributeToResourceData(values map[string]interface{}, value string, res
 }
 
 // awsAttributesToResourceData returns a map of valid values for a terraform schema from an attributes map and a conversion map
-func awsAttributesToResourceData(attributes map[string]string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]interface{}, error) {
-	values := make(map[string]interface{})
+func awsAttributesToResourceData(attributes map[string]string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]any, error) {
+	values := make(map[string]any)
 
 	for attribute, resourcePath := range attributesToResourceMap {
 		if value, ok := attributes[attribute]; ok {

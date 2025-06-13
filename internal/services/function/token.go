@@ -66,7 +66,7 @@ func ResourceToken() *schema.Resource {
 	}
 }
 
-func ResourceFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,7 +90,7 @@ func ResourceFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceFunctionTokenRead(ctx, d, m)
 }
 
-func ResourceFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -118,7 +118,7 @@ func ResourceFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionTokenDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, ID, err := container.NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

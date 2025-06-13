@@ -178,7 +178,7 @@ func ResourceFunction() *schema.Resource {
 	}
 }
 
-func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -270,7 +270,7 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return append(diags, ResourceFunctionRead(ctx, d, m)...)
 }
 
-func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -327,7 +327,7 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return diags
 }
 
-func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -456,7 +456,7 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceFunctionRead(ctx, d, m)
 }
 
-func ResourceFunctionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

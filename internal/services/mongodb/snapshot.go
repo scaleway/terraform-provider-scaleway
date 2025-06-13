@@ -85,7 +85,7 @@ func ResourceSnapshot() *schema.Resource {
 	}
 }
 
-func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, zone, region, err := newAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +116,7 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceSnapshotRead(ctx, d, m)
 }
 
-func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -148,7 +148,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,7 +194,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceSnapshotRead(ctx, d, m)
 }
 
-func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

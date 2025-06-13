@@ -33,7 +33,7 @@ func DataSourceProject() *schema.Resource {
 	}
 }
 
-func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	var projectID string
@@ -144,7 +144,7 @@ func DataSourceProjects() *schema.Resource {
 	}
 }
 
-func DataSourceAccountProjectsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceAccountProjectsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	var orgID *string
@@ -173,10 +173,10 @@ func DataSourceAccountProjectsRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func flattenProjects(projects []*accountSDK.Project) []map[string]interface{} {
-	flattenedProjects := make([]map[string]interface{}, len(projects))
+func flattenProjects(projects []*accountSDK.Project) []map[string]any {
+	flattenedProjects := make([]map[string]any, len(projects))
 	for i, project := range projects {
-		flattenedProjects[i] = map[string]interface{}{
+		flattenedProjects[i] = map[string]any{
 			"id":              project.ID,
 			"name":            project.Name,
 			"organization_id": project.OrganizationID,

@@ -36,7 +36,7 @@ func ResourcePlan() *schema.Resource {
 	}
 }
 
-func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	plan, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
@@ -52,7 +52,7 @@ func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	plan, err := api.GetCurrentPlan(&edgeservices.GetCurrentPlanRequest{
@@ -73,7 +73,7 @@ func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	if d.HasChange("name") {
@@ -89,7 +89,7 @@ func ResourcePlanUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	return ResourcePlanRead(ctx, d, m)
 }
 
-func ResourcePlanDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePlanDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteCurrentPlan(&edgeservices.DeleteCurrentPlanRequest{

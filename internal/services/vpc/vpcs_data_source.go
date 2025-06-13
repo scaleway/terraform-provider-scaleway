@@ -74,7 +74,7 @@ func DataSourceVPCs() *schema.Resource {
 	}
 }
 
-func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,10 +90,10 @@ func DataSourceVPCsRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	vpcs := []interface{}(nil)
+	vpcs := []any(nil)
 
 	for _, virtualPrivateCloud := range res.Vpcs {
-		rawVpc := make(map[string]interface{})
+		rawVpc := make(map[string]any)
 		rawVpc["id"] = regional.NewIDString(region, virtualPrivateCloud.ID)
 		rawVpc["name"] = virtualPrivateCloud.Name
 		rawVpc["created_at"] = types.FlattenTime(virtualPrivateCloud.CreatedAt)

@@ -126,7 +126,7 @@ func DataSourceInvoices() *schema.Resource {
 	}
 }
 
-func DataSourceBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := billingAPI(m)
 
 	res, err := api.ListInvoices(&billing.ListInvoicesRequest{
@@ -139,10 +139,10 @@ func DataSourceBillingInvoicesRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	invoices := []interface{}(nil)
+	invoices := []any(nil)
 
 	for _, invoice := range res.Invoices {
-		rawInvoice := make(map[string]interface{})
+		rawInvoice := make(map[string]any)
 		rawInvoice["id"] = invoice.ID
 		rawInvoice["organization_name"] = invoice.OrganizationName
 		rawInvoice["start_date"] = types.FlattenTime(invoice.StartDate)

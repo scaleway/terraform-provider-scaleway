@@ -1,11 +1,11 @@
 package types
 
-func FlattenMap(m map[string]string) interface{} {
+func FlattenMap(m map[string]string) any {
 	if m == nil {
 		return nil
 	}
 
-	flattenedMap := make(map[string]interface{})
+	flattenedMap := make(map[string]any)
 	for k, v := range m {
 		flattenedMap[k] = v
 	}
@@ -13,12 +13,12 @@ func FlattenMap(m map[string]string) interface{} {
 	return flattenedMap
 }
 
-func FlattenMapStringStringPtr(m map[string]*string) interface{} {
+func FlattenMapStringStringPtr(m map[string]*string) any {
 	if m == nil {
 		return nil
 	}
 
-	flattenedMap := make(map[string]interface{})
+	flattenedMap := make(map[string]any)
 
 	for k, v := range m {
 		if v != nil {
@@ -31,26 +31,26 @@ func FlattenMapStringStringPtr(m map[string]*string) interface{} {
 	return flattenedMap
 }
 
-func ExpandMapPtrStringString(data interface{}) *map[string]string {
+func ExpandMapPtrStringString(data any) *map[string]string {
 	if data == nil {
 		return nil
 	}
 
 	m := make(map[string]string)
-	for k, v := range data.(map[string]interface{}) {
+	for k, v := range data.(map[string]any) {
 		m[k] = v.(string)
 	}
 
 	return &m
 }
 
-func ExpandMapStringStringPtr(data interface{}) map[string]*string {
+func ExpandMapStringStringPtr(data any) map[string]*string {
 	if data == nil {
 		return nil
 	}
 
 	m := make(map[string]*string)
-	for k, v := range data.(map[string]interface{}) {
+	for k, v := range data.(map[string]any) {
 		m[k] = ExpandStringPtr(v)
 	}
 
@@ -63,7 +63,7 @@ func ExpandMapStringString(data any) map[string]string {
 	}
 
 	m := make(map[string]string)
-	for k, v := range data.(map[string]interface{}) {
+	for k, v := range data.(map[string]any) {
 		m[k] = v.(string)
 	}
 

@@ -20,7 +20,7 @@ type ErrorRegistryMessage struct {
 }
 
 // NewAPIWithRegion returns a new container registry API and the region.
-func NewAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw.Region, error) {
+func NewAPIWithRegion(d *schema.ResourceData, m any) (*registry.API, scw.Region, error) {
 	api := registry.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -32,7 +32,7 @@ func NewAPIWithRegion(d *schema.ResourceData, m interface{}) (*registry.API, scw
 }
 
 // NewAPIWithRegionAndID returns a new container registry API, region and ID.
-func NewAPIWithRegionAndID(m interface{}, id string) (*registry.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*registry.API, scw.Region, string, error) {
 	api := registry.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)

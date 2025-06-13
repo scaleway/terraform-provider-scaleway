@@ -93,7 +93,7 @@ func ResourceNamespace() *schema.Resource {
 	}
 }
 
-func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -128,7 +128,7 @@ func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceFunctionNamespaceRead(ctx, d, m)
 }
 
-func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -159,7 +159,7 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -205,7 +205,7 @@ func ResourceFunctionNamespaceUpdate(ctx context.Context, d *schema.ResourceData
 	return ResourceFunctionNamespaceRead(ctx, d, m)
 }
 
-func ResourceFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionNamespaceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

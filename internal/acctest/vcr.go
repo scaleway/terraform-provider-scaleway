@@ -28,7 +28,7 @@ var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") ==
 
 // SensitiveFields is a map with keys listing fields that should be anonymized
 // value will be set in place of its old value
-var SensitiveFields = map[string]interface{}{
+var SensitiveFields = map[string]any{
 	"secret_key": "00000000-0000-0000-0000-000000000000",
 }
 
@@ -65,7 +65,7 @@ func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	return filepath.Join(pkgFolder, "testdata", fileName)
 }
 
-func compareJSONFields(expected, actualI interface{}) bool {
+func compareJSONFields(expected, actualI any) bool {
 	switch actual := actualI.(type) {
 	case string:
 		if _, isString := expected.(string); !isString {
@@ -138,10 +138,10 @@ func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.R
 		return true
 	}
 
-	actualJSON := make(map[string]interface{})
-	cassetteJSON := make(map[string]interface{})
+	actualJSON := make(map[string]any)
+	cassetteJSON := make(map[string]any)
 
-	err = xml.Unmarshal(actualRawBody, new(interface{}))
+	err = xml.Unmarshal(actualRawBody, new(any))
 	if err == nil {
 		// match if content is xml
 		return true
@@ -236,7 +236,7 @@ func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
 }
 
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
-	var jsonBody map[string]interface{}
+	var jsonBody map[string]any
 
 	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
 	if err != nil {

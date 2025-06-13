@@ -68,7 +68,7 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
-func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 	// resource depends on the instance locality
 	regionalID := d.Get("instance_id").(string)
@@ -121,7 +121,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return ResourceUserRead(ctx, d, m)
 }
 
-func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, userName, err := ResourceUserParseID(d.Id())
@@ -173,7 +173,7 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := ResourceUserParseID(d.Id())
@@ -208,7 +208,7 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	return ResourceUserRead(ctx, d, m)
 }
 
-func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 	// resource depends on the instance locality
 	region, instanceID, userName, err := ResourceUserParseID(d.Id())

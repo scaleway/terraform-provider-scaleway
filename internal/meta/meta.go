@@ -49,6 +49,71 @@ type Meta struct {
 	credentialsSource *CredentialsSource
 }
 
+// NewMeta creates the Meta object containing the SDK client.
+func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
+	////
+	// Load Profile
+	////
+	profile, credentialsSource, err := loadProfile(ctx, config.ProviderSchema)
+	if err != nil {
+		return nil, err
+	}
+
+	if config.ForceZone != "" {
+		region, err := config.ForceZone.Region()
+		if err != nil {
+			return nil, err
+		}
+
+		profile.DefaultRegion = scw.StringPtr(region.String())
+		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
+	}
+
+	if config.ForceProjectID != "" {
+		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
+	}
+
+	if config.ForceOrganizationID != "" {
+		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
+	}
+
+	if config.ForceAccessKey != "" {
+		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
+	}
+
+	if config.ForceSecretKey != "" {
+		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
+	}
+
+	// TODO validated profile
+
+	////
+	// Create scaleway SDK client
+	////
+	opts := []scw.ClientOption{
+		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
+		scw.WithProfile(profile),
+	}
+
+	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
+	if config.HTTPClient != nil {
+		httpClient = config.HTTPClient
+	}
+
+	opts = append(opts, scw.WithHTTPClient(httpClient))
+
+	scwClient, err := scw.NewClient(opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Meta{
+		scwClient:         scwClient,
+		httpClient:        httpClient,
+		credentialsSource: credentialsSource,
+	}, nil
+}
+
 func (m Meta) ScwClient() *scw.Client {
 	return m.scwClient
 }
@@ -127,71 +192,6 @@ type Config struct {
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
-}
-
-// NewMeta creates the Meta object containing the SDK client.
-func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
-	////
-	// Load Profile
-	////
-	profile, credentialsSource, err := loadProfile(ctx, config.ProviderSchema)
-	if err != nil {
-		return nil, err
-	}
-
-	if config.ForceZone != "" {
-		region, err := config.ForceZone.Region()
-		if err != nil {
-			return nil, err
-		}
-
-		profile.DefaultRegion = scw.StringPtr(region.String())
-		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
-	}
-
-	if config.ForceProjectID != "" {
-		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
-	}
-
-	if config.ForceOrganizationID != "" {
-		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
-	}
-
-	if config.ForceAccessKey != "" {
-		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
-	}
-
-	if config.ForceSecretKey != "" {
-		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
-	}
-
-	// TODO validated profile
-
-	////
-	// Create scaleway SDK client
-	////
-	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
-		scw.WithProfile(profile),
-	}
-
-	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
-	if config.HTTPClient != nil {
-		httpClient = config.HTTPClient
-	}
-
-	opts = append(opts, scw.WithHTTPClient(httpClient))
-
-	scwClient, err := scw.NewClient(opts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Meta{
-		scwClient:         scwClient,
-		httpClient:        httpClient,
-		credentialsSource: credentialsSource,
-	}, nil
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {

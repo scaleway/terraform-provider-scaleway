@@ -30,8 +30,8 @@ func waitForContainerTrigger(ctx context.Context, containerAPI *container.API, r
 	return trigger, err
 }
 
-func expandContainerTriggerMnqSqsCreationConfig(i interface{}) *container.CreateTriggerRequestMnqSqsClientConfig {
-	m := i.(map[string]interface{})
+func expandContainerTriggerMnqSqsCreationConfig(i any) *container.CreateTriggerRequestMnqSqsClientConfig {
+	m := i.(map[string]any)
 	req := &container.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
 		MnqProjectID: m["project_id"].(string),
@@ -41,8 +41,8 @@ func expandContainerTriggerMnqSqsCreationConfig(i interface{}) *container.Create
 	return req
 }
 
-func expandContainerTriggerMnqNatsCreationConfig(i interface{}) *container.CreateTriggerRequestMnqNatsClientConfig {
-	m := i.(map[string]interface{})
+func expandContainerTriggerMnqNatsCreationConfig(i any) *container.CreateTriggerRequestMnqNatsClientConfig {
+	m := i.(map[string]any)
 
 	return &container.CreateTriggerRequestMnqNatsClientConfig{
 		Subject:          m["subject"].(string),
@@ -52,8 +52,8 @@ func expandContainerTriggerMnqNatsCreationConfig(i interface{}) *container.Creat
 	}
 }
 
-func completeContainerTriggerMnqCreationConfig(i interface{}, d *schema.ResourceData, m interface{}, region scw.Region) error {
-	configMap := i.(map[string]interface{})
+func completeContainerTriggerMnqCreationConfig(i any, d *schema.ResourceData, m any, region scw.Region) error {
+	configMap := i.(map[string]any)
 
 	if sqsRegion, exists := configMap["region"]; !exists || sqsRegion == "" {
 		configMap["region"] = region.String()

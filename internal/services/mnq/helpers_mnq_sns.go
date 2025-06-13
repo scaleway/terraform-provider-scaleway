@@ -19,7 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func SNSClientWithRegion(ctx context.Context, m interface{}, d *schema.ResourceData) (*sns.Client, scw.Region, error) {
+func SNSClientWithRegion(ctx context.Context, m any, d *schema.ResourceData) (*sns.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -37,7 +37,7 @@ func SNSClientWithRegion(ctx context.Context, m interface{}, d *schema.ResourceD
 	return snsClient, region, err
 }
 
-func SNSClientWithRegionFromID(ctx context.Context, d *schema.ResourceData, m interface{}, regionalID string) (*sns.Client, scw.Region, error) {
+func SNSClientWithRegionFromID(ctx context.Context, d *schema.ResourceData, m any, regionalID string) (*sns.Client, scw.Region, error) {
 	tab := strings.SplitN(regionalID, "/", 2)
 	if len(tab) != 2 {
 		return nil, "", errors.New("invalid ID format, expected parts separated by slashes")
@@ -120,7 +120,7 @@ var (
 	}
 )
 
-func resourceMNQSNSTopicName(name interface{}, prefix interface{}, isSQS bool, isSQSFifo bool) string {
+func resourceMNQSNSTopicName(name any, prefix any, isSQS bool, isSQSFifo bool) string {
 	if value, ok := name.(string); ok && value != "" {
 		return value
 	}
@@ -139,7 +139,7 @@ func resourceMNQSNSTopicName(name interface{}, prefix interface{}, isSQS bool, i
 	return output
 }
 
-func resourceMNQSSNSTopicCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceMNQSSNSTopicCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
 	isFifoTopic := d.Get("fifo_topic").(bool)
 
 	var name string

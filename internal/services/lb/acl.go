@@ -153,7 +153,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +184,7 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	return resourceLbACLRead(ctx, d, m)
 }
 
-func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,7 +219,7 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -243,7 +243,7 @@ func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	return resourceLbACLRead(ctx, d, m)
 }
 
-func resourceLbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

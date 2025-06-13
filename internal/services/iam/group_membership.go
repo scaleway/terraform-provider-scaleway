@@ -47,7 +47,7 @@ func ResourceGroupMembership() *schema.Resource {
 	}
 }
 
-func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	userID := types.ExpandStringPtr(d.Get("user_id"))
@@ -67,7 +67,7 @@ func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceIamGroupMembershipRead(ctx, d, m)
 }
 
-func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
@@ -121,7 +121,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
