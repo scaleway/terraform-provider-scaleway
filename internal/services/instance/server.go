@@ -190,6 +190,27 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
+			"filesystems": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Filesystems attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filesystem_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The filesystem ID attached to the server",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the filesystem",
+						},
+					},
+				},
+			},
 			"enable_ipv6": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -516,6 +537,26 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	///
+	// Attach Filesystem
+	///
+	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for _, filesystem := range filesystems.([]interface{}) {
+			fs := filesystem.(map[string]interface{})
+			filesystemID := fs["filesystem_id"]
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
+				ServerID:     res.Server.ID,
+			})
+
+			if err != nil {
+				return nil
+			}
+		}
+	}
+
 	////
 	// Set user data
 	////
@@ -639,6 +680,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	_ = d.Set("type", server.CommercialType)
 	if len(server.Tags) > 0 {
 		_ = d.Set("tags", server.Tags)
+	}
+
+	if server.Filesystems != nil {
+		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
 	}
 
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
@@ -1070,6 +1115,51 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
+	// Update server filesystems
+	///
+
+	if d.HasChange("filesystems") {
+		if fs, ok := d.GetOk("filesystems"); ok {
+			for i := range fs.([]interface{}) {
+				fsKey := fmt.Sprintf("filesystems.%d.filesystem_id", i)
+				if d.HasChange(fsKey) {
+					old, new := d.GetChange(fsKey)
+					if !cmp.Equal(old, new) {
+						_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
+						if err != nil {
+							return diag.FromErr(err)
+						}
+
+						if old != nil {
+							oldFileSystemID := types.ExpandStringPtr(old)
+							_, err = api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+								Zone:         zone,
+								ServerID:     server.ID,
+								FilesystemID: locality.ExpandID(*oldFileSystemID),
+							})
+							if err != nil {
+								return diag.FromErr(err)
+							}
+						}
+
+						if new != nil {
+							newFileSystemID := types.ExpandStringPtr(new)
+							_, err = api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+								Zone:         zone,
+								ServerID:     server.ID,
+								FilesystemID: locality.ExpandID(*newFileSystemID),
+							})
+							if err != nil {
+								return diag.FromErr(err)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	////
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
@@ -1198,6 +1288,23 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	// Detach filesystem
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for index := range filesystems.([]interface{}) {
+			filesystemKey := fmt.Sprintf("filesystem.%d.filesystem_id", index)
+			fs := d.Get(filesystemKey)
+			newFileSystemID := types.ExpandStringPtr(fs)
+			_, err = api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     id,
+				FilesystemID: locality.ExpandID(*newFileSystemID),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	// Delete private-nic if managed by instance_server resource
