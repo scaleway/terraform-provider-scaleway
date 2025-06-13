@@ -111,6 +111,10 @@ The following arguments are supported:
 
 - `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
 
+- `private_network_id` (Optional) The ID of the Private Network the container is connected to.
+
+~> **Important** This feature is currently in beta and requires a namespace with VPC integration activated by setting the `activate_vpc_integration` attribute to `true`.
+
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
 ## Attributes Reference
