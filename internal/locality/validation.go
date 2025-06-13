@@ -9,7 +9,7 @@ import (
 
 // ValidateStringInSliceWithWarning helps to only returns warnings in case we got a non-public locality passed
 func ValidateStringInSliceWithWarning(correctValues []string, field string) schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		_, rawErr := validation.StringInSlice(correctValues, true)(i, field)
 
 		var res diag.Diagnostics
