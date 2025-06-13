@@ -125,7 +125,7 @@ func ResourceHub() *schema.Resource {
 	}
 }
 
-func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -209,7 +209,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceIotHubRead(ctx, d, m)
 }
 
-func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, hubID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -262,7 +262,7 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, hubID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -351,7 +351,7 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceIotHubRead(ctx, d, m)
 }
 
-func ResourceIotHubDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotHubDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

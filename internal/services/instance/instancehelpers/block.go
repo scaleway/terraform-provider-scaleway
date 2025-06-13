@@ -12,7 +12,7 @@ import (
 )
 
 // InstanceAndBlockAPIWithZone returns a new instance API and the zone for a Create request
-func InstanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*BlockAndInstanceAPI, scw.Zone, error) {
+func InstanceAndBlockAPIWithZone(d *schema.ResourceData, m any) (*BlockAndInstanceAPI, scw.Zone, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
@@ -22,7 +22,7 @@ func InstanceAndBlockAPIWithZone(d *schema.ResourceData, m interface{}) (*BlockA
 }
 
 // InstanceAndBlockAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func InstanceAndBlockAPIWithZoneAndID(m interface{}, zonedID string) (*BlockAndInstanceAPI, scw.Zone, string, error) {
+func InstanceAndBlockAPIWithZoneAndID(m any, zonedID string) (*BlockAndInstanceAPI, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
 		return nil, "", "", err

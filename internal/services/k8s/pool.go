@@ -254,7 +254,7 @@ func ResourcePool() *schema.Resource {
 }
 
 //gocyclo:ignore
-func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -362,7 +362,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceK8SPoolRead(ctx, d, m)
 }
 
-func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -487,7 +487,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -557,7 +557,7 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceK8SPoolRead(ctx, d, m)
 }
 
-func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -591,7 +591,7 @@ func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	if diff.HasChange("size") {
 		err := diff.SetNewComputed("nodes")
 		if err != nil {

@@ -88,7 +88,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, _, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,7 +104,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	acls, err := expandACL(d.Get("acl_rules").([]interface{}))
+	acls, err := expandACL(d.Get("acl_rules").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,7 +126,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceACLRead(ctx, d, m)
 }
 
-func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -158,7 +158,7 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -170,7 +170,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 
 	if d.HasChanges("acl_rules", "no_ip_allowed") {
-		acls, err := expandACL(d.Get("acl_rules").([]interface{}))
+		acls, err := expandACL(d.Get("acl_rules").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -190,7 +190,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceACLRead(ctx, d, m)
 }
 
-func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -230,11 +230,11 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
+func expandACL(data []any) ([]*k8s.ACLRuleRequest, error) {
 	expandedACLs := []*k8s.ACLRuleRequest(nil)
 
 	for _, rule := range data {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		expandedRule := &k8s.ACLRuleRequest{}
 
 		if ipRaw, ok := r["ip"]; ok && ipRaw != "" {
@@ -260,15 +260,15 @@ func expandACL(data []interface{}) ([]*k8s.ACLRuleRequest, error) {
 	return expandedACLs, nil
 }
 
-func flattenACL(rules []*k8s.ACLRule) interface{} {
+func flattenACL(rules []*k8s.ACLRule) any {
 	if rules == nil {
 		return nil
 	}
 
-	flattenedACLs := []map[string]interface{}(nil)
+	flattenedACLs := []map[string]any(nil)
 
 	for _, rule := range rules {
-		flattenedRule := map[string]interface{}{
+		flattenedRule := map[string]any{
 			"id":              rule.ID,
 			"scaleway_ranges": rule.ScalewayRanges,
 			"description":     rule.Description,

@@ -60,7 +60,7 @@ func notFound(err error) bool {
 }
 
 type TooManyResultsError struct {
-	LastRequest interface{}
+	LastRequest any
 	Count       int
 }
 
@@ -74,7 +74,7 @@ func (e *TooManyResultsError) Is(err error) bool {
 	return ok
 }
 
-func (e *TooManyResultsError) As(target interface{}) bool {
+func (e *TooManyResultsError) As(target any) bool {
 	t, ok := target.(**retry.NotFoundError)
 	if !ok {
 		return false

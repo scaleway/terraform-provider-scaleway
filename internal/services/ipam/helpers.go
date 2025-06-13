@@ -20,7 +20,7 @@ const (
 )
 
 // newAPIWithRegion returns a new ipam API and the region
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*ipam.API, scw.Region, error) {
 	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -32,7 +32,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*ipam.API, scw.Reg
 }
 
 // NewAPIWithRegionAndID returns a new ipam API with locality and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, id string) (*ipam.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*ipam.API, scw.Region, string, error) {
 	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
@@ -78,7 +78,7 @@ type GetResourcePrivateIPsOptions struct {
 }
 
 // GetResourcePrivateIPs fetches the private IP addresses of a resource in a private network.
-func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region, opts *GetResourcePrivateIPsOptions) ([]map[string]interface{}, error) {
+func GetResourcePrivateIPs(ctx context.Context, m any, region scw.Region, opts *GetResourcePrivateIPsOptions) ([]map[string]any, error) {
 	ipamAPI := ipam.NewAPI(meta.ExtractScwClient(m))
 
 	req := &ipam.ListIPsRequest{
@@ -121,7 +121,7 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 		return nil, nil
 	}
 
-	ipList := make([]map[string]interface{}, 0, len(resp.IPs))
+	ipList := make([]map[string]any, 0, len(resp.IPs))
 
 	for _, ip := range resp.IPs {
 		ipNet := ip.Address
@@ -129,7 +129,7 @@ func GetResourcePrivateIPs(ctx context.Context, m interface{}, region scw.Region
 			continue
 		}
 
-		ipMap := map[string]interface{}{
+		ipMap := map[string]any{
 			"id":      regional.NewIDString(region, ip.ID),
 			"address": ipNet.IP.String(),
 		}

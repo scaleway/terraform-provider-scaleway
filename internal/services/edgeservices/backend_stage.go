@@ -111,7 +111,7 @@ func ResourceBackendStage() *schema.Resource {
 	}
 }
 
-func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	req := &edgeservices.CreateBackendStageRequest{
@@ -136,7 +136,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceBackendStageRead(ctx, d, m)
 }
 
-func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	backendStage, err := api.GetBackendStage(&edgeservices.GetBackendStageRequest{
@@ -167,7 +167,7 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -196,7 +196,7 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceBackendStageRead(ctx, d, m)
 }
 
-func ResourceBackendStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBackendStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteBackendStage(&edgeservices.DeleteBackendStageRequest{

@@ -28,7 +28,7 @@ const (
 )
 
 // newAPIWithZone returns a new VPC API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*vpcgw.API, scw.Zone, error) {
 	api := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -39,7 +39,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*vpcgw.API, scw.Zone
 	return api, zone, nil
 }
 
-func newAPIWithZoneV2(d *schema.ResourceData, m interface{}) (*v2.API, scw.Zone, error) {
+func newAPIWithZoneV2(d *schema.ResourceData, m any) (*v2.API, scw.Zone, error) {
 	api := v2.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -50,7 +50,7 @@ func newAPIWithZoneV2(d *schema.ResourceData, m interface{}) (*v2.API, scw.Zone,
 	return api, zone, nil
 }
 
-func NewAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*vpcgw.API, scw.Zone, string, error) {
 	api := vpcgw.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -61,7 +61,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*vpcgw.API, scw.Zone, string
 	return api, zone, ID, nil
 }
 
-func NewAPIWithZoneAndIDv2(m interface{}, id string) (*v2.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndIDv2(m any, id string) (*v2.API, scw.Zone, string, error) {
 	api := v2.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -92,12 +92,12 @@ func retryUpdateGatewayReverseDNS(ctx context.Context, api *v2.API, req *v2.Upda
 	}
 }
 
-func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestIpamConfig {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandUpdateIpamConfig(raw any) *vpcgw.UpdateGatewayNetworkRequestIpamConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	updateIpamConfig := &vpcgw.UpdateGatewayNetworkRequestIpamConfig{
 		PushDefaultRoute: scw.BoolPtr(rawMap["push_default_route"].(bool)),
@@ -110,12 +110,12 @@ func expandUpdateIpamConfig(raw interface{}) *vpcgw.UpdateGatewayNetworkRequestI
 	return updateIpamConfig
 }
 
-func expandIpamConfigV2(raw interface{}) (bool, *string) {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandIpamConfigV2(raw any) (bool, *string) {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return false, nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	pushDefaultRoute := rawMap["push_default_route"].(bool)
 
@@ -128,12 +128,12 @@ func expandIpamConfigV2(raw interface{}) (bool, *string) {
 	return pushDefaultRoute, ipamIPID
 }
 
-func flattenIpamConfig(config *vpcgw.IpamConfig, region scw.Region) interface{} {
+func flattenIpamConfig(config *vpcgw.IpamConfig, region scw.Region) any {
 	if config == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"push_default_route": config.PushDefaultRoute,
 			"ipam_ip_id":         regional.NewIDString(region, config.IpamIPID),
@@ -293,7 +293,7 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 		_ = d.Set("updated_at", gatewayNetwork.UpdatedAt.Format(time.RFC3339))
 	}
 
-	ipamConfig := []map[string]interface{}{
+	ipamConfig := []map[string]any{
 		{
 			"push_default_route": gatewayNetwork.PushDefaultRoute,
 			"ipam_ip_id":         gatewayNetwork.IpamIPID,
@@ -305,7 +305,7 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 	return nil
 }
 
-func setPrivateIPsV1(ctx context.Context, d *schema.ResourceData, api *vpcgw.API, gn *vpcgw.GatewayNetwork, m interface{}) diag.Diagnostics {
+func setPrivateIPsV1(ctx context.Context, d *schema.ResourceData, api *vpcgw.API, gn *vpcgw.GatewayNetwork, m any) diag.Diagnostics {
 	resourceID := gn.ID
 
 	region, err := gn.Zone.Region()
@@ -366,7 +366,7 @@ func setPrivateIPsV1(ctx context.Context, d *schema.ResourceData, api *vpcgw.API
 	return nil
 }
 
-func setPrivateIPsV2(ctx context.Context, d *schema.ResourceData, api *v2.API, gn *v2.GatewayNetwork, m interface{}) diag.Diagnostics {
+func setPrivateIPsV2(ctx context.Context, d *schema.ResourceData, api *v2.API, gn *v2.GatewayNetwork, m any) diag.Diagnostics {
 	resourceID := gn.ID
 
 	region, err := gn.Zone.Region()

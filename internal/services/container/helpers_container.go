@@ -26,7 +26,7 @@ const (
 )
 
 // newAPIWithRegion returns a new container API and the region.
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*container.API, scw.Region, error) {
 	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -38,7 +38,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, sc
 }
 
 // NewAPIWithRegionAndID returns a new container API, region and ID.
-func NewAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*container.API, scw.Region, string, error) {
 	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -273,14 +273,14 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	return req, nil
 }
 
-func expandHealthCheck(healthCheckSchema interface{}) (*container.ContainerHealthCheckSpec, error) {
+func expandHealthCheck(healthCheckSchema any) (*container.ContainerHealthCheckSpec, error) {
 	healthCheck, ok := healthCheckSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerHealthCheckSpec{}, nil
 	}
 
 	for _, option := range healthCheck.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -308,14 +308,14 @@ func expandHealthCheck(healthCheckSchema interface{}) (*container.ContainerHealt
 	return &container.ContainerHealthCheckSpec{}, nil
 }
 
-func expendHealthCheckHTTP(healthCheckHTTPSchema interface{}) *container.ContainerHealthCheckSpecHTTPProbe {
+func expendHealthCheckHTTP(healthCheckHTTPSchema any) *container.ContainerHealthCheckSpecHTTPProbe {
 	healthCheckHTTP, ok := healthCheckHTTPSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerHealthCheckSpecHTTPProbe{}
 	}
 
 	for _, option := range healthCheckHTTP.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -331,7 +331,7 @@ func expendHealthCheckHTTP(healthCheckHTTPSchema interface{}) *container.Contain
 	return &container.ContainerHealthCheckSpecHTTPProbe{}
 }
 
-func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interface{} {
+func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) any {
 	if healthCheck == nil {
 		return nil
 	}
@@ -341,8 +341,8 @@ func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interfa
 		interval = healthCheck.Interval.ToTimeDuration()
 	}
 
-	flattenedHealthCheck := []map[string]interface{}(nil)
-	flattenedHealthCheck = append(flattenedHealthCheck, map[string]interface{}{
+	flattenedHealthCheck := []map[string]any(nil)
+	flattenedHealthCheck = append(flattenedHealthCheck, map[string]any{
 		"http":              flattenHealthCheckHTTP(healthCheck.HTTP),
 		"failure_threshold": types.FlattenUint32Ptr(&healthCheck.FailureThreshold),
 		"interval":          types.FlattenDuration(interval),
@@ -351,27 +351,27 @@ func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interfa
 	return flattenedHealthCheck
 }
 
-func flattenHealthCheckHTTP(healthCheckHTTP *container.ContainerHealthCheckSpecHTTPProbe) interface{} {
+func flattenHealthCheckHTTP(healthCheckHTTP *container.ContainerHealthCheckSpecHTTPProbe) any {
 	if healthCheckHTTP == nil {
 		return nil
 	}
 
-	flattenedHealthCheckHTTP := []map[string]interface{}(nil)
-	flattenedHealthCheckHTTP = append(flattenedHealthCheckHTTP, map[string]interface{}{
+	flattenedHealthCheckHTTP := []map[string]any(nil)
+	flattenedHealthCheckHTTP = append(flattenedHealthCheckHTTP, map[string]any{
 		"path": types.FlattenStringPtr(&healthCheckHTTP.Path),
 	})
 
 	return flattenedHealthCheckHTTP
 }
 
-func expandScalingOptions(scalingOptionSchema interface{}) (*container.ContainerScalingOption, error) {
+func expandScalingOptions(scalingOptionSchema any) (*container.ContainerScalingOption, error) {
 	scalingOption, ok := scalingOptionSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerScalingOption{}, nil
 	}
 
 	for _, option := range scalingOption.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -404,13 +404,13 @@ func expandScalingOptions(scalingOptionSchema interface{}) (*container.Container
 	return &container.ContainerScalingOption{}, nil
 }
 
-func flattenScalingOption(scalingOption *container.ContainerScalingOption) interface{} {
+func flattenScalingOption(scalingOption *container.ContainerScalingOption) any {
 	if scalingOption == nil {
 		return nil
 	}
 
-	flattenedScalingOption := []map[string]interface{}(nil)
-	flattenedScalingOption = append(flattenedScalingOption, map[string]interface{}{
+	flattenedScalingOption := []map[string]any(nil)
+	flattenedScalingOption = append(flattenedScalingOption, map[string]any{
 		"concurrent_requests_threshold": types.FlattenUint32Ptr(scalingOption.ConcurrentRequestsThreshold),
 		"cpu_usage_threshold":           types.FlattenUint32Ptr(scalingOption.CPUUsageThreshold),
 		"memory_usage_threshold":        types.FlattenUint32Ptr(scalingOption.MemoryUsageThreshold),
@@ -419,12 +419,12 @@ func flattenScalingOption(scalingOption *container.ContainerScalingOption) inter
 	return flattenedScalingOption
 }
 
-func flattenContainerSecrets(secrets []*container.SecretHashedValue) interface{} {
+func flattenContainerSecrets(secrets []*container.SecretHashedValue) any {
 	if len(secrets) == 0 {
 		return nil
 	}
 
-	flattenedSecrets := make(map[string]interface{})
+	flattenedSecrets := make(map[string]any)
 	for _, secret := range secrets {
 		flattenedSecrets[secret.Key] = secret.HashedValue
 	}
@@ -432,8 +432,8 @@ func flattenContainerSecrets(secrets []*container.SecretHashedValue) interface{}
 	return flattenedSecrets
 }
 
-func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
-	secretsMap := secretsRawMap.(map[string]interface{})
+func expandContainerSecrets(secretsRawMap any) []*container.Secret {
+	secretsMap := secretsRawMap.(map[string]any)
 	secrets := make([]*container.Secret, 0, len(secretsMap))
 
 	for k, v := range secretsMap {

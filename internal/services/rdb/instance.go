@@ -355,7 +355,7 @@ func ResourceInstance() *schema.Resource {
 }
 
 //gocyclo:ignore
-func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -548,7 +548,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceRdbInstanceRead(ctx, d, m)
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -664,7 +664,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	// set endpoints
 	diags := diag.Diagnostics{}
-	privateIPs := []map[string]interface{}(nil)
+	privateIPs := []map[string]any(nil)
 	authorized := true
 
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
@@ -725,7 +725,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 //gocyclo:ignore
-func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -1056,7 +1056,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceRdbInstanceRead(ctx, d, m)
 }
 
-func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

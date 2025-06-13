@@ -77,7 +77,7 @@ func ResourceFileSystem() *schema.Resource {
 	}
 }
 
-func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := fileSystemAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +106,7 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceFileSystemRead(ctx, d, m)
 }
 
-func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -137,7 +137,7 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -178,7 +178,7 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceFileSystemRead(ctx, d, m)
 }
 
-func ResourceFileSystemDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFileSystemDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

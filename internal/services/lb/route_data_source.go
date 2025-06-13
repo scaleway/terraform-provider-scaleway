@@ -26,7 +26,7 @@ func DataSourceRoute() *schema.Resource {
 	}
 }
 
-func DataSourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	_, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

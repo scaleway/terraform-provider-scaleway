@@ -101,7 +101,7 @@ func ResourceCacheStage() *schema.Resource {
 	}
 }
 
-func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	cacheStage, err := api.CreateCacheStage(&edgeservices.CreateCacheStageRequest{
@@ -120,7 +120,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceCacheStageRead(ctx, d, m)
 }
 
-func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	cacheStage, err := api.GetCacheStage(&edgeservices.GetCacheStageRequest{
@@ -147,7 +147,7 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -204,7 +204,7 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceCacheStageRead(ctx, d, m)
 }
 
-func ResourceCacheStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteCacheStage(&edgeservices.DeleteCacheStageRequest{

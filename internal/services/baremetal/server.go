@@ -222,7 +222,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Description:      "The ID of the private network to associate with the server",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return locality.ExpandID(i.(string))
 							},
 						},
@@ -326,7 +326,7 @@ func ResourceServerIP() *schema.Resource {
 	}
 }
 
-func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -447,7 +447,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceServerRead(ctx, d, m)
 }
 
-func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -536,7 +536,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	// Read private IPs if possible
-	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	allPrivateIPs := make([]map[string]any, 0, listPrivateNetworks.TotalCount)
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -575,7 +575,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 //gocyclo:ignore
-func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -763,7 +763,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return append(diags, ResourceServerRead(ctx, d, m)...)
 }
 
-func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -805,7 +805,7 @@ func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData,
 }
 
 // validateInstallConfig validates that schema contains attribute required for OS install
-func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	baremetalAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

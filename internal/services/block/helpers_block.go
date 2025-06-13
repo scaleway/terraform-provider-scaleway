@@ -22,7 +22,7 @@ const (
 )
 
 // blockAPIWithZone returns a new block API and the zone for a Create request
-func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zone, error) {
+func blockAPIWithZone(d *schema.ResourceData, m any) (*block.API, scw.Zone, error) {
 	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -34,7 +34,7 @@ func blockAPIWithZone(d *schema.ResourceData, m interface{}) (*block.API, scw.Zo
 }
 
 // NewAPIWithZoneAndID returns a new block API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, zonedID string) (*block.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, zonedID string) (*block.API, scw.Zone, string, error) {
 	blockAPI := block.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonedID)
@@ -47,7 +47,7 @@ func NewAPIWithZoneAndID(m interface{}, zonedID string) (*block.API, scw.Zone, s
 
 // customDiffCannotShrink set key to forceNew if value shrink
 func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
-	return customdiff.ForceNewIf(key, func(_ context.Context, d *schema.ResourceDiff, _ interface{}) bool {
+	return customdiff.ForceNewIf(key, func(_ context.Context, d *schema.ResourceDiff, _ any) bool {
 		oldValueI, newValueI := d.GetChange(key)
 		oldValue := oldValueI.(int)
 		newValue := newValueI.(int)

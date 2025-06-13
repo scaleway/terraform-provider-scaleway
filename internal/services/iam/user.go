@@ -128,7 +128,7 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
-func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	req := &iam.CreateUserRequest{
@@ -157,7 +157,7 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceIamUserRead(ctx, d, m)
 }
 
-func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	user, err := api.GetUser(&iam.GetUserRequest{
@@ -196,7 +196,7 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	user, err := api.GetUser(&iam.GetUserRequest{
@@ -238,7 +238,7 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceIamUserRead(ctx, d, m)
 }
 
-func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeleteUser(&iam.DeleteUserRequest{

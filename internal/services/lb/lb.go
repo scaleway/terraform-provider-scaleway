@@ -228,7 +228,7 @@ func ResourceLb() *schema.Resource {
 	}
 }
 
-func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,7 +248,7 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		for _, tag := range tags.([]interface{}) {
+		for _, tag := range tags.([]any) {
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
@@ -288,7 +288,7 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 	return resourceLbRead(ctx, d, m)
 }
 
-func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -360,7 +360,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
 	}
 
-	allPrivateIPs := []map[string]interface{}(nil)
+	allPrivateIPs := []map[string]any(nil)
 	resourceType := ipamAPI.ResourceTypeLBServer
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -385,7 +385,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 }
 
 //gocyclo:ignore
-func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -439,11 +439,11 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		oldIPIDsSet := make(map[string]struct{})
 		newIPIDsSet := make(map[string]struct{})
 
-		for _, id := range oldIPIDs.([]interface{}) {
+		for _, id := range oldIPIDs.([]any) {
 			oldIPIDsSet[id.(string)] = struct{}{}
 		}
 
-		for _, id := range newIPIDs.([]interface{}) {
+		for _, id := range newIPIDs.([]any) {
 			newIPIDsSet[id.(string)] = struct{}{}
 		}
 
@@ -602,7 +602,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 	return resourceLbRead(ctx, d, m)
 }
 
-func resourceLbDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

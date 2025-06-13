@@ -84,7 +84,7 @@ func DataSourceFrontends() *schema.Resource {
 	}
 }
 
-func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,10 +104,10 @@ func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	frontends := []interface{}(nil)
+	frontends := []any(nil)
 
 	for _, frontend := range res.Frontends {
-		rawFrontend := make(map[string]interface{})
+		rawFrontend := make(map[string]any)
 		rawFrontend["id"] = zonal.NewIDString(zone, frontend.ID)
 		rawFrontend["name"] = frontend.Name
 		rawFrontend["lb_id"] = zonal.NewIDString(zone, frontend.LB.ID)

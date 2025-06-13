@@ -131,7 +131,7 @@ func compareJSONFieldsStrings(expected, actual string) bool {
 
 // compareJSONBodies compare two given maps that represent json bodies
 // returns true if both json are equivalent
-func compareJSONBodies(expected, actual map[string]interface{}) bool {
+func compareJSONBodies(expected, actual map[string]any) bool {
 	// Check for each key in actual requests
 	// Compare its value to cassette content if marshal-able to string
 	for key := range actual {

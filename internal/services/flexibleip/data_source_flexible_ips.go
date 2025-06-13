@@ -126,7 +126,7 @@ func DataSourceFlexibleIPs() *schema.Resource {
 	}
 }
 
-func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,10 +142,10 @@ func DataSourceFlexibleIPsRead(ctx context.Context, d *schema.ResourceData, m in
 		return diag.FromErr(err)
 	}
 
-	fips := []interface{}(nil)
+	fips := []any(nil)
 
 	for _, fip := range res.FlexibleIPs {
-		rawFip := make(map[string]interface{})
+		rawFip := make(map[string]any)
 		rawFip["id"] = zonal.NewID(fip.Zone, fip.ID).String()
 		rawFip["organization_id"] = fip.OrganizationID
 		rawFip["project_id"] = fip.ProjectID

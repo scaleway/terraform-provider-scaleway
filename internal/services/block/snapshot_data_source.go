@@ -31,7 +31,7 @@ func DataSourceSnapshot() *schema.Resource {
 	}
 }
 
-func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

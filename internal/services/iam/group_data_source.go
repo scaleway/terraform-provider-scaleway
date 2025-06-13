@@ -39,7 +39,7 @@ func DataSourceGroup() *schema.Resource {
 	}
 }
 
-func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	groupID, groupIDExists := d.GetOk("group_id")

@@ -37,13 +37,13 @@ const (
 
 type httpDebugLogger struct{}
 
-func (h *httpDebugLogger) Logf(classification smithylogging.Classification, format string, v ...interface{}) {
+func (h *httpDebugLogger) Logf(classification smithylogging.Classification, format string, v ...any) {
 	if classification == smithylogging.Debug {
 		log.Printf("[HTTP DEBUG] %s", fmt.Sprintf(format, v...))
 	}
 }
 
-func SQSClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface{}) (*sqs.Client, scw.Region, error) {
+func SQSClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*sqs.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -86,7 +86,7 @@ func NewSQSClient(ctx context.Context, httpClient *http.Client, region string, e
 
 func NATSClientWithRegion( //nolint:ireturn,nolintlint
 	d *schema.ResourceData,
-	m interface{},
+	m any,
 ) (nats.JetStreamContext, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -168,7 +168,7 @@ func getSQSAttributeNames() []awstype.QueueAttributeName {
 	return attributeNames
 }
 
-func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQSFifo bool) string {
+func resourceMNQQueueName(name any, prefix any, isSQS bool, isSQSFifo bool) string {
 	if value, ok := name.(string); ok && value != "" {
 		return value
 	}
@@ -187,7 +187,7 @@ func resourceMNQQueueName(name interface{}, prefix interface{}, isSQS bool, isSQ
 	return output
 }
 
-func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
 	isSQSFifo := d.Get("fifo_queue").(bool)
 
 	var name string

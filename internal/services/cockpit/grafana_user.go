@@ -61,7 +61,7 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 	}
 }
 
-func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -86,7 +86,7 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceCockpitGrafanaUserRead(ctx, d, m)
 }
 
-func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, projectID, grafanaUserID, err := NewAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,7 +142,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, projectID, grafanaUserID, err := NewAPIGrafanaUserID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -177,7 +177,7 @@ func ResourceImage() *schema.Resource {
 	}
 }
 
-func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -226,7 +226,7 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceInstanceImageRead(ctx, d, m)
 }
 
-func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -263,7 +263,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -336,7 +336,7 @@ func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceInstanceImageRead(ctx, d, m)
 }
 
-func ResourceInstanceImageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceImageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -7,7 +7,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func NewZonedID(idI interface{}, fallBackZone scw.Zone) string {
+func NewZonedID(idI any, fallBackZone scw.Zone) string {
 	zone, id, err := zonal.ParseID(idI.(string))
 	if err != nil {
 		id = idI.(string)
@@ -17,7 +17,7 @@ func NewZonedID(idI interface{}, fallBackZone scw.Zone) string {
 	return zonal.NewIDString(zone, id)
 }
 
-func NewRegionalID(idI interface{}, fallBackRegion scw.Region) string {
+func NewRegionalID(idI any, fallBackRegion scw.Region) string {
 	region, id, err := regional.ParseID(idI.(string))
 	if err != nil {
 		id = idI.(string)

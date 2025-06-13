@@ -29,14 +29,14 @@ func ExtractBaseKey(k string) string {
 func GetStringListsFromState(key string, d *schema.ResourceData) ([]string, []string) {
 	oldList, newList := d.GetChange(key)
 
-	oldListStr := make([]string, len(oldList.([]interface{})))
-	newListStr := make([]string, len(newList.([]interface{})))
+	oldListStr := make([]string, len(oldList.([]any)))
+	newListStr := make([]string, len(newList.([]any)))
 
-	for i, v := range oldList.([]interface{}) {
+	for i, v := range oldList.([]any) {
 		oldListStr[i] = fmt.Sprint(v)
 	}
 
-	for i, v := range newList.([]interface{}) {
+	for i, v := range newList.([]any) {
 		newListStr[i] = fmt.Sprint(v)
 	}
 
