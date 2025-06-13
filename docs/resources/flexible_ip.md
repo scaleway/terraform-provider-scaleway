@@ -78,7 +78,7 @@ The following arguments are supported:
 - `reverse` - (Optional) The reverse domain associated with this flexible IP.
 - `is_ipv6` - (Optional) Defines whether the flexible IP has an IPv6 address.
 - `zone` -(Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Flexible IP.
-
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Flexible IP is associated with.
 
 ## Attributes Reference
 
@@ -94,7 +94,6 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the Flexible IP (Format ISO 8601).
 - `updated_at` - The date and time of the last update of the Flexible IP (Format ISO 8601).
 - `organization_id` - The organization of the Flexible IP.
-- `project_id` - The project of the Flexible IP.
 
 ## Import
 

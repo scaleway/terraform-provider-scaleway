@@ -22,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -155,6 +156,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_edge_services_route_stage":           edgeservices.ResourceRouteStage(),
 				"scaleway_edge_services_tls_stage":             edgeservices.ResourceTLSStage(),
 				"scaleway_edge_services_waf_stage":             edgeservices.ResourceWAFStage(),
+				"scaleway_file_filesystem":                     file.ResourceFileSystem(),
 				"scaleway_flexible_ip":                         flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":             flexibleip.ResourceMACAddress(),
 				"scaleway_function":                            function.ResourceFunction(),
