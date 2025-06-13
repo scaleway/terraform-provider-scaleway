@@ -57,14 +57,14 @@ func ResourceCockpitAlertManager() *schema.Resource {
 	}
 }
 
-func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Get("project_id").(string)
-	contactPoints := d.Get("contact_points").([]interface{})
+	contactPoints := d.Get("contact_points").([]any)
 	EnableManagedAlerts := d.Get("enable_managed_alerts").(bool)
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
@@ -87,7 +87,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 
 	if len(contactPoints) > 0 {
 		for _, cp := range contactPoints {
-			cpMap, ok := cp.(map[string]interface{})
+			cpMap, ok := cp.(map[string]any)
 			if !ok {
 				return diag.FromErr(errors.New("invalid contact point format"))
 			}
@@ -117,7 +117,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -145,11 +145,11 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	var contactPointsList []map[string]interface{}
+	var contactPointsList []map[string]any
 
 	for _, cp := range contactPoints.ContactPoints {
 		if cp.Email != nil {
-			contactPoint := map[string]interface{}{
+			contactPoint := map[string]any{
 				"email": cp.Email.To,
 			}
 			contactPointsList = append(contactPointsList, contactPoint)
@@ -161,7 +161,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,21 +190,21 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("contact_points") {
 		oldContactPointsInterface, newContactPointsInterface := d.GetChange("contact_points")
-		oldContactPoints := oldContactPointsInterface.([]interface{})
-		newContactPoints := newContactPointsInterface.([]interface{})
+		oldContactPoints := oldContactPointsInterface.([]any)
+		newContactPoints := newContactPointsInterface.([]any)
 
-		oldContactMap := make(map[string]map[string]interface{})
+		oldContactMap := make(map[string]map[string]any)
 
 		for _, oldCP := range oldContactPoints {
-			cp := oldCP.(map[string]interface{})
+			cp := oldCP.(map[string]any)
 			email := cp["email"].(string)
 			oldContactMap[email] = cp
 		}
 
-		newContactMap := make(map[string]map[string]interface{})
+		newContactMap := make(map[string]map[string]any)
 
 		for _, newCP := range newContactPoints {
-			cp := newCP.(map[string]interface{})
+			cp := newCP.(map[string]any)
 			email := cp["email"].(string)
 			newContactMap[email] = cp
 		}
@@ -241,7 +241,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)

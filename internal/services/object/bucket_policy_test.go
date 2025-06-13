@@ -300,16 +300,16 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 //
 //	policy["Statement"][i]["Resource"]
 func removePolicyStatementResources(policy string) (string, error) {
-	actualPolicyJSON := make(map[string]interface{})
+	actualPolicyJSON := make(map[string]any)
 
 	err := json.Unmarshal([]byte(policy), &actualPolicyJSON)
 	if err != nil {
 		return "", fmt.Errorf("json.Unmarshal error: %w", err)
 	}
 
-	if statement, ok := actualPolicyJSON["Statement"].([]interface{}); ok && len(statement) > 0 {
+	if statement, ok := actualPolicyJSON["Statement"].([]any); ok && len(statement) > 0 {
 		for _, rule := range statement {
-			if rule, ok := rule.(map[string]interface{}); ok {
+			if rule, ok := rule.(map[string]any); ok {
 				delete(rule, "Resource")
 			}
 		}

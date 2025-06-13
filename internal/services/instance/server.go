@@ -138,7 +138,7 @@ func ResourceServer() *schema.Resource {
 							Computed:    true,
 							ForceNew:    true,
 							Description: "Volume type of the root volume",
-							ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+							ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
 								diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
 								if i.(string) == "b_ssd" {
 									diags = append(diags, diag.Diagnostic{
@@ -390,7 +390,7 @@ func ResourceServer() *schema.Resource {
 }
 
 //gocyclo:ignore
-func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -453,7 +453,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	req.Volumes["0"] = prepareRootVolume(rootVolume, serverType, imageUUID).VolumeTemplate()
 
 	if raw, ok := d.GetOk("additional_volume_ids"); ok {
-		for i, volumeID := range raw.([]interface{}) {
+		for i, volumeID := range raw.([]any) {
 			// We have to get the volume to know whether it is a local or a block volume
 			volumeTemplate, err := instanceServerAdditionalVolumeTemplate(api, zone, volumeID.(string))
 			if err != nil {
@@ -526,7 +526,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if rawUserData, ok := d.GetOk("user_data"); ok {
-		for key, value := range rawUserData.(map[string]interface{}) {
+		for key, value := range rawUserData.(map[string]any) {
 			userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 		}
 	}
@@ -605,7 +605,7 @@ func errorCheck(err error, message string) bool {
 }
 
 //gocyclo:ignore
-func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -688,13 +688,13 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 	if len(server.PublicIPs) > 0 {
 		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
 	} else {
-		_ = d.Set("public_ips", []interface{}{})
+		_ = d.Set("public_ips", []any{})
 	}
 
 	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
 		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
 	} else {
-		_ = d.Set("ip_ids", []interface{}{})
+		_ = d.Set("ip_ids", []any{})
 	}
 
 	if server.IPv6 != nil { //nolint:staticcheck
@@ -717,9 +717,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 
 	for i, serverVolume := range sortVolumeServer(server.Volumes) {
 		if i == 0 {
-			rootVolume := map[string]interface{}{}
+			rootVolume := map[string]any{}
 
-			vs, ok := d.Get("root_volume").([]map[string]interface{})
+			vs, ok := d.Get("root_volume").([]map[string]any)
 			if ok && len(vs) > 0 {
 				rootVolume = vs[0]
 			}
@@ -749,7 +749,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 			rootVolume["boot"] = serverVolume.Boot
 			rootVolume["name"] = serverVolume.Name
 
-			_ = d.Set("root_volume", []map[string]interface{}{rootVolume})
+			_ = d.Set("root_volume", []map[string]any{rootVolume})
 		} else {
 			additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 		}
@@ -768,7 +768,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m i
 		ServerID: id,
 	}, scw.WithContext(ctx))
 
-	userData := make(map[string]interface{})
+	userData := make(map[string]any)
 
 	for key, value := range allUserData.UserData {
 		userDataValue, err := io.ReadAll(value)
@@ -836,7 +836,7 @@ You can check the full list of compatible server types:
 	}
 
 	// Read server's private IPs if possible
-	allPrivateIPs := []map[string]interface{}(nil)
+	allPrivateIPs := []map[string]any(nil)
 	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
 
 	region, err := zone.Region()
@@ -883,7 +883,7 @@ You can check the full list of compatible server types:
 }
 
 //gocyclo:ignore
-func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -1045,7 +1045,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		if allUserData, ok := d.GetOk("user_data"); ok {
-			userDataMap := allUserData.(map[string]interface{})
+			userDataMap := allUserData.(map[string]any)
 			for key, value := range userDataMap {
 				userDataRequests.UserData[key] = bytes.NewBufferString(value.(string))
 			}
@@ -1080,7 +1080,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 		if raw, ok := d.GetOk("private_network"); ok {
 			// retrieve all current private network interfaces
-			for index := range raw.([]interface{}) {
+			for index := range raw.([]any) {
 				pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 				if d.HasChange(pnKey) {
 					o, n := d.GetChange(pnKey)
@@ -1105,8 +1105,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		} else {
 			// retrieve old private network config
 			o, _ := d.GetChange("private_network")
-			for _, raw := range o.([]interface{}) {
-				pn, pnExist := raw.(map[string]interface{})
+			for _, raw := range o.([]any) {
+				pn, pnExist := raw.(map[string]any)
 				if pnExist {
 					_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 					if err != nil {
@@ -1163,7 +1163,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
-func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -1207,7 +1207,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		for index := range raw.([]interface{}) {
+		for index := range raw.([]any) {
 			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 			pn := d.Get(pnKey)
 
@@ -1285,7 +1285,7 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 	return nil
 }
 
-func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDiff, meta any) error {
 	if !diff.HasChange("root_volume.0.size_in_gb") || diff.Id() == "" {
 		return nil
 	}
@@ -1312,7 +1312,7 @@ func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDi
 	return nil
 }
 
-func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, meta any) error {
 	if !diff.HasChange("type") || diff.Id() == "" {
 		return nil
 	}
@@ -1345,7 +1345,7 @@ func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, 
 	return nil
 }
 
-func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDiff, m interface{}) error {
+func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDiff, m any) error {
 	if diff.Get("image") == "" || !diff.HasChange("image") || diff.Id() == "" {
 		return nil
 	}
@@ -1440,7 +1440,7 @@ func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData
 		return err
 	}
 
-	schemaIPs := d.Get("ip_ids").([]interface{})
+	schemaIPs := d.Get("ip_ids").([]any)
 	requestedIPs := make(map[string]bool, len(schemaIPs))
 
 	// Gather request IPs in a map
@@ -1548,10 +1548,10 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 	}
 
 	if !hasAdditionalVolumes {
-		raw = []interface{}{} // Set an empty list if not volumes exist
+		raw = []any{} // Set an empty list if not volumes exist
 	}
 
-	for i, volumeID := range raw.([]interface{}) {
+	for i, volumeID := range raw.([]any) {
 		volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
 
 		volume, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{

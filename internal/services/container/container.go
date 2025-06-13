@@ -285,7 +285,7 @@ func ResourceContainer() *schema.Resource {
 	}
 }
 
-func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -338,7 +338,7 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceContainerRead(ctx, d, m)
 }
 
-func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -388,7 +388,7 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -426,7 +426,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceContainerRead(ctx, d, m)
 }
 
-func ResourceContainerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

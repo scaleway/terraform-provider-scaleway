@@ -320,7 +320,7 @@ E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL i
 	}
 }
 
-func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -456,7 +456,7 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceLbBackendRead(ctx, d, m)
 }
 
-func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -524,7 +524,7 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 //gocyclo:ignore
-func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -670,7 +670,7 @@ func resourceLbBackendUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceLbBackendRead(ctx, d, m)
 }
 
-func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbBackendDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

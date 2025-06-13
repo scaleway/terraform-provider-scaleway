@@ -86,7 +86,7 @@ func ResourceVolume() *schema.Resource {
 	}
 }
 
-func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,7 +142,7 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceBlockVolumeRead(ctx, d, m)
 }
 
-func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,7 +179,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -221,7 +221,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceBlockVolumeRead(ctx, d, m)
 }
 
-func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

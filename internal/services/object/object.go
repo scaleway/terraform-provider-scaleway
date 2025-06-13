@@ -126,7 +126,7 @@ func ResourceObject() *schema.Resource {
 	}
 }
 
-func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -242,7 +242,7 @@ func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 	return digestMD5, encryption, nil
 }
 
-func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -350,7 +350,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceObjectCreate(ctx, d, m)
 }
 
-func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -415,7 +415,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -454,7 +454,7 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 }
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, _ cty.Path) diag.Diagnostics {
+	return func(i any, _ cty.Path) diag.Diagnostics {
 		m := types.ExpandMapStringStringPtr(i)
 		for k := range m {
 			if strings.ToLower(k) != k {

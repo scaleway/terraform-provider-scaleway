@@ -53,7 +53,7 @@ func ResourceDomainValidation() *schema.Resource {
 	}
 }
 
-func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,7 +102,7 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceDomainValidationRead(ctx, d, meta)
 }
 
-func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -130,7 +130,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ResourceDomainValidationDelete(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
 	d.SetId("")
 
 	return nil

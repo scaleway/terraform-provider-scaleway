@@ -66,7 +66,7 @@ func DataSourceImageTag() *schema.Resource {
 	}
 }
 
-func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

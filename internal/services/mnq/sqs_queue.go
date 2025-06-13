@@ -128,7 +128,7 @@ func ResourceSQSQueue() *schema.Resource {
 	}
 }
 
-func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -185,7 +185,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceMNQSQSQueueRead(ctx, d, m)
 }
 
-func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -234,7 +234,7 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -274,7 +274,7 @@ func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceMNQSQSQueueRead(ctx, d, m)
 }
 
-func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSQueueDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)

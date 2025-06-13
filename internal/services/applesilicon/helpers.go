@@ -9,7 +9,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceData, m interface{}, serverID string) error {
+func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceData, m any, serverID string) error {
 	privateNetworkAPI, zone, err := newPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return err

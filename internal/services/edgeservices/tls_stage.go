@@ -100,7 +100,7 @@ func ResourceTLSStage() *schema.Resource {
 	}
 }
 
-func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewEdgeServicesAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -124,7 +124,7 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceTLSStageRead(ctx, d, m)
 }
 
-func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	tlsStage, err := api.GetTLSStage(&edgeservices.GetTLSStageRequest{
@@ -154,7 +154,7 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewEdgeServicesAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -206,7 +206,7 @@ func ResourceTLSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceTLSStageRead(ctx, d, m)
 }
 
-func ResourceTLSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceTLSStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteTLSStage(&edgeservices.DeleteTLSStageRequest{

@@ -235,7 +235,7 @@ func ResourceInstance() *schema.Resource {
 	}
 }
 
-func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -296,10 +296,10 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		var eps []*mongodb.EndpointSpec
 
 		if privateNetworkList, ok := d.GetOk("private_network"); ok {
-			privateNetworks := privateNetworkList.([]interface{})
+			privateNetworks := privateNetworkList.([]any)
 
 			if len(privateNetworks) > 0 {
-				pn := privateNetworks[0].(map[string]interface{})
+				pn := privateNetworks[0].(map[string]any)
 				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 				if privateNetworkID != "" {
@@ -313,7 +313,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 
 		if pubList, ok := d.GetOk("public_network"); ok {
-			items := pubList.([]interface{})
+			items := pubList.([]any)
 			if len(items) > 0 {
 				eps = append(eps, &mongodb.EndpointSpec{
 					Public: &mongodb.EndpointSpecPublicDetails{},
@@ -345,7 +345,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -387,7 +387,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	diags := diag.Diagnostics{}
-	privateIPs := []map[string]interface{}(nil)
+	privateIPs := []map[string]any(nil)
 	authorized := true
 
 	privateNetworkEndpoint, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
@@ -453,7 +453,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return diags
 }
 
-func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -591,9 +591,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		var eps []*mongodb.EndpointSpec
 
 		if privateNetworkList, ok := d.GetOk("private_network"); ok {
-			privateNetworks := privateNetworkList.([]interface{})
+			privateNetworks := privateNetworkList.([]any)
 			if len(privateNetworks) > 0 {
-				pn := privateNetworks[0].(map[string]interface{})
+				pn := privateNetworks[0].(map[string]any)
 				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 				if privateNetworkID != "" {
@@ -626,7 +626,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
-func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

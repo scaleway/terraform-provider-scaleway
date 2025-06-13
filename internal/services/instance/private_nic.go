@@ -107,7 +107,7 @@ func ResourcePrivateNIC() *schema.Resource {
 	}
 }
 
-func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,7 +151,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceInstancePrivateNICRead(ctx, d, m)
 }
 
-func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, _, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -240,7 +240,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, _, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -269,7 +269,7 @@ func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceDat
 	return ResourceInstancePrivateNICRead(ctx, d, m)
 }
 
-func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, _, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

@@ -175,7 +175,7 @@ func ResourceWebhosting() *schema.Resource {
 				return s
 			}(),
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
 				oldTags := types.ExpandStrings(oldTagsInterface)
@@ -193,7 +193,7 @@ func ResourceWebhosting() *schema.Resource {
 	}
 }
 
-func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newHostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -238,7 +238,7 @@ func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceWebhostingRead(ctx, d, m)
 }
 
-func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -290,7 +290,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -343,7 +343,7 @@ func resourceWebhostingUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceWebhostingRead(ctx, d, m)
 }
 
-func resourceHostingDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceHostingDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

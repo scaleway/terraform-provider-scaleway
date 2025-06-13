@@ -70,13 +70,13 @@ func ResourceWebhook() *schema.Resource {
 	}
 }
 
-func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	eventTypes := expandWebhookEventTypes(d.Get("event_types").([]interface{}))
+	eventTypes := expandWebhookEventTypes(d.Get("event_types").([]any))
 
 	webhook, err := api.CreateWebhook(&tem.CreateWebhookRequest{
 		Region:     region,
@@ -95,7 +95,7 @@ func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceWebhookRead(ctx, d, m)
 }
 
-func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -127,7 +127,7 @@ func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,7 +143,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if d.HasChange("event_types") {
-		rawEventTypes := d.Get("event_types").([]interface{})
+		rawEventTypes := d.Get("event_types").([]any)
 		eventTypes := make([]tem.WebhookEventType, len(rawEventTypes))
 
 		for i, raw := range rawEventTypes {
@@ -165,7 +165,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceWebhookRead(ctx, d, m)
 }
 
-func ResourceWebhookDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWebhookDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

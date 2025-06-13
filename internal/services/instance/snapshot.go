@@ -84,7 +84,7 @@ func ResourceSnapshot() *schema.Resource {
 							ForceNew:         true,
 							Description:      "Bucket containing qcow",
 							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return regional.ExpandID(i.(string)).ID
 							},
 						},
@@ -113,7 +113,7 @@ func ResourceSnapshot() *schema.Resource {
 	}
 }
 
-func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -166,7 +166,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceSnapshotRead(ctx, d, m)
 }
 
-func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +199,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -225,7 +225,7 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceSnapshotRead(ctx, d, m)
 }
 
-func ResourceInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

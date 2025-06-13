@@ -224,7 +224,7 @@ func ResourceCluster() *schema.Resource {
 			},
 		},
 		CustomizeDiff: customdiff.All(
-			func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
 
 				version := diff.Get("version").(string)
@@ -239,7 +239,7 @@ func ResourceCluster() *schema.Resource {
 
 				return nil
 			},
-			func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				if diff.HasChange("private_network_id") {
 					actual, planned := diff.GetChange("private_network_id")
 					clusterType := diff.Get("type").(string)
@@ -277,7 +277,7 @@ func ResourceCluster() *schema.Resource {
 
 				return nil
 			},
-			func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+			func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
 				if diff.HasChange("type") && diff.Id() != "" {
 					k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(i, diff.Id())
 					if err != nil {
@@ -310,7 +310,7 @@ func ResourceCluster() *schema.Resource {
 }
 
 //gocyclo:ignore
-func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -516,7 +516,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m int
 	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
 }
 
-func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -590,13 +590,13 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("kubeconfig", []map[string]interface{}{kubeconfig})
+	_ = d.Set("kubeconfig", []map[string]any{kubeconfig})
 
 	return nil
 }
 
 //gocyclo:ignore
-func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -865,7 +865,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
 }
 
-func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, clusterID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

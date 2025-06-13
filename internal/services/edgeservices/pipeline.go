@@ -60,7 +60,7 @@ func ResourcePipeline() *schema.Resource {
 	}
 }
 
-func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	pipeline, err := api.CreatePipeline(&edgeservices.CreatePipelineRequest{
@@ -77,7 +77,7 @@ func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourcePipelineRead(ctx, d, m)
 }
 
-func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	pipeline, err := api.GetPipeline(&edgeservices.GetPipelineRequest{
@@ -103,7 +103,7 @@ func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -132,7 +132,7 @@ func ResourcePipelineUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourcePipelineRead(ctx, d, m)
 }
 
-func ResourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourcePipelineDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeletePipeline(&edgeservices.DeletePipelineRequest{

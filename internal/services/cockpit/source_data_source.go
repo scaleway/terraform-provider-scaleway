@@ -82,7 +82,7 @@ func DataSourceCockpitSource() *schema.Resource {
 	}
 }
 
-func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("id"); ok {
 		return fetchDataSourceByID(ctx, d, meta)
 	}
@@ -90,7 +90,7 @@ func dataSourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, me
 	return fetchDataSourceByFilters(ctx, d, meta)
 }
 
-func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	regionalID := d.Get("id").(string)
 
 	api, region, id, err := NewAPIWithRegionAndID(meta, regionalID)
@@ -113,7 +113,7 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)

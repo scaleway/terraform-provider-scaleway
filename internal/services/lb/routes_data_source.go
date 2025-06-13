@@ -68,7 +68,7 @@ func DataSourceRoutes() *schema.Resource {
 	}
 }
 
-func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -87,10 +87,10 @@ func DataSourceLbRoutesRead(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	routes := []interface{}(nil)
+	routes := []any(nil)
 
 	for _, route := range res.Routes {
-		rawRoute := make(map[string]interface{})
+		rawRoute := make(map[string]any)
 		rawRoute["id"] = zonal.NewID(zone, route.ID).String()
 		rawRoute["frontend_id"] = route.FrontendID
 		rawRoute["backend_id"] = route.BackendID
