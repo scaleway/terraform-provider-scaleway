@@ -152,6 +152,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.Args = types.ExpandStrings(args)
 	}
 
+	if pnID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(pnID.(string)))
+	}
+
 	return req, nil
 }
 
@@ -268,6 +272,14 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 
 	if d.HasChanges("args") {
 		req.Args = types.ExpandUpdatedStringsPtr(d.Get("args"))
+	}
+
+	if d.HasChanges("private_network_id") {
+		if newPNID, ok := d.GetOk("private_network_id"); ok && newPNID.(string) != "" {
+			req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(newPNID.(string)))
+		} else {
+			req.PrivateNetworkID = nil
+		}
 	}
 
 	return req, nil
