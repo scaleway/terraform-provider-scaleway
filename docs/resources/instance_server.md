@@ -255,7 +255,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
 - `filesystem` - (Optional) List of filesystems attached to the server.
-  - `filesystem_id` - (Optional) The unique ID of the filesystem attached to the server.
+    - `filesystem_id` - (Optional) The unique ID of the filesystem attached to the server.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
   Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
@@ -318,8 +318,8 @@ In addition to all arguments above, the following attributes are exported:
 - `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group ressource](instance_placement_group.md) to known when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
-- `filesystem` 
-  - `state` - The current status of the filesystem (e.g., attached, detached).
+- `filesystem`
+    - `state` - The current status of the filesystem (e.g., attached, detached).
 - `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).
 - `public_ip` -  The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.

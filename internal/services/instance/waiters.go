@@ -97,6 +97,7 @@ func waitForFilesystems(ctx context.Context, api *instance.API, zone scw.Zone, i
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
+
 	server, err := api.WaitForServerFileSystem(&instance.WaitForServerFileSystemRequest{
 		ServerID:      id,
 		Zone:          zone,

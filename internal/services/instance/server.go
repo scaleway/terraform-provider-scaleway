@@ -539,17 +539,17 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	///
 	// Attach Filesystem
 	///
-	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
+
 	if filesystems, ok := d.GetOk("filesystems"); ok {
-		for _, filesystem := range filesystems.([]interface{}) {
-			fs := filesystem.(map[string]interface{})
+		for _, filesystem := range filesystems.([]any) {
+			fs := filesystem.(map[string]any)
 			filesystemID := fs["filesystem_id"]
+
 			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
 				Zone:         zone,
 				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
 				ServerID:     res.Server.ID,
 			})
-
 			if err != nil {
 				return nil
 			}
@@ -1120,8 +1120,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("filesystems") {
 		oldRaw, newRaw := d.GetChange("filesystems")
 
-		oldList := oldRaw.([]interface{})
-		newList := newRaw.([]interface{})
+		oldList := oldRaw.([]any)
+		newList := newRaw.([]any)
 
 		oldIDs := make(map[string]struct{})
 		newIDs := make(map[string]struct{})
@@ -1129,7 +1129,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		collectFilesystemIDs(oldList, oldIDs)
 		collectFilesystemIDs(newList, newIDs)
 
-		diagnostics, done := detachOlDFileSystem(oldIDs, newIDs, api, zone, server)
+		diagnostics, done := detachOldFileSystem(oldIDs, newIDs, api, zone, server)
 		if done {
 			return diagnostics
 		}
@@ -1239,47 +1239,6 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
-func attachNewFileSystem(newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instanceSDK.Server) (diag.Diagnostics, bool) {
-	for id := range newIDs {
-		if _, alreadyAttached := oldIDs[id]; !alreadyAttached {
-			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
-				Zone:         zone,
-				ServerID:     server.ID,
-				FilesystemID: locality.ExpandID(id),
-			})
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error attaching filesystem %s: %w", id, err)), true
-			}
-		}
-	}
-	return nil, false
-}
-
-func detachOlDFileSystem(oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instanceSDK.Server) (diag.Diagnostics, bool) {
-	for id := range oldIDs {
-		if _, stillPresent := newIDs[id]; !stillPresent {
-			_, err := api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
-				Zone:         zone,
-				ServerID:     server.ID,
-				FilesystemID: locality.ExpandID(id),
-			})
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error detaching filesystem %s: %w", id, err)), true
-			}
-		}
-	}
-	return nil, false
-}
-
-func collectFilesystemIDs(fsList []interface{}, target map[string]struct{}) {
-	for _, fs := range fsList {
-		if fsMap, ok := fs.(map[string]interface{}); ok {
-			id := fsMap["filesystem_id"].(string)
-			target[id] = struct{}{}
-		}
-	}
-}
-
 func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -1319,14 +1278,17 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	// Detach filesystem
 	if filesystems, ok := d.GetOk("filesystems"); ok {
-		fsList := filesystems.([]interface{})
+		fsList := filesystems.([]any)
 		for i, fsRaw := range fsList {
-			fsMap := fsRaw.(map[string]interface{})
+			fsMap := fsRaw.(map[string]any)
+
 			fsIDRaw, ok := fsMap["filesystem_id"]
 			if !ok || fsIDRaw == nil {
 				return diag.Errorf("filesystem_id is missing or nil for filesystem at index %d", i)
 			}
+
 			fsID := fsIDRaw.(string)
+
 			newFileSystemID := types.ExpandStringPtr(fsID)
 			if newFileSystemID == nil {
 				return diag.Errorf("failed to expand filesystem_id pointer at index %d", i)
