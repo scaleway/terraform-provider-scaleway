@@ -2,6 +2,7 @@ package file
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -38,9 +39,10 @@ func ResourceFileSystem() *schema.Resource {
 				Description: "The name of the filesystem",
 			},
 			"size_in_gb": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The Filesystem size_in_gb in bytes, with a granularity of 100 GB (10^11 bytes). Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size_in_gb.",
+				Type:         schema.TypeInt,
+				Required:     true,
+				ValidateFunc: validation.IntBetween(1, 1000),
+				Description:  "The Filesystem size_in_gb in bytes, with a granularity of 100 GB (10^11 bytes). Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size_in_gb.",
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -135,7 +137,6 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("organization_id", fileSystem.OrganizationID)
 	_ = d.Set("status", fileSystem.Status)
 	_ = d.Set("size_in_gb", int(fileSystem.Size/scw.GB))
-	)
 	_ = d.Set("tags", fileSystem.Tags)
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
