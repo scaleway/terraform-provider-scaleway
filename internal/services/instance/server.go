@@ -1134,7 +1134,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			return diagnostics
 		}
 
-		_, err := waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(defaultFileSystemWaitTimeout))
+		_, err := waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1238,7 +1238,6 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
-
 
 func attachNewFileSystem(newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instanceSDK.Server) (diag.Diagnostics, bool) {
 	for id := range newIDs {

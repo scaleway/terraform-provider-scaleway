@@ -102,7 +102,6 @@ func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []any {
 	return flattenedIPs
 }
 
-
 func flattenServerFileSystem(zone scw.Zone, fs []*instance.ServerFilesystem) []interface{} {
 	filesystems := make([]interface{}, len(fs))
 	region, _ := zone.Region()

@@ -41,7 +41,6 @@ const (
 	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
 	defaultInstanceIPTimeout                = 1 * time.Minute
 	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
-	defaultFileSystemWaitTimeout            = 15 * time.Minute
 
 	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
 
