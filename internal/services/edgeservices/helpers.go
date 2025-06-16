@@ -25,7 +25,7 @@ func NewEdgeServicesAPIWithRegion(d *schema.ResourceData, m any) (*edgeservices.
 }
 
 // edgeServicesAPIWithZone returns a new edge_services API and the zone
-func edgeServicesAPIWithZone(d *schema.ResourceData, m interface{}) (*edgeservices.API, scw.Zone, error) {
+func edgeServicesAPIWithZone(d *schema.ResourceData, m any) (*edgeservices.API, scw.Zone, error) {
 	api := edgeservices.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
