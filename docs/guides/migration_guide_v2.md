@@ -103,7 +103,7 @@ Hence it is named: `scaleway_object_bucket`.
 ### Migration guide for renamed resources
 
 Because the resources changed their name, we cannot use automatic state migration.
-We will first get the identifier of the resource, then remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/docs/import/usage.html) to import existing resources to a renamed resource.
+We will first get the identifier of the resource, then remove the resource from the terraform state and then use [`terraform import`](https://www.terraform.io/terraform/cli/import) to import existing resources to a renamed resource.
 
 For instance, let's suppose that you have resource in `fr-par-1` such as:
 
