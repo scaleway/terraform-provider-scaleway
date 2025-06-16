@@ -163,7 +163,7 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
-	if d.HasChange("size_in_gb_in_gb") {
+	if d.HasChange("size_in_gb") {
 		req.Size = types.ExpandUint64Ptr(d.Get("size_in_gb"))
 	}
 

@@ -551,7 +551,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				ServerID:     res.Server.ID,
 			})
 			if err != nil {
-				return nil
+				return diag.FromErr(err)
 			}
 		}
 	}
