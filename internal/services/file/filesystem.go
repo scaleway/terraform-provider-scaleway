@@ -91,6 +91,12 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any
 		Tags:      types.ExpandStrings(d.Get("tags")),
 	}
 
+	if size, ok := d.GetOk("size_in_gb"); ok {
+		sizeInGB := size.(int)
+		sizeInBytes := uint64(sizeInGB) * uint64(scw.GB)
+		req.Size = sizeInBytes
+	}
+
 	file, err := api.CreateFileSystem(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -128,7 +134,8 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("region", fileSystem.Region)
 	_ = d.Set("organization_id", fileSystem.OrganizationID)
 	_ = d.Set("status", fileSystem.Status)
-	_ = d.Set("size_in_gb", int64(fileSystem.Size))
+	_ = d.Set("size_in_gb", int(fileSystem.Size/scw.GB))
+	)
 	_ = d.Set("tags", fileSystem.Tags)
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
@@ -164,7 +171,8 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if d.HasChange("size_in_gb") {
-		req.Size = types.ExpandUint64Ptr(d.Get("size_in_gb"))
+		sizeInGB := uint64(d.Get("size_in_gb").(int)) * uint64(scw.GB)
+		req.Size = types.ExpandUint64Ptr(sizeInGB)
 	}
 
 	if d.HasChange("tags") {

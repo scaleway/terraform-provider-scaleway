@@ -20,7 +20,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
-	sizeInGB := int64(100_000_000_000)
+	sizeInGB := 100
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -37,7 +37,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.FormatInt(sizeInGB, 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
 			{
@@ -49,7 +49,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				`, fileSystemNameUpdated, sizeInGB),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.FormatInt(sizeInGB, 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
 		},
@@ -61,7 +61,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
-	sizeInGB := int64(10_000_000_000)
+	sizeInGB := 10
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -86,7 +86,7 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
-	sizeInGB := int64(25_000_000_000)
+	sizeInGB := 250
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -100,7 +100,7 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size_in_gb must be greater or equal to 100000000000"),
+				ExpectError: regexp.MustCompile("size does not respect constraint, size must be a multiple of 100000000000"),
 			},
 		},
 	})
