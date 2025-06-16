@@ -123,7 +123,7 @@ func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBa
 	inner := make([]any, len(lbConfigs.LBs))
 
 	for i, lbConfig := range lbConfigs.LBs {
-		inner[i] = map[string]interface{}{
+		inner[i] = map[string]any{
 			"id":          zonal.NewIDString(zone, lbConfig.ID),
 			"frontend_id": zonal.NewIDString(zone, lbConfig.FrontendID),
 			"is_ssl":      types.FlattenBoolPtr(lbConfig.IsSsl),
@@ -132,7 +132,7 @@ func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBa
 		}
 	}
 
-	outer := []map[string]interface{}{{
+	outer := []map[string]any{{
 		"lb_config": inner,
 	}}
 
