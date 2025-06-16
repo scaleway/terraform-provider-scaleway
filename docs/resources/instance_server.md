@@ -254,7 +254,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
-- `filesystem` - (Optional) List of filesystems attached to the server.
+- `filesystems` - (Optional) List of filesystems attached to the server.
     - `filesystem_id` - (Optional) The unique ID of the filesystem attached to the server.
 
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
