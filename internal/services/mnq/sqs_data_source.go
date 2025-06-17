@@ -22,7 +22,7 @@ func DataSourceSQS() *schema.Resource {
 	}
 }
 
-func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)

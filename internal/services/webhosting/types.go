@@ -6,12 +6,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenOffer(offer *webhosting.Offer) interface{} {
+func flattenOffer(offer *webhosting.Offer) any {
 	if offer == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"id":                     offer.ID,
 			"name":                   offer.Name,
@@ -26,15 +26,15 @@ func flattenOffer(offer *webhosting.Offer) interface{} {
 	}
 }
 
-func flattenOfferOptions(options []*webhosting.OfferOption) interface{} {
+func flattenOfferOptions(options []*webhosting.OfferOption) any {
 	if options == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	res := make([]map[string]interface{}, 0, len(options))
+	res := make([]map[string]any, 0, len(options))
 
 	for _, option := range options {
-		res = append(res, map[string]interface{}{
+		res = append(res, map[string]any{
 			"id":                     option.ID,
 			"name":                   string(option.Name),
 			"billing_operation_path": option.BillingOperationPath,
@@ -49,12 +49,12 @@ func flattenOfferOptions(options []*webhosting.OfferOption) interface{} {
 	return res
 }
 
-func flattenOfferPrice(price *scw.Money) interface{} {
+func flattenOfferPrice(price *scw.Money) any {
 	return price.String()
 }
 
-func flattenHostingCpanelUrls(cpanelURL *webhosting.PlatformControlPanelURLs) []map[string]interface{} {
-	return []map[string]interface{}{
+func flattenHostingCpanelUrls(cpanelURL *webhosting.PlatformControlPanelURLs) []map[string]any {
+	return []map[string]any{
 		{
 			"dashboard": cpanelURL.Dashboard,
 			"webmail":   cpanelURL.Webmail,
@@ -62,14 +62,14 @@ func flattenHostingCpanelUrls(cpanelURL *webhosting.PlatformControlPanelURLs) []
 	}
 }
 
-func flattenHostingOptions(options []*webhosting.OfferOption) []map[string]interface{} {
+func flattenHostingOptions(options []*webhosting.OfferOption) []map[string]any {
 	if options == nil {
 		return nil
 	}
 
-	flattenedOptions := []map[string]interface{}(nil)
+	flattenedOptions := []map[string]any(nil)
 	for _, option := range options {
-		flattenedOptions = append(flattenedOptions, map[string]interface{}{
+		flattenedOptions = append(flattenedOptions, map[string]any{
 			"id":   option.ID,
 			"name": option.Name,
 		})
@@ -78,7 +78,7 @@ func flattenHostingOptions(options []*webhosting.OfferOption) []map[string]inter
 	return flattenedOptions
 }
 
-func expandOfferOptions(data interface{}) []*webhosting.OfferOptionRequest {
+func expandOfferOptions(data any) []*webhosting.OfferOptionRequest {
 	optionIDs := types.ExpandStrings(data)
 
 	offerOptions := make([]*webhosting.OfferOptionRequest, 0, len(optionIDs))

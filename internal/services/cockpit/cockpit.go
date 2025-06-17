@@ -93,7 +93,7 @@ func ResourceCockpit() *schema.Resource {
 	}
 }
 
-func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	projectID := d.Get("project_id").(string)
 	if projectID == "" {
 		_, err := getDefaultProjectID(ctx, m)
@@ -107,7 +107,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceCockpitRead(ctx, d, m)
 }
 
-func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	api, err := NewGlobalAPI(m)
@@ -180,7 +180,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	diags := diag.Diagnostics{}
 	if d.HasChange("plan") {
 		diags = append(diags, diag.Diagnostic{
@@ -195,7 +195,7 @@ func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-func ResourceCockpitDelete(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func ResourceCockpitDelete(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
 	d.SetId("")
 
 	return nil

@@ -65,7 +65,7 @@ func ResourceVPC() *schema.Resource {
 				Description: "The date and time of the last update of the private network",
 			},
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			before, after := diff.GetChange("enable_routing")
 			if before != nil && before.(bool) && after != nil && !after.(bool) {
 				return errors.New("routing cannot be disabled on this VPC")
@@ -76,7 +76,7 @@ func ResourceVPC() *schema.Resource {
 	}
 }
 
-func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -98,7 +98,7 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceVPCRead(ctx, d, m)
 }
 
-func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,7 +134,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -180,7 +180,7 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 	return ResourceVPCRead(ctx, d, m)
 }
 
-func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

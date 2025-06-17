@@ -79,7 +79,7 @@ func ResourceNetwork() *schema.Resource {
 	}
 }
 
-func ResourceIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,7 +109,7 @@ func ResourceIotNetworkCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceIotNetworkRead(ctx, d, m)
 }
 
-func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, networkID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -140,7 +140,7 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, networkID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

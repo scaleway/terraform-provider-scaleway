@@ -203,7 +203,7 @@ func ResourceDeployment() *schema.Resource {
 	}
 }
 
-func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -256,7 +256,7 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 	var endpoints []*inference.EndpointSpec
 
 	if publicEndpoint, ok := d.GetOk("public_endpoint"); ok {
-		publicEndpointMap := publicEndpoint.([]interface{})[0].(map[string]interface{})
+		publicEndpointMap := publicEndpoint.([]any)[0].(map[string]any)
 		if publicEndpointMap["is_enabled"].(bool) {
 			publicEp := inference.EndpointSpec{
 				PublicNetwork: &inference.EndpointPublicNetworkDetails{},
@@ -267,7 +267,7 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 	}
 
 	if privateEndpoint, ok := d.GetOk("private_endpoint"); ok {
-		privateEndpointMap := privateEndpoint.([]interface{})[0].(map[string]interface{})
+		privateEndpointMap := privateEndpoint.([]any)[0].(map[string]any)
 		if privateID, exists := privateEndpointMap["private_network_id"]; exists {
 			privateEp := inference.EndpointSpec{
 				PrivateNetwork: &inference.EndpointPrivateNetworkDetails{
@@ -282,7 +282,7 @@ func buildEndpoints(d *schema.ResourceData) []*inference.EndpointSpec {
 	return endpoints
 }
 
-func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -313,13 +313,13 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("created_at", types.FlattenTime(deployment.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(deployment.UpdatedAt))
 
-	var privateEndpoints []map[string]interface{}
+	var privateEndpoints []map[string]any
 
-	var publicEndpoints []map[string]interface{}
+	var publicEndpoints []map[string]any
 
 	for _, endpoint := range deployment.Endpoints {
 		if endpoint.PrivateNetwork != nil {
-			privateEndpointSpec := map[string]interface{}{
+			privateEndpointSpec := map[string]any{
 				"id":                 endpoint.ID,
 				"private_network_id": regional.NewID(deployment.Region, endpoint.PrivateNetwork.PrivateNetworkID).String(),
 				"disable_auth":       endpoint.DisableAuth,
@@ -329,7 +329,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 		}
 
 		if endpoint.PublicNetwork != nil {
-			publicEndpointSpec := map[string]interface{}{
+			publicEndpointSpec := map[string]any{
 				"id":           endpoint.ID,
 				"is_enabled":   true,
 				"disable_auth": endpoint.DisableAuth,
@@ -340,7 +340,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	diags := diag.Diagnostics{}
-	privateIPs := []map[string]interface{}(nil)
+	privateIPs := []map[string]any(nil)
 	authorized := true
 
 	if privateEndpoints != nil {
@@ -399,7 +399,7 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m inter
 	return diags
 }
 
-func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -444,7 +444,7 @@ func ResourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceDeploymentRead(ctx, d, m)
 }
 
-func ResourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

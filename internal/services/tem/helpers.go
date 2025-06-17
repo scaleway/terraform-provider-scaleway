@@ -21,7 +21,7 @@ const (
 )
 
 // temAPIWithRegion returns a new Tem API and the region for a Create request
-func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Region, error) {
+func temAPIWithRegion(d *schema.ResourceData, m any) (*tem.API, scw.Region, error) {
 	api := tem.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -33,7 +33,7 @@ func temAPIWithRegion(d *schema.ResourceData, m interface{}) (*tem.API, scw.Regi
 }
 
 // NewAPIWithRegionAndID returns a Tem API with zone and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*tem.API, scw.Region, string, error) {
 	api := tem.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -44,7 +44,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*tem.API, scw.Region, stri
 	return api, region, id, nil
 }
 
-func getDefaultProjectID(ctx context.Context, m interface{}) (string, error) {
+func getDefaultProjectID(ctx context.Context, m any) (string, error) {
 	accountAPI := account.NewProjectAPI(m)
 
 	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{

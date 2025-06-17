@@ -14,10 +14,6 @@ type ID struct {
 	Region scw.Region
 }
 
-func (z ID) String() string {
-	return fmt.Sprintf("%s/%s", z.Region, z.ID)
-}
-
 func NewID(region scw.Region, id string) ID {
 	return ID{
 		ID:     id,
@@ -25,7 +21,11 @@ func NewID(region scw.Region, id string) ID {
 	}
 }
 
-func ExpandID(id interface{}) ID {
+func (z ID) String() string {
+	return fmt.Sprintf("%s/%s", z.Region, z.ID)
+}
+
+func ExpandID(id any) ID {
 	regionalID := ID{}
 	tab := strings.Split(id.(string), "/")
 

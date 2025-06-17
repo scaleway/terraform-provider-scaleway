@@ -8,7 +8,7 @@ import (
 )
 
 func IsEmail() schema.SchemaValidateDiagFunc {
-	return func(value interface{}, path cty.Path) diag.Diagnostics {
+	return func(value any, path cty.Path) diag.Diagnostics {
 		email, isString := value.(string)
 		if !isString {
 			return diag.Diagnostics{diag.Diagnostic{
@@ -33,8 +33,8 @@ func IsEmail() schema.SchemaValidateDiagFunc {
 }
 
 func IsEmailList() schema.SchemaValidateDiagFunc {
-	return func(value interface{}, path cty.Path) diag.Diagnostics {
-		list, ok := value.([]interface{})
+	return func(value any, path cty.Path) diag.Diagnostics {
+		list, ok := value.([]any)
 		if !ok {
 			return diag.Diagnostics{diag.Diagnostic{
 				Severity:      diag.Error,

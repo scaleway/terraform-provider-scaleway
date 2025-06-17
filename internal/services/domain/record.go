@@ -72,7 +72,7 @@ func ResourceRecord() *schema.Resource {
 				Description: "The name of the record",
 				ForceNew:    true,
 				Optional:    true,
-				StateFunc: func(val interface{}) string {
+				StateFunc: func(val any) string {
 					value := val.(string)
 					if value == "@" {
 						return ""
@@ -249,7 +249,7 @@ func ResourceRecord() *schema.Resource {
 	}
 }
 
-func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	dnsZone := d.Get("dns_zone").(string)
@@ -316,7 +316,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceDomainRecordRead(ctx, d, m)
 }
 
-func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	var record *domain.Record
@@ -433,7 +433,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	if !d.HasChanges(changeKeys...) {
 		return resourceDomainRecordRead(ctx, d, m)
 	}
@@ -480,7 +480,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceDomainRecordRead(ctx, d, m)
 }
 
-func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	recordID := locality.ExpandID(d.Id())

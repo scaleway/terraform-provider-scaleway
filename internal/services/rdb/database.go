@@ -82,7 +82,7 @@ func ResourceDatabase() *schema.Resource {
 	}
 }
 
-func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, err := regional.ParseID(d.Get("instance_id").(string))
@@ -150,7 +150,7 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 	return res.Databases[0], nil
 }
 
-func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())
@@ -180,7 +180,7 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())

@@ -155,7 +155,7 @@ func ResourceReadReplica() *schema.Resource {
 	}
 }
 
-func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +199,7 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceRdbReadReplicaRead(ctx, d, m)
 }
 
-func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -229,7 +229,7 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 //gocyclo:ignore
-func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -332,7 +332,7 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceRdbReadReplicaRead(ctx, d, m)
 }
 
-func ResourceRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

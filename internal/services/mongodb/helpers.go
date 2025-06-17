@@ -22,12 +22,12 @@ const (
 	defaultVolumeSize = 5
 )
 
-func newAPI(m interface{}) *mongodb.API {
+func newAPI(m any) *mongodb.API {
 	return mongodb.NewAPI(meta.ExtractScwClient(m))
 }
 
 // newAPIWithZone returns a new mongoDB API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*mongodb.API, scw.Zone, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
@@ -36,7 +36,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zo
 	return newAPI(m), zone, nil
 }
 
-func newAPIWithZoneAndRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Zone, scw.Region, error) {
+func newAPIWithZoneAndRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Zone, scw.Region, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", "", err
@@ -50,7 +50,7 @@ func newAPIWithZoneAndRegion(d *schema.ResourceData, m interface{}) (*mongodb.AP
 	return newAPI(m), zone, region, nil
 }
 
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -60,7 +60,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*mongodb.API, scw.
 }
 
 // NewAPIWithZoneAndID returns a mongoDB API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*mongodb.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*mongodb.API, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -69,7 +69,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*mongodb.API, scw.Zone, stri
 	return newAPI(m), zone, ID, nil
 }
 
-func NewAPIWithRegionAndID(m interface{}, id string) (*mongodb.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*mongodb.API, scw.Region, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err

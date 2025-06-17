@@ -41,7 +41,7 @@ func ResourceNatsAccount() *schema.Resource {
 	}
 }
 
-func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -61,7 +61,7 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
-func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,7 +89,7 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func ResourceMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,7 +111,7 @@ func ResourceMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
-func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

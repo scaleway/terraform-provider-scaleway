@@ -22,7 +22,7 @@ const (
 var ErrCannotDeleteProtectedSecret = errors.New("cannot delete a protected secret")
 
 // newAPIWithRegion returns a new Secret API and the region for a Create request
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*secret.API, scw.Region, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -34,7 +34,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*secret.API, scw.R
 }
 
 // newAPIWithRegionAndDefault returns a new Secret API and the region for a Create request
-func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m interface{}, defaultRegion scw.Region) (*secret.API, scw.Region, *string, error) {
+func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m any, defaultRegion scw.Region) (*secret.API, scw.Region, *string, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegionWithDefault(d, m, defaultRegion)
@@ -53,7 +53,7 @@ func newAPIWithRegionOptionalProjectIDAndDefault(d *schema.ResourceData, m inter
 }
 
 // newAPIWithRegionAndProjectID returns a new Secret API, with region and projectID
-func newAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secret.API, scw.Region, *string, error) {
+func newAPIWithRegionAndProjectID(d *schema.ResourceData, m any) (*secret.API, scw.Region, *string, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -72,7 +72,7 @@ func newAPIWithRegionAndProjectID(d *schema.ResourceData, m interface{}) (*secre
 }
 
 // NewAPIWithRegionAndID returns a Secret API with locality and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, string, error) {
 	api := secret.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -84,7 +84,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, s
 }
 
 // NewVersionAPIWithRegionAndID returns a Secret API with locality and Nested ID extracted from the state
-func NewVersionAPIWithRegionAndID(m interface{}, id string) (*secret.API, scw.Region, string, string, error) {
+func NewVersionAPIWithRegionAndID(m any, id string) (*secret.API, scw.Region, string, string, error) {
 	region, id, revision, err := locality.ParseLocalizedNestedID(id)
 	if err != nil {
 		return nil, "", "", "", err
@@ -145,12 +145,12 @@ func updateSecretProtection(api *secret.API, region scw.Region, secretID string,
 }
 
 func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error) {
-	rawList := rawSchemaPolicy.([]interface{})
+	rawList := rawSchemaPolicy.([]any)
 	if len(rawList) != 1 {
 		return nil, fmt.Errorf("expected 1 policy, found %d", len(rawList))
 	}
 
-	rawPolicy := rawList[0].(map[string]interface{})
+	rawPolicy := rawList[0].(map[string]any)
 
 	ttl, err := types.ExpandDuration(rawPolicy["ttl"])
 	if err != nil {
@@ -169,12 +169,12 @@ func expandEphemeralPolicy(rawSchemaPolicy any) (*secret.EphemeralPolicy, error)
 	return policy, nil
 }
 
-func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]interface{} {
+func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]any {
 	if policy == nil {
 		return nil
 	}
 
-	policyElem := map[string]interface{}{}
+	policyElem := map[string]any{}
 	if policy.TimeToLive != nil {
 		policyElem["ttl"] = types.FlattenDuration(policy.TimeToLive.ToTimeDuration())
 	}
@@ -185,5 +185,5 @@ func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]interfa
 
 	policyElem["action"] = policy.Action
 
-	return []map[string]interface{}{policyElem}
+	return []map[string]any{policyElem}
 }

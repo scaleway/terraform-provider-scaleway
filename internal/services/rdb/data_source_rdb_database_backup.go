@@ -39,7 +39,7 @@ func DataSourceDatabaseBackup() *schema.Resource {
 	}
 }
 
-func DataSourceRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

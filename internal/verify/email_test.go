@@ -31,13 +31,13 @@ func TestIsEmailList(t *testing.T) {
 	validateFunc := verify.IsEmailList()
 
 	tests := []struct {
-		emails []interface{}
+		emails []any
 		valid  bool
 	}{
-		{[]interface{}{"test@example.com", "test2@example.com"}, true},
-		{[]interface{}{"test@example.com", "invalid-email"}, false},
-		{[]interface{}{123, "test@example.com"}, false},
-		{[]interface{}{}, true},
+		{[]any{"test@example.com", "test2@example.com"}, true},
+		{[]any{"test@example.com", "invalid-email"}, false},
+		{[]any{123, "test@example.com"}, false},
+		{[]any{}, true},
 	}
 
 	for _, test := range tests {

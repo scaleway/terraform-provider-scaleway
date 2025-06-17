@@ -70,7 +70,7 @@ func DataSourceConsumptions() *schema.Resource {
 	}
 }
 
-func DataSourceBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceBillingConsumptionsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := billingAPI(m)
 
 	res, err := api.ListConsumptions(&billing.ListConsumptionsRequest{
@@ -83,10 +83,10 @@ func DataSourceBillingConsumptionsRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	consumptions := []interface{}(nil)
+	consumptions := []any(nil)
 
 	for _, consumption := range res.Consumptions {
-		rawConsumption := make(map[string]interface{})
+		rawConsumption := make(map[string]any)
 		rawConsumption["value"] = consumption.Value.String()
 		rawConsumption["product_name"] = consumption.ProductName
 		rawConsumption["project_id"] = consumption.ProjectID

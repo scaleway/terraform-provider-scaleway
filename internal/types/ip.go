@@ -27,7 +27,7 @@ func ExpandIPNet(raw string) (scw.IPNet, error) {
 	return ipNet, nil
 }
 
-func FlattenIPPtr(ip *net.IP) interface{} {
+func FlattenIPPtr(ip *net.IP) any {
 	if ip == nil {
 		return ""
 	}

@@ -212,7 +212,7 @@ func ResourceBucket() *schema.Resource {
 				},
 			},
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			if diff.Get("object_lock_enabled").(bool) {
 				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
 					return errors.New("versioning must be enabled when object lock is enabled")
@@ -224,7 +224,7 @@ func ResourceBucket() *schema.Resource {
 	}
 }
 
-func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
@@ -273,7 +273,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceObjectBucketUpdate(ctx, d, m)
 }
 
-func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -341,7 +341,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m i
 func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *schema.ResourceData) error {
 	bucket := d.Get("name").(string)
 
-	lifecycleRules := d.Get("lifecycle_rule").([]interface{})
+	lifecycleRules := d.Get("lifecycle_rule").([]any)
 
 	if len(lifecycleRules) == 0 || lifecycleRules[0] == nil {
 		i := &s3.DeleteBucketLifecycleInput{
@@ -359,7 +359,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 	rules := make([]s3Types.LifecycleRule, 0, len(lifecycleRules))
 
 	for i, lifecycleRule := range lifecycleRules {
-		r := lifecycleRule.(map[string]interface{})
+		r := lifecycleRule.(map[string]any)
 
 		rule := s3Types.LifecycleRule{}
 
@@ -414,9 +414,9 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		}
 
 		// Expiration
-		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]interface{})
+		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]any)
 		if len(expiration) > 0 && expiration[0] != nil {
-			e := expiration[0].(map[string]interface{})
+			e := expiration[0].(map[string]any)
 			i := &s3Types.LifecycleExpiration{}
 
 			if val, ok := e["days"].(int); ok && val > 0 {
@@ -433,7 +433,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 			rule.Transitions = []s3Types.Transition{}
 
 			for _, transition := range transitions {
-				transition := transition.(map[string]interface{})
+				transition := transition.(map[string]any)
 				i := s3Types.Transition{}
 
 				if val, ok := transition["days"].(int); ok && val >= 0 {
@@ -467,7 +467,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 }
 
 //gocyclo:ignore
-func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -585,14 +585,14 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 		}
 	}
 
-	lifecycleRules := make([]map[string]interface{}, 0)
+	lifecycleRules := make([]map[string]any, 0)
 	if lifecycle != nil && len(lifecycle.Rules) > 0 {
-		lifecycleRules = make([]map[string]interface{}, 0, len(lifecycle.Rules))
+		lifecycleRules = make([]map[string]any, 0, len(lifecycle.Rules))
 
 		for _, lifecycleRule := range lifecycle.Rules {
 			log.Printf("[DEBUG] SCW bucket: %s, read lifecycle rule: %v", d.Id(), lifecycleRule)
 
-			rule := make(map[string]interface{})
+			rule := make(map[string]any)
 
 			// ID
 			if lifecycleRule.ID != nil && aws.ToString(lifecycleRule.ID) != "" {
@@ -642,19 +642,19 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 
 			// expiration
 			if lifecycleRule.Expiration != nil {
-				e := make(map[string]interface{})
+				e := make(map[string]any)
 				if lifecycleRule.Expiration.Days != nil {
 					e["days"] = int(aws.ToInt32(lifecycleRule.Expiration.Days))
 				}
 
-				rule["expiration"] = []interface{}{e}
+				rule["expiration"] = []any{e}
 			}
 			//// transition
 			if len(lifecycleRule.Transitions) > 0 {
-				transitions := make([]interface{}, 0, len(lifecycleRule.Transitions))
+				transitions := make([]any, 0, len(lifecycleRule.Transitions))
 
 				for _, v := range lifecycleRule.Transitions {
-					t := make(map[string]interface{})
+					t := make(map[string]any)
 					if v.Days != nil {
 						t["days"] = int(aws.ToInt32(v.Days))
 					}
@@ -683,7 +683,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m int
 	return diags
 }
 
-func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 
 	var nObjectDeleted int64
@@ -723,7 +723,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-	v := d.Get("versioning").([]interface{})
+	v := d.Get("versioning").([]any)
 	bucketName := d.Get("name").(string)
 	vc := expandObjectBucketVersioning(v)
 
@@ -743,7 +743,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 
 func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
 	bucketName := d.Get("name").(string)
-	rawCors := d.Get("cors_rule").([]interface{})
+	rawCors := d.Get("cors_rule").([]any)
 
 	if len(rawCors) == 0 {
 		// Delete CORS

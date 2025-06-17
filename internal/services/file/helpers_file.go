@@ -15,7 +15,7 @@ const (
 	defaultFileSystemRetryInterval = 5 * time.Second
 )
 
-func fileSystemAPIWithZone(d *schema.ResourceData, m interface{}) (*file.API, scw.Region, error) {
+func fileSystemAPIWithZone(d *schema.ResourceData, m any) (*file.API, scw.Region, error) {
 	fileAPI := file.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -26,7 +26,7 @@ func fileSystemAPIWithZone(d *schema.ResourceData, m interface{}) (*file.API, sc
 	return fileAPI, region, nil
 }
 
-func NewAPIWithRegionAndID(m interface{}, regionID string) (*file.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, regionID string) (*file.API, scw.Region, string, error) {
 	fileAPI := file.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionID)
