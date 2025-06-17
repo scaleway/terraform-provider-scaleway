@@ -45,6 +45,33 @@ resource "scaleway_instance_server" "web" {
 }
 ```
 
+### With filesystem
+
+```terraform
+resource scaleway_block_volume volume {
+  iops       = 15000
+  size_in_gb = 15
+}
+
+resource scaleway_file_filesystem terraform_instance_filesystem {
+  name = "filesystem-instance-terraform"
+  size_in_gb = 100000000000
+}
+
+resource scaleway_instance_server base {
+  type  = "POP2-HM-2C-16G"
+  state = "started"
+  tags  = ["terraform-test", "scaleway_instance_server", "state"]
+  root_volume {
+    volume_type = "sbs_volume"
+    volume_id   = scaleway_block_volume.volume.id
+  }
+  filesystems {
+    filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
+  }
+}
+```
+
 ### With a reserved IP
 
 ```terraform
@@ -227,6 +254,9 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 ~> **Important:** If this field contains local volumes, you have to first detach them, in one apply, and then delete the volume in another apply.
 
+- `filesystems` - (Optional) List of filesystems attached to the server.
+    - `filesystem_id` - (Optional) The unique ID of the filesystem attached to the server.
+
 - `enable_ipv6` - (Defaults to `false`) Determines if IPv6 is enabled for the server.
   Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 
@@ -288,6 +318,8 @@ In addition to all arguments above, the following attributes are exported:
 - `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group ressource](instance_placement_group.md) to known when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
+- `filesystem`
+    - `state` - The current status of the filesystem (e.g., attached, detached).
 - `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).
 - `public_ip` -  The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.
