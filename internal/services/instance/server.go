@@ -375,9 +375,10 @@ func ResourceServer() *schema.Resource {
 				},
 			},
 			"admin_password_encryption_ssh_key_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.IsUUIDOrEmpty(),
+				Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
 			},
 			"zone":            zonal.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
