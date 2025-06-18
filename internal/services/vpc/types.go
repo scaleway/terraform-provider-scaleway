@@ -183,7 +183,7 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 
 	flattenedRules := []map[string]any(nil)
 
-	var ruleScopeRegex = regexp.MustCompile(`^\(Rule scope: [^)]+\)\s*`)
+	ruleScopeRegex := regexp.MustCompile(`^\(Rule scope: [^)]+\)\s*`)
 
 	for _, rule := range rules {
 		flattenedSource, err := types.FlattenIPNet(rule.Source)
