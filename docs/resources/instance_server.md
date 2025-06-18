@@ -260,8 +260,8 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `protected` - (Optional) Set to true to activate server protection option.
 
-- `admin_password_encryption_ssh_key_id` - (Optional) The ID of the SSH RSA key that will be used to encrypt the initial admin password for OS requiring it. 
-   Mandatory for Windows OS. The public_key value of this key is used to encrypt the admin password. 
+- `admin_password_encryption_ssh_key_id` - (Optional) The ID of the SSH RSA key that will be used to encrypt the initial admin password for OS requiring it.
+   Mandatory for Windows OS. The public_key value of this key is used to encrypt the admin password.
    When set to an empty string, it resets this value and admin_password_encrypted_value to an empty string so a new password may be generated.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
