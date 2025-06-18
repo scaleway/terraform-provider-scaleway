@@ -13,8 +13,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccServer_Minimal1(t *testing.T) {
@@ -2093,4 +2095,17 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestGetEndOfServiceDate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	client := meta.ExtractScwClient(tt.Meta)
+	defer tt.Cleanup()
+
+	eosDate, err := instance.GetEndOfServiceDate(t.Context(), client, "fr-par-1", "ENT1-S")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, "2025-09-01", eosDate)
 }
