@@ -223,3 +223,42 @@ func TestAccVolume_FromInstance(t *testing.T) {
 		},
 	})
 }
+
+func TestAccVolume_UpdateIops(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						name = "test-block-volume-update-iops"
+						iops = 5000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "5000"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_block_volume main {
+						name = "test-block-volume-update-iops"
+						iops = 15000
+						size_in_gb = 20
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_block_volume.main", "iops", "15000"),
+				),
+			},
+		},
+	})
+}
