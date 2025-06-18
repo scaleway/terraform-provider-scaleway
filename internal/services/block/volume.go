@@ -44,7 +44,6 @@ func ResourceVolume() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 				Description: "The maximum IO/s expected, must match available options",
-				ForceNew:    true,
 			},
 			"size_in_gb": {
 				Type:         schema.TypeInt,
@@ -212,6 +211,10 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("iops") {
+		req.PerfIops = types.ExpandUint32Ptr(d.Get("iops"))
 	}
 
 	if _, err := api.UpdateVolume(req, scw.WithContext(ctx)); err != nil {
