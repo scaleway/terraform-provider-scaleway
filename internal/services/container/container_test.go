@@ -233,31 +233,12 @@ func TestAccContainer_WithIMG(t *testing.T) {
 						name = "%s"
 						description = "test container"
 					}
-				`, containerNamespace),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_container_namespace main {
-						name = "%s"
-						description = "test container"
-					}
-				`, containerNamespace),
-				Check: resource.ComposeTestCheckFunc(
-					containerchecks.TestConfigContainerNamespace(tt, "scaleway_container_namespace.main"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_container_namespace main {
-						name = "%s"
-						description = "test container"
-					}
 
 					resource scaleway_container main {
 						name = "my-container-02"
 						description = "environment variables test"
 						namespace_id = scaleway_container_namespace.main.id
-						registry_image = "${scaleway_container_namespace.main.registry_endpoint}/nginx:test"
+						registry_image = "nginx:latest"
 						port = 80
 						cpu_limit = 140
 						memory_limit = 256
@@ -502,7 +483,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false
@@ -521,7 +502,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false
@@ -543,7 +524,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_container_namespace main {}
-		
+
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
 						deploy = false

@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"net"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -182,6 +183,8 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 
 	flattenedRules := []map[string]any(nil)
 
+	ruleScopeRegex := regexp.MustCompile(`^\(Rule scope: [^)]+\)\s*`)
+
 	for _, rule := range rules {
 		flattenedSource, err := types.FlattenIPNet(rule.Source)
 		if err != nil {
@@ -193,6 +196,9 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 			return nil
 		}
 
+		rawDescription := types.FlattenStringPtr(rule.Description)
+		cleanDescription := ruleScopeRegex.ReplaceAllString(rawDescription.(string), "")
+
 		flattenedRules = append(flattenedRules, map[string]any{
 			"protocol":      rule.Protocol.String(),
 			"source":        flattenedSource,
@@ -202,7 +208,7 @@ func flattenACLRules(rules []*vpc.ACLRule) any {
 			"dst_port_low":  int(rule.DstPortLow),
 			"dst_port_high": int(rule.DstPortHigh),
 			"action":        rule.Action.String(),
-			"description":   types.FlattenStringPtr(rule.Description),
+			"description":   cleanDescription,
 		})
 	}
 

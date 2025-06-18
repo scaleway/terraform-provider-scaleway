@@ -9,6 +9,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/go-cty/cty"
@@ -21,6 +22,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
+	product_catalog "github.com/scaleway/scaleway-sdk-go/api/product_catalog/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -787,6 +789,11 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	diags := diag.Diagnostics{}
 
 	if server.EndOfService {
+		eosDate, err := GetEndOfServiceDate(ctx, meta.ExtractScwClient(m), server.Zone, server.CommercialType)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		compatibleTypes, err := api.GetServerCompatibleTypes(&instanceSDK.GetServerCompatibleTypesRequest{
 			Zone:     zone,
 			ServerID: id,
@@ -800,12 +807,13 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
 			Detail:   fmt.Sprintf("Instance type %q will soon reach End of Service", server.CommercialType),
-			Summary: fmt.Sprintf(`Your Instance will soon reach End of Service. You can check the exact date on the Scaleway console. We recommend that you migrate your Instance before that.
+			Summary: fmt.Sprintf(`Your Instance will reach End of Service by %s. We recommend that you migrate your Instance before that.
 Here are the %d best options for %q, ordered by relevance: [%s]
 
 You can check the full list of compatible server types:
 	- on the Scaleway console
 	- using the CLI command 'scw instance server get-compatible-types %s zone=%s'`,
+				eosDate,
 				len(mostRelevantTypes),
 				server.CommercialType,
 				strings.Join(mostRelevantTypes, ", "),
@@ -1571,4 +1579,27 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 	}
 
 	return volumes, nil
+}
+
+func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone, commercialType string) (string, error) {
+	api := product_catalog.NewPublicCatalogAPI(client)
+
+	products, err := api.ListPublicCatalogProducts(&product_catalog.PublicCatalogAPIListPublicCatalogProductsRequest{
+		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
+			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
+		},
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("could not list product catalog entries: %w", err)
+	}
+
+	for _, product := range products.Products {
+		if strings.HasPrefix(product.Product, commercialType) {
+			if product.Locality.Zone != nil && *product.Locality.Zone == zone {
+				return product.EndOfLifeAt.Format(time.DateOnly), nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("could not find product catalog entry for %q in %s", commercialType, zone)
 }
