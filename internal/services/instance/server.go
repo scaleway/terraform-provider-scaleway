@@ -374,6 +374,12 @@ func ResourceServer() *schema.Resource {
 					},
 				},
 			},
+			"admin_password_encryption_ssh_key_id": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.IsUUIDOrEmpty(),
+				Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
+			},
 			"zone":            zonal.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
@@ -437,6 +443,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 		req.PlacementGroup = types.ExpandStringPtr(zonal.ExpandID(placementGroupID).ID)
+	}
+
+	if adminPasswordEncryptionSSHKeyID, ok := d.GetOk("admin_password_encryption_key_ssh_id"); ok {
+		req.AdminPasswordEncryptionSSHKeyID = types.ExpandStringPtr(adminPasswordEncryptionSSHKeyID)
 	}
 
 	serverType := getServerType(ctx, api.API, req.Zone, req.CommercialType)
@@ -715,6 +725,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("ipv6_prefix_length", nil)
 	}
 
+	if server.AdminPasswordEncryptionSSHKeyID != nil {
+		_ = d.Set("admin_password_encryption_ssh_key_id", server.AdminPasswordEncryptionSSHKeyID)
+	}
+
 	var additionalVolumesIDs []string
 
 	for i, serverVolume := range sortVolumeServer(server.Volumes) {
@@ -971,6 +985,10 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Value: placementGroupID}
 		}
+	}
+
+	if d.HasChange("admin_password_encryption_ssh_key_id") {
+		updateRequest.AdminPasswordEncryptionSSHKeyID = types.ExpandUpdatedStringPtr(d.Get("admin_password_encryption_ssh_key_id").(string))
 	}
 
 	////

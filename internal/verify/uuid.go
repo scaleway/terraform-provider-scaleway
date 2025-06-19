@@ -42,6 +42,34 @@ func IsUUID() schema.SchemaValidateDiagFunc {
 	}
 }
 
+func IsUUIDOrEmpty() schema.SchemaValidateDiagFunc {
+	return func(value any, path cty.Path) diag.Diagnostics {
+		uuid, isString := value.(string)
+		if !isString {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "invalid UUID not a string",
+				AttributePath: path,
+			}}
+		}
+
+		if uuid == "" {
+			return nil
+		}
+
+		if !validation.IsUUID(uuid) {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "invalid UUID: " + uuid,
+				AttributePath: path,
+				Detail:        "format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters",
+			}}
+		}
+
+		return nil
+	}
+}
+
 func IsUUIDWithLocality() schema.SchemaValidateDiagFunc {
 	return func(value any, path cty.Path) diag.Diagnostics {
 		uuid, isString := value.(string)

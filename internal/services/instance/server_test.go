@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/stretchr/testify/assert"
@@ -2091,6 +2092,78 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
 						"scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	sshKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			iamchecks.CheckSSHKeyDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_ssh_key" "main" {
+						name = "test-acc-admin-pwd-encryption"
+						public_key = %q
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type = "POP2-2C-8G-WIN"
+						image = "windows_server_2022"
+						admin_password_encryption_ssh_key_id = scaleway_iam_ssh_key.main.id
+					}
+					`, sshKey),
+				Check: resource.ComposeTestCheckFunc(
+					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "POP2-2C-8G-WIN"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "windows_server_2022"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "admin_password_encryption_ssh_key_id", "scaleway_iam_ssh_key.main", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_ssh_key" "main" {
+						name = "test-acc-admin-pwd-encryption"
+						public_key = %q
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type = "POP2-2C-8G-WIN"
+						image = "windows_server_2022"
+						admin_password_encryption_ssh_key_id = ""
+					}
+					`, sshKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "admin_password_encryption_ssh_key_id", ""),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_ssh_key" "main" {
+						name = "test-acc-admin-pwd-encryption"
+						public_key = %q
+					}
+
+					resource "scaleway_instance_server" "main" {
+						type = "POP2-2C-8G-WIN"
+						image = "windows_server_2022"
+						admin_password_encryption_ssh_key_id = scaleway_iam_ssh_key.main.id
+					}
+					`, sshKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "admin_password_encryption_ssh_key_id", "scaleway_iam_ssh_key.main", "id"),
 				),
 			},
 		},
