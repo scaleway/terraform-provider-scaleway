@@ -40,6 +40,10 @@ The following arguments are supported:
 
 - `secret_environment_variables` - (Optional) The secret environment variables of the namespace.
 
+- `activate_vpc_integration` - (Optional) Activates VPC integration for the namespace. Containers of a namespace with VPC integration activated will be able to connect to a Private Network.
+
+~> **Important** Updates to `activate_vpc_integration` will recreate the namespace.
+
 ## Attributes Reference
 
 The `scaleway_container_namespace` resource exports certain attributes once the Containers namespace has been created. These attributes can be referenced in other parts of your Terraform configuration.

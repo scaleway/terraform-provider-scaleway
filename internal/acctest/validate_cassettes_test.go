@@ -29,6 +29,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"../services/secret/testdata/secret-version-type.cassette.yaml":                      {},
 		"../services/file/testdata/file-system-invalid-size-granularity-fails.cassette.yaml": {},
 		"../services/file/testdata/file-system-size-too-small-fails.cassette.yaml":           {},
+		"../services/container/testdata/namespace-vpc-integration.cassette.yaml":             {},
 		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":     {},
 	}
 }

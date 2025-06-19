@@ -53,6 +53,7 @@ func ResourceContainer() *schema.Resource {
 			"namespace_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The container namespace associated",
 			},
 			"tags": {
@@ -263,6 +264,11 @@ func ResourceContainer() *schema.Resource {
 				Optional:    true,
 				Description: "Arguments passed to the command from the command \"field\". Overrides the arguments from the container image.",
 			},
+			"private_network_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the Private Network the container is connected to",
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -384,6 +390,12 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
 	_ = d.Set("command", types.FlattenSliceString(co.Command))
 	_ = d.Set("args", types.FlattenSliceString(co.Args))
+
+	if co.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(co.PrivateNetworkID).(string)).String())
+	} else {
+		_ = d.Set("private_network_id", nil)
+	}
 
 	return nil
 }
