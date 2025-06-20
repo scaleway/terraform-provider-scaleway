@@ -70,7 +70,7 @@ func ResourceBucketACL() *schema.Resource {
 													Type:         schema.TypeString,
 													Required:     true,
 													Description:  "Type of grantee. Valid values: `CanonicalUser`",
-													ValidateFunc: validation.StringInSlice([]string{string(s3Types.TypeCanonicalUser)}, false),
+													ValidateFunc: validation.StringInSlice((s3GranteeTypeValueToStrings()), false),
 												},
 											},
 										},

@@ -729,3 +729,16 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 		return true, true
 	}
 }
+
+func s3GranteeTypeValueToStrings() []string {
+	var t s3Types.Type
+	values := t.Values()
+
+	strings := make([]string, len(values))
+
+	for i, value := range values {
+		strings[i] = string(value)
+	}
+
+	return strings
+}
