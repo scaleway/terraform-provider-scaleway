@@ -1129,20 +1129,16 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		collectFilesystemIDs(oldList, oldIDs)
 		collectFilesystemIDs(newList, newIDs)
 
-		diagnostics, done := detachOldFileSystem(oldIDs, newIDs, api, zone, server)
-		if done {
-			return diagnostics
-		}
-
-		_, err := waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+		err := detachOldFileSystem(ctx, oldIDs, newIDs, api.API, zone, server)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		d2, done2 := attachNewFileSystem(newIDs, oldIDs, api, zone, server)
-		if done2 {
-			return d2
+		err = attachNewFileSystem(ctx, newIDs, oldIDs, api.API, zone, server)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+
 	}
 
 	////

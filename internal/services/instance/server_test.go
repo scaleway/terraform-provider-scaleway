@@ -2112,7 +2112,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
-						size = 100000000000
+						size_in_gb = 100
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -2149,12 +2149,12 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
-						size = 100000000000
+						size_in_gb = 100
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
 						name="filesystem-instance-terraform-test-2"
-						size = 100000000000
+						size_in_gb = 100
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -2193,12 +2193,12 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
-						size = 100000000000
+						size_in_gb = 100
 					}
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
 						name="filesystem-instance-terraform-test-2"
-						size = 100000000000
+						size_in_gb = 100
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -2224,6 +2224,50 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 15000
+						size_in_gb = 15
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
+						name="filesystem-instance-terraform-test-2"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "POP2-HM-2C-16G"
+					  state = "started"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  root_volume {
+							volume_type = "sbs_volume"
+							volume_id = scaleway_block_volume.volume.id
+					  }
+
+					   filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "15"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),

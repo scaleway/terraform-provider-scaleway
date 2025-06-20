@@ -10,7 +10,6 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -34,7 +33,7 @@ const (
 	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
-	DefaultInstanceServerWaitTimeout        = 15 * time.Minute
+	DefaultInstanceServerWaitTimeout        = 20 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
@@ -554,7 +553,7 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 	return server.Server.Project, nil
 }
 
-func attachNewFileSystem(newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instance.Server) (diag.Diagnostics, bool) {
+func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
 	for id := range newIDs {
 		if _, alreadyAttached := oldIDs[id]; !alreadyAttached {
 			_, err := api.AttachServerFileSystem(&instance.AttachServerFileSystemRequest{
@@ -563,15 +562,19 @@ func attachNewFileSystem(newIDs map[string]struct{}, oldIDs map[string]struct{},
 				FilesystemID: locality.ExpandID(id),
 			})
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error attaching filesystem %s: %w", id, err)), true
+				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
+			}
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil {
+				return err
 			}
 		}
 	}
 
-	return nil, false
+	return nil
 }
 
-func detachOldFileSystem(oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, server *instance.Server) (diag.Diagnostics, bool) {
+func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
 	for id := range oldIDs {
 		if _, stillPresent := newIDs[id]; !stillPresent {
 			_, err := api.DetachServerFileSystem(&instance.DetachServerFileSystemRequest{
@@ -580,12 +583,16 @@ func detachOldFileSystem(oldIDs map[string]struct{}, newIDs map[string]struct{},
 				FilesystemID: locality.ExpandID(id),
 			})
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error detaching filesystem %s: %w", id, err)), true
+				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
+			}
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil && !httperrors.Is404(err) {
+				return err
 			}
 		}
 	}
 
-	return nil, false
+	return nil
 }
 
 func collectFilesystemIDs(fsList []any, target map[string]struct{}) {
