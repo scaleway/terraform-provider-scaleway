@@ -98,6 +98,7 @@ func expandLbACLMatch(d *schema.ResourceData, raw any) *lb.ACLMatch {
 	ipSubnetConfigured := isIPSubnetConfigured(d)
 
 	var ipSubnet []*string
+
 	switch {
 	case ipsEdgeServices:
 		ipSubnet = nil
