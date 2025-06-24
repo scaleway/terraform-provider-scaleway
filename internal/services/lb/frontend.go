@@ -382,7 +382,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	}
 
 	// convert state acl and sanitize them a bit
-	newACL := expandsLBACLs(d.Get("acl"))
+	newACL := expandsLBACLs(d, d.Get("acl"))
 
 	// loop
 	for index, stateACL := range newACL {
@@ -441,12 +441,12 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	return nil
 }
 
-func expandsLBACLs(raw any) []*lbSDK.ACL {
-	d := raw.([]any)
+func expandsLBACLs(d *schema.ResourceData, raw any) []*lbSDK.ACL {
+	r := raw.([]any)
 	newACL := make([]*lbSDK.ACL, 0)
 
-	for _, rawACL := range d {
-		newACL = append(newACL, expandLbACL(rawACL))
+	for _, rawACL := range r {
+		newACL = append(newACL, expandLbACL(d, rawACL))
 	}
 
 	return newACL

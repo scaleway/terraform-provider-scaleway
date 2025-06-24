@@ -191,9 +191,11 @@ The following arguments are supported:
 
         - `code`  - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
 
-- `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
+- `match` - (Required) The ACL match rule. At least `ip_subnet` or `ips_edge_services` or `http_filter` and `http_filter_value` are required.
 
-    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match.
+    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match. Only one of `ip_subnet` and `ips_edge_services` should be specified.
+
+    - `ips_edge_services` - (Optional) Defines whether Edge Services IPs should be matched. Only one of `ip_subnet` and `ips_edge_services` should be specified.
 
     - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
        It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
@@ -205,7 +207,7 @@ The following arguments are supported:
     - `http_filter_option` - (Optional) If you have `http_filter` at `http_header_match`, you can use this field to filter on the HTTP header's value.
 
     - `invert` - (Optional) If set to `true`, the condition will be of type "unless".
-  
+
 - `external_acls` - (Defaults to `false`) A boolean to specify whether to use [lb_acl](../resources/lb_acl.md).
   If `external_acls` is set to `true`, `acl` can not be set directly in the Load Balancer frontend.
 

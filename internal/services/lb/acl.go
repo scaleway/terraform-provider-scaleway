@@ -110,6 +110,7 @@ func ResourceACL() *schema.Resource {
 							Optional:         true,
 							Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
 							DiffSuppressFunc: diffSuppressFunc32SubnetMask,
+							ConflictsWith:    []string{"ips_edge_services"},
 						},
 						"http_filter": {
 							Type:             schema.TypeString,
@@ -135,6 +136,12 @@ func ResourceACL() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Description: `If set to true, the condition will be of type "unless"`,
+						},
+						"ips_edge_services": {
+							Type:          schema.TypeBool,
+							Optional:      true,
+							Description:   `Defines whether Edge Services IPs should be matched`,
+							ConflictsWith: []string{"ip_subnet"},
 						},
 					},
 				},
@@ -169,7 +176,7 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		FrontendID:  frontID,
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
-		Match:       expandLbACLMatch(d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match")),
 		Index:       int32(d.Get("index").(int)),
 		Description: d.Get("description").(string),
 	}
@@ -231,7 +238,7 @@ func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
 		Index:       int32(d.Get("index").(int)),
-		Match:       expandLbACLMatch(d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match")),
 		Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 	}
 

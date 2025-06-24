@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -63,25 +64,51 @@ func flattenLbACLMatch(match *lb.ACLMatch) any {
 			"http_filter_value":  types.FlattenSliceStringPtr(match.HTTPFilterValue),
 			"http_filter_option": match.HTTPFilterOption,
 			"invert":             match.Invert,
+			"ips_edge_services":  match.IPsEdgeServices,
 		},
 	}
 }
 
-func expandLbACLMatch(raw any) *lb.ACLMatch {
+func isIPSubnetConfigured(d *schema.ResourceData) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() {
+		return false
+	}
+
+	matchConfig := rawConfig.GetAttr("match")
+	if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
+		return false
+	}
+
+	matchBlock := matchConfig.Index(cty.NumberIntVal(0))
+	if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
+		return false
+	}
+
+	return !matchBlock.GetAttr("ip_subnet").IsNull()
+}
+
+func expandLbACLMatch(d *schema.ResourceData, raw any) *lb.ACLMatch {
 	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]any)[0].(map[string]any)
+	ipsEdgeServices := rawMap["ips_edge_services"].(bool)
+	ipSubnetConfigured := isIPSubnetConfigured(d)
 
-	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
-	ipSubnet := types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]any))
-	if len(ipSubnet) == 0 {
+	var ipSubnet []*string
+	if ipsEdgeServices {
+		ipSubnet = nil
+	} else if ipSubnetConfigured {
+		ipSubnet = types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]any))
+	} else {
 		ipSubnet = []*string{types.ExpandStringPtr("0.0.0.0/0")}
 	}
 
 	return &lb.ACLMatch{
 		IPSubnet:         ipSubnet,
+		IPsEdgeServices:  rawMap["ips_edge_services"].(bool),
 		HTTPFilter:       lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
 		HTTPFilterValue:  types.ExpandSliceStringPtr(rawMap["http_filter_value"].([]any)),
 		HTTPFilterOption: types.ExpandStringPtr(rawMap["http_filter_option"].(string)),
@@ -259,12 +286,12 @@ func flattenLbACL(acl *lb.ACL) any {
 }
 
 // expandLbACL transforms a state acl to an api one.
-func expandLbACL(i any) *lb.ACL {
+func expandLbACL(d *schema.ResourceData, i any) *lb.ACL {
 	rawRule := i.(map[string]any)
 	acl := &lb.ACL{
 		Name:        rawRule["name"].(string),
 		Description: rawRule["description"].(string),
-		Match:       expandLbACLMatch(rawRule["match"]),
+		Match:       expandLbACLMatch(d, rawRule["match"]),
 		Action:      expandLbACLAction(rawRule["action"]),
 		CreatedAt:   types.ExpandTimePtr(rawRule["created_at"]),
 		UpdatedAt:   types.ExpandTimePtr(rawRule["updated_at"]),

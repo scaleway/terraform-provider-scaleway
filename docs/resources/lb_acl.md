@@ -53,9 +53,11 @@ The following arguments are supported:
 
         - `code`  - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
 
-- `match` - (Required) The ACL match rule. At least `ip_subnet` or `http_filter` and `http_filter_value` are required.
+- `match` - (Required) The ACL match rule. At least `ip_subnet` or `ips_edge_services` or `http_filter` and `http_filter_value` are required.
 
-    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match.
+    - `ip_subnet` - (Optional) A list of IPs, or CIDR v4/v6 addresses of the session client, to match. Only one of `ip_subnet` and `ips_edge_services` should be specified.
+
+    - `ips_edge_services` - (Optional) Defines whether Edge Services IPs should be matched. Only one of `ip_subnet` and `ips_edge_services` should be specified.
 
     - `http_filter` - (Optional) The HTTP filter to match. This filter is supported only if your backend protocol has an HTTP forward protocol.
       It extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part).
