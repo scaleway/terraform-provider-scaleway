@@ -236,6 +236,59 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	})
 }
 
+func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccServer_CreateServerWithServicePassword"
+	password := "HelloWorld678!"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "by_id" {
+					  zone    = "%s"
+					  name    = "Proxmox"
+					  version = "VE 8 | Debian 12 (Bookworm)"
+					}
+
+					data "scaleway_baremetal_offer" "server_model" {
+					  zone                = "fr-par-2"
+					  name                = "EM-A610R-NVME"
+					  subscription_period = "hourly"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "TP" {
+					  zone             = "%s"
+					  ssh_key_ids      = [scaleway_iam_ssh_key.main.id]
+					  offer            = data.scaleway_baremetal_offer.server_model.offer_id
+					  os               = data.scaleway_baremetal_os.by_id.os_id
+					  service_password = "%s"
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, password),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.TP"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "id"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "zone", Zone),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "offer", "fr-par-1/e1680dec-52aa-4cbc-b70c-ef32d863fdb0"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "os", "fr-par-1/a5c00c1b-95b1-4c08-8a33-79cc079f9dac"), // Replace with actual os_id if needed
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "service_user"),
+					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.TP", "ssh_key_ids.0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
