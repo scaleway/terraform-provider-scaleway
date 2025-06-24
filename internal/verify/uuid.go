@@ -97,7 +97,7 @@ func IsUUIDWithLocality() schema.SchemaValidateDiagFunc {
 
 func IsUUIDOrNameOffer() schema.SchemaValidateDiagFunc {
 	return func(value any, path cty.Path) diag.Diagnostics {
-		uuid, _ := value.(string)
+		uuid := locality.ExpandID(value)
 		if !validation.IsUUID(uuid) {
 			return diag.Diagnostics{diag.Diagnostic{
 				Severity:      diag.Warning,
