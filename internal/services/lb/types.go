@@ -69,33 +69,62 @@ func flattenLbACLMatch(match *lb.ACLMatch) any {
 	}
 }
 
-func isIPSubnetConfigured(d *schema.ResourceData) bool {
+func isIPSubnetConfigured(d *schema.ResourceData, aclIndex int) bool {
 	rawConfig := d.GetRawConfig()
 	if rawConfig.IsNull() {
 		return false
 	}
 
-	matchConfig := rawConfig.GetAttr("match")
-	if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
-		return false
+	if rawConfig.Type().HasAttribute("match") {
+		// Standalone ACL resource
+		matchConfig := rawConfig.GetAttr("match")
+		if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
+			return false
+		}
+
+		matchBlock := matchConfig.Index(cty.NumberIntVal(0))
+		if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
+			return false
+		}
+
+		return !matchBlock.GetAttr("ip_subnet").IsNull()
+
+	} else if rawConfig.Type().HasAttribute("acl") {
+		// Frontend resource - check specific ACL by index
+		aclConfig := rawConfig.GetAttr("acl")
+		if aclConfig.IsNull() || aclConfig.LengthInt() <= aclIndex {
+			return false
+		}
+
+		aclBlock := aclConfig.Index(cty.NumberIntVal(int64(aclIndex)))
+		if aclBlock.IsNull() || !aclBlock.Type().HasAttribute("match") {
+			return false
+		}
+
+		matchConfig := aclBlock.GetAttr("match")
+		if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
+			return false
+		}
+
+		matchBlock := matchConfig.Index(cty.NumberIntVal(0))
+		if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
+			return false
+		}
+
+		return !matchBlock.GetAttr("ip_subnet").IsNull()
 	}
 
-	matchBlock := matchConfig.Index(cty.NumberIntVal(0))
-	if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
-		return false
-	}
-
-	return !matchBlock.GetAttr("ip_subnet").IsNull()
+	return false
 }
 
-func expandLbACLMatch(d *schema.ResourceData, raw any) *lb.ACLMatch {
+func expandLbACLMatch(d *schema.ResourceData, raw any, aclIndex int) *lb.ACLMatch {
 	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
 	rawMap := raw.([]any)[0].(map[string]any)
 	ipsEdgeServices := rawMap["ips_edge_services"].(bool)
-	ipSubnetConfigured := isIPSubnetConfigured(d)
+	ipSubnetConfigured := isIPSubnetConfigured(d, aclIndex)
 
 	var ipSubnet []*string
 
@@ -288,12 +317,12 @@ func flattenLbACL(acl *lb.ACL) any {
 }
 
 // expandLbACL transforms a state acl to an api one.
-func expandLbACL(d *schema.ResourceData, i any) *lb.ACL {
+func expandLbACL(d *schema.ResourceData, i any, aclIndex int) *lb.ACL {
 	rawRule := i.(map[string]any)
 	acl := &lb.ACL{
 		Name:        rawRule["name"].(string),
 		Description: rawRule["description"].(string),
-		Match:       expandLbACLMatch(d, rawRule["match"]),
+		Match:       expandLbACLMatch(d, rawRule["match"], aclIndex),
 		Action:      expandLbACLAction(rawRule["action"]),
 		CreatedAt:   types.ExpandTimePtr(rawRule["created_at"]),
 		UpdatedAt:   types.ExpandTimePtr(rawRule["updated_at"]),

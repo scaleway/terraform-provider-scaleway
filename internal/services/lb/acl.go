@@ -174,7 +174,7 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		FrontendID:  frontID,
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
-		Match:       expandLbACLMatch(d, d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match"), 0),
 		Index:       int32(d.Get("index").(int)),
 		Description: d.Get("description").(string),
 	}
@@ -236,7 +236,7 @@ func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
 		Index:       int32(d.Get("index").(int)),
-		Match:       expandLbACLMatch(d, d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match"), 0),
 		Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 	}
 

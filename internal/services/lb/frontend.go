@@ -189,6 +189,11 @@ func ResourceFrontend() *schema.Resource {
 										Optional:    true,
 										Description: `If set to true, the condition will be of type "unless"`,
 									},
+									"ips_edge_services": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: `Defines whether Edge Services IPs should be matched`,
+									},
 								},
 							},
 						},
@@ -445,8 +450,8 @@ func expandsLBACLs(d *schema.ResourceData, raw any) []*lbSDK.ACL {
 	r := raw.([]any)
 	newACL := make([]*lbSDK.ACL, 0)
 
-	for _, rawACL := range r {
-		newACL = append(newACL, expandLbACL(d, rawACL))
+	for index, rawACL := range r {
+		newACL = append(newACL, expandLbACL(d, rawACL, index))
 	}
 
 	return newACL
