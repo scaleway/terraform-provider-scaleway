@@ -382,6 +382,8 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			User:               types.ExpandStringPtr(d.Get("user")),
 			Password:           types.ExpandStringPtr(d.Get("password")),
 			PartitioningSchema: &partitioningSchema,
+			ServiceUser:        types.ExpandStringPtr(d.Get("service_user")),
+			ServicePassword:    types.ExpandStringPtr(d.Get("service_password")),
 		}
 	}
 
