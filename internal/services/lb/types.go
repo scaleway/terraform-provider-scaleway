@@ -88,7 +88,6 @@ func isIPSubnetConfigured(d *schema.ResourceData, aclIndex int) bool {
 		}
 
 		return !matchBlock.GetAttr("ip_subnet").IsNull()
-
 	} else if rawConfig.Type().HasAttribute("acl") {
 		// Frontend resource - check specific ACL by index
 		aclConfig := rawConfig.GetAttr("acl")

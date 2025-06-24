@@ -82,6 +82,10 @@ func DataSourceACLs() *schema.Resource {
 										Computed: true,
 										Type:     schema.TypeBool,
 									},
+									"ips_edge_services": {
+										Computed: true,
+										Type:     schema.TypeBool,
+									},
 								},
 							},
 						},
