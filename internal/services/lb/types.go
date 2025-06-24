@@ -98,11 +98,12 @@ func expandLbACLMatch(d *schema.ResourceData, raw any) *lb.ACLMatch {
 	ipSubnetConfigured := isIPSubnetConfigured(d)
 
 	var ipSubnet []*string
-	if ipsEdgeServices {
+	switch {
+	case ipsEdgeServices:
 		ipSubnet = nil
-	} else if ipSubnetConfigured {
+	case ipSubnetConfigured:
 		ipSubnet = types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]any))
-	} else {
+	default:
 		ipSubnet = []*string{types.ExpandStringPtr("0.0.0.0/0")}
 	}
 

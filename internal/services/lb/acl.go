@@ -110,7 +110,6 @@ func ResourceACL() *schema.Resource {
 							Optional:         true,
 							Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
 							DiffSuppressFunc: diffSuppressFunc32SubnetMask,
-							ConflictsWith:    []string{"ips_edge_services"},
 						},
 						"http_filter": {
 							Type:             schema.TypeString,
@@ -138,10 +137,9 @@ func ResourceACL() *schema.Resource {
 							Description: `If set to true, the condition will be of type "unless"`,
 						},
 						"ips_edge_services": {
-							Type:          schema.TypeBool,
-							Optional:      true,
-							Description:   `Defines whether Edge Services IPs should be matched`,
-							ConflictsWith: []string{"ip_subnet"},
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: `Defines whether Edge Services IPs should be matched`,
 						},
 					},
 				},
