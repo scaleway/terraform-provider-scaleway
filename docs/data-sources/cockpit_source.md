@@ -28,7 +28,6 @@ You can also retrieve a data source by specifying filtering criteria such as `na
 ```terraform
 data "scaleway_cockpit_source" "filtered" {
   project_id = "11111111-1111-1111-1111-111111111111"
-  region     = "fr-par"
   name       = "my-data-source"
 }
 ```
@@ -38,8 +37,6 @@ data "scaleway_cockpit_source" "filtered" {
 This section lists the arguments that are supported:
 
 - `id` - (Optional) The unique identifier of the Cockpit data source in the `{region}/{id}` format. If specified, other filters are ignored.
-
-- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) where the data source is located. Defaults to the region specified in the [provider configuration](../index.md#region).
 
 - `project_id` - (Required unless `id` is specified) The ID of the Project the data source is associated with. Defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
 
