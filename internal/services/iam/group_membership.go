@@ -182,57 +182,22 @@ func ExpandGroupMembershipID(id string) (groupID string, userID string, applicat
 }
 
 func MakeGroupRequest(ctx context.Context, api *iam.API, request any) (*iam.Group, error) {
-	retryInterval := 50 * time.Millisecond
-	maxRetries := 10
+	retryInterval := 100 * time.Millisecond
 
-	if transport.DefaultWaitRetryInterval != nil {
-		retryInterval = *transport.DefaultWaitRetryInterval
-	}
-
-	switch req := request.(type) {
-	case *iam.AddGroupMemberRequest:
-		for i := range maxRetries {
-			response, err := api.AddGroupMember(req, scw.WithContext(ctx))
-			if err != nil {
-				if handleTransientError(err, req.GroupID, retryInterval, i) {
-					continue
-				}
-
-				return nil, err
-			}
-
-			return response, nil
+	group, err := transport.RetryOnTransientStateError(func() (*iam.Group, error) {
+		switch req := request.(type) {
+		case *iam.AddGroupMemberRequest:
+			return api.AddGroupMember(req, scw.WithContext(ctx))
+		case *iam.RemoveGroupMemberRequest:
+			return api.RemoveGroupMember(req, scw.WithContext(ctx))
+		default:
+			return nil, fmt.Errorf("invalid request type: %T", req)
 		}
+	}, func() (string, error) {
+		time.Sleep(retryInterval) // lintignore: R018
 
-		return nil, fmt.Errorf("failed to add group member after %d retries", maxRetries)
+		return "", nil
+	})
 
-	case *iam.RemoveGroupMemberRequest:
-		for i := range maxRetries {
-			response, err := api.RemoveGroupMember(req, scw.WithContext(ctx))
-			if err != nil {
-				if handleTransientError(err, req.GroupID, retryInterval, i) {
-					continue
-				}
-
-				return nil, err
-			}
-
-			return response, nil
-		}
-
-		return nil, fmt.Errorf("failed to remove group member after %d retries", maxRetries)
-
-	default:
-		return nil, fmt.Errorf("invalid request type: %T", req)
-	}
-}
-
-func handleTransientError(err error, groupID string, retryInterval time.Duration, maxRetries int) bool {
-	if httperrors.Is409(err) && strings.Contains(err.Error(), fmt.Sprintf("resource group with ID %s is in a transient state: updating", groupID)) {
-		time.Sleep(retryInterval * time.Duration(maxRetries)) // lintignore: R018
-
-		return true
-	}
-
-	return false
+	return group, err
 }
