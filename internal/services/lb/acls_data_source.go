@@ -82,6 +82,10 @@ func DataSourceACLs() *schema.Resource {
 										Computed: true,
 										Type:     schema.TypeBool,
 									},
+									"ips_edge_services": {
+										Computed: true,
+										Type:     schema.TypeBool,
+									},
 								},
 							},
 						},
@@ -135,7 +139,7 @@ func DataSourceACLs() *schema.Resource {
 	}
 }
 
-func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,10 +159,10 @@ func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	acls := []interface{}(nil)
+	acls := []any(nil)
 
 	for _, acl := range res.ACLs {
-		rawACL := make(map[string]interface{})
+		rawACL := make(map[string]any)
 		rawACL["id"] = zonal.NewIDString(zone, acl.ID)
 		rawACL["name"] = acl.Name
 		rawACL["frontend_id"] = zonal.NewIDString(zone, acl.Frontend.ID)

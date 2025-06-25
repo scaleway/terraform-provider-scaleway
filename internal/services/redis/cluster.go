@@ -243,7 +243,7 @@ func ResourceCluster() *schema.Resource {
 }
 
 func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 		oldSizeRaw, newSizeRaw := diff.GetChange("cluster_size")
 		oldSize, _ := oldSizeRaw.(int)
 		newSize, _ := newSizeRaw.(int)
@@ -256,7 +256,7 @@ func customizeDiffMigrateClusterSize() schema.CustomizeDiffFunc {
 	}
 }
 
-func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -327,7 +327,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceClusterRead(ctx, d, m)
 }
 
-func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -367,7 +367,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	// set endpoints
-	allPrivateIPs := []map[string]interface{}(nil)
+	allPrivateIPs := []map[string]any(nil)
 	diags := diag.Diagnostics{}
 	authorized := true
 
@@ -459,7 +459,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -638,7 +638,7 @@ func ResourceClusterUpdateEndpoints(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func ResourceClusterDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceClusterDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

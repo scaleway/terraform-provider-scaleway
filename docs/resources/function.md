@@ -99,6 +99,9 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the functions namespace is associated with.
 
+- `private_network_id` (Optional) The ID of the Private Network the function is connected to.
+
+~> **Important** This feature is currently in beta and requires a namespace with VPC integration activated by setting the `activate_vpc_integration` attribute to `true`.
 
 ## Attributes Reference
 

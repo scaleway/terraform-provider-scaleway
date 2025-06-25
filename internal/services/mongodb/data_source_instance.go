@@ -34,7 +34,7 @@ func DataSourceInstance() *schema.Resource {
 	}
 }
 
-func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, zone, region, err := newAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

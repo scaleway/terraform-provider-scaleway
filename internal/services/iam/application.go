@@ -62,7 +62,7 @@ func ResourceApplication() *schema.Resource {
 	}
 }
 
-func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	app, err := api.CreateApplication(&iam.CreateApplicationRequest{
@@ -80,7 +80,7 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIamApplicationRead(ctx, d, m)
 }
 
-func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	app, err := api.GetApplication(&iam.GetApplicationRequest{
@@ -107,7 +107,7 @@ func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	req := &iam.UpdateApplicationRequest{
@@ -141,7 +141,7 @@ func resourceIamApplicationUpdate(ctx context.Context, d *schema.ResourceData, m
 	return resourceIamApplicationRead(ctx, d, m)
 }
 
-func resourceIamApplicationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamApplicationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeleteApplication(&iam.DeleteApplicationRequest{

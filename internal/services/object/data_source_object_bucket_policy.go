@@ -28,7 +28,7 @@ func DataSourceBucketPolicy() *schema.Resource {
 	}
 }
 
-func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)

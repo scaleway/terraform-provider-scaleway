@@ -96,8 +96,8 @@ func ResourceDefinition() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A reference to a Secret Manager secret.",
-				Set: func(v interface{}) int {
-					secret := v.(map[string]interface{})
+				Set: func(v any) int {
+					secret := v.(map[string]any)
 					if secret["environment"] != "" {
 						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
 					}
@@ -143,7 +143,7 @@ func ResourceDefinition() *schema.Resource {
 	}
 }
 
-func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -192,7 +192,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }
 
-func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -236,7 +236,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -331,7 +331,7 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }
 
-func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

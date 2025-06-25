@@ -189,6 +189,11 @@ func ResourceFrontend() *schema.Resource {
 										Optional:    true,
 										Description: `If set to true, the condition will be of type "unless"`,
 									},
+									"ips_edge_services": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: `Defines whether Edge Services IPs should be matched`,
+									},
 								},
 							},
 						},
@@ -227,7 +232,7 @@ func ResourceFrontend() *schema.Resource {
 	}
 }
 
-func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -299,7 +304,7 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceLbFrontendUpdate(ctx, d, m)
 }
 
-func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -353,12 +358,12 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
+func flattenLBACLs(acls []*lbSDK.ACL) any {
 	sort.Slice(acls, func(i, j int) bool {
 		return acls[i].Index < acls[j].Index
 	})
 
-	rawACLs := make([]interface{}, 0, len(acls))
+	rawACLs := make([]any, 0, len(acls))
 	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
@@ -382,7 +387,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	}
 
 	// convert state acl and sanitize them a bit
-	newACL := expandsLBACLs(d.Get("acl"))
+	newACL := expandsLBACLs(d, d.Get("acl"))
 
 	// loop
 	for index, stateACL := range newACL {
@@ -441,18 +446,18 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	return nil
 }
 
-func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
-	d := raw.([]interface{})
+func expandsLBACLs(d *schema.ResourceData, raw any) []*lbSDK.ACL {
+	r := raw.([]any)
 	newACL := make([]*lbSDK.ACL, 0)
 
-	for _, rawACL := range d {
-		newACL = append(newACL, expandLbACL(rawACL))
+	for index, rawACL := range r {
+		newACL = append(newACL, expandLbACL(d, rawACL, index))
 	}
 
 	return newACL
 }
 
-func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -505,7 +510,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceLbFrontendRead(ctx, d, m)
 }
 
-func resourceLbFrontendDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -95,6 +95,13 @@ func ResourceNamespace() *schema.Resource {
 				Description: "Destroy registry on deletion",
 				Deprecated:  "Registry namespace is automatically destroyed with namespace",
 			},
+			"activate_vpc_integration": {
+				Type:        schema.TypeBool,
+				ForceNew:    true,
+				Optional:    true,
+				Default:     false,
+				Description: "Activate VPC integration for the namespace",
+			},
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
@@ -102,7 +109,7 @@ func ResourceNamespace() *schema.Resource {
 	}
 }
 
-func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,6 +129,10 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		createReq.Tags = types.ExpandStrings(rawTag)
 	}
 
+	if activateVPC, ok := d.GetOk("activate_vpc_integration"); ok {
+		createReq.ActivateVpcIntegration = activateVPC.(bool)
+	}
+
 	ns, err := api.CreateNamespace(createReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -137,7 +148,7 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceContainerNamespaceRead(ctx, d, m)
 }
 
-func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -164,11 +175,12 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
+	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
 
 	return nil
 }
 
-func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -208,7 +220,7 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 	return ResourceContainerNamespaceRead(ctx, d, m)
 }
 
-func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

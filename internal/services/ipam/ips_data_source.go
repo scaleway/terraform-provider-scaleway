@@ -138,7 +138,7 @@ func DataSourceIPs() *schema.Resource {
 	}
 }
 
-func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +184,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	ips := []interface{}(nil)
+	ips := []any(nil)
 
 	for _, ip := range resp.IPs {
 		address, err := types.FlattenIPNet(ip.Address)
@@ -192,7 +192,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.FromErr(err)
 		}
 
-		rawIP := make(map[string]interface{})
+		rawIP := make(map[string]any)
 		rawIP["id"] = regional.NewIDString(region, ip.ID)
 		rawIP["address"] = address
 		rawIP["resource"] = flattenIPResource(ip.Resource)

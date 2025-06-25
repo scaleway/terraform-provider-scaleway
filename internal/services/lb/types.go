@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,12 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interface{} {
+func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) any {
 	if len(privateNetworks) == 0 || privateNetworks == nil {
 		return nil
 	}
 
-	pnI := []map[string]interface{}(nil)
+	pnI := []map[string]any(nil)
 
 	var dhcpConfigExist bool
 
@@ -38,7 +39,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 		}
 
 		pnRegionalID := regional.NewIDString(pnRegion, pn.PrivateNetworkID)
-		pnI = append(pnI, map[string]interface{}{
+		pnI = append(pnI, map[string]any{
 			"private_network_id": pnRegionalID,
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
@@ -51,45 +52,101 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) interfac
 	return pnI
 }
 
-func flattenLbACLMatch(match *lb.ACLMatch) interface{} {
+func flattenLbACLMatch(match *lb.ACLMatch) any {
 	if match == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"ip_subnet":          types.FlattenSliceStringPtr(match.IPSubnet),
 			"http_filter":        match.HTTPFilter.String(),
 			"http_filter_value":  types.FlattenSliceStringPtr(match.HTTPFilterValue),
 			"http_filter_option": match.HTTPFilterOption,
 			"invert":             match.Invert,
+			"ips_edge_services":  match.IPsEdgeServices,
 		},
 	}
 }
 
-func expandLbACLMatch(raw interface{}) *lb.ACLMatch {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func isIPSubnetConfigured(d *schema.ResourceData, aclIndex int) bool {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() {
+		return false
+	}
+
+	if rawConfig.Type().HasAttribute("match") {
+		// Standalone ACL resource
+		matchConfig := rawConfig.GetAttr("match")
+		if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
+			return false
+		}
+
+		matchBlock := matchConfig.Index(cty.NumberIntVal(0))
+		if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
+			return false
+		}
+
+		return !matchBlock.GetAttr("ip_subnet").IsNull()
+	} else if rawConfig.Type().HasAttribute("acl") {
+		// Frontend resource - check specific ACL by index
+		aclConfig := rawConfig.GetAttr("acl")
+		if aclConfig.IsNull() || aclConfig.LengthInt() <= aclIndex {
+			return false
+		}
+
+		aclBlock := aclConfig.Index(cty.NumberIntVal(int64(aclIndex)))
+		if aclBlock.IsNull() || !aclBlock.Type().HasAttribute("match") {
+			return false
+		}
+
+		matchConfig := aclBlock.GetAttr("match")
+		if matchConfig.IsNull() || matchConfig.LengthInt() == 0 {
+			return false
+		}
+
+		matchBlock := matchConfig.Index(cty.NumberIntVal(0))
+		if matchBlock.IsNull() || !matchBlock.Type().HasAttribute("ip_subnet") {
+			return false
+		}
+
+		return !matchBlock.GetAttr("ip_subnet").IsNull()
+	}
+
+	return false
+}
+
+func expandLbACLMatch(d *schema.ResourceData, raw any, aclIndex int) *lb.ACLMatch {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
+	ipsEdgeServices := rawMap["ips_edge_services"].(bool)
+	ipSubnetConfigured := isIPSubnetConfigured(d, aclIndex)
 
-	// scaleway api require ip subnet, so if we did not specify one, just put 0.0.0.0/0 instead
-	ipSubnet := types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]interface{}))
-	if len(ipSubnet) == 0 {
+	var ipSubnet []*string
+
+	switch {
+	case ipsEdgeServices:
+		ipSubnet = nil
+	case ipSubnetConfigured:
+		ipSubnet = types.ExpandSliceStringPtr(rawMap["ip_subnet"].([]any))
+	default:
 		ipSubnet = []*string{types.ExpandStringPtr("0.0.0.0/0")}
 	}
 
 	return &lb.ACLMatch{
 		IPSubnet:         ipSubnet,
+		IPsEdgeServices:  rawMap["ips_edge_services"].(bool),
 		HTTPFilter:       lb.ACLHTTPFilter(rawMap["http_filter"].(string)),
-		HTTPFilterValue:  types.ExpandSliceStringPtr(rawMap["http_filter_value"].([]interface{})),
+		HTTPFilterValue:  types.ExpandSliceStringPtr(rawMap["http_filter_value"].([]any)),
 		HTTPFilterOption: types.ExpandStringPtr(rawMap["http_filter_option"].(string)),
 		Invert:           rawMap["invert"].(bool),
 	}
 }
 
-func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
+func expandLbBackendMarkdownAction(raw any) lb.OnMarkedDownAction {
 	if raw == "none" {
 		return lb.OnMarkedDownActionOnMarkedDownActionNone
 	}
@@ -97,54 +154,54 @@ func expandLbBackendMarkdownAction(raw interface{}) lb.OnMarkedDownAction {
 	return lb.OnMarkedDownAction(raw.(string))
 }
 
-func flattenLbProtocol(protocol lb.Protocol) interface{} {
+func flattenLbProtocol(protocol lb.Protocol) any {
 	return protocol.String()
 }
 
-func expandLbProtocol(raw interface{}) lb.Protocol {
+func expandLbProtocol(raw any) lb.Protocol {
 	return lb.Protocol(raw.(string))
 }
 
-func flattenLbForwardPortAlgorithm(algo lb.ForwardPortAlgorithm) interface{} {
+func flattenLbForwardPortAlgorithm(algo lb.ForwardPortAlgorithm) any {
 	return algo.String()
 }
 
-func expandLbForwardPortAlgorithm(raw interface{}) lb.ForwardPortAlgorithm {
+func expandLbForwardPortAlgorithm(raw any) lb.ForwardPortAlgorithm {
 	return lb.ForwardPortAlgorithm(raw.(string))
 }
 
-func flattenLbStickySessionsType(t lb.StickySessionsType) interface{} {
+func flattenLbStickySessionsType(t lb.StickySessionsType) any {
 	return t.String()
 }
 
-func expandLbStickySessionsType(raw interface{}) lb.StickySessionsType {
+func expandLbStickySessionsType(raw any) lb.StickySessionsType {
 	return lb.StickySessionsType(raw.(string))
 }
 
-func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) interface{} {
+func flattenLbHCTCP(config *lb.HealthCheckTCPConfig) any {
 	if config == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{},
 	}
 }
 
-func expandLbHCTCP(raw interface{}) *lb.HealthCheckTCPConfig {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbHCTCP(raw any) *lb.HealthCheckTCPConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
 	return &lb.HealthCheckTCPConfig{}
 }
 
-func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
+func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) any {
 	if config == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"uri":         config.URI,
 			"method":      config.Method,
@@ -154,12 +211,12 @@ func flattenLbHCHTTP(config *lb.HealthCheckHTTPConfig) interface{} {
 	}
 }
 
-func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbHCHTTP(raw any) *lb.HealthCheckHTTPConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &lb.HealthCheckHTTPConfig{
 		URI:        rawMap["uri"].(string),
@@ -169,12 +226,12 @@ func expandLbHCHTTP(raw interface{}) *lb.HealthCheckHTTPConfig {
 	}
 }
 
-func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
+func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) any {
 	if config == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"uri":         config.URI,
 			"method":      config.Method,
@@ -185,12 +242,12 @@ func flattenLbHCHTTPS(config *lb.HealthCheckHTTPSConfig) interface{} {
 	}
 }
 
-func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbHCHTTPS(raw any) *lb.HealthCheckHTTPSConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &lb.HealthCheckHTTPSConfig{
 		URI:        rawMap["uri"].(string),
@@ -201,13 +258,13 @@ func expandLbHCHTTPS(raw interface{}) *lb.HealthCheckHTTPSConfig {
 	}
 }
 
-func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryptConfig {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbLetsEncrypt(raw any) *lb.CreateCertificateRequestLetsencryptConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
-	alternativeNames := rawMap["subject_alternative_name"].([]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
+	alternativeNames := rawMap["subject_alternative_name"].([]any)
 	config := &lb.CreateCertificateRequestLetsencryptConfig{
 		CommonName: rawMap["common_name"].(string),
 	}
@@ -219,12 +276,12 @@ func expandLbLetsEncrypt(raw interface{}) *lb.CreateCertificateRequestLetsencryp
 	return config
 }
 
-func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCustomCertificate {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbCustomCertificate(raw any) *lb.CreateCertificateRequestCustomCertificate {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 	config := &lb.CreateCertificateRequestCustomCertificate{
 		CertificateChain: rawMap["certificate_chain"].(string),
 	}
@@ -232,15 +289,15 @@ func expandLbCustomCertificate(raw interface{}) *lb.CreateCertificateRequestCust
 	return config
 }
 
-func expandLbProxyProtocol(raw interface{}) lb.ProxyProtocol {
+func expandLbProxyProtocol(raw any) lb.ProxyProtocol {
 	return lb.ProxyProtocol("proxy_protocol_" + raw.(string))
 }
 
-func flattenLbProxyProtocol(pp lb.ProxyProtocol) interface{} {
+func flattenLbProxyProtocol(pp lb.ProxyProtocol) any {
 	return strings.TrimPrefix(pp.String(), "proxy_protocol_")
 }
 
-func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
+func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) any {
 	if action == lb.OnMarkedDownActionOnMarkedDownActionNone {
 		return "none"
 	}
@@ -248,8 +305,8 @@ func flattenLbBackendMarkdownAction(action lb.OnMarkedDownAction) interface{} {
 	return action.String()
 }
 
-func flattenLbACL(acl *lb.ACL) interface{} {
-	res := map[string]interface{}{
+func flattenLbACL(acl *lb.ACL) any {
+	res := map[string]any{
 		"name":   acl.Name,
 		"match":  flattenLbACLMatch(acl.Match),
 		"action": flattenLbACLAction(acl.Action),
@@ -259,12 +316,12 @@ func flattenLbACL(acl *lb.ACL) interface{} {
 }
 
 // expandLbACL transforms a state acl to an api one.
-func expandLbACL(i interface{}) *lb.ACL {
-	rawRule := i.(map[string]interface{})
+func expandLbACL(d *schema.ResourceData, i any, aclIndex int) *lb.ACL {
+	rawRule := i.(map[string]any)
 	acl := &lb.ACL{
 		Name:        rawRule["name"].(string),
 		Description: rawRule["description"].(string),
-		Match:       expandLbACLMatch(rawRule["match"]),
+		Match:       expandLbACLMatch(d, rawRule["match"], aclIndex),
 		Action:      expandLbACLAction(rawRule["action"]),
 		CreatedAt:   types.ExpandTimePtr(rawRule["created_at"]),
 		UpdatedAt:   types.ExpandTimePtr(rawRule["updated_at"]),
@@ -282,8 +339,8 @@ func expandLbACL(i interface{}) *lb.ACL {
 	return acl
 }
 
-func flattenLbACLAction(action *lb.ACLAction) interface{} {
-	return []map[string]interface{}{
+func flattenLbACLAction(action *lb.ACLAction) any {
+	return []map[string]any{
 		{
 			"type":     action.Type,
 			"redirect": flattenLbACLActionRedirect(action.Redirect),
@@ -291,12 +348,12 @@ func flattenLbACLAction(action *lb.ACLAction) interface{} {
 	}
 }
 
-func expandLbACLAction(raw interface{}) *lb.ACLAction {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbACLAction(raw any) *lb.ACLAction {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &lb.ACLAction{
 		Type:     lb.ACLActionType(rawMap["type"].(string)),
@@ -304,12 +361,12 @@ func expandLbACLAction(raw interface{}) *lb.ACLAction {
 	}
 }
 
-func flattenLbACLActionRedirect(redirect *lb.ACLActionRedirect) interface{} {
+func flattenLbACLActionRedirect(redirect *lb.ACLActionRedirect) any {
 	if redirect == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"type":   redirect.Type,
 			"target": redirect.Target,
@@ -318,12 +375,12 @@ func flattenLbACLActionRedirect(redirect *lb.ACLActionRedirect) interface{} {
 	}
 }
 
-func expandLbACLActionRedirect(raw interface{}) *lb.ACLActionRedirect {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandLbACLActionRedirect(raw any) *lb.ACLActionRedirect {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &lb.ACLActionRedirect{
 		Type:   lb.ACLActionRedirectRedirectType(rawMap["type"].(string)),
@@ -332,7 +389,7 @@ func expandLbACLActionRedirect(raw interface{}) *lb.ACLActionRedirect {
 	}
 }
 
-func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
+func expandPrivateNetworks(data any) ([]*lb.PrivateNetwork, error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -340,11 +397,11 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 	pns := []*lb.PrivateNetwork(nil)
 
 	for _, pn := range data.(*schema.Set).List() {
-		rawPn := pn.(map[string]interface{})
+		rawPn := pn.(map[string]any)
 		privateNetwork := &lb.PrivateNetwork{}
 		privateNetwork.PrivateNetworkID = locality.ExpandID(rawPn["private_network_id"].(string))
 
-		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]interface{})) > 0 {
+		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]any)) > 0 {
 			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig) //nolint:staticcheck
 		} else {
 			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"]) //nolint:staticcheck
@@ -358,8 +415,8 @@ func expandPrivateNetworks(data interface{}) ([]*lb.PrivateNetwork, error) {
 	return pns, nil
 }
 
-func expandLbPrivateNetworkStaticConfig(raw interface{}) *lb.PrivateNetworkStaticConfig {
-	if raw == nil || len(raw.([]interface{})) < 1 {
+func expandLbPrivateNetworkStaticConfig(raw any) *lb.PrivateNetworkStaticConfig {
+	if raw == nil || len(raw.([]any)) < 1 {
 		return nil
 	}
 
@@ -376,7 +433,7 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []s
 	return *cfg.IPAddress //nolint:staticcheck
 }
 
-func expandLbPrivateNetworkDHCPConfig(raw interface{}) *lb.PrivateNetworkDHCPConfig {
+func expandLbPrivateNetworkDHCPConfig(raw any) *lb.PrivateNetworkDHCPConfig {
 	if raw == nil || !raw.(bool) {
 		return nil
 	}
@@ -427,14 +484,14 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 	return privateNetworks, nil
 }
 
-func flattenLbInstances(instances []*lb.Instance) interface{} {
+func flattenLbInstances(instances []*lb.Instance) any {
 	if instances == nil {
 		return nil
 	}
 
-	flattenedInstances := []map[string]interface{}(nil)
+	flattenedInstances := []map[string]any(nil)
 	for _, instance := range instances {
-		flattenedInstances = append(flattenedInstances, map[string]interface{}{
+		flattenedInstances = append(flattenedInstances, map[string]any{
 			"id":         instance.ID,
 			"status":     instance.Status.String(),
 			"ip_address": instance.IPAddress,
@@ -447,14 +504,14 @@ func flattenLbInstances(instances []*lb.Instance) interface{} {
 	return flattenedInstances
 }
 
-func flattenLbIPs(ips []*lb.IP) interface{} {
+func flattenLbIPs(ips []*lb.IP) any {
 	if ips == nil {
 		return nil
 	}
 
-	flattenedIPs := []map[string]interface{}(nil)
+	flattenedIPs := []map[string]any(nil)
 	for _, ip := range ips {
-		flattenedIPs = append(flattenedIPs, map[string]interface{}{
+		flattenedIPs = append(flattenedIPs, map[string]any{
 			"id":              ip.ID,
 			"ip_address":      ip.IPAddress,
 			"reverse":         ip.Reverse,

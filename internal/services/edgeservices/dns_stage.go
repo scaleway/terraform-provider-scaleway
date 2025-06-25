@@ -78,7 +78,7 @@ func ResourceDNSStage() *schema.Resource {
 	}
 }
 
-func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.CreateDNSStage(&edgeservices.CreateDNSStageRequest{
@@ -97,7 +97,7 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceDNSStageRead(ctx, d, m)
 }
 
-func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	dnsStage, err := api.GetDNSStage(&edgeservices.GetDNSStageRequest{
@@ -121,7 +121,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
 	_ = d.Set("type", dnsStage.Type.String())
 
-	oldFQDNs := d.Get("fqdns").([]interface{})
+	oldFQDNs := d.Get("fqdns").([]any)
 	oldFQDNsSet := make(map[string]bool)
 
 	for _, fqdn := range oldFQDNs {
@@ -160,7 +160,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -199,7 +199,7 @@ func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceDNSStageRead(ctx, d, m)
 }
 
-func ResourceDNSStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDNSStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteDNSStage(&edgeservices.DeleteDNSStageRequest{

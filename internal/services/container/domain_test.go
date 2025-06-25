@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
-	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
 )
 
 func TestAccDomain_Basic(t *testing.T) {
@@ -27,17 +26,11 @@ func TestAccDomain_Basic(t *testing.T) {
 		CheckDestroy:      isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource scaleway_container_namespace main {}
-				`,
-				Check: containerchecks.TestConfigContainerNamespace(tt, "scaleway_container_namespace.main"),
-			},
-			{
 				Config: fmt.Sprintf(`
 				resource scaleway_container_namespace main {}
 
 				resource scaleway_container app {
-					registry_image = "${scaleway_container_namespace.main.registry_endpoint}/nginx:test"
+					registry_image = "nginx:latest"
 					namespace_id = scaleway_container_namespace.main.id
 					port = 80
 					deploy = true

@@ -410,13 +410,13 @@ func contactSchema() map[string]*schema.Schema {
 	}
 }
 
-func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
 	projectID := d.Get("project_id").(string)
 
 	domainNames := make([]string, 0)
-	for _, v := range d.Get("domain_names").([]interface{}) {
+	for _, v := range d.Get("domain_names").([]any) {
 		domainNames = append(domainNames, v.(string))
 	}
 
@@ -433,9 +433,9 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m i
 	if ownerContactID != "" {
 		buyDomainsRequest.OwnerContactID = &ownerContactID
 	} else if ownerContacts, ok := d.GetOk("owner_contact"); ok {
-		contacts := ownerContacts.([]interface{})
+		contacts := ownerContacts.([]any)
 		if len(contacts) > 0 {
-			buyDomainsRequest.OwnerContact = ExpandNewContact(contacts[0].(map[string]interface{}))
+			buyDomainsRequest.OwnerContact = ExpandNewContact(contacts[0].(map[string]any))
 		}
 	}
 
@@ -479,7 +479,7 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
-func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -522,11 +522,11 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m in
 
 	computedDnssec := firstResp.Dnssec.Status == domain.DomainFeatureStatusEnabled
 
-	var computedDSRecord []interface{}
+	var computedDSRecord []any
 	if firstResp.Dnssec != nil {
 		computedDSRecord = FlattenDSRecord(firstResp.Dnssec.DsRecords)
 	} else {
-		computedDSRecord = []interface{}{}
+		computedDSRecord = []any{}
 	}
 
 	_ = d.Set("domain_names", domainNames)
@@ -548,7 +548,7 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -641,7 +641,7 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
-func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 

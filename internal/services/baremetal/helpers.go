@@ -29,7 +29,7 @@ const (
 )
 
 // newAPIWithZone returns a new API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*baremetal.API, scw.Zone, error) {
 	api := baremetal.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -41,7 +41,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetal.API, scw.
 }
 
 // NewAPIWithZoneAndID returns an API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, error) {
+func NewAPIWithZoneAndID(m any, id string) (*baremetal.API, zonal.ID, error) {
 	api := baremetal.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -53,7 +53,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*baremetal.API, zonal.ID, er
 }
 
 // returns a new private network API and the zone for a Create request
-func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*baremetalV3.PrivateNetworkAPI, scw.Zone, error) {
+func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m any) (*baremetalV3.PrivateNetworkAPI, scw.Zone, error) {
 	privateNetworkAPI := baremetalV3.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -65,7 +65,7 @@ func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*barem
 }
 
 // NewPrivateNetworkAPIWithZoneAndID returns a private network API with zone and ID extracted from the state
-func NewPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetalV3.PrivateNetworkAPI, zonal.ID, error) {
+func NewPrivateNetworkAPIWithZoneAndID(m any, id string) (*baremetalV3.PrivateNetworkAPI, zonal.ID, error) {
 	privateNetworkAPI := baremetalV3.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -76,7 +76,7 @@ func NewPrivateNetworkAPIWithZoneAndID(m interface{}, id string) (*baremetalV3.P
 	return privateNetworkAPI, zonal.NewID(zone, ID), nil
 }
 
-func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceData, m interface{}, serverID string) error {
+func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceData, m any, serverID string) error {
 	privateNetworkAPI, zone, err := newPrivateNetworkAPIWithZone(d, m)
 	if err != nil {
 		return err
@@ -168,8 +168,8 @@ func compareOptions(slice1, slice2 []*baremetal.ServerOption) []*baremetal.Serve
 }
 
 // customDiffPrivateNetworkOption checks that the private_network option has been set if there is a private_network
-func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-	return func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 		var isPrivateNetworkOption bool
 
 		_, okPrivateNetwork := diff.GetOk("private_network")
@@ -197,8 +197,8 @@ func customDiffPrivateNetworkOption() func(ctx context.Context, diff *schema.Res
 	}
 }
 
-func privateNetworkSetHash(v interface{}) int {
-	m := v.(map[string]interface{})
+func privateNetworkSetHash(v any) int {
+	m := v.(map[string]any)
 	id := locality.ExpandID(m["id"].(string))
 
 	var buf bytes.Buffer
@@ -206,7 +206,7 @@ func privateNetworkSetHash(v interface{}) int {
 	buf.WriteString(id)
 
 	if ipamIPs, ok := m["ipam_ip_ids"]; ok && ipamIPs != nil {
-		ipamIPsList := ipamIPs.([]interface{})
+		ipamIPsList := ipamIPs.([]any)
 
 		var ipamIPIDs []string
 
@@ -227,7 +227,7 @@ func privateNetworkSetHash(v interface{}) int {
 	return schema.HashString(buf.String())
 }
 
-func getOfferInformations(ctx context.Context, offer interface{}, id string, i interface{}) (*baremetal.Offer, error) {
+func getOfferInformations(ctx context.Context, offer any, id string, i any) (*baremetal.Offer, error) {
 	api, zone, err := NewAPIWithZoneAndID(i, id)
 	if err != nil {
 		return nil, err
@@ -245,8 +245,8 @@ func getOfferInformations(ctx context.Context, offer interface{}, id string, i i
 	}
 }
 
-func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
-	return func(ctx context.Context, diff *schema.ResourceDiff, i interface{}) error {
+func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
 		if diff.Get("offer") == "" || !diff.HasChange("offer") || diff.Id() == "" {
 			return nil
 		}

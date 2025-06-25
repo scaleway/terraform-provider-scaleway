@@ -583,10 +583,10 @@ func isLbDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 }
 
 func TestLbUpgradeV1SchemaUpgradeFunc(t *testing.T) {
-	v0Schema := map[string]interface{}{
+	v0Schema := map[string]any{
 		"id": "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
-	v1Schema := map[string]interface{}{
+	v1Schema := map[string]any{
 		"id": "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
 

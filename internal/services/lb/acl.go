@@ -136,6 +136,11 @@ func ResourceACL() *schema.Resource {
 							Optional:    true,
 							Description: `If set to true, the condition will be of type "unless"`,
 						},
+						"ips_edge_services": {
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Description: `Defines whether Edge Services IPs should be matched`,
+						},
 					},
 				},
 			},
@@ -153,7 +158,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -169,7 +174,7 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		FrontendID:  frontID,
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
-		Match:       expandLbACLMatch(d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match"), 0),
 		Index:       int32(d.Get("index").(int)),
 		Description: d.Get("description").(string),
 	}
@@ -184,7 +189,7 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	return resourceLbACLRead(ctx, d, m)
 }
 
-func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -219,7 +224,7 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,7 +236,7 @@ func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 		Name:        d.Get("name").(string),
 		Action:      expandLbACLAction(d.Get("action")),
 		Index:       int32(d.Get("index").(int)),
-		Match:       expandLbACLMatch(d.Get("match")),
+		Match:       expandLbACLMatch(d, d.Get("match"), 0),
 		Description: types.ExpandUpdatedStringPtr(d.Get("description")),
 	}
 
@@ -243,7 +248,7 @@ func resourceLbACLUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	return resourceLbACLRead(ctx, d, m)
 }
 
-func resourceLbACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -20,7 +20,7 @@ import (
 const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
-func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Region, error) {
+func vpcAPIWithRegion(d *schema.ResourceData, m any) (*vpc.API, scw.Region, error) {
 	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -32,7 +32,7 @@ func vpcAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.API, scw.Regi
 }
 
 // NewAPIWithRegionAndID returns a new VPC API with locality and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*vpc.API, scw.Region, string, error) {
 	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
@@ -43,12 +43,12 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*vpc.API, scw.Region, stri
 	return vpcAPI, region, ID, err
 }
 
-func NewAPI(m interface{}) (*vpc.API, error) {
+func NewAPI(m any) (*vpc.API, error) {
 	return vpc.NewAPI(meta.ExtractScwClient(m)), nil
 }
 
 // routesAPIWithRegion returns a new VPC API and the region for a Create request
-func routesAPIWithRegion(d *schema.ResourceData, m interface{}) (*vpc.RoutesWithNexthopAPI, scw.Region, error) {
+func routesAPIWithRegion(d *schema.ResourceData, m any) (*vpc.RoutesWithNexthopAPI, scw.Region, error) {
 	routesAPI := vpc.NewRoutesWithNexthopAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -65,7 +65,7 @@ func vpcPrivateNetworkUpgradeV1SchemaType() cty.Type {
 	})
 }
 
-func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	var err error
 
 	ID, exist := rawState["id"]

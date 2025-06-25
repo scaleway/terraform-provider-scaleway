@@ -72,7 +72,7 @@ func ResourceServer() *schema.Resource {
 							Description:      "The private network ID",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return locality.ExpandID(i.(string))
 							},
 						},
@@ -186,7 +186,7 @@ func ResourceServer() *schema.Resource {
 	}
 }
 
-func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -234,7 +234,7 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }
 
-func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -292,7 +292,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	diags := diag.Diagnostics{}
-	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	allPrivateIPs := make([]map[string]any, 0, listPrivateNetworks.TotalCount)
 	authorized := true
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -338,7 +338,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -399,7 +399,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }
 
-func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

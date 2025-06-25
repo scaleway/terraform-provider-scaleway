@@ -88,7 +88,7 @@ func ResourceSNSTopic() *schema.Resource {
 	}
 }
 
-func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -139,7 +139,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceMNQSNSTopicRead(ctx, d, m)
 }
 
-func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	snsClient, _, err := SNSClientWithRegion(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -172,7 +172,7 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	snsClient, _, err := SNSClientWithRegion(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -220,7 +220,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceMNQSNSTopicRead(ctx, d, m)
 }
 
-func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	snsClient, _, err := SNSClientWithRegion(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)

@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -47,17 +49,17 @@ func ResourceGroupMembership() *schema.Resource {
 	}
 }
 
-func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	userID := types.ExpandStringPtr(d.Get("user_id"))
 	applicationID := types.ExpandStringPtr(d.Get("application_id"))
 
-	group, err := api.AddGroupMember(&iam.AddGroupMemberRequest{
+	group, err := MakeGroupRequest(ctx, api, &iam.AddGroupMemberRequest{
 		GroupID:       d.Get("group_id").(string),
 		UserID:        userID,
 		ApplicationID: applicationID,
-	}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -67,14 +69,14 @@ func resourceIamGroupMembershipCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceIamGroupMembershipRead(ctx, d, m)
 }
 
-func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	// http GET request should not return a 409 error
 	group, err := api.GetGroup(&iam.GetGroupRequest{
 		GroupID: groupID,
 	}, scw.WithContext(ctx))
@@ -121,7 +123,7 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	groupID, userID, applicationID, err := ExpandGroupMembershipID(d.Id())
@@ -139,7 +141,7 @@ func resourceIamGroupMembershipDelete(ctx context.Context, d *schema.ResourceDat
 		req.ApplicationID = &applicationID
 	}
 
-	_, err = api.RemoveGroupMember(req, scw.WithContext(ctx))
+	_, err = MakeGroupRequest(ctx, api, req)
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -177,4 +179,25 @@ func ExpandGroupMembershipID(id string) (groupID string, userID string, applicat
 	}
 
 	return
+}
+
+func MakeGroupRequest(ctx context.Context, api *iam.API, request any) (*iam.Group, error) {
+	retryInterval := 100 * time.Millisecond
+
+	group, err := transport.RetryOnTransientStateError(func() (*iam.Group, error) {
+		switch req := request.(type) {
+		case *iam.AddGroupMemberRequest:
+			return api.AddGroupMember(req, scw.WithContext(ctx))
+		case *iam.RemoveGroupMemberRequest:
+			return api.RemoveGroupMember(req, scw.WithContext(ctx))
+		default:
+			return nil, fmt.Errorf("invalid request type: %T", req)
+		}
+	}, func() (string, error) {
+		time.Sleep(retryInterval) // lintignore: R018
+
+		return "", nil
+	})
+
+	return group, err
 }

@@ -162,7 +162,7 @@ func DataSourceLbs() *schema.Resource {
 	}
 }
 
-func DataSourceLbsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -178,10 +178,10 @@ func DataSourceLbsRead(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
-	lbs := []interface{}(nil)
+	lbs := []any(nil)
 
 	for _, loadbalancer := range res.LBs {
-		rawLb := make(map[string]interface{})
+		rawLb := make(map[string]any)
 		rawLb["id"] = zonal.NewID(loadbalancer.Zone, loadbalancer.ID).String()
 		rawLb["description"] = loadbalancer.Description
 		rawLb["zone"] = string(zone)

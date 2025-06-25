@@ -142,7 +142,7 @@ func DataSourceServers() *schema.Resource {
 	}
 }
 
-func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -160,10 +160,10 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 
 	var diags diag.Diagnostics
 
-	servers := []interface{}(nil)
+	servers := []any(nil)
 
 	for _, server := range res.Servers {
-		rawServer := make(map[string]interface{})
+		rawServer := make(map[string]any)
 		rawServer["id"] = zonal.NewID(server.Zone, server.ID).String()
 
 		if server.PublicIP != nil { //nolint:staticcheck

@@ -103,7 +103,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,7 +135,7 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceVPCACLRead(ctx, d, m)
 }
 
-func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -162,7 +162,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -192,7 +192,7 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceVPCACLRead(ctx, d, m)
 }
 
-func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

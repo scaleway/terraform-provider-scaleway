@@ -83,7 +83,7 @@ func DataSourceIPs() *schema.Resource {
 	}
 }
 
-func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,10 +111,10 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 		filteredList = res.IPs
 	}
 
-	ips := []interface{}(nil)
+	ips := []any(nil)
 
 	for _, ip := range filteredList {
-		rawIP := make(map[string]interface{})
+		rawIP := make(map[string]any)
 		rawIP["id"] = zonal.NewID(ip.Zone, ip.ID).String()
 		rawIP["ip_address"] = ip.IPAddress
 		rawIP["lb_id"] = types.FlattenStringPtr(ip.LBID)

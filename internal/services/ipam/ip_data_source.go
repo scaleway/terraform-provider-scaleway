@@ -72,7 +72,7 @@ func DataSourceIP() *schema.Resource {
 				Optional:      true,
 				Description:   "IP Type (ipv4, ipv6)",
 				ConflictsWith: []string{"ipam_ip_id"},
-				ValidateDiagFunc: func(i interface{}, _ cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(i any, _ cty.Path) diag.Diagnostics {
 					switch i.(string) {
 					case "ipv4":
 						return nil
@@ -122,7 +122,7 @@ func DataSourceIP() *schema.Resource {
 	}
 }
 
-func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,9 +136,9 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interfa
 	if !ok {
 		resources, resourcesOk := d.GetOk("resource")
 		if resourcesOk {
-			resourceList := resources.([]interface{})
+			resourceList := resources.([]any)
 			if len(resourceList) > 0 {
-				resourceMap := resourceList[0].(map[string]interface{})
+				resourceMap := resourceList[0].(map[string]any)
 				id, idExists := resourceMap["id"].(string)
 				name, nameExists := resourceMap["name"].(string)
 

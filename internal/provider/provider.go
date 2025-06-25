@@ -345,7 +345,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
-		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
 			// If we provide meta in config use it. This is useful for tests
@@ -361,7 +361,28 @@ func Provider(config *Config) plugin.ProviderFunc {
 				return nil, diag.FromErr(err)
 			}
 
-			return m, nil
+			var diags diag.Diagnostics
+
+			ok, message, err := m.HasMultipleVariableSources()
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Error checking multiple variable sources",
+					Detail:   err.Error(),
+				})
+
+				return m, diags
+			}
+
+			if ok && err == nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
+					Detail:   message,
+				})
+			}
+
+			return m, diags
 		}
 
 		return p
