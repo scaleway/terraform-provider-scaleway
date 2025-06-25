@@ -54,7 +54,7 @@ func TestAccAcl_Basic(t *testing.T) {
 							ip_subnet = ["192.168.0.1", "192.168.0.2", "192.168.10.0/24"]
 							http_filter = "acl_http_filter_none"
 							http_filter_value = []
-							invert = "true"
+							invert = true
 						}
 					}
 				`,
@@ -127,6 +127,114 @@ func TestAccAcl_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter", "acl_http_filter_none"),
 					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter_value.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.invert", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ips_edge_services", "false"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "30s"
+						external_acls = true
+					}
+					resource scaleway_lb_acl acl01 {
+						frontend_id = scaleway_lb_frontend.frt01.id
+						name = "updated-test-acl-basic"
+						description = "updated description"
+						index = 3
+						action {
+							type = "deny"
+						}
+						match {
+							http_filter = "acl_http_filter_none"
+							http_filter_value = []
+							ips_edge_services = true
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb_acl.acl01", "frontend_id",
+						"scaleway_lb_frontend.frt01", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "name", "updated-test-acl-basic"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "description", "updated description"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "index", "3"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "action.0.type", "deny"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ip_subnet.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ip_subnet.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter", "acl_http_filter_none"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter_value.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.invert", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ips_edge_services", "true"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_lb_ip ip01 {}
+					resource scaleway_lb lb01 {
+						ip_id = scaleway_lb_ip.ip01.id
+						name = "test-lb-acl"
+						type = "lb-s"
+					}
+					resource scaleway_lb_backend bkd01 {
+						lb_id = scaleway_lb.lb01.id
+						forward_protocol = "http"
+						forward_port = 80
+						proxy_protocol = "none"
+					}
+					resource scaleway_lb_frontend frt01 {
+						lb_id = scaleway_lb.lb01.id
+						backend_id = scaleway_lb_backend.bkd01.id
+						name = "tf-test"
+						inbound_port = 80
+						timeout_client = "30s"
+						external_acls = true
+					}
+					resource scaleway_lb_acl acl01 {
+						frontend_id = scaleway_lb_frontend.frt01.id
+						name = "updated-test-acl-basic"
+						description = "updated description"
+						index = 3
+						action {
+							type = "deny"
+						}
+						match {
+							http_filter = "acl_http_filter_none"
+							http_filter_value = []
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isACLPresent(tt, "scaleway_lb_acl.acl01"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_lb_acl.acl01", "frontend_id",
+						"scaleway_lb_frontend.frt01", "id"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "name", "updated-test-acl-basic"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "description", "updated description"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "index", "3"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "action.0.type", "deny"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ip_subnet.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ip_subnet.0", "0.0.0.0/0"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter", "acl_http_filter_none"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.http_filter_value.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.invert", "false"),
+					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ips_edge_services", "false"),
 				),
 			},
 			{

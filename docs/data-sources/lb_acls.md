@@ -54,4 +54,5 @@ In addition to all arguments above, the following attributes are exported:
         - `http_filter` - The HTTP filter to match.
         - `http_filter_value` - The possible values to match for a given HTTP filter.
         - `http_filter_option` - A list of possible values for the HTTP filter based on the HTTP header.
-        - `invert` -  The condition will be of type "unless" if invert is set to `true`
+        - `invert` - The condition will be of type "unless" if invert is set to `true`
+        - `ips_edge_services` - Defines whether Edge Services IPs should be matched.
