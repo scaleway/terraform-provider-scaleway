@@ -45,7 +45,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) any {
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
 			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig), //nolint:staticcheck
-			"ipam_ids":           regional.NewRegionalIDs(pnRegion, pn.IpamIDs),
+			"ipam_ids":           regional.NewIDStrings(pnRegion, pn.IpamIDs),
 		})
 	}
 

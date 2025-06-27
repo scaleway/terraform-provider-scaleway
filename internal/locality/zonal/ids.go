@@ -45,6 +45,20 @@ func NewIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
 }
 
+// NewIDStrings returns a slice of zonal IDs built from a zone and a list of raw resource IDs.
+func NewIDStrings(zone scw.Zone, ids []string) []string {
+	if ids == nil {
+		return nil
+	}
+
+	flattenedIDs := make([]string, len(ids))
+	for i, id := range ids {
+		flattenedIDs[i] = NewIDString(zone, id)
+	}
+
+	return flattenedIDs
+}
+
 // NewNestedIDString constructs a unique identifier based on resource zone, inner and outer IDs
 func NewNestedIDString(zone scw.Zone, outerID, innerID string) string {
 	return fmt.Sprintf("%s/%s/%s", zone, outerID, innerID)

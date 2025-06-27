@@ -42,7 +42,7 @@ func flattenPrivateNetworks(region scw.Region, privateNetworks []*applesilicon.S
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]any{
 			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),
-			"ipam_ip_ids": regional.NewRegionalIDs(region, privateNetwork.IpamIPIDs),
+			"ipam_ip_ids": regional.NewIDStrings(region, privateNetwork.IpamIPIDs),
 			"vlan":        types.FlattenUint32Ptr(privateNetwork.Vlan),
 			"status":      privateNetwork.Status,
 			"created_at":  types.FlattenTime(privateNetwork.CreatedAt),
