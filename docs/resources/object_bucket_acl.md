@@ -114,8 +114,9 @@ The `owner` configuration block supports the following arguments:
 
 The `grantee` configuration block supports the following arguments:
 
-* `id` - (Required) The canonical user ID of the grantee.
-* `type` - (Required) Type of grantee. Valid values: CanonicalUser.
+* `id` - (Optional) The canonical user ID of the grantee.
+* `type` - (Required) Type of grantee. Valid values: CanonicalUser, Group.
+* `uri` - (Optional) The uri of the grantee if type is Group.
 
 ## Attributes Reference
 
