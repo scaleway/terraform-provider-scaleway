@@ -1603,6 +1603,7 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 	api := product_catalog.NewPublicCatalogAPI(client)
 
 	products, err := api.ListPublicCatalogProducts(&product_catalog.PublicCatalogAPIListPublicCatalogProductsRequest{
+		Zone: &zone,
 		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
 			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
 		},

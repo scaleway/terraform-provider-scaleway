@@ -40,6 +40,7 @@ resource "scaleway_edge_services_cache_stage" "main" {
 - `waf_stage_id` - (Optional) The WAF stage ID the cache stage will be linked to. Only one of `backend_stage_id`, `route_stage_id` and `waf_stage_id` should be specified.
 - `fallback_ttl` - (Optional) The Time To Live (TTL) in seconds. Defines how long content is cached.
 - `refresh_cache` - (Optional) Trigger a refresh of the cache by changing this field's value.
+- `include_cookies` - (Optional) Defines whether responses to requests with cookies must be stored in the cache.
 - `purge_requests` - (Optional) The Scaleway Object Storage origin bucket (S3) linked to the backend stage.
     - `pipeline_id` - The pipeline ID in which the purge request will be created.
     - `assets` - The list of asserts to purge.
