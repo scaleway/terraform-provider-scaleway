@@ -80,8 +80,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-grantee")
 
-	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
-	ownerIDChild := "50ab77d5-56bd-4981-a118-4e0fa5309b59"
+	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf" // scaleway-dev-tools-org
 	resource.Test(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -128,9 +127,13 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main" {
 						name = "%[1]s"
-						region = "%[4]s"
+						region = "%[3]s"
 					}
-			
+
+					data "scaleway_iam_user" "devtool" {
+						email = "developer-tools-team@scaleway.com"
+					}
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.id
 						access_control_policy {
@@ -141,7 +144,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "FULL_CONTROL"
 						  	}
-			
+
 						  	grant {
 								grantee {
 							  		id   = "%[2]s"
@@ -149,21 +152,36 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 								}
 								permission = "WRITE"
 						  	}
-			
+
 							grant {
 								grantee {
-								  	id   = "%[3]s"
+								  	id   = data.scaleway_iam_user.devtool.id
 								  	type = "CanonicalUser"
 								}
 								permission = "FULL_CONTROL"
 							}
-			
+
+							grant {
+								grantee {
+								  	uri  = "%[4]s"
+								  	type = "Group"
+								}
+								permission = "READ_ACP"
+							}
+
+							grant {
+								grantee {
+								  	uri  = "%[5]s"
+								  	type = "Group"
+								}
+								permission = "READ"
+							}
 						  	owner {
 								id = "%[2]s"
 						  	}
 						}
 					}
-				`, testBucketName, ownerID, ownerIDChild, objectTestsMainRegion),
+				`, testBucketName, ownerID, objectTestsMainRegion, object.AuthenticatedUsersURI, object.AllUsersURI),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
@@ -263,7 +281,7 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 						name = "%s"
 						region = "%s"
 					}
-			
+
 					resource "scaleway_object_bucket_acl" "main" {
 						bucket = scaleway_object_bucket.main.name
 						acl = "public-read"
