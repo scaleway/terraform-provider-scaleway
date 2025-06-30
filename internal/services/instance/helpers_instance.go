@@ -552,3 +552,50 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 
 	return server.Server.Project, nil
 }
+
+func DeleteASGServers(
+	ctx context.Context,
+	api *instance.API,
+	zone scw.Zone,
+	groupID string,
+	timeout time.Duration,
+) error {
+	resp, err := api.ListServers(&instance.ListServersRequest{
+		Zone: zone,
+		Name: types.ExpandStringPtr(groupID),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	for _, srv := range resp.Servers {
+		switch srv.State {
+		case instance.ServerStateRunning:
+			if _, err = api.ServerAction(&instance.ServerActionRequest{
+				Zone:     zone,
+				ServerID: srv.ID,
+				Action:   instance.ServerActionTerminate,
+			}, scw.WithContext(ctx)); err != nil {
+				return err
+			}
+		case instance.ServerStateStopped, instance.ServerStateStoppedInPlace:
+			if err = api.DeleteServer(&instance.DeleteServerRequest{
+				Zone:     zone,
+				ServerID: srv.ID,
+			}, scw.WithContext(ctx)); err != nil {
+				return err
+			}
+		}
+
+		_, err := api.WaitForServer(&instance.WaitForServerRequest{
+			Zone:     zone,
+			ServerID: srv.ID,
+			Timeout:  scw.TimeDurationPtr(timeout),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return err
+		}
+	}
+
+	return nil
+}
