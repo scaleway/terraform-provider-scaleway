@@ -445,7 +445,7 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 	for _, grant := range acl.Grants {
 		if grant.Grantee != nil &&
 			grant.Grantee.Type == s3Types.TypeGroup &&
-			*grant.Grantee.URI == "http://acs.amazonaws.com/groups/global/AllUsers" {
+			*grant.Grantee.URI == AllUsersURI {
 			return true
 		}
 	}
