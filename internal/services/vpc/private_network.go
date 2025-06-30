@@ -159,7 +159,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 				ForceNew:    true,
 				Description: "The VPC in which to create the private network",
 			},
-			"default_route_propagation_enabled": {
+			"enable_default_route_propagation": {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Computed:    true,

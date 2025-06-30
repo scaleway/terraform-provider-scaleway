@@ -48,7 +48,7 @@ func ResourceVPC() *schema.Resource {
 			"enable_custom_routes_propagation": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Computed:    true,
+				Default:     true,
 				Description: "Defines whether the VPC advertises custom routes between its Private Networks",
 			},
 			"project_id": account.ProjectIDSchema(),
