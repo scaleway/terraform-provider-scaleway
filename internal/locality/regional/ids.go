@@ -21,6 +21,19 @@ func NewID(region scw.Region, id string) ID {
 	}
 }
 
+func NewIDStrings(region scw.Region, ids []string) []string {
+	if ids == nil {
+		return nil
+	}
+
+	flattenedIDs := make([]string, len(ids))
+	for i, id := range ids {
+		flattenedIDs[i] = NewIDString(region, id)
+	}
+
+	return flattenedIDs
+}
+
 func (z ID) String() string {
 	return fmt.Sprintf("%s/%s", z.Region, z.ID)
 }
@@ -67,17 +80,4 @@ func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	region, err = scw.ParseRegion(loc)
 
 	return
-}
-
-func NewRegionalIDs(region scw.Region, ids []string) []string {
-	if ids == nil {
-		return nil
-	}
-
-	flattenedIDs := make([]string, len(ids))
-	for i, id := range ids {
-		flattenedIDs[i] = NewIDString(region, id)
-	}
-
-	return flattenedIDs
 }

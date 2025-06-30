@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
@@ -126,6 +127,9 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.ResourceProject(),
 				"scaleway_account_ssh_key":                     iam.ResourceSSKKey(),
 				"scaleway_apple_silicon_server":                applesilicon.ResourceServer(),
+				"scaleway_autoscaling_instance_group":          autoscaling.ResourceInstanceGroup(),
+				"scaleway_autoscaling_instance_policy":         autoscaling.ResourceInstancePolicy(),
+				"scaleway_autoscaling_instance_template":       autoscaling.ResourceInstanceTemplate(),
 				"scaleway_baremetal_server":                    baremetal.ResourceServer(),
 				"scaleway_block_snapshot":                      block.ResourceSnapshot(),
 				"scaleway_block_volume":                        block.ResourceVolume(),
