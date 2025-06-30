@@ -185,7 +185,7 @@ func ResourceInstanceTemplate() *schema.Resource {
 	}
 }
 
-func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := NewAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -210,7 +210,7 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		req.CloudInit = &rawCI
 	}
 
-	volumesList := expandVolumes(d.Get("volumes").([]interface{}))
+	volumesList := expandVolumes(d.Get("volumes").([]any))
 
 	req.Volumes = volumesList
 
@@ -224,7 +224,7 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceTemplateRead(ctx, d, m)
 }
 
-func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -281,7 +281,7 @@ func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -346,7 +346,7 @@ func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if d.HasChange("volumes") {
-		updateRequest.Volumes = expandVolumes(d.Get("volumes").([]interface{}))
+		updateRequest.Volumes = expandVolumes(d.Get("volumes").([]any))
 		hasChanged = true
 	}
 
@@ -360,7 +360,7 @@ func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceTemplateRead(ctx, d, m)
 }
 
-func ResourceInstanceTemplateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceTemplateDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

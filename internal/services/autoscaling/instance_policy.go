@@ -116,7 +116,7 @@ func ResourceInstancePolicy() *schema.Resource {
 	}
 }
 
-func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := NewAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -130,7 +130,7 @@ func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		Type:            autoscaling.InstancePolicyType(d.Get("type").(string)),
 		Value:           uint32(d.Get("value").(int)),
 		Priority:        uint32(d.Get("priority").(int)),
-		Metric:          expandPolicyMetric(d.Get("metric").([]interface{})),
+		Metric:          expandPolicyMetric(d.Get("metric").([]any)),
 	}
 
 	policy, err := api.CreateInstancePolicy(req, scw.WithContext(ctx))
@@ -143,7 +143,7 @@ func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceInstancePolicyRead(ctx, d, m)
 }
 
-func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -175,7 +175,7 @@ func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func ResourceInstancePolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -220,7 +220,7 @@ func ResourceInstancePolicyUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceInstancePolicyRead(ctx, d, m)
 }
 
-func ResourceInstancePolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

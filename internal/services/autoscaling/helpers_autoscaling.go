@@ -9,7 +9,7 @@ import (
 )
 
 // NewAPIWithZone returns a new autoscaling API and the zone for a Create request
-func NewAPIWithZone(d *schema.ResourceData, m interface{}) (*autoscaling.API, scw.Zone, error) {
+func NewAPIWithZone(d *schema.ResourceData, m any) (*autoscaling.API, scw.Zone, error) {
 	autoscalingAPI := autoscaling.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -21,7 +21,7 @@ func NewAPIWithZone(d *schema.ResourceData, m interface{}) (*autoscaling.API, sc
 }
 
 // NewAPIWithZoneAndID returns a new autoscaling API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, zonalID string) (*autoscaling.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, zonalID string) (*autoscaling.API, scw.Zone, string, error) {
 	autoscalingAPI := autoscaling.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonalID)

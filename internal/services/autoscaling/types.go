@@ -13,12 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func expandInstanceCapacity(raw interface{}) *autoscaling.Capacity {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandInstanceCapacity(raw any) *autoscaling.Capacity {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 	capacity := &autoscaling.Capacity{
 		MaxReplicas: uint32(rawMap["max_replicas"].(int)),
 		MinReplicas: uint32(rawMap["min_replicas"].(int)),
@@ -31,12 +31,12 @@ func expandInstanceCapacity(raw interface{}) *autoscaling.Capacity {
 	return capacity
 }
 
-func expandUpdateInstanceCapacity(raw interface{}) *autoscaling.UpdateInstanceGroupRequestCapacity {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandUpdateInstanceCapacity(raw any) *autoscaling.UpdateInstanceGroupRequestCapacity {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 	capacity := &autoscaling.UpdateInstanceGroupRequestCapacity{}
 
 	if rawVal, ok := rawMap["max_replicas"].(int); ok {
@@ -54,12 +54,12 @@ func expandUpdateInstanceCapacity(raw interface{}) *autoscaling.UpdateInstanceGr
 	return capacity
 }
 
-func expandInstanceLoadBalancer(raw interface{}) *autoscaling.Loadbalancer {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandInstanceLoadBalancer(raw any) *autoscaling.Loadbalancer {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &autoscaling.Loadbalancer{
 		ID:               locality.ExpandID(rawMap["id"].(string)),
@@ -68,12 +68,12 @@ func expandInstanceLoadBalancer(raw interface{}) *autoscaling.Loadbalancer {
 	}
 }
 
-func expandPolicyMetric(raw interface{}) *autoscaling.Metric {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandPolicyMetric(raw any) *autoscaling.Metric {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	var managedPtr *autoscaling.MetricManagedMetric
 
@@ -93,12 +93,12 @@ func expandPolicyMetric(raw interface{}) *autoscaling.Metric {
 	}
 }
 
-func expandUpdatePolicyMetric(raw interface{}) *autoscaling.UpdateInstancePolicyRequestMetric {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandUpdatePolicyMetric(raw any) *autoscaling.UpdateInstancePolicyRequestMetric {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	var managedPtr *autoscaling.UpdateInstancePolicyRequestMetricManagedMetric
 
@@ -118,12 +118,12 @@ func expandUpdatePolicyMetric(raw interface{}) *autoscaling.UpdateInstancePolicy
 	}
 }
 
-func expandUpdateInstanceLoadBalancer(raw interface{}) *autoscaling.UpdateInstanceGroupRequestLoadbalancer {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandUpdateInstanceLoadBalancer(raw any) *autoscaling.UpdateInstanceGroupRequestLoadbalancer {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 	lb := &autoscaling.UpdateInstanceGroupRequestLoadbalancer{}
 
 	if rawVal, ok := rawMap["backend_ids"].(int); ok {
@@ -133,29 +133,29 @@ func expandUpdateInstanceLoadBalancer(raw interface{}) *autoscaling.UpdateInstan
 	return lb
 }
 
-func expandVolumes(rawVols []interface{}) map[string]*autoscaling.VolumeInstanceTemplate {
+func expandVolumes(rawVols []any) map[string]*autoscaling.VolumeInstanceTemplate {
 	vols := make(map[string]*autoscaling.VolumeInstanceTemplate, len(rawVols))
 
 	for i, raw := range rawVols {
-		m := raw.(map[string]interface{})
+		m := raw.(map[string]any)
 		vt := &autoscaling.VolumeInstanceTemplate{
 			Name:       m["name"].(string),
 			Boot:       m["boot"].(bool),
 			VolumeType: autoscaling.VolumeInstanceTemplateVolumeType(m["volume_type"].(string)),
-			Tags:       types.ExpandStrings(m["tags"].([]interface{})),
+			Tags:       types.ExpandStrings(m["tags"].([]any)),
 			PerfIops:   types.ExpandUint32Ptr(m["perf_iops"].(int)),
 		}
 
-		if slice := m["from_empty"].([]interface{}); len(slice) > 0 && slice[0] != nil {
-			inner := slice[0].(map[string]interface{})
+		if slice := m["from_empty"].([]any); len(slice) > 0 && slice[0] != nil {
+			inner := slice[0].(map[string]any)
 			sizeGB := inner["size"].(int)
 			vt.FromEmpty = &autoscaling.VolumeInstanceTemplateFromEmpty{
 				Size: scw.Size(uint64(sizeGB) * uint64(scw.GB)),
 			}
 		}
 
-		if slice := m["from_snapshot"].([]interface{}); len(slice) > 0 && slice[0] != nil {
-			inner := slice[0].(map[string]interface{})
+		if slice := m["from_snapshot"].([]any); len(slice) > 0 && slice[0] != nil {
+			inner := slice[0].(map[string]any)
 			snapshot := &autoscaling.VolumeInstanceTemplateFromSnapshot{
 				SnapshotID: locality.ExpandID(inner["snapshot_id"].(string)),
 			}
@@ -173,12 +173,12 @@ func expandVolumes(rawVols []interface{}) map[string]*autoscaling.VolumeInstance
 	return vols
 }
 
-func flattenInstanceCapacity(capacity *autoscaling.Capacity) interface{} {
+func flattenInstanceCapacity(capacity *autoscaling.Capacity) any {
 	if capacity == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"max_replicas":   capacity.MaxReplicas,
 			"min_replicas":   capacity.MinReplicas,
@@ -187,7 +187,7 @@ func flattenInstanceCapacity(capacity *autoscaling.Capacity) interface{} {
 	}
 }
 
-func flattenInstanceLoadBalancer(lb *autoscaling.Loadbalancer, zone scw.Zone) interface{} {
+func flattenInstanceLoadBalancer(lb *autoscaling.Loadbalancer, zone scw.Zone) any {
 	if lb == nil {
 		return nil
 	}
@@ -197,7 +197,7 @@ func flattenInstanceLoadBalancer(lb *autoscaling.Loadbalancer, zone scw.Zone) in
 		return diag.FromErr(err)
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"id":                 zonal.NewIDString(zone, lb.ID),
 			"backend_ids":        zonal.NewIDStrings(zone, lb.BackendIDs),
@@ -206,7 +206,7 @@ func flattenInstanceLoadBalancer(lb *autoscaling.Loadbalancer, zone scw.Zone) in
 	}
 }
 
-func flattenPolicyMetric(metric *autoscaling.Metric) interface{} {
+func flattenPolicyMetric(metric *autoscaling.Metric) any {
 	if metric == nil {
 		return nil
 	}
@@ -216,7 +216,7 @@ func flattenPolicyMetric(metric *autoscaling.Metric) interface{} {
 		managedMetric = metric.ManagedMetric.String()
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"name":                metric.Name,
 			"managed_metric":      managedMetric,
@@ -229,7 +229,7 @@ func flattenPolicyMetric(metric *autoscaling.Metric) interface{} {
 	}
 }
 
-func flattenVolumes(zone scw.Zone, volMap map[string]*autoscaling.VolumeInstanceTemplate) []interface{} {
+func flattenVolumes(zone scw.Zone, volMap map[string]*autoscaling.VolumeInstanceTemplate) []any {
 	keys := make([]string, 0, len(volMap))
 	for k := range volMap {
 		keys = append(keys, k)
@@ -237,11 +237,11 @@ func flattenVolumes(zone scw.Zone, volMap map[string]*autoscaling.VolumeInstance
 
 	sort.Strings(keys)
 
-	volumes := make([]interface{}, len(keys))
+	volumes := make([]any, len(keys))
 
 	for i, k := range keys {
 		v := volMap[k]
-		m := map[string]interface{}{
+		m := map[string]any{
 			"name":        v.Name,
 			"boot":        v.Boot,
 			"volume_type": v.VolumeType.String(),
@@ -250,13 +250,13 @@ func flattenVolumes(zone scw.Zone, volMap map[string]*autoscaling.VolumeInstance
 		}
 
 		if v.FromEmpty != nil {
-			m["from_empty"] = []interface{}{map[string]interface{}{
+			m["from_empty"] = []any{map[string]any{
 				"size": int(v.FromEmpty.Size / scw.GB),
 			}}
 		}
 
 		if v.FromSnapshot != nil {
-			inner := map[string]interface{}{
+			inner := map[string]any{
 				"snapshot_id": zonal.NewIDString(zone, v.FromSnapshot.SnapshotID),
 			}
 
@@ -264,7 +264,7 @@ func flattenVolumes(zone scw.Zone, volMap map[string]*autoscaling.VolumeInstance
 				inner["size"] = int(*v.FromSnapshot.Size / scw.GB)
 			}
 
-			m["from_snapshot"] = []interface{}{inner}
+			m["from_snapshot"] = []any{inner}
 		}
 
 		volumes[i] = m
