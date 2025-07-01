@@ -75,6 +75,11 @@ jobs:
       - name: Determine Skip Pattern
         id: skip-config
         run: |
+          echo ""
+          echo "Variable values:"
+          echo "  SKIP_TESTS_BAREMETAL: '${SKIP_TESTS_BAREMETAL}'"
+          echo "  SKIP_TESTS_ALL: '${SKIP_TESTS_ALL}'"
+          
           PRODUCT="${{ matrix.products }}"
           SKIP_PATTERN=""
           
@@ -99,7 +104,9 @@ jobs:
       - name: Run Acceptance Tests
         run: |
           SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
-
+          echo "Skip pattern received: '${SKIP_PATTERN}'"
+          echo ""
+          
           if [ -n "$SKIP_PATTERN" ]; then
             echo ""
             echo "SKIPPING TESTS"
