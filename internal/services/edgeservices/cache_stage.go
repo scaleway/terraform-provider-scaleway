@@ -86,6 +86,11 @@ func ResourceCacheStage() *schema.Resource {
 				Optional:    true,
 				Description: "Trigger a refresh of the cache by changing this field's value",
 			},
+			"include_cookies": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Defines whether responses to requests with cookies must be stored in the cache",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -110,6 +115,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m any
 		RouteStageID:   types.ExpandStringPtr(d.Get("route_stage_id").(string)),
 		WafStageID:     types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
 		FallbackTTL:    &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))},
+		IncludeCookies: types.ExpandBoolPtr(d.Get("include_cookies").(bool)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,6 +149,7 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("route_stage_id", types.FlattenStringPtr(cacheStage.RouteStageID))
 	_ = d.Set("waf_stage_id", types.FlattenStringPtr(cacheStage.WafStageID))
 	_ = d.Set("fallback_ttl", cacheStage.FallbackTTL.Seconds)
+	_ = d.Set("include_cookies", cacheStage.IncludeCookies)
 
 	return nil
 }
@@ -173,6 +180,11 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("fallback_ttl") {
 		updateRequest.FallbackTTL = &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))}
+		hasChanged = true
+	}
+
+	if d.HasChange("include_cookies") {
+		updateRequest.IncludeCookies = types.ExpandBoolPtr(d.Get("include_cookies").(bool))
 		hasChanged = true
 	}
 
