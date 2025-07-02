@@ -26,6 +26,7 @@ func TestAccServer_Basic(t *testing.T) {
 						name = "TestAccServerBasic"
 						type = "M4-M"
 						public_bandwidth = 1000000000
+						zone="fr-par-3"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -46,6 +47,7 @@ func TestAccServer_Basic(t *testing.T) {
 						name = "TestAccServerBasic"
 						type = "M4-M"
 						public_bandwidth = 2000000000
+						zone="fr-par-3"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
