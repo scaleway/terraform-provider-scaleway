@@ -5,80 +5,30 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func DataSourceCockpitSource() *schema.Resource {
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().Schema)
+
+	dsSchema["id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "ID of the data source.",
+	}
+
+	datasource.FixDatasourceSchemaFlags(dsSchema, false, "id", "name", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "type", "origin")
+
 	return &schema.Resource{
 		ReadContext: dataSourceCockpitSourceRead,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "ID of the data source.",
-			},
-			"region": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The region of the data source.",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the data source.",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The type of the data source (e.g., 'metrics', 'logs', 'traces').",
-				ValidateFunc: validation.StringInSlice([]string{
-					"metrics", "logs", "traces",
-				}, false),
-			},
-			"origin": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The origin of the data source (e.g., 'scaleway', 'external', 'custom').",
-				ValidateFunc: validation.StringInSlice([]string{
-					"scaleway", "external", "custom",
-				}, false),
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL of the data source.",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The creation date of the data source.",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The last update date of the data source.",
-			},
-			"synchronized_with_grafana": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the data source is synchronized with Grafana.",
-			},
-			"retention_days": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The retention period of the data source in days.",
-			},
-		},
+		Schema:      dsSchema,
 	}
 }
 
@@ -113,11 +63,24 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta any) 
 	return nil
 }
 
-func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
+func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	var region scw.Region
+
+	var err error
+
+	if v, ok := d.GetOk("region"); ok && v.(string) != "" {
+		region, err = scw.ParseRegion(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		_, region, err = cockpitAPIWithRegion(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
+
+	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
 
 	req := &cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
