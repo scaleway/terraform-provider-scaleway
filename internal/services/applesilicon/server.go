@@ -204,10 +204,11 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		ProjectID:      d.Get("project_id").(string),
 		EnableVpc:      d.Get("enable_vpc").(bool),
 		CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string)),
+		Zone:           zone,
 	}
 
 	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
-		createReq.PublicBandwidthBps = uint64(bandwidth.(int))
+		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))
@@ -280,7 +281,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("password", res.SudoPassword)
 	_ = d.Set("username", res.SSHUsername)
-	_ = d.Set("public_bandwidth", res.PublicBandwidthBps)
+	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
+	_ = d.Set("zone", res.Zone)
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
@@ -379,8 +381,8 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("public_bandwidth") {
-		publicBandwidth := uint64(d.Get("public_bandwidth").(int))
-		req.PublicBandwidthBps = &publicBandwidth
+		publicBandwidth := types.ExpandUint64Ptr(d.Get("public_bandwidth"))
+		req.PublicBandwidthBps = publicBandwidth
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
