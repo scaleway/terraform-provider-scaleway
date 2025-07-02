@@ -129,3 +129,44 @@ func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 		},
 	})
 }
+
+func TestAccCockpitSource_DataSource_ByRegion(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isSourceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_datasource_by_region"
+					}
+
+					resource "scaleway_cockpit_source" "main" {
+					  project_id = scaleway_account_project.project.id
+					  name       = "source-by-region"
+					  type       = "logs"
+					  retention_days = 30
+					  region     = "fr-par"
+					}
+
+					data "scaleway_cockpit_source" "by_region" {
+					  project_id = scaleway_account_project.project.id
+					  name       = "source-by-region"
+					  region     = "fr-par"
+					  depends_on = [scaleway_cockpit_source.main]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("data.scaleway_cockpit_source.by_region", "id", "scaleway_cockpit_source.main", "id"),
+					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.by_region", "name", "source-by-region"),
+					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.by_region", "type", "logs"),
+					resource.TestCheckResourceAttr("data.scaleway_cockpit_source.by_region", "region", "fr-par"),
+				),
+			},
+		},
+	})
+}
