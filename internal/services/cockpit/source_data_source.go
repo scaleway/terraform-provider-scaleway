@@ -65,6 +65,7 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta any) 
 
 func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var region scw.Region
+
 	var err error
 
 	if v, ok := d.GetOk("region"); ok && v.(string) != "" {
