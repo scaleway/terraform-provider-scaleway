@@ -159,6 +159,12 @@ func ResourcePrivateNetwork() *schema.Resource {
 				ForceNew:    true,
 				Description: "The VPC in which to create the private network",
 			},
+			"enable_default_route_propagation": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Defines whether default v4 and v6 routes are propagated for this Private Network",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"zone": {
 				Type:             schema.TypeString,
@@ -197,10 +203,11 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	req := &vpc.CreatePrivateNetworkRequest{
-		Name:      types.ExpandOrGenerateString(d.Get("name"), "pn"),
-		Tags:      types.ExpandStrings(d.Get("tags")),
-		ProjectID: d.Get("project_id").(string),
-		Region:    region,
+		Name:                           types.ExpandOrGenerateString(d.Get("name"), "pn"),
+		Tags:                           types.ExpandStrings(d.Get("tags")),
+		DefaultRoutePropagationEnabled: d.Get("enable_default_route_propagation").(bool),
+		ProjectID:                      d.Get("project_id").(string),
+		Region:                         region,
 	}
 
 	if _, ok := d.GetOk("vpc_id"); ok {
@@ -258,6 +265,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
+	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
 	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
@@ -276,10 +284,11 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
-		PrivateNetworkID: ID,
-		Region:           region,
-		Name:             scw.StringPtr(d.Get("name").(string)),
-		Tags:             types.ExpandUpdatedStringsPtr(d.Get("tags")),
+		PrivateNetworkID:               ID,
+		Region:                         region,
+		Name:                           scw.StringPtr(d.Get("name").(string)),
+		Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
+		DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
