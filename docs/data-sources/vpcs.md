@@ -42,3 +42,5 @@ In addition to all arguments above, the following attributes are exported:
     - `updated_at` - Date and time of VPC's last update (RFC 3339 format).
     - `organization_id` - The Organization ID the VPC is associated with.
     - `project_id` - The ID of the Project the VPC is associated with.
+    - `enable_routing` - Defines whether routing between Private Networks in the VPC is enabled.
+    - `enable_custom_routes_propagation` - Defines whether the VPC advertises custom routes between its Private Networks.

@@ -38,6 +38,8 @@ The following arguments are supported:
 
 - `commitment_type` (Optional, Default: duration_24h): Activate commitment for this server
 
+- `public_bandwidth` (Optional) Configure the available public bandwidth for your server in bits per second. This option may not be available for all offers.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

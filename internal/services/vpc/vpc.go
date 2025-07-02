@@ -45,6 +45,12 @@ func ResourceVPC() *schema.Resource {
 				Computed:    true,
 				Description: "Enable routing between Private Networks in the VPC",
 			},
+			"enable_custom_routes_propagation": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Defines whether the VPC advertises custom routes between its Private Networks",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"region":     regional.Schema(),
 			// Computed elements
@@ -93,6 +99,16 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
+	if _, ok := d.GetOk("enable_custom_routes_propagation"); ok {
+		_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
+			Region: region,
+			VpcID:  res.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(regional.NewIDString(region, res.ID))
 
 	return ResourceVPCRead(ctx, d, m)
@@ -125,6 +141,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
+	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
 	_ = d.Set("region", region)
 
 	if len(res.Tags) > 0 {
@@ -168,6 +185,19 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		enableRouting := d.Get("enable_routing").(bool)
 		if enableRouting {
 			_, err = vpcAPI.EnableRouting(&vpc.EnableRoutingRequest{
+				Region: region,
+				VpcID:  ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if d.HasChange("enable_custom_routes_propagation") {
+		enableCustomRoutesPropagation := d.Get("enable_custom_routes_propagation").(bool)
+		if enableCustomRoutesPropagation {
+			_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
 				Region: region,
 				VpcID:  ID,
 			}, scw.WithContext(ctx))

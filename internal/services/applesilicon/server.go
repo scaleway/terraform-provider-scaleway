@@ -61,6 +61,12 @@ func ResourceServer() *schema.Resource {
 				Description:      "The commitment period of the server",
 				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
 			},
+			"public_bandwidth": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The public bandwidth of the server in bits per second",
+			},
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -198,6 +204,11 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		ProjectID:      d.Get("project_id").(string),
 		EnableVpc:      d.Get("enable_vpc").(bool),
 		CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string)),
+		Zone:           zone,
+	}
+
+	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
+		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))
@@ -270,6 +281,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("password", res.SudoPassword)
 	_ = d.Set("username", res.SSHUsername)
+	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
+	_ = d.Set("zone", res.Zone)
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
@@ -365,6 +378,11 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("enable_vpc") {
 		enableVpc := d.Get("enable_vpc").(bool)
 		req.EnableVpc = &enableVpc
+	}
+
+	if d.HasChange("public_bandwidth") {
+		publicBandwidth := types.ExpandUint64Ptr(d.Get("public_bandwidth"))
+		req.PublicBandwidthBps = publicBandwidth
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
