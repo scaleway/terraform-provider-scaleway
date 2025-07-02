@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -195,6 +197,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_acl":                             k8s.ResourceACL(),
 				"scaleway_k8s_cluster":                         k8s.ResourceCluster(),
 				"scaleway_k8s_pool":                            k8s.ResourcePool(),
+				"scaleway_key_manager_key":                     keymanager.ResourceKey(),
 				"scaleway_lb":                                  lb.ResourceLb(),
 				"scaleway_lb_acl":                              lb.ResourceACL(),
 				"scaleway_lb_backend":                          lb.ResourceBackend(),
@@ -297,6 +300,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_cluster":                         k8s.DataSourceCluster(),
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),
+				"scaleway_key_manager_key":                     keymanager.DataSourceKey(),
 				"scaleway_lb":                                  lb.DataSourceLb(),
 				"scaleway_lb_acls":                             lb.DataSourceACLs(),
 				"scaleway_lb_backend":                          lb.DataSourceBackend(),
