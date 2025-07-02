@@ -54,8 +54,79 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.24.0
+      # This CI supports skipping flaky or broken tests via GitHub repository variables.
+      # This allows quick fixes without code changes when tests break due to external factors.
+      #
+      # HOW TO SKIP TESTS:
+      # 1. Go to: Settings → Secrets and variables → Actions → Variables
+      # 2. Create or edit Repository variables:
+      #    - SKIP_TESTS_<PRODUCT>: Skip patterns for any product (uppercase)
+      #    - SKIP_TESTS_ALL: Skip patterns applied to ALL products
+      #
+      # PATTERN SYNTAX:
+      # - Single test: TestAccServer_Basic
+      # - Multiple tests: TestAccServer_Basic|TestAccServer_Other
+      # - Wildcard: TestAccServer.*
+      # - Contains: .*IPAM.*
+      #
+      # EXAMPLE:
+      # Variable: SKIP_TESTS_BAREMETAL
+      # Value: TestAccServer_Basic|TestAccServer_WithIPAMPrivateNetwork
+      - name: Determine Skip Pattern
+        id: skip-config
+        run: |
+          PRODUCT="${{ matrix.products }}"
+          SKIP_PATTERN=""
+          
+          case "$PRODUCT" in
+            baremetal)
+              SKIP_PATTERN="$SKIP_TESTS_BAREMETAL"
+              ;;
+          esac
+
+          if [ -n "$SKIP_TESTS_ALL" ]; then
+            if [ -n "$SKIP_PATTERN" ]; then
+              SKIP_PATTERN="${SKIP_PATTERN}|${SKIP_TESTS_ALL}"
+            else
+              SKIP_PATTERN="$SKIP_TESTS_ALL"
+            fi
+          fi
+
+          echo "skip_pattern=$SKIP_PATTERN" >> $GITHUB_OUTPUT
+        env:
+          SKIP_TESTS_BAREMETAL: ${{ vars.SKIP_TESTS_BAREMETAL }}
+          SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
       - name: Run Acceptance Tests
-        run: go test -v ./internal/services/${{ matrix.products }} -timeout=2h
+        run: |
+          SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
+
+          if [ -n "$SKIP_PATTERN" ]; then
+            echo ""
+            echo "SKIPPING TESTS"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Pattern: $SKIP_PATTERN"
+            echo ""
+            echo "Tests that will be skipped:"
+            go test -list=. ./internal/services/${{ matrix.products }} | grep -E "$SKIP_PATTERN" || true
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+
+            go test -v ./internal/services/${{ matrix.products }} -timeout=2h -skip="$SKIP_PATTERN"
+            TEST_RESULT=$?
+          else
+            go test -v ./internal/services/${{ matrix.products }} -timeout=2h
+            TEST_RESULT=$?
+          fi
+
+          if [ -n "$SKIP_PATTERN" ]; then
+            echo ""
+            echo "CI Skip Configuration:"
+            echo "Pattern: $SKIP_PATTERN"
+            echo "To modify: Update SKIP_TESTS_$(echo ${{ matrix.products }} | tr '[:lower:]' '[:upper:]') in GitHub repository variables"
+          fi
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          exit $TEST_RESULT
         env:
           TF_LOG: DEBUG
           TF_ACC: 1
