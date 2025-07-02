@@ -249,6 +249,13 @@ func ResourcePool() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the pool",
 			},
+			"security_group_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "The ID of the security group",
+			},
 		},
 	}
 }
@@ -322,6 +329,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	if volumeSize, ok := d.GetOk("root_volume_size_in_gb"); ok {
 		volumeSizeInBytes := scw.Size(uint64(volumeSize.(int)) * gb)
 		req.RootVolumeSize = &volumeSizeInBytes
+	}
+
+	if securityGroupID, ok := d.GetOk("security_group_id"); ok {
+		req.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(securityGroupID.(string)))
 	}
 
 	// check if the cluster is waiting for a pool
@@ -422,6 +433,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
+	_ = d.Set("security_group_id", pool.SecurityGroupID)
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())

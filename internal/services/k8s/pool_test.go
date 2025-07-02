@@ -52,6 +52,7 @@ func TestAccPool_Basic(t *testing.T) {
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.0.address"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "security_group_id"),
 				),
 			},
 			{
@@ -65,6 +66,7 @@ func TestAccPool_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "autoscaling", "true"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "version", latestK8SVersion),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.minimal", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.minimal", "security_group_id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.minimal", "tags.2", "minimal"),
@@ -75,6 +77,7 @@ func TestAccPool_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.0.address"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "nodes.0.private_ips.1.address"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.default", "security_group_id"),
 				),
 			},
 			{
