@@ -33,7 +33,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.0", "tf"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "tags.1", "test"),
-				),ad
+				),
 			},
 		},
 	})
