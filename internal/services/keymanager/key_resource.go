@@ -94,6 +94,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	tags := ExpandStringList(d.Get("tags"))
 
 	var usageBlock *key_manager.KeyUsage
+
 	switch usage {
 	case "symmetric_encryption":
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
@@ -109,13 +110,16 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	var rotationPolicy *key_manager.KeyRotationPolicy
+
 	if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]interface{})) > 0 {
 		m := v.([]interface{})[0].(map[string]interface{})
+
 		if period, ok := m["rotation_period"].(string); ok && period != "" {
 			dur, err := time.ParseDuration(period)
 			if err != nil {
 				return diag.Errorf("invalid rotation_period: %v", err)
 			}
+
 			sdur := scw.NewDurationFromTimeDuration(dur)
 			rotationPolicy = &key_manager.KeyRotationPolicy{
 				RotationPeriod: sdur,
@@ -139,7 +143,9 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId(key.ID)
+
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
 
@@ -159,30 +165,34 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("name", key.Name)
 	_ = d.Set("project_id", key.ProjectID)
 	_ = d.Set("region", key.Region.String())
-	_ = d.Set("usage", FlattenUsage(key.Usage))
+	_ = d.Set("usage", UsageToString(key.Usage))
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
 	_ = d.Set("rotation_count", key.RotationCount)
 	_ = d.Set("state", key.State.String())
-	_ = d.Set("created_at", FlattenTime(key.CreatedAt))
-	_ = d.Set("updated_at", FlattenTime(key.UpdatedAt))
+	_ = d.Set("created_at", TimeToRFC3339(key.CreatedAt))
+	_ = d.Set("updated_at", TimeToRFC3339(key.UpdatedAt))
 	_ = d.Set("protected", key.Protected)
 	_ = d.Set("locked", key.Locked)
-	_ = d.Set("rotated_at", FlattenTime(key.RotatedAt))
+	_ = d.Set("rotated_at", TimeToRFC3339(key.RotatedAt))
 	_ = d.Set("origin_read", key.Origin.String())
 	_ = d.Set("region_read", key.Region.String())
+
 	if key.RotationPolicy != nil {
 		var periodStr string
+
 		if key.RotationPolicy.RotationPeriod != nil {
 			periodStr = key.RotationPolicy.RotationPeriod.ToTimeDuration().String()
 		}
+
 		_ = d.Set("rotation_policy", []map[string]interface{}{
 			{
 				"rotation_period":  periodStr,
-				"next_rotation_at": FlattenTime(key.RotationPolicy.NextRotationAt),
+				"next_rotation_at": TimeToRFC3339(key.RotationPolicy.NextRotationAt),
 			},
 		})
 	}
+
 	return nil
 }
 
@@ -200,22 +210,27 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		name := d.Get("name").(string)
 		updateReq.Name = &name
 	}
+
 	if d.HasChange("description") {
 		desc := d.Get("description").(string)
 		updateReq.Description = &desc
 	}
+
 	if d.HasChange("tags") {
 		tags := ExpandStringList(d.Get("tags"))
 		updateReq.Tags = &tags
 	}
+
 	if d.HasChange("rotation_policy") {
 		if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]interface{})) > 0 {
 			m := v.([]interface{})[0].(map[string]interface{})
+
 			if period, ok := m["rotation_period"].(string); ok && period != "" {
 				dur, err := time.ParseDuration(period)
 				if err != nil {
 					return diag.Errorf("invalid rotation_period: %v", err)
 				}
+
 				sdur := scw.NewDurationFromTimeDuration(dur)
 				updateReq.RotationPolicy = &key_manager.KeyRotationPolicy{
 					RotationPeriod: sdur,
@@ -228,6 +243,7 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
 
@@ -243,6 +259,8 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	d.SetId("")
+
 	return nil
 }

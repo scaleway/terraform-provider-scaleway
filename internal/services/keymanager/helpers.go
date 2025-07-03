@@ -7,36 +7,44 @@ import (
 )
 
 func ExpandStringList(v interface{}) []string {
-	if v == nil {
-		return nil
-	}
+	var result []string
 	list := v.([]interface{})
-	result := make([]string, len(list))
+
 	for i, s := range list {
-		result[i] = s.(string)
+		_ = i
+
+		if str, ok := s.(string); ok {
+			result = append(result, str)
+		}
 	}
+
 	return result
 }
 
-func FlattenUsage(u *key_manager.KeyUsage) string {
+func UsageToString(u *key_manager.KeyUsage) string {
 	if u == nil {
 		return ""
 	}
+
 	if u.SymmetricEncryption != nil {
 		return "symmetric_encryption"
 	}
+
 	if u.AsymmetricEncryption != nil {
 		return "asymmetric_encryption"
 	}
+
 	if u.AsymmetricSigning != nil {
 		return "asymmetric_signing"
 	}
+
 	return ""
 }
 
-func FlattenTime(t *time.Time) string {
+func TimeToRFC3339(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
+
 	return t.Format(time.RFC3339)
 }
