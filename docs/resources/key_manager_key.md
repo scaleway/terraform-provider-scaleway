@@ -1,3 +1,7 @@
+---
+subcategory: "Key Manager"
+page_title: "Scaleway: scaleway_key_manager_key"
+---
 # scaleway_key_manager_key
 
 Provides a Scaleway Key Manager Key resource.  
