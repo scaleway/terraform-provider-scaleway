@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -144,15 +145,16 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(key.ID)
+	d.SetId(fmt.Sprintf("%s/%s", key.Region, key.ID))
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
 
 func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := key_manager.NewAPI(meta.ExtractScwClient(m))
-	region := scw.Region(d.Get("region").(string))
-	keyID := d.Id()
+	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	key, err := client.GetKey(&key_manager.GetKeyRequest{
 		Region: region,
@@ -168,8 +170,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m in
 	_ = d.Set("usage", UsageToString(key.Usage))
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
-	_ = d.Set("rotation_count", key.RotationCount)
-	_ = d.Set("state", key.State.String())
+	_ = d.Set("rotation_count", int(key.RotationCount))
 	_ = d.Set("created_at", TimeToRFC3339(key.CreatedAt))
 	_ = d.Set("updated_at", TimeToRFC3339(key.UpdatedAt))
 	_ = d.Set("protected", key.Protected)
@@ -197,9 +198,10 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := key_manager.NewAPI(meta.ExtractScwClient(m))
-	region := scw.Region(d.Get("region").(string))
-	keyID := d.Id()
+	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	updateReq := &key_manager.UpdateKeyRequest{
 		Region: region,
@@ -239,7 +241,7 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	_, err := client.UpdateKey(updateReq)
+	_, err = client.UpdateKey(updateReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -248,11 +250,12 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 }
 
 func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := key_manager.NewAPI(meta.ExtractScwClient(m))
-	region := scw.Region(d.Get("region").(string))
-	keyID := d.Id()
+	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	err := client.DeleteKey(&key_manager.DeleteKeyRequest{
+	err = client.DeleteKey(&key_manager.DeleteKeyRequest{
 		Region: region,
 		KeyID:  keyID,
 	})

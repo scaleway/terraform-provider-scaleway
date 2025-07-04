@@ -1,4 +1,3 @@
----
 # scaleway_key_manager_key
 
 Provides a Scaleway Key Manager Key resource.  
@@ -30,17 +29,17 @@ The following arguments are supported:
 - `region` (String) – The region in which to create the key (e.g., `fr-par`).  
 - `project_id` (String, Optional) – The ID of the project the key belongs to.  
 - `usage` (String, **Required**) – The usage of the key. Valid values are:
-  - `symmetric_encryption`
-  - `asymmetric_encryption`
-  - `asymmetric_signing`
+    - `symmetric_encryption`
+    - `asymmetric_encryption`
+    - `asymmetric_signing`
 - `description` (String, Optional) – A description for the key.
 - `tags` (List of String, Optional) – A list of tags to assign to the key.
 - `unprotected` (Boolean, Optional) – If `true`, the key can be deleted. Defaults to `false` (protected).
 - `origin` (String, Optional) – The origin of the key. Valid values are:
-  - `scaleway_kms` (default)
-  - `external`
+    - `scaleway_kms` (default)
+    - `external`
 - `rotation_policy` (Block, Optional) – Rotation policy for the key:
-  - `rotation_period` (String, Optional) – The period between key rotations (e.g., `"720h"` for 30 days).
+    - `rotation_period` (String, Optional) – The period between key rotations (e.g., `"720h"` for 30 days).
 
 ## Attributes Reference
 
@@ -57,8 +56,8 @@ In addition to the arguments above, the following attributes are exported:
 - `origin_read` – The origin of the key as returned by the API.
 - `region_read` – The region of the key as returned by the API.
 - `rotation_policy` (Block)
-  - `rotation_period` – The period between key rotations.
-  - `next_rotation_at` – The date and time of the next scheduled rotation.
+    - `rotation_period` – The period between key rotations.
+    - `next_rotation_at` – The date and time of the next scheduled rotation.
 
 ## Import
 

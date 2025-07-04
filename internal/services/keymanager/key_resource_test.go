@@ -1,10 +1,15 @@
 package keymanager_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 )
 
 func TestAccKeyManagerKey_Basic(t *testing.T) {
@@ -14,6 +19,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -46,6 +52,7 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -82,4 +89,36 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 			},
 		},
 	})
+}
+
+func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		for _, rs := range state.RootModule().Resources {
+			if rs.Type != "scaleway_key_manager_key" {
+				continue
+			}
+
+			client, region, keyID, err := keymanager.NewKeyManagerAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return err
+			}
+
+			key, err := client.GetKey(&key_manager.GetKeyRequest{
+				Region: region,
+				KeyID:  keyID,
+			})
+			if err == nil {
+				// If the key exists but has DeletionRequestedAt set, we consider it "destroyed" for test purposes
+				if key.DeletionRequestedAt != nil {
+					continue
+				}
+				return fmt.Errorf("Key (%s) still exists", rs.Primary.ID)
+			}
+
+			if !httperrors.Is404(err) {
+				return err
+			}
+		}
+		return nil
+	}
 }
