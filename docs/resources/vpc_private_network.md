@@ -52,6 +52,7 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Private Network.
 - `vpc_id` - (Optional) The VPC in which to create the Private Network.
 - `is_regional` - (Deprecated) Private Networks are now all necessarily regional.
+- `enable_default_route_propagation` - (Optional) Defines whether default v4 and v6 routes are propagated for this Private Network.
 - `zone` - (Deprecated) Use `region` instead.
 
 ## Attributes Reference

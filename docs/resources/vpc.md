@@ -36,6 +36,7 @@ The following arguments are supported:
 - `name` - (Optional) The name for the VPC. If not provided it will be randomly generated.
 - `tags` - (Optional) The tags to associate with the VPC.
 - `enable_routing` - (Optional) Enable routing between Private Networks in the VPC. Note that you will not be able to deactivate it afterwards.
+- `enable_custom_routes_propagation` - (`true` for newly created VPCs) Defines whether the VPC advertises custom routes between its Private Networks. Note that you will not be able to deactivate it afterwards.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the VPC.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the VPC is associated with.
 
