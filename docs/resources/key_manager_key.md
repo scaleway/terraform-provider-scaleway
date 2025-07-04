@@ -9,7 +9,7 @@ This resource allows you to create and manage cryptographic keys in Scaleway Key
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_key_manager_key" "main" {
   name         = "my-kms-key"
   region       = "fr-par"
@@ -80,7 +80,7 @@ terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-55
 
 ## Example: Asymmetric Key
 
-```hcl
+```terraform
 resource "scaleway_key_manager_key" "asym" {
   name        = "asymmetric-key"
   region      = "fr-par"
