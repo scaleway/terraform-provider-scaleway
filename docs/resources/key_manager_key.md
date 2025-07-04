@@ -47,7 +47,7 @@ The following arguments are supported:
 
 ## Attributes Reference
 
-In addition to the arguments above, the following attributes are exported:
+In addition to all arguments above, the following attributes are exported:
 
 - `id` – The ID of the key.
 - `state` – The state of the key (e.g., `enabled`).
