@@ -2,7 +2,7 @@
 subcategory: "Key Manager"
 page_title: "Scaleway: scaleway_key_manager_key"
 ---
-# scaleway_key_manager_key
+# Resource: scaleway_key_manager_key
 
 Provides a Scaleway Key Manager Key resource.  
 This resource allows you to create and manage cryptographic keys in Scaleway Key Manager (KMS).

@@ -59,6 +59,7 @@ func ExtractRegionAndKeyID(id string) (scw.Region, string, error) {
 	if len(parts) != 2 {
 		return "", "", fmt.Errorf("unexpected ID format (%s), expected region/key_id", id)
 	}
+
 	return scw.Region(parts[0]), parts[1], nil
 }
 
@@ -68,6 +69,8 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 	if err != nil {
 		return nil, "", "", err
 	}
+
 	client := key_manager.NewAPI(meta.ExtractScwClient(m))
+
 	return client, region, keyID, nil
 }

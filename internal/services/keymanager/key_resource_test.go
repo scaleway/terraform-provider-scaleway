@@ -112,6 +112,7 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if key.DeletionRequestedAt != nil {
 					continue
 				}
+				
 				return fmt.Errorf("Key (%s) still exists", rs.Primary.ID)
 			}
 
@@ -119,6 +120,7 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 		}
+
 		return nil
 	}
 }
