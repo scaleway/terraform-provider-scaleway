@@ -89,8 +89,3 @@ resource "scaleway_key_manager_key" "asym" {
   unprotected = true
 }
 ```
-
-## See Also
-
-- [Scaleway Key Manager documentation](https://www.scaleway.com/en/docs/security/key-manager/)
-- [Terraform Scaleway Provider documentation](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs)
