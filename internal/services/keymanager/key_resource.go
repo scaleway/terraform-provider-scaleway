@@ -82,7 +82,7 @@ func ResourceKeyManagerKey() *schema.Resource {
 	}
 }
 
-func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := key_manager.NewAPI(meta.ExtractScwClient(m))
 
 	region := scw.Region(d.Get("region").(string))
@@ -112,8 +112,8 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	var rotationPolicy *key_manager.KeyRotationPolicy
 
-	if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]interface{})) > 0 {
-		m := v.([]interface{})[0].(map[string]interface{})
+	if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]any)) > 0 {
+		m := v.([]any)[0].(map[string]any)
 
 		if period, ok := m["rotation_period"].(string); ok && period != "" {
 			dur, err := time.ParseDuration(period)
@@ -150,7 +150,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
 
-func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -186,7 +186,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m in
 			periodStr = key.RotationPolicy.RotationPeriod.ToTimeDuration().String()
 		}
 
-		_ = d.Set("rotation_policy", []map[string]interface{}{
+		_ = d.Set("rotation_policy", []map[string]any{
 			{
 				"rotation_period":  periodStr,
 				"next_rotation_at": TimeToRFC3339(key.RotationPolicy.NextRotationAt),
@@ -197,7 +197,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -224,8 +224,8 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("rotation_policy") {
-		if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]interface{})) > 0 {
-			m := v.([]interface{})[0].(map[string]interface{})
+		if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]any)) > 0 {
+			m := v.([]any)[0].(map[string]any)
 
 			if period, ok := m["rotation_period"].(string); ok && period != "" {
 				dur, err := time.ParseDuration(period)
@@ -249,7 +249,7 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
 
-func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client, region, keyID, err := NewKeyManagerAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

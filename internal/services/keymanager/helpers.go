@@ -10,9 +10,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func ExpandStringList(v interface{}) []string {
+func ExpandStringList(v any) []string {
 	var result []string
-	list := v.([]interface{})
+	list := v.([]any)
 
 	for i, s := range list {
 		_ = i
