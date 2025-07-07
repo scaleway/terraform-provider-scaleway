@@ -29,6 +29,52 @@ resource "scaleway_block_snapshot" "block_snapshot" {
 }
 ```
 
+### How to import from Object Storage
+
+```terraform
+resource "scaleway_object_bucket" "my-import-bucket" {
+  name = "snapshot-bucket-to-import"
+}
+
+resource "scaleway_object" "qcow-object" {
+  bucket = scaleway_object_bucket.snapshot-bucket.name
+  key    = "my-snapshot.qcow2"
+  file   = "imported-snapshot/snapshot.qcow2"
+}
+resource "scaleway_block_volume" "imported" {
+  iops = 5000
+  name = "imported-from-qcow"
+
+  import {
+    bucket = "my-import-bucket"
+    key    = "imported-snapshot/snapshot.qcow2"
+  }
+}
+```
+
+### How to export to Object Storage
+
+```terraform
+resource "scaleway_object_bucket" "my-import-bucket" {
+      name = "snapshot-bucket-to-import"
+}
+
+resource "scaleway_object" "qcow-object" {
+      bucket = scaleway_object_bucket.snapshot-bucket.name
+      key    = "export/my-snapshot.qcow2"
+}
+
+resource "scaleway_block_volume" "to_export" {
+  iops = 5000
+  name = "to-export"
+
+  export {
+    bucket = "snapshot-bucket-to-import"
+    key    = "exports/my-snapshot.qcow2"
+  }
+}
+```
+
 ## Argument Reference
 
 This section lists the arguments that are supported:
@@ -38,6 +84,12 @@ This section lists the arguments that are supported:
 - `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Scaleway Project the snapshot is associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
+- `import` - (Optional)  Use this block to import a QCOW image from Object Storage to create a volume.
+      - `bucket` – (Required) The name of the bucket containing the QCOW file.
+      - `key` – (Required) The key of the QCOW file within the bucket.
+- `export` - (Optional) Use this block to export the volume as a QCOW file to Object Storage.
+      - `bucket` – (Required) The name of the bucket where the QCOW file will be saved.
+      - `key` – (Required) The desired key (path) for the QCOW file within the bucket.
 
 ## Attributes Reference
 
