@@ -3,28 +3,12 @@ package keymanager
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func ExpandStringList(v any) []string {
-	var result []string
-
-	list := v.([]any)
-
-	for i, s := range list {
-		_ = i
-
-		if str, ok := s.(string); ok {
-			result = append(result, str)
-		}
-	}
-
-	return result
-}
 
 func UsageToString(u *key_manager.KeyUsage) string {
 	if u == nil {
@@ -44,14 +28,6 @@ func UsageToString(u *key_manager.KeyUsage) string {
 	}
 
 	return ""
-}
-
-func TimeToRFC3339(t *time.Time) string {
-	if t == nil {
-		return ""
-	}
-
-	return t.Format(time.RFC3339)
 }
 
 // ExtractRegionAndKeyID parses an ID of the form "region/key_id" and returns the region and key ID.

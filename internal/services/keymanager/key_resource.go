@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func ResourceKeyManagerKey() *schema.Resource {
@@ -92,7 +93,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 	description := d.Get("description").(string)
 	unprotected := d.Get("unprotected").(bool)
 	origin := d.Get("origin").(string)
-	tags := ExpandStringList(d.Get("tags"))
+	tags := types.ExpandStrings(d.Get("tags"))
 
 	var usageBlock *key_manager.KeyUsage
 
@@ -171,11 +172,11 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
 	_ = d.Set("rotation_count", int(key.RotationCount))
-	_ = d.Set("created_at", TimeToRFC3339(key.CreatedAt))
-	_ = d.Set("updated_at", TimeToRFC3339(key.UpdatedAt))
+	_ = d.Set("created_at", types.FlattenTime(key.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(key.UpdatedAt))
 	_ = d.Set("protected", key.Protected)
 	_ = d.Set("locked", key.Locked)
-	_ = d.Set("rotated_at", TimeToRFC3339(key.RotatedAt))
+	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
 	_ = d.Set("origin_read", key.Origin.String())
 	_ = d.Set("region_read", key.Region.String())
 
@@ -189,7 +190,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		_ = d.Set("rotation_policy", []map[string]any{
 			{
 				"rotation_period":  periodStr,
-				"next_rotation_at": TimeToRFC3339(key.RotationPolicy.NextRotationAt),
+				"next_rotation_at": types.FlattenTime(key.RotationPolicy.NextRotationAt),
 			},
 		})
 	}
@@ -219,7 +220,7 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("tags") {
-		tags := ExpandStringList(d.Get("tags"))
+		tags := types.ExpandStrings(d.Get("tags"))
 		updateReq.Tags = &tags
 	}
 
