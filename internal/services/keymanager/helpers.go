@@ -12,7 +12,7 @@ import (
 
 func ExpandStringList(v any) []string {
 	var result []string
-	
+
 	list := v.([]any)
 
 	for i, s := range list {
