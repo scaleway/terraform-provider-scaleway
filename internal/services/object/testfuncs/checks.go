@@ -204,3 +204,48 @@ func IsWebsiteConfigurationPresent(tt *acctest.TestTools, resourceName string) r
 		return nil
 	}
 }
+
+func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		rs := state.RootModule().Resources[n]
+		if rs == nil {
+			return errors.New("resource not found")
+		}
+
+		key := rs.Primary.Attributes["key"]
+
+		regionalID := regional.ExpandID(rs.Primary.Attributes["bucket"])
+		bucketRegion := regionalID.Region.String()
+		bucketName := regionalID.ID
+
+		s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+		if err != nil {
+			return err
+		}
+
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return errors.New("no ID is set")
+		}
+
+		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
+			Bucket: scw.StringPtr(bucketName),
+			Key:    scw.StringPtr(key),
+		})
+		if err != nil {
+			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
+				return errors.New("s3 object not found")
+			}
+
+			return err
+		}
+
+		return nil
+	}
+}
