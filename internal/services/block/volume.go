@@ -46,18 +46,16 @@ func ResourceVolume() *schema.Resource {
 				Description: "The maximum IO/s expected, must match available options",
 			},
 			"size_in_gb": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The volume size in GB",
-				ExactlyOneOf: []string{"snapshot_id"}, // TODO: Allow size with snapshot to change created volume size
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The volume size in GB",
 			},
 			"snapshot_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
 				ForceNew:         true,
 				Description:      "The snapshot to create the volume from",
-				ExactlyOneOf:     []string{"size_in_gb"},
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"instance_volume_id": {
@@ -112,16 +110,21 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 			req.PerfIops = types.ExpandUint32Ptr(iops)
 		}
 
-		if size, ok := d.GetOk("size_in_gb"); ok {
-			volumeSizeInBytes := scw.Size(size.(int)) * scw.GB
-			req.FromEmpty = &block.CreateVolumeRequestFromEmpty{
-				Size: volumeSizeInBytes,
+		snapshotID, hasSnapshot := d.GetOk("snapshot_id")
+		if hasSnapshot {
+			req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
+				SnapshotID: locality.ExpandID(snapshotID.(string)),
 			}
 		}
 
-		if snapshotID, ok := d.GetOk("snapshot_id"); ok {
-			req.FromSnapshot = &block.CreateVolumeRequestFromSnapshot{
-				SnapshotID: locality.ExpandID(snapshotID.(string)),
+		if size, ok := d.GetOk("size_in_gb"); ok {
+			volumeSizeInBytes := scw.Size(size.(int)) * scw.GB
+			if hasSnapshot {
+				req.FromSnapshot.Size = &volumeSizeInBytes
+			} else {
+				req.FromEmpty = &block.CreateVolumeRequestFromEmpty{
+					Size: volumeSizeInBytes,
+				}
 			}
 		}
 
