@@ -24,42 +24,48 @@ func ResourceKeyManagerKey() *schema.Resource {
 		DeleteContext: resourceKeyManagerKeyDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Name of the key.",
 			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
+			"project_id": account.ProjectIDSchema(), // ID of the Project containing the key.
+			"region":     regional.Schema(),         // Region where the key is stored.
 			"usage": {
 				Type:     schema.TypeString,
 				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
 				}, false),
+				Description: "Key usage. Keys with a usage set to 'symmetric_encryption' can encrypt and decrypt data using the AES-256-GCM key algorithm. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Description of the key.",
 			},
 			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "List of the key's tags.",
 			},
 			"rotation_policy": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Key rotation policy.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"rotation_period":  {Type: schema.TypeString, Optional: true},
-						"next_rotation_at": {Type: schema.TypeString, Computed: true},
+						"rotation_period":  {Type: schema.TypeString, Optional: true, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
+						"next_rotation_at": {Type: schema.TypeString, Computed: true, Description: "Timestamp indicating the next scheduled rotation."},
 					},
 				},
 			},
 			"unprotected": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, the key is not protected against deletion.",
 			},
 			"origin": {
 				Type:     schema.TypeString,
@@ -67,18 +73,17 @@ func ResourceKeyManagerKey() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"scaleway_kms", "external",
 				}, false),
+				Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
 			},
 			// Computed fields
-			"id":             {Type: schema.TypeString, Computed: true},
-			"state":          {Type: schema.TypeString, Computed: true},
-			"created_at":     {Type: schema.TypeString, Computed: true},
-			"updated_at":     {Type: schema.TypeString, Computed: true},
-			"rotation_count": {Type: schema.TypeInt, Computed: true},
-			"protected":      {Type: schema.TypeBool, Computed: true},
-			"locked":         {Type: schema.TypeBool, Computed: true},
-			"rotated_at":     {Type: schema.TypeString, Computed: true},
-			"origin_read":    {Type: schema.TypeString, Computed: true},
-			"region_read":    {Type: schema.TypeString, Computed: true},
+			"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
+			"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
+			"created_at":     {Type: schema.TypeString, Computed: true, Description: "Key creation date."},
+			"updated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last modification date."},
+			"rotation_count": {Type: schema.TypeInt, Computed: true, Description: "The rotation count tracks the number of times the key has been rotated."},
+			"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
+			"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
+			"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
 		},
 	}
 }
@@ -177,8 +182,6 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("protected", key.Protected)
 	_ = d.Set("locked", key.Locked)
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
-	_ = d.Set("origin_read", key.Origin.String())
-	_ = d.Set("region_read", key.Region.String())
 
 	if key.RotationPolicy != nil {
 		var periodStr string
