@@ -84,6 +84,30 @@ func ResourceSnapshot() *schema.Resource {
 				Description:   "Import snapshot from a qcow",
 				ConflictsWith: []string{"volume_id"},
 			},
+			"export": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bucket": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Bucket containing qcow",
+							DiffSuppressFunc: dsf.Locality,
+							StateFunc: func(i any) string {
+								return regional.ExpandID(i.(string)).ID
+							},
+						},
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key of the qcow file in the specified bucket",
+						},
+					},
+				},
+				Optional:    true,
+				Description: "Export snapshot to a qcow",
+			},
 			"zone":       zonal.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
@@ -130,6 +154,20 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if _, shouldExport := d.GetOk("export"); shouldExport {
+		req := block.ExportSnapshotToObjectStorageRequest{
+			Zone:       zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
+			Key:        d.Get("export.0.key").(string),
+		}
+
+		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceBlockSnapshotRead(ctx, d, m)
@@ -199,6 +237,20 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if _, err := api.UpdateSnapshot(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if shouldExport := d.HasChange("export"); shouldExport {
+		req := block.ExportSnapshotToObjectStorageRequest{
+			Zone:       zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
+			Key:        d.Get("export.0.key").(string),
+		}
+
+		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceBlockSnapshotRead(ctx, d, m)
