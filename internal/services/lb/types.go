@@ -400,13 +400,6 @@ func expandPrivateNetworks(data any) ([]*lb.PrivateNetwork, error) {
 		rawPn := pn.(map[string]any)
 		privateNetwork := &lb.PrivateNetwork{}
 		privateNetwork.PrivateNetworkID = locality.ExpandID(rawPn["private_network_id"].(string))
-
-		if staticConfig, hasStaticConfig := rawPn["static_config"]; hasStaticConfig && len(staticConfig.([]any)) > 0 {
-			privateNetwork.StaticConfig = expandLbPrivateNetworkStaticConfig(staticConfig) //nolint:staticcheck
-		} else {
-			privateNetwork.DHCPConfig = expandLbPrivateNetworkDHCPConfig(rawPn["dhcp_config"]) //nolint:staticcheck
-		}
-
 		privateNetwork.IpamIDs = locality.ExpandIDs(rawPn["ipam_ids"])
 
 		pns = append(pns, privateNetwork)
@@ -415,30 +408,12 @@ func expandPrivateNetworks(data any) ([]*lb.PrivateNetwork, error) {
 	return pns, nil
 }
 
-func expandLbPrivateNetworkStaticConfig(raw any) *lb.PrivateNetworkStaticConfig {
-	if raw == nil || len(raw.([]any)) < 1 {
-		return nil
-	}
-
-	return &lb.PrivateNetworkStaticConfig{
-		IPAddress: types.ExpandStringsPtr(raw),
-	}
-}
-
 func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []string {
 	if cfg == nil {
 		return nil
 	}
 
 	return *cfg.IPAddress //nolint:staticcheck
-}
-
-func expandLbPrivateNetworkDHCPConfig(raw any) *lb.PrivateNetworkDHCPConfig {
-	if raw == nil || !raw.(bool) {
-		return nil
-	}
-
-	return &lb.PrivateNetworkDHCPConfig{}
 }
 
 func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, pnConfigs []*lb.PrivateNetwork, lbID string, timeout time.Duration) ([]*lb.PrivateNetwork, error) {

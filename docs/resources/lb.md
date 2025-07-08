@@ -109,8 +109,6 @@ The following arguments are supported:
     - `private_network_id` - (Required) The ID of the Private Network to attach to.
     - ~> **Important:** Updates to `private_network` will recreate the attachment.
     - `ipam_ids` - (Optional) IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network.
-    - `dhcp_config` - (Deprecated) Please use `ipam_ids`. Set to `true` if you want to let DHCP assign IP addresses.
-    - `static_config` - (Deprecated) Please use `ipam_ids`. Define a local ip address of your choice for the load balancer instance.
 - `ssl_compatibility_level` - (Optional) Enforces minimal SSL version (in SSL/TLS offloading context). Please check [possible values](https://www.scaleway.com/en/developers/api/load-balancer/zoned-api/#path-load-balancer-create-a-load-balancer).
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Load Balancer is associated with.
