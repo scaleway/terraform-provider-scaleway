@@ -1407,10 +1407,6 @@ func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDif
 	// the image with another tool.
 	marketplaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
 
-	if err != nil {
-		return err
-	}
-
 	marketplaceImage, err := marketplaceAPI.GetLocalImage(&marketplace.GetLocalImageRequest{
 		LocalImageID: server.Server.Image.ID,
 	}, scw.WithContext(ctx))
@@ -1613,10 +1609,9 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 	}
 
 	for _, product := range products.Products {
-		if strings.HasPrefix(product.Product, commercialType) {
-			if product.Locality.Zone != nil && *product.Locality.Zone == zone {
-				return product.EndOfLifeAt.Format(time.DateOnly), nil
-			}
+		if product.Properties != nil && product.Properties.Instance != nil &&
+			product.Properties.Instance.OfferID == commercialType {
+			return product.EndOfLifeAt.Format(time.DateOnly), nil
 		}
 	}
 
