@@ -9,7 +9,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-
 func UsageToString(u *key_manager.KeyUsage) string {
 	if u == nil {
 		return ""
