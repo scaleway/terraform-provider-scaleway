@@ -71,12 +71,15 @@ func ExpandKeyUsage(usage string) *key_manager.KeyUsage {
 	switch usage {
 	case "symmetric_encryption":
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
+
 		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
 	case "asymmetric_encryption":
 		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
+
 		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
 	case "asymmetric_signing":
 		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
+
 		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
 	default:
 		return nil
@@ -89,18 +92,22 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 	if !ok || len(list) == 0 {
 		return nil, nil
 	}
+
 	m, ok := list[0].(map[string]any)
 	if !ok {
 		return nil, nil
 	}
+
 	periodStr, ok := m["rotation_period"].(string)
 	if !ok || periodStr == "" {
 		return nil, nil
 	}
+
 	period, err := time.ParseDuration(periodStr)
 	if err != nil {
 		return nil, err
 	}
+
 	return &key_manager.KeyRotationPolicy{
 		RotationPeriod: scw.NewDurationFromTimeDuration(period),
 	}, nil
@@ -111,10 +118,13 @@ func FlattenKeyRotationPolicy(rp *key_manager.KeyRotationPolicy) []map[string]an
 	if rp == nil {
 		return nil
 	}
+
 	var periodStr string
+
 	if rp.RotationPeriod != nil {
 		periodStr = rp.RotationPeriod.ToTimeDuration().String()
 	}
+
 	return []map[string]any{
 		{
 			"rotation_period":  periodStr,

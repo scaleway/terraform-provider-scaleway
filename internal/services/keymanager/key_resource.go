@@ -108,6 +108,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		if err != nil {
 			return diag.Errorf("invalid rotation_period: %v", err)
 		}
+
 		createReq.RotationPolicy = rp
 	}
 
@@ -190,6 +191,7 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 			if err != nil {
 				return diag.Errorf("invalid rotation_period: %v", err)
 			}
+
 			updateReq.RotationPolicy = rp
 		}
 	}
