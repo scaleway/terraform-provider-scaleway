@@ -534,7 +534,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  }
 					  options {
 						id         = data.scaleway_baremetal_option.remote_access.option_id
-						expires_at = "2025-07-06T09:00:00Z"
+						expires_at = "2026-07-06T09:00:00Z"
 					  }
 					}
 				`, Zone, Zone, OfferName, Zone, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
@@ -544,11 +544,11 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
-						"expires_at": "2025-07-06T09:00:00Z",
+						"id":         Zone + "/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2026-07-06T09:00:00Z",
 					}),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id": "fr-par-1/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
+						"id": Zone + "/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
 					}),
 				),
 			},
@@ -584,7 +584,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					  options {
 						id         = data.scaleway_baremetal_option.remote_access.option_id
-						expires_at = "2025-07-06T09:00:00Z"
+						expires_at = "2026-07-06T09:00:00Z"
 					  }
 					}
 				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
@@ -593,8 +593,8 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
-						"expires_at": "2025-07-06T09:00:00Z",
+						"id":         Zone + "/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2026-07-06T09:00:00Z",
 					}),
 				),
 			},
