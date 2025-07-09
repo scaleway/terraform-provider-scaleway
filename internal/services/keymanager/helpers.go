@@ -32,7 +32,6 @@ func UsageToString(u *key_manager.KeyUsage) string {
 	return ""
 }
 
-// ExtractRegionAndKeyID parses an ID of the form "region/key_id" and returns the region and key ID.
 func ExtractRegionAndKeyID(id string) (scw.Region, string, error) {
 	parts := strings.SplitN(id, "/", 2)
 	if len(parts) != 2 {
@@ -53,7 +52,6 @@ func newKeyManagerAPI(d *schema.ResourceData, m any) (*key_manager.API, scw.Regi
 	return api, region, nil
 }
 
-// NewKeyManagerAPIWithRegionAndID returns a Key Manager API client, region, and key ID from meta and a composite ID.
 func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Region, string, error) {
 	region, keyID, err := ExtractRegionAndKeyID(id)
 	if err != nil {
@@ -65,9 +63,7 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 	return client, region, keyID, nil
 }
 
-// ExpandKeyUsage converts a usage string to a *key_manager.KeyUsage struct for API requests.
 func ExpandKeyUsage(usage string) *key_manager.KeyUsage {
-	// You can extend this switch if you want to support more algorithms in the future
 	switch usage {
 	case "symmetric_encryption":
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
@@ -86,7 +82,6 @@ func ExpandKeyUsage(usage string) *key_manager.KeyUsage {
 	}
 }
 
-// ExpandKeyRotationPolicy converts a Terraform rotation_policy value to a *key_manager.KeyRotationPolicy.
 func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 	list, ok := v.([]any)
 	if !ok || len(list) == 0 {
@@ -113,7 +108,6 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 	}, nil
 }
 
-// FlattenKeyRotationPolicy converts a *key_manager.KeyRotationPolicy to a []map[string]any for Terraform.
 func FlattenKeyRotationPolicy(rp *key_manager.KeyRotationPolicy) []map[string]any {
 	if rp == nil {
 		return nil

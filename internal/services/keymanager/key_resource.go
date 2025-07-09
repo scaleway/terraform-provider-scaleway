@@ -2,7 +2,6 @@ package keymanager
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,8 +24,8 @@ func ResourceKeyManagerKey() *schema.Resource {
 				Optional:    true,
 				Description: "Name of the key.",
 			},
-			"project_id": account.ProjectIDSchema(), // ID of the Project containing the key.
-			"region":     regional.Schema(),         // Region where the key is stored.
+			"project_id": account.ProjectIDSchema(),
+			"region":     regional.Schema(),
 			"usage": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -123,7 +122,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", key.Region, key.ID))
+	d.SetId(regional.NewIDString(key.Region, key.ID))
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
