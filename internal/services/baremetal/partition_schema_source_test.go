@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	offerNameEasyPartitioning            = "EM-B220E-NVME"
 	incompatibleOfferName                = "EM-L110X-SATA"
 	AlternativeOfferNameEasyPartitioning = "EM-B420E-NVME"
 	mountpoint                           = "/data"
@@ -73,7 +72,7 @@ func TestAccPartitionSchemaDataSource_Basic(t *testing.T) {
 					}
 				`,
 					Zone,
-					offerNameEasyPartitioning,
+					OfferName,
 					Zone,
 					sshKeyName,
 					SSHKeyBaremetal,
@@ -141,7 +140,7 @@ func TestAccPartitionSchemaDataSource_WithoutExtraPart(t *testing.T) {
 					}
 				`,
 					Zone,
-					offerNameEasyPartitioning,
+					OfferName,
 					Zone,
 					sshKeyName,
 					SSHKeyBaremetal,
@@ -208,7 +207,7 @@ func TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 					}
 				`,
 					Zone,
-					offerNameEasyPartitioning,
+					OfferName,
 					Zone,
 					sshKeyName,
 					SSHKeyBaremetal,
