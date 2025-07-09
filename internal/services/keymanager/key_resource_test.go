@@ -24,7 +24,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_key_manager_key" "main" {
-				  name         = "tf-test-kms-key-unprotected"
+				  name         = "tf-test-kms-key-unprotected-a"
 				  region       = "fr-par"
 				  usage        = "symmetric_encryption"
 				  description  = "Test key"
@@ -33,7 +33,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-unprotected"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-unprotected-a"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "region", "fr-par"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "usage", "symmetric_encryption"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key"),
@@ -108,7 +108,6 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				KeyID:  keyID,
 			})
 			if err == nil {
-				// If the key exists but has DeletionRequestedAt set, we consider it "destroyed" for test purposes
 				if key.DeletionRequestedAt != nil {
 					continue
 				}

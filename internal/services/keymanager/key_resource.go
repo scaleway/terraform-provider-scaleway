@@ -3,15 +3,12 @@ package keymanager
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -89,64 +86,38 @@ func ResourceKeyManagerKey() *schema.Resource {
 }
 
 func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := key_manager.NewAPI(meta.ExtractScwClient(m))
-
-	region := scw.Region(d.Get("region").(string))
-	projectID := d.Get("project_id").(string)
-	name := d.Get("name").(string)
-	usage := d.Get("usage").(string)
-	description := d.Get("description").(string)
-	unprotected := d.Get("unprotected").(bool)
-	origin := d.Get("origin").(string)
-	tags := types.ExpandStrings(d.Get("tags"))
-
-	var usageBlock *key_manager.KeyUsage
-
-	switch usage {
-	case "symmetric_encryption":
-		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
-		usageBlock = &key_manager.KeyUsage{SymmetricEncryption: &alg}
-	case "asymmetric_encryption":
-		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
-		usageBlock = &key_manager.KeyUsage{AsymmetricEncryption: &alg}
-	case "asymmetric_signing":
-		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
-		usageBlock = &key_manager.KeyUsage{AsymmetricSigning: &alg}
-	default:
-		return diag.Errorf("invalid usage: %s", usage)
-	}
-
-	var rotationPolicy *key_manager.KeyRotationPolicy
-
-	if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]any)) > 0 {
-		m := v.([]any)[0].(map[string]any)
-
-		if period, ok := m["rotation_period"].(string); ok && period != "" {
-			dur, err := time.ParseDuration(period)
-			if err != nil {
-				return diag.Errorf("invalid rotation_period: %v", err)
-			}
-
-			sdur := scw.NewDurationFromTimeDuration(dur)
-			rotationPolicy = &key_manager.KeyRotationPolicy{
-				RotationPeriod: sdur,
-			}
-		}
+	api, region, err := newKeyManagerAPI(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	createReq := &key_manager.CreateKeyRequest{
-		Region:         region,
-		ProjectID:      projectID,
-		Name:           &name,
-		Usage:          usageBlock,
-		Description:    &description,
-		Tags:           tags,
-		RotationPolicy: rotationPolicy,
-		Unprotected:    unprotected,
-		Origin:         key_manager.KeyOrigin(origin),
+		Region:      region,
+		ProjectID:   d.Get("project_id").(string),
+		Name:        types.ExpandStringPtr(d.Get("name")),
+		Description: types.ExpandStringPtr(d.Get("description")),
+		Unprotected: d.Get("unprotected").(bool),
 	}
 
-	key, err := client.CreateKey(createReq)
+	if v, ok := d.GetOk("tags"); ok {
+		createReq.Tags = types.ExpandStrings(v)
+	}
+
+	if v, ok := d.GetOk("rotation_policy"); ok {
+		rp, err := ExpandKeyRotationPolicy(v)
+		if err != nil {
+			return diag.Errorf("invalid rotation_period: %v", err)
+		}
+		createReq.RotationPolicy = rp
+	}
+
+	if v, ok := d.GetOk("origin"); ok {
+		createReq.Origin = key_manager.KeyOrigin(v.(string))
+	}
+
+	createReq.Usage = ExpandKeyUsage(d.Get("usage").(string))
+
+	key, err := api.CreateKey(createReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,21 +153,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("protected", key.Protected)
 	_ = d.Set("locked", key.Locked)
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
-
-	if key.RotationPolicy != nil {
-		var periodStr string
-
-		if key.RotationPolicy.RotationPeriod != nil {
-			periodStr = key.RotationPolicy.RotationPeriod.ToTimeDuration().String()
-		}
-
-		_ = d.Set("rotation_policy", []map[string]any{
-			{
-				"rotation_period":  periodStr,
-				"next_rotation_at": types.FlattenTime(key.RotationPolicy.NextRotationAt),
-			},
-		})
-	}
+	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
 
 	return nil
 }
@@ -228,20 +185,12 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("rotation_policy") {
-		if v, ok := d.GetOk("rotation_policy"); ok && len(v.([]any)) > 0 {
-			m := v.([]any)[0].(map[string]any)
-
-			if period, ok := m["rotation_period"].(string); ok && period != "" {
-				dur, err := time.ParseDuration(period)
-				if err != nil {
-					return diag.Errorf("invalid rotation_period: %v", err)
-				}
-
-				sdur := scw.NewDurationFromTimeDuration(dur)
-				updateReq.RotationPolicy = &key_manager.KeyRotationPolicy{
-					RotationPeriod: sdur,
-				}
+		if v, ok := d.GetOk("rotation_policy"); ok {
+			rp, err := ExpandKeyRotationPolicy(v)
+			if err != nil {
+				return diag.Errorf("invalid rotation_period: %v", err)
 			}
+			updateReq.RotationPolicy = rp
 		}
 	}
 
