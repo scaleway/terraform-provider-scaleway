@@ -64,8 +64,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
@@ -101,8 +101,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -170,7 +170,7 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
@@ -222,8 +222,8 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
