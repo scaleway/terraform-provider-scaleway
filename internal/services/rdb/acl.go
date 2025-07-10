@@ -122,7 +122,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	res, err := rdbAPI.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: instanceID,
-	}, scw.WithContext(ctx))
+	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
