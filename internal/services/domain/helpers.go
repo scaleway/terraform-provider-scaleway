@@ -623,3 +623,11 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []any {
 
 	return results
 }
+
+func BuildZoneName(subdomain, domain string) string {
+	if subdomain == "" {
+		return domain
+	}
+
+	return fmt.Sprintf("%s.%s", subdomain, domain)
+}
