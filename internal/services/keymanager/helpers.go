@@ -1,13 +1,12 @@
 package keymanager
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -32,15 +31,6 @@ func UsageToString(u *key_manager.KeyUsage) string {
 	return ""
 }
 
-func ExtractRegionAndKeyID(id string) (scw.Region, string, error) {
-	parts := strings.SplitN(id, "/", 2)
-	if len(parts) != 2 {
-		return "", "", fmt.Errorf("unexpected ID format (%s), expected region/key_id", id)
-	}
-
-	return scw.Region(parts[0]), parts[1], nil
-}
-
 func newKeyManagerAPI(d *schema.ResourceData, m any) (*key_manager.API, scw.Region, error) {
 	api := key_manager.NewAPI(meta.ExtractScwClient(m))
 
@@ -53,7 +43,7 @@ func newKeyManagerAPI(d *schema.ResourceData, m any) (*key_manager.API, scw.Regi
 }
 
 func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Region, string, error) {
-	region, keyID, err := ExtractRegionAndKeyID(id)
+	region, keyID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
