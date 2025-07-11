@@ -32,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
@@ -195,6 +196,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_acl":                             k8s.ResourceACL(),
 				"scaleway_k8s_cluster":                         k8s.ResourceCluster(),
 				"scaleway_k8s_pool":                            k8s.ResourcePool(),
+				"scaleway_key_manager_key":                     keymanager.ResourceKeyManagerKey(),
 				"scaleway_lb":                                  lb.ResourceLb(),
 				"scaleway_lb_acl":                              lb.ResourceACL(),
 				"scaleway_lb_backend":                          lb.ResourceBackend(),
