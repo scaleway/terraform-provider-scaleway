@@ -13,7 +13,7 @@ see the [API documentation](https://www.scaleway.com/en/developers/api/apple-sil
 ### Basic
 
 ```terraform
-resource scaleway_apple_silicon_server server {
+resource "scaleway_apple_silicon_server" "server" {
   name = "test-m1"
   type = "M1-M"
 }
@@ -22,14 +22,16 @@ resource scaleway_apple_silicon_server server {
 ### Enable VPC and attach private network
 
 ```terraform
-resource scaleway_vpc vpc-apple-silicon {
+resource "scaleway_vpc" "vpc-apple-silicon" {
   name = "vpc-apple-silicon"
 }
-resource scaleway_vpc_private_network pn-apple-silicon {
+
+resource "scaleway_vpc_private_network" "pn-apple-silicon" {
   name = "pn-apple-silicon"
   vpc_id = scaleway_vpc.vpc-apple-silicon.id
 }
-resource scaleway_apple_silicon_server my-server {
+
+resource "scaleway_apple_silicon_server" "my-server" {
     name = "TestAccServerEnableVPC"
     type = "M2-M"
     enable_vpc = true
