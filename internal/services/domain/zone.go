@@ -88,7 +88,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	domainName := strings.ToLower(d.Get("domain").(string))
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
-	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
+	zoneName := BuildZoneName(subdomainName, domainName)
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -100,7 +100,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	for i := range zones.DNSZones {
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
-			d.SetId(fmt.Sprintf("%s.%s", subdomainName, domainName))
+			d.SetId(BuildZoneName(subdomainName, domainName))
 
 			return resourceDomainZoneRead(ctx, d, m)
 		}
@@ -121,7 +121,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
+	d.SetId(BuildZoneName(dnsZone.Subdomain, dnsZone.Domain))
 
 	return resourceDomainZoneRead(ctx, d, m)
 }
