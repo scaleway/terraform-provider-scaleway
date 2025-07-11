@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultHostingTimeout = 5 * time.Minute
+	defaultHostingTimeout = 15 * time.Minute
 	hostingRetryInterval  = 5 * time.Second
 )
 
