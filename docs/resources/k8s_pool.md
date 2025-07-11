@@ -14,7 +14,7 @@ Creates and manages Scaleway Kubernetes cluster pools. For more information, see
 ```terraform
 resource "scaleway_k8s_cluster" "jack" {
   name    = "jack"
-  version = "1.24.3"
+  version = "1.32.3"
   cni     = "cilium"
 }
 
@@ -153,7 +153,7 @@ resource "scaleway_k8s_pool" "pool" {
 resource "scaleway_k8s_cluster" "cluster" {
   name    = "placement_group"
   cni     = "kilo"
-  version = "%s"
+  version = "1.32.3"
   tags    = ["terraform-test", "scaleway_k8s_cluster", "placement_group"]
   region  = "fr-par"
   type    = "multicloud"
