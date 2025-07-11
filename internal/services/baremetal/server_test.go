@@ -258,7 +258,7 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 					}
 
 					data "scaleway_baremetal_offer" "server_model" {
-					  zone                = "fr-par-2"
+					  zone                = "%s"
 					  name                = "EM-A610R-NVME"
 					  subscription_period = "hourly"
 					}
@@ -275,13 +275,13 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 					  os               = data.scaleway_baremetal_os.by_id.os_id
 					  service_password = "%s"
 					}
-				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, password),
+				`, Zone, Zone, SSHKeyName, SSHKeyBaremetal, Zone, password),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.TP"),
 					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "id"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "zone", Zone),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "offer", "fr-par-1/e1680dec-52aa-4cbc-b70c-ef32d863fdb0"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "os", "fr-par-1/a5c00c1b-95b1-4c08-8a33-79cc079f9dac"), // Replace with actual os_id if needed
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "os", "fr-par-2/a5c00c1b-95b1-4c08-8a33-79cc079f9dac"), // Replace with actual os_id if needed
 					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "service_user"),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.TP", "ssh_key_ids.0"),
 				),
@@ -1180,7 +1180,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 						install_config_afterward = true
 					}`, Zone, newOffer, Zone),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", Zone),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
 			},
