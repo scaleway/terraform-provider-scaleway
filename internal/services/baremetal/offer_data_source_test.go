@@ -14,9 +14,12 @@ import (
 )
 
 const (
-	OfferName = "EM-I215E-NVME"
-	Zone      = "fr-par-2"
-	OfferID   = "ddb09834-8680-4339-b5e3-19ca5205fa1f"
+	OfferID = "ddb09834-8680-4339-b5e3-19ca5205fa1f"
+)
+
+var (
+	OfferName = getenv("OFFER_NAME", "EM-I215E-NVME")
+	Zone      = getenv("ZONE", "fr-par-2")
 )
 
 func TestAccDataSourceOffer_Basic(t *testing.T) {

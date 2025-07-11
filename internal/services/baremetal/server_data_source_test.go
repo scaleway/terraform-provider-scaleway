@@ -2,6 +2,7 @@ package baremetal_test
 
 import (
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -13,7 +14,7 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 

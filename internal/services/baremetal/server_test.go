@@ -3,6 +3,7 @@ package baremetal_test
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"reflect"
 	"regexp"
 	"strings"
@@ -25,7 +26,7 @@ func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -64,7 +65,7 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -101,7 +102,7 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
@@ -120,7 +121,7 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -170,7 +171,7 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
@@ -182,7 +183,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -222,7 +223,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", Zone+"/"+OfferID),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -293,7 +294,7 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -359,7 +360,7 @@ func TestAccServer_AddOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -451,7 +452,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -606,7 +607,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -678,7 +679,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -791,7 +792,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -917,7 +918,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -1099,7 +1100,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 
 	newOffer := "EM-B320E-NVME"
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
