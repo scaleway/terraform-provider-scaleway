@@ -1,10 +1,11 @@
 package baremetal_test
 
 import (
+	"os"
+
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"os"
 )
 
 func getenv(key, fallback string) string {
@@ -12,6 +13,7 @@ func getenv(key, fallback string) string {
 	if value == "" {
 		return fallback
 	}
+
 	return value
 }
 
