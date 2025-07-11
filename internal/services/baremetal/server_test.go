@@ -259,7 +259,7 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 
 					data "scaleway_baremetal_offer" "server_model" {
 					  zone                = "%s"
-					  name                = "EM-A610R-NVME"
+					  name                = "%s"
 					  subscription_period = "hourly"
 					}
 
@@ -275,7 +275,7 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 					  os               = data.scaleway_baremetal_os.by_id.os_id
 					  service_password = "%s"
 					}
-				`, Zone, Zone, SSHKeyName, SSHKeyBaremetal, Zone, password),
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, Zone, password),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.TP"),
 					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "id"),
