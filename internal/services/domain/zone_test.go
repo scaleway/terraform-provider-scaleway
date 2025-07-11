@@ -43,6 +43,36 @@ func TestAccDomainZone_Basic(t *testing.T) {
 	})
 }
 
+func TestAccDomainZone_RootZone(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	logging.L.Debugf("TestAccDomainZone_RootZone: test root zone with domain: %s", acctest.TestDomain)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckDomainZoneDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_zone" "test" {
+						domain    = "%s"
+						subdomain = ""
+					}
+				`, acctest.TestDomain),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainZoneExists(tt, "scaleway_domain_zone.test"),
+					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "subdomain", ""),
+					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "domain", acctest.TestDomain),
+					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "status", "active"),
+					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "id", acctest.TestDomain),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckDomainZoneExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -53,7 +83,7 @@ func testAccCheckDomainZoneExists(tt *acctest.TestTools, n string) resource.Test
 		domainAPI := domain.NewDomainAPI(tt.Meta)
 
 		listDNSZones, err := domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-			DNSZones: []string{fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
+			DNSZones: []string{domain.BuildZoneName(rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 		})
 		if err != nil {
 			return err
@@ -80,7 +110,7 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 			// check if the zone still exists
 			domainAPI := domain.NewDomainAPI(tt.Meta)
 			listDNSZones, err := domainAPI.ListDNSZones(&domainSDK.ListDNSZonesRequest{
-				DNSZones: []string{fmt.Sprintf("%s.%s", rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
+				DNSZones: []string{domain.BuildZoneName(rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 			})
 
 			if httperrors.Is403(err) { // forbidden: subdomain not found
@@ -92,6 +122,11 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 			}
 
 			if listDNSZones.TotalCount > 0 {
+				// Root zones cannot be deleted, so we accept that they still exist
+				if rs.Primary.Attributes["subdomain"] == "" {
+					return nil
+				}
+
 				return fmt.Errorf("zone %s still exist for domain: %s",
 					rs.Primary.Attributes["subdomain"],
 					rs.Primary.Attributes["domain"])
