@@ -23,6 +23,36 @@ func TestAccACL_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpc-acl-basic"
+					}
+					
+					resource "scaleway_vpc_acl" "acl01" {
+					  vpc_id   = scaleway_vpc.vpc01.id
+					  is_ipv6  = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isACLPresent(tt, "scaleway_vpc_acl.acl01"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_acl.acl01", "vpc_id", "scaleway_vpc.vpc01", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "is_ipv6", "false"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "default_policy", "accept"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccACL_WithRules(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isACLDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
 					  name = "tf-vpc-acl"
 					}
 					
