@@ -29,7 +29,6 @@ var changeKeys = []string{
 	"weighted",
 	"view",
 	"dns_zone",
-	"keep_empty_zone",
 }
 
 func ResourceRecord() *schema.Resource {
@@ -55,12 +54,6 @@ func ResourceRecord() *schema.Resource {
 				Description: "The zone you want to add the record in",
 				Required:    true,
 				ForceNew:    true,
-			},
-			"keep_empty_zone": {
-				Type:        schema.TypeBool,
-				Description: "When destroy a resource record, if a zone have only NS, delete the zone",
-				Optional:    true,
-				Default:     false,
 			},
 			"root_zone": {
 				Type:        schema.TypeBool,
@@ -503,7 +496,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	// for non-root zone, if the zone have only NS records, then delete the zone
-	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
+	if d.Get("root_zone").(bool) {
 		return nil
 	}
 
