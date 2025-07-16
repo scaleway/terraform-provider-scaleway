@@ -74,6 +74,14 @@ func DataSourceFrontends() *schema.Resource {
 							Computed: true,
 							Type:     schema.TypeBool,
 						},
+						"connection_rate_limit": {
+							Computed: true,
+							Type:     schema.TypeInt,
+						},
+						"enable_access_logs": {
+							Computed: true,
+							Type:     schema.TypeBool,
+						},
 					},
 				},
 			},
@@ -117,6 +125,8 @@ func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m an
 		rawFrontend["backend_id"] = frontend.Backend.ID
 		rawFrontend["timeout_client"] = types.FlattenDuration(frontend.TimeoutClient)
 		rawFrontend["enable_http3"] = frontend.EnableHTTP3
+		rawFrontend["connection_rate_limit"] = types.FlattenUint32Ptr(frontend.ConnectionRateLimit)
+		rawFrontend["enable_access_logs"] = frontend.EnableAccessLogs
 
 		if len(frontend.CertificateIDs) > 0 {
 			rawFrontend["certificate_ids"] = frontend.CertificateIDs

@@ -173,6 +173,8 @@ The following arguments are supported:
 
 - `connection_rate_limit` - (Optional) The rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
 
+- `enable_access_logs` - (Default: `false`) Defines whether to enable access logs on the frontend.
+
 - `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend.  Defined below.
 
 ## acl
