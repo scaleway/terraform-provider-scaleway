@@ -39,7 +39,7 @@ resource "scaleway_vpc_acl" "acl01" {
 The following arguments are supported:
 
 - `vpc_id` - (Required) The VPC ID the ACL belongs to.
-- `default_policy` - (Required) The action to take for packets which do not match any rules.
+- `default_policy` - (Optional. Defaults to `accept`) The action to take for packets which do not match any rules.
 - `is_ipv6` - (Optional) Defines whether this set of ACL rules is for IPv6 (false = IPv4). Each Network ACL can have rules for only one IP type.
 - `rules` - (Optional) The list of Network ACL rules.
     - `protocol` - (Optional) The protocol to which this rule applies. Default value: ANY.
