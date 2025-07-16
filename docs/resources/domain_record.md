@@ -207,8 +207,6 @@ The following arguments are supported:
 
 - `dns_zone` - (Required) The DNS zone of the domain. If the domain has no DNS zone, one will be automatically created.
 
-- `keep_empty_zone` - (Optional, defaults to `false`) When destroying a resource, if only NS records remain and this is set to `false`, the zone will be deleted. Note that each zone not deleted will [be billed](https://www.scaleway.com/en/dns/).
-
 - `name` - (Optional) The name of the record (can be an empty string for a root record).
 
 - `type` - (Required) The type of the record (`A`, `AAAA`, `MX`, `CNAME`, `DNAME`, `ALIAS`, `NS`, `PTR`, `SRV`, `TXT`, `TLSA`, or `CAA`).
