@@ -23,6 +23,55 @@ func TestAccACL_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpc-acl-basic"
+					}
+					
+					resource "scaleway_vpc_acl" "acl01" {
+					  vpc_id   = scaleway_vpc.vpc01.id
+					  is_ipv6  = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isACLPresent(tt, "scaleway_vpc_acl.acl01"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_acl.acl01", "vpc_id", "scaleway_vpc.vpc01", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "is_ipv6", "false"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "default_policy", "accept"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpc-acl-basic"
+					}
+					
+					resource "scaleway_vpc_acl" "acl01" {
+					  vpc_id   = scaleway_vpc.vpc01.id
+					  is_ipv6  = false
+					  default_policy = "drop"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isACLPresent(tt, "scaleway_vpc_acl.acl01"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_acl.acl01", "vpc_id", "scaleway_vpc.vpc01", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "is_ipv6", "false"),
+					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "default_policy", "drop"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccACL_WithRules(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isACLDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
 					  name = "tf-vpc-acl"
 					}
 					
@@ -121,6 +170,16 @@ func TestAccACL_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "rules.1.action", "accept"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpc-acl"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckACLDefaultPolicy(tt, "scaleway_vpc.vpc01"),
+				),
+			},
 		},
 	})
 }
@@ -173,6 +232,35 @@ func isACLDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if !httperrors.Is404(err) {
 				return err
 			}
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckACLDefaultPolicy(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		vpcAPI, region, ID, err := vpc.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		acl, err := vpcAPI.GetACL(&vpcSDK.GetACLRequest{
+			VpcID:  ID,
+			Region: region,
+			IsIPv6: false,
+		})
+		if err != nil {
+			return err
+		}
+
+		if acl.DefaultPolicy.String() != vpcSDK.ActionAccept.String() {
+			return fmt.Errorf("expected default_policy to be %s, got %s", vpcSDK.ActionAccept.String(), acl.DefaultPolicy.String())
 		}
 
 		return nil

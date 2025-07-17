@@ -675,7 +675,6 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 						name            = "%[2]s"
 						type            = "%[3]s"
 						data            = "%[4]s"
-						keep_empty_zone = false
 					}
 				`, testDNSZone, name, recordType, data),
 				Check: resource.ComposeTestCheckFunc(

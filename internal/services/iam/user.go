@@ -208,15 +208,27 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	req := &iam.UpdateUserRequest{UserID: user.ID}
 
-	if d.HasChanges("tags", "email", "first_name") {
+	if d.HasChanges("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChange("email") {
 		req.Email = scw.StringPtr(d.Get("email").(string))
+	}
+
+	if d.HasChange("first_name") {
 		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
 	}
 
-	if d.HasChanges("last_name", "phone_number", "locale") {
+	if d.HasChanges("last_name") {
 		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+	}
+
+	if d.HasChange("phone_number") {
 		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+	}
+
+	if d.HasChange("locale") {
 		req.Locale = scw.StringPtr(d.Get("locale").(string))
 	}
 

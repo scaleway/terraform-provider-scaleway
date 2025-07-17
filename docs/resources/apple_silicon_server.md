@@ -19,6 +19,28 @@ resource "scaleway_apple_silicon_server" "server" {
 }
 ```
 
+### Enable VPC and attach private network
+
+```terraform
+resource "scaleway_vpc" "vpc-apple-silicon" {
+  name = "vpc-apple-silicon"
+}
+
+resource "scaleway_vpc_private_network" "pn-apple-silicon" {
+  name = "pn-apple-silicon"
+  vpc_id = scaleway_vpc.vpc-apple-silicon.id
+}
+
+resource "scaleway_apple_silicon_server" "my-server" {
+    name = "TestAccServerEnableVPC"
+    type = "M2-M"
+    enable_vpc = true
+    private_network {
+      id = scaleway_vpc_private_network.pn-apple-silicon.id
+    }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -35,6 +57,10 @@ The following arguments are supported:
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
   associated with.
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.
+
+- `private_network` - (Optional) The private networks to attach to the server
+    - `id` - The private network ID
+    - `ipam_ip_ids` - A list of IPAM IP IDs to attach to the server.
 
 - `commitment_type` (Optional, Default: duration_24h): Activate commitment for this server
 
@@ -59,6 +85,11 @@ In addition to all arguments above, the following attributes are exported:
 - `deleted_at` - The minimal date and time on which you can delete this server due to Apple licence.
 - `organization_id` - The organization ID the server is associated with.
 - `vpc_status` - The current status of the VPC option.
+- `private_network` - The private networks to attach to the server
+    - `vlan`  - The VLAN ID associated with the private network.
+    - `status` - The current status of the private network.
+    - `created_at` - The date and time the private network was created.
+    - `updated_at` - The date and time the private network was last updated.
 
 ## Import
 

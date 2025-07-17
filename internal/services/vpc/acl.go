@@ -31,7 +31,8 @@ func ResourceACL() *schema.Resource {
 			},
 			"default_policy": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
+				Default:          vpc.ActionAccept,
 				Description:      "The action to take for packets which do not match any rules",
 				ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
 			},
@@ -43,7 +44,7 @@ func ResourceACL() *schema.Resource {
 			},
 			"rules": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The list of Network ACL rules",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -201,7 +202,7 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) di
 	_, err = vpcAPI.SetACL(&vpc.SetACLRequest{
 		VpcID:         locality.ExpandID(ID),
 		Region:        region,
-		DefaultPolicy: "drop",
+		DefaultPolicy: vpc.ActionAccept,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
