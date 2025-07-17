@@ -32,28 +32,34 @@ func DataSourceFrontends() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The load-balancer frontend ID",
 						},
 						"name": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The name of the frontend",
 						},
 						"inbound_port": {
-							Computed: true,
-							Type:     schema.TypeInt,
+							Computed:    true,
+							Type:        schema.TypeInt,
+							Description: "TCP port to listen on the front side",
 						},
 						"backend_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The load-balancer backend ID",
 						},
 						"lb_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The load-balancer ID",
 						},
 						"timeout_client": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "Set the maximum inactivity time on the client side",
 						},
 						"certificate_ids": {
 							Computed: true,
@@ -61,18 +67,32 @@ func DataSourceFrontends() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Description: "Collection of Certificate IDs related to the load balancer and domain",
 						},
 						"created_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The date and time of the creation of the frontend",
 						},
 						"update_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Type:        schema.TypeString,
+							Description: "The date and time of the last update of the frontend",
 						},
 						"enable_http3": {
-							Computed: true,
-							Type:     schema.TypeBool,
+							Computed:    true,
+							Type:        schema.TypeBool,
+							Description: "Activates HTTP/3 protocol",
+						},
+						"connection_rate_limit": {
+							Computed:    true,
+							Type:        schema.TypeInt,
+							Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
+						},
+						"enable_access_logs": {
+							Computed:    true,
+							Type:        schema.TypeBool,
+							Description: "Defines whether to enable access logs on the frontend",
 						},
 					},
 				},
@@ -117,6 +137,8 @@ func DataSourceLbFrontendsRead(ctx context.Context, d *schema.ResourceData, m an
 		rawFrontend["backend_id"] = frontend.Backend.ID
 		rawFrontend["timeout_client"] = types.FlattenDuration(frontend.TimeoutClient)
 		rawFrontend["enable_http3"] = frontend.EnableHTTP3
+		rawFrontend["connection_rate_limit"] = types.FlattenUint32Ptr(frontend.ConnectionRateLimit)
+		rawFrontend["enable_access_logs"] = frontend.EnableAccessLogs
 
 		if len(frontend.CertificateIDs) > 0 {
 			rawFrontend["certificate_ids"] = frontend.CertificateIDs

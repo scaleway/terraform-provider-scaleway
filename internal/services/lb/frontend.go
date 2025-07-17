@@ -228,6 +228,22 @@ func ResourceFrontend() *schema.Resource {
 				Optional:    true,
 				Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
 			},
+			"enable_access_logs": {
+				Type:        schema.TypeBool,
+				Description: "Defines whether to enable access logs on the frontend",
+				Optional:    true,
+				Default:     false,
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the frontend",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the frontend",
+			},
 		},
 	}
 }
@@ -283,6 +299,7 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any
 		TimeoutClient:       timeoutClient,
 		EnableHTTP3:         d.Get("enable_http3").(bool),
 		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
+		EnableAccessLogs:    d.Get("enable_access_logs").(bool),
 	}
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
@@ -331,6 +348,9 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 	_ = d.Set("connection_rate_limit", types.FlattenUint32Ptr(frontend.ConnectionRateLimit))
+	_ = d.Set("enable_access_logs", frontend.EnableAccessLogs)
+	_ = d.Set("created_at", types.FlattenTime(frontend.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(frontend.UpdatedAt))
 
 	if frontend.Certificate != nil { //nolint:staticcheck
 		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
@@ -495,6 +515,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m any
 		CertificateIDs:      types.ExpandSliceIDsPtr(d.Get("certificate_ids")),
 		EnableHTTP3:         d.Get("enable_http3").(bool),
 		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
+		EnableAccessLogs:    types.ExpandBoolPtr(d.Get("enable_access_logs")),
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))

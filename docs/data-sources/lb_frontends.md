@@ -40,9 +40,11 @@ In addition to all arguments above, the following attributes are exported:
         ~> **Important:** LB frontend IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
     - `inbound_port` - TCP port the frontend listens to.
     - `created_at` - The date on which the frontend was created (RFC 3339 format).
-    - `update_at` - The date aont which the frontend was last updated (RFC 3339 format).
+    - `update_at` - The date on which the frontend was last updated (RFC 3339 format).
     - `backend_id` - The Load Balancer backend ID this frontend is attached to.
          ~> **Important:** Load Balancer backend IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
     - `timeout_client` - Maximum inactivity time on the client side.
     - `certificate_ids` - List of certificate IDs that are used by the frontend.
     - `enable_http3` - Whether HTTP/3 protocol is activated.
+    - `connection_rate_limit` - The rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second.
+    - `enable_access_logs` - Defines whether to enable access logs on the frontend.
