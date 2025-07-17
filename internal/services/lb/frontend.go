@@ -234,6 +234,16 @@ func ResourceFrontend() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the frontend",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the frontend",
+			},
 		},
 	}
 }
@@ -339,6 +349,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 	_ = d.Set("connection_rate_limit", types.FlattenUint32Ptr(frontend.ConnectionRateLimit))
 	_ = d.Set("enable_access_logs", frontend.EnableAccessLogs)
+	_ = d.Set("created_at", types.FlattenTime(frontend.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(frontend.UpdatedAt))
 
 	if frontend.Certificate != nil { //nolint:staticcheck
 		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck

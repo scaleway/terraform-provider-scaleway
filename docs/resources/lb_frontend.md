@@ -223,6 +223,9 @@ In addition to all arguments above, the following attributes are exported:
 
 - `certificate_id` - (Deprecated, use `certificate_ids` instead) First certificate ID used by the frontend.
 
+- `created_at` - The date and time the frontend was created.
+
+- `updated_at` - The date and time the frontend resource was updated.
 
 ## Import
 
