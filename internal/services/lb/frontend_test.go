@@ -43,7 +43,6 @@ func TestAccFrontend_Basic(t *testing.T) {
 						lb_id = scaleway_lb.lb01.id
 						backend_id = scaleway_lb_backend.bkd01.id
 						inbound_port = 80
-						enable_access_logs = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -52,7 +51,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "0"),
-					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "true"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "false"),
 				),
 			},
 			{
