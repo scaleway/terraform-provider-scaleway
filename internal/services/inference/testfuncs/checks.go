@@ -3,8 +3,8 @@ package inferencetestfuncs
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -53,7 +53,7 @@ func IsModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			model, err := inferenceAPI.GetModel(&inferenceSDK.GetModelRequest{
+			model, err := inferenceAPI.WaitForModel(&inferenceSDK.WaitForModelRequest{
 				Region:  region,
 				ModelID: id,
 			})
