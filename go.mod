@@ -28,7 +28,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.7.4
 	github.com/nats-io/nats.go v1.38.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.33.0.20250625143510-4421125d41b9
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.34.0.20250721082157-a9b7a7bd9686
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.39.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
@@ -156,11 +156,11 @@ require (
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
+	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.33.0 // indirect
+	golang.org/x/tools v0.34.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250505200425-f936aa4a68b2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250505200425-f936aa4a68b2 // indirect

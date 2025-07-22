@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -134,12 +134,12 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("instance_id", zonal.NewIDString(zone, snapshot.InstanceID))
+	_ = d.Set("instance_id", zonal.NewIDString(zone, *snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
-	_ = d.Set("size", int64(snapshot.Size))
+	_ = d.Set("size", int64(snapshot.SizeBytes))
 	_ = d.Set("node_type", snapshot.NodeType)
-	_ = d.Set("volume_type", snapshot.VolumeType.Type)
+	_ = d.Set("volume_type", snapshot.VolumeType)
 	_ = d.Set("expires_at", types.FlattenTime(snapshot.ExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(snapshot.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(snapshot.UpdatedAt))

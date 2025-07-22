@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -85,7 +85,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
-	_ = d.Set("node_number", int(instance.NodeNumber))
+	_ = d.Set("node_number", int(instance.NodeAmount))
 	_ = d.Set("node_type", instance.NodeType)
 	_ = d.Set("project_id", instance.ProjectID)
 	_ = d.Set("tags", instance.Tags)
@@ -94,7 +94,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if instance.Volume != nil {
 		_ = d.Set("volume_type", instance.Volume.Type)
-		_ = d.Set("volume_size_in_gb", int(instance.Volume.Size/scw.GB))
+		_ = d.Set("volume_size_in_gb", int(instance.Volume.SizeBytes/scw.GB))
 	}
 
 	publicNetworkEndpoint, publicNetworkExists := flattenPublicNetwork(instance.Endpoints)
@@ -102,14 +102,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("public_network", publicNetworkEndpoint)
 	}
 
-	if len(instance.Settings) > 0 {
-		settingsMap := make(map[string]string)
-		for _, setting := range instance.Settings {
-			settingsMap[setting.Name] = setting.Value
-		}
-
-		_ = d.Set("settings", settingsMap)
-	}
+	_ = d.Set("settings", map[string]string{})
 
 	return nil
 }
