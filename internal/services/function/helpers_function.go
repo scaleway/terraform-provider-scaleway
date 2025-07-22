@@ -73,7 +73,7 @@ func functionUpload(ctx context.Context, m any, functionAPI *function.API, regio
 	}
 	defer zip.Close() //nolint: errcheck
 
-	req, err := http.NewRequest(http.MethodPut, uploadURL.URL, zip)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, uploadURL.URL, zip)
 	if err != nil {
 		return fmt.Errorf("failed to init request: %w", err)
 	}
