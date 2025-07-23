@@ -1,7 +1,6 @@
 package mongodb
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -472,12 +471,16 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 		InstanceID: ID,
 	}, scw.WithContext(ctx))
 
-	var buf bytes.Buffer
-
 	if err == nil && cert != nil {
-		_, copyErr := io.Copy(&buf, cert.Content)
-		if copyErr == nil {
-			_ = d.Set("tls_certificate", buf.String())
+		certBytes, readErr := io.ReadAll(cert.Content)
+		if readErr == nil {
+			_ = d.Set("tls_certificate", string(certBytes))
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to read MongoDB TLS certificate content",
+				Detail:   readErr.Error(),
+			})
 		}
 	}
 
