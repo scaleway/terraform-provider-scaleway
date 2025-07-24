@@ -180,9 +180,9 @@ data "scaleway_rdb_instance" "mybackend" {
 
 ## Using s3 compatible backend
 
-You can use scaleway object-storage bucket as an S3 compatible backend to store your terraform tfstate file just like you would do with AWS s3
+You can use scaleway object-storage bucket as an S3 compatible backend to store your terraform .tfstate file just like you would do with AWS s3
 
-### by using hardcoded credetials (NOT RECOMENDED)
+### by using hardcoded credetials (NOT RECOMMENDED)
 ```
 terraform {
   backend "s3" {
@@ -200,7 +200,7 @@ terraform {
 }
 ```
 
-### by using credetials environment variables
+### by using credentials environment variables
 ```
 $ export SCW_ACCESS_KEY="XXXXXXXXXXX"
 $ export SCW_SECRET_KEY="YYYYYYYYYYY"
@@ -218,15 +218,15 @@ terraform {
 ```
 
 ### and with the shared congfiguration file ? 
-scaleway scw cli privide you with a credential file 
+scaleway scw-cli provide you with a credential file 
 >~/$HOME/.config/scw/config.yaml
 
-to generate your credential fil you can run scw init at first run or login for every new key pairs generated
+to generate your credential file you can run scw init at first run or login for every new key pairs generated
 ```
 scw login
 ```
 
-it will generate scw shared configuration fil folowinng this format
+it will generate scw shared configuration file folowinng this format
 ```
 profiles:
   myProfile1:
@@ -242,7 +242,7 @@ profiles:
 
 actualy terraform backend "s3" is not aware of any other kind of s3 compatible bucket and is by default assuming you ar using aws's S3 service
 
-so in order to read scw ccredentials, do not try to use `profile = myProfile1` it will not work, unless you copy scw credentials into aws shared configuration file
+so in order to read scw ccredentials, do not try to use `profile = myProfile1` it will not work, unless you can copy your scw credentials into aws shared configuration file
 
 >~/$HOME/.aws/credentials
 
@@ -268,4 +268,4 @@ terraform {
   }
 }
 ```
-now run terraform init and backend s3 should be able to use scaleway object storage instead of aws s3.
+now run terraform init and the s3 backend should be able to use scaleway object storage instead of aws s3.
