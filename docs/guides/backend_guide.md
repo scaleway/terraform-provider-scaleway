@@ -183,6 +183,7 @@ data "scaleway_rdb_instance" "mybackend" {
 You can use scaleway object-storage bucket as an S3 compatible backend to store your terraform .tfstate file just like you would do with AWS s3
 
 ### by using hardcoded credetials (NOT RECOMMENDED)
+
 ```
 terraform {
   backend "s3" {
@@ -201,11 +202,14 @@ terraform {
 ```
 
 ### by using credentials environment variables
+
 ```
 $ export SCW_ACCESS_KEY="XXXXXXXXXXX"
 $ export SCW_SECRET_KEY="YYYYYYYYYYY"
 ```
+
 and this simple backend code
+
 ```
 terraform {
   backend "s3" {
@@ -217,16 +221,18 @@ terraform {
 }
 ```
 
-### and with the shared congfiguration file ? 
-scaleway scw-cli provide you with a credential file 
+### and with the shared congfiguration file ?
+scaleway scw-cli provide you with a credential file
 >~/$HOME/.config/scw/config.yaml
 
 to generate your credential file you can run scw init at first run or login for every new key pairs generated
+
 ```
 scw login
 ```
 
 it will generate scw shared configuration file folowinng this format
+
 ```
 profiles:
   myProfile1:
@@ -251,6 +257,7 @@ so in order to read scw ccredentials, do not try to use `profile = myProfile1` i
 aws_access_key_id = XXXXXXXXXXX
 aws_secret_access_key = YYYYYYYYYYY
 ```
+
 then in your tf backend bloc use this profile as if it waf a aws backend `profile = "scaleway_rofile"`
 
 ```
@@ -268,4 +275,5 @@ terraform {
   }
 }
 ```
+
 now run terraform init and the s3 backend should be able to use scaleway object storage instead of aws s3.
