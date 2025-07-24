@@ -226,3 +226,12 @@ func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDif
 
 	return nil
 }
+
+func ResourceLBPrivateNetworkParseID(resourceID string) (zone scw.Zone, lbID string, pnID string, err error) {
+	idParts := strings.Split(resourceID, "/")
+	if len(idParts) != 3 {
+		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
+	}
+
+	return scw.Zone(idParts[0]), idParts[1], idParts[2], nil
+}
