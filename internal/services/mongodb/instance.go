@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -233,6 +234,11 @@ func ResourceInstance() *schema.Resource {
 			// Common
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
+			"tls_certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "PEM-encoded TLS certificate for MongoDB",
+			},
 		},
 		CustomizeDiff: customdiff.All(
 			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
@@ -459,6 +465,24 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	_ = d.Set("settings", map[string]string{})
+
+	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
+		Region:     region,
+		InstanceID: ID,
+	}, scw.WithContext(ctx))
+
+	if err == nil && cert != nil {
+		certBytes, readErr := io.ReadAll(cert.Content)
+		if readErr == nil {
+			_ = d.Set("tls_certificate", string(certBytes))
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to read MongoDB TLS certificate content",
+				Detail:   readErr.Error(),
+			})
+		}
+	}
 
 	return diags
 }

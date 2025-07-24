@@ -126,6 +126,7 @@ In addition to all arguments above, the following attributes are exported:
     - `id` - The ID of the endpoint.
     - `port` - TCP port of the endpoint.
     - `dns_records` - List of DNS records for your endpoint.
+- `tls_certificate` - The PEM-encoded TLS certificate for the MongoDB® instance, if available.
 
 ## Import
 

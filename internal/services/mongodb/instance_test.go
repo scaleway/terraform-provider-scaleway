@@ -41,6 +41,7 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "tls_certificate"),
 				),
 			},
 		},
