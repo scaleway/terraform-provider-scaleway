@@ -246,9 +246,9 @@ profiles:
     insecure: false
 ```
 
-actualy terraform backend "s3" is not aware of any other kind of s3 compatible bucket and is by default assuming you ar using aws's S3 service
+actually terraform backend "s3" is not aware of any other kind of s3 compatible bucket and is by default assuming you ar using aws's S3 service
 
-so in order to read scw ccredentials, do not try to use `profile = myProfile1` it will not work, unless you can copy your scw credentials into aws shared configuration file
+so in order to read scw credentials, do not try to use `profile = myProfile1` it will not work, unless you can copy your scw credentials into aws shared configuration file
 
 >~/$HOME/.aws/credentials
 
