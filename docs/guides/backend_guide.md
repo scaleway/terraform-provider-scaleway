@@ -226,7 +226,7 @@ to generate your credential fil you can run scw init at first run or login for e
 scw login
 ```
 
-it wil generat scw shared configuration fil folowinng this format
+it will generate scw shared configuration fil folowinng this format
 ```
 profiles:
   myProfile1:
@@ -268,4 +268,4 @@ terraform {
   }
 }
 ```
-now run terraform init and backend s3 should be able to use scaleway object storage instead of aws s3
+now run terraform init and backend s3 should be able to use scaleway object storage instead of aws s3.
