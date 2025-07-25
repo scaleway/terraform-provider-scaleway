@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
-func TestAccMongoDBSnapshot_Basic(t *testing.T) {
+func TestAccMongoDBSnapshot_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -23,75 +23,42 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name       = "test-mongodb-instance"
-						version    = "7.0.12"
-						node_type  = "MGDB-PLAY2-NANO"
-						node_number = 1
-						user_name  = "my_initial_user"
-						password   = "thiZ_is_v&ry_s3cret"
-					}
+				resource "scaleway_mongodb_instance" "main" {
+				  name       = "test-mongodb-instance"
+				  version    = "7.0.12"
+				  node_type  = "MGDB-PLAY2-NANO"
+				  node_number = 1
+				  user_name  = "my_initial_user"
+				  password   = "thiZ_is_v&ry_s3cret"
+				}
 
-					resource "scaleway_mongodb_snapshot" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test-snapshot"
-						expires_at  = "2025-12-31T23:59:59Z"
-					}
+				resource "scaleway_mongodb_snapshot" "main" {
+				  instance_id = scaleway_mongodb_instance.main.id
+				  name        = "test-snapshot"
+				  expires_at  = "2025-12-31T23:59:59Z"
+				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "test-snapshot"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccMongoDBSnapshot_Update(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSnapshotDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name       = "test-mongodb-instance"
-						version    = "7.0.12"
-						node_type  = "MGDB-PLAY2-NANO"
-						node_number = 1
-						user_name  = "my_initial_user"
-						password   = "thiZ_is_v&ry_s3cret"
-					}
-
-					resource "scaleway_mongodb_snapshot" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "test-snapshot"
-						expires_at  = "2025-12-31T23:59:59Z"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2025-12-31T23:59:59Z"),
 				),
 			},
 			{
 				Config: `
-					resource "scaleway_mongodb_instance" "main" {
-						name       = "test-mongodb-instance"
-						version    = "7.0.12"
-						node_type  = "MGDB-PLAY2-NANO"
-						node_number = 1
-						user_name  = "my_initial_user"
-						password   = "thiZ_is_v&ry_s3cret"
-					}
+				resource "scaleway_mongodb_instance" "main" {
+				  name       = "test-mongodb-instance"
+				  version    = "7.0.12"
+				  node_type  = "MGDB-PLAY2-NANO"
+				  node_number = 1
+				  user_name  = "my_initial_user"
+				  password   = "thiZ_is_v&ry_s3cret"
+				}
 
-					resource "scaleway_mongodb_snapshot" "main" {
-						instance_id = scaleway_mongodb_instance.main.id
-						name        = "updated-snapshot"
-						expires_at  = "2025-09-20T23:59:59Z"
-					}
+				resource "scaleway_mongodb_snapshot" "main" {
+				  instance_id = scaleway_mongodb_instance.main.id
+				  name        = "updated-snapshot"
+				  expires_at  = "2025-09-20T23:59:59Z"
+				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "updated-snapshot"),
