@@ -831,8 +831,11 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				return fmt.Errorf("failed to check if domain zone exists: %w", err)
 			}
 
-			if listDNSZones.TotalCount > 0 {
-				return fmt.Errorf("zone %s still exist", rs.Primary.Attributes["dns_zone"])
+			// Check if the specific record still exists
+			for _, record := range listDNSZones.Records {
+				if record.ID == rs.Primary.ID {
+					return fmt.Errorf("record %s still exists in zone %s", rs.Primary.ID, rs.Primary.Attributes["dns_zone"])
+				}
 			}
 
 			return nil
