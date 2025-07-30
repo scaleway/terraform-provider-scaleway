@@ -6,13 +6,13 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 137
+        content_length: 138
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"name":"TestAccFileSystem_InvalidSizeGranularityFails","project_id":"d3520a52-2c75-4ba0-bda8-82dd087f07f2","size":25000000000,"tags":[]}'
+        body: '{"name":"TestAccFileSystem_InvalidSizeGranularityFails","project_id":"d3520a52-2c75-4ba0-bda8-82dd087f07f2","size":250000000000,"tags":[]}'
         form: {}
         headers:
             Content-Type:
@@ -27,20 +27,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 182
+        content_length: 176
         uncompressed: false
-        body: '{"details":[{"argument_name":"size","help_message":"size must be greater or equal to 100000000000","reason":"constraint"}],"message":"invalid argument(s)","type":"invalid_arguments"}'
+        body: '{"details":[{"argument_name":"size","help_message":"size must be a multiple of 100000000000","reason":"constraint"}],"message":"invalid argument(s)","type":"invalid_arguments"}'
         headers:
             Content-Length:
-                - "182"
+                - "176"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Thu, 05 Jun 2025 15:04:00 GMT
+                - Mon, 16 Jun 2025 12:41:54 GMT
             Server:
-                - Scaleway API Gateway (fr-par-1;edge01)
+                - Scaleway API Gateway (fr-par-1;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -48,7 +48,7 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 1a3119e1-bf60-4f56-ae77-75a725054db8
+                - c4b3c3a3-2afa-476e-aa57-0e45eac69c8d
         status: 400 Bad Request
         code: 400
-        duration: 184.383ms
+        duration: 56.899875ms
