@@ -165,6 +165,100 @@ func TestAccACL_Basic(t *testing.T) {
 	})
 }
 
+func TestAccACL_RulesOrder(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	clusterName := "k8s-acl-order"
+	latestK8sVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "acl_order" {}
+			
+					resource "scaleway_k8s_cluster" "acl_order" {
+						name = "%s"
+						version = "%s"
+						cni = "cilium"
+						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.acl_order.id
+					}
+			
+					resource "scaleway_k8s_acl" "acl_order" {
+						cluster_id = scaleway_k8s_cluster.acl_order.id
+						acl_rules {
+							ip = "12.2.3.4/32"
+							description = "First rule"
+						}
+						acl_rules {
+							ip = "11.2.3.4/32"
+							description = "Second rule"
+						}
+						acl_rules {
+							ip = "1.2.3.7/32"
+							description = "Third rule"
+						}
+						acl_rules {
+							ip = "1.2.3.4/32"
+							description = "Fourth rule"
+						}
+					}`, clusterName, latestK8sVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_k8s_acl.acl_order", "cluster_id", "scaleway_k8s_cluster.acl_order", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.#", "4"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.0.ip", "12.2.3.4/32"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.1.ip", "1.2.3.4/32"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.2.ip", "11.2.3.4/32"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.3.ip", "1.2.3.7/32"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.0.description", "First rule"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.1.description", "Fourth rule"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.2.description", "Second rule"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.3.description", "Third rule"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "acl_order" {}
+			
+					resource "scaleway_k8s_cluster" "acl_order" {
+						name = "%s"
+						version = "%s"
+						cni = "cilium"
+						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.acl_order.id
+					}
+			
+					resource "scaleway_k8s_acl" "acl_order" {
+						cluster_id = scaleway_k8s_cluster.acl_order.id
+						acl_rules {
+							ip = "12.2.3.4/32"
+							description = "First rule"
+						}
+						acl_rules {
+							ip = "11.2.3.4/32"
+							description = "Second rule"
+						}
+						acl_rules {
+							ip = "1.2.3.7/32"
+							description = "Third rule"
+						}
+						acl_rules {
+							ip = "1.2.3.4/32"
+							description = "Fourth rule"
+						}
+					}`, clusterName, latestK8sVersion),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
 func testAccCheckK8SClusterAllowedIPs(tt *acctest.TestTools, n string, expected string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
