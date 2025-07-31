@@ -146,7 +146,7 @@ func checkGrafanaURL(resourceName, projectResource string) resource.TestCheckFun
 		}
 
 		projectID := rs.Primary.ID
-		expectedURL := fmt.Sprintf("https://%s.dashboards.obs.fr-par.scw.cloud", projectID)
+		expectedURL := fmt.Sprintf("https://%s.dashboard.obs.fr-par.scw.cloud", projectID)
 
 		return resource.TestCheckResourceAttr(resourceName, "endpoints.0.grafana_url", expectedURL)(s)
 	}
