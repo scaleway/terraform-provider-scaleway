@@ -433,7 +433,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
-	_ = d.Set("security_group_id", pool.SecurityGroupID)
+	_ = d.Set("security_group_id", locality.ExpandID(pool.SecurityGroupID))
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
