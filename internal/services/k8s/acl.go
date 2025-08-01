@@ -51,7 +51,7 @@ func ResourceACL() *schema.Resource {
 				ExactlyOneOf: []string{"acl_rules"},
 			},
 			"acl_rules": {
-				Type:         schema.TypeList,
+				Type:         schema.TypeSet,
 				Optional:     true,
 				Description:  "The list of network rules that manage inbound traffic",
 				ExactlyOneOf: []string{"no_ip_allowed"},
@@ -104,7 +104,7 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	acls, err := expandACL(d.Get("acl_rules").([]any))
+	acls, err := expandACL(d.Get("acl_rules"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,7 +170,7 @@ func ResourceACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	}
 
 	if d.HasChanges("acl_rules", "no_ip_allowed") {
-		acls, err := expandACL(d.Get("acl_rules").([]any))
+		acls, err := expandACL(d.Get("acl_rules"))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -230,10 +230,14 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 	return nil
 }
 
-func expandACL(data []any) ([]*k8s.ACLRuleRequest, error) {
+func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 	expandedACLs := []*k8s.ACLRuleRequest(nil)
 
-	for _, rule := range data {
+	if data == nil {
+		return expandedACLs, nil
+	}
+
+	for _, rule := range data.(*schema.Set).List() {
 		r := rule.(map[string]any)
 		expandedRule := &k8s.ACLRuleRequest{}
 
