@@ -3,6 +3,7 @@ package cockpit_test
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -180,7 +181,7 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_account_project" "project" {
-						name = "tf_test_cockpit_alert_manager_id"
+						name = "tf_test_cockpit_alert_manager_id_parsing"
 					}
 
 					resource "scaleway_cockpit_alert_manager" "main" {
@@ -205,7 +206,7 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_account_project" "project" {
-						name = "tf_test_cockpit_alert_manager_id"
+						name = "tf_test_cockpit_alert_manager_id_parsing"
 					}
 
 					resource "scaleway_cockpit_alert_manager" "main" {
@@ -363,7 +364,7 @@ func testAccCheckAlertManagerIDFormat(tt *acctest.TestTools, resourceName string
 
 		parts := strings.Split(id, "/")
 		if len(parts) != 3 {
-			return errors.New("alert manager ID should have 3 parts, got " + fmt.Sprintf("%d", len(parts)) + ": " + id)
+			return errors.New("alert manager ID should have 3 parts, got " + strconv.Itoa(len(parts)) + ": " + id)
 		}
 
 		region := parts[0]
