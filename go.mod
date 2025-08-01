@@ -26,7 +26,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.20.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
 	github.com/nats-io/jwt/v2 v2.7.4
-	github.com/nats-io/nats.go v1.38.0
+	github.com/nats-io/nats.go v1.44.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.34.0.20250721082157-a9b7a7bd9686
 	github.com/stretchr/testify v1.10.0
@@ -105,7 +105,7 @@ require (
 	github.com/katbyte/andreyvit-diff v0.0.2 // indirect
 	github.com/katbyte/sergi-go-diff v1.2.2 // indirect
 	github.com/katbyte/terrafmt v0.5.5 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
