@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -267,7 +268,7 @@ func testAccCheckAlertManagerEnabled(tt *acctest.TestTools, resourceName string,
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("alert manager not found: %s", resourceName)
+			return errors.New("alert manager not found: " + resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
@@ -292,7 +293,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("alert manager not found: %s", resourceName)
+			return errors.New("alert manager not found: " + resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
@@ -311,7 +312,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 			}
 		}
 
-		return fmt.Errorf("contact point with email %s not found in project %s", rs.Primary.Attributes["emails.0"], projectID)
+		return errors.New("contact point with email " + rs.Primary.Attributes["emails.0"] + " not found in project " + projectID)
 	}
 }
 
@@ -339,7 +340,7 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			}
 
 			if alertManager.AlertManagerEnabled {
-				return fmt.Errorf("cockpit alert manager (%s) is still enabled", rs.Primary.ID)
+				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
 			}
 		}
 
@@ -352,42 +353,42 @@ func testAccCheckAlertManagerIDFormat(tt *acctest.TestTools, resourceName string
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("alert manager not found: %s", resourceName)
+			return errors.New("alert manager not found: " + resourceName)
 		}
 
 		id := rs.Primary.ID
 		if id == "" {
-			return fmt.Errorf("alert manager ID is empty")
+			return errors.New("alert manager ID is empty")
 		}
 
 		parts := strings.Split(id, "/")
 		if len(parts) != 3 {
-			return fmt.Errorf("alert manager ID should have 3 parts, got %d: %s", len(parts), id)
+			return errors.New("alert manager ID should have 3 parts, got " + fmt.Sprintf("%d", len(parts)) + ": " + id)
 		}
 
 		region := parts[0]
 		projectID := parts[1]
 
 		if region == "" {
-			return fmt.Errorf("region part of ID is empty")
+			return errors.New("region part of ID is empty")
 		}
 
 		if projectID == "" {
-			return fmt.Errorf("project ID part of ID is empty")
+			return errors.New("project ID part of ID is empty")
 		}
 
 		if parts[2] != "1" {
-			return fmt.Errorf("third part of ID should be '1', got %s", parts[2])
+			return errors.New("third part of ID should be '1', got " + parts[2])
 		}
 
 		expectedProjectID := rs.Primary.Attributes["project_id"]
 		if expectedProjectID != projectID {
-			return fmt.Errorf("project_id in attributes (%s) doesn't match project_id in ID (%s)", expectedProjectID, projectID)
+			return errors.New("project_id in attributes (" + expectedProjectID + ") doesn't match project_id in ID (" + projectID + ")")
 		}
 
 		expectedRegion := rs.Primary.Attributes["region"]
 		if expectedRegion != region {
-			return fmt.Errorf("region in attributes (%s) doesn't match region in ID (%s)", expectedRegion, region)
+			return errors.New("region in attributes (" + expectedRegion + ") doesn't match region in ID (" + region + ")")
 		}
 
 		return nil

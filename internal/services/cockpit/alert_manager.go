@@ -125,13 +125,10 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	// Parse the ID to get projectID
-	parsedRegion, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// Use the parsed region instead of the one from the schema
-	region = parsedRegion
 
 	alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 		Region:    region,
@@ -177,13 +174,10 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Parse the ID to get projectID
-	parsedRegion, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// Use the parsed region instead of the one from the schema
-	region = parsedRegion
 
 	if d.HasChange("enable_managed_alerts") {
 		enable := d.Get("enable_managed_alerts").(bool)
@@ -264,13 +258,10 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	// Parse the ID to get projectID
-	parsedRegion, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	// Use the parsed region instead of the one from the schema
-	region = parsedRegion
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
