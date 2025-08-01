@@ -2,6 +2,7 @@ package cockpit_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -166,6 +167,67 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 	})
 }
 
+func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_test_cockpit_alert_manager_id"
+					}
+
+					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
+						enable_managed_alerts = true
+
+						contact_points {
+							email = "test@example.com"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "region"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "enable_managed_alerts", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "alert_manager_url"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "test@example.com"),
+					testAccCheckAlertManagerIDFormat(tt, "scaleway_cockpit_alert_manager.main"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_test_cockpit_alert_manager_id"
+					}
+
+					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
+						enable_managed_alerts = true
+
+						contact_points {
+							email = "updated@example.com"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "region"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "updated@example.com"),
+					testAccCheckAlertManagerIDFormat(tt, "scaleway_cockpit_alert_manager.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]string) string {
 	contactsConfig := ""
 	for _, contact := range contactPoints {
@@ -279,6 +341,53 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			if alertManager.AlertManagerEnabled {
 				return fmt.Errorf("cockpit alert manager (%s) is still enabled", rs.Primary.ID)
 			}
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckAlertManagerIDFormat verifies the ID format
+func testAccCheckAlertManagerIDFormat(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("alert manager not found: %s", resourceName)
+		}
+
+		id := rs.Primary.ID
+		if id == "" {
+			return fmt.Errorf("alert manager ID is empty")
+		}
+
+		parts := strings.Split(id, "/")
+		if len(parts) != 3 {
+			return fmt.Errorf("alert manager ID should have 3 parts, got %d: %s", len(parts), id)
+		}
+
+		region := parts[0]
+		projectID := parts[1]
+
+		if region == "" {
+			return fmt.Errorf("region part of ID is empty")
+		}
+
+		if projectID == "" {
+			return fmt.Errorf("project ID part of ID is empty")
+		}
+
+		if parts[2] != "1" {
+			return fmt.Errorf("third part of ID should be '1', got %s", parts[2])
+		}
+
+		expectedProjectID := rs.Primary.Attributes["project_id"]
+		if expectedProjectID != projectID {
+			return fmt.Errorf("project_id in attributes (%s) doesn't match project_id in ID (%s)", expectedProjectID, projectID)
+		}
+
+		expectedRegion := rs.Primary.Attributes["region"]
+		if expectedRegion != region {
+			return fmt.Errorf("region in attributes (%s) doesn't match region in ID (%s)", expectedRegion, region)
 		}
 
 		return nil
