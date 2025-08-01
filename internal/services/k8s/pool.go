@@ -250,11 +250,12 @@ func ResourcePool() *schema.Resource {
 				Description: "The status of the pool",
 			},
 			"security_group_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The ID of the security group",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The ID of the security group",
+				DiffSuppressFunc: dsf.Locality,
 			},
 		},
 	}

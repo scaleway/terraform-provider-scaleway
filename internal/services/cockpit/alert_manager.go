@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -123,7 +124,11 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 		Region:    region,
@@ -136,6 +141,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("enable_managed_alerts", alertManager.ManagedAlertsEnabled)
 	_ = d.Set("region", alertManager.Region)
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
+	_ = d.Set("project_id", projectID)
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -167,7 +173,11 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.HasChange("enable_managed_alerts") {
 		enable := d.Get("enable_managed_alerts").(bool)
@@ -247,7 +257,11 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -291,6 +305,19 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
+// ResourceCockpitAlertManagerID builds the resource identifier
+// The resource identifier format is "Region/ProjectID/1"
 func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourceID string) {
 	return fmt.Sprintf("%s/%s/1", region, projectID)
+}
+
+// ResourceCockpitAlertManagerParseID extracts region and project ID from the resource identifier.
+// The resource identifier format is "Region/ProjectID/1"
+func ResourceCockpitAlertManagerParseID(resourceID string) (region scw.Region, projectID string, err error) {
+	parts := strings.Split(resourceID, "/")
+	if len(parts) != 3 {
+		return "", "", fmt.Errorf("invalid alert manager ID format: %s", resourceID)
+	}
+
+	return scw.Region(parts[0]), parts[1], nil
 }

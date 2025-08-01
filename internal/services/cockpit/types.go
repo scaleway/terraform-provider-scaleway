@@ -20,7 +20,7 @@ var scopeMapping = map[string]cockpit.TokenScope{
 }
 
 func createGrafanaURL(projectID string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.dashboards.obs.%s.scw.cloud", projectID, region)
+	return fmt.Sprintf("https://%s.dashboard.obs.%s.scw.cloud", projectID, region)
 }
 
 func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]any {
