@@ -50,6 +50,8 @@ In addition to all above arguments, the following attributes are exported:
 - `public_network` - Public network details.
 - `private_network` - List of private networks endpoints of the Redis Cluster.
 - `endpoint_id` - The ID of the endpoint.
+- `port` - TCP port of the endpoint.
+- `ips` - List of IPv4 addresses of the endpoint.
 - `tls_enabled` -  Whether TLS is enabled or not.
 - `acl` - List of acl rules.
 - `settings` -  Map of settings for redis cluster.

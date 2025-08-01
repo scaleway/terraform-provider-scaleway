@@ -164,6 +164,19 @@ func ResourceCluster() *schema.Resource {
 							Computed:    true,
 							Description: "UUID of the endpoint to be connected to the cluster",
 						},
+						"port": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "TCP port of the endpoint",
+						},
+						"ips": {
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Computed:    true,
+							Description: "List of IPv4 addresses of the endpoint",
+						},
 						"zone": zonal.ComputedSchema(),
 					},
 				},
