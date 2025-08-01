@@ -194,6 +194,8 @@ the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
     - `endpoint_id` - The ID of the endpoint.
     - `zone` - The zone of the Private Network.
+    - `port` - TCP port of the endpoint.
+    - `ips` - List of IPv4 addresses of the endpoint.
 
 - `private_ips` - The list of private IPv4 addresses associated with the resource.
     - `id` - The ID of the IPv4 address resource.
