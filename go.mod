@@ -11,7 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sns v1.34.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.38.6
 	github.com/aws/smithy-go v1.22.5
-	github.com/docker/docker v28.2.2+incompatible
+	github.com/docker/docker v28.3.3+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
