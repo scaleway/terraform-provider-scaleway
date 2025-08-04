@@ -152,7 +152,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				Description: "If true, the baremetak server is protected against accidental deletion via the Scaleway API.",
+				Description: "If true, the baremetal server is protected against accidental deletion via the Scaleway API.",
 			},
 			"tags": {
 				Type: schema.TypeList,
