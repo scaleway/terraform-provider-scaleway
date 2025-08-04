@@ -305,6 +305,7 @@ The following arguments are supported:
     - `ipam_ip_ids` - (Optional) List of IPAM IP IDs to assign to the server in the requested private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `partitioning` (Optional) The partitioning schema in JSON format
+- `protected` - (Optional) Set to true to activate server protection option.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
 
