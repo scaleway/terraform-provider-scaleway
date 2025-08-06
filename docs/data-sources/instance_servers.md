@@ -46,6 +46,9 @@ In addition to all above arguments, the following attributes are exported:
     - `tags` - The tags associated with the server.
     - `public_ip` - The public IP address of the server.
     - `private_ip` - The Scaleway internal IP address of the server.
+    - `private_ips` - The list of private IPv4 and IPv6 addresses associated with the server.
+        - `id` - The ID of the IP address resource.
+        - `address` - The private IP address.
     - `public_ips` - The list of public IPs of the server
         - `id` - The ID of the IP
         - `address` - The address of the IP

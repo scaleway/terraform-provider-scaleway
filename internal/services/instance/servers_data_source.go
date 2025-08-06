@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -64,6 +68,26 @@ func DataSourceServers() *schema.Resource {
 						"private_ip": {
 							Computed: true,
 							Type:     schema.TypeString,
+						},
+						"private_ips": {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Optional:    true,
+							Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"id": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The ID of the IPv4/v6 address resource",
+									},
+									"address": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "The private IPv4/v6 address",
+									},
+								},
+							},
 						},
 						"state": {
 							Computed: true,
@@ -225,6 +249,62 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			}
 
 			rawServer["ipv6_prefix_length"] = prefixLength
+		}
+
+		ph, err := newPrivateNICHandler(instanceAPI, server.ID, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		privateNICIDs := []string(nil)
+		for _, nic := range ph.privateNICsMap {
+			privateNICIDs = append(privateNICIDs, nic.ID)
+		}
+
+		// Read server's private IPs if possible
+		allPrivateIPs := []map[string]any(nil)
+		resourceType := ipamAPI.ResourceTypeInstancePrivateNic
+
+		region, err := zone.Region()
+		if err != nil {
+			return append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Unable to get server's private IPs",
+				Detail:   err.Error(),
+			})
+		}
+
+		for _, nicID := range privateNICIDs {
+			opts := &ipam.GetResourcePrivateIPsOptions{
+				ResourceType: &resourceType,
+				ResourceID:   &nicID,
+				ProjectID:    &server.Project,
+			}
+
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+
+			switch {
+			case err == nil:
+				allPrivateIPs = append(allPrivateIPs, privateIPs...)
+			case httperrors.Is403(err):
+				return append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Unauthorized to read server's private IPs, please check your IAM permissions",
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ips"),
+				})
+			default:
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       fmt.Sprintf("Unable to get private IPs for server %s (pnic_id: %s)", server.ID, nicID),
+					Detail:        err.Error(),
+					AttributePath: cty.GetAttrPath("private_ips"),
+				})
+			}
+
+			if len(allPrivateIPs) > 0 {
+				rawServer["private_ips"] = allPrivateIPs
+			}
 		}
 
 		servers = append(servers, rawServer)
