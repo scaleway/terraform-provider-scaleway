@@ -1,10 +1,11 @@
 ---
 page_title: "Using Backend Guide"
 ---
+# Configuring Terraform Backends: PostgreSQL vs Object Storage
 
-# Terraform Backend
+## Configuring a Terraform Backend with PostgreSQL and State Locking
 
-This page describes how to configure a backend by adding the backend block to your configuration with the Terraform Scaleway Provider.
+This guide explains how to configure a remote backend using the Terraform Scaleway Provider with PostgreSQL, enabling remote state management with locking.
 
 Terraform provides the option to set up a [“backend”](https://developer.hashicorp.com/terraform/language/backend) of the `state` data files.
 
@@ -13,7 +14,7 @@ This option allows you to handle the state and the way certain operations are ex
 Backends can store the state remotely and protect it with locks to prevent corruption;
 it makes it possible for a team to work with ease, or, for instance, to run Terraform within a pipeline.
 
-## Create your database
+### Create your database
 
 You can create your database resource using terraform itself .
 
@@ -60,7 +61,7 @@ and deploy it:
 terraform plan -out "planfile" ; terraform apply -input=false -auto-approve "planfile"
 ```
 
-## Configuring the PostgreSQL Connection String
+#### Configuring the PostgreSQL Connection String
 
 We choose to set our environment variable for the connection string for this guide. Please check the [secret section](#secrets) for more details.
 
@@ -68,11 +69,11 @@ We choose to set our environment variable for the connection string for this gui
 export PG_CONN_STR=postgres://<user>:<pass>@localhost:<port>/terraform_backend?sslmode=disable
 ```
 
-## Secrets
+#### Secrets
 
 Hashicorp offers several methods to keep your secrets. Please check the Terraform [partial configuration](https://developer.hashicorp.com/terraform/language/backend#partial-configuration) for this topic.
 
-## Create your infrastructure with the Scaleway provider
+#### Create your infrastructure with the Scaleway provider
 
 ```hcl
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,7 +127,7 @@ AND TABLE_NAME = 'states';
     ....
 ```
 
-## Multiple Workplaces
+### Multiple Workplaces
 
 You can configure several `states` on your database using a different `schema_name`.
 
@@ -145,7 +146,7 @@ terraform {
 }
 ```
 
-## Migrating the state
+### Migrating the state
 
 Considering you have already running infrastructure you want to use the `backend` option.
 
@@ -159,7 +160,7 @@ Answer the prompt `yes`, and your state will migrate.
 $ terraform init -backend-config="conn_str=${PG_CONN_STR}" -migrate-state
 ```
 
-## What about locking?
+### What about locking?
 
 Most of the remote [backends](https://developer.hashicorp.com/terraform/language/backend#backend-types) natively support locking. To run terraform apply, Terraform will automatically acquire a lock;
 if someone else is already running apply, they will already have the lock, and you will have to wait.
@@ -167,7 +168,7 @@ You can run apply with the `-lock-timeout=<TIME>` parameter to tell Terraform to
 
 The Lock method prevents opening the state file while already in use.
 
-## Share configuration
+### Share configuration
 
 You can also share the configuration using the different [data sources](https://www.terraform.io/language/state/remote-state-data).
 This is useful when working on the same infrastructure or the same team.
@@ -177,3 +178,68 @@ data "scaleway_rdb_instance" "mybackend" {
   name = "your-database-name"
 }
 ```
+
+## Alternative: Store Terraform State in Scaleway Object Storage (Without Locking)
+
+[Scaleway object storage](https://www.scaleway.com/en/object-storage/) can be used to store your Terraform state.
+However, this backend does not support state locking, which is critical when multiple users or automated processes might access the same state concurrently.
+Configure your backend as:
+
+```
+terraform {
+  backend "s3" {
+    bucket                      = "terraform-state"
+    key                         = "my_state.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+    access_key                  = "my-access-key"
+    secret_key                  = "my-secret-key"
+    skip_credentials_validation = true
+    force_path_style            = true
+    skip_region_validation = true
+    # Need terraform>=1.6.1
+    skip_requesting_account_id  = true
+  }
+}
+```
+
+Warning: This backend does not offer locking. If you're working in a team or running Terraform in CI/CD pipelines, using object storage without locking can lead to state corruption.
+
+### Securing credentials
+
+To avoid hardcoding secrets in your Terraform configuration, use one of the following secure methods:
+
+#### Environment Variables
+
+Set the credentials in your shell environment using the AWS-compatible variable names:
+
+```shell
+export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
+export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
+```
+
+This approach is simple and works well for scripts, local development, and CI pipelines.
+
+#### AWS Credentials Files
+
+Store your credentials in:
+
+- `~/.aws/credentials` – for secrets
+- `~/.aws/config` – for configuration like profiles or regions
+
+Example ~/.aws/credentials file:
+
+```
+[default]
+aws_access_key_id = YOUR_SCW_ACCESS_KEY
+aws_secret_access_key = YOUR_SCW_SECRET_KEY
+```
+
+This method is ideal for managing multiple profiles or persisting configuration across sessions.
+
+Both methods are compatible with Terraform’s S3 backend, which also works with Scaleway Object Storage.
+
+For full details, see the official [Terraform S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3#access_key)
+
+For example configuration files, refer to the [Object Storage documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/)
+
