@@ -54,7 +54,6 @@ func ResourceVolume() *schema.Resource {
 			"snapshot_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				Description:      "The snapshot to create the volume from",
 				DiffSuppressFunc: dsf.Locality,
 			},
@@ -79,6 +78,7 @@ func ResourceVolume() *schema.Resource {
 		},
 		CustomizeDiff: customdiff.All(
 			customDiffCannotShrink("size_in_gb"),
+			customDiffSnapshot("snapshot_id"),
 		),
 	}
 }

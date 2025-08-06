@@ -56,6 +56,26 @@ func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
+		if !diff.HasChange(key) {
+			return nil
+		}
+
+		oldValue, newValue := diff.GetChange(key)
+		blockAPI := block.NewAPI(meta.ExtractScwClient(i))
+
+		_, err := blockAPI.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: oldValue.(string),
+		})
+		if (httperrors.Is403(err) || httperrors.Is404(err)) && newValue == nil {
+			return nil
+		}
+
+		return diff.ForceNew("snapshot_id")
+	}
+}
+
 func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumeID string, timeout time.Duration) (*block.Volume, error) {
 	instanceVolumeResp, err := api.GetVolume(&instance.GetVolumeRequest{
 		Zone:     zone,
