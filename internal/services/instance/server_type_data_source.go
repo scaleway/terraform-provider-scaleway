@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -192,14 +191,17 @@ func DataSourceInstanceServerTypeRead(ctx context.Context, d *schema.ResourceDat
 	d.SetId(name)
 	_ = d.Set("name", name)
 	_ = d.Set("arch", serverType.Arch)
-	_ = d.Set("cpu", serverType.Ncpus)
-	_ = d.Set("ram", serverType.RAM)
-	_ = d.Set("gpu", serverType.Gpu)
+	_ = d.Set("cpu", int(serverType.Ncpus))
+	_ = d.Set("ram", int(serverType.RAM))
 	_ = d.Set("volumes", flattenVolumeConstraints(serverType))
 	_ = d.Set("capabilities", flattenCapabilities(serverType.Capabilities))
 	_ = d.Set("network", flattenNetwork(serverType))
 	_ = d.Set("hourly_price", serverType.HourlyPrice)
 	_ = d.Set("end_of_service", serverType.EndOfService)
+
+	if serverType.Gpu != nil {
+		_ = d.Set("gpu", int(*serverType.Gpu))
+	}
 
 	// Availability
 	availabilitiesResponse, err := instanceAPI.GetServerTypesAvailability(&instance.GetServerTypesAvailabilityRequest{
