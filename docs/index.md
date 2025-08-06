@@ -236,7 +236,8 @@ terraform {
     access_key                  = "my-access-key"
     secret_key                  = "my-secret-key"
     skip_credentials_validation = true
-    skip_region_validation      = true
+    force_path_style            = true
+    skip_region_validation = true
     # Need terraform>=1.6.1
     skip_requesting_account_id  = true
   }
