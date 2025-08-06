@@ -100,9 +100,15 @@ func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBack
 		}
 
 		innerMap := lbConfigList[0].(map[string]any)
+
+		configZone := zone
+		if zoneStr, ok := innerMap["zone"]; ok && zoneStr != "" {
+			configZone = scw.Zone(zoneStr.(string))
+		}
+
 		lbConfig := &edge_services.ScalewayLB{
 			ID:         locality.ExpandID(innerMap["id"]),
-			Zone:       zone,
+			Zone:       configZone,
 			FrontendID: locality.ExpandID(innerMap["frontend_id"]),
 			IsSsl:      types.ExpandBoolPtr(innerMap["is_ssl"]),
 			DomainName: types.ExpandStringPtr(innerMap["domain_name"]),
