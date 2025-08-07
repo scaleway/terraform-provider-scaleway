@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/logger"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -52,11 +52,9 @@ func ResourceVolume() *schema.Resource {
 				Description: "The volume size in GB",
 			},
 			"snapshot_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The snapshot to create the volume from",
-				DiffSuppressFunc: dsf.Locality,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The snapshot to create the volume from",
 			},
 			"instance_volume_id": {
 				Type:          schema.TypeString,
@@ -175,14 +173,14 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	snapshotID := ""
 
 	if volume.ParentSnapshotID != nil {
-		id := *volume.ParentSnapshotID
+		logger.Debugf("found snapshot In READ %s", volume.ParentSnapshotID)
 		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: id,
+			SnapshotID: *volume.ParentSnapshotID,
 			Zone:       zone,
 		})
 
-		if !httperrors.Is403(err) && !httperrors.Is404(err) {
-			snapshotID = zonal.NewIDString(zone, id)
+		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+			snapshotID = zonal.NewIDString(zone, *volume.ParentSnapshotID)
 		}
 	}
 

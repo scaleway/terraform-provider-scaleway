@@ -9,6 +9,7 @@ import (
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -63,6 +64,10 @@ func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
 		}
 
 		oldValue, newValue := diff.GetChange(key)
+		if dsf.Locality(key, oldValue.(string), newValue.(string), nil) {
+			return nil
+		}
+
 		blockAPI := block.NewAPI(meta.ExtractScwClient(i))
 
 		_, err := blockAPI.GetSnapshot(&block.GetSnapshotRequest{
