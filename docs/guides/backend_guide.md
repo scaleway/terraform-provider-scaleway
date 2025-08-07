@@ -177,3 +177,103 @@ data "scaleway_rdb_instance" "mybackend" {
   name = "your-database-name"
 }
 ```
+
+## Using s3 compatible backend
+
+You can use scaleway object-storage bucket as an S3 compatible backend to store your terraform .tfstate file just like you would do with AWS s3
+
+### by using hardcoded credetials (NOT RECOMMENDED)
+
+```
+terraform {
+  backend "s3" {
+    bucket                      = "scw-bucket"
+    key                         = "terraform.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+    skip_credentials_validation = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    skip_s3_checksum            = true
+    access_key                  = XXXXXXXXXXX
+    secert_key                  = YYYYYYYYYYY
+  }
+}
+```
+
+### by using credentials environment variables
+
+```
+$ export SCW_ACCESS_KEY="XXXXXXXXXXX"
+$ export SCW_SECRET_KEY="YYYYYYYYYYY"
+```
+
+and this simple backend code
+
+```
+terraform {
+  backend "s3" {
+    bucket                      = "scw-bucket"
+    key                         = "terraform.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+  }
+}
+```
+
+### and with the shared congfiguration file ?
+scaleway scw-cli provide you with a credential file
+>~/$HOME/.config/scw/config.yaml
+
+to generate your credential file you can run scw init at first run or login for every new key pairs generated
+
+```
+scw login
+```
+
+it will generate scw shared configuration file folowinng this format
+
+```
+profiles:
+  myProfile1:
+    access_key: XXXXXXXXXXX
+    secret_key: YYYYYYYYYYY
+    default_organization_id: example-org-id-zzzzzzzzzz
+    default_project_id: example-org-id-zzzzzzzzzz
+    default_zone: fr-par-1
+    default_region: fr-par
+    api_url: https://api.scaleway.com
+    insecure: false
+```
+
+actually terraform backend "s3" is not aware of any other kind of s3 compatible bucket and is by default assuming you ar using aws's S3 service
+
+so in order to read scw credentials, do not try to use `profile = myProfile1` it will not work, unless you can copy your scw credentials into aws shared configuration file
+
+>~/$HOME/.aws/credentials
+
+```
+[scaleway_profile]
+aws_access_key_id = XXXXXXXXXXX
+aws_secret_access_key = YYYYYYYYYYY
+```
+
+then in your tf backend bloc use this profile as if it waf a aws backend `profile = "scaleway_rofile"`
+
+```
+terraform {
+  backend "s3" {
+    bucket                      = "scw-bucket"
+    key                         = "terraform.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+    skip_credentials_validation = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    skip_s3_checksum            = true
+    profile                     = "scaleway_rofile"
+  }
+}
+```
+
+now run terraform init and the s3 backend should be able to use scaleway object storage instead of aws s3.
