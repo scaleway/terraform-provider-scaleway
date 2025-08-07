@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -69,15 +68,9 @@ func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
 		_, err := blockAPI.GetSnapshot(&block.GetSnapshotRequest{
 			SnapshotID: oldValue.(string),
 		})
-		logging.L.Debugf("customDiffSnapshot: old=%s, new=%s", oldValue, newValue)
-		logging.L.Debugf("error: %v", err)
-
 		if (httperrors.Is403(err) || httperrors.Is404(err)) && newValue == "" {
-			logging.L.Infof("customDiffSnapshot: snapshot %s is missing or forbidden", oldValue)
 			return nil
 		}
-
-		logging.L.Infof("customDiffSnapshot: forcing recreation due to snapshot_id change")
 		return diff.ForceNew(key)
 	}
 }
