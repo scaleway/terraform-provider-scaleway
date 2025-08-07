@@ -171,15 +171,20 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
 	_ = d.Set("tags", volume.Tags)
-	_, err = api.GetSnapshot(&block.GetSnapshotRequest{
-		SnapshotID: *volume.ParentSnapshotID,
-		Zone:       zone,
-	})
-	if volume.ParentSnapshotID != nil && !httperrors.Is403(err) && !httperrors.Is404(err) {
-		_ = d.Set("snapshot_id", zonal.NewIDString(zone, *volume.ParentSnapshotID))
-	} else {
-		_ = d.Set("snapshot_id", "")
+	snapshotID := ""
+	if volume.ParentSnapshotID != nil {
+		id := *volume.ParentSnapshotID
+		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: id,
+			Zone:       zone,
+		})
+
+		if !httperrors.Is403(err) && !httperrors.Is404(err) {
+			snapshotID = zonal.NewIDString(zone, id)
+		}
 	}
+
+	_ = d.Set("snapshot_id", snapshotID)
 
 	return nil
 }
