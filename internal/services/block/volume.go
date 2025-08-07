@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -201,6 +200,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	req := &block.UpdateVolumeRequest{
 		Zone:     zone,
 		VolumeID: volume.ID,
+		Name:     types.ExpandUpdatedStringPtr(volume.Name),
 	}
 
 	if d.HasChange("name") {
