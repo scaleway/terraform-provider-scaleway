@@ -71,6 +71,7 @@ func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
 		if (httperrors.Is403(err) || httperrors.Is404(err)) && newValue == "" {
 			return nil
 		}
+
 		return diff.ForceNew(key)
 	}
 }
