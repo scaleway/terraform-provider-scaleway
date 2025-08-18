@@ -54,7 +54,6 @@ func ResourceVolume() *schema.Resource {
 			"snapshot_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
 				Description:      "The snapshot to create the volume from",
 				DiffSuppressFunc: dsf.Locality,
 			},
@@ -78,6 +77,7 @@ func ResourceVolume() *schema.Resource {
 			"project_id": account.ProjectIDSchema(),
 		},
 		CustomizeDiff: customdiff.All(
+			customDiffSnapshot("snapshot_id"),
 			customDiffCannotShrink("size_in_gb"),
 		),
 	}
@@ -171,12 +171,20 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	_ = d.Set("zone", volume.Zone)
 	_ = d.Set("project_id", volume.ProjectID)
 	_ = d.Set("tags", volume.Tags)
+	snapshotID := ""
 
 	if volume.ParentSnapshotID != nil {
-		_ = d.Set("snapshot_id", zonal.NewIDString(zone, *volume.ParentSnapshotID))
-	} else {
-		_ = d.Set("snapshot_id", "")
+		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: *volume.ParentSnapshotID,
+			Zone:       zone,
+		})
+
+		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+			snapshotID = zonal.NewIDString(zone, *volume.ParentSnapshotID)
+		}
 	}
+
+	_ = d.Set("snapshot_id", snapshotID)
 
 	return nil
 }
@@ -201,6 +209,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	req := &block.UpdateVolumeRequest{
 		Zone:     zone,
 		VolumeID: volume.ID,
+		Name:     types.ExpandUpdatedStringPtr(volume.Name),
 	}
 
 	if d.HasChange("name") {
