@@ -290,7 +290,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeMap,
 				Optional:    true,
 				Computed:    true,
-				Description: "The user data associated with the server", // TODO: document reserved keys (`cloud-init`)
+				Description: "The user data associated with the server",
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

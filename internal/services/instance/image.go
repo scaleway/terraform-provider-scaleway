@@ -59,7 +59,6 @@ func ResourceImage() *schema.Resource {
 			"additional_volume_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
-				MaxItems: 1,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
@@ -101,6 +100,35 @@ func ResourceImage() *schema.Resource {
 				Computed:    true,
 				Description: "The state of the image [ available | creating | error ]",
 			},
+			"root_volume": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "Specs of the additional volumes attached to the image",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "UUID of the additional volume",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the additional volume",
+							Computed:    true,
+						},
+						"size": {
+							Type:        schema.TypeInt,
+							Description: "Size of the additional volume",
+							Computed:    true,
+						},
+						"volume_type": {
+							Type:        schema.TypeString,
+							Description: "Type of the additional volume",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"additional_volumes": {
 				Type:        schema.TypeList,
 				Computed:    true,
@@ -117,11 +145,6 @@ func ResourceImage() *schema.Resource {
 							Description: "Name of the additional volume",
 							Computed:    true,
 						},
-						"export_uri": {
-							Type:        schema.TypeString,
-							Description: "URI of the additional volume",
-							Computed:    true,
-						},
 						"size": {
 							Type:        schema.TypeInt,
 							Description: "Size of the additional volume",
@@ -132,26 +155,6 @@ func ResourceImage() *schema.Resource {
 							Description: "Type of the additional volume",
 							Computed:    true,
 						},
-						"creation_date": {
-							Type:        schema.TypeString,
-							Description: "Date and time of the creation of the additional volume (RFC3339)",
-							Computed:    true,
-						},
-						"modification_date": {
-							Type:        schema.TypeString,
-							Description: "Date and time of the modification of the additional volume (RFC3339)",
-							Computed:    true,
-						},
-						"organization": {
-							Type:        schema.TypeString,
-							Description: "Organization ID of the additional volume",
-							Computed:    true,
-						},
-						"project": {
-							Type:        schema.TypeString,
-							Description: "Project ID of the additional volume",
-							Computed:    true,
-						},
 						"tags": {
 							Type:        schema.TypeList,
 							Description: "List of tags attached to the additional volume",
@@ -160,19 +163,9 @@ func ResourceImage() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
-						"state": {
-							Type:        schema.TypeString,
-							Description: "The state of the additional volume",
-							Computed:    true,
-						},
-						"zone": {
-							Type:        schema.TypeString,
-							Description: "Zone ID of the additional volume",
-							Computed:    true,
-						},
 						"server": {
 							Type:        schema.TypeMap,
-							Description: "Server",
+							Description: "Server containing the volume (in case the image is a backup from a server)",
 							Computed:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -262,6 +255,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", image.Image.Name)
 	_ = d.Set("root_volume_id", zonal.NewIDString(image.Image.Zone, image.Image.RootVolume.ID))
 	_ = d.Set("architecture", image.Image.Arch)
+	_ = d.Set("root_volume", flattenImageRootVolume(image.Image.RootVolume, zone))
 	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.Image.ExtraVolumes, zone))
 	_ = d.Set("tags", image.Image.Tags)
 	_ = d.Set("public", image.Image.Public)

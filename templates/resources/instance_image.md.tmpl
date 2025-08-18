@@ -69,7 +69,7 @@ resource "scaleway_instance_snapshot" "server_snapshot" {
 resource "scaleway_instance_image" "image" {
   name           = "image_with_extra_volumes"
   root_volume_id = scaleway_instance_snapshot.server_snapshot.id
-  additional_volumes = [
+  additional_volume_ids = [
     scaleway_instance_snapshot.volume_snapshot.id
   ]
 }
@@ -83,9 +83,6 @@ The following arguments are supported:
 - `name` - (Optional) The name of the image. If not provided it will be randomly generated.
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 - `additional_volume_ids` - (Optional) List of IDs of the snapshots of the additional volumes to be attached to the image.
-
--> **Important:** For now it is only possible to have 1 additional_volume.
-
 - `tags` - (Optional) A list of tags to apply to the image.
 - `public` - (Optional) Set to `true` if the image is public.
 - `zone` - (Defaults to provider `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image should be created.
@@ -104,26 +101,27 @@ In addition to all arguments above, the following attributes are exported:
 - `from_server_id` - ID of the server the image is based on (in case it is a backup).
 - `state` - State of the image. Possible values are: `available`, `creating` or `error`.
 - `organization_id` - The organization ID the image is associated with.
+- `root_volume` - The description of the root volume attached to the image.
+
+  -> The `root_volume` block contains :
+    - `id` - The ID of the volume.
+    - `name` - The name of the volume.
+    - `size` - The size of the volume.
+    - `volume_type` - The type of volume, possible values are `l_ssd` and `sbs_snapshot`.
+
 - `additional_volumes` - The description of the extra volumes attached to the image.
 
     -> The `additional_volumes` block contains :
     - `id` - The ID of the volume.
     - `name` - The name of the volume.
-    - `export_uri` - The export URI of the volume.
     - `size` - The size of the volume.
-    - `volume_type` - The type of volume, possible values are `l_ssd` and `b_ssd`.
-    - `creation_date` - Date of the volume creation.
-    - `modification_date` - Date of volume latest update.
-    - `organization` - The organization ID the volume is associated with.
-    - `project` - ID of the project the volume is associated with
+    - `volume_type` - The type of volume, possible values are `l_ssd` and `sbs_snapshot`.
     - `tags` - List of tags associated with the volume.
-    - `state` - State of the volume.
-    - `zone` - The [zone](../guides/regions_and_zones.md#zones) in which the volume is.
     - `server` - Description of the server containing the volume (in case the image is a backup from a server).
 
-    -> The `server` block contains :
-      - `id` - ID of the server containing the volume.
-      - `name` - Name of the server containing the volume.
+        -> The `server` block contains :
+        - `id` - ID of the server containing the volume.
+        - `name` - Name of the server containing the volume.
 
 ## Import
 
