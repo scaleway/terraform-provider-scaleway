@@ -69,7 +69,7 @@ resource "scaleway_instance_snapshot" "server_snapshot" {
 resource "scaleway_instance_image" "image" {
   name           = "image_with_extra_volumes"
   root_volume_id = scaleway_instance_snapshot.server_snapshot.id
-  additional_volumes = [
+  additional_volume_ids = [
     scaleway_instance_snapshot.volume_snapshot.id
   ]
 }
@@ -83,9 +83,6 @@ The following arguments are supported:
 - `name` - (Optional) The name of the image. If not provided it will be randomly generated.
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 - `additional_volume_ids` - (Optional) List of IDs of the snapshots of the additional volumes to be attached to the image.
-
--> **Important:** For now it is only possible to have 1 additional_volume.
-
 - `tags` - (Optional) A list of tags to apply to the image.
 - `public` - (Optional) Set to `true` if the image is public.
 - `zone` - (Defaults to provider `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image should be created.
