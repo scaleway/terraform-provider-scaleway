@@ -179,6 +179,35 @@ func ResourceInstance() *schema.Resource {
 					},
 				},
 			},
+			"public_network": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				MaxItems:    1,
+				Description: "Public network specs details",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "ID of the public network",
+						},
+						"port": {
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Computed:    true,
+							Description: "TCP port of the endpoint",
+						},
+						"dns_record": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Computed:    true,
+							Description: "The DNS record of your endpoint",
+						},
+					},
+				},
+			},
 			"tags": {
 				Type:     schema.TypeList,
 				Optional: true,
