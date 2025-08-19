@@ -32,7 +32,6 @@ func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Region:       region,
 				DeploymentID: ID,
 			})
-
 			if err == nil {
 				return fmt.Errorf("deployment %s (%s) still exists", deployment.Name, deployment.ID)
 			}

@@ -27,6 +27,7 @@ var DestroyWaitTimeout = 3 * time.Minute
 func TestAccFlexibleIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
@@ -52,6 +53,7 @@ func TestAccFlexibleIP_Basic(t *testing.T) {
 func TestAccFlexibleIP_WithZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
@@ -83,6 +85,7 @@ func TestAccFlexibleIP_WithZone(t *testing.T) {
 func TestAccFlexibleIP_IPv6(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),

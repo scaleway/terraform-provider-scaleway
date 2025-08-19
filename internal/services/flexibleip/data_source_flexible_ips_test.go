@@ -11,6 +11,7 @@ import (
 func TestAccDataSourceFlexibleIPs_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -60,6 +61,7 @@ func TestAccDataSourceFlexibleIPs_Basic(t *testing.T) {
 func TestAccDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

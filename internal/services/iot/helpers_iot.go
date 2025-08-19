@@ -88,6 +88,7 @@ func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m any) (string, 
 	}
 
 	defer mqttCa.Body.Close() //nolint: errcheck
+
 	resp, _ := io.ReadAll(mqttCa.Body)
 
 	return string(resp), nil
