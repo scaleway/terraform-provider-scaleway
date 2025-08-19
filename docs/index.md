@@ -221,38 +221,9 @@ In addition to [generic provider arguments](https://www.terraform.io/docs/config
 | `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)          |           |
 | `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)             |           |
 
-## Store terraform state on Scaleway S3-compatible object storage
+## Store terraform state
 
-[Scaleway object storage](https://www.scaleway.com/en/object-storage/) can be used to store your Terraform state.
-Configure your backend as:
-
-```
-terraform {
-  backend "s3" {
-    bucket                      = "terraform-state"
-    key                         = "my_state.tfstate"
-    region                      = "fr-par"
-    endpoint                    = "https://s3.fr-par.scw.cloud"
-    access_key                  = "my-access-key"
-    secret_key                  = "my-secret-key"
-    skip_credentials_validation = true
-    skip_region_validation      = true
-    # Need terraform>=1.6.1
-    skip_requesting_account_id  = true
-  }
-}
-```
-
-Be careful as no locking mechanism are yet supported.
-Using scaleway object storage as terraform backend is not suitable if you work in a team with a risk of simultaneous access to the same plan.
-
-Note: For security reason it's not recommended to store secrets in terraform files.
-If you want to configure the backend with environment var, you need to use `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` [source](https://www.terraform.io/docs/backends/types/s3.html#access_key).
-
-```bash
-export AWS_ACCESS_KEY_ID=$SCW_ACCESS_KEY
-export AWS_SECRET_ACCESS_KEY=$SCW_SECRET_KEY
-```
+For detailed instructions and best practices, see the full [Backend guide](guides/backend_guide.md)
 
 ## Custom User-Agent Information
 
