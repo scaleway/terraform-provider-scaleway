@@ -245,7 +245,6 @@ func isSourceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Region:       region,
 				DataSourceID: ID,
 			})
-
 			if err == nil {
 				return fmt.Errorf("cockpit source (%s) still exists", rs.Primary.ID)
 			}

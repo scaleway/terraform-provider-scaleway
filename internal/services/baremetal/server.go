@@ -605,6 +605,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	var serverGetOptionIDs []*baremetal.ServerOption
+
 	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
 
 	if d.HasChange("offer") {

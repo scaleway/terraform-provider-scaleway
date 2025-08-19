@@ -199,7 +199,6 @@ func testAccCheckFunctionCronDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				CronID: id,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function cron (%s) still exists", rs.Primary.ID)
 			}

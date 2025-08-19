@@ -104,7 +104,6 @@ func testAccCheckFunctionTokenDestroy(tt *acctest.TestTools) resource.TestCheckF
 				TokenID: id,
 				Region:  region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function token (%s) still exists", rs.Primary.ID)
 			}

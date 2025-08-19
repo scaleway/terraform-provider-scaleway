@@ -100,7 +100,6 @@ func testAccCheckFunctionDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 				DomainID: id,
 				Region:   region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function domain (%s) still exists", rs.Primary.ID)
 			}

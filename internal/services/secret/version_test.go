@@ -213,7 +213,6 @@ func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckF
 				Region:   region,
 				Revision: revision,
 			})
-
 			if err == nil {
 				return fmt.Errorf("secret version (%s) still exists", rs.Primary.ID)
 			}

@@ -15,6 +15,7 @@ import (
 func TestAccProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      isProjectDestroyed(tt),
@@ -52,6 +53,7 @@ func TestAccProject_Basic(t *testing.T) {
 func TestAccProject_NoUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      isProjectDestroyed(tt),

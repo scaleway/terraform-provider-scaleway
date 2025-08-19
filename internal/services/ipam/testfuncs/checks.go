@@ -27,7 +27,6 @@ func CheckIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				IPID:   ID,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
 			}

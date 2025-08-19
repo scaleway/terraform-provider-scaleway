@@ -27,7 +27,6 @@ func CheckFileDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				Region:       region,
 				FilesystemID: id,
 			})
-
 			if err == nil {
 				return fmt.Errorf("filesystem (%s) still exists", rs.Primary.ID)
 			}

@@ -414,6 +414,7 @@ func TestAccFunction_Sandbox(t *testing.T) {
 func TestAccFunction_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -603,7 +604,6 @@ func testAccCheckFunctionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				FunctionID: id,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function (%s) still exists", rs.Primary.ID)
 			}

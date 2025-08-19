@@ -15,6 +15,7 @@ import (
 func TestAccPrivateNIC_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -52,6 +53,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 func TestAccPrivateNIC_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -140,6 +142,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -245,7 +248,6 @@ func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				PrivateNicID: innerID,
 				Zone:         zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"instanceSDK private NIC %s still exists",
