@@ -142,6 +142,10 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
+		if req.VolumeType == "" {
+			req.VolumeType = instanceSDK.SnapshotVolumeTypeLSSD
+		}
+
 		req.Bucket = types.ExpandStringPtr(regional.ExpandID(d.Get("import.0.bucket")).ID)
 		req.Key = types.ExpandStringPtr(d.Get("import.0.key"))
 	}
