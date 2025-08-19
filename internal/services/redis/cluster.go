@@ -182,33 +182,6 @@ func ResourceCluster() *schema.Resource {
 				},
 			},
 			// Computed
-			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Public network specs details",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"ips": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Computed: true,
-						},
-					},
-				},
-			},
 			"private_ips": {
 				Type:        schema.TypeList,
 				Computed:    true,
