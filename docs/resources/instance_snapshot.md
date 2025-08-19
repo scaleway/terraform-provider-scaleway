@@ -40,7 +40,6 @@ resource "scaleway_instance_server" "main" {
 
 resource "scaleway_instance_snapshot" "main" {
   volume_id  = scaleway_instance_volume.main.id
-  type       = "unified"
   depends_on = [scaleway_instance_server.main]
 }
 ```
@@ -59,7 +58,6 @@ resource "scaleway_object" "qcow" {
 }
 
 resource "scaleway_instance_snapshot" "snapshot" {
-  type = "unified"
   import {
     bucket = scaleway_object.qcow.bucket
     key    = scaleway_object.qcow.key
@@ -72,11 +70,12 @@ resource "scaleway_instance_snapshot" "snapshot" {
 The following arguments are supported:
 
 - `volume_id` - (Optional) The ID of the volume to take a snapshot from.
-- `type` - (Optional) The snapshot's volume type.  The possible values are: `l_ssd` (Local SSD) and `unified`.
+- `type` - (Default to `l_ssd`) The snapshot's volume type.  The possible values are: `l_ssd` (Local SSD).
 Updates to this field will recreate a new resource.
 
 ~> **Important:** Snapshots of volumes with type `b_ssd` (Block SSD) are deprecated and cannot be managed using the `scaleway_instance_snapshot` resource anymore. Please use the `scaleway_block_snapshot` resource instead.
 If you want to migrate existing snapshots, you can visit [this page](https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/) for more information.
+~> **Important:** Snapshots of volumes with type `unified` (can be used with both Block and Local SSD) are deprecated since the migration to SBS.
 
 - `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
@@ -87,8 +86,6 @@ If you want to migrate existing snapshots, you can visit [this page](https://www
 - `import` - (Optional) Import a snapshot from a qcow2 file located in a bucket
     - `bucket` - Bucket name containing [qcow2](https://en.wikipedia.org/wiki/Qcow) to import
     - `key` - Key of the object to import
-
--> **Note:** The type `unified` could be instantiated on both `l_ssd` and `b_ssd` volumes.
 
 ## Attributes Reference
 

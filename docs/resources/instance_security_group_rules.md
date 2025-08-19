@@ -46,9 +46,9 @@ resource "scaleway_instance_security_group" "main" {
 
 locals {
   trusted = [
-    "1.2.3.4",
-    "4.5.6.7",
-    "7.8.9.10"
+    "1.2.3.4/32",
+    "4.5.6.7/32",
+    "7.8.9.10/24"
   ]
 }
 
@@ -59,7 +59,7 @@ resource "scaleway_instance_security_group_rules" "main" {
     for_each = local.trusted
     content {
       action = "accept"
-      ip     = inbound_rule.value
+      ip_range     = inbound_rule.value
       port   = 80
     }
   }
@@ -79,9 +79,9 @@ resource "scaleway_instance_security_group" "main" {
 
 locals {
   trusted = [
-    { ip = "1.2.3.4", port = "80" },
-    { ip = "5.6.7.8", port = "81" },
-    { ip = "9.10.11.12", port = "81" },
+    { ip_range = "1.2.3.4/32", port = "80" },
+    { ip_range = "5.6.7.8/32", port = "81" },
+    { ip_range = "9.10.11.12/32", port = "81" },
   ]
 }
 
@@ -92,7 +92,7 @@ resource "scaleway_instance_security_group_rules" "main" {
     for_each = local.trusted
     content {
       action = "accept"
-      ip     = inbound_rule.value.ip
+      ip_range     = inbound_rule.value.ip_range
       port   = inbound_rule.value.port
     }
   }
@@ -122,7 +122,7 @@ The `inbound_rule` and `outbound_rule` block supports:
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
 
-- `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
+- `ip`- (Deprecated) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
