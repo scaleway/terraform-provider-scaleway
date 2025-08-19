@@ -88,7 +88,7 @@ linters:
     - usetesting # Reports uses of functions with replacement inside the testing package. [auto-fix]
     - wastedassign # wastedassign finds wasted assignment statements. [fast: false, auto-fix: false]
     - whitespace # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
-    - wsl # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
+    - wsl_v5 # Whitespace Linter - Forces you to use empty lines! [fast: true, auto-fix: false]
     - zerologlint # Detects the wrong usage of `zerolog` that a user forgets to dispatch with `Send` or `Msg` [fast: false, auto-fix: false]
 
   disable:
@@ -128,6 +128,11 @@ linters:
     ireturn:
       reject:
         - anon
+
+    wsl_v5:
+      allow-first-in-block: true
+      allow-whole-block: false
+      branch-max-lines: 2
 
   exclusions:
     rules:
