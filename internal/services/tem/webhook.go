@@ -33,6 +33,7 @@ func ResourceWebhook() *schema.Resource {
 			},
 			"name": {
 				Type:         schema.TypeString,
+				Description:  "The name of the webhook",
 				Optional:     true,
 				Computed:     true,
 				ValidateFunc: validation.StringLenBetween(3, 127),

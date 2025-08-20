@@ -56,8 +56,9 @@ func ResourceCacheStage() *schema.Resource {
 				Description: "The Time To Live (TTL) in seconds. Defines how long content is cached",
 			},
 			"purge_requests": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Set of purge requests",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"pipeline_id": {
