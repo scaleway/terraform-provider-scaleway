@@ -63,6 +63,7 @@ func DataSourceBackends() *schema.Resource {
 							Description: func() string {
 								var t lb.ForwardPortAlgorithm
 								values := t.Values()
+
 								return fmt.Sprintf("Load balancing algorithm to be used when determining which backend server to forward new traffic to. Possible values are: %s", values)
 							}(),
 							Type: schema.TypeString,
