@@ -295,8 +295,13 @@ In addition to all arguments above, the following attributes are exported:
 - `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).
 - `public_ip` -  The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.
-    - `id` - The ID of the IP
-    - `address` - The address of the IP
+    - `id` - The ID of the IP.
+    - `address` - The address of the IP.
+    - `gateway` - The IP of the Gateway associated with the IP.
+    - `netmask` - The CIDR netmask of the IP.
+    - `family` - The IP address' family.
+    - `dynamic` - Whether the IP is dynamic.
+    - `provisioning_mode` - The provisioning mode of the IP
 - `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
   Deprecated: Please use a scaleway_instance_ip with a `routed_ipv6` type.
 - `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
