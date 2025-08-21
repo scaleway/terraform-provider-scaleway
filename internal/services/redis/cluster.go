@@ -192,10 +192,12 @@ func ResourceCluster() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:     schema.TypeString,
+							Optional: true,
 							Computed: true,
 						},
 						"port": {
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "TCP port of the endpoint",
 						},
@@ -204,6 +206,7 @@ func ResourceCluster() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
+							Optional: true,
 							Computed: true,
 						},
 					},

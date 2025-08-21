@@ -189,16 +189,19 @@ func ResourceInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "ID of the public network",
 						},
 						"port": {
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "TCP port of the endpoint",
 						},
 						"dns_record": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "The DNS record of your endpoint",
 						},
