@@ -44,10 +44,11 @@ func ResourceLockConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default_retention": {
-							Type:     schema.TypeList,
-							Required: true,
-							MinItems: 1,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Description: "Default retention.",
+							Required:    true,
+							MinItems:    1,
+							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"mode": {

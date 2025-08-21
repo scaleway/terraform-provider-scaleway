@@ -52,8 +52,9 @@ func DataSourceRoutes() *schema.Resource {
 				Description: "Routes with these exact tags are listed.",
 			},
 			"routes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of routes",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

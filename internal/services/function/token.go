@@ -30,6 +30,7 @@ func ResourceToken() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"function_id": {
 				Type:             schema.TypeString,
+				Description:      "The ID of the function",
 				ForceNew:         true,
 				Optional:         true,
 				ExactlyOneOf:     []string{"namespace_id"},
@@ -37,27 +38,31 @@ func ResourceToken() *schema.Resource {
 			},
 			"namespace_id": {
 				Type:             schema.TypeString,
+				Description:      "The ID of the namespace",
 				ForceNew:         true,
 				Optional:         true,
 				ExactlyOneOf:     []string{"function_id"},
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "The description of the function",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"expires_at": {
 				Type:             schema.TypeString,
+				Description:      "The date after which the token expires RFC3339",
 				Optional:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: verify.IsDate(),
 				DiffSuppressFunc: dsf.TimeRFC3339,
 			},
 			"token": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Description: "Token generated",
+				Computed:    true,
+				Sensitive:   true,
 			},
 
 			"region": regional.Schema(),

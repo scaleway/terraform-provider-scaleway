@@ -220,6 +220,7 @@ func ResourceServer() *schema.Resource {
 			},
 			"ip_ids": {
 				Type:          schema.TypeList,
+				Description:   "The IDs of the reserved IP for the server",
 				Optional:      true,
 				ConflictsWith: []string{"ip_id"},
 				Elem: &schema.Schema{

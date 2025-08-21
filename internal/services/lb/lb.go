@@ -161,8 +161,9 @@ func ResourceLb() *schema.Resource {
 							Description: "The status of private network connection",
 						},
 						"zone": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Zone",
+							Computed:    true,
 						},
 					},
 				},

@@ -40,9 +40,10 @@ func ResourceRegistration() *schema.Resource {
 				Description: "List of domain names to be managed.",
 			},
 			"duration_in_years": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  1,
+				Type:        schema.TypeInt,
+				Description: "Duration of the registration period in years.",
+				Optional:    true,
+				Default:     1,
 			},
 			"owner_contact_id": {
 				Type:     schema.TypeString,
