@@ -49,8 +49,9 @@ func ResourceBucketACL() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"grant": {
-							Type:     schema.TypeSet,
-							Optional: true,
+							Type:        schema.TypeSet,
+							Description: "Grant",
+							Optional:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"grantee": {
@@ -61,8 +62,9 @@ func ResourceBucketACL() *schema.Resource {
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"display_name": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Description: "Display name of the grantee to grant access to.",
+													Computed:    true,
 												},
 												"uri": {
 													Type:        schema.TypeString,

@@ -43,29 +43,35 @@ func DataSourceIPs() *schema.Resource {
 				Description: "IPs with these exact tags are listed",
 			},
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of IPs",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the IP",
+							Type:        schema.TypeString,
 						},
 						"ip_address": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "IP address of this IP",
+							Type:        schema.TypeString,
 						},
 						"lb_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Load balancer ID associated with this IP",
+							Type:        schema.TypeString,
 						},
 						"reverse": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Reverse DNS associated with this IP address",
+							Type:        schema.TypeString,
 						},
 						"tags": {
-							Computed: true,
-							Type:     schema.TypeList,
+							Computed:    true,
+							Description: "List of tags associated with this IP",
+							Type:        schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
