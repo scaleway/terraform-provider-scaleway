@@ -34,8 +34,9 @@ func DataSourceInvoices() *schema.Resource {
 				Description: "The invoice type. It can either be `periodic` or `purchase`",
 			},
 			"invoices": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of invoices",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

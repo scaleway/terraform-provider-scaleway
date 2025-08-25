@@ -25,6 +25,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.20.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
+	github.com/hashicorp/terraform-plugin-testing v1.5.1
 	github.com/nats-io/jwt/v2 v2.7.4
 	github.com/nats-io/nats.go v1.44.0
 	github.com/robfig/cron/v3 v3.0.1
@@ -153,7 +154,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.22.0 // indirect
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
-	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
+	golang.org/x/exp v0.0.0-20230809150735-7b3493d9a819 // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
@@ -175,6 +176,7 @@ require (
 tool (
 	github.com/bflad/tfproviderdocs
 	github.com/bflad/tfproviderlint/cmd/tfproviderlint
+	github.com/bflad/tfproviderlint/cmd/tfproviderlintx
 	github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	github.com/katbyte/terrafmt
 )

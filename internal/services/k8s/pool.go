@@ -190,8 +190,9 @@ func ResourcePool() *schema.Resource {
 				Description: "The actual size of the pool",
 			},
 			"nodes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of nodes in the pool",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

@@ -168,6 +168,7 @@ func ResourceBackend() *schema.Resource {
 			},
 			"health_check_tcp": {
 				Type:          schema.TypeList,
+				Description:   "TCP Health check",
 				MaxItems:      1,
 				ConflictsWith: []string{"health_check_http", "health_check_https"},
 				Optional:      true,
@@ -178,6 +179,7 @@ func ResourceBackend() *schema.Resource {
 			},
 			"health_check_http": {
 				Type:          schema.TypeList,
+				Description:   "HTTP Health check",
 				MaxItems:      1,
 				ConflictsWith: []string{"health_check_tcp", "health_check_https"},
 				Optional:      true,
@@ -210,6 +212,7 @@ func ResourceBackend() *schema.Resource {
 			},
 			"health_check_https": {
 				Type:          schema.TypeList,
+				Description:   "HTTPS Health check",
 				MaxItems:      1,
 				ConflictsWith: []string{"health_check_tcp", "health_check_http"},
 				Optional:      true,

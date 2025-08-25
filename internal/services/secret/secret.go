@@ -2,6 +2,7 @@ package secret
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"strconv"
 
@@ -79,8 +80,14 @@ func ResourceSecret() *schema.Resource {
 				},
 			},
 			"type": {
-				ForceNew:         true,
-				Type:             schema.TypeString,
+				ForceNew: true,
+				Type:     schema.TypeString,
+				Description: func() string {
+					var t secret.SecretType
+					secretTypes := t.Values()
+
+					return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
+				}(),
 				Optional:         true,
 				Default:          secret.SecretTypeOpaque,
 				ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
@@ -91,8 +98,9 @@ func ResourceSecret() *schema.Resource {
 				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
 			},
 			"ephemeral_policy": {
-				Type:     schema.TypeList,
-				Optional: true,
+				Type:        schema.TypeList,
+				Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ttl": {
@@ -117,8 +125,9 @@ func ResourceSecret() *schema.Resource {
 				},
 			},
 			"versions": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of the versions of the secret",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"revision": {
