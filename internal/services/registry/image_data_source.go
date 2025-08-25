@@ -60,8 +60,9 @@ func DataSourceImage() *schema.Resource {
 				Description: "The tags associated with the registry image",
 			},
 			"updated_at": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Computed:    true,
+				Description: "Timestamp when the image was last updated.",
+				Type:        schema.TypeString,
 			},
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),

@@ -78,6 +78,7 @@ func ResourceSecurityGroup() *schema.Resource {
 			},
 			"external_rules": {
 				Type:          schema.TypeBool,
+				Description:   "External rules for this security group",
 				Optional:      true,
 				Default:       false,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},

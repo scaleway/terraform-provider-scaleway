@@ -21,7 +21,7 @@ resource "scaleway_instance_security_group" "web" {
   inbound_rule {
     action = "accept"
     port   = 22
-    ip     = "212.47.225.64"
+    ip_range     = "212.47.225.64/32"
   }
 
   inbound_rule {
@@ -46,13 +46,13 @@ resource "scaleway_instance_security_group" "web" {
 
   inbound_rule {
     action = "drop"
-    ip     = "1.1.1.1" # Banned IP
+    ip_range     = "1.1.1.1/32" # Banned IP range
   }
 
   inbound_rule {
     action = "accept"
     port   = 22
-    ip     = "212.47.225.64"
+    ip_range     = "212.47.225.64/32"
   }
 
   inbound_rule {
@@ -62,7 +62,7 @@ resource "scaleway_instance_security_group" "web" {
 
   outbound_rule {
     action = "accept"
-    ip     = "8.8.8.8" # Only allow outgoing connection to this IP.
+    ip_range     = "8.8.8.8/32" # Only allow outgoing connection to this IP range.
   }
 }
 ```
@@ -86,7 +86,7 @@ resource "scaleway_instance_security_group" "dummy" {
     content {
       action = "accept"
       port   = 22
-      ip     = inbound_rule.value
+      ip_range     = inbound_rule.value
     }
   }
 }
@@ -132,7 +132,7 @@ The `inbound_rule` and `outbound_rule` block supports:
   If no `port` nor `port_range` are specified, rule will apply to all port.
   Only one of `port` and `port_range` should be specified.
 
-- `ip`- (Optional) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
+- `ip`- (Deprecated) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 

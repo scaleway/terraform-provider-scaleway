@@ -38,6 +38,7 @@ func DataSourceIP() *schema.Resource {
 			},
 			"resource": {
 				Type:          schema.TypeList,
+				Description:   "The resource to filter for",
 				Optional:      true,
 				MaxItems:      1,
 				ConflictsWith: []string{"ipam_ip_id"},
