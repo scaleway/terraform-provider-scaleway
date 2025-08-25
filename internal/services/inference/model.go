@@ -25,7 +25,6 @@ func ResourceModel() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultModelTimeout),
 			Create:  schema.DefaultTimeout(defaultModelTimeout),
-			Update:  schema.DefaultTimeout(defaultModelTimeout),
 			Delete:  schema.DefaultTimeout(defaultModelTimeout),
 		},
 		SchemaVersion: 0,

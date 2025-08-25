@@ -61,26 +61,31 @@ func ResourceReadReplica() *schema.Resource {
 						"endpoint_id": {
 							Type:        schema.TypeString,
 							Description: "UUID of the endpoint (UUID format).",
+							Optional:    true,
 							Computed:    true,
 						},
 						"ip": {
 							Type:        schema.TypeString,
 							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"port": {
 							Type:        schema.TypeInt,
 							Description: "TCP port of the endpoint.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Description: "Name of the endpoint.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"hostname": {
 							Type:        schema.TypeString,
 							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Optional:    true,
 							Computed:    true,
 						},
 					},

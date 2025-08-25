@@ -37,34 +37,41 @@ func ResourceDefinition() *schema.Resource {
 				Description: "The job name",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The job description",
+				Optional:    true,
 			},
 			"cpu_limit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "CPU limit of the job",
+				Required:    true,
 			},
 			"memory_limit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "Memory limit of the job",
+				Required:    true,
 			},
 			"image_uri": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Image URI to use for the job",
+				Optional:    true,
 			},
 			"command": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Command to use for the job",
+				Optional:    true,
 			},
 			"timeout": {
 				Type:             schema.TypeString,
+				Description:      "Timeout for the job in seconds",
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: dsf.Duration,
 			},
 			"env": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:        schema.TypeMap,
+				Description: "Environment variables to pass to the job",
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -72,18 +79,21 @@ func ResourceDefinition() *schema.Resource {
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
 			"cron": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Description: "Cron expression",
+				Optional:    true,
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"schedule": {
 							Type:         schema.TypeString,
+							Description:  "UNIX cron schedule to run job",
 							Required:     true,
 							RequiredWith: []string{"cron.0"},
 						},
 						"timezone": {
 							Type:         schema.TypeString,
+							Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
 							Required:     true,
 							RequiredWith: []string{"cron.0"},
 						},

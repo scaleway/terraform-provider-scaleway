@@ -34,36 +34,43 @@ func DataSourceFlexibleIPs() *schema.Resource {
 				Description: "Flexible IPs with these exact tags are listed",
 			},
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of flexible IPs",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "ID of the flexible IP",
+							Type:        schema.TypeString,
 						},
 						"description": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Description of the flexible IP",
+							Type:        schema.TypeString,
 						},
 						"tags": {
-							Computed: true,
-							Type:     schema.TypeList,
+							Computed:    true,
+							Description: "List of flexible IP tags",
+							Type:        schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
 						"status": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Status of the flexible IP",
+							Type:        schema.TypeString,
 						},
 						"ip_address": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "IP address of the flexible IP",
+							Type:        schema.TypeString,
 						},
 						"reverse": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Reverse DNS of the flexible IP",
+							Type:        schema.TypeString,
 						},
 						"mac_address": {
 							Type:        schema.TypeList,
@@ -106,12 +113,14 @@ func DataSourceFlexibleIPs() *schema.Resource {
 							},
 						},
 						"created_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Date on which the flexible IP was created (RFC 3339 format)",
+							Type:        schema.TypeString,
 						},
 						"updated_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Date on which the flexible IP was last updated (RFC 3339 format)",
+							Type:        schema.TypeString,
 						},
 						"zone":            zonal.ComputedSchema(),
 						"organization_id": account.OrganizationIDSchema(),

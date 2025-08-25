@@ -185,8 +185,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Elem:        ResourceServerIP(),
 			},
 			"domain": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Domain associated with the server",
+				Computed:    true,
 			},
 			"options": {
 				Type:        schema.TypeSet,

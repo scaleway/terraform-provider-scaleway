@@ -44,8 +44,9 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"suffix": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Suffix that will be added to the index.",
+							Required:    true,
 						},
 					},
 				},
@@ -58,8 +59,9 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Key for the object to use as an error document.",
+							Required:    true,
 						},
 					},
 				},
