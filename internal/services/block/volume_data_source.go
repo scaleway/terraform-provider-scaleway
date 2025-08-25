@@ -28,6 +28,7 @@ func DataSourceVolume() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBlockVolumeRead,
 		Schema:      dsSchema,
+		Identity:    volumeIdentity(),
 	}
 }
 

@@ -26,23 +26,7 @@ func ResourceVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Identity: &schema.ResourceIdentity{
-			Version: 0,
-			SchemaFunc: func() map[string]*schema.Schema {
-				return map[string]*schema.Schema{
-					"volume_id": {
-						Type:              schema.TypeString,
-						RequiredForImport: true,
-						Description:       "Volume ID",
-					},
-					"zone": {
-						Type:              schema.TypeString,
-						RequiredForImport: true,
-						Description:       "Zone",
-					},
-				}
-			},
-		},
+		Identity: volumeIdentity(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultBlockTimeout),
 			Read:    schema.DefaultTimeout(defaultBlockTimeout),
@@ -97,6 +81,26 @@ func ResourceVolume() *schema.Resource {
 			customDiffSnapshot("snapshot_id"),
 			customDiffCannotShrink("size_in_gb"),
 		),
+	}
+}
+
+func volumeIdentity() *schema.ResourceIdentity {
+	return &schema.ResourceIdentity{
+		Version: 0,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"volume_id": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Volume ID",
+				},
+				"zone": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Zone",
+				},
+			}
+		},
 	}
 }
 
@@ -211,6 +215,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	if err = identity.Set("volume_id", volume.ID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = identity.Set("zone", volume.Zone); err != nil {
 		return diag.FromErr(err)
 	}

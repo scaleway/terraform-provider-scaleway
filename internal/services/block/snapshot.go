@@ -33,23 +33,7 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
-		Identity: &schema.ResourceIdentity{
-			Version: 0,
-			SchemaFunc: func() map[string]*schema.Schema {
-				return map[string]*schema.Schema{
-					"snapshot_id": {
-						Type:              schema.TypeString,
-						RequiredForImport: true,
-						Description:       "Snapshot ID",
-					},
-					"zone": {
-						Type:              schema.TypeString,
-						RequiredForImport: true,
-						Description:       "Zone ID",
-					},
-				}
-			},
-		},
+		Identity:      blockIdentity(),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -227,6 +211,7 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 	if err = identity.Set("snapshot_id", snapshot.ID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = identity.Set("zone", snapshot.Zone); err != nil {
 		return diag.FromErr(err)
 	}
@@ -310,4 +295,24 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	return nil
+}
+
+func blockIdentity() *schema.ResourceIdentity {
+	return &schema.ResourceIdentity{
+		Version: 0,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"snapshot_id": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Snapshot ID",
+				},
+				"zone": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Zone ID",
+				},
+			}
+		},
+	}
 }

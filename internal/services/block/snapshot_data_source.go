@@ -28,6 +28,7 @@ func DataSourceSnapshot() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBlockSnapshotRead,
 		Schema:      dsSchema,
+		Identity:    blockIdentity(),
 	}
 }
 
