@@ -28,6 +28,7 @@ func DataSourceSnapshot() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBlockSnapshotRead,
 		Schema:      dsSchema,
+		Identity:    blockIdentity(),
 	}
 }
 
@@ -80,6 +81,8 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 	if d.Id() == "" {
 		return diag.Errorf("snapshot (%s) not found", zoneID)
 	}
+
+	applySnapshotIdentity(d, snapshotID.(string), zone)
 
 	return nil
 }

@@ -28,6 +28,7 @@ func DataSourceVolume() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceBlockVolumeRead,
 		Schema:      dsSchema,
+		Identity:    volumeIdentity(),
 	}
 }
 
@@ -79,6 +80,8 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 	if d.Id() == "" {
 		return diag.Errorf("volume (%s) not found", zoneID)
 	}
+
+	applyVolumeIdentity(d, volumeID.(string), zone)
 
 	return nil
 }
