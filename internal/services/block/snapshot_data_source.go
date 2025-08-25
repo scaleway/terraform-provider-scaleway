@@ -82,5 +82,7 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("snapshot (%s) not found", zoneID)
 	}
 
+	applySnapshotIdentity(d, snapshotID.(string), zone)
+
 	return nil
 }

@@ -203,16 +203,25 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("tags", snapshot.Tags)
 
+	diags := applySnapshotIdentity(d, snapshot.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
+	return nil
+}
+
+func applySnapshotIdentity(d *schema.ResourceData, snapshotID string, zone scw.Zone) diag.Diagnostics {
 	identity, err := d.Identity()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = identity.Set("snapshot_id", snapshot.ID); err != nil {
+	if err = identity.Set("snapshot_id", snapshotID); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = identity.Set("zone", snapshot.Zone); err != nil {
+	if err = identity.Set("zone", zone); err != nil {
 		return diag.FromErr(err)
 	}
 

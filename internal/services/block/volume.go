@@ -207,16 +207,25 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	_ = d.Set("snapshot_id", snapshotID)
 
+	diags := applyVolumeIdentity(d, volume.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
+	return nil
+}
+
+func applyVolumeIdentity(d *schema.ResourceData, volumeID string, zone scw.Zone) diag.Diagnostics {
 	identity, err := d.Identity()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = identity.Set("volume_id", volume.ID); err != nil {
+	if err = identity.Set("volume_id", volumeID); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err = identity.Set("zone", volume.Zone); err != nil {
+	if err = identity.Set("zone", zone); err != nil {
 		return diag.FromErr(err)
 	}
 
