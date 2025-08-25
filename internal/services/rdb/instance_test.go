@@ -1378,6 +1378,139 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			rdbchecks.IsInstanceDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "test-rdb-cleanup"
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-cleanup"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-cleanup"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EndpointErrorHandling(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			rdbchecks.IsInstanceDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "test-rdb-error-handling"
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-error-handling"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-error-handling"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "true"),
+				),
+			},
+			// Test endpoint update to verify error handling is working
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "test-rdb-error-handling"
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-error-handling"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-error-handling-updated"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+						
+						load_balancer {}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "load_balancer.#", "1"),
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
