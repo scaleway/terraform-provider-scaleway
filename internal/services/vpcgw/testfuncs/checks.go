@@ -28,7 +28,6 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				GatewayNetworkID: ID,
 				Zone:             zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC gateway network %s still exists",
@@ -62,7 +61,6 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				GatewayID: ID,
 				Zone:      zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC public gateway %s still exists",
@@ -96,7 +94,6 @@ func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				DHCPID: ID,
 				Zone:   zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC public gateway DHCP config %s still exists",
@@ -130,7 +127,6 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				IPID: ID,
 				Zone: zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC public gateway ip %s still exists",

@@ -182,7 +182,6 @@ func isCronDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				CronID: id,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("containerSDK cron (%s) still exists", rs.Primary.ID)
 			}

@@ -94,7 +94,6 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NamespaceID: id,
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
 			}

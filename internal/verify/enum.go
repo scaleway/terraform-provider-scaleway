@@ -28,6 +28,7 @@ func ValidateEnumIgnoreCase[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 
 func getValues[T EnumValues[T]]() []string {
 	var t T
+
 	values := t.Values()
 	result := make([]string, len(values))
 

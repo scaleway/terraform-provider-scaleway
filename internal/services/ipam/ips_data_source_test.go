@@ -11,6 +11,7 @@ import (
 func TestAccDataSourceIPAMIPs_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -96,6 +97,7 @@ func TestAccDataSourceIPAMIPs_Basic(t *testing.T) {
 func TestAccDataSourceIPAMIPs_RedisCluster(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

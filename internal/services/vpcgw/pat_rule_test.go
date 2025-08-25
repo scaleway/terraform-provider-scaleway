@@ -131,7 +131,6 @@ func testAccCheckVPCPublicGatewayPATRuleDestroy(tt *acctest.TestTools) resource.
 				PatRuleID: ID,
 				Zone:      zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC public gateway pat rule %s still exists",

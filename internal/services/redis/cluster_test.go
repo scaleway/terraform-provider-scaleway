@@ -88,6 +88,7 @@ func TestAccCluster_Basic(t *testing.T) {
 func TestAccCluster_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -151,6 +152,7 @@ func TestAccCluster_Migrate(t *testing.T) {
 func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	clusterID := ""
 	resource.ParallelTest(t, resource.TestCase{
@@ -235,6 +237,7 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 func TestAccCluster_ACL(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -311,6 +314,7 @@ func TestAccCluster_ACL(t *testing.T) {
 func TestAccCluster_Settings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -387,6 +391,7 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -579,6 +584,7 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -645,6 +651,7 @@ func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 func TestAccCluster_Certificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -686,6 +693,7 @@ func TestAccCluster_Certificate(t *testing.T) {
 func TestAccCluster_NoCertificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -727,6 +735,7 @@ func TestAccCluster_NoCertificate(t *testing.T) {
 func TestAccCluster_MigrateToHAMode(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -774,7 +783,6 @@ func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				ClusterID: ID,
 				Zone:      zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
 			}
