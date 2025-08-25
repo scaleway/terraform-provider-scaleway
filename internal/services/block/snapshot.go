@@ -39,13 +39,11 @@ func ResourceSnapshot() *schema.Resource {
 				return map[string]*schema.Schema{
 					"snapshot_id": {
 						Type:              schema.TypeString,
-						Computed:          true,
 						RequiredForImport: true,
 						Description:       "Snapshot ID",
 					},
 					"zone": {
 						Type:              schema.TypeString,
-						Computed:          true,
 						RequiredForImport: true,
 						Description:       "Zone ID",
 					},

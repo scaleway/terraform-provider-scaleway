@@ -32,13 +32,11 @@ func ResourceVolume() *schema.Resource {
 				return map[string]*schema.Schema{
 					"volume_id": {
 						Type:              schema.TypeString,
-						Computed:          true,
 						RequiredForImport: true,
 						Description:       "Volume ID",
 					},
 					"zone": {
 						Type:              schema.TypeString,
-						Computed:          true,
 						RequiredForImport: true,
 						Description:       "Zone",
 					},
