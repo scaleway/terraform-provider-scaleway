@@ -1036,7 +1036,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					},
 					scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -1084,7 +1084,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					Region:     region,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}
