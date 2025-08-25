@@ -82,7 +82,6 @@ func isNatsAccountDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NatsAccountID: id,
 				Region:        region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq nats account (%s) still exists", rs.Primary.ID)
 			}

@@ -14,6 +14,7 @@ import (
 func TestAccDataSourceIPAMIP_Instance(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -67,6 +68,7 @@ func TestAccDataSourceIPAMIP_Instance(t *testing.T) {
 func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -182,6 +184,7 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 func TestAccDataSourceIPAMIP_ID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

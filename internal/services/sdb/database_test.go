@@ -123,7 +123,6 @@ func testAccCheckServerlessSQLDBDatabaseDestroy(tt *acctest.TestTools) resource.
 				DatabaseID: id,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("serverless_sql database (%s) still exists", rs.Primary.ID)
 			}

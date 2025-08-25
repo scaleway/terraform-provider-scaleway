@@ -16,6 +16,7 @@ import (
 func TestAccPlacementGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -62,6 +63,7 @@ func TestAccPlacementGroup_Basic(t *testing.T) {
 func TestAccPlacementGroup_Rename(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -104,6 +106,7 @@ func TestAccPlacementGroup_Rename(t *testing.T) {
 func TestAccPlacementGroup_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      instancechecks.IsIPDestroyed(tt),

@@ -379,7 +379,6 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NamespaceID: id,
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container namespace (%s) still exists", rs.Primary.ID)
 			}
@@ -409,7 +408,6 @@ func isRegistryDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NamespaceID: rs.Primary.Attributes["registry_namespace_id"],
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
 			}

@@ -101,7 +101,6 @@ func isTokenDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				TokenID: id,
 				Region:  region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container token (%s) still exists", rs.Primary.ID)
 			}
