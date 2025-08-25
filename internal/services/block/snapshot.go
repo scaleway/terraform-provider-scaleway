@@ -151,6 +151,7 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	d.SetId(zonal.NewIDString(zone, snapshot.ID))
+
 	diags := applySnapshotIdentity(d, snapshot.ID, zone)
 	if diags != nil {
 		return diags
