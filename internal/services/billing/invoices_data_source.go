@@ -124,6 +124,8 @@ func DataSourceInvoices() *schema.Resource {
 			},
 			"organization_id": account.OrganizationIDSchema(),
 		},
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 	}
 }
 
