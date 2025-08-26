@@ -36,6 +36,8 @@ func DataSourceAvailabilityZones() *schema.Resource {
 				Description: "Availability Zones (AZ)",
 			},
 		},
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 	}
 }
 
