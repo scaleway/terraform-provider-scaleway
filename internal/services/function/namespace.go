@@ -113,6 +113,7 @@ func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
+		ActivateVpcIntegration:     true,
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
