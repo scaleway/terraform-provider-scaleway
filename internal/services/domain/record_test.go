@@ -701,7 +701,7 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 
 	name := "_test_srv_bug"
 	recordType := "SRV"
-	data := "0 0 1234 foo.example.com"
+	data := "0 0 1234 foo.example.com."
 	ttl := 60
 	priority := 0
 
@@ -726,7 +726,7 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
-					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "0 0 1234 foo.example.com"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "0 0 1234 foo.example.com."),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", strconv.Itoa(ttl)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", strconv.Itoa(priority)),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),
@@ -738,7 +738,7 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 						dns_zone = "%[1]s"
 						name     = "%[2]s"
 						type     = "%[3]s"
-						data     = "10 0 5678 bar.example.com"
+						data     = "10 0 5678 bar.example.com."
 						priority = 10
 						ttl      = 300
 					}
@@ -748,7 +748,7 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
-					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "10 0 5678 bar.example.com"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "10 0 5678 bar.example.com."),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", "300"),
 					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", "10"),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),

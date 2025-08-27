@@ -296,7 +296,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, recordData, dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, flattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
 	if err != nil {
 		return diag.FromErr(err)
 	}

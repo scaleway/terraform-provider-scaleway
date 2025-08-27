@@ -40,7 +40,9 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 				if currentRecord != nil {
 					return nil, errors.New("multiple records found with same type and data")
 				}
+
 				currentRecord = r
+
 				break
 			}
 		} else {
@@ -48,7 +50,9 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 				if currentRecord != nil {
 					return nil, errors.New("multiple records found with same type and data")
 				}
+
 				currentRecord = r
+
 				break
 			}
 		}

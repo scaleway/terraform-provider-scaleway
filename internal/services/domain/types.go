@@ -8,14 +8,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-// getStringSafely safely extracts a string value from an interface
-func getStringSafely(v any) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return ""
-}
-
 func flattenDomainData(data string, recordType domain.RecordType) any {
 	switch recordType {
 	case domain.RecordTypeMX: // API return this format: "{priority} {data}"
@@ -39,11 +31,13 @@ func normalizeSRVData(data string) string {
 	if len(parts) >= 4 {
 		priority, weight, port, target := parts[0], parts[1], parts[2], parts[3]
 		target = removeZoneDomainSuffix(target)
+
 		return strings.Join([]string{priority, weight, port, target}, " ")
 	}
 
 	if len(parts) == 3 {
 		priority, port, target := parts[0], parts[1], parts[2]
+
 		return strings.Join([]string{priority, "0", port, target}, " ")
 	}
 
@@ -56,16 +50,24 @@ func removeZoneDomainSuffix(target string) string {
 		return target
 	}
 
+	hadTrailingDot := strings.HasSuffix(target, ".")
+
 	targetParts := strings.Split(strings.TrimSuffix(target, "."), ".")
 
 	switch {
 	case len(targetParts) > 4:
-		return strings.Join(targetParts[:len(targetParts)-3], ".")
+		target = strings.Join(targetParts[:len(targetParts)-3], ".")
 	case len(targetParts) > 3:
-		return strings.Join(targetParts[:len(targetParts)-2], ".")
+		target = strings.Join(targetParts[:len(targetParts)-2], ".")
 	default:
-		return strings.TrimSuffix(target, ".")
+		target = strings.TrimSuffix(target, ".")
 	}
+
+	if hadTrailingDot {
+		target += "."
+	}
+
+	return target
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) any {
@@ -181,34 +183,22 @@ func expandDomainHTTPService(i any, ok bool) *domain.RecordHTTPServiceConfig {
 		return nil
 	}
 
-	lst, ok := i.([]any)
-	if !ok || len(lst) == 0 {
-		return nil
-	}
-
-	rawMap, ok := lst[0].(map[string]any)
-	if !ok {
-		return nil
-	}
+	rawMap := i.([]any)[0].(map[string]any)
 
 	ips := []net.IP{}
 
 	rawIPs, ok := rawMap["ips"].([]any)
 	if ok {
 		for _, rawIP := range rawIPs {
-			if s, ok := rawIP.(string); ok {
-				if ip := net.ParseIP(s); ip != nil {
-					ips = append(ips, ip)
-				}
-			}
+			ips = append(ips, net.ParseIP(rawIP.(string)))
 		}
 	}
 
 	return &domain.RecordHTTPServiceConfig{
 		MustContain: types.ExpandStringPtr(rawMap["must_contain"]),
-		URL:         getStringSafely(rawMap["url"]),
+		URL:         rawMap["url"].(string),
 		UserAgent:   types.ExpandStringPtr(rawMap["user_agent"]),
-		Strategy:    domain.RecordHTTPServiceConfigStrategy(getStringSafely(rawMap["strategy"])),
+		Strategy:    domain.RecordHTTPServiceConfigStrategy(rawMap["strategy"].(string)),
 		IPs:         ips,
 	}
 }
