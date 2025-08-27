@@ -24,8 +24,15 @@ resource "scaleway_rdb_instance" "main" {
 }
 
 resource "random_password" "db_password" {
-  length  = 16
-  special = true
+  length           = 20
+  special          = true
+  upper            = true
+  lower            = true
+  numeric          = true
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+  min_special      = 1
 }
 
 resource "scaleway_rdb_user" "db_admin" {
@@ -48,7 +55,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `name` will recreate the database user.
 
-- `password` - (Required) database user password.
+- `password` - (Required) database user password. The password must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter, and 1 special character. For secure password generation, consider using the `random_password` resource with appropriate parameters.
 
 - `is_admin` - (Optional) Grant admin permissions to the database user.
 

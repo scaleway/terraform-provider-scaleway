@@ -25,6 +25,33 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
+### Example with Secure Random Password
+
+```terraform
+resource "random_password" "rdb_password" {
+  length           = 24
+  special          = true
+  upper            = true
+  lower            = true
+  numeric          = true
+  min_upper        = 1
+  min_lower        = 1
+  min_numeric      = 1
+  min_special      = 1
+}
+
+resource "scaleway_rdb_instance" "main" {
+  name               = "test-rdb"
+  node_type          = "DB-DEV-S"
+  engine             = "PostgreSQL-15"
+  is_ha_cluster      = true
+  disable_backup     = true
+  user_name          = "my_initial_user"
+  password           = random_password.rdb_password.result
+  encryption_at_rest = true
+}
+```
+
 ### Example Block Storage Low Latency
 
 ```terraform
@@ -153,7 +180,7 @@ interruption.
 
 ~> **Important** Updates to `user_name` will recreate the Database Instance.
 
-- `password` - (Optional) Password for the first user of the Database Instance.
+- `password` - (Optional) Password for the first user of the Database Instance. The password must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter, and 1 special character. For secure password generation, consider using the `random_password` resource with appropriate parameters.
 
 - `is_ha_cluster` - (Optional) Enable or disable high availability for the Database Instance.
 

@@ -89,7 +89,7 @@ you cannot downgrade a Redis™ cluster.
 
 - `user_name` - (Required) Identifier for the first user of the Redis™ cluster.
 
-- `password` - (Required) Password for the first user of the Redis™ cluster.
+- `password` - (Required) Password for the first user of the Redis™ cluster. The password must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter, and 1 special character. For secure password generation, consider using the `random_password` resource with appropriate parameters.
 
 - `name` - (Optional) The name of the Redis™ cluster.
 

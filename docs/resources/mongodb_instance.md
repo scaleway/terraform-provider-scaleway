@@ -95,7 +95,7 @@ The following arguments are supported:
 - `version` - (Optional) MongoDB® version of the instance.
 - `node_type` - (Required) The type of MongoDB® intance to create.
 - `user_name` - (Optional) Name of the user created when the intance is created.
-- `password` - (Optional) Password of the user.
+- `password` - (Optional) Password of the user. The password must contain at least 1 digit, 1 uppercase letter, 1 lowercase letter, and 1 special character. For secure password generation, consider using the `random_password` resource with appropriate parameters.
 - `name` - (Optional) Name of the MongoDB® instance.
 - `tags` - (Optional) List of tags attached to the MongoDB® instance.
 - `volume_type` - (Optional) Volume type of the instance.
