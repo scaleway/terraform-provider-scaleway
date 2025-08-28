@@ -301,7 +301,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	dnsRecordsResponse, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
-		Domain: webhostingResponse.Domain,
+		Domain: *webhostingResponse.Domain,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

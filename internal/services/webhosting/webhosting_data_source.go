@@ -62,7 +62,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any
 
 		foundDomain, err := datasource.FindExact(
 			res.Hostings,
-			func(s *webhosting.HostingSummary) bool { return s.Domain == hostingDomain },
+			func(s *webhosting.HostingSummary) bool { return *s.Domain == hostingDomain },
 			hostingDomain,
 		)
 		if err != nil {
