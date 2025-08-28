@@ -6,7 +6,10 @@ import (
 	"encoding/xml"
 	"flag"
 	"net/http"
+	"flag"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -27,7 +30,7 @@ import (
 )
 
 // UpdateCassettes will update all cassettes of a given test
-var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
 func PreCheck(_ *testing.T) {}
 
