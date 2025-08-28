@@ -35,6 +35,8 @@ require (
 	golang.org/x/crypto v0.43.0
 	golang.org/x/sync v0.17.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
+	golang.org/x/crypto v0.42.0
+	gopkg.in/dnaeon/go-vcr.v4 v4.0.5
 )
 
 require (
@@ -85,6 +87,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/gookit/color v1.5.1 // indirect
