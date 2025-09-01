@@ -28,7 +28,7 @@ const (
 )
 
 // lbAPIWithZone returns an lb API WITH zone for a Create request
-func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.Zone, error) {
+func lbAPIWithZone(d *schema.ResourceData, m any) (*lbSDK.ZonedAPI, scw.Zone, error) {
 	lbAPI := lbSDK.NewZonedAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -40,7 +40,7 @@ func lbAPIWithZone(d *schema.ResourceData, m interface{}) (*lbSDK.ZonedAPI, scw.
 }
 
 // NewAPIWithZoneAndID returns an lb API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*lbSDK.ZonedAPI, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*lbSDK.ZonedAPI, scw.Zone, string, error) {
 	lbAPI := lbSDK.NewZonedAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -110,7 +110,7 @@ func lbUpgradeV1SchemaType() cty.Type {
 }
 
 // lbUpgradeV1UpgradeFunc allow upgrade the from regional to a zoned resource.
-func UpgradeStateV1Func(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+func UpgradeStateV1Func(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	var err error
 	// element id: upgrade
 	ID, exist := rawState["id"]
@@ -151,16 +151,16 @@ func ipv4Match(cidr, ipStr string) bool {
 	return cidrNet.Contains(ip)
 }
 
-func lbPrivateNetworkSetHash(v interface{}) int {
+func lbPrivateNetworkSetHash(v any) int {
 	var buf bytes.Buffer
 
-	m := v.(map[string]interface{})
+	m := v.(map[string]any)
 	if pnID, ok := m["private_network_id"]; ok {
 		buf.WriteString(locality.ExpandID(pnID))
 	}
 
-	if staticConfig, ok := m["static_config"]; ok && len(staticConfig.([]interface{})) > 0 {
-		for _, item := range staticConfig.([]interface{}) {
+	if staticConfig, ok := m["static_config"]; ok && len(staticConfig.([]any)) > 0 {
+		for _, item := range staticConfig.([]any) {
 			buf.WriteString(item.(string))
 		}
 	}
@@ -195,16 +195,16 @@ func normalizeIPSubnet(ip string) string {
 	return ip
 }
 
-func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	oldIPIDs, newIPIDs := diff.GetChange("ip_ids")
 	oldIPIDsSet := make(map[string]struct{})
 	newIPIDsSet := make(map[string]struct{})
 
-	for _, id := range oldIPIDs.([]interface{}) {
+	for _, id := range oldIPIDs.([]any) {
 		oldIPIDsSet[id.(string)] = struct{}{}
 	}
 
-	for _, id := range newIPIDs.([]interface{}) {
+	for _, id := range newIPIDs.([]any) {
 		newIPIDsSet[id.(string)] = struct{}{}
 	}
 
@@ -218,7 +218,7 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ interf
 	return nil
 }
 
-func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func customizeDiffAssignFlexibleIPv6(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	oldValue, newValue := diff.GetChange("assign_flexible_ipv6")
 	if oldValue.(bool) && !newValue.(bool) {
 		return diff.ForceNew("assign_flexible_ipv6")

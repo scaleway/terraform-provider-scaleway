@@ -5,12 +5,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
+func flattenDomainReputation(reputation *tem.DomainReputation) any {
 	if reputation == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"status":             reputation.Status.String(),
 			"score":              reputation.Score,
@@ -21,7 +21,7 @@ func flattenDomainReputation(reputation *tem.DomainReputation) interface{} {
 	}
 }
 
-func expandWebhookEventTypes(eventTypesInterface []interface{}) []tem.WebhookEventType {
+func expandWebhookEventTypes(eventTypesInterface []any) []tem.WebhookEventType {
 	eventTypes := make([]tem.WebhookEventType, len(eventTypesInterface))
 	for i, v := range eventTypesInterface {
 		eventTypes[i] = tem.WebhookEventType(v.(string))

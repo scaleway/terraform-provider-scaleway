@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -170,6 +171,11 @@ func ResourceFunction() *schema.Resource {
 				Computed:    true,
 				Description: "The native function domain name.",
 			},
+			"private_network_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the Private Network the container is connected to",
+			},
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
@@ -178,7 +184,7 @@ func ResourceFunction() *schema.Resource {
 	}
 }
 
-func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -212,6 +218,10 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if timeout, ok := d.GetOk("timeout"); ok {
 		req.Timeout = &scw.Duration{Seconds: int64(timeout.(int))}
+	}
+
+	if pnID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(pnID.(string)))
 	}
 
 	f, err := api.CreateFunction(req, scw.WithContext(ctx))
@@ -270,7 +280,7 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return append(diags, ResourceFunctionRead(ctx, d, m)...)
 }
 
-func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -324,10 +334,16 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interfa
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(f.SecretEnvironmentVariables))
 	_ = d.Set("tags", types.FlattenSliceString(f.Tags))
 
+	if f.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(f.PrivateNetworkID).(string)).String())
+	} else {
+		_ = d.Set("private_network_id", nil)
+	}
+
 	return diags
 }
 
-func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -415,6 +431,11 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		updated = true
 	}
 
+	if d.HasChanges("private_network_id") {
+		req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("private_network_id")))
+		updated = true
+	}
+
 	if updated {
 		_, err = api.UpdateFunction(req, scw.WithContext(ctx))
 		if err != nil {
@@ -456,7 +477,7 @@ func ResourceFunctionUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceFunctionRead(ctx, d, m)
 }
 
-func ResourceFunctionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

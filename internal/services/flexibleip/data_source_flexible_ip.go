@@ -44,7 +44,7 @@ func DataSourceFlexibleIP() *schema.Resource {
 	}
 }
 
-func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

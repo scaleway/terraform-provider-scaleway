@@ -25,7 +25,7 @@ func DataSourcePrivilege() *schema.Resource {
 }
 
 // DataSourceRDBPrivilegeRead
-func DataSourceRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	_, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

@@ -2,7 +2,7 @@ package types
 
 import "time"
 
-func FlattenDuration(duration *time.Duration) interface{} {
+func FlattenDuration(duration *time.Duration) any {
 	if duration != nil {
 		return duration.String()
 	}
@@ -10,7 +10,7 @@ func FlattenDuration(duration *time.Duration) interface{} {
 	return ""
 }
 
-func ExpandDuration(data interface{}) (*time.Duration, error) {
+func ExpandDuration(data any) (*time.Duration, error) {
 	if data == nil || data == "" {
 		return nil, nil
 	}
@@ -23,7 +23,7 @@ func ExpandDuration(data interface{}) (*time.Duration, error) {
 	return &d, nil
 }
 
-func FlattenTime(date *time.Time) interface{} {
+func FlattenTime(date *time.Time) any {
 	if date != nil {
 		return date.Format(time.RFC3339)
 	}
@@ -33,7 +33,7 @@ func FlattenTime(date *time.Time) interface{} {
 
 // ExpandTimePtr returns a time pointer for an RFC3339 time.
 // It returns nil if time is not valid, you should use validateDate to validate field.
-func ExpandTimePtr(i interface{}) *time.Time {
+func ExpandTimePtr(i any) *time.Time {
 	rawTime := ExpandStringPtr(i)
 	if rawTime == nil {
 		return nil

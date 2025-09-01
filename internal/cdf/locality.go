@@ -45,7 +45,7 @@ func expandListKeys(key string, diff *schema.ResourceDiff) []string {
 // getLocality find the locality of a resource
 // Will try to get the zone if available then use region
 // Will also use default zone or region if available
-func getLocality(diff *schema.ResourceDiff, m interface{}) string {
+func getLocality(diff *schema.ResourceDiff, m any) string {
 	var loc string
 
 	rawStateType := diff.GetRawState().Type()
@@ -67,7 +67,7 @@ func getLocality(diff *schema.ResourceDiff, m interface{}) string {
 // Should not be used on computed keys, if a computed key is going to change on zone/region change
 // this function will still block the terraform plan
 func LocalityCheck(keys ...string) schema.CustomizeDiffFunc {
-	return func(_ context.Context, diff *schema.ResourceDiff, m interface{}) error {
+	return func(_ context.Context, diff *schema.ResourceDiff, m any) error {
 		l := getLocality(diff, m)
 
 		if l == "" {

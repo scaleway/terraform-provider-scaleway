@@ -60,3 +60,6 @@ tfproviderlint:
 
 tfproviderdocs:
 	go tool tfproviderdocs check -provider-name scaleway -enable-contents-check
+
+tfproviderlintx:
+	go tool tfproviderlintx -XR001=false -XS002=false ./...

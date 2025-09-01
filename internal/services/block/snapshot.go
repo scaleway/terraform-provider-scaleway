@@ -68,7 +68,7 @@ func ResourceSnapshot() *schema.Resource {
 							ForceNew:         true,
 							Description:      "Bucket containing qcow",
 							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return regional.ExpandID(i.(string)).ID
 							},
 						},
@@ -84,13 +84,37 @@ func ResourceSnapshot() *schema.Resource {
 				Description:   "Import snapshot from a qcow",
 				ConflictsWith: []string{"volume_id"},
 			},
+			"export": {
+				Type:     schema.TypeList,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"bucket": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "Bucket containing qcow",
+							DiffSuppressFunc: dsf.Locality,
+							StateFunc: func(i any) string {
+								return regional.ExpandID(i.(string)).ID
+							},
+						},
+						"key": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "Key of the qcow file in the specified bucket",
+						},
+					},
+				},
+				Optional:    true,
+				Description: "Export snapshot to a qcow",
+			},
 			"zone":       zonal.Schema(),
 			"project_id": account.ProjectIDSchema(),
 		},
 	}
 }
 
-func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := blockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -132,10 +156,24 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	if _, shouldExport := d.GetOk("export"); shouldExport {
+		req := block.ExportSnapshotToObjectStorageRequest{
+			Zone:       zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
+			Key:        d.Get("export.0.key").(string),
+		}
+
+		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return ResourceBlockSnapshotRead(ctx, d, m)
 }
 
-func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -167,7 +205,7 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,10 +239,24 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	if shouldExport := d.HasChange("export"); shouldExport {
+		req := block.ExportSnapshotToObjectStorageRequest{
+			Zone:       zone,
+			SnapshotID: snapshot.ID,
+			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
+			Key:        d.Get("export.0.key").(string),
+		}
+
+		_, err = api.ExportSnapshotToObjectStorage(&req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return ResourceBlockSnapshotRead(ctx, d, m)
 }
 
-func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

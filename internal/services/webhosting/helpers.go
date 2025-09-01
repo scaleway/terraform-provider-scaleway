@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	defaultHostingTimeout = 5 * time.Minute
+	defaultHostingTimeout = 15 * time.Minute
 	hostingRetryInterval  = 5 * time.Second
 )
 
-func newOfferAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.OfferAPI, scw.Region, error) {
+func newOfferAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.OfferAPI, scw.Region, error) {
 	api := webhosting.NewOfferAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -29,7 +29,7 @@ func newOfferAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.O
 }
 
 // newHostingAPIWithRegion returns a new Hosting API and the region for a Create request.
-func newHostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.HostingAPI, scw.Region, error) {
+func newHostingAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.HostingAPI, scw.Region, error) {
 	api := webhosting.NewHostingAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -40,7 +40,7 @@ func newHostingAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting
 	return api, region, nil
 }
 
-func newDNSAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.DnsAPI, scw.Region, error) {
+func newDNSAPIWithRegion(d *schema.ResourceData, m any) (*webhosting.DnsAPI, scw.Region, error) {
 	api := webhosting.NewDnsAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -52,7 +52,7 @@ func newDNSAPIWithRegion(d *schema.ResourceData, m interface{}) (*webhosting.Dns
 }
 
 // NewAPIWithRegionAndID returns a Hosting API with region and ID extracted from the state.
-func NewAPIWithRegionAndID(m interface{}, id string) (*webhosting.HostingAPI, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*webhosting.HostingAPI, scw.Region, string, error) {
 	api := webhosting.NewHostingAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -77,10 +77,10 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 	}, scw.WithContext(ctx))
 }
 
-func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]interface{} {
-	result := []map[string]interface{}{}
+func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
+	result := []map[string]any{}
 	for _, r := range records {
-		result = append(result, map[string]interface{}{
+		result = append(result, map[string]any{
 			"name":     r.Name,
 			"type":     r.Type.String(),
 			"ttl":      r.TTL,
@@ -93,10 +93,10 @@ func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]interface{}
 	return result
 }
 
-func flattenNameServers(servers []*webhosting.Nameserver) []map[string]interface{} {
-	result := []map[string]interface{}{}
+func flattenNameServers(servers []*webhosting.Nameserver) []map[string]any {
+	result := []map[string]any{}
 	for _, s := range servers {
-		result = append(result, map[string]interface{}{
+		result = append(result, map[string]any{
 			"hostname":   s.Hostname,
 			"status":     s.Status.String(),
 			"is_default": s.IsDefault,

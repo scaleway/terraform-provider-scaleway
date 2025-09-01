@@ -55,7 +55,7 @@ func ResourceBlockedList() *schema.Resource {
 	}
 }
 
-func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -86,7 +86,7 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceBlockedListRead(ctx, d, m)
 }
 
-func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, domainID, err := NewAPIWithRegionAndID(m, d.Get("domain_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -121,7 +121,7 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m inte
 	return nil
 }
 
-func ResourceBlockedListDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceBlockedListDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

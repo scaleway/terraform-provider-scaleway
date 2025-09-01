@@ -1,5 +1,8 @@
 name: Run tfproviderlint
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -18,6 +21,8 @@ jobs:
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
       - name: Run tfproviderlint
         run: make tfproviderlint
+      - name: Run tfproviderlintx
+        run: make tfproviderlintx
   tfproviderdocs:
     runs-on: ubuntu-latest
     steps:

@@ -82,7 +82,7 @@ func ResourceMACAddress() *schema.Resource {
 	}
 }
 
-func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,7 +136,7 @@ func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceFlexibleIPMACRead(ctx, d, m)
 }
 
-func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -172,7 +172,7 @@ func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -258,7 +258,7 @@ func ResourceFlexibleIPMACUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceFlexibleIPMACRead(ctx, d, m)
 }
 
-func ResourceFlexibleIPMACDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPMACDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

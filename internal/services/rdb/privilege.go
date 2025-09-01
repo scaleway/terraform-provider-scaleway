@@ -68,7 +68,7 @@ func ResourcePrivilege() *schema.Resource {
 	}
 }
 
-func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -123,7 +123,7 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
 
-func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
@@ -193,7 +193,7 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
@@ -266,7 +266,7 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m i
 }
 
 //gocyclo:ignore
-func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbPrivilegeDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())

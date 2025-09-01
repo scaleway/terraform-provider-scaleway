@@ -8,8 +8,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqSqsClientConfig {
-	m := i.(map[string]interface{})
+func expandFunctionTriggerMnqSqsCreationConfig(i any) *function.CreateTriggerRequestMnqSqsClientConfig {
+	m := i.(map[string]any)
 	req := &function.CreateTriggerRequestMnqSqsClientConfig{
 		Queue:        m["queue"].(string),
 		MnqProjectID: m["project_id"].(string),
@@ -19,8 +19,8 @@ func expandFunctionTriggerMnqSqsCreationConfig(i interface{}) *function.CreateTr
 	return req
 }
 
-func expandFunctionTriggerMnqNatsCreationConfig(i interface{}) *function.CreateTriggerRequestMnqNatsClientConfig {
-	m := i.(map[string]interface{})
+func expandFunctionTriggerMnqNatsCreationConfig(i any) *function.CreateTriggerRequestMnqNatsClientConfig {
+	m := i.(map[string]any)
 
 	return &function.CreateTriggerRequestMnqNatsClientConfig{
 		Subject:          locality.ExpandID(m["subject"]),
@@ -30,8 +30,8 @@ func expandFunctionTriggerMnqNatsCreationConfig(i interface{}) *function.CreateT
 	}
 }
 
-func completeFunctionTriggerMnqCreationConfig(i interface{}, d *schema.ResourceData, m interface{}, region scw.Region) error {
-	configMap := i.(map[string]interface{})
+func completeFunctionTriggerMnqCreationConfig(i any, d *schema.ResourceData, m any, region scw.Region) error {
+	configMap := i.(map[string]any)
 
 	if sqsRegion, exists := configMap["region"]; !exists || sqsRegion == "" {
 		configMap["region"] = region.String()

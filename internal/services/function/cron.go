@@ -66,7 +66,7 @@ func ResourceCron() *schema.Resource {
 	}
 }
 
-func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -110,7 +110,7 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceFunctionCronRead(ctx, d, m)
 }
 
-func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,7 +143,7 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,7 +190,7 @@ func ResourceFunctionCronUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceFunctionCronRead(ctx, d, m)
 }
 
-func ResourceFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFunctionCronDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -1,11 +1,14 @@
 package meta
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
+	"text/tabwriter"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,6 +27,7 @@ const (
 )
 
 type CredentialsSource struct {
+	Variables     map[string][]string
 	AccessKey     string
 	SecretKey     string
 	ProjectID     string
@@ -43,45 +47,6 @@ type Meta struct {
 	httpClient *http.Client
 	// credentialsSource stores information about the source (env, profile, etc.) of each credential
 	credentialsSource *CredentialsSource
-}
-
-func (m Meta) ScwClient() *scw.Client {
-	return m.scwClient
-}
-
-func (m Meta) HTTPClient() *http.Client {
-	return m.httpClient
-}
-
-func (m Meta) AccessKeySource() string {
-	return m.credentialsSource.AccessKey
-}
-
-func (m Meta) SecretKeySource() string {
-	return m.credentialsSource.SecretKey
-}
-
-func (m Meta) ProjectIDSource() string {
-	return m.credentialsSource.ProjectID
-}
-
-func (m Meta) RegionSource() string {
-	return m.credentialsSource.DefaultRegion
-}
-
-func (m Meta) ZoneSource() string {
-	return m.credentialsSource.DefaultZone
-}
-
-type Config struct {
-	ProviderSchema      *schema.ResourceData
-	HTTPClient          *http.Client
-	TerraformVersion    string
-	ForceZone           scw.Zone
-	ForceProjectID      string
-	ForceOrganizationID string
-	ForceAccessKey      string
-	ForceSecretKey      string
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -147,6 +112,86 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 		httpClient:        httpClient,
 		credentialsSource: credentialsSource,
 	}, nil
+}
+
+func (m Meta) ScwClient() *scw.Client {
+	return m.scwClient
+}
+
+func (m Meta) HTTPClient() *http.Client {
+	return m.httpClient
+}
+
+func (m Meta) AccessKeySource() string {
+	return m.credentialsSource.AccessKey
+}
+
+func (m Meta) SecretKeySource() string {
+	return m.credentialsSource.SecretKey
+}
+
+func (m Meta) ProjectIDSource() string {
+	return m.credentialsSource.ProjectID
+}
+
+func (m Meta) RegionSource() string {
+	return m.credentialsSource.DefaultRegion
+}
+
+func (m Meta) ZoneSource() string {
+	return m.credentialsSource.DefaultZone
+}
+
+// HasMultipleVariableSources return an informative message during the Provider initialization
+// if there are multiple sources of configuration that could confuse the user
+//
+// Variable			AvailableSources									Using
+// SCW_ACCESS_KEY	Active Profile in config.yaml, Environment variable	Environment variable
+// SCW_SECRET_KEY	Active Profile in config.yaml, Environment variable	Environment variable
+func (m Meta) HasMultipleVariableSources() (bool, string, error) {
+	multiple := false
+
+	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
+
+	w := new(tabwriter.Writer)
+	buf := &bytes.Buffer{}
+	w.Init(buf, 0, 8, 0, '\t', 0)
+
+	_, err := fmt.Fprintln(w, "Variable\tAvailableSources\tUsing")
+	if err != nil {
+		return false, "", err
+	}
+
+	for _, variable := range variables {
+		values, ok := m.credentialsSource.Variables[variable]
+		if ok {
+			if len(values) > 1 {
+				_, err := fmt.Fprintf(w, "%s\t%s\t%s\n", variable, strings.Join(values, ", "), values[len(values)-1])
+				if err != nil {
+					return false, "", err
+				}
+
+				multiple = true
+			}
+		}
+	}
+
+	if err := w.Flush(); err != nil {
+		return false, "", err
+	}
+
+	return multiple, buf.String(), nil
+}
+
+type Config struct {
+	ProviderSchema      *schema.ResourceData
+	HTTPClient          *http.Client
+	TerraformVersion    string
+	ForceZone           scw.Zone
+	ForceProjectID      string
+	ForceOrganizationID string
+	ForceAccessKey      string
+	ForceSecretKey      string
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
@@ -270,6 +315,7 @@ func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, en
 		},
 	}
 	credentialsSource := &CredentialsSource{}
+	credentialsSource.Variables = map[string][]string{}
 
 	for _, pair := range profilesInOrder {
 		source := pair.Source
@@ -277,22 +323,31 @@ func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, en
 
 		if profile.AccessKey != nil {
 			credentialsSource.AccessKey = source
+			credentialsSource.Variables[scw.ScwAccessKeyEnv] = append(credentialsSource.Variables[scw.ScwAccessKeyEnv], source)
 		}
 
 		if profile.SecretKey != nil {
 			credentialsSource.SecretKey = source
+			credentialsSource.Variables[scw.ScwSecretKeyEnv] = append(credentialsSource.Variables[scw.ScwSecretKeyEnv], source)
 		}
 
 		if profile.DefaultProjectID != nil {
 			credentialsSource.ProjectID = source
+			credentialsSource.Variables[scw.ScwDefaultProjectIDEnv] = append(credentialsSource.Variables[scw.ScwDefaultProjectIDEnv], source)
 		}
 
 		if profile.DefaultRegion != nil {
 			credentialsSource.DefaultRegion = source
+			if source != CredentialsSourceDefault {
+				credentialsSource.Variables[scw.ScwDefaultRegionEnv] = append(credentialsSource.Variables[scw.ScwDefaultRegionEnv], source)
+			}
 		}
 
 		if profile.DefaultZone != nil {
 			credentialsSource.DefaultZone = source
+			if source != CredentialsSourceDefault {
+				credentialsSource.Variables[scw.ScwDefaultZoneEnv] = append(credentialsSource.Variables[scw.ScwDefaultZoneEnv], source)
+			}
 		}
 	}
 

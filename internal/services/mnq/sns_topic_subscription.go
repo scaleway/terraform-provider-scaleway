@@ -47,12 +47,14 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 			},
 			"topic_arn": {
 				Type:         schema.TypeString,
+				Description:  "ARN of the topic",
 				Optional:     true,
 				AtLeastOneOf: []string{"topic_id"},
 				ForceNew:     true,
 			},
 			"topic_id": {
 				Type:         schema.TypeString,
+				Description:  "ID of the topic",
 				Optional:     true,
 				AtLeastOneOf: []string{"topic_arn"},
 				ForceNew:     true,
@@ -89,7 +91,7 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 	}
 }
 
-func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -163,7 +165,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 	return ResourceMNQSNSTopicSubscriptionRead(ctx, d, m)
 }
 
-func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	snsClient, region, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -196,7 +198,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	snsClient, _, err := SNSClientWithRegionFromID(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

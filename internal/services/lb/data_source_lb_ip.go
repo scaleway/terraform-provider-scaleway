@@ -43,7 +43,7 @@ func DataSourceIP() *schema.Resource {
 	}
 }
 
-func DataSourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

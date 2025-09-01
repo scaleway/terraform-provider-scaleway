@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -185,6 +185,8 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					acctest.CheckResourceIDPersisted("scaleway_redis_cluster.main", &clusterID),
 				),
 			},
@@ -215,6 +217,8 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "3"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.private_network", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					acctest.CheckResourceIDChanged("scaleway_redis_cluster.main", &clusterID),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_ips.0.address"),
@@ -421,7 +425,9 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.12.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
@@ -467,8 +473,12 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.id"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.port"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.1.ips.#"),
 					privateNetworksIpsAreEither("scaleway_redis_cluster.main", "10.12.1.0/20", "192.168.1.0/20"),
 					privateNetworksIDsAreEither("scaleway_redis_cluster.main", "scaleway_vpc_private_network.pn", "scaleway_vpc_private_network.pn2"),
 				),
@@ -508,7 +518,9 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.0", "10.13.1.0/20"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.service_ips.0"),
 					resource.TestCheckNoResourceAttr("scaleway_redis_cluster.main", "private_network.1.id"),
@@ -612,7 +624,9 @@ func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.1", "10.12.1.11/24"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "private_network.0.service_ips.2", "10.12.1.12/24"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.ips.#"),
 					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.id"),
+					resource.TestCheckResourceAttrSet("scaleway_redis_cluster.main", "private_network.0.port"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_redis_cluster.main", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	vpcSDK "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -34,6 +34,7 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "updated_at"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_custom_routes_propagation", "true"),
 				),
 			},
 		},

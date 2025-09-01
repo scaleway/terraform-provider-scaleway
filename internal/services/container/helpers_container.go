@@ -26,7 +26,7 @@ const (
 )
 
 // newAPIWithRegion returns a new container API and the region.
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*container.API, scw.Region, error) {
 	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -38,7 +38,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*container.API, sc
 }
 
 // NewAPIWithRegionAndID returns a new container API, region and ID.
-func NewAPIWithRegionAndID(m interface{}, id string) (*container.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*container.API, scw.Region, string, error) {
 	api := container.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -144,17 +144,151 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		req.Tags = types.ExpandStrings(tags)
 	}
 
+	if command, ok := d.GetOk("command"); ok {
+		req.Command = types.ExpandStrings(command)
+	}
+
+	if args, ok := d.GetOk("args"); ok {
+		req.Args = types.ExpandStrings(args)
+	}
+
+	if pnID, ok := d.GetOk("private_network_id"); ok {
+		req.PrivateNetworkID = types.ExpandStringPtr(locality.ExpandID(pnID.(string)))
+	}
+
 	return req, nil
 }
 
-func expandHealthCheck(healthCheckSchema interface{}) (*container.ContainerHealthCheckSpec, error) {
+func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, containerID string) (*container.UpdateContainerRequest, error) {
+	req := &container.UpdateContainerRequest{
+		Region:      region,
+		ContainerID: containerID,
+	}
+
+	if d.HasChanges("environment_variables") {
+		envVariablesRaw := d.Get("environment_variables")
+		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
+	}
+
+	if d.HasChanges("secret_environment_variables") {
+		oldEnv, newEnv := d.GetChange("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+	}
+
+	if d.HasChange("tags") {
+		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+	}
+
+	if d.HasChanges("min_scale") {
+		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
+	}
+
+	if d.HasChanges("max_scale") {
+		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
+	}
+
+	if d.HasChanges("memory_limit") {
+		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
+	}
+
+	if d.HasChanges("cpu_limit") {
+		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
+	}
+
+	if d.HasChanges("timeout") {
+		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
+	}
+
+	if d.HasChanges("privacy") {
+		req.Privacy = container.ContainerPrivacy(*types.ExpandStringPtr(d.Get("privacy")))
+	}
+
+	if d.HasChanges("description") {
+		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
+	}
+
+	if d.HasChanges("registry_image") {
+		req.RegistryImage = types.ExpandStringPtr(d.Get("registry_image"))
+	}
+
+	if d.HasChanges("max_concurrency") {
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
+	}
+
+	if d.HasChanges("protocol") {
+		req.Protocol = container.ContainerProtocol(*types.ExpandStringPtr(d.Get("protocol")))
+	}
+
+	if d.HasChanges("port") {
+		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
+	}
+
+	if d.HasChanges("http_option") {
+		req.HTTPOption = container.ContainerHTTPOption(d.Get("http_option").(string))
+	}
+
+	if d.HasChanges("deploy") {
+		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
+	}
+
+	if d.HasChanges("sandbox") {
+		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
+	}
+
+	if d.HasChanges("health_check") {
+		healthCheck := d.Get("health_check")
+
+		healthCheckReq, errExpandHealthCheck := expandHealthCheck(healthCheck)
+		if errExpandHealthCheck != nil {
+			return nil, errExpandHealthCheck
+		}
+
+		req.HealthCheck = healthCheckReq
+	}
+
+	if d.HasChanges("scaling_option") {
+		scalingOption := d.Get("scaling_option")
+
+		scalingOptionReq, err := expandScalingOptions(scalingOption)
+		if err != nil {
+			return nil, err
+		}
+
+		req.ScalingOption = scalingOptionReq
+	}
+
+	imageHasChanged := d.HasChanges("registry_sha256")
+	if imageHasChanged {
+		req.Redeploy = &imageHasChanged
+	}
+
+	if d.HasChanges("local_storage_limit") {
+		req.LocalStorageLimit = scw.Uint32Ptr(uint32(d.Get("local_storage_limit").(int)))
+	}
+
+	if d.HasChanges("command") {
+		req.Command = types.ExpandUpdatedStringsPtr(d.Get("command"))
+	}
+
+	if d.HasChanges("args") {
+		req.Args = types.ExpandUpdatedStringsPtr(d.Get("args"))
+	}
+
+	if d.HasChanges("private_network_id") {
+		req.PrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("private_network_id")))
+	}
+
+	return req, nil
+}
+
+func expandHealthCheck(healthCheckSchema any) (*container.ContainerHealthCheckSpec, error) {
 	healthCheck, ok := healthCheckSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerHealthCheckSpec{}, nil
 	}
 
 	for _, option := range healthCheck.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -182,14 +316,14 @@ func expandHealthCheck(healthCheckSchema interface{}) (*container.ContainerHealt
 	return &container.ContainerHealthCheckSpec{}, nil
 }
 
-func expendHealthCheckHTTP(healthCheckHTTPSchema interface{}) *container.ContainerHealthCheckSpecHTTPProbe {
+func expendHealthCheckHTTP(healthCheckHTTPSchema any) *container.ContainerHealthCheckSpecHTTPProbe {
 	healthCheckHTTP, ok := healthCheckHTTPSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerHealthCheckSpecHTTPProbe{}
 	}
 
 	for _, option := range healthCheckHTTP.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -205,7 +339,7 @@ func expendHealthCheckHTTP(healthCheckHTTPSchema interface{}) *container.Contain
 	return &container.ContainerHealthCheckSpecHTTPProbe{}
 }
 
-func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interface{} {
+func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) any {
 	if healthCheck == nil {
 		return nil
 	}
@@ -215,8 +349,8 @@ func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interfa
 		interval = healthCheck.Interval.ToTimeDuration()
 	}
 
-	flattenedHealthCheck := []map[string]interface{}(nil)
-	flattenedHealthCheck = append(flattenedHealthCheck, map[string]interface{}{
+	flattenedHealthCheck := []map[string]any(nil)
+	flattenedHealthCheck = append(flattenedHealthCheck, map[string]any{
 		"http":              flattenHealthCheckHTTP(healthCheck.HTTP),
 		"failure_threshold": types.FlattenUint32Ptr(&healthCheck.FailureThreshold),
 		"interval":          types.FlattenDuration(interval),
@@ -225,27 +359,27 @@ func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) interfa
 	return flattenedHealthCheck
 }
 
-func flattenHealthCheckHTTP(healthCheckHTTP *container.ContainerHealthCheckSpecHTTPProbe) interface{} {
+func flattenHealthCheckHTTP(healthCheckHTTP *container.ContainerHealthCheckSpecHTTPProbe) any {
 	if healthCheckHTTP == nil {
 		return nil
 	}
 
-	flattenedHealthCheckHTTP := []map[string]interface{}(nil)
-	flattenedHealthCheckHTTP = append(flattenedHealthCheckHTTP, map[string]interface{}{
+	flattenedHealthCheckHTTP := []map[string]any(nil)
+	flattenedHealthCheckHTTP = append(flattenedHealthCheckHTTP, map[string]any{
 		"path": types.FlattenStringPtr(&healthCheckHTTP.Path),
 	})
 
 	return flattenedHealthCheckHTTP
 }
 
-func expandScalingOptions(scalingOptionSchema interface{}) (*container.ContainerScalingOption, error) {
+func expandScalingOptions(scalingOptionSchema any) (*container.ContainerScalingOption, error) {
 	scalingOption, ok := scalingOptionSchema.(*schema.Set)
 	if !ok {
 		return &container.ContainerScalingOption{}, nil
 	}
 
 	for _, option := range scalingOption.List() {
-		rawOption, isRawOption := option.(map[string]interface{})
+		rawOption, isRawOption := option.(map[string]any)
 		if !isRawOption {
 			continue
 		}
@@ -278,13 +412,13 @@ func expandScalingOptions(scalingOptionSchema interface{}) (*container.Container
 	return &container.ContainerScalingOption{}, nil
 }
 
-func flattenScalingOption(scalingOption *container.ContainerScalingOption) interface{} {
+func flattenScalingOption(scalingOption *container.ContainerScalingOption) any {
 	if scalingOption == nil {
 		return nil
 	}
 
-	flattenedScalingOption := []map[string]interface{}(nil)
-	flattenedScalingOption = append(flattenedScalingOption, map[string]interface{}{
+	flattenedScalingOption := []map[string]any(nil)
+	flattenedScalingOption = append(flattenedScalingOption, map[string]any{
 		"concurrent_requests_threshold": types.FlattenUint32Ptr(scalingOption.ConcurrentRequestsThreshold),
 		"cpu_usage_threshold":           types.FlattenUint32Ptr(scalingOption.CPUUsageThreshold),
 		"memory_usage_threshold":        types.FlattenUint32Ptr(scalingOption.MemoryUsageThreshold),
@@ -293,12 +427,12 @@ func flattenScalingOption(scalingOption *container.ContainerScalingOption) inter
 	return flattenedScalingOption
 }
 
-func flattenContainerSecrets(secrets []*container.SecretHashedValue) interface{} {
+func flattenContainerSecrets(secrets []*container.SecretHashedValue) any {
 	if len(secrets) == 0 {
 		return nil
 	}
 
-	flattenedSecrets := make(map[string]interface{})
+	flattenedSecrets := make(map[string]any)
 	for _, secret := range secrets {
 		flattenedSecrets[secret.Key] = secret.HashedValue
 	}
@@ -306,8 +440,8 @@ func flattenContainerSecrets(secrets []*container.SecretHashedValue) interface{}
 	return flattenedSecrets
 }
 
-func expandContainerSecrets(secretsRawMap interface{}) []*container.Secret {
-	secretsMap := secretsRawMap.(map[string]interface{})
+func expandContainerSecrets(secretsRawMap any) []*container.Secret {
+	secretsMap := secretsRawMap.(map[string]any)
 	secrets := make([]*container.Secret, 0, len(secretsMap))
 
 	for k, v := range secretsMap {

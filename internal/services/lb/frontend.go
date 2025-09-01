@@ -189,6 +189,11 @@ func ResourceFrontend() *schema.Resource {
 										Optional:    true,
 										Description: `If set to true, the condition will be of type "unless"`,
 									},
+									"ips_edge_services": {
+										Type:        schema.TypeBool,
+										Optional:    true,
+										Description: `Defines whether Edge Services IPs should be matched`,
+									},
 								},
 							},
 						},
@@ -223,11 +228,27 @@ func ResourceFrontend() *schema.Resource {
 				Optional:    true,
 				Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
 			},
+			"enable_access_logs": {
+				Type:        schema.TypeBool,
+				Description: "Defines whether to enable access logs on the frontend",
+				Optional:    true,
+				Default:     false,
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the creation of the frontend",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The date and time of the last update of the frontend",
+			},
 		},
 	}
 }
 
-func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -278,6 +299,7 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 		TimeoutClient:       timeoutClient,
 		EnableHTTP3:         d.Get("enable_http3").(bool),
 		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
+		EnableAccessLogs:    d.Get("enable_access_logs").(bool),
 	}
 
 	certificatesRaw, certificatesExist := d.GetOk("certificate_ids")
@@ -299,7 +321,7 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceLbFrontendUpdate(ctx, d, m)
 }
 
-func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -326,6 +348,9 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("timeout_client", types.FlattenDuration(frontend.TimeoutClient))
 	_ = d.Set("enable_http3", frontend.EnableHTTP3)
 	_ = d.Set("connection_rate_limit", types.FlattenUint32Ptr(frontend.ConnectionRateLimit))
+	_ = d.Set("enable_access_logs", frontend.EnableAccessLogs)
+	_ = d.Set("created_at", types.FlattenTime(frontend.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(frontend.UpdatedAt))
 
 	if frontend.Certificate != nil { //nolint:staticcheck
 		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
@@ -353,12 +378,12 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func flattenLBACLs(acls []*lbSDK.ACL) interface{} {
+func flattenLBACLs(acls []*lbSDK.ACL) any {
 	sort.Slice(acls, func(i, j int) bool {
 		return acls[i].Index < acls[j].Index
 	})
 
-	rawACLs := make([]interface{}, 0, len(acls))
+	rawACLs := make([]any, 0, len(acls))
 	for _, apiACL := range acls {
 		rawACLs = append(rawACLs, flattenLbACL(apiACL))
 	}
@@ -382,7 +407,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	}
 
 	// convert state acl and sanitize them a bit
-	newACL := expandsLBACLs(d.Get("acl"))
+	newACL := expandsLBACLs(d, d.Get("acl"))
 
 	// loop
 	for index, stateACL := range newACL {
@@ -441,18 +466,18 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 	return nil
 }
 
-func expandsLBACLs(raw interface{}) []*lbSDK.ACL {
-	d := raw.([]interface{})
+func expandsLBACLs(d *schema.ResourceData, raw any) []*lbSDK.ACL {
+	r := raw.([]any)
 	newACL := make([]*lbSDK.ACL, 0)
 
-	for _, rawACL := range d {
-		newACL = append(newACL, expandLbACL(rawACL))
+	for index, rawACL := range r {
+		newACL = append(newACL, expandLbACL(d, rawACL, index))
 	}
 
 	return newACL
 }
 
-func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -490,6 +515,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 		CertificateIDs:      types.ExpandSliceIDsPtr(d.Get("certificate_ids")),
 		EnableHTTP3:         d.Get("enable_http3").(bool),
 		ConnectionRateLimit: types.ExpandUint32Ptr(d.Get("connection_rate_limit")),
+		EnableAccessLogs:    types.ExpandBoolPtr(d.Get("enable_access_logs")),
 	}
 
 	_, err = lbAPI.UpdateFrontend(req, scw.WithContext(ctx))
@@ -505,7 +531,7 @@ func resourceLbFrontendUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceLbFrontendRead(ctx, d, m)
 }
 
-func resourceLbFrontendDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbFrontendDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

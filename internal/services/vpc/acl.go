@@ -31,7 +31,8 @@ func ResourceACL() *schema.Resource {
 			},
 			"default_policy": {
 				Type:             schema.TypeString,
-				Required:         true,
+				Optional:         true,
+				Default:          vpc.ActionAccept,
 				Description:      "The action to take for packets which do not match any rules",
 				ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
 			},
@@ -43,7 +44,7 @@ func ResourceACL() *schema.Resource {
 			},
 			"rules": {
 				Type:        schema.TypeList,
-				Required:    true,
+				Optional:    true,
 				Description: "The list of Network ACL rules",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -103,7 +104,7 @@ func ResourceACL() *schema.Resource {
 	}
 }
 
-func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,7 +136,7 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceVPCACLRead(ctx, d, m)
 }
 
-func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -162,7 +163,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -192,7 +193,7 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceVPCACLRead(ctx, d, m)
 }
 
-func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,7 +202,7 @@ func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	_, err = vpcAPI.SetACL(&vpc.SetACLRequest{
 		VpcID:         locality.ExpandID(ID),
 		Region:        region,
-		DefaultPolicy: "drop",
+		DefaultPolicy: vpc.ActionAccept,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

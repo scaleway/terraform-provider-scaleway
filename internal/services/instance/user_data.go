@@ -56,7 +56,7 @@ func ResourceUserData() *schema.Resource {
 	}
 }
 
-func ResourceInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -93,7 +93,7 @@ func ResourceInstanceUserDataCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceUserDataRead(ctx, d, m)
 }
 
-func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, key, err := NewAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -139,7 +139,7 @@ func ResourceInstanceUserDataRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, key, err := NewAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -178,7 +178,7 @@ func ResourceInstanceUserDataUpdate(ctx context.Context, d *schema.ResourceData,
 	return ResourceInstanceUserDataRead(ctx, d, m)
 }
 
-func ResourceInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUserDataDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, key, err := NewAPIWithZoneAndNestedID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

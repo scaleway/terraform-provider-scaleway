@@ -134,7 +134,7 @@ func ResourcePublicGateway() *schema.Resource {
 	}
 }
 
-func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -186,7 +186,7 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }
 
-func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -221,7 +221,7 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 	return readVPCGWResourceDataV2(d, gatewayV2)
 }
 
-func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -270,7 +270,7 @@ func ResourceVPCPublicGatewayUpdate(ctx context.Context, d *schema.ResourceData,
 	return ResourceVPCPublicGatewayRead(ctx, d, m)
 }
 
-func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

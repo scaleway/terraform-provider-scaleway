@@ -190,8 +190,9 @@ func ResourcePool() *schema.Resource {
 				Description: "The actual size of the pool",
 			},
 			"nodes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of nodes in the pool",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -249,12 +250,20 @@ func ResourcePool() *schema.Resource {
 				Computed:    true,
 				Description: "The status of the pool",
 			},
+			"security_group_id": {
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The ID of the security group",
+				DiffSuppressFunc: dsf.Locality,
+			},
 		},
 	}
 }
 
 //gocyclo:ignore
-func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -324,6 +333,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interf
 		req.RootVolumeSize = &volumeSizeInBytes
 	}
 
+	if securityGroupID, ok := d.GetOk("security_group_id"); ok {
+		req.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(securityGroupID.(string)))
+	}
+
 	// check if the cluster is waiting for a pool
 	cluster, err := k8sAPI.GetCluster(&k8s.GetClusterRequest{
 		ClusterID: locality.ExpandID(d.Get("cluster_id")),
@@ -362,7 +375,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceK8SPoolRead(ctx, d, m)
 }
 
-func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -422,6 +435,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
+	_ = d.Set("security_group_id", pool.SecurityGroupID)
 
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
@@ -487,7 +501,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return diags
 }
 
-func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -557,7 +571,7 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceK8SPoolRead(ctx, d, m)
 }
 
-func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, poolID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -591,7 +605,7 @@ func ResourceK8SPoolDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+func ResourceK8SPoolCustomDiff(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 	if diff.HasChange("size") {
 		err := diff.SetNewComputed("nodes")
 		if err != nil {

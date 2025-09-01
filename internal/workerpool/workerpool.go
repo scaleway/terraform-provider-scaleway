@@ -27,6 +27,31 @@ func NewWorkerPool(size int) *WorkerPool {
 	return p
 }
 
+func (p *WorkerPool) AddTask(task Task) {
+	p.tasksWaitingGroup.Add(1)
+	p.tasksToDispatch <- task
+}
+
+func (p *WorkerPool) CloseAndWait() []error {
+	close(p.tasksToDispatch)
+	p.tasksWaitingGroup.Wait()
+
+	return p.errors
+}
+
+func (p *WorkerPool) worker() {
+	for task := range p.tasksToRun {
+		err := task()
+		if err != nil {
+			p.errorsMutex.Lock()
+			p.errors = append(p.errors, err)
+			p.errorsMutex.Unlock()
+		}
+
+		p.tasksWaitingGroup.Done()
+	}
+}
+
 func (p *WorkerPool) dispatcher() {
 	var pendingTasks []Task
 
@@ -59,29 +84,4 @@ func (p *WorkerPool) dispatcher() {
 		default:
 		}
 	}
-}
-
-func (p *WorkerPool) worker() {
-	for task := range p.tasksToRun {
-		err := task()
-		if err != nil {
-			p.errorsMutex.Lock()
-			p.errors = append(p.errors, err)
-			p.errorsMutex.Unlock()
-		}
-
-		p.tasksWaitingGroup.Done()
-	}
-}
-
-func (p *WorkerPool) AddTask(task Task) {
-	p.tasksWaitingGroup.Add(1)
-	p.tasksToDispatch <- task
-}
-
-func (p *WorkerPool) CloseAndWait() []error {
-	close(p.tasksToDispatch)
-	p.tasksWaitingGroup.Wait()
-
-	return p.errors
 }

@@ -13,7 +13,7 @@ import (
 )
 
 // newAPIWithRegion returns a new jobs API and the region for a Create request
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*jobs.API, scw.Region, error) {
 	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -25,7 +25,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*jobs.API, scw.Reg
 }
 
 // NewAPIWithRegionAndID returns a new jobs API with region and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, regionalID string) (*jobs.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, regionalID string) (*jobs.API, scw.Region, string, error) {
 	jobsAPI := jobs.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)
@@ -109,7 +109,7 @@ func expandJobDefinitionSecret(i any) []JobDefinitionSecret {
 	}
 
 	for _, rawSecret := range i.(*schema.Set).List() {
-		secretMap := rawSecret.(map[string]interface{})
+		secretMap := rawSecret.(map[string]any)
 		env, file := "", ""
 
 		if userEnv, ok := secretMap["environment"].(string); ok {
@@ -137,10 +137,10 @@ func expandJobDefinitionSecret(i any) []JobDefinitionSecret {
 }
 
 func flattenJobDefinitionSecret(jobSecrets []*jobs.Secret) []any {
-	secretRefs := make([]interface{}, len(jobSecrets))
+	secretRefs := make([]any, len(jobSecrets))
 
 	for i, secret := range jobSecrets {
-		secretRef := make(map[string]interface{})
+		secretRef := make(map[string]any)
 		secretRef["secret_id"] = secret.SecretManagerID
 		secretRef["secret_reference_id"] = secret.SecretID
 		secretRef["secret_version"] = secret.SecretManagerVersion

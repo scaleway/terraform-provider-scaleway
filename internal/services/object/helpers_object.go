@@ -84,7 +84,7 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
 }
 
-func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface{}) (*s3.Client, scw.Region, error) {
+func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -105,7 +105,7 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m interface
 	return s3Client, region, err
 }
 
-func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m interface{}, id string) (*s3.Client, scw.Region, string, error) {
+func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m any, id string) (*s3.Client, scw.Region, string, error) {
 	region, name, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -140,7 +140,7 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m in
 	return s3Client, region, name, nil
 }
 
-func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData, m interface{}, name string) (*s3.Client, scw.Region, string, string, error) {
+func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
 	region, outerID, innerID, err := regional.ParseNestedID(name)
 	if err != nil {
 		return nil, "", "", "", err
@@ -161,7 +161,7 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	return s3Client, region, outerID, innerID, err
 }
 
-func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m interface{}, name string) (*s3.Client, scw.Region, string, string, error) {
+func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
 	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
 	if err != nil {
 		return nil, "", name, "", err
@@ -182,7 +182,7 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	return s3Client, scw.Region(region), name, outerID, err
 }
 
-func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m interface{}, region string) (*s3.Client, error) {
+func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, region string) (*s3.Client, error) {
 	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
 	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
 		accessKey = accessKeyWithProjectID(accessKey, projectID)
@@ -202,8 +202,8 @@ func accessKeyWithProjectID(accessKey string, projectID string) string {
 	return accessKey + "@" + projectID
 }
 
-func flattenObjectBucketTags(tagsSet []s3Types.Tag) map[string]interface{} {
-	tags := map[string]interface{}{}
+func flattenObjectBucketTags(tagsSet []s3Types.Tag) map[string]any {
+	tags := map[string]any{}
 
 	for _, tagSet := range tagsSet {
 		var key string
@@ -224,9 +224,9 @@ func flattenObjectBucketTags(tagsSet []s3Types.Tag) map[string]interface{} {
 	return tags
 }
 
-func ExpandObjectBucketTags(tags interface{}) []s3Types.Tag {
-	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]interface{})))
-	for key, value := range tags.(map[string]interface{}) {
+func ExpandObjectBucketTags(tags any) []s3Types.Tag {
+	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]any)))
+	for key, value := range tags.(map[string]any) {
 		tagsSet = append(tagsSet, s3Types.Tag{
 			Key:   scw.StringPtr(key),
 			Value: types.ExpandStringPtr(value),
@@ -257,19 +257,19 @@ func IsS3Err(err error, code string, message string) bool {
 	return false
 }
 
-func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]interface{} {
-	vcl := []map[string]interface{}{{}}
+func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]any {
+	vcl := []map[string]any{{}}
 	vcl[0]["enabled"] = versioningResponse.Status == s3Types.BucketVersioningStatusEnabled
 
 	return vcl
 }
 
-func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfiguration {
+func expandObjectBucketVersioning(v []any) *s3Types.VersioningConfiguration {
 	vc := &s3Types.VersioningConfiguration{}
 	vc.Status = s3Types.BucketVersioningStatusSuspended
 
 	if len(v) > 0 {
-		if c := v[0].(map[string]interface{}); c["enabled"].(bool) {
+		if c := v[0].(map[string]any); c["enabled"].(bool) {
 			vc.Status = s3Types.BucketVersioningStatusEnabled
 		}
 	}
@@ -277,16 +277,16 @@ func expandObjectBucketVersioning(v []interface{}) *s3Types.VersioningConfigurat
 	return vc
 }
 
-func flattenBucketCORS(corsResponse interface{}) []interface{} {
+func flattenBucketCORS(corsResponse any) []any {
 	if corsResponse == nil {
 		return nil
 	}
 
 	if cors, ok := corsResponse.(*s3.GetBucketCorsOutput); ok && cors != nil && len(cors.CORSRules) > 0 {
-		var corsRules []interface{}
+		var corsRules []any
 
 		for _, ruleObject := range cors.CORSRules {
-			rule := map[string]interface{}{}
+			rule := map[string]any{}
 			if len(ruleObject.AllowedHeaders) > 0 {
 				rule["allowed_headers"] = ruleObject.AllowedHeaders
 			}
@@ -316,7 +316,7 @@ func flattenBucketCORS(corsResponse interface{}) []interface{} {
 	return nil
 }
 
-func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string) []s3Types.CORSRule {
+func expandBucketCORS(ctx context.Context, rawCors []any, bucket string) []s3Types.CORSRule {
 	if len(rawCors) == 0 {
 		tflog.Warn(ctx, "No CORS configuration provided for bucket: "+bucket)
 
@@ -327,7 +327,7 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 	rules := make([]s3Types.CORSRule, 0, len(rawCors))
 
 	for _, raw := range rawCors {
-		corsMap, ok := raw.(map[string]interface{})
+		corsMap, ok := raw.(map[string]any)
 		if !ok {
 			tflog.Warn(ctx, fmt.Sprintf("Invalid CORS entry for bucket %s: %#v", bucket, raw))
 
@@ -365,11 +365,11 @@ func expandBucketCORS(ctx context.Context, rawCors []interface{}, bucket string)
 	return rules
 }
 
-func toStringSlice(ctx context.Context, input interface{}) []string {
+func toStringSlice(ctx context.Context, input any) []string {
 	var result []string
 
 	switch v := input.(type) {
-	case []interface{}:
+	case []any:
 		for _, item := range v {
 			if str, ok := item.(string); ok {
 				result = append(result, str)
@@ -555,10 +555,10 @@ func findDeletionWorkerCapacity() int {
 	return deletionWorkers
 }
 
-func transitionHash(v interface{}) int {
+func transitionHash(v any) int {
 	var buf bytes.Buffer
 
-	m, ok := v.(map[string]interface{})
+	m, ok := v.(map[string]any)
 
 	if !ok {
 		return 0

@@ -41,7 +41,7 @@ func DataSourceIP() *schema.Resource {
 	}
 }
 
-func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

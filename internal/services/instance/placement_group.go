@@ -68,7 +68,7 @@ func ResourcePlacementGroup() *schema.Resource {
 	}
 }
 
-func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -91,7 +91,7 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 	return ResourceInstancePlacementGroupRead(ctx, d, m)
 }
 
-func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -123,7 +123,7 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -169,7 +169,7 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 	return ResourceInstancePlacementGroupRead(ctx, d, m)
 }
 
-func ResourceInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

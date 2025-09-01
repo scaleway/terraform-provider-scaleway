@@ -40,7 +40,7 @@ func DataSourceWebhosting() *schema.Resource {
 	}
 }
 
-func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newHostingAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

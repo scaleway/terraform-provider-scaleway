@@ -76,7 +76,7 @@ func ResourceIP() *schema.Resource {
 	}
 }
 
-func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -105,7 +105,7 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceLbIPRead(ctx, d, m)
 }
 
-func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -168,7 +168,7 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	return nil
 }
 
-func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -257,7 +257,7 @@ func resourceLbIPUpdate(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 //gocyclo:ignore
-func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

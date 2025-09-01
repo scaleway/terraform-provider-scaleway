@@ -31,7 +31,7 @@ func DataSourceSSHKey() *schema.Resource {
 	}
 }
 
-func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iamAPI := NewAPI(m)
 
 	sshKeyID, sshKeyIDExists := d.GetOk("ssh_key_id")

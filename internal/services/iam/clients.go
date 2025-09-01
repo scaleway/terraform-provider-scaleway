@@ -6,6 +6,6 @@ import (
 )
 
 // NewAPI returns a new iam API for a Create request
-func NewAPI(m interface{}) *iam.API {
+func NewAPI(m any) *iam.API {
 	return iam.NewAPI(meta.ExtractScwClient(m))
 }

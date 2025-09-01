@@ -5,12 +5,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) interface{} {
+func flattenFlexibleIPMacAddress(mac *flexibleip.MACAddress) any {
 	if mac == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"id":          mac.ID,
 			"mac_address": mac.MacAddress,

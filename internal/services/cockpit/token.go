@@ -140,7 +140,7 @@ func resourceCockpitTokenScopes() *schema.Resource {
 	}
 }
 
-func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -152,7 +152,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	var scopes []cockpit.TokenScope
 
-	if !scopesSet || len(rawScopes.([]interface{})) == 0 {
+	if !scopesSet || len(rawScopes.([]any)) == 0 {
 		schema := resourceCockpitTokenScopes().Schema
 		for key, val := range schema {
 			if defaultVal, ok := val.Default.(bool); ok && defaultVal {
@@ -183,7 +183,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m i
 	return ResourceCockpitTokenRead(ctx, d, m)
 }
 
-func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -213,7 +213,7 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCockpitTokenDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

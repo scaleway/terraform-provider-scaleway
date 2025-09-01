@@ -41,7 +41,7 @@ func ResourceDomain() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				Description: "Accept the Scaleway Terms of Service",
-				ValidateFunc: func(i interface{}, _ string) (warnings []string, errs []error) {
+				ValidateFunc: func(i any, _ string) (warnings []string, errs []error) {
 					v := i.(bool)
 					if !v {
 						errs = append(errs, errors.New("you must accept the Scaleway Terms of Service to use this service"))
@@ -189,7 +189,7 @@ func ResourceDomain() *schema.Resource {
 	}
 }
 
-func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -211,7 +211,7 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceDomainRead(ctx, d, m)
 }
 
-func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -266,7 +266,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -288,7 +288,7 @@ func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceDomainRead(ctx, d, m)
 }
 
-func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

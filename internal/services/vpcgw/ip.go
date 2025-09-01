@@ -62,7 +62,7 @@ func ResourceIP() *schema.Resource {
 	}
 }
 
-func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -99,7 +99,7 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 	return ResourceIPRead(ctx, d, m)
 }
 
-func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -131,7 +131,7 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -164,7 +164,7 @@ func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceDat
 	return ResourceIPRead(ctx, d, m)
 }
 
-func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

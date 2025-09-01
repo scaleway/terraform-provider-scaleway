@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
-func FlattenStringPtr(s *string) interface{} {
+func FlattenStringPtr(s *string) any {
 	if s == nil {
 		return ""
 	}
@@ -19,7 +19,7 @@ func FlattenStringPtr(s *string) interface{} {
 	return *s
 }
 
-func ExpandStringPtr(data interface{}) *string {
+func ExpandStringPtr(data any) *string {
 	if data == nil || data == "" {
 		return nil
 	}
@@ -32,7 +32,7 @@ func NewRandomName(prefix string) string {
 	return namegenerator.GetRandomName("tf", prefix)
 }
 
-func ExpandOrGenerateString(data interface{}, prefix string) string {
+func ExpandOrGenerateString(data any, prefix string) string {
 	if data == nil || data == "" {
 		return NewRandomName(prefix)
 	}
@@ -40,7 +40,7 @@ func ExpandOrGenerateString(data interface{}, prefix string) string {
 	return data.(string)
 }
 
-func ExpandStringWithDefault(data interface{}, defaultValue string) string {
+func ExpandStringWithDefault(data any, defaultValue string) string {
 	if data == nil || data.(string) == "" {
 		return defaultValue
 	}
@@ -48,21 +48,21 @@ func ExpandStringWithDefault(data interface{}, defaultValue string) string {
 	return data.(string)
 }
 
-func ExpandSliceStringPtr(data interface{}) []*string {
+func ExpandSliceStringPtr(data any) []*string {
 	if data == nil {
 		return nil
 	}
 
 	stringSlice := []*string(nil)
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		stringSlice = append(stringSlice, ExpandStringPtr(s))
 	}
 
 	return stringSlice
 }
 
-func FlattenSliceStringPtr(s []*string) interface{} {
-	res := make([]interface{}, 0, len(s))
+func FlattenSliceStringPtr(s []*string) any {
+	res := make([]any, 0, len(s))
 	for _, strPtr := range s {
 		res = append(res, FlattenStringPtr(strPtr))
 	}
@@ -70,8 +70,8 @@ func FlattenSliceStringPtr(s []*string) interface{} {
 	return res
 }
 
-func FlattenSliceString(s []string) interface{} {
-	res := make([]interface{}, 0, len(s))
+func FlattenSliceString(s []string) any {
+	res := make([]any, 0, len(s))
 	for _, strPtr := range s {
 		res = append(res, strPtr)
 	}
@@ -79,7 +79,7 @@ func FlattenSliceString(s []string) interface{} {
 	return res
 }
 
-func ExpandUpdatedStringPtr(data interface{}) *string {
+func ExpandUpdatedStringPtr(data any) *string {
 	str := ""
 	if data != nil {
 		str = data.(string)
@@ -88,10 +88,10 @@ func ExpandUpdatedStringPtr(data interface{}) *string {
 	return &str
 }
 
-func ExpandStrings(data interface{}) []string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
+func ExpandStrings(data any) []string {
+	stringSlice := make([]string, 0, len(data.([]any)))
 
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
@@ -103,14 +103,14 @@ func ExpandStrings(data interface{}) []string {
 	return stringSlice
 }
 
-func ExpandStringsPtr(data interface{}) *[]string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
+func ExpandStringsPtr(data any) *[]string {
+	stringSlice := make([]string, 0, len(data.([]any)))
 
-	if _, ok := data.([]interface{}); !ok || data == nil {
+	if _, ok := data.([]any); !ok || data == nil {
 		return nil
 	}
 
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
@@ -128,13 +128,13 @@ func ExpandStringsPtr(data interface{}) *[]string {
 
 // ExpandUpdatedStringsPtr expands a string slice but will default to an empty list.
 // Should be used on schema update so emptying a list will update resource.
-func ExpandUpdatedStringsPtr(data interface{}) *[]string {
+func ExpandUpdatedStringsPtr(data any) *[]string {
 	stringSlice := []string{}
-	if _, ok := data.([]interface{}); !ok || data == nil {
+	if _, ok := data.([]any); !ok || data == nil {
 		return &stringSlice
 	}
 
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		// zero-value is nil, ["foo", ""]
 		if s == nil {
 			s = ""
@@ -146,47 +146,47 @@ func ExpandUpdatedStringsPtr(data interface{}) *[]string {
 	return &stringSlice
 }
 
-func ExpandSliceIDs(rawIDs interface{}) []string {
-	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
-	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+func ExpandSliceIDs(rawIDs any) []string {
+	stringSlice := make([]string, 0, len(rawIDs.([]any)))
+	if _, ok := rawIDs.([]any); !ok || rawIDs == nil {
 		return stringSlice
 	}
 
-	for _, s := range rawIDs.([]interface{}) {
+	for _, s := range rawIDs.([]any) {
 		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
 	}
 
 	return stringSlice
 }
 
-func ExpandSliceIDsPtr(rawIDs interface{}) *[]string {
-	stringSlice := make([]string, 0, len(rawIDs.([]interface{})))
-	if _, ok := rawIDs.([]interface{}); !ok || rawIDs == nil {
+func ExpandSliceIDsPtr(rawIDs any) *[]string {
+	stringSlice := make([]string, 0, len(rawIDs.([]any)))
+	if _, ok := rawIDs.([]any); !ok || rawIDs == nil {
 		return &stringSlice
 	}
 
-	for _, s := range rawIDs.([]interface{}) {
+	for _, s := range rawIDs.([]any) {
 		stringSlice = append(stringSlice, locality.ExpandID(s.(string)))
 	}
 
 	return &stringSlice
 }
 
-func ExpandStringsOrEmpty(data interface{}) []string {
-	stringSlice := make([]string, 0, len(data.([]interface{})))
-	if _, ok := data.([]interface{}); !ok || data == nil {
+func ExpandStringsOrEmpty(data any) []string {
+	stringSlice := make([]string, 0, len(data.([]any)))
+	if _, ok := data.([]any); !ok || data == nil {
 		return stringSlice
 	}
 
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		stringSlice = append(stringSlice, s.(string))
 	}
 
 	return stringSlice
 }
 
-func FlattenSliceIDs(certificates []string, zone scw.Zone) interface{} {
-	res := []interface{}(nil)
+func FlattenSliceIDs(certificates []string, zone scw.Zone) any {
+	res := []any(nil)
 	for _, certificateID := range certificates {
 		res = append(res, zonal.NewIDString(zone, certificateID))
 	}

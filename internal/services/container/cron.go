@@ -66,7 +66,7 @@ func ResourceCron() *schema.Resource {
 	}
 }
 
-func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +106,7 @@ func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceContainerCronRead(ctx, d, m)
 }
 
-func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerCronID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,7 +138,7 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerCronID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -191,7 +191,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceContainerCronRead(ctx, d, m)
 }
 
-func ResourceContainerCronDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCronDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerCronID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

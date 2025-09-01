@@ -23,12 +23,12 @@ const (
 )
 
 // newRedisApi returns a new Redis API
-func newAPI(m interface{}) *redis.API {
+func newAPI(m any) *redis.API {
 	return redis.NewAPI(meta.ExtractScwClient(m))
 }
 
 // newAPIWithZone returns a new Redis API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*redis.API, scw.Zone, error) {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return nil, "", err
@@ -38,7 +38,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*redis.API, scw.Zone
 }
 
 // NewAPIWithZoneAndID returns a Redis API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*redis.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*redis.API, scw.Zone, string, error) {
 	zone, ID, err := zonal.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -61,17 +61,17 @@ func waitForCluster(ctx context.Context, api *redis.API, zone scw.Zone, id strin
 	}, scw.WithContext(ctx))
 }
 
-func privateNetworkSetHash(v interface{}) int {
+func privateNetworkSetHash(v any) int {
 	var buf bytes.Buffer
 
-	m := v.(map[string]interface{})
+	m := v.(map[string]any)
 	if pnID, ok := m["id"]; ok {
 		buf.WriteString(locality.ExpandID(pnID))
 	}
 
 	if serviceIPs, ok := m["service_ips"]; ok {
 		// Sort the service IPs before generating the hash.
-		ips := serviceIPs.([]interface{})
+		ips := serviceIPs.([]any)
 		sort.Slice(ips, func(i, j int) bool {
 			return ips[i].(string) < ips[j].(string)
 		})

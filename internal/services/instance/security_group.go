@@ -78,6 +78,7 @@ func ResourceSecurityGroup() *schema.Resource {
 			},
 			"external_rules": {
 				Type:          schema.TypeBool,
+				Description:   "External rules for this security group",
 				Optional:      true,
 				Default:       false,
 				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
@@ -103,7 +104,7 @@ func ResourceSecurityGroup() *schema.Resource {
 	}
 }
 
-func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -139,7 +140,7 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 	return ResourceInstanceSecurityGroupUpdate(ctx, d, m)
 }
 
-func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -183,7 +184,7 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]interface{}, []interface{}, error) {
+func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zone scw.Zone, securityGroupID string, d *schema.ResourceData) ([]any, []any, error) {
 	resRules, err := instanceAPI.ListSecurityGroupRules(&instanceSDK.ListSecurityGroupRulesRequest{
 		Zone:            zone,
 		SecurityGroupID: locality.ExpandID(securityGroupID),
@@ -201,9 +202,9 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 		instanceSDK.SecurityGroupRuleDirectionOutbound: {},
 	}
 
-	stateRules := map[instanceSDK.SecurityGroupRuleDirection][]interface{}{
-		instanceSDK.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
-		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
+	stateRules := map[instanceSDK.SecurityGroupRuleDirection][]any{
+		instanceSDK.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]any),
+		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]any),
 	}
 
 	for _, apiRule := range resRules.Rules {
@@ -248,7 +249,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 	return stateRules[instanceSDK.SecurityGroupRuleDirectionInbound], stateRules[instanceSDK.SecurityGroupRuleDirectionOutbound], nil
 }
 
-func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, _, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -315,9 +316,9 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 
 // updateSecurityGroupeRules handles updating SecurityGroupRules
 func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone scw.Zone, securityGroupID string, instanceAPI *instanceSDK.API) error {
-	stateRules := map[instanceSDK.SecurityGroupRuleDirection][]interface{}{
-		instanceSDK.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]interface{}),
-		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]interface{}),
+	stateRules := map[instanceSDK.SecurityGroupRuleDirection][]any{
+		instanceSDK.SecurityGroupRuleDirectionInbound:  d.Get("inbound_rule").([]any),
+		instanceSDK.SecurityGroupRuleDirectionOutbound: d.Get("outbound_rule").([]any),
 	}
 
 	setGroupRules := []*instanceSDK.SetSecurityGroupRulesRequestRule{}
@@ -355,7 +356,7 @@ func updateSecurityGroupeRules(ctx context.Context, d *schema.ResourceData, zone
 	return nil
 }
 
-func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, _, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -423,8 +424,8 @@ func securityGroupRuleSchema() *schema.Resource {
 }
 
 // securityGroupRuleExpand transform a state rule to an api one.
-func securityGroupRuleExpand(i interface{}) (*instanceSDK.SecurityGroupRule, error) {
-	rawRule := i.(map[string]interface{})
+func securityGroupRuleExpand(i any) (*instanceSDK.SecurityGroupRule, error) {
+	rawRule := i.(map[string]any)
 
 	portFrom, portTo := uint32(0), uint32(0)
 
@@ -474,7 +475,7 @@ func securityGroupRuleExpand(i interface{}) (*instanceSDK.SecurityGroupRule, err
 }
 
 // securityGroupRuleFlatten transform an api rule to a state one.
-func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule) (map[string]interface{}, error) {
+func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule) (map[string]any, error) {
 	portFrom, portTo := uint32(0), uint32(0)
 
 	if rule.DestPortFrom != nil {
@@ -490,7 +491,7 @@ func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule) (map[string]i
 		return nil, err
 	}
 
-	res := map[string]interface{}{
+	res := map[string]any{
 		"protocol":   rule.Protocol.String(),
 		"ip_range":   ipnetRange,
 		"port_range": fmt.Sprintf("%d-%d", portFrom, portTo),

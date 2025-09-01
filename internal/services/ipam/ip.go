@@ -169,7 +169,7 @@ func ResourceIP() *schema.Resource {
 	}
 }
 
-func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -215,7 +215,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceIPAMIPRead(ctx, d, m)
 }
 
-func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -296,7 +296,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -332,7 +332,7 @@ func ResourceIPAMIPUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceIPAMIPRead(ctx, d, m)
 }
 
-func ResourceIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

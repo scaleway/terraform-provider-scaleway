@@ -57,17 +57,17 @@ func expandImageExtraVolumesUpdateTemplates(snapshotIDs []string) map[string]*in
 	return volTemplates
 }
 
-func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) interface{} {
-	volumesFlat := []map[string]interface{}(nil)
+func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) any {
+	volumesFlat := []map[string]any(nil)
 
 	for _, volume := range volumes {
-		server := map[string]interface{}{}
+		server := map[string]any{}
 		if volume.Server != nil {
 			server["id"] = volume.Server.ID
 			server["name"] = volume.Server.Name
 		}
 
-		volumeFlat := map[string]interface{}{
+		volumeFlat := map[string]any{
 			"id":                zonal.NewIDString(zone, volume.ID),
 			"name":              volume.Name,
 			"export_uri":        volume.ExportURI, //nolint:staticcheck
@@ -88,21 +88,26 @@ func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone
 	return volumesFlat
 }
 
-func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []interface{} {
-	flattenedIPs := make([]interface{}, len(ips))
+func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []any {
+	flattenedIPs := make([]any, len(ips))
 
 	for i, ip := range ips {
-		flattenedIPs[i] = map[string]interface{}{
-			"id":      zonal.NewIDString(zone, ip.ID),
-			"address": ip.Address.String(),
+		flattenedIPs[i] = map[string]any{
+			"id":                zonal.NewIDString(zone, ip.ID),
+			"address":           ip.Address.String(),
+			"gateway":           ip.Gateway.String(),
+			"netmask":           ip.Netmask,
+			"family":            ip.Family.String(),
+			"dynamic":           ip.Dynamic,
+			"provisioning_mode": ip.ProvisioningMode.String(),
 		}
 	}
 
 	return flattenedIPs
 }
 
-func flattenServerIPIDs(ips []*instance.ServerIP) []interface{} {
-	ipIDs := make([]interface{}, len(ips))
+func flattenServerIPIDs(ips []*instance.ServerIP) []any {
+	ipIDs := make([]any, len(ips))
 
 	for i, ip := range ips {
 		ipIDs[i] = ip.ID

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
@@ -146,7 +146,7 @@ func checkGrafanaURL(resourceName, projectResource string) resource.TestCheckFun
 		}
 
 		projectID := rs.Primary.ID
-		expectedURL := fmt.Sprintf("https://%s.dashboards.obs.fr-par.scw.cloud", projectID)
+		expectedURL := fmt.Sprintf("https://%s.dashboard.obs.fr-par.scw.cloud", projectID)
 
 		return resource.TestCheckResourceAttr(resourceName, "endpoints.0.grafana_url", expectedURL)(s)
 	}

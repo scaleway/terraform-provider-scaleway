@@ -60,7 +60,7 @@ func ResourceWAFStage() *schema.Resource {
 	}
 }
 
-func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	wafStage, err := api.CreateWafStage(&edgeservices.CreateWafStageRequest{
@@ -78,7 +78,7 @@ func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceWAFStageRead(ctx, d, m)
 }
 
-func ResourceWAFStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWAFStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	wafStage, err := api.GetWafStage(&edgeservices.GetWafStageRequest{
@@ -104,7 +104,7 @@ func ResourceWAFStageRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceWAFStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWAFStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -138,7 +138,7 @@ func ResourceWAFStageUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceWAFStageRead(ctx, d, m)
 }
 
-func ResourceWAFStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceWAFStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteWafStage(&edgeservices.DeleteWafStageRequest{

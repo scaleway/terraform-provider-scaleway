@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -21,8 +20,8 @@ func DataSourceZone() *schema.Resource {
 	}
 }
 
-func DataSourceZoneRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	d.SetId(fmt.Sprintf("%s.%s", d.Get("subdomain").(string), d.Get("domain").(string)))
+func DataSourceZoneRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	d.SetId(BuildZoneName(d.Get("subdomain").(string), d.Get("domain").(string)))
 
 	return resourceDomainZoneRead(ctx, d, m)
 }

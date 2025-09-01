@@ -1,7 +1,7 @@
 package locality
 
 // ExpandID returns the id whether it is a localizedID or a raw ID.
-func ExpandID(id interface{}) string {
+func ExpandID(id any) string {
 	_, ID, err := ParseLocalizedID(id.(string))
 	if err != nil {
 		return id.(string)
@@ -10,10 +10,10 @@ func ExpandID(id interface{}) string {
 	return ID
 }
 
-func ExpandIDs(data interface{}) []string {
-	expandedIDs := make([]string, 0, len(data.([]interface{})))
+func ExpandIDs(data any) []string {
+	expandedIDs := make([]string, 0, len(data.([]any)))
 
-	for _, s := range data.([]interface{}) {
+	for _, s := range data.([]any) {
 		if s == nil {
 			s = ""
 		}

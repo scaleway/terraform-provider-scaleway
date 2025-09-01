@@ -21,7 +21,7 @@ const (
 	mqttCaFileName          = "iot-hub-ca.pem"
 )
 
-func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Region, error) {
+func iotAPIWithRegion(d *schema.ResourceData, m any) (*iot.API, scw.Region, error) {
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -29,7 +29,7 @@ func iotAPIWithRegion(d *schema.ResourceData, m interface{}) (*iot.API, scw.Regi
 	return iotAPI, region, err
 }
 
-func NewAPIWithRegionAndID(m interface{}, id string) (*iot.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*iot.API, scw.Region, string, error) {
 	iotAPI := iot.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(id)
@@ -56,7 +56,7 @@ func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string,
 func extractRestHeaders(d *schema.ResourceData, key string) map[string]string {
 	stringMap := map[string]string{}
 
-	data := d.Get(key).(map[string]interface{})
+	data := d.Get(key).(map[string]any)
 
 	for k, v := range data {
 		stringMap[k] = v.(string)
@@ -73,7 +73,7 @@ func computeIotHubCaURL(productPlan iot.HubProductPlan, region scw.Region) strin
 	return mqttCaURLDownload + string(region) + "/" + mqttCaFileName
 }
 
-func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m interface{}) (string, error) {
+func computeIotHubMQTTCa(ctx context.Context, mqttCaURL string, m any) (string, error) {
 	if mqttCaURL == "" {
 		return "", nil
 	}

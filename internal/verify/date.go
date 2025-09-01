@@ -11,7 +11,7 @@ import (
 // IsDate will validate that field is a valid ISO 8601
 // It is the same as RFC3339
 func IsDate() schema.SchemaValidateDiagFunc {
-	return func(value interface{}, path cty.Path) diag.Diagnostics {
+	return func(value any, path cty.Path) diag.Diagnostics {
 		date, isStr := value.(string)
 		if !isStr {
 			return diag.Diagnostics{diag.Diagnostic{
@@ -35,7 +35,7 @@ func IsDate() schema.SchemaValidateDiagFunc {
 }
 
 func IsDuration() schema.SchemaValidateDiagFunc {
-	return func(value interface{}, path cty.Path) diag.Diagnostics {
+	return func(value any, path cty.Path) diag.Diagnostics {
 		str, isStr := value.(string)
 		if !isStr {
 			return diag.Diagnostics{diag.Diagnostic{

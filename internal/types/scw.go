@@ -2,7 +2,7 @@ package types
 
 import "github.com/scaleway/scaleway-sdk-go/scw"
 
-func FlattenSize(size *scw.Size) interface{} {
+func FlattenSize(size *scw.Size) any {
 	if size == nil {
 		return 0
 	}
@@ -10,7 +10,7 @@ func FlattenSize(size *scw.Size) interface{} {
 	return *size
 }
 
-func ExpandSize(data interface{}) *scw.Size {
+func ExpandSize(data any) *scw.Size {
 	if data == nil || data == "" {
 		return nil
 	}

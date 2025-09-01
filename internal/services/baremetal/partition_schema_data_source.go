@@ -78,7 +78,7 @@ func DataPartitionSchema() *schema.Resource {
 	}
 }
 
-func dataPartitionSchemaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataPartitionSchemaRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, fallBackZone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

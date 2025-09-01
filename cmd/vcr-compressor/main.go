@@ -68,7 +68,7 @@ func main() {
 			continue
 		}
 
-		var m map[string]interface{}
+		var m map[string]any
 
 		err := json.Unmarshal([]byte(responseBody), &m)
 		if err != nil {

@@ -14,10 +14,6 @@ type ID struct {
 	Zone scw.Zone
 }
 
-func (z ID) String() string {
-	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
-}
-
 func NewID(zone scw.Zone, id string) ID {
 	return ID{
 		ID:   id,
@@ -25,7 +21,11 @@ func NewID(zone scw.Zone, id string) ID {
 	}
 }
 
-func ExpandID(id interface{}) ID {
+func (z ID) String() string {
+	return fmt.Sprintf("%s/%s", z.Zone, z.ID)
+}
+
+func ExpandID(id any) ID {
 	zonedID := ID{}
 	tab := strings.Split(id.(string), "/")
 
@@ -43,6 +43,20 @@ func ExpandID(id interface{}) ID {
 // NewIDString constructs a unique identifier based on resource zone and id
 func NewIDString(zone scw.Zone, id string) string {
 	return fmt.Sprintf("%s/%s", zone, id)
+}
+
+// NewIDStrings returns a slice of zonal IDs built from a zone and a list of raw resource IDs.
+func NewIDStrings(zone scw.Zone, ids []string) []string {
+	if ids == nil {
+		return nil
+	}
+
+	flattenedIDs := make([]string, len(ids))
+	for i, id := range ids {
+		flattenedIDs[i] = NewIDString(zone, id)
+	}
+
+	return flattenedIDs
 }
 
 // NewNestedIDString constructs a unique identifier based on resource zone, inner and outer IDs

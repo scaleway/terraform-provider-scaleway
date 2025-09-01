@@ -35,7 +35,7 @@ func DataSourceCertificate() *schema.Resource {
 	}
 }
 
-func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

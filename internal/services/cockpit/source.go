@@ -87,7 +87,7 @@ func ResourceCockpitSource() *schema.Resource {
 	}
 }
 
-func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,7 +111,7 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
-func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,7 +151,7 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -182,7 +182,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -128,7 +128,7 @@ func ResourcePolicy() *schema.Resource {
 	}
 }
 
-func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	pol, err := api.CreatePolicy(&iam.CreatePolicyRequest{
@@ -151,7 +151,7 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamPolicyRead(ctx, d, m)
 }
 
-func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	pol, err := api.GetPolicy(&iam.GetPolicyRequest{
@@ -201,7 +201,7 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	req := &iam.UpdatePolicyRequest{
@@ -265,7 +265,7 @@ func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamPolicyRead(ctx, d, m)
 }
 
-func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamPolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeletePolicy(&iam.DeletePolicyRequest{

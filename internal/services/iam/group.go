@@ -82,7 +82,7 @@ func ResourceGroup() *schema.Resource {
 	}
 }
 
-func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 	req := &iam.CreateGroupRequest{
 		OrganizationID: d.Get("organization_id").(string),
@@ -115,7 +115,7 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceIamGroupRead(ctx, d, m)
 }
 
-func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	group, err := api.GetGroup(&iam.GetGroupRequest{
@@ -146,7 +146,7 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	group, err := api.GetGroup(&iam.GetGroupRequest{
@@ -207,7 +207,7 @@ func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceIamGroupRead(ctx, d, m)
 }
 
-func resourceIamGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeleteGroup(&iam.DeleteGroupRequest{

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	applesiliconSDK "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -24,13 +24,35 @@ func TestAccServer_Basic(t *testing.T) {
 				Config: `
 					resource scaleway_apple_silicon_server main {
 						name = "TestAccServerBasic"
-						type = "M2-M"
+						type = "M4-M"
+						public_bandwidth = 1000000000
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerBasic"
+						type = "M4-M"
+						public_bandwidth = 2000000000
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerBasic"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M4-M"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "2000000000"),
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),

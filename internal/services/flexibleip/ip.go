@@ -92,7 +92,7 @@ func ResourceIP() *schema.Resource {
 	}
 }
 
-func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, err := fipAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -121,7 +121,7 @@ func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceFlexibleIPRead(ctx, d, m)
 }
 
-func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -167,7 +167,7 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -241,7 +241,7 @@ func ResourceFlexibleIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceFlexibleIPRead(ctx, d, m)
 }
 
-func ResourceFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceFlexibleIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	fipAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

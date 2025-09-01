@@ -56,8 +56,9 @@ func ResourceCacheStage() *schema.Resource {
 				Description: "The Time To Live (TTL) in seconds. Defines how long content is cached",
 			},
 			"purge_requests": {
-				Type:     schema.TypeSet,
-				Optional: true,
+				Type:        schema.TypeSet,
+				Description: "Set of purge requests",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"pipeline_id": {
@@ -86,6 +87,11 @@ func ResourceCacheStage() *schema.Resource {
 				Optional:    true,
 				Description: "Trigger a refresh of the cache by changing this field's value",
 			},
+			"include_cookies": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Description: "Defines whether responses to requests with cookies must be stored in the cache",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -101,7 +107,7 @@ func ResourceCacheStage() *schema.Resource {
 	}
 }
 
-func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	cacheStage, err := api.CreateCacheStage(&edgeservices.CreateCacheStageRequest{
@@ -110,6 +116,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 		RouteStageID:   types.ExpandStringPtr(d.Get("route_stage_id").(string)),
 		WafStageID:     types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
 		FallbackTTL:    &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))},
+		IncludeCookies: types.ExpandBoolPtr(d.Get("include_cookies").(bool)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -120,7 +127,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceCacheStageRead(ctx, d, m)
 }
 
-func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	cacheStage, err := api.GetCacheStage(&edgeservices.GetCacheStageRequest{
@@ -143,11 +150,12 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m inter
 	_ = d.Set("route_stage_id", types.FlattenStringPtr(cacheStage.RouteStageID))
 	_ = d.Set("waf_stage_id", types.FlattenStringPtr(cacheStage.WafStageID))
 	_ = d.Set("fallback_ttl", cacheStage.FallbackTTL.Seconds)
+	_ = d.Set("include_cookies", cacheStage.IncludeCookies)
 
 	return nil
 }
 
-func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	hasChanged := false
@@ -173,6 +181,11 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	if d.HasChange("fallback_ttl") {
 		updateRequest.FallbackTTL = &scw.Duration{Seconds: int64(d.Get("fallback_ttl").(int))}
+		hasChanged = true
+	}
+
+	if d.HasChange("include_cookies") {
+		updateRequest.IncludeCookies = types.ExpandBoolPtr(d.Get("include_cookies").(bool))
 		hasChanged = true
 	}
 
@@ -204,7 +217,7 @@ func ResourceCacheStageUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceCacheStageRead(ctx, d, m)
 }
 
-func ResourceCacheStageDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceCacheStageDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
 	err := api.DeleteCacheStage(&edgeservices.DeleteCacheStageRequest{

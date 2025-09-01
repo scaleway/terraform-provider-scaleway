@@ -56,7 +56,7 @@ func DataSourceVersion() *schema.Resource {
 	}
 }
 
-func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func datasourceSchemaFromResourceVersionSchema(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	secretID, existSecretID := d.GetOk("secret_id")
 
 	api, region, projectID, err := newAPIWithRegionOptionalProjectIDAndDefault(d, m, regional.ExpandID(secretID).Region)

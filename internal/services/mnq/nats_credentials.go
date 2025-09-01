@@ -49,7 +49,7 @@ func ResourceNatsCredentials() *schema.Resource {
 	}
 }
 
-func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQNatsAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -71,7 +71,7 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceMNQNatsCredentialsRead(ctx, d, m)
 }
 
-func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -98,7 +98,7 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func ResourceMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQNatsCredentialsDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -31,7 +31,7 @@ func DataSourceFunction() *schema.Resource {
 	}
 }
 
-func DataSourceFunctionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceFunctionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := functionAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

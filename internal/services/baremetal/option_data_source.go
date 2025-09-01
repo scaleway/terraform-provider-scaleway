@@ -40,7 +40,7 @@ func DataSourceOption() *schema.Resource {
 	}
 }
 
-func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceOptionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

@@ -8,13 +8,13 @@ import (
 )
 
 func TestPrivilegeV1SchemaUpgradeFunc(t *testing.T) {
-	v0Schema := map[string]interface{}{
+	v0Schema := map[string]any{
 		"id":            "fr-par/11111111-1111-1111-1111-111111111111",
 		"region":        "fr-par",
 		"database_name": "database",
 		"user_name":     "username",
 	}
-	v1Schema := map[string]interface{}{
+	v1Schema := map[string]any{
 		"id":            "fr-par/11111111-1111-1111-1111-111111111111/database/username",
 		"region":        "fr-par",
 		"database_name": "database",

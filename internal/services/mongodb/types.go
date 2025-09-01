@@ -1,21 +1,23 @@
 package mongodb
 
 import (
-	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	"strings"
+
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 )
 
-func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
-	publicFlat := []map[string]interface{}(nil)
+func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (any, bool) {
+	publicFlat := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
-		if endpoint.Public == nil {
+		if endpoint.PublicNetwork == nil {
 			continue
 		}
 
-		publicFlat = append(publicFlat, map[string]interface{}{
+		publicFlat = append(publicFlat, map[string]any{
 			"id":         endpoint.ID,
 			"port":       endpoint.Port,
-			"dns_record": endpoint.DNSRecords[0],
+			"dns_record": endpoint.DNSRecord,
 		})
 
 		break
@@ -24,24 +26,32 @@ func flattenPublicNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
 	return publicFlat, len(publicFlat) != 0
 }
 
-func flattenPrivateNetwork(endpoints []*mongodb.Endpoint) (interface{}, bool) {
-	privateFlat := []map[string]interface{}(nil)
+func flattenPrivateNetwork(endpoints []*mongodb.Endpoint) (any, bool) {
+	privateFlat := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork == nil {
 			continue
 		}
 
-		privateFlat = append(privateFlat, map[string]interface{}{
+		privateFlat = append(privateFlat, map[string]any{
 			"pn_id":       endpoint.PrivateNetwork.PrivateNetworkID,
 			"id":          endpoint.ID,
 			"port":        endpoint.Port,
-			"dns_records": endpoint.DNSRecords,
-			"ips":         endpoint.IPs,
+			"dns_records": []string{endpoint.DNSRecord},
 		})
 
 		break
 	}
 
 	return privateFlat, len(privateFlat) != 0
+}
+
+func NormalizeMongoDBVersion(version string) string {
+	parts := strings.Split(version, ".")
+	if len(parts) >= 2 {
+		return parts[0] + "." + parts[1]
+	}
+
+	return version
 }

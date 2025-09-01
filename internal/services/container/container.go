@@ -53,6 +53,7 @@ func ResourceContainer() *schema.Resource {
 			"namespace_id": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "The container namespace associated",
 			},
 			"tags": {
@@ -251,6 +252,23 @@ func ResourceContainer() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"command": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Command executed when the container starts. Overrides the command from the container image.",
+			},
+			"args": {
+				Type:        schema.TypeList,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Arguments passed to the command from the command \"field\". Overrides the arguments from the container image.",
+			},
+			"private_network_id": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "ID of the Private Network the container is connected to",
+			},
 			// computed
 			"status": {
 				Type:        schema.TypeString,
@@ -273,7 +291,7 @@ func ResourceContainer() *schema.Resource {
 	}
 }
 
-func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -326,7 +344,7 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceContainerRead(ctx, d, m)
 }
 
-func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -370,11 +388,19 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
 	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
+	_ = d.Set("command", types.FlattenSliceString(co.Command))
+	_ = d.Set("args", types.FlattenSliceString(co.Args))
+
+	if co.PrivateNetworkID != nil {
+		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(co.PrivateNetworkID).(string)).String())
+	} else {
+		_ = d.Set("private_network_id", nil)
+	}
 
 	return nil
 }
 
-func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -394,110 +420,9 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	// update container
-	req := &container.UpdateContainerRequest{
-		Region:      region,
-		ContainerID: containerID,
-	}
-
-	if d.HasChanges("environment_variables") {
-		envVariablesRaw := d.Get("environment_variables")
-		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
-	}
-
-	if d.HasChanges("secret_environment_variables") {
-		oldEnv, newEnv := d.GetChange("secret_environment_variables")
-		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	}
-
-	if d.HasChanges("min_scale") {
-		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
-	}
-
-	if d.HasChanges("max_scale") {
-		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
-	}
-
-	if d.HasChanges("memory_limit") {
-		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
-	}
-
-	if d.HasChanges("cpu_limit") {
-		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
-	}
-
-	if d.HasChanges("timeout") {
-		req.Timeout = &scw.Duration{Seconds: int64(d.Get("timeout").(int))}
-	}
-
-	if d.HasChanges("privacy") {
-		req.Privacy = container.ContainerPrivacy(*types.ExpandStringPtr(d.Get("privacy")))
-	}
-
-	if d.HasChanges("description") {
-		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
-	}
-
-	if d.HasChanges("registry_image") {
-		req.RegistryImage = types.ExpandStringPtr(d.Get("registry_image"))
-	}
-
-	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
-	}
-
-	if d.HasChanges("protocol") {
-		req.Protocol = container.ContainerProtocol(*types.ExpandStringPtr(d.Get("protocol")))
-	}
-
-	if d.HasChanges("port") {
-		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
-	}
-
-	if d.HasChanges("http_option") {
-		req.HTTPOption = container.ContainerHTTPOption(d.Get("http_option").(string))
-	}
-
-	if d.HasChanges("deploy") {
-		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
-	}
-
-	if d.HasChanges("sandbox") {
-		req.Sandbox = container.ContainerSandbox(d.Get("sandbox").(string))
-	}
-
-	if d.HasChanges("health_check") {
-		healthCheck := d.Get("health_check")
-
-		healthCheckReq, errExpandHealthCheck := expandHealthCheck(healthCheck)
-		if errExpandHealthCheck != nil {
-			return diag.FromErr(errExpandHealthCheck)
-		}
-
-		req.HealthCheck = healthCheckReq
-	}
-
-	if d.HasChanges("scaling_option") {
-		scalingOption := d.Get("scaling_option")
-
-		scalingOptionReq, err := expandScalingOptions(scalingOption)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		req.ScalingOption = scalingOptionReq
-	}
-
-	imageHasChanged := d.HasChanges("registry_sha256")
-	if imageHasChanged {
-		req.Redeploy = &imageHasChanged
-	}
-
-	if d.HasChanges("local_storage_limit") {
-		req.LocalStorageLimit = scw.Uint32Ptr(uint32(d.Get("local_storage_limit").(int)))
+	req, err := setUpdateContainerRequest(d, region, containerID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	con, err := api.UpdateContainer(req, scw.WithContext(ctx))
@@ -513,7 +438,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceContainerRead(ctx, d, m)
 }
 
-func ResourceContainerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, containerID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

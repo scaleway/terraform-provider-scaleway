@@ -181,7 +181,7 @@ func ResourceDevice() *schema.Resource {
 	}
 }
 
-func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, err := iotAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -263,17 +263,17 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m inte
 		}
 	} else {
 		// Update certificate and key as they cannot be retrieved later.
-		cert := map[string]interface{}{
+		cert := map[string]any{
 			"crt": res.Certificate.Crt,
 			"key": res.Certificate.Key,
 		}
-		_ = d.Set("certificate", []map[string]interface{}{cert})
+		_ = d.Set("certificate", []map[string]any{cert})
 	}
 
 	return ResourceIotDeviceRead(ctx, d, m)
 }
 
-func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, deviceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -304,7 +304,7 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interf
 	_ = d.Set("is_connected", device.IsConnected)
 	_ = d.Set("description", device.Description)
 
-	mf := map[string]interface{}{}
+	mf := map[string]any{}
 	mfHasNonDefaultChange := false
 
 	// We need to set the message filters only in case when we already set a value or we got non default value
@@ -325,19 +325,19 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if mfHasNonDefaultChange {
-		mf["publish"] = []map[string]interface{}{{
+		mf["publish"] = []map[string]any{{
 			"policy": device.MessageFilters.Publish.Policy,
 			"topics": *device.MessageFilters.Publish.Topics,
 		}}
 
-		mf["subscribe"] = []map[string]interface{}{{
+		mf["subscribe"] = []map[string]any{{
 			"policy": device.MessageFilters.Subscribe.Policy,
 			"topics": *device.MessageFilters.Subscribe.Topics,
 		}}
 	}
 
 	if mfHasNonDefaultChange {
-		_ = d.Set("message_filters", []map[string]interface{}{mf})
+		_ = d.Set("message_filters", []map[string]any{mf})
 	}
 
 	// Read Device certificate
@@ -351,17 +351,17 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.FromErr(err)
 		}
 		// Set device certificate.
-		cert := map[string]interface{}{
+		cert := map[string]any{
 			"crt": devCrt.CertificatePem,
 			"key": devCrtKey.(string),
 		}
-		_ = d.Set("certificate", []map[string]interface{}{cert})
+		_ = d.Set("certificate", []map[string]any{cert})
 	}
 
 	return nil
 }
 
-func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, deviceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -438,7 +438,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return ResourceIotDeviceRead(ctx, d, m)
 }
 
-func ResourceIotDeviceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIotDeviceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iotAPI, region, deviceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

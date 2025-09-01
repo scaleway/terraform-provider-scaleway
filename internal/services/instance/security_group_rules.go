@@ -45,14 +45,14 @@ func ResourceSecurityGroupRules() *schema.Resource {
 	}
 }
 
-func ResourceInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	d.SetId(d.Get("security_group_id").(string))
 
 	// We call update instead of read as it will take care of creating rules.
 	return ResourceInstanceSecurityGroupRulesUpdate(ctx, d, m)
 }
 
-func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
 	instanceAPI, zone, securityGroupID, err := NewAPIWithZoneAndID(m, securityGroupZonedID)
@@ -79,7 +79,7 @@ func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func ResourceInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
 	instanceAPI, zone, securityGroupID, err := NewAPIWithZoneAndID(m, securityGroupZonedID)
@@ -95,7 +95,7 @@ func ResourceInstanceSecurityGroupRulesUpdate(ctx context.Context, d *schema.Res
 	return ResourceInstanceSecurityGroupRulesRead(ctx, d, m)
 }
 
-func ResourceInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceSecurityGroupRulesDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	securityGroupZonedID := d.Id()
 
 	instanceAPI, zone, securityGroupID, err := NewAPIWithZoneAndID(m, securityGroupZonedID)

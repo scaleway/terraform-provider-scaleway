@@ -37,7 +37,7 @@ func DataSourceRecord() *schema.Resource {
 	}
 }
 
-func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	recordID, ok := d.GetOk("record_id")

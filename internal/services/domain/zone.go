@@ -83,12 +83,12 @@ func ResourceZone() *schema.Resource {
 	}
 }
 
-func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	domainName := strings.ToLower(d.Get("domain").(string))
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
-	zoneName := fmt.Sprintf("%s.%s", subdomainName, domainName)
+	zoneName := BuildZoneName(subdomainName, domainName)
 
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -100,7 +100,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	for i := range zones.DNSZones {
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
-			d.SetId(fmt.Sprintf("%s.%s", subdomainName, domainName))
+			d.SetId(BuildZoneName(subdomainName, domainName))
 
 			return resourceDomainZoneRead(ctx, d, m)
 		}
@@ -121,12 +121,12 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m int
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s.%s", dnsZone.Subdomain, dnsZone.Domain))
+	d.SetId(BuildZoneName(dnsZone.Subdomain, dnsZone.Domain))
 
 	return resourceDomainZoneRead(ctx, d, m)
 }
 
-func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	var zone *domain.DNSZone
@@ -168,7 +168,7 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	if d.HasChangesExcept("subdomain") {
@@ -185,7 +185,7 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m interface
 	return resourceDomainZoneRead(ctx, d, m)
 }
 
-func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	_, err := waitForDNSZone(ctx, domainAPI, d.Id(), d.Timeout(schema.TimeoutDelete))

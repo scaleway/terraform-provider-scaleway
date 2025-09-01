@@ -1,0 +1,91 @@
+---
+subcategory: "Key Manager"
+page_title: "Scaleway: scaleway_key_manager_key"
+---
+# Resource: scaleway_key_manager_key
+
+Provides a Scaleway Key Manager Key resource.  
+This resource allows you to create and manage cryptographic keys in Scaleway Key Manager (KMS).
+
+## Example Usage
+
+```terraform
+resource "scaleway_key_manager_key" "main" {
+  name         = "my-kms-key"
+  region       = "fr-par"
+  project_id   = "your-project-id" # optional, will use provider default if omitted
+  usage        = "symmetric_encryption"
+  description  = "Key for encrypting secrets"
+  tags         = ["env:prod", "kms"]
+  unprotected  = true
+
+  rotation_policy {
+    rotation_period = "720h" # 30 days
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `name` (String) – The name of the key.  
+- `region` (String) – The region in which to create the key (e.g., `fr-par`).  
+- `project_id` (String, Optional) – The ID of the project the key belongs to.  
+- `usage` (String, **Required**) – The usage of the key. Valid values are:
+    - `symmetric_encryption`
+    - `asymmetric_encryption`
+    - `asymmetric_signing`
+- `description` (String, Optional) – A description for the key.
+- `tags` (List of String, Optional) – A list of tags to assign to the key.
+- `unprotected` (Boolean, Optional) – If `true`, the key can be deleted. Defaults to `false` (protected).
+- `origin` (String, Optional) – The origin of the key. Valid values are:
+    - `scaleway_kms` (default)
+    - `external`
+- `rotation_policy` (Block, Optional) – Rotation policy for the key:
+    - `rotation_period` (String, Optional) – The period between key rotations (e.g., `"720h"` for 30 days).
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` – The ID of the key.
+- `state` – The state of the key (e.g., `enabled`).
+- `created_at` – The date and time when the key was created.
+- `updated_at` – The date and time when the key was last updated.
+- `rotation_count` – The number of times the key has been rotated.
+- `protected` – Whether the key is protected from deletion.
+- `locked` – Whether the key is locked.
+- `rotated_at` – The date and time when the key was last rotated.
+- `origin_read` – The origin of the key as returned by the API.
+- `region_read` – The region of the key as returned by the API.
+- `rotation_policy` (Block)
+    - `rotation_period` – The period between key rotations.
+    - `next_rotation_at` – The date and time of the next scheduled rotation.
+
+## Import
+
+You can import a key using its ID and region:
+
+```shell
+terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-555555555555
+```
+
+## Notes
+
+- **Protection**: By default, keys are protected and cannot be deleted. To allow deletion, set `unprotected = true` when creating the key.
+- **Rotation Policy**: The `rotation_policy` block allows you to set automatic rotation for your key.
+- **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
+- **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
+
+## Example: Asymmetric Key
+
+```terraform
+resource "scaleway_key_manager_key" "asym" {
+  name        = "asymmetric-key"
+  region      = "fr-par"
+  usage       = "asymmetric_signing"
+  description = "Key for signing documents"
+  unprotected = true
+}
+```

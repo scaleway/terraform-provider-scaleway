@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/alexedwards/argon2id"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccFunction_Basic(t *testing.T) {
@@ -410,6 +411,158 @@ func TestAccFunction_Sandbox(t *testing.T) {
 	})
 }
 
+func TestAccFunction_PrivateNetwork(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFunctionNamespaceDestroy(tt),
+			testAccCheckFunctionDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn00 {
+						name = "test-acc-function-pn-pn00"
+					}
+					resource scaleway_vpc_private_network pn01 {
+						name = "test-acc-function-pn-pn01"
+					}
+
+					resource scaleway_function_namespace main {
+						activate_vpc_integration = true
+					}
+
+					resource scaleway_function f00 {
+						name = "test-acc-function-pn-00"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn00.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.f00"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
+					resource.TestCheckResourceAttr("scaleway_function.f00", "sandbox", "v1"),
+					resource.TestCheckResourceAttrPair("scaleway_function.f00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn00 {
+						name = "test-acc-function-pn-pn00"
+					}
+					resource scaleway_vpc_private_network pn01 {
+						name = "test-acc-function-pn-pn01"
+					}
+
+					resource scaleway_function_namespace main {
+						activate_vpc_integration = true
+					}
+
+					resource scaleway_function f00 {
+						name = "test-acc-function-pn-f00"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn00.id
+					}
+
+					resource scaleway_function f01 {
+						name = "test-acc-function-pn-f01"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn00.id
+					}
+
+					resource scaleway_function f02 {
+						name = "test-acc-function-pn-f02"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn00.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.f00"),
+					testAccCheckFunctionExists(tt, "scaleway_function.f01"),
+					testAccCheckFunctionExists(tt, "scaleway_function.f02"),
+					resource.TestCheckResourceAttr("scaleway_function.f00", "sandbox", "v1"),
+					resource.TestCheckResourceAttr("scaleway_function.f01", "sandbox", "v1"),
+					resource.TestCheckResourceAttr("scaleway_function.f02", "sandbox", "v1"),
+					resource.TestCheckResourceAttrPair("scaleway_function.f00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_function.f01", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_function.f02", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network pn00 {
+						name = "test-acc-function-pn-pn00"
+					}
+					resource scaleway_vpc_private_network pn01 {
+						name = "test-acc-function-pn-pn01"
+					}
+
+					resource scaleway_function_namespace main {
+						activate_vpc_integration = true
+					}
+
+					resource scaleway_function f00 {
+						name = "test-acc-function-pn-f00"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+					}
+
+					resource scaleway_function f01 {
+						name = "test-acc-function-pn-f01"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn01.id
+					}
+
+					resource scaleway_function f02 {
+						name = "test-acc-function-pn-02"
+						namespace_id = scaleway_function_namespace.main.id
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						sandbox = "v1"
+						private_network_id = scaleway_vpc_private_network.pn00.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionExists(tt, "scaleway_function.f00"),
+					testAccCheckFunctionExists(tt, "scaleway_function.f01"),
+					testAccCheckFunctionExists(tt, "scaleway_function.f02"),
+					resource.TestCheckResourceAttr("scaleway_function.f00", "private_network_id", ""),
+					resource.TestCheckResourceAttrPair("scaleway_function.f01", "private_network_id", "scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_function.f02", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckFunctionExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -468,7 +621,7 @@ func passwordMatchHash(parent string, key string, password string) resource.Test
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[parent]
 		if !ok {
-			return fmt.Errorf("resource container not found: %s", parent)
+			return fmt.Errorf("resource not found: %s", parent)
 		}
 
 		match, err := argon2id.ComparePasswordAndHash(password, rs.Primary.Attributes[key])

@@ -10,11 +10,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func NewProjectAPI(m interface{}) *accountSDK.ProjectAPI {
+func NewProjectAPI(m any) *accountSDK.ProjectAPI {
 	return accountSDK.NewProjectAPI(meta.ExtractScwClient(m))
 }
 
-func GetOrganizationID(m interface{}, d *schema.ResourceData) *string {
+func GetOrganizationID(m any, d *schema.ResourceData) *string {
 	orgID, orgIDExist := d.GetOk("organization_id")
 
 	if orgIDExist {

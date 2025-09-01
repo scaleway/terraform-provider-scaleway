@@ -31,10 +31,11 @@ func ResourceSNSCredentials() *schema.Resource {
 				Description: "The credentials name",
 			},
 			"permissions": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The permissions attached to the credentials",
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"can_publish": {
@@ -78,7 +79,7 @@ func ResourceSNSCredentials() *schema.Resource {
 	}
 }
 
-func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +107,7 @@ func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,7 +142,7 @@ func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,7 +180,7 @@ func ResourceMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 	return ResourceMNQSNSCredentialsRead(ctx, d, m)
 }
 
-func ResourceMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

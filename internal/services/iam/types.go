@@ -7,7 +7,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func expandPermissionSetNames(rawPermissions interface{}) *[]string {
+func expandPermissionSetNames(rawPermissions any) *[]string {
 	permissions := []string{}
 	permissionSet := rawPermissions.(*schema.Set)
 
@@ -19,22 +19,22 @@ func expandPermissionSetNames(rawPermissions interface{}) *[]string {
 }
 
 func flattenPermissionSetNames(permissions []string) *schema.Set {
-	rawPermissions := []interface{}(nil)
+	rawPermissions := []any(nil)
 	for _, perm := range permissions {
 		rawPermissions = append(rawPermissions, perm)
 	}
 
-	return schema.NewSet(func(i interface{}) int {
+	return schema.NewSet(func(i any) int {
 		return types.StringHashcode(i.(string))
 	}, rawPermissions)
 }
 
-func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
+func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
 	rules := []*iam.RuleSpecs(nil)
 
-	rawRules := d.([]interface{})
+	rawRules := d.([]any)
 	for _, rawRule := range rawRules {
-		mapRule := rawRule.(map[string]interface{})
+		mapRule := rawRule.(map[string]any)
 		rule := &iam.RuleSpecs{
 			PermissionSetNames: expandPermissionSetNames(mapRule["permission_set_names"]),
 			Condition:          mapRule["condition"].(string),
@@ -54,11 +54,11 @@ func expandPolicyRuleSpecs(d interface{}) []*iam.RuleSpecs {
 	return rules
 }
 
-func flattenPolicyRules(rules []*iam.Rule) interface{} {
-	rawRules := []interface{}(nil)
+func flattenPolicyRules(rules []*iam.Rule) any {
+	rawRules := []any(nil)
 
 	for _, rule := range rules {
-		rawRule := map[string]interface{}{}
+		rawRule := map[string]any{}
 		if rule.OrganizationID != nil {
 			rawRule["organization_id"] = types.FlattenStringPtr(rule.OrganizationID)
 		} else {

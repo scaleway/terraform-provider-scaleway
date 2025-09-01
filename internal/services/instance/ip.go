@@ -71,7 +71,7 @@ func ResourceIP() *schema.Resource {
 	}
 }
 
-func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,7 +113,7 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
-func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,7 +136,7 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
-func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -191,7 +191,7 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

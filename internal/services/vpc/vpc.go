@@ -45,6 +45,12 @@ func ResourceVPC() *schema.Resource {
 				Computed:    true,
 				Description: "Enable routing between Private Networks in the VPC",
 			},
+			"enable_custom_routes_propagation": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Defines whether the VPC advertises custom routes between its Private Networks",
+			},
 			"project_id": account.ProjectIDSchema(),
 			"region":     regional.Schema(),
 			// Computed elements
@@ -65,7 +71,7 @@ func ResourceVPC() *schema.Resource {
 				Description: "The date and time of the last update of the private network",
 			},
 		},
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ interface{}) error {
+		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			before, after := diff.GetChange("enable_routing")
 			if before != nil && before.(bool) && after != nil && !after.(bool) {
 				return errors.New("routing cannot be disabled on this VPC")
@@ -76,7 +82,7 @@ func ResourceVPC() *schema.Resource {
 	}
 }
 
-func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -93,12 +99,22 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m interface{
 		return diag.FromErr(err)
 	}
 
+	if _, ok := d.GetOk("enable_custom_routes_propagation"); ok {
+		_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
+			Region: region,
+			VpcID:  res.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	d.SetId(regional.NewIDString(region, res.ID))
 
 	return ResourceVPCRead(ctx, d, m)
 }
 
-func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -125,6 +141,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
+	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
 	_ = d.Set("region", region)
 
 	if len(res.Tags) > 0 {
@@ -134,7 +151,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m interface{})
 	return nil
 }
 
-func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,10 +194,23 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m interface{
 		}
 	}
 
+	if d.HasChange("enable_custom_routes_propagation") {
+		enableCustomRoutesPropagation := d.Get("enable_custom_routes_propagation").(bool)
+		if enableCustomRoutesPropagation {
+			_, err = vpcAPI.EnableCustomRoutesPropagation(&vpc.EnableCustomRoutesPropagationRequest{
+				Region: region,
+				VpcID:  ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return ResourceVPCRead(ctx, d, m)
 }
 
-func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

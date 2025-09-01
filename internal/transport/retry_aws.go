@@ -9,14 +9,14 @@ import (
 )
 
 // RetryWhenAWSErrCodeEquals retries a function when it returns a specific AWS error
-func RetryWhenAWSErrCodeEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) { //nolint: ireturn
+func RetryWhenAWSErrCodeEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) {
 	return retryWhen(ctx, config, func(err error) bool {
 		return tfawserr.ErrCodeEquals(err, codes...)
 	})
 }
 
 // RetryWhenAWSErrCodeNotEquals retries a function until it returns a specific AWS error
-func RetryWhenAWSErrCodeNotEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) { //nolint: ireturn
+func RetryWhenAWSErrCodeNotEquals[T any](ctx context.Context, codes []string, config *RetryWhenConfig[T]) (T, error) {
 	return retryWhen(ctx, config, func(err error) bool {
 		if err == nil {
 			return true
@@ -28,7 +28,7 @@ func RetryWhenAWSErrCodeNotEquals[T any](ctx context.Context, codes []string, co
 
 // retryWhen executes the function passed in the configuration object until the timeout is reached or the context is cancelled.
 // It will retry if the shouldRetry function returns true. It will stop if the shouldRetry function returns false.
-func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRetry func(error) bool) (T, error) { //nolint: ireturn
+func retryWhen[T any](ctx context.Context, config *RetryWhenConfig[T], shouldRetry func(error) bool) (T, error) {
 	retryInterval := config.Interval
 	if DefaultWaitRetryInterval != nil {
 		retryInterval = *DefaultWaitRetryInterval

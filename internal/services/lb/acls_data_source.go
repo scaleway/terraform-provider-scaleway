@@ -27,89 +27,112 @@ func DataSourceACLs() *schema.Resource {
 				Description: "ACLs with a name like it are listed.",
 			},
 			"acls": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "ACLs that are listed.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the ACL.",
+							Type:        schema.TypeString,
 						},
 						"name": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Name of the ACL.",
+							Type:        schema.TypeString,
 						},
 						"frontend_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "ID of the frontend to use for the ACL.",
+							Type:        schema.TypeString,
 						},
 						"index": {
-							Computed: true,
-							Type:     schema.TypeInt,
+							Computed:    true,
+							Description: "Priority of this ACL (ACLs are applied in ascending order, 0 is the first ACL executed).",
+							Type:        schema.TypeInt,
 						},
 						"description": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "ACL description.",
+							Type:        schema.TypeString,
 						},
 						"match": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "ACL Match configuration.",
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"ip_subnet": {
-										Computed: true,
-										Type:     schema.TypeList,
+										Computed:    true,
+										Description: "List of IPs or CIDR v4/v6 addresses to filter for from the client side.",
+										Type:        schema.TypeList,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
 									},
 									"http_filter": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "type of HTTP filter to match. Extracts the request's URL path, which starts at the first slash and ends before the question mark (without the host part). Defines where to filter for the http_filter_value. Only supported for HTTP backends.",
+										Computed:    true,
 									},
 									"http_filter_value": {
-										Computed: true,
-										Type:     schema.TypeList,
+										Computed:    true,
+										Description: "List of values to filter for",
+										Type:        schema.TypeList,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
 									},
 									"http_filter_option": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "Name of the HTTP header to filter on if `http_header_match` was selected in `http_filter`.",
+										Computed:    true,
 									},
 									"invert": {
-										Computed: true,
-										Type:     schema.TypeBool,
+										Computed:    true,
+										Description: "Defines whether to invert the match condition. If set to `true`, the ACL carries out its action when the condition DOES NOT match",
+										Type:        schema.TypeBool,
+									},
+									"ips_edge_services": {
+										Computed:    true,
+										Description: "Defines whether Edge Services IPs should be matched",
+										Type:        schema.TypeBool,
 									},
 								},
 							},
 						},
 						"action": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "Action to take when incoming traffic matches an ACL filter.",
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "type: action to take when incoming traffic matches an ACL filter. (allow/deny)",
+										Computed:    true,
 									},
 									"redirect": {
-										Type:     schema.TypeList,
-										Computed: true,
+										Type:        schema.TypeList,
+										Description: "redirection parameters when using an ACL with a `redirect` action.",
+										Computed:    true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"type": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Description: "Value can be location or scheme",
+													Computed:    true,
 												},
 												"target": {
-													Type:     schema.TypeString,
-													Computed: true,
+													Type:        schema.TypeString,
+													Description: "redirect target. For a location redirect, you can use a URL e.g. `https://scaleway.com`. Using a scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme. This can be useful to implement HTTP to HTTPS redirects. Valid placeholders that can be used in a `location` redirect to preserve parts of the original request in the redirection URL are {{host}}, {{query}}, {{path}} and {{scheme}}.",
+													Computed:    true,
 												},
 												"code": {
-													Type:     schema.TypeInt,
-													Computed: true,
+													Type:        schema.TypeInt,
+													Description: "HTTP redirect code to use. Valid values are 301, 302, 303, 307 and 308. Default value is 302.",
+													Computed:    true,
 												},
 											},
 										},
@@ -118,12 +141,14 @@ func DataSourceACLs() *schema.Resource {
 							},
 						},
 						"created_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Timestamp when the ACL was created (RFC3339)",
+							Type:        schema.TypeString,
 						},
 						"update_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Timestamp when the ACL was updated (RFC3339)",
+							Type:        schema.TypeString,
 						},
 					},
 				},
@@ -135,7 +160,7 @@ func DataSourceACLs() *schema.Resource {
 	}
 }
 
-func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,10 +180,10 @@ func DataSourceLbACLsRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	acls := []interface{}(nil)
+	acls := []any(nil)
 
 	for _, acl := range res.ACLs {
-		rawACL := make(map[string]interface{})
+		rawACL := make(map[string]any)
 		rawACL["id"] = zonal.NewIDString(zone, acl.ID)
 		rawACL["name"] = acl.Name
 		rawACL["frontend_id"] = zonal.NewIDString(zone, acl.Frontend.ID)

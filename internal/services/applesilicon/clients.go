@@ -9,7 +9,7 @@ import (
 )
 
 // newAPIWithZone returns a new apple silicon API and the zone
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*applesilicon.API, scw.Zone, error) {
 	asAPI := applesilicon.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -21,7 +21,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.API, s
 }
 
 // NewAPIWithZoneAndID returns an apple silicon API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*applesilicon.API, scw.Zone, string, error) {
 	asAPI := applesilicon.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)
@@ -32,7 +32,7 @@ func NewAPIWithZoneAndID(m interface{}, id string) (*applesilicon.API, scw.Zone,
 	return asAPI, zone, ID, nil
 }
 
-func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m interface{}) (*applesilicon.PrivateNetworkAPI, scw.Zone, error) {
+func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m any) (*applesilicon.PrivateNetworkAPI, scw.Zone, error) {
 	privateNetworkAPI := applesilicon.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)

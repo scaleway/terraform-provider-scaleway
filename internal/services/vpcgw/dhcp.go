@@ -131,7 +131,7 @@ func ResourceDHCP() *schema.Resource {
 	}
 }
 
-func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -198,7 +198,7 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
 }
 
-func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -240,7 +240,7 @@ func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -320,7 +320,7 @@ func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceD
 	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
 }
 
-func ResourceVPCPublicGatewayDHCPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCPublicGatewayDHCPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

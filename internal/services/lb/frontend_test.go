@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -51,6 +51,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", ""),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "0"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "false"),
 				),
 			},
 			{
@@ -75,6 +76,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 						timeout_client = "30s"
 						enable_http3 = true
 						connection_rate_limit = 100
+						enable_access_logs = true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -84,6 +86,7 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "timeout_client", "30s"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_http3", "true"),
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "connection_rate_limit", "100"),
+					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "true"),
 				),
 			},
 		},

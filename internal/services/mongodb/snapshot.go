@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -85,7 +85,7 @@ func ResourceSnapshot() *schema.Resource {
 	}
 }
 
-func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, zone, region, err := newAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +116,7 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceSnapshotRead(ctx, d, m)
 }
 
-func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -134,12 +134,12 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("instance_id", zonal.NewIDString(zone, snapshot.InstanceID))
+	_ = d.Set("instance_id", zonal.NewIDString(zone, *snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
-	_ = d.Set("size", int64(snapshot.Size))
+	_ = d.Set("size", int64(snapshot.SizeBytes))
 	_ = d.Set("node_type", snapshot.NodeType)
-	_ = d.Set("volume_type", snapshot.VolumeType.Type)
+	_ = d.Set("volume_type", snapshot.VolumeType)
 	_ = d.Set("expires_at", types.FlattenTime(snapshot.ExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(snapshot.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(snapshot.UpdatedAt))
@@ -148,7 +148,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,7 +194,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceSnapshotRead(ctx, d, m)
 }
 
-func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

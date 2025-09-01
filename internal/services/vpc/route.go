@@ -78,7 +78,7 @@ func ResourceRoute() *schema.Resource {
 	}
 }
 
-func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, err := vpcAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -114,7 +114,7 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	return ResourceRouteRead(ctx, d, m)
 }
 
-func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -156,7 +156,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,7 +214,7 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m interfac
 	return ResourceRouteRead(ctx, d, m)
 }
 
-func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

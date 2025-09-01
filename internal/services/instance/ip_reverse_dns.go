@@ -47,7 +47,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 	}
 }
 
-func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -86,7 +86,7 @@ func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceD
 	return ResourceInstanceIPReverseDNSRead(ctx, d, m)
 }
 
-func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -113,7 +113,7 @@ func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -142,7 +142,7 @@ func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceD
 	return ResourceInstanceIPReverseDNSRead(ctx, d, m)
 }
 
-func ResourceInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

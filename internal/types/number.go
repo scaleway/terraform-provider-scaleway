@@ -2,7 +2,7 @@ package types
 
 import "github.com/scaleway/scaleway-sdk-go/scw"
 
-func FlattenInt32Ptr(i *int32) interface{} {
+func FlattenInt32Ptr(i *int32) any {
 	if i == nil {
 		return 0
 	}
@@ -10,7 +10,7 @@ func FlattenInt32Ptr(i *int32) interface{} {
 	return *i
 }
 
-func FlattenUint32Ptr(i *uint32) interface{} {
+func FlattenUint32Ptr(i *uint32) any {
 	if i == nil {
 		return 0
 	}
@@ -18,7 +18,7 @@ func FlattenUint32Ptr(i *uint32) interface{} {
 	return *i
 }
 
-func ExpandInt32Ptr(data interface{}) *int32 {
+func ExpandInt32Ptr(data any) *int32 {
 	if data == nil || data == "" {
 		return nil
 	}
@@ -26,7 +26,7 @@ func ExpandInt32Ptr(data interface{}) *int32 {
 	return scw.Int32Ptr(int32(data.(int)))
 }
 
-func ExpandUint32Ptr(data interface{}) *uint32 {
+func ExpandUint32Ptr(data any) *uint32 {
 	if data == nil || data == "" {
 		return nil
 	}
@@ -34,7 +34,7 @@ func ExpandUint32Ptr(data interface{}) *uint32 {
 	return scw.Uint32Ptr(uint32(data.(int)))
 }
 
-func ExpandUint64Ptr(data interface{}) *uint64 {
+func ExpandUint64Ptr(data any) *uint64 {
 	if data == nil || data == "" {
 		return nil
 	}

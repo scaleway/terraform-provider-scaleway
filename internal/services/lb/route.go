@@ -81,7 +81,7 @@ func ResourceRoute() *schema.Resource {
 	}
 }
 
-func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -123,7 +123,7 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceLbRouteRead(ctx, d, m)
 }
 
-func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,7 +155,7 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -190,7 +190,7 @@ func resourceLbRouteUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceLbRouteRead(ctx, d, m)
 }
 
-func resourceLbRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

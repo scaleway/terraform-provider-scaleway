@@ -16,7 +16,7 @@ import (
 // region/id1/invalid -> id1
 // id1 -> id1
 // invalid -> invalid
-func expandLastID(i interface{}) string {
+func expandLastID(i any) string {
 	composedID := i.(string)
 
 	elems := strings.Split(composedID, "/")
@@ -29,12 +29,12 @@ func expandLastID(i interface{}) string {
 	return composedID
 }
 
-func expandIPSource(raw interface{}) *ipam.Source {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandIPSource(raw any) *ipam.Source {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &ipam.Source{
 		Zonal:            types.ExpandStringPtr(rawMap["zonal"].(string)),
@@ -43,12 +43,12 @@ func expandIPSource(raw interface{}) *ipam.Source {
 	}
 }
 
-func expandCustomResource(raw interface{}) *ipam.CustomResource {
-	if raw == nil || len(raw.([]interface{})) != 1 {
+func expandCustomResource(raw any) *ipam.CustomResource {
+	if raw == nil || len(raw.([]any)) != 1 {
 		return nil
 	}
 
-	rawMap := raw.([]interface{})[0].(map[string]interface{})
+	rawMap := raw.([]any)[0].(map[string]any)
 
 	return &ipam.CustomResource{
 		MacAddress: rawMap["mac_address"].(string),
@@ -56,12 +56,12 @@ func expandCustomResource(raw interface{}) *ipam.CustomResource {
 	}
 }
 
-func flattenIPSource(source *ipam.Source, privateNetworkID string) interface{} {
+func flattenIPSource(source *ipam.Source, privateNetworkID string) any {
 	if source == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"zonal":              types.FlattenStringPtr(source.Zonal),
 			"private_network_id": privateNetworkID,
@@ -70,12 +70,12 @@ func flattenIPSource(source *ipam.Source, privateNetworkID string) interface{} {
 	}
 }
 
-func flattenIPResource(resource *ipam.Resource) interface{} {
+func flattenIPResource(resource *ipam.Resource) any {
 	if resource == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"type":        resource.Type.String(),
 			"id":          resource.ID,
@@ -85,19 +85,19 @@ func flattenIPResource(resource *ipam.Resource) interface{} {
 	}
 }
 
-func flattenIPReverse(reverse *ipam.Reverse) interface{} {
+func flattenIPReverse(reverse *ipam.Reverse) any {
 	if reverse == nil {
 		return nil
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"hostname": reverse.Hostname,
 		"address":  types.FlattenIPPtr(reverse.Address),
 	}
 }
 
-func flattenIPReverses(reverses []*ipam.Reverse) interface{} {
-	rawReverses := make([]interface{}, 0, len(reverses))
+func flattenIPReverses(reverses []*ipam.Reverse) any {
+	rawReverses := make([]any, 0, len(reverses))
 	for _, reverse := range reverses {
 		rawReverses = append(rawReverses, flattenIPReverse(reverse))
 	}
@@ -105,8 +105,8 @@ func flattenIPReverses(reverses []*ipam.Reverse) interface{} {
 	return rawReverses
 }
 
-func checkSubnetIDInFlattenedSubnets(subnetID string, flattenedSubnets interface{}) bool {
-	for _, subnet := range flattenedSubnets.([]map[string]interface{}) {
+func checkSubnetIDInFlattenedSubnets(subnetID string, flattenedSubnets any) bool {
+	for _, subnet := range flattenedSubnets.([]map[string]any) {
 		if subnet["id"].(string) == subnetID {
 			return true
 		}

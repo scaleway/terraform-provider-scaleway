@@ -84,7 +84,7 @@ func ResourceSnapshot() *schema.Resource {
 	}
 }
 
-func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,7 +122,7 @@ func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta
 	return ResourceRdbSnapshotRead(ctx, d, meta)
 }
 
-func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -165,7 +165,7 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	rdbAPI, region, snapshotID, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -216,7 +216,7 @@ func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta
 	return ResourceRdbSnapshotRead(ctx, d, meta)
 }
 
-func ResourceRdbSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceRdbSnapshotDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	rdbAPI, region, snapshotID, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

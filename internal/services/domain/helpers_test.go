@@ -11,14 +11,14 @@ import (
 
 func TestExpandContact(t *testing.T) {
 	tests := []struct {
-		contactMap  map[string]interface{}
+		contactMap  map[string]any
 		expected    *domainSDK.Contact
 		name        string
 		expectError bool
 	}{
 		{
 			name: "minimal valid contact",
-			contactMap: map[string]interface{}{
+			contactMap: map[string]any{
 				"phone_number":   "123456789",
 				"legal_form":     "individual",
 				"firstname":      "John",
@@ -43,7 +43,7 @@ func TestExpandContact(t *testing.T) {
 		},
 		{
 			name: "full contact with extensions",
-			contactMap: map[string]interface{}{
+			contactMap: map[string]any{
 				"phone_number":   "987654321",
 				"legal_form":     "corporate",
 				"firstname":      "Jane",
@@ -53,9 +53,9 @@ func TestExpandContact(t *testing.T) {
 				"zip":            "10001",
 				"city":           "New York",
 				"country":        "US",
-				"extension_fr": map[string]interface{}{
+				"extension_fr": map[string]any{
 					"mode": "individual",
-					"individual_info": map[string]interface{}{
+					"individual_info": map[string]any{
 						"whois_opt_in": true,
 					},
 				},
@@ -94,14 +94,14 @@ func TestExpandContact(t *testing.T) {
 
 func TestExpandNewContact(t *testing.T) {
 	tests := []struct {
-		contactMap  map[string]interface{}
+		contactMap  map[string]any
 		expected    *domainSDK.NewContact
 		name        string
 		expectError bool
 	}{
 		{
 			name: "minimal valid new contact",
-			contactMap: map[string]interface{}{
+			contactMap: map[string]any{
 				"phone_number":   "123456789",
 				"legal_form":     "individual",
 				"firstname":      "John",
@@ -126,7 +126,7 @@ func TestExpandNewContact(t *testing.T) {
 		},
 		{
 			name: "new contact with optional fields",
-			contactMap: map[string]interface{}{
+			contactMap: map[string]any{
 				"phone_number":                "987654321",
 				"legal_form":                  "corporate",
 				"firstname":                   "Jane",
@@ -169,7 +169,7 @@ func TestExpandNewContact(t *testing.T) {
 		},
 		{
 			name: "new contact with extensions",
-			contactMap: map[string]interface{}{
+			contactMap: map[string]any{
 				"phone_number":   "654987321",
 				"legal_form":     "individual",
 				"firstname":      "Alice",
@@ -179,9 +179,9 @@ func TestExpandNewContact(t *testing.T) {
 				"zip":            "30301",
 				"city":           "Atlanta",
 				"country":        "US",
-				"extension_fr": map[string]interface{}{
+				"extension_fr": map[string]any{
 					"mode": "individual",
-					"individual_info": map[string]interface{}{
+					"individual_info": map[string]any{
 						"whois_opt_in": true,
 					},
 				},

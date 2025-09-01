@@ -44,8 +44,9 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"suffix": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Suffix that will be added to the index.",
+							Required:    true,
 						},
 					},
 				},
@@ -58,8 +59,9 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Description: "Key for the object to use as an error document.",
+							Required:    true,
 						},
 					},
 				},
@@ -81,7 +83,7 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 	}
 }
 
-func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -101,11 +103,11 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	}
 
 	websiteConfig := &s3Types.WebsiteConfiguration{
-		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]interface{})),
+		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]any)),
 	}
 
-	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
+	if v, ok := d.GetOk("error_document"); ok && len(v.([]any)) > 0 && v.([]any)[0] != nil {
+		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]any))
 	}
 
 	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
@@ -130,7 +132,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	return resourceBucketWebsiteConfigurationRead(ctx, d, m)
 }
 
-func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, region, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,18 +203,18 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	websiteConfig := &s3Types.WebsiteConfiguration{
-		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]interface{})),
+		IndexDocument: expandBucketWebsiteConfigurationIndexDocument(d.Get("index_document").([]any)),
 	}
 
-	if v, ok := d.GetOk("error_document"); ok && len(v.([]interface{})) > 0 && v.([]interface{})[0] != nil {
-		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]interface{}))
+	if v, ok := d.GetOk("error_document"); ok && len(v.([]any)) > 0 && v.([]any)[0] != nil {
+		websiteConfig.ErrorDocument = expandBucketWebsiteConfigurationErrorDocument(v.([]any))
 	}
 
 	input := &s3.PutBucketWebsiteInput{
@@ -228,7 +230,7 @@ func resourceBucketWebsiteConfigurationUpdate(ctx context.Context, d *schema.Res
 	return resourceBucketWebsiteConfigurationRead(ctx, d, m)
 }
 
-func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -251,12 +253,12 @@ func resourceBucketWebsiteConfigurationDelete(ctx context.Context, d *schema.Res
 	return nil
 }
 
-func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3Types.ErrorDocument {
+func expandBucketWebsiteConfigurationErrorDocument(l []any) *s3Types.ErrorDocument {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
 
-	tfMap, ok := l[0].(map[string]interface{})
+	tfMap, ok := l[0].(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -270,12 +272,12 @@ func expandBucketWebsiteConfigurationErrorDocument(l []interface{}) *s3Types.Err
 	return result
 }
 
-func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3Types.IndexDocument {
+func expandBucketWebsiteConfigurationIndexDocument(l []any) *s3Types.IndexDocument {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
 
-	tfMap, ok := l[0].(map[string]interface{})
+	tfMap, ok := l[0].(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -289,30 +291,30 @@ func expandBucketWebsiteConfigurationIndexDocument(l []interface{}) *s3Types.Ind
 	return result
 }
 
-func flattenBucketWebsiteConfigurationIndexDocument(i *s3Types.IndexDocument) []interface{} {
+func flattenBucketWebsiteConfigurationIndexDocument(i *s3Types.IndexDocument) []any {
 	if i == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	if i.Suffix != nil {
 		m["suffix"] = aws.ToString(i.Suffix)
 	}
 
-	return []interface{}{m}
+	return []any{m}
 }
 
-func flattenBucketWebsiteConfigurationErrorDocument(e *s3Types.ErrorDocument) []interface{} {
+func flattenBucketWebsiteConfigurationErrorDocument(e *s3Types.ErrorDocument) []any {
 	if e == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	if e.Key != nil {
 		m["key"] = aws.ToString(e.Key)
 	}
 
-	return []interface{}{m}
+	return []any{m}
 }

@@ -9,7 +9,7 @@ import (
 
 // FindExact finds the first element in 'slice' matching the condition defined by 'finder'.
 // It returns the first matching element and an error if either no match is found or multiple matches are found.
-func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) { //nolint
+func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) {
 	var found T
 
 	var foundFlag bool
@@ -60,7 +60,7 @@ func notFound(err error) bool {
 }
 
 type TooManyResultsError struct {
-	LastRequest interface{}
+	LastRequest any
 	Count       int
 }
 
@@ -74,7 +74,7 @@ func (e *TooManyResultsError) Is(err error) bool {
 	return ok
 }
 
-func (e *TooManyResultsError) As(target interface{}) bool {
+func (e *TooManyResultsError) As(target any) bool {
 	t, ok := target.(**retry.NotFoundError)
 	if !ok {
 		return false

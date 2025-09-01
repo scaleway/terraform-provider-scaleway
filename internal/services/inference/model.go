@@ -25,7 +25,6 @@ func ResourceModel() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultModelTimeout),
 			Create:  schema.DefaultTimeout(defaultModelTimeout),
-			Update:  schema.DefaultTimeout(defaultModelTimeout),
 			Delete:  schema.DefaultTimeout(defaultModelTimeout),
 		},
 		SchemaVersion: 0,
@@ -135,7 +134,7 @@ func ResourceModel() *schema.Resource {
 	}
 }
 
-func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,7 +176,7 @@ func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m interfac
 	return ResourceModelRead(ctx, d, m)
 }
 
-func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -208,7 +207,7 @@ func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m interface{
 	return nil
 }
 
-func ResourceModelDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceModelDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

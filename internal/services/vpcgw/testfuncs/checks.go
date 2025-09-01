@@ -3,8 +3,8 @@ package vpcgwtestfuncs
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	vpcgwSDK "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"

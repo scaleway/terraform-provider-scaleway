@@ -31,10 +31,11 @@ func ResourceSQSCredentials() *schema.Resource {
 				Description: "The credentials name",
 			},
 			"permissions": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "The permissions attached to the credentials",
+				MaxItems:    1,
+				Optional:    true,
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"can_publish": {
@@ -78,7 +79,7 @@ func ResourceSQSCredentials() *schema.Resource {
 	}
 }
 
-func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -106,7 +107,7 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceMNQSQSCredentialsRead(ctx, d, m)
 }
 
-func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -141,7 +142,7 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,7 +180,7 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 	return ResourceMNQSQSCredentialsRead(ctx, d, m)
 }
 
-func ResourceMNQSQSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSCredentialsDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

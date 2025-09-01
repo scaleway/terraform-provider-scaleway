@@ -9,17 +9,17 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func expandPrivateNetworks(pn interface{}) map[string]*[]string {
+func expandPrivateNetworks(pn any) map[string]*[]string {
 	privateNetworks := make(map[string]*[]string)
 
 	for _, op := range pn.(*schema.Set).List() {
-		rawPN := op.(map[string]interface{})
+		rawPN := op.(map[string]any)
 		id := locality.ExpandID(rawPN["id"].(string))
 
 		ipamIPIDs := &[]string{}
 
 		if ipamIPs, ok := rawPN["ipam_ip_ids"]; ok && ipamIPs != nil {
-			ipamIPsList := ipamIPs.([]interface{})
+			ipamIPsList := ipamIPs.([]any)
 			if len(ipamIPsList) > 0 {
 				ips := make([]string, len(ipamIPsList))
 
@@ -37,12 +37,12 @@ func expandPrivateNetworks(pn interface{}) map[string]*[]string {
 	return privateNetworks
 }
 
-func flattenPrivateNetworks(region scw.Region, privateNetworks []*applesilicon.ServerPrivateNetwork) interface{} {
-	flattenedPrivateNetworks := []map[string]interface{}(nil)
+func flattenPrivateNetworks(region scw.Region, privateNetworks []*applesilicon.ServerPrivateNetwork) any {
+	flattenedPrivateNetworks := []map[string]any(nil)
 	for _, privateNetwork := range privateNetworks {
-		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]interface{}{
+		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]any{
 			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),
-			"ipam_ip_ids": regional.NewRegionalIDs(region, privateNetwork.IpamIPIDs),
+			"ipam_ip_ids": regional.NewIDStrings(region, privateNetwork.IpamIPIDs),
 			"vlan":        types.FlattenUint32Ptr(privateNetwork.Vlan),
 			"status":      privateNetwork.Status,
 			"created_at":  types.FlattenTime(privateNetwork.CreatedAt),

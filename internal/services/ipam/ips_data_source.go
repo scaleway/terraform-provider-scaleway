@@ -77,56 +77,67 @@ func DataSourceIPs() *schema.Resource {
 			"organization_id": account.OrganizationIDSchema(),
 			// Computed
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "IPs to filter for",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "ID of the IP to filter for",
+							Type:        schema.TypeString,
 						},
 						"address": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Address of the IP to filter for",
+							Type:        schema.TypeString,
 						},
 						"resource": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "Resource to filter for",
+							Computed:    true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"type": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "Type of resource to filter for",
+										Computed:    true,
 									},
 									"id": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "ID of the resource to filter for",
+										Computed:    true,
 									},
 									"mac_address": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "MAC address of the resource to filter for",
+										Computed:    true,
 									},
 									"name": {
-										Type:     schema.TypeString,
-										Computed: true,
+										Type:        schema.TypeString,
+										Description: "Name of the resource to filter for",
+										Computed:    true,
 									},
 								},
 							},
 						},
 						"tags": {
-							Type:     schema.TypeList,
-							Computed: true,
+							Type:        schema.TypeList,
+							Description: "Tags to filter for",
+							Computed:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 						},
 						"created_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Date and time when the resource was created",
+							Type:        schema.TypeString,
 						},
 						"updated_at": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Date and time when the resource was updated",
+							Type:        schema.TypeString,
 						},
 						"region":     regional.ComputedSchema(),
 						"zone":       zonal.ComputedSchema(),
@@ -138,7 +149,7 @@ func DataSourceIPs() *schema.Resource {
 	}
 }
 
-func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +195,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	ips := []interface{}(nil)
+	ips := []any(nil)
 
 	for _, ip := range resp.IPs {
 		address, err := types.FlattenIPNet(ip.Address)
@@ -192,7 +203,7 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m interf
 			return diag.FromErr(err)
 		}
 
-		rawIP := make(map[string]interface{})
+		rawIP := make(map[string]any)
 		rawIP["id"] = regional.NewIDString(region, ip.ID)
 		rawIP["address"] = address
 		rawIP["resource"] = flattenIPResource(ip.Resource)

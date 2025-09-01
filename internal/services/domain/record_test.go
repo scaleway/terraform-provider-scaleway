@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -675,7 +675,6 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 						name            = "%[2]s"
 						type            = "%[3]s"
 						data            = "%[4]s"
-						keep_empty_zone = false
 					}
 				`, testDNSZone, name, recordType, data),
 				Check: resource.ComposeTestCheckFunc(
@@ -832,8 +831,11 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				return fmt.Errorf("failed to check if domain zone exists: %w", err)
 			}
 
-			if listDNSZones.TotalCount > 0 {
-				return fmt.Errorf("zone %s still exist", rs.Primary.Attributes["dns_zone"])
+			// Check if the specific record still exists
+			for _, record := range listDNSZones.Records {
+				if record.ID == rs.Primary.ID {
+					return fmt.Errorf("record %s still exists in zone %s", rs.Primary.ID, rs.Primary.Attributes["dns_zone"])
+				}
 			}
 
 			return nil

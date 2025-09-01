@@ -27,13 +27,13 @@ const (
 )
 
 // NewGlobalAPI returns a new global cockpit API.
-func NewGlobalAPI(m interface{}) (*cockpit.GlobalAPI, error) {
+func NewGlobalAPI(m any) (*cockpit.GlobalAPI, error) {
 	api := cockpit.NewGlobalAPI(meta.ExtractScwClient(m))
 
 	return api, nil
 }
 
-func cockpitAPIWithRegion(d *schema.ResourceData, m interface{}) (*cockpit.RegionalAPI, scw.Region, error) {
+func cockpitAPIWithRegion(d *schema.ResourceData, m any) (*cockpit.RegionalAPI, scw.Region, error) {
 	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -44,7 +44,7 @@ func cockpitAPIWithRegion(d *schema.ResourceData, m interface{}) (*cockpit.Regio
 	return api, region, err
 }
 
-func NewAPIWithRegionAndID(m interface{}, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
 	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -56,7 +56,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*cockpit.RegionalAPI, scw.
 }
 
 // NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
-func NewAPIGrafanaUserID(m interface{}, id string) (*cockpit.GlobalAPI, string, uint32, error) {
+func NewAPIGrafanaUserID(m any, id string) (*cockpit.GlobalAPI, string, uint32, error) {
 	projectID, resourceIDString, err := parseCockpitID(id)
 	if err != nil {
 		return nil, "", 0, err
@@ -96,7 +96,7 @@ func cockpitTokenUpgradeV1SchemaType() cty.Type {
 	})
 }
 
-func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	defaultRegion := scw.RegionFrPar // Default to the 'fr-par' region as all tokens created with the v1beta1 API were implicitly set to this region
 
 	if _, ok := rawState["region"]; !ok {
@@ -115,7 +115,7 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]interface{
 	return rawState, nil
 }
 
-func getDefaultProjectID(ctx context.Context, m interface{}) (string, error) {
+func getDefaultProjectID(ctx context.Context, m any) (string, error) {
 	accountAPI := account.NewProjectAPI(m)
 
 	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{

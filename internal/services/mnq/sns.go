@@ -32,7 +32,7 @@ func ResourceSNS() *schema.Resource {
 	}
 }
 
-func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -51,7 +51,7 @@ func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceMNQSNSRead(ctx, d, m)
 }
 
-func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -72,7 +72,7 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

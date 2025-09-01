@@ -52,7 +52,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 	}
 }
 
-func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -89,7 +89,7 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 	return ResourceIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -126,7 +126,7 @@ func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func ResourceIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -153,7 +153,7 @@ func ResourceIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData,
 	return ResourceIPAMIPReverseDNSRead(ctx, d, m)
 }
 
-func ResourceIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceIPAMIPReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	ipamAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

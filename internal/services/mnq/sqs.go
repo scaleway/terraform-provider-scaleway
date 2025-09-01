@@ -32,7 +32,7 @@ func ResourceSQS() *schema.Resource {
 	}
 }
 
-func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -51,7 +51,7 @@ func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceMNQSQSRead(ctx, d, m)
 }
 
-func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -72,7 +72,7 @@ func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceMNQSQSDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewSQSAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

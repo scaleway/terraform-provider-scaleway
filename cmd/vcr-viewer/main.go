@@ -37,7 +37,7 @@ func main() {
 		log.Printf("    Status: %s\n", interaction.Response.Status)
 		log.Printf("    Body: %s\n", interaction.Response.Body)
 
-		var m map[string]interface{}
+		var m map[string]any
 
 		err := json.Unmarshal([]byte(interaction.Response.Body), &m)
 		if err != nil {

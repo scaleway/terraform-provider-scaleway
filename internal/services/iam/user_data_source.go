@@ -49,7 +49,7 @@ func DataSourceUser() *schema.Resource {
 	}
 }
 
-func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	iamAPI := NewAPI(m)
 
 	var email, organizationID string

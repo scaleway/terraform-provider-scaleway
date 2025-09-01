@@ -18,7 +18,7 @@ const (
 )
 
 // fipAPIWithZone returns an lb API WITH zone for a Create request
-func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw.Zone, error) {
+func fipAPIWithZone(d *schema.ResourceData, m any) (*flexibleip.API, scw.Zone, error) {
 	api := flexibleip.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -30,7 +30,7 @@ func fipAPIWithZone(d *schema.ResourceData, m interface{}) (*flexibleip.API, scw
 }
 
 // NewAPIWithZoneAndID returns an flexibleip API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, id string) (*flexibleip.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, id string) (*flexibleip.API, scw.Zone, string, error) {
 	fipAPI := flexibleip.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(id)

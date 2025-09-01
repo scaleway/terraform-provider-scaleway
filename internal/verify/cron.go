@@ -8,7 +8,7 @@ import (
 )
 
 func ValidateCronExpression() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, path cty.Path) diag.Diagnostics {
+	return func(i any, path cty.Path) diag.Diagnostics {
 		v, ok := i.(string)
 		if !ok {
 			diags := diag.Diagnostics{diag.Diagnostic{

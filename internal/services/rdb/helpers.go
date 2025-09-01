@@ -21,12 +21,12 @@ const (
 )
 
 // newAPI returns a new RDB API
-func newAPI(m interface{}) *rdb.API {
+func newAPI(m any) *rdb.API {
 	return rdb.NewAPI(meta.ExtractScwClient(m))
 }
 
 // newAPIWithRegion returns a new lb API and the region for a Create request
-func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*rdb.API, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
 		return nil, "", err
@@ -36,7 +36,7 @@ func newAPIWithRegion(d *schema.ResourceData, m interface{}) (*rdb.API, scw.Regi
 }
 
 // NewAPIWithRegionAndID returns an lb API with region and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*rdb.API, scw.Region, string, error) {
 	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
@@ -46,7 +46,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*rdb.API, scw.Region, stri
 }
 
 // PrivilegeV1SchemaUpgradeFunc allow upgrade the privilege ID on schema V1
-func PrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]interface{}, m interface{}) (map[string]interface{}, error) {
+func PrivilegeV1SchemaUpgradeFunc(_ context.Context, rawState map[string]any, m any) (map[string]any, error) {
 	idRaw, exist := rawState["id"]
 	if !exist {
 		return nil, errors.New("upgrade: id not exist")

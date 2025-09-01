@@ -39,7 +39,7 @@ func DataSourceImage() *schema.Resource {
 	}
 }
 
-func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
