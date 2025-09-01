@@ -1,6 +1,8 @@
 package keymanager
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -85,7 +87,7 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 
 	periodStr, ok := m["rotation_period"].(string)
 	if !ok || periodStr == "" {
-		return nil, nil
+		return nil, errors.New("rotation_period is required when rotation_policy block is specified")
 	}
 
 	period, err := time.ParseDuration(periodStr)
@@ -93,9 +95,21 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 		return nil, err
 	}
 
-	return &key_manager.KeyRotationPolicy{
+	policy := &key_manager.KeyRotationPolicy{
 		RotationPeriod: scw.NewDurationFromTimeDuration(period),
-	}, nil
+	}
+
+	// Handle next_rotation_at if provided
+	if nextRotationStr, ok := m["next_rotation_at"].(string); ok && nextRotationStr != "" {
+		nextRotation, err := time.Parse(time.RFC3339, nextRotationStr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid next_rotation_at format: %w", err)
+		}
+
+		policy.NextRotationAt = &nextRotation
+	}
+
+	return policy, nil
 }
 
 func FlattenKeyRotationPolicy(rp *key_manager.KeyRotationPolicy) []map[string]any {
