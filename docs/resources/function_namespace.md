@@ -40,9 +40,9 @@ The following arguments are supported:
 
 - `secret_environment_variables` - (Optional) The secret environment variables of the namespace.
 
-- `activate_vpc_integration` - (Optional) Activates VPC integration for the namespace. Functions of a namespace with VPC integration activated will be able to connect to a Private Network.
+- `activate_vpc_integration` - (Deprecated) Activates VPC integration for the namespace. Functions of a namespace with VPC integration activated will be able to connect to a Private Network.
 
-~> **Important** Updates to `activate_vpc_integration` will recreate the namespace.
+~> **Important:** VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be "true".
 
 ## Attributes Reference
 
