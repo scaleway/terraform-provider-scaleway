@@ -8,7 +8,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenDomainData(data string, recordType domain.RecordType) any {
+// FlattenDomainData normalizes domain record data based on record type
+func FlattenDomainData(data string, recordType domain.RecordType) any {
 	switch recordType {
 	case domain.RecordTypeMX: // API return this format: "{priority} {data}"
 		dataSplit := strings.SplitN(data, " ", 2)
@@ -18,19 +19,19 @@ func flattenDomainData(data string, recordType domain.RecordType) any {
 	case domain.RecordTypeTXT:
 		return strings.Trim(data, "\"")
 	case domain.RecordTypeSRV:
-		return normalizeSRVData(data)
+		return NormalizeSRVData(data)
 	}
 
 	return data
 }
 
-// normalizeSRVData normalizes SRV record data by handling weight field and zone domain suffixes
-func normalizeSRVData(data string) string {
+// NormalizeSRVData normalizes SRV record data by handling weight field and zone domain suffixes
+func NormalizeSRVData(data string) string {
 	parts := strings.Fields(data)
 
 	if len(parts) >= 4 {
 		priority, weight, port, target := parts[0], parts[1], parts[2], parts[3]
-		target = removeZoneDomainSuffix(target)
+		target = RemoveZoneDomainSuffix(target)
 
 		return strings.Join([]string{priority, weight, port, target}, " ")
 	}
@@ -44,8 +45,8 @@ func normalizeSRVData(data string) string {
 	return data
 }
 
-// removeZoneDomainSuffix removes the zone domain suffix from a target
-func removeZoneDomainSuffix(target string) string {
+// RemoveZoneDomainSuffix removes the zone domain suffix from a target
+func RemoveZoneDomainSuffix(target string) string {
 	if !strings.Contains(target, ".") {
 		return target
 	}
