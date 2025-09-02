@@ -38,7 +38,7 @@ func DataSourcePool() *schema.Resource {
 	}
 }
 
-func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	k8sAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

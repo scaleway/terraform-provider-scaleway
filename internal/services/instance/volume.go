@@ -91,7 +91,7 @@ func ResourceVolume() *schema.Resource {
 	}
 }
 
-func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,7 +138,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceInstanceVolumeRead(ctx, d, m)
 }
 
-func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,7 +194,7 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -255,7 +255,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceInstanceVolumeRead(ctx, d, m)
 }
 
-func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

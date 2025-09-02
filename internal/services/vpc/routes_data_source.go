@@ -52,8 +52,9 @@ func DataSourceRoutes() *schema.Resource {
 				Description: "Routes with these exact tags are listed.",
 			},
 			"routes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of routes",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -123,7 +124,7 @@ func DataSourceRoutes() *schema.Resource {
 	}
 }
 
-func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	routesAPI, region, err := routesAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -148,10 +149,10 @@ func DataSourceRoutesRead(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	routes := []interface{}(nil)
+	routes := []any(nil)
 
 	for _, route := range res.Routes {
-		rawRoute := make(map[string]interface{})
+		rawRoute := make(map[string]any)
 		if route.Route != nil {
 			rawRoute["id"] = regional.NewIDString(region, route.Route.ID)
 			rawRoute["created_at"] = types.FlattenTime(route.Route.CreatedAt)

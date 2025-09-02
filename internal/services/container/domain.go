@@ -26,7 +26,6 @@ func ResourceDomain() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultContainerDomainTimeout),
 			Read:    schema.DefaultTimeout(defaultContainerDomainTimeout),
-			Update:  schema.DefaultTimeout(defaultContainerDomainTimeout),
 			Delete:  schema.DefaultTimeout(defaultContainerDomainTimeout),
 			Default: schema.DefaultTimeout(defaultContainerDomainTimeout),
 		},
@@ -57,7 +56,7 @@ func ResourceDomain() *schema.Resource {
 	}
 }
 
-func ResourceContainerDomainCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerDomainCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -92,7 +91,7 @@ func ResourceContainerDomainCreate(ctx context.Context, d *schema.ResourceData, 
 	return ResourceContainerDomainRead(ctx, d, m)
 }
 
-func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, domainID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,7 +116,7 @@ func ResourceContainerDomainRead(ctx context.Context, d *schema.ResourceData, m 
 	return nil
 }
 
-func ResourceContainerDomainDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, domainID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

@@ -9,8 +9,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface{} {
-	autoscalerConfig := map[string]interface{}{}
+func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]any {
+	autoscalerConfig := map[string]any{}
 	autoscalerConfig["disable_scale_down"] = cluster.AutoscalerConfig.ScaleDownDisabled
 	autoscalerConfig["scale_down_delay_after_add"] = cluster.AutoscalerConfig.ScaleDownDelayAfterAdd
 	autoscalerConfig["scale_down_unneeded_time"] = cluster.AutoscalerConfig.ScaleDownUnneededTime
@@ -30,11 +30,11 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]interface
 	autoscalerConfig["scale_down_utilization_threshold"] = thresholdF64
 	autoscalerConfig["max_graceful_termination_sec"] = cluster.AutoscalerConfig.MaxGracefulTerminationSec
 
-	return []map[string]interface{}{autoscalerConfig}
+	return []map[string]any{autoscalerConfig}
 }
 
-func clusterOpenIDConnectConfigFlatten(cluster *k8s.Cluster) []map[string]interface{} {
-	openIDConnectConfig := map[string]interface{}{}
+func clusterOpenIDConnectConfigFlatten(cluster *k8s.Cluster) []map[string]any {
+	openIDConnectConfig := map[string]any{}
 	openIDConnectConfig["issuer_url"] = cluster.OpenIDConnectConfig.IssuerURL
 	openIDConnectConfig["client_id"] = cluster.OpenIDConnectConfig.ClientID
 	openIDConnectConfig["username_claim"] = cluster.OpenIDConnectConfig.UsernameClaim
@@ -43,40 +43,40 @@ func clusterOpenIDConnectConfigFlatten(cluster *k8s.Cluster) []map[string]interf
 	openIDConnectConfig["groups_prefix"] = cluster.OpenIDConnectConfig.GroupsPrefix
 	openIDConnectConfig["required_claim"] = cluster.OpenIDConnectConfig.RequiredClaim
 
-	return []map[string]interface{}{openIDConnectConfig}
+	return []map[string]any{openIDConnectConfig}
 }
 
-func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]interface{} {
-	autoUpgrade := map[string]interface{}{}
+func clusterAutoUpgradeFlatten(cluster *k8s.Cluster) []map[string]any {
+	autoUpgrade := map[string]any{}
 	autoUpgrade["enable"] = cluster.AutoUpgrade.Enabled
 	autoUpgrade["maintenance_window_start_hour"] = cluster.AutoUpgrade.MaintenanceWindow.StartHour
 	autoUpgrade["maintenance_window_day"] = cluster.AutoUpgrade.MaintenanceWindow.Day
 
-	return []map[string]interface{}{autoUpgrade}
+	return []map[string]any{autoUpgrade}
 }
 
-func poolUpgradePolicyFlatten(pool *k8s.Pool) []map[string]interface{} {
-	upgradePolicy := map[string]interface{}{}
+func poolUpgradePolicyFlatten(pool *k8s.Pool) []map[string]any {
+	upgradePolicy := map[string]any{}
 	if pool.UpgradePolicy != nil {
 		upgradePolicy["max_surge"] = pool.UpgradePolicy.MaxSurge
 		upgradePolicy["max_unavailable"] = pool.UpgradePolicy.MaxUnavailable
 	}
 
-	return []map[string]interface{}{upgradePolicy}
+	return []map[string]any{upgradePolicy}
 }
 
-func expandKubeletArgs(args interface{}) map[string]string {
+func expandKubeletArgs(args any) map[string]string {
 	kubeletArgs := map[string]string{}
 
-	for key, value := range args.(map[string]interface{}) {
+	for key, value := range args.(map[string]any) {
 		kubeletArgs[key] = value.(string)
 	}
 
 	return kubeletArgs
 }
 
-func flattenKubeletArgs(args map[string]string) map[string]interface{} {
-	kubeletArgs := map[string]interface{}{}
+func flattenKubeletArgs(args map[string]string) map[string]any {
+	kubeletArgs := map[string]any{}
 
 	for key, value := range args {
 		kubeletArgs[key] = value
@@ -85,7 +85,7 @@ func flattenKubeletArgs(args map[string]string) map[string]interface{} {
 	return kubeletArgs
 }
 
-func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (map[string]interface{}, error) {
+func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, clusterID string) (map[string]any, error) {
 	kubeconfig, err := k8sAPI.GetClusterKubeConfig(&k8s.GetClusterKubeConfigRequest{
 		Region:    region,
 		ClusterID: clusterID,
@@ -109,7 +109,7 @@ func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, 
 		return nil, err
 	}
 
-	kubeconf := map[string]interface{}{}
+	kubeconf := map[string]any{}
 	kubeconf["config_file"] = string(kubeconfig.GetRaw())
 	kubeconf["host"] = kubeconfigServer
 	kubeconf["cluster_ca_certificate"] = kubeconfigCa

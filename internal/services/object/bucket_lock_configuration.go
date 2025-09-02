@@ -44,10 +44,11 @@ func ResourceLockConfiguration() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"default_retention": {
-							Type:     schema.TypeList,
-							Required: true,
-							MinItems: 1,
-							MaxItems: 1,
+							Type:        schema.TypeList,
+							Description: "Default retention.",
+							Required:    true,
+							MinItems:    1,
+							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"mode": {
@@ -81,7 +82,7 @@ func ResourceLockConfiguration() *schema.Resource {
 	}
 }
 
-func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -104,7 +105,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		Bucket: aws.String(bucket),
 		ObjectLockConfiguration: &s3Types.ObjectLockConfiguration{
 			ObjectLockEnabled: "Enabled",
-			Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
+			Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]any)),
 		},
 	}
 
@@ -118,7 +119,7 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 	return resourceObjectLockConfigurationRead(ctx, d, m)
 }
 
-func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -166,7 +167,7 @@ func resourceObjectLockConfigurationRead(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -174,7 +175,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 
 	lockConfig := &s3Types.ObjectLockConfiguration{
 		ObjectLockEnabled: s3Types.ObjectLockEnabledEnabled,
-		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]interface{})),
+		Rule:              expandBucketLockConfigurationRule(d.Get("rule").([]any)),
 	}
 
 	input := &s3.PutObjectLockConfigurationInput{
@@ -190,7 +191,7 @@ func resourceObjectLockConfigurationUpdate(ctx context.Context, d *schema.Resour
 	return resourceObjectLockConfigurationRead(ctx, d, m)
 }
 
-func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	conn, _, bucket, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -216,27 +217,27 @@ func resourceObjectLockConfigurationDelete(ctx context.Context, d *schema.Resour
 	return nil
 }
 
-func expandBucketLockConfigurationRule(l []interface{}) *s3Types.ObjectLockRule {
+func expandBucketLockConfigurationRule(l []any) *s3Types.ObjectLockRule {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
 
-	tfMap, ok := l[0].(map[string]interface{})
+	tfMap, ok := l[0].(map[string]any)
 	if !ok {
 		return nil
 	}
 
 	return &s3Types.ObjectLockRule{
-		DefaultRetention: expandBucketLockConfigurationRuleDefaultRetention(tfMap["default_retention"].([]interface{})),
+		DefaultRetention: expandBucketLockConfigurationRuleDefaultRetention(tfMap["default_retention"].([]any)),
 	}
 }
 
-func expandBucketLockConfigurationRuleDefaultRetention(l []interface{}) *s3Types.DefaultRetention {
+func expandBucketLockConfigurationRuleDefaultRetention(l []any) *s3Types.DefaultRetention {
 	if len(l) == 0 || l[0] == nil {
 		return nil
 	}
 
-	tfMap, ok := l[0].(map[string]interface{})
+	tfMap, ok := l[0].(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -256,24 +257,24 @@ func expandBucketLockConfigurationRuleDefaultRetention(l []interface{}) *s3Types
 	return result
 }
 
-func flattenBucketLockConfigurationRule(i *s3Types.ObjectLockRule) []interface{} {
+func flattenBucketLockConfigurationRule(i *s3Types.ObjectLockRule) []any {
 	if i == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	m["default_retention"] = flattenBucketLockConfigurationRuleDefaultRetention(i.DefaultRetention)
 
-	return []interface{}{m}
+	return []any{m}
 }
 
-func flattenBucketLockConfigurationRuleDefaultRetention(i *s3Types.DefaultRetention) []interface{} {
+func flattenBucketLockConfigurationRuleDefaultRetention(i *s3Types.DefaultRetention) []any {
 	if i == nil {
-		return []interface{}{}
+		return []any{}
 	}
 
-	m := make(map[string]interface{})
+	m := make(map[string]any)
 
 	m["mode"] = i.Mode
 
@@ -285,5 +286,5 @@ func flattenBucketLockConfigurationRuleDefaultRetention(i *s3Types.DefaultRetent
 		m["years"] = i.Years
 	}
 
-	return []interface{}{m}
+	return []any{m}
 }

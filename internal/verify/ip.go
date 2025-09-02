@@ -9,7 +9,7 @@ import (
 )
 
 func IsStandaloneIPorCIDR() schema.SchemaValidateDiagFunc {
-	return func(value interface{}, path cty.Path) diag.Diagnostics {
+	return func(value any, path cty.Path) diag.Diagnostics {
 		ip, isString := value.(string)
 		if !isString {
 			return diag.Diagnostics{diag.Diagnostic{

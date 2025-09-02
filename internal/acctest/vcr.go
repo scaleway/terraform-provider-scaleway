@@ -28,7 +28,7 @@ var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") ==
 
 // SensitiveFields is a map with keys listing fields that should be anonymized
 // value will be set in place of its old value
-var SensitiveFields = map[string]interface{}{
+var SensitiveFields = map[string]any{
 	"secret_key": "00000000-0000-0000-0000-000000000000",
 }
 
@@ -43,6 +43,22 @@ var BodyMatcherIgnore = []string{
 	"organization_id",
 	"project_id",
 	"project", // like project_id but should be deprecated
+	// function related fields
+	"mnq_project_id",
+	"mnq_region",
+	"mnq_nats_account_id",
+	"mnq_nats_subject",
+}
+
+// removeKeyRecursive removes a key from a map and all its nested maps
+func removeKeyRecursive(m map[string]any, key string) {
+	delete(m, key)
+
+	for _, v := range m {
+		if v, ok := v.(map[string]any); ok {
+			removeKeyRecursive(v, key)
+		}
+	}
 }
 
 // getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
@@ -65,178 +81,133 @@ func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	return filepath.Join(pkgFolder, "testdata", fileName)
 }
 
-func compareJSONFields(expected, actualI interface{}) bool {
-	switch actual := actualI.(type) {
-	case string:
-		if _, isString := expected.(string); !isString {
-			return false
-		}
-
-		return compareJSONFieldsStrings(expected.(string), actual)
-	default:
-		// Consider equality when not handled
-		return true
-	}
-}
-
-// compareFormBodies compare two given url.Values
-// returns true if both url.Values are equivalent
-func compareFormBodies(expected, actual url.Values) bool {
-	// Check for each key in actual requests
-	// Compare its value to cassette content if marshal-able to string
-	for key := range actual {
-		expectedValue, exists := expected[key]
-		if !exists {
-			// Actual request may contain a field that does not exist in cassette
-			// New fields can appear in requests with new api features
-			// We do not want to generate new cassettes for each new features
-			continue
-		}
-
-		if !compareJSONFields(expectedValue, actual[key]) {
-			return false
-		}
-	}
-
-	for key := range expected {
-		_, exists := actual[key]
-		if !exists && expected[key] != nil {
-			// Fails match if cassettes contains a field not in actual requests
-			// Fields should not disappear from requests unless a sdk breaking change
-			// We ignore if field is nil in cassette as it could be an old deprecated and unused field
-			return false
-		}
-	}
-
-	return true
-}
-
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
-func cassetteBodyMatcher(actualRequest *http.Request, cassetteRequest cassette.Request) bool {
-	if actualRequest.Body == nil || actualRequest.ContentLength == 0 {
-		if cassetteRequest.Body == "" {
+func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool {
+	if request.Body == nil || request.ContentLength == 0 {
+		if cassette.Body == "" {
 			return true // Body match if both are empty
-		} else if _, isFile := actualRequest.Body.(*os.File); isFile {
+		}
+
+		if _, isFile := request.Body.(*os.File); isFile {
 			return true // Body match if request is sending a file, maybe do more check here
 		}
 
 		return false
 	}
 
-	actualBody, err := actualRequest.GetBody()
+	r, err := request.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy actualRequest body: %w", err)) // lintignore: R009
+		panic(fmt.Errorf("cassette body matcher: failed to copy request body: %w", err)) // lintignore: R009
 	}
 
-	actualRawBody, err := io.ReadAll(actualBody)
+	requestBody, err := io.ReadAll(r)
 	if err != nil {
 		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
-	if string(actualRawBody) == cassetteRequest.Body {
+	if string(requestBody) == cassette.Body {
 		return true
 	}
 
-	actualJSON := make(map[string]interface{})
-	cassetteJSON := make(map[string]interface{})
+	requestJSON := make(map[string]any)
+	cassetteJSON := make(map[string]any)
 
-	err = xml.Unmarshal(actualRawBody, new(interface{}))
+	// match if content is xml
+	err = xml.Unmarshal(requestBody, new(any))
 	if err == nil {
-		// match if content is xml
 		return true
 	}
 
-	if !json.Valid(actualRawBody) {
-		values, err := url.ParseQuery(string(actualRawBody))
+	if !json.Valid(requestBody) {
+		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
 			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
 		}
 
-		// Remove keys that should be ignored during compare
+		// Remove keys that should be ignored during comparison
 		for _, key := range BodyMatcherIgnore {
-			values.Del(key)
+			requestValues.Del(key)
 		}
 
-		// Compare url values
-		return compareFormBodies(values, cassetteRequest.Form)
+		return compareFormBodies(requestValues, cassette.Form)
 	}
 
-	err = json.Unmarshal(actualRawBody, &actualJSON)
+	err = json.Unmarshal(requestBody, &requestJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse json body: %w", err)) // lintignore: R009
+		panic(fmt.Errorf("cassette body matcher: failed to parse request body as json: %w", err)) // lintignore: R009
 	}
 
-	err = json.Unmarshal([]byte(cassetteRequest.Body), &cassetteJSON)
+	err = json.Unmarshal([]byte(cassette.Body), &cassetteJSON)
 	if err != nil {
 		// actualRequest contains JSON but cassette may not contain JSON, this doesn't match in this case
 		return false
 	}
-
-	// Remove keys that should be ignored during compare
+	// remove keys that should be ignored during comparison
 	for _, key := range BodyMatcherIgnore {
-		delete(actualJSON, key)
-		delete(cassetteJSON, key)
+		removeKeyRecursive(requestJSON, key)
+		removeKeyRecursive(cassetteJSON, key)
 	}
 
-	return compareJSONBodies(cassetteJSON, actualJSON)
+	return compareJSONBodies(requestJSON, cassetteJSON, false)
 }
 
-// cassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
+// CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
 // It compares method, path and query but will remove unwanted values from query
-func cassetteMatcher(actual *http.Request, expected cassette.Request) bool {
-	expectedURL, _ := url.Parse(expected.URL)
-	actualURL := actual.URL
-	actualURLValues := actualURL.Query()
-	expectedURLValues := expectedURL.Query()
+func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
+	cassetteURL, _ := url.Parse(cassette.URL)
+	requestURL := request.URL
+
+	requestURLValues := requestURL.Query()
+	cassetteURLValues := cassetteURL.Query()
 
 	for _, query := range QueryMatcherIgnore {
-		actualURLValues.Del(query)
-		expectedURLValues.Del(query)
+		requestURLValues.Del(query)
+		cassetteURLValues.Del(query)
 	}
 
-	actualURL.RawQuery = actualURLValues.Encode()
-	expectedURL.RawQuery = expectedURLValues.Encode()
+	requestURL.RawQuery = requestURLValues.Encode()
+	cassetteURL.RawQuery = cassetteURLValues.Encode()
 
 	// Specific handling of s3 URLs
 	// Url format is https://test-acc-scaleway-object-bucket-lifecycle-8445817190507446251.s3.fr-par.scw.cloud/?lifecycle=
-	if strings.HasSuffix(actualURL.Host, "scw.cloud") {
-		if !strings.HasSuffix(expectedURL.Host, "scw.cloud") {
+	if strings.HasSuffix(requestURL.Host, "scw.cloud") {
+		if !strings.HasSuffix(cassetteURL.Host, "scw.cloud") {
 			return false
 		}
 
-		actualS3Host := strings.Split(actualURL.Host, ".")
-		expectedS3Host := strings.Split(expectedURL.Host, ".")
+		requestS3Host := strings.Split(requestURL.Host, ".")
+		cassetteS3Host := strings.Split(cassetteURL.Host, ".")
 
-		if len(actualS3Host) >= 5 && len(expectedS3Host) >= 5 {
+		if len(requestS3Host) >= 5 && len(cassetteS3Host) >= 5 {
 			// Host is bucket.s3.region.scw.cloud
 			// it could be a host without bucket name (ex: function upload)
-			actualBucket := actualS3Host[0]
-			expectedBucket := expectedS3Host[0]
+			requestBucket := requestS3Host[0]
+			cassetteBucket := cassetteS3Host[0]
 
 			// Remove random number at the end of the bucket name
-			if strings.Contains(actualBucket, "-") {
-				actualBucket = actualBucket[:strings.LastIndex(actualBucket, "-")]
+			if strings.Contains(requestBucket, "-") {
+				requestBucket = requestBucket[:strings.LastIndex(requestBucket, "-")]
 			}
 
-			if strings.Contains(expectedBucket, "-") {
-				expectedBucket = expectedBucket[:strings.LastIndex(expectedBucket, "-")]
+			if strings.Contains(cassetteBucket, "-") {
+				cassetteBucket = cassetteBucket[:strings.LastIndex(cassetteBucket, "-")]
 			}
 
-			if actualBucket != expectedBucket {
+			if requestBucket != cassetteBucket {
 				return false
 			}
 		}
 	}
 
-	return actual.Method == expected.Method &&
-		actual.URL.Path == expectedURL.Path &&
-		actualURL.RawQuery == expectedURL.RawQuery &&
-		cassetteBodyMatcher(actual, expected)
+	return request.Method == cassette.Method &&
+		request.URL.Path == cassetteURL.Path &&
+		requestURL.RawQuery == cassetteURL.RawQuery &&
+		cassetteBodyMatcher(request, cassette)
 }
 
 func cassetteSensitiveFieldsAnonymizer(i *cassette.Interaction) error {
-	var jsonBody map[string]interface{}
+	var jsonBody map[string]any
 
 	err := json.Unmarshal([]byte(i.Response.Body), &jsonBody)
 	if err != nil {
@@ -297,7 +268,7 @@ func getHTTPRecoder(t *testing.T, pkgFolder string, update bool) (client *http.C
 	}(r)
 
 	// Add custom matcher for requests and cassettes
-	r.SetMatcher(cassetteMatcher)
+	r.SetMatcher(CassetteMatcher)
 
 	// Add a filter which removes Authorization headers from all requests:
 	r.AddHook(func(i *cassette.Interaction) error {

@@ -61,6 +61,12 @@ func ResourceServer() *schema.Resource {
 				Description:      "The commitment period of the server",
 				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
 			},
+			"public_bandwidth": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "The public bandwidth of the server in bits per second",
+			},
 			"private_network": {
 				Type:        schema.TypeSet,
 				Optional:    true,
@@ -72,7 +78,7 @@ func ResourceServer() *schema.Resource {
 							Description:      "The private network ID",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return locality.ExpandID(i.(string))
 							},
 						},
@@ -186,7 +192,7 @@ func ResourceServer() *schema.Resource {
 	}
 }
 
-func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -198,6 +204,11 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		ProjectID:      d.Get("project_id").(string),
 		EnableVpc:      d.Get("enable_vpc").(bool),
 		CommitmentType: applesilicon.CommitmentType(d.Get("commitment").(string)),
+		Zone:           zone,
+	}
+
+	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
+		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))
@@ -234,7 +245,7 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }
 
-func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -270,6 +281,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("password", res.SudoPassword)
 	_ = d.Set("username", res.SSHUsername)
+	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
+	_ = d.Set("zone", res.Zone)
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
@@ -292,7 +305,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	diags := diag.Diagnostics{}
-	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	allPrivateIPs := make([]map[string]any, 0, listPrivateNetworks.TotalCount)
 	authorized := true
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -338,7 +351,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -365,6 +378,11 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("enable_vpc") {
 		enableVpc := d.Get("enable_vpc").(bool)
 		req.EnableVpc = &enableVpc
+	}
+
+	if d.HasChange("public_bandwidth") {
+		publicBandwidth := types.ExpandUint64Ptr(d.Get("public_bandwidth"))
+		req.PublicBandwidthBps = publicBandwidth
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
@@ -399,7 +417,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	return ResourceAppleSiliconServerRead(ctx, d, m)
 }
 
-func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	asAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

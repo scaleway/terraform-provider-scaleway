@@ -19,12 +19,12 @@ const (
 )
 
 // NewDomainAPI returns a new domain API.
-func NewDomainAPI(m interface{}) *domain.API {
+func NewDomainAPI(m any) *domain.API {
 	return domain.NewAPI(meta.ExtractScwClient(m))
 }
 
 // NewRegistrarDomainAPI returns a new registrar API.
-func NewRegistrarDomainAPI(m interface{}) *domain.RegistrarAPI {
+func NewRegistrarDomainAPI(m any) *domain.RegistrarAPI {
 	return domain.NewRegistrarAPI(meta.ExtractScwClient(m))
 }
 
@@ -32,17 +32,29 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 	var currentRecord *domain.Record
 
 	for _, r := range records {
-		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
+		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type).(string)
+		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type).(string)
 
-		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
-			if currentRecord != nil {
-				return nil, errors.New("multiple records found with same type and data")
+		if dnsType == domain.RecordTypeSRV {
+			if flattedData == flattenCurrentData {
+				if currentRecord != nil {
+					return nil, fmt.Errorf("multiple records found with same type and data: existing record %s (ID: %s) conflicts with new record data %s", currentRecord.Data, currentRecord.ID, data)
+				}
+
+				currentRecord = r
+
+				break
 			}
+		} else {
+			if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
+				if currentRecord != nil {
+					return nil, fmt.Errorf("multiple records found with same type and data: existing record %s (ID: %s) conflicts with new record data %s", currentRecord.Data, currentRecord.ID, data)
+				}
 
-			currentRecord = r
+				currentRecord = r
 
-			break
+				break
+			}
 		}
 	}
 
@@ -62,7 +74,7 @@ func FindDefaultReverse(address string) string {
 	return strings.Join(parts, "-") + ".instances.scw.cloud"
 }
 
-func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
+func ExpandContact(contactMap map[string]any) *domain.Contact {
 	if contactMap == nil {
 		return nil
 	}
@@ -120,21 +132,21 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 		contact.WhoisOptIn = v
 	}
 
-	if extFr, ok := contactMap["extension_fr"].(map[string]interface{}); ok && len(extFr) > 0 {
+	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
 		extension := expandContactExtension(extFr, "fr")
 		if extension != nil {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
 
-	if extEu, ok := contactMap["extension_eu"].(map[string]interface{}); ok && len(extEu) > 0 {
+	if extEu, ok := contactMap["extension_eu"].(map[string]any); ok && len(extEu) > 0 {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
 			contact.ExtensionEu = extension.(*domain.ContactExtensionEU)
 		}
 	}
 
-	if extNl, ok := contactMap["extension_nl"].(map[string]interface{}); ok && len(extNl) > 0 {
+	if extNl, ok := contactMap["extension_nl"].(map[string]any); ok && len(extNl) > 0 {
 		extension := expandContactExtension(extNl, "nl")
 		if extension != nil {
 			contact.ExtensionNl = extension.(*domain.ContactExtensionNL)
@@ -144,7 +156,7 @@ func ExpandContact(contactMap map[string]interface{}) *domain.Contact {
 	return contact
 }
 
-func expandContactExtension(extensionMap map[string]interface{}, extensionType string) interface{} {
+func expandContactExtension(extensionMap map[string]any, extensionType string) any {
 	if len(extensionMap) == 0 {
 		return nil
 	}
@@ -194,7 +206,7 @@ func expandContactExtension(extensionMap map[string]interface{}, extensionType s
 	}
 }
 
-func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
+func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 	if contactMap == nil {
 		return nil
 	}
@@ -251,21 +263,21 @@ func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
 		contact.State = scw.StringPtr(v)
 	}
 
-	if extFr, ok := contactMap["extension_fr"].(map[string]interface{}); ok && len(extFr) > 0 {
+	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
 		extension := expandContactExtension(extFr, "fr")
 		if extension != nil {
 			contact.ExtensionFr = extension.(*domain.ContactExtensionFR)
 		}
 	}
 
-	if extEu, ok := contactMap["extension_eu"].(map[string]interface{}); ok && len(extEu) > 0 {
+	if extEu, ok := contactMap["extension_eu"].(map[string]any); ok && len(extEu) > 0 {
 		extension := expandContactExtension(extEu, "eu")
 		if extension != nil {
 			contact.ExtensionEu = extension.(*domain.ContactExtensionEU)
 		}
 	}
 
-	if extNl, ok := contactMap["extension_nl"].(map[string]interface{}); ok && len(extNl) > 0 {
+	if extNl, ok := contactMap["extension_nl"].(map[string]any); ok && len(extNl) > 0 {
 		extension := expandContactExtension(extNl, "nl")
 		if extension != nil {
 			contact.ExtensionNl = extension.(*domain.ContactExtensionNL)
@@ -275,7 +287,7 @@ func ExpandNewContact(contactMap map[string]interface{}) *domain.NewContact {
 	return contact
 }
 
-func parseEnum(data map[string]interface{}, key string, defaultValue string) string {
+func parseEnum(data map[string]any, key string, defaultValue string) string {
 	if value, ok := data[key].(string); ok {
 		return value
 	}
@@ -283,8 +295,8 @@ func parseEnum(data map[string]interface{}, key string, defaultValue string) str
 	return defaultValue
 }
 
-func parseStruct[T any](data map[string]interface{}, key string) *T {
-	if nested, ok := data[key].(map[string]interface{}); ok {
+func parseStruct[T any](data map[string]any, key string) *T {
+	if nested, ok := data[key].(map[string]any); ok {
 		var result T
 
 		mapToStruct(nested, &result)
@@ -295,7 +307,7 @@ func parseStruct[T any](data map[string]interface{}, key string) *T {
 	return nil
 }
 
-func mapToStruct(data map[string]interface{}, target interface{}) {
+func mapToStruct(data map[string]any, target any) {
 	switch t := target.(type) {
 	case *domain.ContactExtensionFRIndividualInfo:
 		if v, ok := data["whois_opt_in"].(bool); ok {
@@ -409,12 +421,12 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 	return nil, fmt.Errorf("task with ID '%s' not found", taskID)
 }
 
-func flattenContact(contact *domain.Contact) []map[string]interface{} {
+func flattenContact(contact *domain.Contact) []map[string]any {
 	if contact == nil {
 		return nil
 	}
 
-	flattened := map[string]interface{}{
+	flattened := map[string]any{
 		"phone_number":                contact.PhoneNumber,
 		"legal_form":                  string(contact.LegalForm),
 		"firstname":                   contact.Firstname,
@@ -448,15 +460,15 @@ func flattenContact(contact *domain.Contact) []map[string]interface{} {
 		flattened["extension_nl"] = flattenContactExtensionNL(contact.ExtensionNl)
 	}
 
-	return []map[string]interface{}{flattened}
+	return []map[string]any{flattened}
 }
 
-func flattenContactExtensionFR(ext *domain.ContactExtensionFR) []map[string]interface{} {
+func flattenContactExtensionFR(ext *domain.ContactExtensionFR) []map[string]any {
 	if ext == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"mode":                 string(ext.Mode),
 			"individual_info":      flattenContactExtensionFRIndividualInfo(ext.IndividualInfo),
@@ -468,24 +480,24 @@ func flattenContactExtensionFR(ext *domain.ContactExtensionFR) []map[string]inte
 	}
 }
 
-func flattenContactExtensionFRIndividualInfo(info *domain.ContactExtensionFRIndividualInfo) []map[string]interface{} {
+func flattenContactExtensionFRIndividualInfo(info *domain.ContactExtensionFRIndividualInfo) []map[string]any {
 	if info == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"whois_opt_in": info.WhoisOptIn,
 		},
 	}
 }
 
-func flattenContactExtensionFRDunsInfo(info *domain.ContactExtensionFRDunsInfo) []map[string]interface{} {
+func flattenContactExtensionFRDunsInfo(info *domain.ContactExtensionFRDunsInfo) []map[string]any {
 	if info == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"duns_id":  info.DunsID,
 			"local_id": info.LocalID,
@@ -493,12 +505,12 @@ func flattenContactExtensionFRDunsInfo(info *domain.ContactExtensionFRDunsInfo) 
 	}
 }
 
-func flattenContactExtensionFRAssociationInfo(info *domain.ContactExtensionFRAssociationInfo) []map[string]interface{} {
+func flattenContactExtensionFRAssociationInfo(info *domain.ContactExtensionFRAssociationInfo) []map[string]any {
 	if info == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"publication_jo":      info.PublicationJo.Format(time.RFC3339),
 			"publication_jo_page": info.PublicationJoPage,
@@ -506,48 +518,48 @@ func flattenContactExtensionFRAssociationInfo(info *domain.ContactExtensionFRAss
 	}
 }
 
-func flattenContactExtensionFRTrademarkInfo(info *domain.ContactExtensionFRTrademarkInfo) []map[string]interface{} {
+func flattenContactExtensionFRTrademarkInfo(info *domain.ContactExtensionFRTrademarkInfo) []map[string]any {
 	if info == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"trademark_inpi": info.TrademarkInpi,
 		},
 	}
 }
 
-func flattenContactExtensionFRCodeAuthAfnicInfo(info *domain.ContactExtensionFRCodeAuthAfnicInfo) []map[string]interface{} {
+func flattenContactExtensionFRCodeAuthAfnicInfo(info *domain.ContactExtensionFRCodeAuthAfnicInfo) []map[string]any {
 	if info == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"code_auth_afnic": info.CodeAuthAfnic,
 		},
 	}
 }
 
-func flattenContactExtensionEU(ext *domain.ContactExtensionEU) []map[string]interface{} {
+func flattenContactExtensionEU(ext *domain.ContactExtensionEU) []map[string]any {
 	if ext == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"european_citizenship": ext.EuropeanCitizenship,
 		},
 	}
 }
 
-func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]interface{} {
+func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]any {
 	if ext == nil {
 		return nil
 	}
 
-	return []map[string]interface{}{
+	return []map[string]any{
 		{
 			"legal_form":                     string(ext.LegalForm),
 			"legal_form_registration_number": ext.LegalFormRegistrationNumber,
@@ -580,39 +592,39 @@ func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAP
 	})
 }
 
-func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
+func FlattenDSRecord(dsRecords []*domain.DSRecord) []any {
 	if len(dsRecords) == 0 {
-		return []interface{}{}
+		return []any{}
 	}
 
-	results := make([]interface{}, 0, len(dsRecords))
+	results := make([]any, 0, len(dsRecords))
 
 	for _, dsRecord := range dsRecords {
-		item := map[string]interface{}{
+		item := map[string]any{
 			"key_id":    dsRecord.KeyID,
 			"algorithm": string(dsRecord.Algorithm),
 		}
 
 		if dsRecord.Digest != nil {
-			digest := map[string]interface{}{
+			digest := map[string]any{
 				"type":   string(dsRecord.Digest.Type),
 				"digest": dsRecord.Digest.Digest,
 			}
 
 			if dsRecord.Digest.PublicKey != nil {
-				digest["public_key"] = []interface{}{
-					map[string]interface{}{
+				digest["public_key"] = []any{
+					map[string]any{
 						"key": dsRecord.Digest.PublicKey.Key,
 					},
 				}
 			}
 
-			item["digest"] = []interface{}{digest}
+			item["digest"] = []any{digest}
 		}
 
 		if dsRecord.PublicKey != nil {
-			item["public_key"] = []interface{}{
-				map[string]interface{}{
+			item["public_key"] = []any{
+				map[string]any{
 					"key": dsRecord.PublicKey.Key,
 				},
 			}
@@ -622,4 +634,12 @@ func FlattenDSRecord(dsRecords []*domain.DSRecord) []interface{} {
 	}
 
 	return results
+}
+
+func BuildZoneName(subdomain, domain string) string {
+	if subdomain == "" {
+		return domain
+	}
+
+	return fmt.Sprintf("%s.%s", subdomain, domain)
 }

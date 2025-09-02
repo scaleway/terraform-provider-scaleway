@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
@@ -21,6 +22,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -30,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
@@ -125,6 +128,9 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.ResourceProject(),
 				"scaleway_account_ssh_key":                     iam.ResourceSSKKey(),
 				"scaleway_apple_silicon_server":                applesilicon.ResourceServer(),
+				"scaleway_autoscaling_instance_group":          autoscaling.ResourceInstanceGroup(),
+				"scaleway_autoscaling_instance_policy":         autoscaling.ResourceInstancePolicy(),
+				"scaleway_autoscaling_instance_template":       autoscaling.ResourceInstanceTemplate(),
 				"scaleway_baremetal_server":                    baremetal.ResourceServer(),
 				"scaleway_block_snapshot":                      block.ResourceSnapshot(),
 				"scaleway_block_volume":                        block.ResourceVolume(),
@@ -151,6 +157,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_edge_services_route_stage":           edgeservices.ResourceRouteStage(),
 				"scaleway_edge_services_tls_stage":             edgeservices.ResourceTLSStage(),
 				"scaleway_edge_services_waf_stage":             edgeservices.ResourceWAFStage(),
+				"scaleway_file_filesystem":                     file.ResourceFileSystem(),
 				"scaleway_flexible_ip":                         flexibleip.ResourceIP(),
 				"scaleway_flexible_ip_mac_address":             flexibleip.ResourceMACAddress(),
 				"scaleway_function":                            function.ResourceFunction(),
@@ -189,6 +196,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_acl":                             k8s.ResourceACL(),
 				"scaleway_k8s_cluster":                         k8s.ResourceCluster(),
 				"scaleway_k8s_pool":                            k8s.ResourcePool(),
+				"scaleway_key_manager_key":                     keymanager.ResourceKeyManagerKey(),
 				"scaleway_lb":                                  lb.ResourceLb(),
 				"scaleway_lb_acl":                              lb.ResourceACL(),
 				"scaleway_lb_backend":                          lb.ResourceBackend(),
@@ -339,7 +347,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 
 		addBetaResources(p)
 
-		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (interface{}, diag.Diagnostics) {
+		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
 
 			// If we provide meta in config use it. This is useful for tests
@@ -355,7 +363,28 @@ func Provider(config *Config) plugin.ProviderFunc {
 				return nil, diag.FromErr(err)
 			}
 
-			return m, nil
+			var diags diag.Diagnostics
+
+			ok, message, err := m.HasMultipleVariableSources()
+			if err != nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Error checking multiple variable sources",
+					Detail:   err.Error(),
+				})
+
+				return m, diags
+			}
+
+			if ok && err == nil {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
+					Detail:   message,
+				})
+			}
+
+			return m, diags
 		}
 
 		return p

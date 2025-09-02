@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -21,7 +21,7 @@ func TestAccToken_Basic(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /tokens" request.
-		expiresAt = "2025-01-28T15:28:16+01:00"
+		expiresAt = "2025-08-28T17:05:34+02:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{

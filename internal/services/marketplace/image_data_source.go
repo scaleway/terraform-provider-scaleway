@@ -39,7 +39,7 @@ func DataSourceImage() *schema.Resource {
 	}
 }
 
-func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	marketplaceAPI, zone, err := marketplaceAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -58,8 +58,8 @@ func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData,
 	zonedID := datasource.NewZonedID(image.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("zone", zone)
-	_ = d.Set("label", d.Get("label"))
-	_ = d.Set("instance_type", d.Get("type"))
+	_ = d.Set("label", image.Label)
+	_ = d.Set("instance_type", d.Get("instance_type").(string))
 	_ = d.Set("image_type", image.Type)
 
 	return nil

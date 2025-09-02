@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccFunctionNamespace_Basic(t *testing.T) {
@@ -173,6 +174,70 @@ func TestAccFunctionNamespace_EnvironmentVariables(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "environment_variables.foo", "bar"),
 					passwordMatchHash("scaleway_function_namespace.main", "secret_environment_variables.test_secret", "updated_secret"),
 					acctest.CheckResourceAttrUUID("scaleway_function_namespace.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccFunctionNamespace_VPCIntegration(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	namespaceID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckFunctionNamespaceDestroy(tt),
+			testAccCheckFunctionDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_vpc_private_network main {}
+			
+					resource scaleway_function_namespace main {}
+			
+					resource scaleway_function main {
+						namespace_id = scaleway_function_namespace.main.id
+						sandbox = "v1"
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
+					acctest.CheckResourceIDPersisted("scaleway_function_namespace.main", &namespaceID),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_vpc_private_network main {}
+
+					resource scaleway_function_namespace main {
+						activate_vpc_integration = true
+					}
+
+					resource scaleway_function main {
+						namespace_id = scaleway_function_namespace.main.id
+						sandbox = "v1"
+						privacy = "private"
+						runtime = "go123"
+						handler = "Handle"
+						private_network_id = scaleway_vpc_private_network.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
+					testAccCheckFunctionExists(tt, "scaleway_function.main"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
+					resource.TestCheckResourceAttrPair("scaleway_function.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_function_namespace.main", &namespaceID),
 				),
 			},
 		},

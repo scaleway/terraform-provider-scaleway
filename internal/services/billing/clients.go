@@ -6,6 +6,6 @@ import (
 )
 
 // billingAPI returns a new billing API.
-func billingAPI(m interface{}) *billing.API {
+func billingAPI(m any) *billing.API {
 	return billing.NewAPI(meta.ExtractScwClient(m))
 }

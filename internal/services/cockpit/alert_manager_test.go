@@ -1,11 +1,14 @@
 package cockpit_test
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -166,6 +169,67 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 	})
 }
 
+func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_test_cockpit_alert_manager_id_parsing"
+					}
+
+					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
+						enable_managed_alerts = true
+
+						contact_points {
+							email = "test@example.com"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "region"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "enable_managed_alerts", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "alert_manager_url"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "test@example.com"),
+					testAccCheckAlertManagerIDFormat(tt, "scaleway_cockpit_alert_manager.main"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_test_cockpit_alert_manager_id_parsing"
+					}
+
+					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
+						enable_managed_alerts = true
+
+						contact_points {
+							email = "updated@example.com"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "region"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "updated@example.com"),
+					testAccCheckAlertManagerIDFormat(tt, "scaleway_cockpit_alert_manager.main"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]string) string {
 	contactsConfig := ""
 	for _, contact := range contactPoints {
@@ -205,7 +269,7 @@ func testAccCheckAlertManagerEnabled(tt *acctest.TestTools, resourceName string,
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("alert manager not found: %s", resourceName)
+			return errors.New("alert manager not found: " + resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
@@ -230,7 +294,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("alert manager not found: %s", resourceName)
+			return errors.New("alert manager not found: " + resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
@@ -249,7 +313,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 			}
 		}
 
-		return fmt.Errorf("contact point with email %s not found in project %s", rs.Primary.Attributes["emails.0"], projectID)
+		return errors.New("contact point with email " + rs.Primary.Attributes["emails.0"] + " not found in project " + projectID)
 	}
 }
 
@@ -277,8 +341,55 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			}
 
 			if alertManager.AlertManagerEnabled {
-				return fmt.Errorf("cockpit alert manager (%s) is still enabled", rs.Primary.ID)
+				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
 			}
+		}
+
+		return nil
+	}
+}
+
+// testAccCheckAlertManagerIDFormat verifies the ID format
+func testAccCheckAlertManagerIDFormat(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return errors.New("alert manager not found: " + resourceName)
+		}
+
+		id := rs.Primary.ID
+		if id == "" {
+			return errors.New("alert manager ID is empty")
+		}
+
+		parts := strings.Split(id, "/")
+		if len(parts) != 3 {
+			return errors.New("alert manager ID should have 3 parts, got " + strconv.Itoa(len(parts)) + ": " + id)
+		}
+
+		region := parts[0]
+		projectID := parts[1]
+
+		if region == "" {
+			return errors.New("region part of ID is empty")
+		}
+
+		if projectID == "" {
+			return errors.New("project ID part of ID is empty")
+		}
+
+		if parts[2] != "1" {
+			return errors.New("third part of ID should be '1', got " + parts[2])
+		}
+
+		expectedProjectID := rs.Primary.Attributes["project_id"]
+		if expectedProjectID != projectID {
+			return errors.New("project_id in attributes (" + expectedProjectID + ") doesn't match project_id in ID (" + projectID + ")")
+		}
+
+		expectedRegion := rs.Primary.Attributes["region"]
+		if expectedRegion != region {
+			return errors.New("region in attributes (" + expectedRegion + ") doesn't match region in ID (" + region + ")")
 		}
 
 		return nil

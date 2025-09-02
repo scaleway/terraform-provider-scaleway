@@ -48,7 +48,7 @@ const (
 )
 
 // newAPIWithZone returns a new instance API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Zone, error) {
+func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 
 	zone, err := meta.ExtractZone(d, m)
@@ -60,7 +60,7 @@ func newAPIWithZone(d *schema.ResourceData, m interface{}) (*instance.API, scw.Z
 }
 
 // NewAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone, string, error) {
+func NewAPIWithZoneAndID(m any, zonedID string) (*instance.API, scw.Zone, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonedID)
@@ -72,7 +72,7 @@ func NewAPIWithZoneAndID(m interface{}, zonedID string) (*instance.API, scw.Zone
 }
 
 // NewAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
-func NewAPIWithZoneAndNestedID(m interface{}, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
+func NewAPIWithZoneAndNestedID(m any, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
@@ -268,7 +268,7 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 }
 
 func preparePrivateNIC(
-	ctx context.Context, data interface{},
+	ctx context.Context, data any,
 	server *instance.Server, vpcAPI *vpc.API,
 ) ([]*instance.CreatePrivateNICRequest, error) {
 	if data == nil {
@@ -277,8 +277,8 @@ func preparePrivateNIC(
 
 	var res []*instance.CreatePrivateNICRequest
 
-	for _, pn := range data.([]interface{}) {
-		r := pn.(map[string]interface{})
+	for _, pn := range data.([]any) {
+		r := pn.(map[string]any)
 		zonedID, pnExist := r["pn_id"]
 		privateNetworkID := locality.ExpandID(zonedID.(string))
 
@@ -325,7 +325,7 @@ func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*pri
 	return handler, handler.flatPrivateNICs()
 }
 
-func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout time.Duration) error {
+func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Duration) error {
 	oPtr := types.ExpandStringPtr(o)
 	if oPtr != nil && len(*oPtr) > 0 {
 		idPN := locality.ExpandID(*oPtr)
@@ -362,7 +362,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o interface{}, timeout
 	return nil
 }
 
-func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout time.Duration) error {
+func (ph *privateNICsHandler) attach(ctx context.Context, n any, timeout time.Duration) error {
 	if nPtr := types.ExpandStringPtr(n); nPtr != nil {
 		// check if new private network was already attached on instance server
 		privateNetworkID := locality.ExpandID(*nPtr)
@@ -393,9 +393,9 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n interface{}, timeout
 
 func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 	raw := d.Get("private_network")
-	privateNetworks := []map[string]interface{}(nil)
+	privateNetworks := []map[string]any(nil)
 
-	for index := range raw.([]interface{}) {
+	for index := range raw.([]any) {
 		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
 		keyValue := d.Get(pnKey)
 
@@ -404,13 +404,13 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 			continue
 		}
 
-		privateNetworks = append(privateNetworks, keyRaw.(map[string]interface{}))
+		privateNetworks = append(privateNetworks, keyRaw.(map[string]any))
 	}
 
 	return d.Set("private_network", privateNetworks)
 }
 
-func (ph *privateNICsHandler) get(key string) (interface{}, error) {
+func (ph *privateNICsHandler) get(key string) (any, error) {
 	loc, id, err := locality.ParseLocalizedID(key)
 	if err != nil {
 		return nil, err
@@ -421,7 +421,7 @@ func (ph *privateNICsHandler) get(key string) (interface{}, error) {
 		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
 		"status":      pn.State.String(),
@@ -551,4 +551,51 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 	}
 
 	return server.Server.Project, nil
+}
+
+func DeleteASGServers(
+	ctx context.Context,
+	api *instance.API,
+	zone scw.Zone,
+	groupID string,
+	timeout time.Duration,
+) error {
+	resp, err := api.ListServers(&instance.ListServersRequest{
+		Zone: zone,
+		Name: types.ExpandStringPtr(groupID),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	for _, srv := range resp.Servers {
+		switch srv.State {
+		case instance.ServerStateRunning:
+			if _, err = api.ServerAction(&instance.ServerActionRequest{
+				Zone:     zone,
+				ServerID: srv.ID,
+				Action:   instance.ServerActionTerminate,
+			}, scw.WithContext(ctx)); err != nil {
+				return err
+			}
+		case instance.ServerStateStopped, instance.ServerStateStoppedInPlace:
+			if err = api.DeleteServer(&instance.DeleteServerRequest{
+				Zone:     zone,
+				ServerID: srv.ID,
+			}, scw.WithContext(ctx)); err != nil {
+				return err
+			}
+		}
+
+		_, err := api.WaitForServer(&instance.WaitForServerRequest{
+			Zone:     zone,
+			ServerID: srv.ID,
+			Timeout:  scw.TimeDurationPtr(timeout),
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return err
+		}
+	}
+
+	return nil
 }

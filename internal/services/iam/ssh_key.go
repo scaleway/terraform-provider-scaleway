@@ -84,7 +84,7 @@ func ResourceSSKKey() *schema.Resource {
 	}
 }
 
-func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
@@ -111,7 +111,7 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	res, err := api.GetSSHKey(&iam.GetSSHKeyRequest{
@@ -139,7 +139,7 @@ func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interf
 	return nil
 }
 
-func resourceIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	req := &iam.UpdateSSHKeyRequest{
@@ -183,7 +183,7 @@ func resourceIamSSKKeyUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	return resourceIamSSHKeyRead(ctx, d, m)
 }
 
-func resourceIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIamSSKKeyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
 	err := api.DeleteSSHKey(&iam.DeleteSSHKeyRequest{

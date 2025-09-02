@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,14 +58,14 @@ func ResourceCockpitAlertManager() *schema.Resource {
 	}
 }
 
-func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	projectID := d.Get("project_id").(string)
-	contactPoints := d.Get("contact_points").([]interface{})
+	contactPoints := d.Get("contact_points").([]any)
 	EnableManagedAlerts := d.Get("enable_managed_alerts").(bool)
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
@@ -87,7 +88,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 
 	if len(contactPoints) > 0 {
 		for _, cp := range contactPoints {
-			cpMap, ok := cp.(map[string]interface{})
+			cpMap, ok := cp.(map[string]any)
 			if !ok {
 				return diag.FromErr(errors.New("invalid contact point format"))
 			}
@@ -117,13 +118,17 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 		Region:    region,
@@ -136,6 +141,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("enable_managed_alerts", alertManager.ManagedAlertsEnabled)
 	_ = d.Set("region", alertManager.Region)
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
+	_ = d.Set("project_id", projectID)
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -145,11 +151,11 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	var contactPointsList []map[string]interface{}
+	var contactPointsList []map[string]any
 
 	for _, cp := range contactPoints.ContactPoints {
 		if cp.Email != nil {
-			contactPoint := map[string]interface{}{
+			contactPoint := map[string]any{
 				"email": cp.Email.To,
 			}
 			contactPointsList = append(contactPointsList, contactPoint)
@@ -161,13 +167,17 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.HasChange("enable_managed_alerts") {
 		enable := d.Get("enable_managed_alerts").(bool)
@@ -190,21 +200,21 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 
 	if d.HasChange("contact_points") {
 		oldContactPointsInterface, newContactPointsInterface := d.GetChange("contact_points")
-		oldContactPoints := oldContactPointsInterface.([]interface{})
-		newContactPoints := newContactPointsInterface.([]interface{})
+		oldContactPoints := oldContactPointsInterface.([]any)
+		newContactPoints := newContactPointsInterface.([]any)
 
-		oldContactMap := make(map[string]map[string]interface{})
+		oldContactMap := make(map[string]map[string]any)
 
 		for _, oldCP := range oldContactPoints {
-			cp := oldCP.(map[string]interface{})
+			cp := oldCP.(map[string]any)
 			email := cp["email"].(string)
 			oldContactMap[email] = cp
 		}
 
-		newContactMap := make(map[string]map[string]interface{})
+		newContactMap := make(map[string]map[string]any)
 
 		for _, newCP := range newContactPoints {
-			cp := newCP.(map[string]interface{})
+			cp := newCP.(map[string]any)
 			email := cp["email"].(string)
 			newContactMap[email] = cp
 		}
@@ -241,13 +251,17 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
 
-func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, err := cockpitAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
+	// Parse the ID to get projectID
+	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -291,6 +305,19 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
+// ResourceCockpitAlertManagerID builds the resource identifier
+// The resource identifier format is "Region/ProjectID/1"
 func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourceID string) {
 	return fmt.Sprintf("%s/%s/1", region, projectID)
+}
+
+// ResourceCockpitAlertManagerParseID extracts region and project ID from the resource identifier.
+// The resource identifier format is "Region/ProjectID/1"
+func ResourceCockpitAlertManagerParseID(resourceID string) (region scw.Region, projectID string, err error) {
+	parts := strings.Split(resourceID, "/")
+	if len(parts) != 3 {
+		return "", "", fmt.Errorf("invalid alert manager ID format: %s", resourceID)
+	}
+
+	return scw.Region(parts[0]), parts[1], nil
 }

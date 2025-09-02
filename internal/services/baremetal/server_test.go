@@ -8,10 +8,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	baremetalV3SDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
@@ -25,7 +26,7 @@ func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -64,8 +65,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
@@ -101,8 +102,8 @@ func TestAccServer_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
@@ -120,7 +121,7 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -170,7 +171,7 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", "TestAccScalewayBaremetalServer_WithoutInstallConfig"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
@@ -182,7 +183,7 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -222,8 +223,8 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_id", "fr-par-1/206ea234-9097-4ae1-af68-6d2be09f47ed"),
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", "fr-par-1/96e5f0f2-d216-4de2-8a15-68730d877885"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "os", Zone+"/96e5f0f2-d216-4de2-8a15-68730d877885"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "description", "test a description"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
@@ -236,11 +237,64 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	})
 }
 
+func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	SSHKeyName := "TestAccServer_CreateServerWithServicePassword"
+	password := "HelloWorld678!"
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "by_id" {
+					  zone    = "%s"
+					  name    = "Proxmox"
+					  version = "VE 8 | Debian 12 (Bookworm)"
+					}
+
+					data "scaleway_baremetal_offer" "server_model" {
+					  zone                = "%s"
+					  name                = "%s"
+					  subscription_period = "hourly"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "TP" {
+					  zone             = "%s"
+					  ssh_key_ids      = [scaleway_iam_ssh_key.main.id]
+					  offer            = data.scaleway_baremetal_offer.server_model.offer_id
+					  os               = data.scaleway_baremetal_os.by_id.os_id
+					  service_password = "%s"
+					}
+				`, Zone, Zone, OfferName, SSHKeyName, SSHKeyBaremetal, Zone, password),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.TP"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "id"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "zone", Zone),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.TP", "os", "fr-par-2/a5c00c1b-95b1-4c08-8a33-79cc079f9dac"), // Replace with actual os_id if needed
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "service_user"),
+					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.TP", "ssh_key_ids.0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServer_CreateServerWithOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -306,7 +360,7 @@ func TestAccServer_AddOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -398,7 +452,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -481,7 +535,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					  }
 					  options {
 						id         = data.scaleway_baremetal_option.remote_access.option_id
-						expires_at = "2025-07-06T09:00:00Z"
+						expires_at = "2026-07-06T09:00:00Z"
 					  }
 					}
 				`, Zone, Zone, OfferName, Zone, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
@@ -491,11 +545,11 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "options.*.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
-						"expires_at": "2025-07-06T09:00:00Z",
+						"id":         Zone + "/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2026-07-06T09:00:00Z",
 					}),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id": "fr-par-1/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
+						"id": Zone + "/cd4158d7-2d65-49be-8803-c4b8ab6f760c",
 					}),
 				),
 			},
@@ -531,7 +585,7 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					
 					  options {
 						id         = data.scaleway_baremetal_option.remote_access.option_id
-						expires_at = "2025-07-06T09:00:00Z"
+						expires_at = "2026-07-06T09:00:00Z"
 					  }
 					}
 				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
@@ -540,8 +594,8 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.remote_access", "option_id"),
 					resource.TestCheckTypeSetElemNestedAttrs("scaleway_baremetal_server.base", "options.*", map[string]string{
-						"id":         "fr-par-1/931df052-d713-4674-8b58-96a63244c8e2",
-						"expires_at": "2025-07-06T09:00:00Z",
+						"id":         Zone + "/931df052-d713-4674-8b58-96a63244c8e2",
+						"expires_at": "2026-07-06T09:00:00Z",
 					}),
 				),
 			},
@@ -553,7 +607,7 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -625,7 +679,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -738,7 +792,7 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -864,7 +918,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -1046,7 +1100,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 
 	newOffer := "EM-B320E-NVME"
 
-	if !IsOfferAvailable(OfferID, Zone, tt) {
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
 		t.Skip("Offer is out of stock")
 	}
 
@@ -1126,7 +1180,7 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 						install_config_afterward = true
 					}`, Zone, newOffer, Zone),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", Zone),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
 			},

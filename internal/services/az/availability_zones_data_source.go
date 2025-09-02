@@ -39,7 +39,7 @@ func DataSourceAvailabilityZones() *schema.Resource {
 	}
 }
 
-func dataSourceAvailabilityZonesRead(_ context.Context, d *schema.ResourceData, _ interface{}) diag.Diagnostics {
+func dataSourceAvailabilityZonesRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
 	regionStr := d.Get("region").(string)
 
 	if !validation.IsRegion(regionStr) {

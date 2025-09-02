@@ -355,7 +355,7 @@ func ResourceInstance() *schema.Resource {
 }
 
 //gocyclo:ignore
-func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -405,6 +405,15 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 			}
 		}
 
+		// Configure endpoints after instance creation from snapshot
+		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
+		}
+
+		if diags := createLoadBalancerEndpoint(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+			return diags
+		}
+
 		d.SetId(regional.NewIDString(region, res.ID))
 		id = res.ID
 	} else {
@@ -434,43 +443,16 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 		}
 
 		// Init Endpoints
-		if pn, pnExist := d.GetOk("private_network"); pnExist {
-			ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
-
-			var diags diag.Diagnostics
-
-			createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
-			if diags.HasError() {
-				return diags
-			}
-
-			for _, warning := range diags {
-				tflog.Warn(ctx, warning.Detail)
-			}
+		endpoints, diags := collectEndpointSpecs(d)
+		if diags.HasError() {
+			return diags
 		}
 
-		if _, lbExists := d.GetOk("load_balancer"); lbExists {
-			createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
-		}
-		// Init Endpoints
-		if pn, pnExist := d.GetOk("private_network"); pnExist {
-			ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
-
-			var diags diag.Diagnostics
-
-			createReq.InitEndpoints, diags = expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
-			if diags.HasError() {
-				return diags
-			}
-
-			for _, warning := range diags {
-				tflog.Warn(ctx, warning.Detail)
-			}
+		for _, warning := range diags {
+			tflog.Warn(ctx, warning.Detail)
 		}
 
-		if _, lbExists := d.GetOk("load_balancer"); lbExists {
-			createReq.InitEndpoints = append(createReq.InitEndpoints, expandLoadBalancer())
-		}
+		createReq.InitEndpoints = endpoints
 
 		if size, ok := d.GetOk("volume_size_in_gb"); ok {
 			if createReq.VolumeType == rdb.VolumeTypeLssd {
@@ -548,7 +530,78 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceRdbInstanceRead(ctx, d, m)
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+// createPrivateNetworkEndpoints creates private network endpoints for an instance
+func createPrivateNetworkEndpoints(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
+	if pn, pnExist := d.GetOk("private_network"); pnExist {
+		ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
+
+		privateEndpoints, diags := expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+		if diags.HasError() {
+			return diags
+		}
+
+		for _, warning := range diags {
+			tflog.Warn(ctx, warning.Detail)
+		}
+
+		for _, e := range privateEndpoints {
+			_, err := rdbAPI.CreateEndpoint(
+				&rdb.CreateEndpointRequest{Region: region, InstanceID: instanceID, EndpointSpec: e},
+				scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// createLoadBalancerEndpoint creates load balancer endpoint for an instance
+func createLoadBalancerEndpoint(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
+	if _, lbExists := d.GetOk("load_balancer"); lbExists {
+		_, err := rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
+			Region:       region,
+			InstanceID:   instanceID,
+			EndpointSpec: expandLoadBalancer(),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+// collectEndpointSpecs collects all endpoint specifications for instance creation
+func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Diagnostics) {
+	var endpoints []*rdb.EndpointSpec
+
+	var diags diag.Diagnostics
+
+	// Add private network endpoints
+	if pn, pnExist := d.GetOk("private_network"); pnExist {
+		ipamConfig, staticConfig := getIPConfigCreate(d, "ip_net")
+
+		privateEndpoints, pnDiags := expandPrivateNetwork(pn, pnExist, ipamConfig, staticConfig)
+		if pnDiags.HasError() {
+			return nil, pnDiags
+		}
+
+		diags = append(diags, pnDiags...)
+
+		endpoints = append(endpoints, privateEndpoints...)
+	}
+
+	// Add load balancer endpoint
+	if _, lbExists := d.GetOk("load_balancer"); lbExists {
+		endpoints = append(endpoints, expandLoadBalancer())
+	}
+
+	return endpoints, diags
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -664,7 +717,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 
 	// set endpoints
 	diags := diag.Diagnostics{}
-	privateIPs := []map[string]interface{}(nil)
+	privateIPs := []map[string]any(nil)
 	authorized := true
 
 	if pnI, pnExist := flattenPrivateNetwork(res.Endpoints); pnExist {
@@ -725,7 +778,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 //gocyclo:ignore
-func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -983,7 +1036,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 					},
 					scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -1031,7 +1084,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 					Region:     region,
 				}, scw.WithContext(ctx))
 				if err != nil {
-					diag.FromErr(err)
+					return diag.FromErr(err)
 				}
 			}
 		}
@@ -1056,7 +1109,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m in
 	return ResourceRdbInstanceRead(ctx, d, m)
 }
 
-func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

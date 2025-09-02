@@ -1,4 +1,8 @@
 name: Documentation Checks
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -61,3 +65,5 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - uses: hashicorp/setup-terraform@v3
       - run: go tool tfplugindocs validate
+      - run: go tool tfplugindocs generate
+      - run: git diff --exit-code docs

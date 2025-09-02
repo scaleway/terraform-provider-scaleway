@@ -12,7 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func expandPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
+func expandPrivateNetwork(data []any) ([]*redis.EndpointSpec, error) {
 	if data == nil {
 		return nil, nil
 	}
@@ -20,9 +20,9 @@ func expandPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
 	epSpecs := make([]*redis.EndpointSpec, 0, len(data))
 
 	for _, rawPN := range data {
-		pn := rawPN.(map[string]interface{})
+		pn := rawPN.(map[string]any)
 		pnID := locality.ExpandID(pn["id"].(string))
-		rawIPs := pn["service_ips"].([]interface{})
+		rawIPs := pn["service_ips"].([]any)
 		ips := []scw.IPNet(nil)
 		spec := &redis.EndpointSpecPrivateNetworkSpec{
 			ID: pnID,
@@ -49,11 +49,11 @@ func expandPrivateNetwork(data []interface{}) ([]*redis.EndpointSpec, error) {
 	return epSpecs, nil
 }
 
-func expandACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
+func expandACLSpecs(i any) ([]*redis.ACLRuleSpec, error) {
 	rules := []*redis.ACLRuleSpec(nil)
 
 	for _, aclRule := range i.(*schema.Set).List() {
-		rawRule := aclRule.(map[string]interface{})
+		rawRule := aclRule.(map[string]any)
 		rule := &redis.ACLRuleSpec{}
 
 		if ruleDescription, hasDescription := rawRule["description"]; hasDescription {
@@ -72,10 +72,10 @@ func expandACLSpecs(i interface{}) ([]*redis.ACLRuleSpec, error) {
 	return rules, nil
 }
 
-func flattenACLs(aclRules []*redis.ACLRule) interface{} {
-	flat := []map[string]interface{}(nil)
+func flattenACLs(aclRules []*redis.ACLRule) any {
+	flat := []map[string]any(nil)
 	for _, acl := range aclRules {
-		flat = append(flat, map[string]interface{}{
+		flat = append(flat, map[string]any{
 			"id":          acl.ID,
 			"ip":          acl.IPCidr.String(),
 			"description": types.FlattenStringPtr(acl.Description),
@@ -85,8 +85,8 @@ func flattenACLs(aclRules []*redis.ACLRule) interface{} {
 	return flat
 }
 
-func expandSettings(i interface{}) []*redis.ClusterSetting {
-	rawSettings := i.(map[string]interface{})
+func expandSettings(i any) []*redis.ClusterSetting {
+	rawSettings := i.(map[string]any)
 	settings := []*redis.ClusterSetting(nil)
 
 	for key, value := range rawSettings {
@@ -99,7 +99,7 @@ func expandSettings(i interface{}) []*redis.ClusterSetting {
 	return settings
 }
 
-func flattenSettings(settings []*redis.ClusterSetting) interface{} {
+func flattenSettings(settings []*redis.ClusterSetting) any {
 	rawSettings := make(map[string]string)
 	for _, setting := range settings {
 		rawSettings[setting.Name] = setting.Value
@@ -108,8 +108,8 @@ func flattenSettings(settings []*redis.ClusterSetting) interface{} {
 	return rawSettings
 }
 
-func flattenPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
-	pnFlat := []map[string]interface{}(nil)
+func flattenPrivateNetwork(endpoints []*redis.Endpoint) (any, bool) {
+	pnFlat := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork == nil {
@@ -125,15 +125,22 @@ func flattenPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
 
 		pnRegionalID := regional.NewIDString(fetchRegion, pn.ID)
 
-		serviceIps := []interface{}(nil)
+		serviceIps := []any(nil)
 		for _, ip := range pn.ServiceIPs {
 			serviceIps = append(serviceIps, ip.String())
 		}
 
-		pnFlat = append(pnFlat, map[string]interface{}{
+		ips := []any(nil)
+		for _, ip := range endpoint.IPs {
+			ips = append(ips, ip.String())
+		}
+
+		pnFlat = append(pnFlat, map[string]any{
 			"endpoint_id": endpoint.ID,
 			"zone":        pn.Zone,
 			"id":          pnRegionalID,
+			"port":        int(endpoint.Port),
+			"ips":         ips,
 			"service_ips": serviceIps,
 		})
 	}
@@ -141,20 +148,20 @@ func flattenPrivateNetwork(endpoints []*redis.Endpoint) (interface{}, bool) {
 	return pnFlat, len(pnFlat) != 0
 }
 
-func flattenPublicNetwork(endpoints []*redis.Endpoint) interface{} {
-	pnFlat := []map[string]interface{}(nil)
+func flattenPublicNetwork(endpoints []*redis.Endpoint) any {
+	pnFlat := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
 		if endpoint.PublicNetwork == nil {
 			continue
 		}
 
-		ipsFlat := []interface{}(nil)
+		ipsFlat := []any(nil)
 		for _, ip := range endpoint.IPs {
 			ipsFlat = append(ipsFlat, ip.String())
 		}
 
-		pnFlat = append(pnFlat, map[string]interface{}{
+		pnFlat = append(pnFlat, map[string]any{
 			"id":   endpoint.ID,
 			"port": int(endpoint.Port),
 			"ips":  ipsFlat,

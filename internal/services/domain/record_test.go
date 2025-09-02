@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -675,7 +675,6 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 						name            = "%[2]s"
 						type            = "%[3]s"
 						data            = "%[4]s"
-						keep_empty_zone = false
 					}
 				`, testDNSZone, name, recordType, data),
 				Check: resource.ComposeTestCheckFunc(
@@ -687,6 +686,72 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "ttl", strconv.Itoa(ttl)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "priority", strconv.Itoa(priority)),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.proxy_srv", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-srv-duplication." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_SRVWithDomainDuplication: test dns zone: %s", testDNSZone)
+
+	name := "_test_srv_bug"
+	recordType := "SRV"
+	data := "0 0 1234 foo.example.com."
+	ttl := 60
+	priority := 0
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "srv_test" {
+						dns_zone = "%[1]s"
+						name     = "%[2]s"
+						type     = "%[3]s"
+						data     = "%[4]s"
+						priority = %[5]d
+						ttl      = %[6]d
+					}
+				`, testDNSZone, name, recordType, data, priority, ttl),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.srv_test"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "0 0 1234 foo.example.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", strconv.Itoa(priority)),
+					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "srv_test" {
+						dns_zone = "%[1]s"
+						name     = "%[2]s"
+						type     = "%[3]s"
+						data     = "10 0 5678 bar.example.com."
+						priority = 10
+						ttl      = 300
+					}
+				`, testDNSZone, name, recordType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.srv_test"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "10 0 5678 bar.example.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", "300"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", "10"),
+					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),
 				),
 			},
 		},
@@ -832,8 +897,11 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				return fmt.Errorf("failed to check if domain zone exists: %w", err)
 			}
 
-			if listDNSZones.TotalCount > 0 {
-				return fmt.Errorf("zone %s still exist", rs.Primary.Attributes["dns_zone"])
+			// Check if the specific record still exists
+			for _, record := range listDNSZones.Records {
+				if record.ID == rs.Primary.ID {
+					return fmt.Errorf("record %s still exists in zone %s", rs.Primary.ID, rs.Primary.Attributes["dns_zone"])
+				}
 			}
 
 			return nil

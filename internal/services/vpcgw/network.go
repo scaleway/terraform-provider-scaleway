@@ -59,7 +59,7 @@ func ResourceNetwork() *schema.Resource {
 				Description:      "The ID of the public gateway DHCP config",
 				ConflictsWith:    []string{"static_address", "ipam_config"},
 				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
-					if v, ok := d.Get("ipam_config").([]interface{}); ok && len(v) > 0 {
+					if v, ok := d.Get("ipam_config").([]any); ok && len(v) > 0 {
 						return true
 					}
 
@@ -166,7 +166,7 @@ func ResourceNetwork() *schema.Resource {
 	}
 }
 
-func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZoneV2(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -216,7 +216,7 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceVPCGatewayNetworkRead(ctx, d, m)
 }
 
-func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -261,7 +261,7 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	return readVPCGWNetworkResourceDataV2(d, gatewayNetwork, diags)
 }
 
-func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -307,7 +307,7 @@ func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	return ResourceVPCGatewayNetworkRead(ctx, d, m)
 }
 
-func ResourceVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPCGatewayNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := NewAPIWithZoneAndIDv2(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

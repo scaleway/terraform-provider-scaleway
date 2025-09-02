@@ -20,10 +20,10 @@ var scopeMapping = map[string]cockpit.TokenScope{
 }
 
 func createGrafanaURL(projectID string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.dashboards.obs.%s.scw.cloud", projectID, region)
+	return fmt.Sprintf("https://%s.dashboard.obs.%s.scw.cloud", projectID, region)
 }
 
-func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]interface{} {
+func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL string, alertManagerURL string) []map[string]any {
 	endpointMap := map[string]string{}
 
 	for _, dataSource := range dataSources {
@@ -37,7 +37,7 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 		}
 	}
 
-	endpoints := []map[string]interface{}{
+	endpoints := []map[string]any{
 		{
 			"metrics_url":      endpointMap["metrics_url"],
 			"logs_url":         endpointMap["logs_url"],
@@ -50,11 +50,11 @@ func flattenCockpitEndpoints(dataSources []*cockpit.DataSource, grafanaURL strin
 	return endpoints
 }
 
-func createCockpitPushURLList(endpoints []map[string]interface{}) []map[string]interface{} {
-	var result []map[string]interface{}
+func createCockpitPushURLList(endpoints []map[string]any) []map[string]any {
+	var result []map[string]any
 
 	for _, endpoint := range endpoints {
-		newEndpoint := make(map[string]interface{})
+		newEndpoint := make(map[string]any)
 
 		if metricsURL, ok := endpoint["metrics_url"].(string); ok && metricsURL != "" {
 			newEndpoint["push_metrics_url"] = metricsURL + pathMetricsURL
@@ -85,15 +85,15 @@ func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string
 	}
 }
 
-func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
+func expandCockpitTokenScopes(raw any) []cockpit.TokenScope {
 	var expandedScopes []cockpit.TokenScope
 
-	scopesList, ok := raw.([]interface{})
+	scopesList, ok := raw.([]any)
 	if !ok || len(scopesList) == 0 {
 		return expandedScopes
 	}
 
-	scopesMap, ok := scopesList[0].(map[string]interface{})
+	scopesMap, ok := scopesList[0].(map[string]any)
 	if !ok {
 		return expandedScopes
 	}
@@ -107,8 +107,8 @@ func expandCockpitTokenScopes(raw interface{}) []cockpit.TokenScope {
 	return expandedScopes
 }
 
-func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []interface{} {
-	result := map[string]interface{}{}
+func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []any {
+	result := map[string]any{}
 	for key := range scopeMapping {
 		result[key] = false
 	}
@@ -123,5 +123,5 @@ func flattenCockpitTokenScopes(scopes []cockpit.TokenScope) []interface{} {
 		}
 	}
 
-	return []interface{}{result}
+	return []any{result}
 }

@@ -21,7 +21,7 @@ func DataSourceAPIKey() *schema.Resource {
 	}
 }
 
-func DataSourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accessKey := d.Get("access_key").(string)
 
 	d.SetId(accessKey)

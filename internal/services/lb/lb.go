@@ -131,18 +131,16 @@ func ResourceLb() *schema.Resource {
 						"static_config": {
 							Description: "Define an IP address in the subnet of your private network that will be assigned to your load balancer instance",
 							Type:        schema.TypeList,
-							Optional:    true,
+							Computed:    true,
 							Deprecated:  "static_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
 							},
-							MaxItems: 1,
 						},
 						"dhcp_config": {
 							Description: "Set to true if you want to let DHCP assign IP addresses",
 							Type:        schema.TypeBool,
-							Optional:    true,
 							Computed:    true,
 							Deprecated:  "dhcp_config field is deprecated, please use `private_network_id` or `ipam_ids` instead",
 						},
@@ -163,8 +161,9 @@ func ResourceLb() *schema.Resource {
 							Description: "The status of private network connection",
 						},
 						"zone": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "Zone",
+							Computed:    true,
 						},
 					},
 				},
@@ -228,7 +227,7 @@ func ResourceLb() *schema.Resource {
 	}
 }
 
-func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,7 +247,7 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
-		for _, tag := range tags.([]interface{}) {
+		for _, tag := range tags.([]any) {
 			createReq.Tags = append(createReq.Tags, tag.(string))
 		}
 	}
@@ -288,7 +287,7 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m interface{}
 	return resourceLbRead(ctx, d, m)
 }
 
-func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -360,7 +359,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
 	}
 
-	allPrivateIPs := []map[string]interface{}(nil)
+	allPrivateIPs := []map[string]any(nil)
 	resourceType := ipamAPI.ResourceTypeLBServer
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -385,7 +384,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m interface{}) 
 }
 
 //gocyclo:ignore
-func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -439,11 +438,11 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 		oldIPIDsSet := make(map[string]struct{})
 		newIPIDsSet := make(map[string]struct{})
 
-		for _, id := range oldIPIDs.([]interface{}) {
+		for _, id := range oldIPIDs.([]any) {
 			oldIPIDsSet[id.(string)] = struct{}{}
 		}
 
-		for _, id := range newIPIDs.([]interface{}) {
+		for _, id := range newIPIDs.([]any) {
 			newIPIDsSet[id.(string)] = struct{}{}
 		}
 
@@ -602,7 +601,7 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m interface{}
 	return resourceLbRead(ctx, d, m)
 }
 
-func resourceLbDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

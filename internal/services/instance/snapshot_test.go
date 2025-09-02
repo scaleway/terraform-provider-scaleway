@@ -4,84 +4,16 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
-
-func TestAccSnapshot_BlockVolume(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       = "b_ssd"
-						size_in_gb = 20
-					}
-
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id = scaleway_instance_volume.main.id
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccSnapshot_Unified(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.Test(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       = "l_ssd"
-						size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image    = "ubuntu_jammy"
-						type     = "DEV1-S"
-						root_volume {
-							size_in_gb = 10
-							volume_type = "l_ssd"
-						}
-						additional_volume_ids = [
-							scaleway_instance_volume.main.id
-						]
-					}
-
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id = scaleway_instance_volume.main.id
-						type = "unified"
-						depends_on = [scaleway_instance_server.main]
-					}
-					`,
-				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "type", "unified"),
-				),
-			},
-		},
-	})
-}
 
 func TestAccSnapshot_Server(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -112,130 +44,73 @@ func TestAccSnapshot_Server(t *testing.T) {
 	})
 }
 
-func TestAccSnapshot_ServerWithBlockVolume(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
-
+func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-instance-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsVolumeDestroyed(tt),
-			instancechecks.IsServerDestroyed(tt),
 			isSnapshotDestroyed(tt),
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_instance_volume" main {
-						type       = "b_ssd"
-						size_in_gb = 10
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "snapshot-bucket" {
+					  name = "%s"
+					}
+					
+					resource "scaleway_object" "qcow-object" {
+					  bucket = scaleway_object_bucket.snapshot-bucket.name
+					  key    = "test-acc-instance-snapshot.qcow2"
+					  file   = "testfixture/small_image.qcow2"
 					}
 
-					resource "scaleway_instance_server" main {
-						image = "ubuntu_focal"
-						type = "DEV1-S"
-						root_volume {
-							size_in_gb = 10
-							volume_type = "l_ssd"
-						}
-						additional_volume_ids = [
-							scaleway_instance_volume.main.id
-						]
+					resource "scaleway_instance_snapshot" "qcow-instance-snapshot" {
+					  name = "test-acc-snapshot-import-default"
+					  import {
+					    bucket = scaleway_object.qcow-object.bucket
+					    key    = scaleway_object.qcow-object.key
+					  }
 					}
-
-					resource "scaleway_instance_snapshot" main {
-						volume_id = scaleway_instance_volume.main.id
-					}`,
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccSnapshot_RenameSnapshot(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated for block volumes")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       = "b_ssd"
-						size_in_gb = 20
-					}
-
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id = scaleway_instance_volume.main.id
-						name = "first_name"
-						tags = ["test-terraform"]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "tags.0", "test-terraform"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.qcow-instance-snapshot"),
+					acctest.CheckResourceAttrUUID("scaleway_instance_snapshot.qcow-instance-snapshot", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "name", "test-acc-snapshot-import-default"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "type", "l_ssd"),
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       = "b_ssd"
-						size_in_gb = 20
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "snapshot-bucket" {
+					  name = "%s"
+					}
+					
+					resource "scaleway_object" "qcow-object" {
+					  bucket = scaleway_object_bucket.snapshot-bucket.name
+					  key    = "test-acc-instance-snapshot.qcow2"
+					  file   = "testfixture/small_image.qcow2"
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id = scaleway_instance_volume.main.id
-						name = "second_name"
-					}`,
+					resource "scaleway_instance_snapshot" "qcow-instance-snapshot" {
+					  name = "test-acc-snapshot-import-lssd"
+					  type = "l_ssd"
+					  import {
+					    bucket = scaleway_object.qcow-object.bucket
+					    key    = scaleway_object.qcow-object.key
+					  }
+					}
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_snapshot.main", "tags.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccSnapshot_FromObject(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_snapshot\" is depracated")
-	// TestAccSnapshot_FromS3 tests the same logic on the scaleway_block_snapshot resource
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsVolumeDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_object_bucket" "bucket" {
-						name = "test-instance-snapshot-import-from-object"
-					}
-
-					resource "scaleway_object" "image" {
-						bucket = scaleway_object_bucket.bucket.name
-						key    = "image.qcow"
-						file   = "testfixture/empty.qcow2"
-					}
-
-					resource "scaleway_block_snapshot" "snapshot" {
-						name = "test-instance-snapshot-import-from-object"
-						type = "b_ssd"
-						import {
-							bucket = scaleway_object.image.bucket
-							key    = scaleway_object.image.key
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "scaleway_instance_snapshot.snapshot"),
+					isSnapshotPresent(tt, "scaleway_instance_snapshot.qcow-instance-snapshot"),
+					acctest.CheckResourceAttrUUID("scaleway_instance_snapshot.qcow-instance-snapshot", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "name", "test-acc-snapshot-import-lssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "type", "l_ssd"),
 				),
 			},
 		},

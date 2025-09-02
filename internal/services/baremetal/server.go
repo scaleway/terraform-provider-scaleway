@@ -148,6 +148,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				ValidateFunc: validation.StringLenBetween(0, 255),
 				Description:  "Some description to associate to the server, max 255 characters",
 			},
+			"protected": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, the baremetal server is protected against accidental deletion via the Scaleway API.",
+			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -179,8 +185,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Elem:        ResourceServerIP(),
 			},
 			"domain": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Domain associated with the server",
+				Computed:    true,
 			},
 			"options": {
 				Type:        schema.TypeSet,
@@ -222,7 +229,7 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 							Description:      "The ID of the private network to associate with the server",
 							Required:         true,
 							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i interface{}) string {
+							StateFunc: func(i any) string {
 								return locality.ExpandID(i.(string))
 							},
 						},
@@ -326,7 +333,7 @@ func ResourceServerIP() *schema.Resource {
 	}
 }
 
-func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -357,6 +364,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
+		Protected:   d.Get("protected").(bool),
 	}
 
 	partitioningSchema := baremetal.Schema{}
@@ -382,6 +390,8 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			User:               types.ExpandStringPtr(d.Get("user")),
 			Password:           types.ExpandStringPtr(d.Get("password")),
 			PartitioningSchema: &partitioningSchema,
+			ServicePassword:    types.ExpandStringPtr(d.Get("service_password")),
+			ServiceUser:        types.ExpandStringPtr(d.Get("service_user")),
 		}
 	}
 
@@ -447,7 +457,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return ResourceServerRead(ctx, d, m)
 }
 
-func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -503,6 +513,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	_ = d.Set("ips", flattenIPs(server.IPs))
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
+	_ = d.Set("protected", server.Protected)
 
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
@@ -536,7 +547,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	// Read private IPs if possible
-	allPrivateIPs := make([]map[string]interface{}, 0, listPrivateNetworks.TotalCount)
+	allPrivateIPs := make([]map[string]any, 0, listPrivateNetworks.TotalCount)
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
@@ -575,7 +586,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 //gocyclo:ignore
-func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -699,6 +710,11 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		hasChanged = true
 	}
 
+	if d.HasChange("protected") {
+		req.Protected = types.ExpandBoolPtr(d.Get("protected").(bool))
+		hasChanged = true
+	}
+
 	if hasChanged {
 		_, err = api.UpdateServer(req, scw.WithContext(ctx))
 		if err != nil {
@@ -763,7 +779,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return append(diags, ResourceServerRead(ctx, d, m)...)
 }
 
-func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -805,7 +821,7 @@ func installAttributeMissing(field *baremetal.OSOSField, d *schema.ResourceData,
 }
 
 // validateInstallConfig validates that schema contains attribute required for OS install
-func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func validateInstallConfig(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	baremetalAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

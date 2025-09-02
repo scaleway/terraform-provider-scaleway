@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
@@ -16,6 +17,19 @@ var transientStates = map[string]bool{
 	k8s.PoolStatusDeleting.String():    true,
 	k8s.PoolStatusScaling.String():     true,
 	k8s.PoolStatusUpgrading.String():   true,
+
+	rdb.DatabaseBackupStatusCreating.String():  true,
+	rdb.DatabaseBackupStatusDeleting.String():  true,
+	rdb.DatabaseBackupStatusExporting.String(): true,
+	rdb.DatabaseBackupStatusRestoring.String(): true,
+	rdb.InstanceStatusAutohealing.String():     true,
+	rdb.InstanceStatusBackuping.String():       true,
+	rdb.InstanceStatusConfiguring.String():     true,
+	rdb.InstanceStatusDeleting.String():        true,
+	rdb.InstanceStatusInitializing.String():    true,
+	rdb.InstanceStatusProvisioning.String():    true,
+	rdb.InstanceStatusRestarting.String():      true,
+	rdb.InstanceStatusSnapshotting.String():    true,
 }
 
 func main() {
@@ -54,7 +68,7 @@ func main() {
 			continue
 		}
 
-		var m map[string]interface{}
+		var m map[string]any
 
 		err := json.Unmarshal([]byte(responseBody), &m)
 		if err != nil {

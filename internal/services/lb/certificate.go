@@ -130,7 +130,7 @@ func ResourceCertificate() *schema.Resource {
 	}
 }
 
-func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	zone, lbID, err := zonal.ParseID(d.Get("lb_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
@@ -184,7 +184,7 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceLbCertificateRead(ctx, d, m)
 }
 
-func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -231,7 +231,7 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m in
 	return diags
 }
 
-func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -268,7 +268,7 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceLbCertificateRead(ctx, d, m)
 }
 
-func resourceLbCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbCertificateDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

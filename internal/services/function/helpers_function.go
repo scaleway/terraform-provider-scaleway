@@ -29,7 +29,7 @@ const (
 )
 
 // functionAPIWithRegion returns a new container registry API and the region.
-func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API, scw.Region, error) {
+func functionAPIWithRegion(d *schema.ResourceData, m any) (*function.API, scw.Region, error) {
 	api := function.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -41,7 +41,7 @@ func functionAPIWithRegion(d *schema.ResourceData, m interface{}) (*function.API
 }
 
 // NewAPIWithRegionAndID returns a new container registry API, region and ID.
-func NewAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, id string) (*function.API, scw.Region, string, error) {
 	api := function.NewAPI(meta.ExtractScwClient(m))
 
 	region, id, err := regional.ParseID(id)
@@ -52,7 +52,7 @@ func NewAPIWithRegionAndID(m interface{}, id string) (*function.API, scw.Region,
 	return api, region, id, nil
 }
 
-func functionUpload(ctx context.Context, m interface{}, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
+func functionUpload(ctx context.Context, m any, functionAPI *function.API, region scw.Region, functionID string, zipFile string) error {
 	zipStat, err := os.Stat(zipFile)
 	if err != nil {
 		return fmt.Errorf("failed to stat zip file: %w", err)
@@ -73,7 +73,7 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 	}
 	defer zip.Close() //nolint: errcheck
 
-	req, err := http.NewRequest(http.MethodPut, uploadURL.URL, zip)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, uploadURL.URL, zip)
 	if err != nil {
 		return fmt.Errorf("failed to init request: %w", err)
 	}
@@ -105,7 +105,7 @@ func functionUpload(ctx context.Context, m interface{}, functionAPI *function.AP
 		return fmt.Errorf("failed to dump request: %w", err)
 	}
 
-	tflog.Debug(ctx, "Request dump", map[string]interface{}{
+	tflog.Debug(ctx, "Request dump", map[string]any{
 		"url":      uploadURL.URL,
 		"response": string(respDump),
 		"request":  string(reqDump),
@@ -130,8 +130,8 @@ func functionDeploy(ctx context.Context, functionAPI *function.API, region scw.R
 	return nil
 }
 
-func expandFunctionsSecrets(secretsRawMap interface{}) []*function.Secret {
-	secretsMap := secretsRawMap.(map[string]interface{})
+func expandFunctionsSecrets(secretsRawMap any) []*function.Secret {
+	secretsMap := secretsRawMap.(map[string]any)
 	secrets := make([]*function.Secret, 0, len(secretsMap))
 
 	for k, v := range secretsMap {
@@ -176,12 +176,12 @@ func retryCreateFunctionDomain(ctx context.Context, functionAPI *function.API, r
 	}
 }
 
-func flattenFunctionSecrets(secrets []*function.SecretHashedValue) interface{} {
+func flattenFunctionSecrets(secrets []*function.SecretHashedValue) any {
 	if len(secrets) == 0 {
 		return nil
 	}
 
-	flattenedSecrets := make(map[string]interface{})
+	flattenedSecrets := make(map[string]any)
 	for _, secret := range secrets {
 		flattenedSecrets[secret.Key] = secret.HashedValue
 	}

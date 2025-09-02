@@ -37,34 +37,41 @@ func ResourceDefinition() *schema.Resource {
 				Description: "The job name",
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The job description",
+				Optional:    true,
 			},
 			"cpu_limit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "CPU limit of the job",
+				Required:    true,
 			},
 			"memory_limit": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:        schema.TypeInt,
+				Description: "Memory limit of the job",
+				Required:    true,
 			},
 			"image_uri": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Image URI to use for the job",
+				Optional:    true,
 			},
 			"command": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "Command to use for the job",
+				Optional:    true,
 			},
 			"timeout": {
 				Type:             schema.TypeString,
+				Description:      "Timeout for the job in seconds",
 				Optional:         true,
 				Computed:         true,
 				DiffSuppressFunc: dsf.Duration,
 			},
 			"env": {
-				Type:     schema.TypeMap,
-				Optional: true,
+				Type:        schema.TypeMap,
+				Description: "Environment variables to pass to the job",
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					ValidateFunc: validation.StringLenBetween(0, 1000),
@@ -72,18 +79,21 @@ func ResourceDefinition() *schema.Resource {
 				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 			},
 			"cron": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:        schema.TypeList,
+				Description: "Cron expression",
+				Optional:    true,
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"schedule": {
 							Type:         schema.TypeString,
+							Description:  "UNIX cron schedule to run job",
 							Required:     true,
 							RequiredWith: []string{"cron.0"},
 						},
 						"timezone": {
 							Type:         schema.TypeString,
+							Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
 							Required:     true,
 							RequiredWith: []string{"cron.0"},
 						},
@@ -96,8 +106,8 @@ func ResourceDefinition() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Description: "A reference to a Secret Manager secret.",
-				Set: func(v interface{}) int {
-					secret := v.(map[string]interface{})
+				Set: func(v any) int {
+					secret := v.(map[string]any)
 					if secret["environment"] != "" {
 						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
 					}
@@ -143,7 +153,7 @@ func ResourceDefinition() *schema.Resource {
 	}
 }
 
-func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -192,7 +202,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }
 
-func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -236,7 +246,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -331,7 +341,7 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }
 
-func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

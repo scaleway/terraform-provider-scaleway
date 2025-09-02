@@ -5,6 +5,11 @@ formatters:
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]
     - gofumpt # Gofumpt checks whether code was gofumpt-ed. [fast: true, auto-fix: true]
     - goimports # In addition to fixing imports, goimports also formats your code in the same style as gofmt. [fast: true, auto-fix: true]
+  settings:
+    gofmt:
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
 
 linters:
   # Run golangci-lint linters to see the list of all linters
@@ -29,6 +34,7 @@ linters:
     - exptostd # Detects functions from golang.org/x/exp/ that can be replaced by std functions. [auto-fix]
     - fatcontext # Detects nested contexts in loops and function literals. [auto-fix]
     - forbidigo # Forbids identifiers [fast: true, auto-fix: false]
+    - funcorder # Checks the order of functions, methods, and constructors. [fast]
     - gocheckcompilerdirectives # Checks that go compiler directive comments (//go:) are valid. [fast: true, auto-fix: false]
     - gochecksumtype # Run exhaustiveness checks on Go "sum types" [fast: false, auto-fix: false]
     - goconst # Finds repeated strings that could be replaced by a constant [fast: true, auto-fix: false]
@@ -64,6 +70,7 @@ linters:
     - promlinter # Check Prometheus metrics naming via promlint [fast: true, auto-fix: false]
     - protogetter # Reports direct reads from proto message fields when getters should be used [fast: false, auto-fix: true]
     - reassign # Checks that package variables are not reassigned [fast: false, auto-fix: false]
+    - recvcheck # Checks for receiver type consistency.
     - revive # Fast, configurable, extensible, flexible, and beautiful linter for Go. Drop-in replacement of golint. [fast: false, auto-fix: false]
     - rowserrcheck # checks whether Err of rows is checked successfully [fast: false, auto-fix: false]
     - sloglint # ensure consistent code style when using log/slog [fast: false, auto-fix: false]
@@ -105,6 +112,18 @@ linters:
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
 
   settings:
+    depguard:
+      rules:
+        testing:
+          files:
+            - "**/*_test.go"
+          deny:
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+              desc: use github.com/hashicorp/terraform-plugin-testing/helper/acctest
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+              desc: use github.com/hashicorp/terraform-plugin-testing/helper/resource
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+              desc: use github.com/hashicorp/terraform-plugin-testing/terraform
     govet:
       disable-all: true
       enable:
@@ -118,6 +137,9 @@ linters:
       rules:
         - name: exported
           disabled: true
+    ireturn:
+      reject:
+        - anon
 
   exclusions:
     rules:

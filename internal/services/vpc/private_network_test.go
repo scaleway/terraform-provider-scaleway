@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
@@ -43,13 +43,19 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 						"region",
 						"fr-par",
 					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.pn01",
+						"enable_default_route_propagation",
+						"false",
+					),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_vpc_private_network pn01 {
-						name = "%s"
-						tags = ["tag0", "tag1"]
+						name =                             "%s"
+						tags =                             ["tag0", "tag1"]
+                        enable_default_route_propagation = true
 					}
 				`, privateNetworkName),
 				Check: resource.ComposeTestCheckFunc(
@@ -66,6 +72,11 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 						"scaleway_vpc_private_network.pn01",
 						"tags.1",
 						"tag1",
+					),
+					resource.TestCheckResourceAttr(
+						"scaleway_vpc_private_network.pn01",
+						"enable_default_route_propagation",
+						"true",
 					),
 				),
 			},

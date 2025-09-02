@@ -57,7 +57,7 @@ func ResourceProject() *schema.Resource {
 	}
 }
 
-func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	request := &accountSDK.ProjectAPICreateProjectRequest{
@@ -79,7 +79,7 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceAccountProjectRead(ctx, d, m)
 }
 
-func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	res, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
@@ -104,7 +104,7 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	req := &accountSDK.ProjectAPIUpdateProjectRequest{
@@ -133,7 +133,7 @@ func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m
 	return resourceAccountProjectRead(ctx, d, m)
 }
 
-func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceAccountProjectDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
 	err := retry.RetryContext(ctx, d.Timeout(schema.TimeoutDelete), func() *retry.RetryError {

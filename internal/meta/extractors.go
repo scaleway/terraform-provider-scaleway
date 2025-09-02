@@ -15,15 +15,15 @@ import (
 // terraformResourceData is an interface for *schema.ResourceData. (used for mock)
 type terraformResourceData interface {
 	HasChange(string) bool
-	GetOk(string) (interface{}, bool)
-	Get(string) interface{}
+	GetOk(string) (any, bool)
+	Get(string) any
 	Id() string
 }
 
 // ExtractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
-func ExtractZone(d terraformResourceData, m interface{}) (scw.Zone, error) {
+func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -40,7 +40,7 @@ func ExtractZone(d terraformResourceData, m interface{}) (scw.Zone, error) {
 // ExtractRegion will try to guess the region from the following:
 //   - region field of the resource data
 //   - default region from config
-func ExtractRegion(d terraformResourceData, m interface{}) (scw.Region, error) {
+func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -58,7 +58,7 @@ func ExtractRegion(d terraformResourceData, m interface{}) (scw.Region, error) {
 //   - region field of the resource data
 //   - default region given in argument
 //   - default region from config
-func ExtractRegionWithDefault(d terraformResourceData, m interface{}, defaultRegion scw.Region) (scw.Region, error) {
+func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.Region) (scw.Region, error) {
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -79,7 +79,7 @@ func ExtractRegionWithDefault(d terraformResourceData, m interface{}, defaultReg
 // ExtractProjectID will try to guess the project id from the following:
 //   - project_id field of the resource data
 //   - default project id from config
-func ExtractProjectID(d terraformResourceData, m interface{}) (projectID string, isDefault bool, err error) {
+func ExtractProjectID(d terraformResourceData, m any) (projectID string, isDefault bool, err error) {
 	rawProjectID, exist := d.GetOk("project_id")
 	if exist {
 		return rawProjectID.(string), false, nil
@@ -93,15 +93,15 @@ func ExtractProjectID(d terraformResourceData, m interface{}) (projectID string,
 	return "", false, ErrProjectIDNotFound
 }
 
-func ExtractScwClient(m interface{}) *scw.Client {
+func ExtractScwClient(m any) *scw.Client {
 	return m.(*Meta).ScwClient()
 }
 
-func ExtractHTTPClient(m interface{}) *http.Client {
+func ExtractHTTPClient(m any) *http.Client {
 	return m.(*Meta).HTTPClient()
 }
 
-func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Type) (interface{}, bool) {
+func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Type) (any, bool) {
 	if key == "" {
 		return rawConfig, false
 	}
@@ -159,7 +159,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 
 // GetRawConfigForKey returns the value for a specific key in the user's raw configuration, which can be useful on resources' update
 // The value for the key to look for must be a primitive type (bool, string, number) and the expected type of the value should be passed as the ty parameter
-func GetRawConfigForKey(d *schema.ResourceData, key string, ty cty.Type) (interface{}, bool) {
+func GetRawConfigForKey(d *schema.ResourceData, key string, ty cty.Type) (any, bool) {
 	rawConfig := d.GetRawConfig()
 	if rawConfig.IsNull() {
 		return nil, false

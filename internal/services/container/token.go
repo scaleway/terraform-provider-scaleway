@@ -28,6 +28,7 @@ func ResourceToken() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"container_id": {
 				Type:             schema.TypeString,
+				Description:      "Container ID",
 				ForceNew:         true,
 				Optional:         true,
 				ExactlyOneOf:     []string{"namespace_id"},
@@ -35,27 +36,31 @@ func ResourceToken() *schema.Resource {
 			},
 			"namespace_id": {
 				Type:             schema.TypeString,
+				Description:      "Namespace ID",
 				ForceNew:         true,
 				Optional:         true,
 				ExactlyOneOf:     []string{"container_id"},
 				DiffSuppressFunc: dsf.Locality,
 			},
 			"description": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Description: "Description of the token.",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"expires_at": {
 				Type:             schema.TypeString,
+				Description:      "Expiration date of the token (TimeRFC3339)",
 				Optional:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: verify.IsDate(),
 				DiffSuppressFunc: dsf.TimeRFC3339,
 			},
 			"token": {
-				Type:      schema.TypeString,
-				Computed:  true,
-				Sensitive: true,
+				Type:        schema.TypeString,
+				Description: "Token",
+				Computed:    true,
+				Sensitive:   true,
 			},
 
 			"region": regional.Schema(),
@@ -64,7 +69,7 @@ func ResourceToken() *schema.Resource {
 	}
 }
 
-func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -88,7 +93,7 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceContainerTokenRead(ctx, d, m)
 }
 
-func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -116,7 +121,7 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func ResourceContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

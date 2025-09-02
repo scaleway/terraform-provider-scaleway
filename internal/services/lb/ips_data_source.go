@@ -43,29 +43,35 @@ func DataSourceIPs() *schema.Resource {
 				Description: "IPs with these exact tags are listed",
 			},
 			"ips": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of IPs",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "UUID of the IP",
+							Type:        schema.TypeString,
 						},
 						"ip_address": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "IP address of this IP",
+							Type:        schema.TypeString,
 						},
 						"lb_id": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Load balancer ID associated with this IP",
+							Type:        schema.TypeString,
 						},
 						"reverse": {
-							Computed: true,
-							Type:     schema.TypeString,
+							Computed:    true,
+							Description: "Reverse DNS associated with this IP address",
+							Type:        schema.TypeString,
 						},
 						"tags": {
-							Computed: true,
-							Type:     schema.TypeList,
+							Computed:    true,
+							Description: "List of tags associated with this IP",
+							Type:        schema.TypeList,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
@@ -83,7 +89,7 @@ func DataSourceIPs() *schema.Resource {
 	}
 }
 
-func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -111,10 +117,10 @@ func DataSourceLbIPsRead(ctx context.Context, d *schema.ResourceData, m interfac
 		filteredList = res.IPs
 	}
 
-	ips := []interface{}(nil)
+	ips := []any(nil)
 
 	for _, ip := range filteredList {
-		rawIP := make(map[string]interface{})
+		rawIP := make(map[string]any)
 		rawIP["id"] = zonal.NewID(ip.Zone, ip.ID).String()
 		rawIP["ip_address"] = ip.IPAddress
 		rawIP["lb_id"] = types.FlattenStringPtr(ip.LBID)

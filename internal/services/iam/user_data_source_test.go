@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
@@ -22,6 +22,7 @@ func TestAccDataSourceUser_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_iam_user" "main" {
 					  email = "foo@scaleway.com"
+					  username = "foo"
 					}
 
 					data "scaleway_iam_user" "by_id" {

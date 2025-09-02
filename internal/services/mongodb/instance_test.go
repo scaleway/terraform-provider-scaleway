@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
@@ -25,7 +25,7 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 			{
 				Config: `
 					resource scaleway_mongodb_instance main {
-						name = "test-mongodb-basic1"
+						name = "test-mongodb-basic-1"
 						version = "7.0.12"
 						node_type = "MGDB-PLAY2-NANO"
 						node_number = 1
@@ -35,12 +35,13 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-basic-1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0.12"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
 					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret"),
+					resource.TestCheckResourceAttrSet("scaleway_mongodb_instance.main", "tls_certificate"),
 				),
 			},
 		},

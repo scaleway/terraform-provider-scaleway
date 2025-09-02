@@ -20,27 +20,27 @@ type Logger struct{}
 var L = Logger{}
 
 // Debugf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
-func (l Logger) Debugf(format string, args ...interface{}) {
+func (l Logger) Debugf(format string, args ...any) {
 	log.Printf("[DEBUG] "+format, args...)
 }
 
 // Infof logs to the INFO log. Arguments are handled in the manner of fmt.Printf.
-func (l Logger) Infof(format string, args ...interface{}) {
+func (l Logger) Infof(format string, args ...any) {
 	log.Printf("[INFO] "+format, args...)
 }
 
 // Warningf logs to the WARNING log. Arguments are handled in the manner of fmt.Printf.
-func (l Logger) Warningf(format string, args ...interface{}) {
+func (l Logger) Warningf(format string, args ...any) {
 	log.Printf("[WARN] "+format, args...)
 }
 
 // Errorf logs to the ERROR log. Arguments are handled in the manner of fmt.Printf.
-func (l Logger) Errorf(format string, args ...interface{}) {
+func (l Logger) Errorf(format string, args ...any) {
 	log.Printf("[ERROR] "+format, args...)
 }
 
 // Printf logs to the DEBUG log. Arguments are handled in the manner of fmt.Printf.
-func (l Logger) Printf(format string, args ...interface{}) {
+func (l Logger) Printf(format string, args ...any) {
 	l.Debugf(format, args...)
 }
 

@@ -61,26 +61,31 @@ func ResourceReadReplica() *schema.Resource {
 						"endpoint_id": {
 							Type:        schema.TypeString,
 							Description: "UUID of the endpoint (UUID format).",
+							Optional:    true,
 							Computed:    true,
 						},
 						"ip": {
 							Type:        schema.TypeString,
 							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"port": {
 							Type:        schema.TypeInt,
 							Description: "TCP port of the endpoint.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Description: "Name of the endpoint.",
+							Optional:    true,
 							Computed:    true,
 						},
 						"hostname": {
 							Type:        schema.TypeString,
 							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+							Optional:    true,
 							Computed:    true,
 						},
 					},
@@ -155,7 +160,7 @@ func ResourceReadReplica() *schema.Resource {
 	}
 }
 
-func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +204,7 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceRdbReadReplicaRead(ctx, d, m)
 }
 
-func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -229,7 +234,7 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m i
 }
 
 //gocyclo:ignore
-func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -332,7 +337,7 @@ func ResourceRdbReadReplicaUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceRdbReadReplicaRead(ctx, d, m)
 }
 
-func ResourceRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbReadReplicaDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

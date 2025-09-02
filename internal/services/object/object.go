@@ -89,6 +89,12 @@ func ResourceObject() *schema.Resource {
 				},
 				ValidateDiagFunc: validateMapKeyLowerCase(),
 			},
+			"content_type": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
+			},
 			"tags": {
 				Optional:    true,
 				Type:        schema.TypeMap,
@@ -120,7 +126,7 @@ func ResourceObject() *schema.Resource {
 	}
 }
 
-func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -151,6 +157,10 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		Key:          types.ExpandStringPtr(key),
 		StorageClass: storageClass,
 		Metadata:     types.ExpandMapStringString(d.Get("metadata")),
+	}
+
+	if contentType, ok := d.GetOk("content_type"); ok {
+		req.ContentType = types.ExpandStringPtr(contentType)
 	}
 
 	visibilityStr := types.ExpandStringPtr(d.Get("visibility").(string))
@@ -232,7 +242,7 @@ func EncryptCustomerKey(encryptionKeyStr string) (string, *string, error) {
 	return digestMD5, encryption, nil
 }
 
-func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -251,6 +261,10 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
+		}
+
+		if contentType, ok := d.GetOk("content_type"); ok {
+			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
 		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
@@ -284,6 +298,10 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
+		}
+
+		if contentType, ok := d.GetOk("content_type"); ok {
+			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
 		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
@@ -332,7 +350,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceObjectCreate(ctx, d, m)
 }
 
-func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -368,6 +386,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	_ = d.Set("metadata", types.FlattenMap(obj.Metadata))
+	_ = d.Set("content_type", &obj.ContentType)
 
 	tags, err := s3Client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
 		Bucket: types.ExpandStringPtr(bucket),
@@ -396,7 +415,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, key, bucket, err := s3ClientWithRegionAndNestedName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -426,7 +445,7 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 	for _, grant := range acl.Grants {
 		if grant.Grantee != nil &&
 			grant.Grantee.Type == s3Types.TypeGroup &&
-			*grant.Grantee.URI == "http://acs.amazonaws.com/groups/global/AllUsers" {
+			*grant.Grantee.URI == AllUsersURI {
 			return true
 		}
 	}
@@ -435,7 +454,7 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 }
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
-	return func(i interface{}, _ cty.Path) diag.Diagnostics {
+	return func(i any, _ cty.Path) diag.Diagnostics {
 		m := types.ExpandMapStringStringPtr(i)
 		for k := range m {
 			if strings.ToLower(k) != k {

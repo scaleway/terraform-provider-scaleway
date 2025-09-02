@@ -29,7 +29,6 @@ var changeKeys = []string{
 	"weighted",
 	"view",
 	"dns_zone",
-	"keep_empty_zone",
 }
 
 func ResourceRecord() *schema.Resource {
@@ -56,12 +55,6 @@ func ResourceRecord() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"keep_empty_zone": {
-				Type:        schema.TypeBool,
-				Description: "When destroy a resource record, if a zone have only NS, delete the zone",
-				Optional:    true,
-				Default:     false,
-			},
 			"root_zone": {
 				Type:        schema.TypeBool,
 				Description: "Does the DNS zone is the root zone or not",
@@ -72,7 +65,7 @@ func ResourceRecord() *schema.Resource {
 				Description: "The name of the record",
 				ForceNew:    true,
 				Optional:    true,
-				StateFunc: func(val interface{}) string {
+				StateFunc: func(val any) string {
 					value := val.(string)
 					if value == "@" {
 						return ""
@@ -249,7 +242,7 @@ func ResourceRecord() *schema.Resource {
 	}
 }
 
-func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	dnsZone := d.Get("dns_zone").(string)
@@ -303,7 +296,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, recordData, dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -316,7 +309,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceDomainRecordRead(ctx, d, m)
 }
 
-func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	var record *domain.Record
@@ -415,7 +408,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", flattenDomainData(record.Data, record.Type).(string))
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
@@ -433,7 +426,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	if !d.HasChanges(changeKeys...) {
 		return resourceDomainRecordRead(ctx, d, m)
 	}
@@ -480,7 +473,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceDomainRecordRead(ctx, d, m)
 }
 
-func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
 	recordID := locality.ExpandID(d.Id())
@@ -501,52 +494,6 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	d.SetId("")
-
-	// for non-root zone, if the zone have only NS records, then delete the zone
-	if d.Get("keep_empty_zone").(bool) || d.Get("root_zone").(bool) {
-		return nil
-	}
-
-	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-		DNSZone: d.Get("dns_zone").(string),
-	})
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	for _, r := range res.Records {
-		if r.Type != domain.RecordTypeNS {
-			// The zone isn't empty, keep it
-			return nil
-		}
-
-		tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
-	}
-
-	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-		DNSZone:   d.Get("dns_zone").(string),
-		ProjectID: d.Get("project_id").(string),
-	})
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

@@ -1,0 +1,53 @@
+---
+subcategory: "Transactional Email"
+page_title: "Scaleway: scaleway_tem_blocked_list"
+---
+
+# Resource: scaleway_tem_blocked_list
+
+Creates and manages blocklisted email addresses for a Scaleway Transactional Email Domain.
+For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/transactional-email/#post-transactional-email-v1alpha1-regions-region-blocklists).
+
+## Example Usage
+
+### Basic
+
+```hcl
+resource "scaleway_tem_blocked_list" "test" {
+  domain_id = "fr-par/12345678-1234-1234-1234-123456789abc"
+  email     = "spam@example.com"
+  type      = "mailbox_full"
+  reason    = "Spam detected"
+  region    = "fr-par"
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `domain_id` - (Required) The ID of the domain affected by the blocklist. Must be in the format `{region}/{domain_id}`.
+- `email` - (Required) The email address to block.
+- `type` - (Required) Type of the blocklist. Possible values are:
+    - `mailbox_full` — The recipient's mailbox is full.
+    - `mailbox_not_found` — The recipient's mailbox does not exist.
+- `reason` - (Optional, Default: `manual_block`) Reason for blocking the email address.
+- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) in which the blocklist is created. Defaults to the provider's region.
+- `project_id` - (Optional) The ID of the project this blocklist belongs to. Defaults to the provider's project ID.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the blocklist, in the format `{region}/{id}`.
+
+~> **Important:** Blocklist IDs are [regional](../guides/regions_and_zones.md#resource-ids), and must be imported/exported using the full format.
+
+## Import
+
+Blocklists can be imported using the `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_tem_blocked_list.test fr-par/11111111-1111-1111-1111-111111111111
+```
+

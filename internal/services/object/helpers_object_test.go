@@ -18,17 +18,17 @@ const (
 func TestExpandObjectBucketTags(t *testing.T) {
 	tests := []struct {
 		name string
-		tags interface{}
+		tags any
 		want []s3Types.Tag
 	}{
 		{
 			name: "no tags",
-			tags: map[string]interface{}{},
+			tags: map[string]any{},
 			want: []s3Types.Tag(nil),
 		},
 		{
 			name: "single tag",
-			tags: map[string]interface{}{
+			tags: map[string]any{
 				"key1": "val1",
 			},
 			want: []s3Types.Tag{
@@ -37,7 +37,7 @@ func TestExpandObjectBucketTags(t *testing.T) {
 		},
 		{
 			name: "many tags",
-			tags: map[string]interface{}{
+			tags: map[string]any{
 				"key1": "val1",
 				"key2": "val2",
 				"key3": "val3",

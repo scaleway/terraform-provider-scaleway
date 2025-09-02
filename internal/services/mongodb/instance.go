@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
-	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1alpha1"
+	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -186,16 +189,19 @@ func ResourceInstance() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "ID of the public network",
 						},
 						"port": {
 							Type:        schema.TypeInt,
+							Optional:    true,
 							Computed:    true,
 							Description: "TCP port of the endpoint",
 						},
 						"dns_record": {
 							Type:        schema.TypeString,
+							Optional:    true,
 							Computed:    true,
 							Description: "The DNS record of your endpoint",
 						},
@@ -231,11 +237,32 @@ func ResourceInstance() *schema.Resource {
 			// Common
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
+			"tls_certificate": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "PEM-encoded TLS certificate for MongoDB",
+			},
 		},
+		CustomizeDiff: customdiff.All(
+			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+				if d.HasChange("version") {
+					v := d.Get("version").(string)
+					parts := strings.Split(v, ".")
+					if len(parts) > 2 {
+						majorMinor := parts[0] + "." + parts[1]
+						if err := d.SetNew("version", majorMinor); err != nil {
+							return err
+						}
+					}
+				}
+
+				return nil
+			},
+		),
 	}
 }
 
-func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -248,16 +275,12 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	var res *mongodb.Instance
 
 	if exist {
-		volume := &mongodb.RestoreSnapshotRequestVolumeDetails{
-			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
-		}
-		id := regional.ExpandID(snapshotID.(string))
 		restoreSnapshotRequest := &mongodb.RestoreSnapshotRequest{
-			SnapshotID:   id.ID,
+			SnapshotID:   regional.ExpandID(snapshotID.(string)).ID,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
-			NodeNumber:   *nodeNumber,
+			NodeAmount:   *nodeNumber,
 			NodeType:     d.Get("node_type").(string),
-			Volume:       volume,
+			VolumeType:   mongodb.VolumeType(d.Get("volume_type").(string)),
 		}
 
 		res, err = mongodbAPI.RestoreSnapshot(restoreSnapshotRequest, scw.WithContext(ctx))
@@ -265,25 +288,28 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 	} else {
+		version := d.Get("version").(string)
+		normalizeVersion := NormalizeMongoDBVersion(version)
+
 		createReq := &mongodb.CreateInstanceRequest{
 			ProjectID:  d.Get("project_id").(string),
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
-			Version:    d.Get("version").(string),
+			Version:    normalizeVersion,
 			NodeType:   d.Get("node_type").(string),
-			NodeNumber: *nodeNumber,
+			NodeAmount: *nodeNumber,
 			UserName:   d.Get("user_name").(string),
 			Password:   d.Get("password").(string),
 		}
 
-		volumeRequestDetails := &mongodb.CreateInstanceRequestVolumeDetails{
-			VolumeType: mongodb.VolumeType(d.Get("volume_type").(string)),
+		volumeRequestDetails := &mongodb.Volume{
+			Type: mongodb.VolumeType(d.Get("volume_type").(string)),
 		}
 		volumeSize, volumeSizeExist := d.GetOk("volume_size_in_gb")
 
 		if volumeSizeExist {
-			volumeRequestDetails.VolumeSize = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
+			volumeRequestDetails.SizeBytes = scw.Size(uint64(volumeSize.(int)) * uint64(scw.GB))
 		} else {
-			volumeRequestDetails.VolumeSize = scw.Size(defaultVolumeSize * uint64(scw.GB))
+			volumeRequestDetails.SizeBytes = scw.Size(defaultVolumeSize * uint64(scw.GB))
 		}
 
 		createReq.Volume = volumeRequestDetails
@@ -296,10 +322,10 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		var eps []*mongodb.EndpointSpec
 
 		if privateNetworkList, ok := d.GetOk("private_network"); ok {
-			privateNetworks := privateNetworkList.([]interface{})
+			privateNetworks := privateNetworkList.([]any)
 
 			if len(privateNetworks) > 0 {
-				pn := privateNetworks[0].(map[string]interface{})
+				pn := privateNetworks[0].(map[string]any)
 				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 				if privateNetworkID != "" {
@@ -313,17 +339,17 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 		}
 
 		if pubList, ok := d.GetOk("public_network"); ok {
-			items := pubList.([]interface{})
+			items := pubList.([]any)
 			if len(items) > 0 {
 				eps = append(eps, &mongodb.EndpointSpec{
-					Public: &mongodb.EndpointSpecPublicDetails{},
+					PublicNetwork: &mongodb.EndpointSpecPublicNetworkDetails{},
 				})
 			}
 		}
 
 		if len(eps) == 0 {
 			eps = append(eps, &mongodb.EndpointSpec{
-				Public: &mongodb.EndpointSpecPublicDetails{},
+				PublicNetwork: &mongodb.EndpointSpecPublicNetworkDetails{},
 			})
 		}
 
@@ -345,7 +371,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -369,7 +395,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
-	_ = d.Set("node_number", int(instance.NodeNumber))
+	_ = d.Set("node_number", int(instance.NodeAmount))
 	_ = d.Set("node_type", instance.NodeType)
 	_ = d.Set("project_id", instance.ProjectID)
 	_ = d.Set("tags", instance.Tags)
@@ -378,7 +404,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if instance.Volume != nil {
 		_ = d.Set("volume_type", instance.Volume.Type)
-		_ = d.Set("volume_size_in_gb", int(instance.Volume.Size/scw.GB))
+		_ = d.Set("volume_size_in_gb", int(instance.Volume.SizeBytes/scw.GB))
 	}
 
 	publicNetworkEndpoint, publicNetworkExists := flattenPublicNetwork(instance.Endpoints)
@@ -387,7 +413,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	diags := diag.Diagnostics{}
-	privateIPs := []map[string]interface{}(nil)
+	privateIPs := []map[string]any(nil)
 	authorized := true
 
 	privateNetworkEndpoint, privateNetworkExists := flattenPrivateNetwork(instance.Endpoints)
@@ -441,19 +467,30 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m interfa
 		_ = d.Set("private_ip", privateIPs)
 	}
 
-	if len(instance.Settings) > 0 {
-		settingsMap := make(map[string]string)
-		for _, setting := range instance.Settings {
-			settingsMap[setting.Name] = setting.Value
-		}
+	_ = d.Set("settings", map[string]string{})
 
-		_ = d.Set("settings", settingsMap)
+	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
+		Region:     region,
+		InstanceID: ID,
+	}, scw.WithContext(ctx))
+
+	if err == nil && cert != nil {
+		certBytes, readErr := io.ReadAll(cert.Content)
+		if readErr == nil {
+			_ = d.Set("tls_certificate", string(certBytes))
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Failed to read MongoDB TLS certificate content",
+				Detail:   readErr.Error(),
+			})
+		}
 	}
 
 	return diags
 }
 
-func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -479,9 +516,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		size := scw.Size(newSize * uint64(scw.GB))
 
 		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
-			InstanceID: ID,
-			Region:     region,
-			VolumeSize: &size,
+			InstanceID:      ID,
+			Region:          region,
+			VolumeSizeBytes: &size,
 		}
 
 		_, err = mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
@@ -591,9 +628,9 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		var eps []*mongodb.EndpointSpec
 
 		if privateNetworkList, ok := d.GetOk("private_network"); ok {
-			privateNetworks := privateNetworkList.([]interface{})
+			privateNetworks := privateNetworkList.([]any)
 			if len(privateNetworks) > 0 {
-				pn := privateNetworks[0].(map[string]interface{})
+				pn := privateNetworks[0].(map[string]any)
 				privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 				if privateNetworkID != "" {
@@ -626,7 +663,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return append(diags, ResourceInstanceRead(ctx, d, m)...)
 }
 
-func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

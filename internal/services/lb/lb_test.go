@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -583,10 +583,10 @@ func isLbDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 }
 
 func TestLbUpgradeV1SchemaUpgradeFunc(t *testing.T) {
-	v0Schema := map[string]interface{}{
+	v0Schema := map[string]any{
 		"id": "fr-par/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
-	v1Schema := map[string]interface{}{
+	v1Schema := map[string]any{
 		"id": "fr-par-1/22c61530-834c-4ab4-aa71-aaaa2ac9d45a",
 	}
 

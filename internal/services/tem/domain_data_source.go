@@ -36,7 +36,7 @@ func DataSourceDomain() *schema.Resource {
 	}
 }
 
-func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := temAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)

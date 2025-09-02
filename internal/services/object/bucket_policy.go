@@ -50,7 +50,7 @@ func ResourceBucketPolicy() *schema.Resource {
 	}
 }
 
-func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -109,7 +109,7 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 }
 
 //gocyclo:ignore
-func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, region, _, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -171,7 +171,7 @@ func resourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceObjectBucketPolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

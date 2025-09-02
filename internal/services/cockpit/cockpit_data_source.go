@@ -31,7 +31,7 @@ func DataSourceCockpit() *schema.Resource {
 	}
 }
 
-func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	projectID := d.Get("project_id").(string)
 	if projectID == "" {
 		_, err := getDefaultProjectID(ctx, m)

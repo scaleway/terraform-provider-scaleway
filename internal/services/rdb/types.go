@@ -11,7 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
+func flattenInstanceSettings(settings []*rdb.InstanceSetting) any {
 	res := make(map[string]string)
 	for _, value := range settings {
 		res[value.Name] = value.Value
@@ -20,8 +20,8 @@ func flattenInstanceSettings(settings []*rdb.InstanceSetting) interface{} {
 	return res
 }
 
-func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
-	rawRule := i.(map[string]interface{})
+func expandInstanceSettings(i any) []*rdb.InstanceSetting {
+	rawRule := i.(map[string]any)
 	res := make([]*rdb.InstanceSetting, 0, len(rawRule))
 
 	for key, value := range rawRule {
@@ -34,17 +34,17 @@ func expandInstanceSettings(i interface{}) []*rdb.InstanceSetting {
 	return res
 }
 
-func expandPrivateNetwork(data interface{}, exist bool, ipamConfig *bool, staticConfig *string) ([]*rdb.EndpointSpec, diag.Diagnostics) {
+func expandPrivateNetwork(data any, exist bool, ipamConfig *bool, staticConfig *string) ([]*rdb.EndpointSpec, diag.Diagnostics) {
 	if data == nil || !exist {
 		return nil, nil
 	}
 
 	var diags diag.Diagnostics
 
-	res := make([]*rdb.EndpointSpec, 0, len(data.([]interface{})))
+	res := make([]*rdb.EndpointSpec, 0, len(data.([]any)))
 
-	for _, pn := range data.([]interface{}) {
-		r := pn.(map[string]interface{})
+	for _, pn := range data.([]any) {
+		r := pn.(map[string]any)
 		spec := &rdb.EndpointSpec{
 			PrivateNetwork: &rdb.EndpointSpecPrivateNetwork{
 				PrivateNetworkID: locality.ExpandID(r["pn_id"].(string)),
@@ -83,8 +83,8 @@ func expandLoadBalancer() *rdb.EndpointSpec {
 	}
 }
 
-func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
-	pnI := []map[string]interface{}(nil)
+func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (any, bool) {
+	pnI := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
 		if endpoint.PrivateNetwork != nil {
@@ -107,7 +107,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 				enableIpam = true
 			}
 
-			pnI = append(pnI, map[string]interface{}{
+			pnI = append(pnI, map[string]any{
 				"endpoint_id": endpoint.ID,
 				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
@@ -125,12 +125,12 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	return pnI, false
 }
 
-func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
-	flat := []map[string]interface{}(nil)
+func flattenLoadBalancer(endpoints []*rdb.Endpoint) (any, bool) {
+	flat := []map[string]any(nil)
 
 	for _, endpoint := range endpoints {
 		if endpoint.LoadBalancer != nil {
-			flat = append(flat, map[string]interface{}{
+			flat = append(flat, map[string]any{
 				"endpoint_id": endpoint.ID,
 				"ip":          types.FlattenIPPtr(endpoint.IP),
 				"port":        int(endpoint.Port),
@@ -145,8 +145,8 @@ func flattenLoadBalancer(endpoints []*rdb.Endpoint) (interface{}, bool) {
 	return flat, false
 }
 
-func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadReplicaEndpointSpec {
-	if data == nil || len(data.([]interface{})) == 0 {
+func expandReadReplicaEndpointsSpecDirectAccess(data any) *rdb.ReadReplicaEndpointSpec {
+	if data == nil || len(data.([]any)) == 0 {
 		return nil
 	}
 
@@ -156,14 +156,14 @@ func expandReadReplicaEndpointsSpecDirectAccess(data interface{}) *rdb.ReadRepli
 }
 
 // expandReadReplicaEndpointsSpecPrivateNetwork expand read-replica private network endpoints from schema to specs
-func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *bool, staticConfig *string) (*rdb.ReadReplicaEndpointSpec, diag.Diagnostics) {
-	if data == nil || len(data.([]interface{})) == 0 {
+func expandReadReplicaEndpointsSpecPrivateNetwork(data any, ipamConfig *bool, staticConfig *string) (*rdb.ReadReplicaEndpointSpec, diag.Diagnostics) {
+	if data == nil || len(data.([]any)) == 0 {
 		return nil, nil
 	}
 	// private_network is a list of size 1
-	data = data.([]interface{})[0]
+	data = data.([]any)[0]
 
-	rawEndpoint := data.(map[string]interface{})
+	rawEndpoint := data.(map[string]any)
 
 	var diags diag.Diagnostics
 
@@ -197,9 +197,9 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data interface{}, ipamConfig *
 }
 
 // flattenReadReplicaEndpoints flatten read-replica endpoints to directAccess and privateNetwork
-func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork interface{}) {
+func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, privateNetwork any) {
 	for _, endpoint := range endpoints {
-		rawEndpoint := map[string]interface{}{
+		rawEndpoint := map[string]any{
 			"endpoint_id": endpoint.ID,
 			"ip":          types.FlattenIPPtr(endpoint.IP),
 			"port":        int(endpoint.Port),
@@ -234,20 +234,20 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 	// direct_access and private_network are lists
 
 	if directAccess != nil {
-		directAccess = []interface{}{directAccess}
+		directAccess = []any{directAccess}
 	}
 
 	if privateNetwork != nil {
-		privateNetwork = []interface{}{privateNetwork}
+		privateNetwork = []any{privateNetwork}
 	}
 
 	return directAccess, privateNetwork
 }
 
-func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
-	policyConfigRaw := i.([]interface{})
+func expandInstanceLogsPolicy(i any) *rdb.LogsPolicy {
+	policyConfigRaw := i.([]any)
 	for _, policyRaw := range policyConfigRaw {
-		policy := policyRaw.(map[string]interface{})
+		policy := policyRaw.(map[string]any)
 
 		return &rdb.LogsPolicy{
 			MaxAgeRetention:    types.ExpandUint32Ptr(policy["max_age_retention"]),
@@ -258,10 +258,10 @@ func expandInstanceLogsPolicy(i interface{}) *rdb.LogsPolicy {
 	return nil
 }
 
-func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) interface{} {
-	p := []map[string]interface{}{}
+func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) any {
+	p := []map[string]any{}
 	if policy != nil {
-		p = append(p, map[string]interface{}{
+		p = append(p, map[string]any{
 			"max_age_retention":    types.FlattenUint32Ptr(policy.MaxAgeRetention),
 			"total_disk_retention": types.FlattenSize(policy.TotalDiskRetention),
 		})

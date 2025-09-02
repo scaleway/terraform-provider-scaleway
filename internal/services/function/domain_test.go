@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
-	containerchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/function"
 )
 
@@ -27,21 +26,6 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 		CheckDestroy:      testAccCheckFunctionDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource scaleway_function_namespace main {}
-
-				resource scaleway_function main {
-						namespace_id = scaleway_function_namespace.main.id
-						runtime = "go122"
-						privacy = "private"
-						handler = "Handle"
-						zip_file = "testfixture/gofunction.zip"
-						deploy = true
-				}
-				`,
-				Check: containerchecks.TestConfigContainerNamespace(tt, "scaleway_function_namespace.main"),
-			},
-			{
 				Config: fmt.Sprintf(`
 					resource scaleway_function_namespace main {}
 
@@ -56,7 +40,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 
 					resource scaleway_domain_record "function" {
 				  		dns_zone = "%s"
-				  		name     = "container"
+				  		name     = "function"
 				  		type     = "CNAME"
 				  		data     = "${scaleway_function.main.domain_name}."
 				  		ttl      = 60
@@ -69,6 +53,7 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 				`, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionDomainExists(tt, "scaleway_function_domain.main"),
+					resource.TestCheckResourceAttr("scaleway_function_domain.main", "hostname", fmt.Sprintf("%s.%s", "function", testDNSZone)),
 				),
 			},
 		},

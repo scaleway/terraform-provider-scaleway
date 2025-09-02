@@ -86,7 +86,7 @@ func ResourceDatabaseBackup() *schema.Resource {
 	}
 }
 
-func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -117,7 +117,7 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceRdbDatabaseBackupRead(ctx, d, m)
 }
 
-func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -149,7 +149,7 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -186,7 +186,7 @@ func ResourceRdbDatabaseBackupUpdate(ctx context.Context, d *schema.ResourceData
 	return ResourceRdbDatabaseBackupRead(ctx, d, m)
 }
 
-func ResourceRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

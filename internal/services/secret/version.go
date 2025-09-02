@@ -42,7 +42,7 @@ func ResourceVersion() *schema.Resource {
 				Description: "The data payload of your secret version.",
 				Sensitive:   true,
 				ForceNew:    true,
-				StateFunc: func(i interface{}) string {
+				StateFunc: func(i any) string {
 					return Base64Encoded([]byte(i.(string)))
 				},
 			},
@@ -76,7 +76,7 @@ func ResourceVersion() *schema.Resource {
 	}
 }
 
-func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -103,7 +103,7 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceVersionRead(ctx, d, m)
 }
 
-func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, revision, err := NewVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,7 +136,7 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func ResourceVersionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVersionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, revision, err := NewVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -165,7 +165,7 @@ func ResourceVersionUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return ResourceVersionRead(ctx, d, m)
 }
 
-func ResourceVersionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVersionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, revision, err := NewVersionAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

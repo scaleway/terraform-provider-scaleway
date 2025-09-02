@@ -10,9 +10,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
-	sdkacctest "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
@@ -300,16 +300,16 @@ func testAccCheckBucketHasPolicy(tt *acctest.TestTools, n string, expectedPolicy
 //
 //	policy["Statement"][i]["Resource"]
 func removePolicyStatementResources(policy string) (string, error) {
-	actualPolicyJSON := make(map[string]interface{})
+	actualPolicyJSON := make(map[string]any)
 
 	err := json.Unmarshal([]byte(policy), &actualPolicyJSON)
 	if err != nil {
 		return "", fmt.Errorf("json.Unmarshal error: %w", err)
 	}
 
-	if statement, ok := actualPolicyJSON["Statement"].([]interface{}); ok && len(statement) > 0 {
+	if statement, ok := actualPolicyJSON["Statement"].([]any); ok && len(statement) > 0 {
 		for _, rule := range statement {
-			if rule, ok := rule.(map[string]interface{}); ok {
+			if rule, ok := rule.(map[string]any); ok {
 				delete(rule, "Resource")
 			}
 		}
