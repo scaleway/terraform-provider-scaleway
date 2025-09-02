@@ -18,6 +18,12 @@ import (
 const (
 	AWSErrQueueDeletedRecently = "AWS.SimpleQueueService.QueueDeletedRecently"
 	AWSErrNonExistentQueue     = "AWS.SimpleQueueService.NonExistentQueue"
+
+	// SQS ARN prefix
+	SQSPrefix = "arn:scw:sqs:"
+
+	// Dead letter queue resource path
+	DeadLetterQueuePath = "dead_letter_queue"
 )
 
 func newMNQNatsAPI(d *schema.ResourceData, m any) (*mnq.NatsAPI, scw.Region, error) {
@@ -224,8 +230,7 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 	case schema.TypeString:
 		s = resourceValue.(string)
 	case schema.TypeList:
-		// Handle dead-letter queue configuration
-		if resourcePath == "dead_letter_queue" {
+		if resourcePath == DeadLetterQueuePath {
 			deadLetterConfig := resourceValue.([]any)
 			if len(deadLetterConfig) > 0 {
 				config := deadLetterConfig[0].(map[string]any)
@@ -235,7 +240,7 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 				var scwARN string
 
 				switch {
-				case strings.HasPrefix(queueID, "arn:scw:sqs:"):
+				case strings.HasPrefix(queueID, SQSPrefix):
 					scwARN = queueID
 				case strings.Contains(queueID, "/"):
 					parts := strings.Split(queueID, "/")
@@ -252,7 +257,6 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 					scwARN = queueID
 				}
 
-				// Create RedrivePolicy JSON
 				redrivePolicy := map[string]any{
 					"deadLetterTargetArn": scwARN,
 					"maxReceiveCount":     maxReceiveCount,
@@ -310,7 +314,7 @@ func awsAttributeToResourceData(values map[string]any, value string, resourcePat
 	case schema.TypeString:
 		setResourceValue(values, resourcePath, value, resourceSchemas)
 	case schema.TypeList:
-		if resourcePath == "dead_letter_queue" && value != "" {
+		if resourcePath == DeadLetterQueuePath && value != "" {
 			var redrivePolicy map[string]any
 			if err := json.Unmarshal([]byte(value), &redrivePolicy); err != nil {
 				return fmt.Errorf("failed to unmarshal redrive policy: %w", err)
@@ -320,7 +324,7 @@ func awsAttributeToResourceData(values map[string]any, value string, resourcePat
 
 			var terraformID string
 
-			if strings.HasPrefix(deadLetterTargetArn, "arn:scw:sqs:") {
+			if strings.HasPrefix(deadLetterTargetArn, SQSPrefix) {
 				parts := strings.Split(deadLetterTargetArn, ":")
 				if len(parts) >= 6 {
 					region := parts[3]
