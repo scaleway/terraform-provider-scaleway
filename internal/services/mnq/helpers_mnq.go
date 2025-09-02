@@ -1,6 +1,7 @@
 package mnq
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -172,11 +173,9 @@ func ComposeSNSARN(region scw.Region, projectID string, resourceName string) str
 	return composeARN("sns", region, projectID, resourceName)
 }
 
-// Set the value inside values at the resource path (e.g. a.0.b sets b's value)
 func setResourceValue(values map[string]any, resourcePath string, value any, resourceSchemas map[string]*schema.Schema) {
 	parts := strings.Split(resourcePath, ".")
 	if len(parts) > 1 {
-		// Terraform's nested objects are represented as slices of maps
 		if _, ok := values[parts[0]]; !ok {
 			values[parts[0]] = []any{make(map[string]any)}
 		}
@@ -224,6 +223,51 @@ func awsResourceDataToAttribute(awsAttributes map[string]string, awsAttribute st
 		s = strconv.Itoa(resourceValue.(int))
 	case schema.TypeString:
 		s = resourceValue.(string)
+	case schema.TypeList:
+		// Handle dead-letter queue configuration
+		if resourcePath == "dead_letter_queue" {
+			deadLetterConfig := resourceValue.([]any)
+			if len(deadLetterConfig) > 0 {
+				config := deadLetterConfig[0].(map[string]any)
+				queueID := config["id"].(string)
+				maxReceiveCount := config["max_receive_count"].(int)
+
+				var scwARN string
+
+				switch {
+				case strings.HasPrefix(queueID, "arn:scw:sqs:"):
+					scwARN = queueID
+				case strings.Contains(queueID, "/"):
+					parts := strings.Split(queueID, "/")
+					if len(parts) == 3 {
+						region := parts[0]
+						projectID := parts[1]
+						queueName := parts[2]
+
+						scwARN = fmt.Sprintf("arn:scw:sqs:%s:project-%s:%s", region, projectID, queueName)
+					} else {
+						return fmt.Errorf("invalid queue ID format for dead-letter queue: %s (expected region/project-id/queue-name or arn:scw:sqs:region:project-id:queue-name)", queueID)
+					}
+				default:
+					scwARN = queueID
+				}
+
+				// Create RedrivePolicy JSON
+				redrivePolicy := map[string]any{
+					"deadLetterTargetArn": scwARN,
+					"maxReceiveCount":     maxReceiveCount,
+				}
+
+				jsonData, err := json.Marshal(redrivePolicy)
+				if err != nil {
+					return fmt.Errorf("failed to marshal redrive policy: %w", err)
+				}
+
+				s = string(jsonData)
+			}
+		} else {
+			return fmt.Errorf("unsupported list type for %s", resourcePath)
+		}
 	default:
 		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
 	}
@@ -265,6 +309,40 @@ func awsAttributeToResourceData(values map[string]any, value string, resourcePat
 		setResourceValue(values, resourcePath, i, resourceSchemas)
 	case schema.TypeString:
 		setResourceValue(values, resourcePath, value, resourceSchemas)
+	case schema.TypeList:
+		if resourcePath == "dead_letter_queue" && value != "" {
+			var redrivePolicy map[string]any
+			if err := json.Unmarshal([]byte(value), &redrivePolicy); err != nil {
+				return fmt.Errorf("failed to unmarshal redrive policy: %w", err)
+			}
+
+			deadLetterTargetArn := redrivePolicy["deadLetterTargetArn"].(string)
+
+			var terraformID string
+
+			if strings.HasPrefix(deadLetterTargetArn, "arn:scw:sqs:") {
+				parts := strings.Split(deadLetterTargetArn, ":")
+				if len(parts) >= 6 {
+					region := parts[3]
+					projectID := strings.TrimPrefix(parts[4], "project-")
+					queueName := parts[5]
+					terraformID = fmt.Sprintf("%s/%s/%s", region, projectID, queueName)
+				} else {
+					terraformID = deadLetterTargetArn
+				}
+			} else {
+				terraformID = deadLetterTargetArn
+			}
+
+			deadLetterConfig := map[string]any{
+				"id":                terraformID,
+				"max_receive_count": int(redrivePolicy["maxReceiveCount"].(float64)),
+			}
+
+			setResourceValue(values, resourcePath, []any{deadLetterConfig}, resourceSchemas)
+		} else {
+			return fmt.Errorf("unsupported list type for %s", resourcePath)
+		}
 	default:
 		return fmt.Errorf("unsupported type %s for %s", resourceSchema.Type, resourcePath)
 	}
@@ -272,7 +350,6 @@ func awsAttributeToResourceData(values map[string]any, value string, resourcePat
 	return nil
 }
 
-// awsAttributesToResourceData returns a map of valid values for a terraform schema from an attributes map and a conversion map
 func awsAttributesToResourceData(attributes map[string]string, resourceSchemas map[string]*schema.Schema, attributesToResourceMap map[string]string) (map[string]any, error) {
 	values := make(map[string]any)
 
