@@ -1,1487 +1,1030 @@
 ---
 version: 2
 interactions:
-    - id: 0
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 100
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","description":""}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 235
-        uncompressed: false
-        body: '{"created_at":"2024-09-19T09:04:35.346174Z","description":"","id":"c01110ce-3abd-4150-98d1-6f4269262e3f","name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-09-19T09:04:35.346174Z"}'
-        headers:
-            Content-Length:
-                - "235"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:35 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 61f3d820-9573-4b8d-adbd-671cce36bca6
-        status: 200 OK
-        code: 200
-        duration: 256.601357ms
-    - id: 1
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 235
-        uncompressed: false
-        body: '{"created_at":"2024-09-19T09:04:35.346174Z","description":"","id":"c01110ce-3abd-4150-98d1-6f4269262e3f","name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-09-19T09:04:35.346174Z"}'
-        headers:
-            Content-Length:
-                - "235"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:35 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 20fa1882-f013-47f2-ad10-63bb4c8068a6
-        status: 200 OK
-        code: 200
-        duration: 74.696687ms
-    - id: 2
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 53
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f"}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/enable
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 187
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "187"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:35 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 8839bc94-f23e-4107-9073-be2fa1a273e3
-        status: 200 OK
-        code: 200
-        duration: 123.904717ms
-    - id: 3
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 53
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f"}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/managed-alerts/enable
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:35 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 170eb347-3925-49e9-ac57-0f25b950d8a3
-        status: 200 OK
-        code: 200
-        duration: 237.810114ms
-    - id: 4
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 93
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"notupdated@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 60
-        uncompressed: false
-        body: '{"email":{"to":"notupdated@example.com"},"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "60"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:36 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - d7d35dea-8801-4ebf-bbdc-50792814079b
-        status: 200 OK
-        code: 200
-        duration: 288.029436ms
-    - id: 5
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 91
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"initial1@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 58
-        uncompressed: false
-        body: '{"email":{"to":"initial1@example.com"},"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "58"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:36 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 23df8982-d18c-457b-b657-3f49d1ce379a
-        status: 200 OK
-        code: 200
-        duration: 316.736801ms
-    - id: 6
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:36 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - be7292b6-4d46-4aa8-99ee-8c8184bd3a84
-        status: 200 OK
-        code: 200
-        duration: 68.899347ms
-    - id: 7
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"initial1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:36 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 8078869b-ef85-4a9b-b728-00b61265229a
-        status: 200 OK
-        code: 200
-        duration: 158.617016ms
-    - id: 8
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"initial1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:37 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 82e7609a-720b-43a2-8639-f30cb8a97e67
-        status: 200 OK
-        code: 200
-        duration: 92.703033ms
-    - id: 9
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 235
-        uncompressed: false
-        body: '{"created_at":"2024-09-19T09:04:35.346174Z","description":"","id":"c01110ce-3abd-4150-98d1-6f4269262e3f","name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-09-19T09:04:35.346174Z"}'
-        headers:
-            Content-Length:
-                - "235"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:37 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - b0a31712-d3b0-411a-a7e5-89a537d65eca
-        status: 200 OK
-        code: 200
-        duration: 100.89368ms
-    - id: 10
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:37 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 049afeb6-6d48-4d75-b6fb-af7bd66447e5
-        status: 200 OK
-        code: 200
-        duration: 76.731205ms
-    - id: 11
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"initial1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:37 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 51b7dee6-cb90-42a2-93c7-56e315f67e27
-        status: 200 OK
-        code: 200
-        duration: 134.592233ms
-    - id: 12
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 235
-        uncompressed: false
-        body: '{"created_at":"2024-09-19T09:04:35.346174Z","description":"","id":"c01110ce-3abd-4150-98d1-6f4269262e3f","name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-09-19T09:04:35.346174Z"}'
-        headers:
-            Content-Length:
-                - "235"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:38 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 1506aff5-e793-488a-bf4f-d438e2f8ef6e
-        status: 200 OK
-        code: 200
-        duration: 111.076726ms
-    - id: 13
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:38 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - b5d5e556-f939-4d62-aede-82b0025b36a3
-        status: 200 OK
-        code: 200
-        duration: 60.029987ms
-    - id: 14
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"initial1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:38 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - c2b72de4-4631-4ec9-bb0c-2a4c1f6055f5
-        status: 200 OK
-        code: 200
-        duration: 136.626418ms
-    - id: 15
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 91
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"initial1@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:39 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - b256162e-db07-4444-bab0-c5a10ecfd461
-        status: 204 No Content
-        code: 204
-        duration: 366.209301ms
-    - id: 16
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 91
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"updated1@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 58
-        uncompressed: false
-        body: '{"email":{"to":"updated1@example.com"},"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "58"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:39 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - a8dea3ca-6b75-4aa2-8715-f2356fd90d41
-        status: 200 OK
-        code: 200
-        duration: 271.742982ms
-    - id: 17
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:39 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - e59736fb-4ddb-4604-8328-91743555e420
-        status: 200 OK
-        code: 200
-        duration: 60.856151ms
-    - id: 18
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"updated1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:39 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 9ff2dfa1-d6eb-481c-893c-4c980c883f4b
-        status: 200 OK
-        code: 200
-        duration: 133.439723ms
-    - id: 19
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"updated1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:39 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 72a13933-f86b-413c-a52e-4df7d6f5c110
-        status: 200 OK
-        code: 200
-        duration: 100.463244ms
-    - id: 20
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 235
-        uncompressed: false
-        body: '{"created_at":"2024-09-19T09:04:35.346174Z","description":"","id":"c01110ce-3abd-4150-98d1-6f4269262e3f","name":"tf_test_project","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2024-09-19T09:04:35.346174Z"}'
-        headers:
-            Content-Length:
-                - "235"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:40 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 873020b1-84a7-4b97-a00d-36da61a784cf
-        status: 200 OK
-        code: 200
-        duration: 90.11131ms
-    - id: 21
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 186
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":true,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "186"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:40 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - ad82190f-b069-4522-8d11-c47c6f6a0a15
-        status: 200 OK
-        code: 200
-        duration: 74.079823ms
-    - id: 22
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"updated1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:40 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - b9410814-0350-4bf5-b5c3-b31dc1c51692
-        status: 200 OK
-        code: 200
-        duration: 116.511146ms
-    - id: 23
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 231
-        uncompressed: false
-        body: '{"contact_points":[{"email":{"to":"notupdated@example.com"},"region":"fr-par"},{"email":{"to":"updated1@example.com"},"region":"fr-par"}],"has_additional_contact_points":false,"has_additional_receivers":false,"total_count":2}'
-        headers:
-            Content-Length:
-                - "231"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:41 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 79c408db-0b16-42d0-9db6-e479a471db44
-        status: 200 OK
-        code: 200
-        duration: 105.945032ms
-    - id: 24
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 93
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"notupdated@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:41 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 87cda9ed-e4e7-4966-a21f-0898eb44feaf
-        status: 204 No Content
-        code: 204
-        duration: 1.041493555s
-    - id: 25
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 91
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f","email":{"to":"updated1@example.com"}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:42 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 95735859-2aa7-41a7-bebf-db71e5946627
-        status: 204 No Content
-        code: 204
-        duration: 469.557747ms
-    - id: 26
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 53
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f"}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/managed-alerts/disable
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 187
-        uncompressed: false
-        body: '{"alert_manager_enabled":true,"alert_manager_url":"https://472dd885-4df3-4ecc-94cf-58cc0a011c4c.alertmanager.cockpit.fr-par.scw.cloud","managed_alerts_enabled":false,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "187"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:42 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 0ae477b3-be9f-4909-9061-0d4d7a441783
-        status: 200 OK
-        code: 200
-        duration: 231.865282ms
-    - id: 27
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 53
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"project_id":"c01110ce-3abd-4150-98d1-6f4269262e3f"}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/disable
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 108
-        uncompressed: false
-        body: '{"alert_manager_enabled":false,"alert_manager_url":null,"managed_alerts_enabled":false,"region":"fr-par"}'
-        headers:
-            Content-Length:
-                - "108"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:43 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 09500696-f52e-4159-9340-61c3eb337e56
-        status: 200 OK
-        code: 200
-        duration: 306.713205ms
-    - id: 28
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/account/v3/projects/c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:44 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - c60f3422-587c-42bb-95d6-818b7cd3039a
-        status: 204 No Content
-        code: 204
-        duration: 1.415988861s
-    - id: 29
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.23.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=c01110ce-3abd-4150-98d1-6f4269262e3f
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 117
-        uncompressed: false
-        body: '{"details":[{"action":"read","resource":"cockpit"}],"message":"insufficient permissions","type":"permissions_denied"}'
-        headers:
-            Content-Length:
-                - "117"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Thu, 19 Sep 2024 09:04:44 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-1;edge03)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 418604dc-3996-4b93-834f-689c5dbbd543
-        status: 403 Forbidden
-        code: 403
-        duration: 61.758199ms
+- id: 0
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 100
+    host: api.scaleway.com
+    body: "{\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"description\":\"\"}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 251
+    body: "{\"id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"created_at\":\"2025-09-01T16:57:11.748948Z\",\"updated_at\":\"2025-09-01T16:57:11.748948Z\",\"description\":\"\",\"qualification\":null}"
+    headers:
+      Content-Length:
+      - "251"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:11 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 57801168-0653-4e77-97ad-5eeb961fbe69
+    status: 200 OK
+    code: 200
+    duration: 421.161457ms
+- id: 1
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 296
+    body: "{\"id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"created_at\":\"2025-09-01T16:57:11.748948Z\",\"updated_at\":\"2025-09-01T16:57:11.748948Z\",\"description\":\"\",\"qualification\":{\"architecture_type\":\"unknown_architecture_type\"}}"
+    headers:
+      Content-Length:
+      - "296"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:12 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 0eb92a8a-c67c-4a80-b0ab-ee70cfd6bdde
+    status: 200 OK
+    code: 200
+    duration: 283.59649ms
+- id: 2
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 53
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\"}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/enable
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 184
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":false,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "184"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:12 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 91f372cc-76f7-4598-a73b-5ee9a16e83fc
+    status: 200 OK
+    code: 200
+    duration: 263.982818ms
+- id: 3
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 53
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\"}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/managed-alerts/enable
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:13 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 2968f680-4fa6-4d57-915f-8a71ca8fdebd
+    status: 200 OK
+    code: 200
+    duration: 1.410396414s
+- id: 4
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 93
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"notupdated@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 94
+    body: "{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "94"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:14 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - ac80d350-8302-4d64-bb42-2949825dcdd9
+    status: 200 OK
+    code: 200
+    duration: 223.407449ms
+- id: 5
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 91
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"initial1@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 92
+    body: "{\"email\":{\"to\":\"initial1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "92"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:14 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 55ee690b-f578-4fbf-8ac0-538a1c0d63f5
+    status: 200 OK
+    code: 200
+    duration: 304.92208ms
+- id: 6
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:14 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - aabf78a1-d1eb-4f20-b947-741639eef86b
+    status: 200 OK
+    code: 200
+    duration: 120.962639ms
+- id: 7
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"initial1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:14 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 67c4c825-4490-4a3d-bd9c-9fbba38c3d31
+    status: 200 OK
+    code: 200
+    duration: 109.32319ms
+- id: 8
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"initial1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:15 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 82c97236-f83b-486b-a5db-4963be808cb4
+    status: 200 OK
+    code: 200
+    duration: 122.731437ms
+- id: 9
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 296
+    body: "{\"id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"created_at\":\"2025-09-01T16:57:11.748948Z\",\"updated_at\":\"2025-09-01T16:57:11.748948Z\",\"description\":\"\",\"qualification\":{\"architecture_type\":\"unknown_architecture_type\"}}"
+    headers:
+      Content-Length:
+      - "296"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:16 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 85793229-a03c-413d-98ab-498ac36723f8
+    status: 200 OK
+    code: 200
+    duration: 197.392102ms
+- id: 10
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:16 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 2b5c6d7d-fc10-4c13-baf1-926ec7ee8958
+    status: 200 OK
+    code: 200
+    duration: 95.830775ms
+- id: 11
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"initial1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:16 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 1ea72a8b-4aa6-49ff-8f50-2893d601cb16
+    status: 200 OK
+    code: 200
+    duration: 107.963762ms
+- id: 12
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 296
+    body: "{\"id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"created_at\":\"2025-09-01T16:57:11.748948Z\",\"updated_at\":\"2025-09-01T16:57:11.748948Z\",\"description\":\"\",\"qualification\":{\"architecture_type\":\"unknown_architecture_type\"}}"
+    headers:
+      Content-Length:
+      - "296"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:18 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - da3b6cb8-afff-47ab-aa20-bb2192dbebb7
+    status: 200 OK
+    code: 200
+    duration: 210.677085ms
+- id: 13
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:18 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - e3d4cfa5-453b-4dcf-9e94-539a23fca4f3
+    status: 200 OK
+    code: 200
+    duration: 149.475521ms
+- id: 14
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"initial1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:18 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - e3ade900-d8b6-4632-812c-d3dc13208ebf
+    status: 200 OK
+    code: 200
+    duration: 145.012114ms
+- id: 15
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 91
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"initial1@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 0
+    body: ""
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:20 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 104203c3-44e6-4428-be8b-3668a37de0da
+    status: 204 No Content
+    code: 204
+    duration: 220.058824ms
+- id: 16
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 91
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"updated1@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 92
+    body: "{\"email\":{\"to\":\"updated1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "92"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:20 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - fbba66ac-87a3-423d-8242-7b2da341da0d
+    status: 200 OK
+    code: 200
+    duration: 641.312332ms
+- id: 17
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:20 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 44c16ac1-1e47-424a-aa17-32f13adbb416
+    status: 200 OK
+    code: 200
+    duration: 72.324841ms
+- id: 18
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"updated1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:21 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 1497711a-e2ff-4f0e-9dba-0a2eddee5ccf
+    status: 200 OK
+    code: 200
+    duration: 148.543937ms
+- id: 19
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"updated1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:21 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - b5846380-0305-40ba-8730-829313be2b75
+    status: 200 OK
+    code: 200
+    duration: 135.892876ms
+- id: 20
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 296
+    body: "{\"id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"name\":\"tf_test_project\",\"organization_id\":\"105bdce1-64c0-48ab-899d-868455867ecf\",\"created_at\":\"2025-09-01T16:57:11.748948Z\",\"updated_at\":\"2025-09-01T16:57:11.748948Z\",\"description\":\"\",\"qualification\":{\"architecture_type\":\"unknown_architecture_type\"}}"
+    headers:
+      Content-Length:
+      - "296"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:23 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 2934ac36-f9ab-4eb9-9461-a3019701dbe1
+    status: 200 OK
+    code: 200
+    duration: 190.413969ms
+- id: 21
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 183
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":true,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "183"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:23 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - cfee3ba7-d85f-4fea-9b9e-1bb133cb6dfb
+    status: 200 OK
+    code: 200
+    duration: 163.629307ms
+- id: 22
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"updated1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:23 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 931d2923-57eb-43cc-b6e3-8fa922cf4074
+    status: 200 OK
+    code: 200
+    duration: 154.916345ms
+- id: 23
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 295
+    body: "{\"total_count\":2,\"contact_points\":[{\"email\":{\"to\":\"notupdated@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"},{\"email\":{\"to\":\"updated1@example.com\"},\"send_resolved_notifications\":true,\"region\":\"fr-par\"}],\"has_additional_receivers\":false,\"has_additional_contact_points\":false}"
+    headers:
+      Content-Length:
+      - "295"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:25 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 30ebc4e7-abe8-40a2-85f7-abe3f98d813d
+    status: 200 OK
+    code: 200
+    duration: 108.106468ms
+- id: 24
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 93
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"notupdated@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 0
+    body: ""
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:25 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 190565cb-9b4d-4066-b7fc-c02c5d1624c9
+    status: 204 No Content
+    code: 204
+    duration: 233.729741ms
+- id: 25
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 91
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\",\"email\":{\"to\":\"updated1@example.com\"}}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/contact-points/delete
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 0
+    body: ""
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:25 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 54f109b0-8a3f-4395-a285-46373d0afc7a
+    status: 204 No Content
+    code: 204
+    duration: 273.593649ms
+- id: 26
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 53
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\"}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/managed-alerts/disable
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 184
+    body: "{\"alert_manager_url\":\"https://39df5cec-ea2b-4d19-ba63-18bcafd7342e.alertmanager.cockpit.fr-par.scw.cloud\",\"alert_manager_enabled\":true,\"managed_alerts_enabled\":false,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "184"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:26 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 8006cfd6-0dab-4bed-84e8-0f7441706417
+    status: 200 OK
+    code: 200
+    duration: 299.328585ms
+- id: 27
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 53
+    host: api.scaleway.com
+    body: "{\"project_id\":\"09bf3634-87a1-446a-8c35-1184aa38a369\"}"
+    headers:
+      Content-Type:
+      - application/json
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager/disable
+    method: POST
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 105
+    body: "{\"alert_manager_url\":null,\"alert_manager_enabled\":false,\"managed_alerts_enabled\":false,\"region\":\"fr-par\"}"
+    headers:
+      Content-Length:
+      - "105"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:26 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - f2fb11f0-79f8-4403-9248-5c23337184d1
+    status: 200 OK
+    code: 200
+    duration: 211.356758ms
+- id: 28
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/account/v3/projects/09bf3634-87a1-446a-8c35-1184aa38a369
+    method: DELETE
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 0
+    body: ""
+    headers:
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:27 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - af852929-fcae-4f95-8f1f-d3ce86fee2b5
+    status: 204 No Content
+    code: 204
+    duration: 1.342149996s
+- id: 29
+  request:
+    proto: HTTP/1.1
+    proto_major: 1
+    proto_minor: 1
+    content_length: 0
+    host: api.scaleway.com
+    form:
+      project_id:
+      - 09bf3634-87a1-446a-8c35-1184aa38a369
+    headers:
+      User-Agent:
+      - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.24.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+    url: https://api.scaleway.com/cockpit/v1/regions/fr-par/alert-manager?project_id=09bf3634-87a1-446a-8c35-1184aa38a369
+    method: GET
+  response:
+    proto: HTTP/2.0
+    proto_major: 2
+    proto_minor: 0
+    content_length: 117
+    body: "{\"details\":[{\"action\":\"read\",\"resource\":\"cockpit\"}],\"message\":\"insufficient permissions\",\"type\":\"permissions_denied\"}"
+    headers:
+      Content-Length:
+      - "117"
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Sep 2025 16:57:27 GMT
+      Server:
+      - Scaleway API Gateway (fr-par-1;edge01)
+      X-Request-Id:
+      - 8856ec55-8e8b-4596-b96b-30ede6723254
+    status: 403 Forbidden
+    code: 403
+    duration: 327.52382ms
