@@ -106,3 +106,16 @@ func getIPConfigUpdate(d *schema.ResourceData, ipFieldName string) (ipamConfig *
 
 	return ipamConfig, staticConfig
 }
+
+// LoadBalancerDiffSuppressFunc suppresses diff when load_balancer is not set
+func LoadBalancerDiffSuppressFunc(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if !strings.HasPrefix(k, "load_balancer") {
+		return false
+	}
+
+	if _, exists := d.GetOk("load_balancer"); !exists {
+		return true
+	}
+
+	return false
+}
