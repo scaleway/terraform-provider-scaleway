@@ -20,7 +20,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -263,7 +262,7 @@ func ResourceInstance() *schema.Resource {
 }
 
 func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, zone, err := newAPIWithZone(d, m)
+	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -361,7 +360,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
