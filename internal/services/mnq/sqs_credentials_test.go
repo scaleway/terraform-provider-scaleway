@@ -142,7 +142,6 @@ func isSQSCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SqsCredentialsID: id,
 				Region:           region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq sqs credentials (%s) still exists", rs.Primary.ID)
 			}

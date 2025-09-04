@@ -51,6 +51,7 @@ func TestAccDataSourceVPC_Basic(t *testing.T) {
 func TestAccDataSourceVPC_Default(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

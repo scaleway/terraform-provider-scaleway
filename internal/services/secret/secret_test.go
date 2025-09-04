@@ -330,7 +330,6 @@ func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				SecretID: id,
 				Region:   region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
 			}

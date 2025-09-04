@@ -27,7 +27,6 @@ func CheckPrivateNetworkDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				PrivateNetworkID: ID,
 				Region:           region,
 			})
-
 			if err == nil {
 				return fmt.Errorf(
 					"VPC private network %s still exists",

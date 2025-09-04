@@ -284,7 +284,6 @@ func testAccCheckFunctionNamespaceDestroy(tt *acctest.TestTools) resource.TestCh
 				NamespaceID: id,
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function namespace (%s) still exists", rs.Primary.ID)
 			}

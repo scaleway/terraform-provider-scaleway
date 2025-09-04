@@ -511,7 +511,6 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				InstanceID: ID,
 				Region:     extractRegion,
 			})
-
 			if err == nil {
 				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
 			}

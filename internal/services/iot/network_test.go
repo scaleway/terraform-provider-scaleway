@@ -14,6 +14,7 @@ import (
 func TestAccNetwork_Minimal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -52,6 +53,7 @@ func TestAccNetwork_Minimal(t *testing.T) {
 func TestAccNetwork_RESTWithTopicPrefix(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -92,6 +94,7 @@ func TestAccNetwork_RESTWithTopicPrefix(t *testing.T) {
 func TestAccNetwork_Sigfox(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
