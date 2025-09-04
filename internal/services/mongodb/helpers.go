@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -26,30 +26,6 @@ func newAPI(m any) *mongodb.API {
 	return mongodb.NewAPI(meta.ExtractScwClient(m))
 }
 
-// newAPIWithZone returns a new mongoDB API and the zone for a Create request
-func newAPIWithZone(d *schema.ResourceData, m any) (*mongodb.API, scw.Zone, error) {
-	zone, err := meta.ExtractZone(d, m)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return newAPI(m), zone, nil
-}
-
-func newAPIWithZoneAndRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Zone, scw.Region, error) {
-	zone, err := meta.ExtractZone(d, m)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	region, err := meta.ExtractRegion(d, m)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	return newAPI(m), zone, region, nil
-}
-
 func newAPIWithRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
@@ -59,23 +35,9 @@ func newAPIWithRegion(d *schema.ResourceData, m any) (*mongodb.API, scw.Region, 
 	return newAPI(m), region, nil
 }
 
-// NewAPIWithZoneAndID returns a mongoDB API with zone and ID extracted from the state
-func NewAPIWithZoneAndID(m any, id string) (*mongodb.API, scw.Zone, string, error) {
-	zone, ID, err := zonal.ParseID(id)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	return newAPI(m), zone, ID, nil
-}
-
+// NewAPIWithRegionAndID returns a mongoDB API with region and ID extracted from the state
 func NewAPIWithRegionAndID(m any, id string) (*mongodb.API, scw.Region, string, error) {
-	zone, ID, err := zonal.ParseID(id)
-	if err != nil {
-		return nil, "", "", err
-	}
-
-	region, err := zone.Region()
+	region, ID, err := regional.ParseID(id)
 	if err != nil {
 		return nil, "", "", err
 	}
