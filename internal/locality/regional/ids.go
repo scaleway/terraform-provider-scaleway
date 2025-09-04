@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
@@ -80,4 +81,51 @@ func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	region, err = scw.ParseRegion(loc)
 
 	return
+}
+
+func ResolveRegionAndID(
+	d *schema.ResourceData,
+	fallbackDefaultRegion func(*schema.ResourceData) (scw.Region, error),
+) (scw.Region, string, error) {
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		if v := identity.Get("id"); v != nil {
+			ID, _ := v.(string)
+			if ID != "" {
+				if rv := identity.Get("region"); rv != nil {
+					if rstr, ok := rv.(string); ok && rstr != "" {
+						return scw.Region(rstr), ID, nil
+					}
+				}
+
+				if sid := d.Id(); sid != "" {
+					if rFromState, _, err := ParseID(sid); err == nil && rFromState != "" {
+						return rFromState, ID, nil
+					}
+				}
+
+				if fallbackDefaultRegion != nil {
+					if region, err := fallbackDefaultRegion(d); err == nil && region != "" {
+						return region, ID, nil
+					}
+				}
+
+				return "", "", fmt.Errorf("cannot resolve region for identity (id=%q)", ID)
+			}
+		}
+	}
+
+	if sid := d.Id(); sid != "" {
+		region, ID, err := ParseID(sid)
+		if err != nil {
+			return "", "", err
+		}
+
+		if ID == "" {
+			return "", "", fmt.Errorf("empty id parsed from state ID %q", sid)
+		}
+
+		return region, ID, nil
+	}
+
+	return "", "", fmt.Errorf("cannot resolve identity: both identity.id and state ID are empty")
 }

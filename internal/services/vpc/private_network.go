@@ -2,8 +2,6 @@ package vpc
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -27,40 +25,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 		UpdateContext: ResourceVPCPrivateNetworkUpdate,
 		DeleteContext: ResourceVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: func(
-				ctx context.Context,
-				d *schema.ResourceData,
-				m interface{},
-			) ([]*schema.ResourceData, error) {
-				// If importing by ID (e.g. "fr-par/8cef…"), we just set the ID field to state, allowing the read to fill in the rest of the data
-				if d.Id() != "" {
-					return []*schema.ResourceData{d}, nil
-				}
-
-				// Otherwise, we're importing by identity “identity = { id = ..., region = ... }”
-				identity, err := d.Identity()
-				if err != nil {
-					return nil, fmt.Errorf("error retrieving identity: %w", err)
-				}
-
-				rawID := identity.Get("id").(string)
-
-				regionVal := identity.Get("region").(string)
-				if regionVal == "" {
-					region, err := meta.ExtractRegion(d, m)
-					if err != nil {
-						return nil, errors.New("identity.region was not set")
-					}
-
-					regionVal = region.String()
-				}
-
-				localizedID := fmt.Sprintf("%s/%s", regionVal, rawID)
-
-				d.SetId(localizedID)
-
-				return []*schema.ResourceData{d}, nil
-			},
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
 		},
 		Identity: &schema.ResourceIdentity{
 			Version: 0,
@@ -282,11 +247,23 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(regional.NewIDString(region, pn.ID))
 
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("id", pn.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = identity.Set("region", region); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
 
 func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -342,7 +319,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -362,7 +339,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
