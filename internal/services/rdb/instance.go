@@ -260,10 +260,12 @@ func ResourceInstance() *schema.Resource {
 				Description: "Certificate of the database instance",
 			},
 			"load_balancer": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Load balancer of the database instance",
+				Type:             schema.TypeList,
+				Optional:         true,
+				Computed:         true,
+				MaxItems:         1,
+				Description:      "Load balancer of the database instance",
+				DiffSuppressFunc: LoadBalancerDiffSuppressFunc,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						// Computed
