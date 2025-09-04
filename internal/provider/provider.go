@@ -268,6 +268,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_volume":                        block.DataSourceVolume(),
 				"scaleway_cockpit":                             cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_source":                      cockpit.DataSourceCockpitSource(),
+				"scaleway_cockpit_sources":                     cockpit.DataSourceCockpitSources(),
 				"scaleway_config":                              scwconfig.DataSourceConfig(),
 				"scaleway_container":                           container.DataSourceContainer(),
 				"scaleway_container_namespace":                 container.DataSourceNamespace(),
