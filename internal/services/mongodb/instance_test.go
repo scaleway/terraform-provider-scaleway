@@ -502,12 +502,7 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			mongodbAPI, zone, ID, err := mongodb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			extractRegion, err := zone.Region()
+			mongodbAPI, extractRegion, ID, err := mongodb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
