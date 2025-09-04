@@ -182,6 +182,11 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		_ = d.Set("tags", res.Tags)
 	}
 
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", res.ID)
+		_ = identity.Set("region", region)
+	}
+
 	return nil
 }
 

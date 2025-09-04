@@ -303,16 +303,9 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
 	_ = d.Set("ipv6_subnets", ipv6Subnets)
 
-	identity, err := d.Identity()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err = identity.Set("id", pn.ID); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = identity.Set("region", region); err != nil {
-		return diag.FromErr(err)
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", pn.ID)
+		_ = identity.Set("region", region)
 	}
 
 	return nil

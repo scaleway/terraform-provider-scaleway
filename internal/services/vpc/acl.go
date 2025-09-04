@@ -150,16 +150,9 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	d.SetId(regional.NewIDString(region, regional.ExpandID(d.Get("vpc_id").(string)).ID))
 
-	identity, err := d.Identity()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err = identity.Set("id", regional.ExpandID(d.Get("vpc_id").(string)).ID); err != nil {
-		return diag.FromErr(err)
-	}
-	if err = identity.Set("region", region); err != nil {
-		return diag.FromErr(err)
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", regional.ExpandID(d.Get("vpc_id").(string)).ID)
+		_ = identity.Set("region", region)
 	}
 
 	return ResourceVPCACLRead(ctx, d, m)
