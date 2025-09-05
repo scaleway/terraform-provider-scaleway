@@ -21,7 +21,24 @@ func ResourceRoute() *schema.Resource {
 		UpdateContext: ResourceRouteUpdate,
 		DeleteContext: ResourceRouteDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+						Description:       "The Route ID (e.g. `11111111-1111-1111-1111-111111111111`)",
+					},
+					"region": {
+						Type:              schema.TypeString,
+						OptionalForImport: true,
+						Description:       "The region of the VPC. If omitted during import, defaults from provider",
+					},
+				}
+			},
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -111,11 +128,23 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("id", res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err = identity.Set("region", region); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceRouteRead(ctx, d, m)
 }
 
 func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -153,11 +182,16 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		_ = d.Set("tags", res.Tags)
 	}
 
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", res.ID)
+		_ = identity.Set("region", region)
+	}
+
 	return nil
 }
 
 func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -215,7 +249,7 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
