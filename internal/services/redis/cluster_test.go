@@ -1,12 +1,15 @@
 package redis_test
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
@@ -760,31 +763,36 @@ func TestAccCluster_MigrateToHAMode(t *testing.T) {
 
 func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_redis_cluster" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_redis_cluster" {
+					continue
+				}
+
+				api, zone, id, err := redis.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetCluster(&redisSDK.GetClusterRequest{
+					ClusterID: id,
+					Zone:      zone,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("redis cluster (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			redisAPI, zone, ID, err := redis.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = redisAPI.GetCluster(&redisSDK.GetClusterRequest{
-				ClusterID: ID,
-				Zone:      zone,
-			})
-
-			if err == nil {
-				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
