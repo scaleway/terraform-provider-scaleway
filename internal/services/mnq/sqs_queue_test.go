@@ -3,6 +3,7 @@ package mnq_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -164,6 +165,131 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-basic"),
 					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "project_id", projectID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSQSQueue_DeadLetterQueue(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      isSQSQueueDestroyed(ctx, tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_queue_dead_letter"
+					}
+
+					resource scaleway_mnq_sqs main {
+						project_id = scaleway_account_project.main.id
+					}
+
+					resource scaleway_mnq_sqs_credentials main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						permissions {
+							can_manage = true
+						}
+					}
+
+					resource scaleway_mnq_sqs_queue dead_letter_queue {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "dead-letter-queue"
+						sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+					}
+
+					resource scaleway_mnq_sqs_queue main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "test-mnq-sqs-queue-dead-letter"
+						sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+
+						dead_letter_queue {
+							id = scaleway_mnq_sqs_queue.dead_letter_queue.id
+							max_receive_count = 3
+						}
+
+						depends_on = [scaleway_mnq_sqs_queue.dead_letter_queue]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.dead_letter_queue"),
+					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.dead_letter_queue", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-dead-letter"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.dead_letter_queue", "name", "dead-letter-queue"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "dead_letter_queue.0.max_receive_count", "3"),
+					// Test that ARN is computed and follows expected format
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs_queue.main", "arn"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs_queue.dead_letter_queue", "arn"),
+					resource.TestMatchResourceAttr("scaleway_mnq_sqs_queue.main", "arn", regexp.MustCompile(`^arn:scw:sqs:.*:.*:.*$`)),
+					resource.TestMatchResourceAttr("scaleway_mnq_sqs_queue.dead_letter_queue", "arn", regexp.MustCompile(`^arn:scw:sqs:.*:.*:.*$`)),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_account_project main {
+						name = "tf_tests_mnq_sqs_queue_dead_letter"
+					}
+
+					resource scaleway_mnq_sqs main {
+						project_id = scaleway_account_project.main.id
+					}
+
+					resource scaleway_mnq_sqs_credentials main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						permissions {
+							can_manage = true
+						}
+					}
+
+					resource scaleway_mnq_sqs_queue dead_letter_queue {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "dead-letter-queue"
+						sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+					}
+
+					resource scaleway_mnq_sqs_queue main {
+						project_id = scaleway_mnq_sqs.main.project_id
+						name = "test-mnq-sqs-queue-dead-letter"
+						sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+						access_key = scaleway_mnq_sqs_credentials.main.access_key
+						secret_key = scaleway_mnq_sqs_credentials.main.secret_key
+
+						dead_letter_queue {
+							id = scaleway_mnq_sqs_queue.dead_letter_queue.id
+							max_receive_count = 5
+						}
+
+						depends_on = [scaleway_mnq_sqs_queue.dead_letter_queue]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.main"),
+					isSQSQueuePresent(ctx, tt, "scaleway_mnq_sqs_queue.dead_letter_queue"),
+					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_mnq_sqs_queue.dead_letter_queue", "id"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "name", "test-mnq-sqs-queue-dead-letter"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.dead_letter_queue", "name", "dead-letter-queue"),
+					resource.TestCheckResourceAttr("scaleway_mnq_sqs_queue.main", "dead_letter_queue.0.max_receive_count", "5"),
+					// Test that ARN is computed and follows expected format
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs_queue.main", "arn"),
+					resource.TestCheckResourceAttrSet("scaleway_mnq_sqs_queue.dead_letter_queue", "arn"),
+					resource.TestMatchResourceAttr("scaleway_mnq_sqs_queue.main", "arn", regexp.MustCompile(`^arn:scw:sqs:.*:.*:.*$`)),
+					resource.TestMatchResourceAttr("scaleway_mnq_sqs_queue.dead_letter_queue", "arn", regexp.MustCompile(`^arn:scw:sqs:.*:.*:.*$`)),
 				),
 			},
 		},

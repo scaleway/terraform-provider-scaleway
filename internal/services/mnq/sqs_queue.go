@@ -106,6 +106,27 @@ func ResourceSQSQueue() *schema.Resource {
 				ValidateFunc: validation.IntBetween(1024, 262_144),
 				Description:  "The maximum size of a message. Should be in bytes.",
 			},
+			"dead_letter_queue": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Description: "Configuration for the dead-letter queue",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ID or ARN of the dead-letter queue where messages are sent after the maximum receive count is exceeded.",
+						},
+						"max_receive_count": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 1000),
+							Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
+						},
+					},
+				},
+			},
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 
@@ -115,6 +136,11 @@ func ResourceSQSQueue() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The URL of the queue",
+			},
+			"arn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The ARN of the queue",
 			},
 		},
 		CustomizeDiff: resourceMNQQueueCustomizeDiff,

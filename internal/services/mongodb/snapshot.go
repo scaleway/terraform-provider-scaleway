@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -86,7 +85,7 @@ func ResourceSnapshot() *schema.Resource {
 }
 
 func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, zone, region, err := newAPIWithZoneAndRegion(d, m)
+	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +104,7 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if snapshot != nil {
-		d.SetId(zonal.NewIDString(zone, snapshot.ID))
+		d.SetId(regional.NewIDString(region, snapshot.ID))
 
 		_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -122,7 +121,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	zone, snapshotID, err := zonal.ParseID(d.Id())
+	_, snapshotID, err := regional.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +133,7 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("instance_id", zonal.NewIDString(zone, *snapshot.InstanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, *snapshot.InstanceID))
 	_ = d.Set("name", snapshot.Name)
 	_ = d.Set("instance_name", snapshot.InstanceName)
 	_ = d.Set("size", int64(snapshot.SizeBytes))
@@ -154,7 +153,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_, snapshotID, err := zonal.ParseID(d.Id())
+	_, snapshotID, err := regional.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -200,7 +199,7 @@ func ResourceSnapshotDelete(_ context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_, snapshotID, err := zonal.ParseID(d.Id())
+	_, snapshotID, err := regional.ParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
