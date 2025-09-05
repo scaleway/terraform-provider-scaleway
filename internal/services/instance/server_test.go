@@ -2177,6 +2177,8 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 }
 
 func TestGetEndOfServiceDate(t *testing.T) {
+	t.Skip("There are currently no server-type with a scheduled End Of Life")
+
 	tt := acctest.NewTestTools(t)
 	client := meta.ExtractScwClient(tt.Meta)
 	defer tt.Cleanup()

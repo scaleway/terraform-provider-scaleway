@@ -12,6 +12,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 )
 
+const (
+	terraformTestAccountUserID = "ef29ce05-3f2b-4fa0-a259-d76110850d57" // hashicorp@scaleway.com IAM user ID
+	devtoolsAccountUserID      = "84d20ae1-9650-419a-ab74-7ab09b6262e0" // developer-tools-team@scaleway.com IAM user ID
+	personalAccountUserID      = "29c74dc1-87e7-4c49-91a1-0ad5540ecdd7" // lmarabese@scaleway.com IAM user ID inside organization 'terraform-provider-scaleway'
+)
+
 func TestAccGroup_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -207,9 +213,9 @@ func TestAccGroup_Users(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_iam_user" "user00" {
-						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -218,7 +224,7 @@ func TestAccGroup_Users(t *testing.T) {
 							data.scaleway_iam_user.user00.user_id
 						]
 					}
-				`,
+				`, devtoolsAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
@@ -227,12 +233,12 @@ func TestAccGroup_Users(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_iam_user" "user00" {
-						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
+						user_id = "%s"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -242,7 +248,7 @@ func TestAccGroup_Users(t *testing.T) {
 							data.scaleway_iam_user.user01.user_id,
 						]
 					}
-				`,
+				`, devtoolsAccountUserID, terraformTestAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
@@ -252,9 +258,9 @@ func TestAccGroup_Users(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_iam_user" "user02" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -263,7 +269,7 @@ func TestAccGroup_Users(t *testing.T) {
 							data.scaleway_iam_user.user02.user_id
 						]
 					}
-				`,
+				`, personalAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_user"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "name", "tf_tests_iam_group_user"),
@@ -299,13 +305,13 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "app03" {
 						name = "tf_tests_iam_group_app3"
 					}
 
 					data "scaleway_iam_user" "user00" {
-						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -317,7 +323,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 							data.scaleway_iam_user.user00.user_id
 						]
 					}
-				`,
+				`, devtoolsAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
@@ -355,7 +361,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "app03" {
 						name = "tf_tests_iam_group_app3"
 					}
@@ -364,10 +370,10 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user00" {
-						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
+						user_id = "%s"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -380,7 +386,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 							data.scaleway_iam_user.user01.user_id,
 						]
 					}
-				`,
+				`, terraformTestAccountUserID, personalAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
@@ -392,7 +398,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "app03" {
 						name = "tf_tests_iam_group_app3"
 					}
@@ -401,13 +407,13 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "user01" {
-						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
+						user_id = "%s"
 					}
 					data "scaleway_iam_user" "user03" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "%s"
 					}
 					data "scaleway_iam_user" "user04" {
-						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
+						user_id = "%s"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -418,7 +424,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 							data.scaleway_iam_user.user04.user_id,
 						]
 					}
-				`,
+				`, terraformTestAccountUserID, personalAccountUserID, devtoolsAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_mix"),
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "name", "tf_tests_iam_group_user_app"),
