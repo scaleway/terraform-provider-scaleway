@@ -167,7 +167,7 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 
 	_ = d.Set("private_network_id", regional.NewIDString(region, foundPN.PrivateNetworkID))
 	_ = d.Set("lb_id", zonal.NewIDString(zone, foundPN.LB.ID))
-	_ = d.Set("ipam_ip_ids", regional.NewRegionalIDs(region, foundPN.IpamIDs))
+	_ = d.Set("ipam_ip_ids", regional.NewIDStrings(region, foundPN.IpamIDs))
 	_ = d.Set("status", foundPN.Status.String())
 	_ = d.Set("created_at", types.FlattenTime(foundPN.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(foundPN.UpdatedAt))
