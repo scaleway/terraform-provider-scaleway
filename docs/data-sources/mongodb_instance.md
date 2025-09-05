@@ -39,7 +39,7 @@ output "mongodb_version" {
 
 - `project_id` - (Optional) The ID of the project the MongoDB® instance is in. Can be used to filter instances when using `name`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the MongoDB® Instance exists.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® Instance exists.
 
 - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the MongoDB® instance is in.
 
@@ -64,5 +64,5 @@ In addition to all above arguments, the following attributes are exported:
 MongoDB® instance can be imported using the `id`, e.g.
 
 ```bash
-terraform import scaleway_mongodb_instance.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_mongodb_instance.main fr-par/11111111-1111-1111-1111-111111111111
 ```
