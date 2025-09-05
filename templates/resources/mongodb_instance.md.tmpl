@@ -75,6 +75,24 @@ resource "scaleway_mongodb_instance" "main" {
 }
 ```
 
+### With Snapshot Scheduling
+
+```terraform
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-with-snapshots"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 5
+
+  # Snapshot scheduling configuration
+  snapshot_schedule_frequency_hours = 24
+  snapshot_schedule_retention_days  = 7
+  is_snapshot_schedule_enabled      = true
+}
+```
 
 ### Restore From Snapshot
 
@@ -107,6 +125,12 @@ The following arguments are supported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the MongoDB® instance is associated with.
 
+### Snapshot Scheduling
+
+- `snapshot_schedule_frequency_hours` - (Optional) Snapshot schedule frequency in hours.
+- `snapshot_schedule_retention_days` - (Optional) Snapshot schedule retention in days.
+- `is_snapshot_schedule_enabled` - (Optional) Enable or disable automatic snapshot scheduling.
+
 ~> **Important** If neither private_network nor public_network is specified, a public network endpoint is created by default.
 
 
@@ -130,6 +154,9 @@ In addition to all arguments above, the following attributes are exported:
     - `id` - The ID of the endpoint.
     - `port` - TCP port of the endpoint.
     - `dns_records` - List of DNS records for your endpoint.
+- `snapshot_schedule_frequency_hours` - Snapshot schedule frequency in hours.
+- `snapshot_schedule_retention_days` - Snapshot schedule retention in days.
+- `is_snapshot_schedule_enabled` - Whether automatic snapshot scheduling is enabled.
 - `tls_certificate` - The PEM-encoded TLS certificate for the MongoDB® instance, if available.
 
 ## Import
