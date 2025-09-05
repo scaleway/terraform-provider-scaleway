@@ -60,7 +60,7 @@ jobs:
         with:
           go-version: 1.24.0
       - name: Run Acceptance Tests
-        run: go test -v ./internal/services/${{ matrix.products }} -timeout=4h
+        run: go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=4h
         env:
           TF_LOG: DEBUG
           # https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#running-acceptance-tests
