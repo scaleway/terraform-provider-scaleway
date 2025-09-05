@@ -1,9 +1,12 @@
 package iam_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -109,28 +112,30 @@ func testAccCheckIamApplicationExists(tt *acctest.TestTools, name string) resour
 
 func testAccCheckIamApplicationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_iam_application" {
-				continue
+		api := iam.NewAPI(tt.Meta)
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range s.RootModule().Resources {
+				if rs.Type != "scaleway_iam_application" {
+					continue
+				}
+
+				_, err := api.GetApplication(&iamSDK.GetApplicationRequest{
+					ApplicationID: rs.Primary.ID,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("IAM application (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			iamAPI := iam.NewAPI(tt.Meta)
-
-			_, err := iamAPI.GetApplication(&iamSDK.GetApplicationRequest{
-				ApplicationID: rs.Primary.ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

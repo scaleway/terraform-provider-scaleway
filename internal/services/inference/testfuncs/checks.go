@@ -1,8 +1,11 @@
 package inferencetestfuncs
 
 import (
+	"context"
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	inferenceSDK "github.com/scaleway/scaleway-sdk-go/api/inference/v1"
@@ -42,31 +45,36 @@ func IsDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 }
 
 func IsModelDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_inference_model" {
-				continue
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_inference_model" {
+					continue
+				}
+
+				api, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				model, err := api.GetModel(&inferenceSDK.GetModelRequest{
+					Region:  region,
+					ModelID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("model %s (%s) still exists", model.Name, model.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			inferenceAPI, region, id, err := inference.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			model, err := inferenceAPI.GetModel(&inferenceSDK.GetModelRequest{
-				Region:  region,
-				ModelID: id,
-			})
-
-			if err == nil {
-				return fmt.Errorf("model %s (%s) still exists", model.Name, model.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

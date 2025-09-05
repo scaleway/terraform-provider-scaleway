@@ -1,9 +1,12 @@
 package registry_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
@@ -80,30 +83,35 @@ func isNamespacePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 
 func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_registry_namespace" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_registry_namespace" {
+					continue
+				}
+
+				api, region, id, err := registry.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetNamespace(&registrySDK.GetNamespaceRequest{
+					NamespaceID: id,
+					Region:      region,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("namespace (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, id, err := registry.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.WaitForNamespace(&registrySDK.WaitForNamespaceRequest{
-				NamespaceID: id,
-				Region:      region,
-			})
-
-			if err == nil {
-				return fmt.Errorf("namespace (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

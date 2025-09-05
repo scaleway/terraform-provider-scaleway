@@ -1,10 +1,13 @@
 package secret_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
@@ -316,30 +319,35 @@ func testAccCheckSecretExists(tt *acctest.TestTools, n string) resource.TestChec
 
 func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_secret" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_secret" {
+					continue
+				}
+
+				api, region, id, err := secret.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetSecret(&secretSDK.GetSecretRequest{
+					SecretID: id,
+					Region:   region,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("secret (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, id, err := secret.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.GetSecret(&secretSDK.GetSecretRequest{
-				SecretID: id,
-				Region:   region,
-			})
-
-			if err == nil {
-				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
