@@ -175,6 +175,7 @@ func testAccCheckVPCExists(tt *acctest.TestTools, n string) resource.TestCheckFu
 func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc" {
@@ -190,6 +191,7 @@ func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					Region: region,
 					VpcID:  id,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC (%s) still exists", rs.Primary.ID))
@@ -199,6 +201,7 @@ func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}

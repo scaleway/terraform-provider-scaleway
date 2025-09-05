@@ -18,6 +18,7 @@ import (
 func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc_gateway_network" {
@@ -31,6 +32,7 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					GatewayNetworkID: id,
 					Zone:             zone,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC gateway network (%s) still exists", rs.Primary.ID))
@@ -40,6 +42,7 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}
@@ -48,6 +51,7 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc_public_gateway" {
@@ -61,6 +65,7 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					GatewayID: id,
 					Zone:      zone,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC public gateway (%s) still exists", rs.Primary.ID))
@@ -70,6 +75,7 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}
@@ -78,6 +84,7 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc_public_gateway_dhcp" {
@@ -91,6 +98,7 @@ func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					DHCPID: id,
 					Zone:   zone,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC public gateway DHCP config (%s) still exists", rs.Primary.ID))
@@ -100,6 +108,7 @@ func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}
@@ -108,6 +117,7 @@ func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
+
 		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc_public_gateway_ip" {
@@ -121,6 +131,7 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					IPID: id,
 					Zone: zone,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC public gateway ip (%s) still exists", rs.Primary.ID))
@@ -130,6 +141,7 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}

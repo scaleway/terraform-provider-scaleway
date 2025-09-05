@@ -33,6 +33,7 @@ func CheckIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					IPID:   ID,
 					Region: region,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("IP (%s) still exists", rs.Primary.ID))
@@ -42,6 +43,7 @@ func CheckIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+			
 			return nil
 		})
 	}
