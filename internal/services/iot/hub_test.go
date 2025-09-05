@@ -1,9 +1,12 @@
 package iot_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	iotSDK "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
@@ -109,33 +112,36 @@ func TestAccHub_Dedicated(t *testing.T) {
 
 func isHubDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_iot_hub" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_iot_hub" {
+					continue
+				}
+
+				iotAPI, region, hubID, err := iot.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = iotAPI.GetHub(&iotSDK.GetHubRequest{
+					Region: region,
+					HubID:  hubID,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("hub (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			iotAPI, region, hubID, err := iot.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = iotAPI.GetHub(&iotSDK.GetHubRequest{
-				Region: region,
-				HubID:  hubID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("hub (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
