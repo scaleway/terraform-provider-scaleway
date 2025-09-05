@@ -36,6 +36,44 @@ resource "scaleway_mnq_sqs_queue" "main" {
 }
 ```
 
+### With Dead Letter Queue
+
+```terraform
+resource "scaleway_mnq_sqs" "main" {}
+
+resource "scaleway_mnq_sqs_credentials" "main" {
+  project_id = scaleway_mnq_sqs.main.project_id
+  name       = "sqs-credentials"
+
+  permissions {
+    can_manage  = true
+    can_receive = false
+    can_publish = false
+  }
+}
+
+resource "scaleway_mnq_sqs_queue" "dead_letter" {
+  project_id   = scaleway_mnq_sqs.main.project_id
+  name         = "dead-letter-queue"
+  sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+  access_key   = scaleway_mnq_sqs_credentials.main.access_key
+  secret_key   = scaleway_mnq_sqs_credentials.main.secret_key
+}
+
+resource "scaleway_mnq_sqs_queue" "main" {
+  project_id   = scaleway_mnq_sqs.main.project_id
+  name         = "my-queue"
+  sqs_endpoint = scaleway_mnq_sqs.main.endpoint
+  access_key   = scaleway_mnq_sqs_credentials.main.access_key
+  secret_key   = scaleway_mnq_sqs_credentials.main.secret_key
+
+  dead_letter_queue {
+    id                = scaleway_mnq_sqs_queue.dead_letter.id
+    max_receive_count = 3
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -62,9 +100,19 @@ The following arguments are supported:
 
 - `message_max_size` - (Optional) The maximum size of a message. Should be in bytes. Must be between 1024 and 262_144. Defaults to 262_144.
 
+- `dead_letter_queue` - (Optional) Configuration for the dead letter queue. See [Dead Letter Queue](#dead-letter-queue) below for details.
+
 - `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project in which SQS is enabled.
+
+## Dead Letter Queue
+
+The `dead_letter_queue` block supports the following:
+
+- `id` - (Required) The ID of the dead letter queue. Can be either in the format `{region}/{project-id}/{queue-name}` or `arn:scw:sqs:{region}:project-{project-id}:{queue-name}`.
+
+- `max_receive_count` - (Required) The number of times a message is delivered to the source queue before being moved to the dead letter queue. Must be between 1 and 1000.
 
 
 ## Attributes Reference
