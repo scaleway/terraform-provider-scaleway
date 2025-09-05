@@ -1,11 +1,14 @@
 package k8s_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -677,25 +680,28 @@ func testAccCheckK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCh
 			return nil
 		}
 
-		k8sAPI, region, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+		ctx := context.Background()
 
-		_, err = k8sAPI.WaitForPool(&k8sSDK.WaitForPoolRequest{
-			Region: region,
-			PoolID: poolID,
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			api, region, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+
+			_, err = api.GetPool(&k8sSDK.GetPoolRequest{
+				Region: region,
+				PoolID: poolID,
+			})
+
+			switch {
+			case err == nil:
+				return retry.RetryableError(fmt.Errorf("k8s pool (%s) still exists", rs.Primary.ID))
+			case httperrors.Is404(err):
+				return nil
+			default:
+				return retry.NonRetryableError(err)
+			}
 		})
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("pool (%s) still exists", rs.Primary.ID)
-		}
-		// Unexpected api error we return it
-		if !httperrors.Is404(err) {
-			return err
-		}
-
-		return nil
 	}
 }
 

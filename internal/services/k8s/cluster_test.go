@@ -1,10 +1,13 @@
 package k8s_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
@@ -545,33 +548,36 @@ func TestAccCluster_TypeChange(t *testing.T) {
 
 func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_k8s_cluster" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_k8s_cluster" {
+					continue
+				}
+
+				api, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetCluster(&k8sSDK.GetClusterRequest{
+					Region:    region,
+					ClusterID: clusterID,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("k8s cluster (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = k8sAPI.WaitForCluster(&k8sSDK.WaitForClusterRequest{
-				Region:    region,
-				ClusterID: clusterID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
