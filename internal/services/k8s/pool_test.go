@@ -434,6 +434,7 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	poolID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -447,39 +448,6 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
 		),
 		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-				resource "scaleway_vpc_private_network" "public_ip" {
-				  name       = "test-k8s-public-ip"
-				}
-			
-				resource "scaleway_k8s_cluster" "public_ip" {
-				  name = "test-k8s-public-ip"
-				  version = "%s"
-				  cni     = "cilium"
-				  private_network_id = scaleway_vpc_private_network.public_ip.id
-				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
-				  delete_additional_resources = false
-				  depends_on = [scaleway_vpc_private_network.public_ip]
-				}
-			
-				resource "scaleway_k8s_pool" "public_ip" {
-				  cluster_id          = scaleway_k8s_cluster.public_ip.id
-				  name                = "test-k8s-public-ip"
-				  node_type           = "pro2_xxs"
-				  size                = 1
-				  autoscaling         = false
-				  autohealing         = true
-				  wait_for_pool_ready = true
-				}`, latestK8SVersion),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.public_ip"),
-					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.public_ip"),
-					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.public_ip"),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.public_ip", "public_ip_disabled", "false"),
-					testAccCheckK8SPoolPublicIP(tt, "scaleway_k8s_cluster.public_ip", "scaleway_k8s_pool.public_ip", false),
-				),
-			},
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_vpc_private_network" "public_ip" {
@@ -528,6 +496,41 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.public_ip"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.public_ip", "public_ip_disabled", "true"),
 					testAccCheckK8SPoolPublicIP(tt, "scaleway_k8s_cluster.public_ip", "scaleway_k8s_pool.public_ip", true),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.public_ip", &poolID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_vpc_private_network" "public_ip" {
+				  name       = "test-k8s-public-ip"
+				}
+			
+				resource "scaleway_k8s_cluster" "public_ip" {
+				  name = "test-k8s-public-ip"
+				  version = "%s"
+				  cni     = "cilium"
+				  private_network_id = scaleway_vpc_private_network.public_ip.id
+				  tags = [ "terraform-test", "scaleway_k8s_cluster", "public_ip" ]
+				  delete_additional_resources = false
+				  depends_on = [scaleway_vpc_private_network.public_ip]
+				}
+			
+				resource "scaleway_k8s_pool" "public_ip" {
+				  cluster_id          = scaleway_k8s_cluster.public_ip.id
+				  name                = "test-k8s-public-ip"
+				  node_type           = "pro2_xxs"
+				  size                = 1
+				  autoscaling         = false
+				  autohealing         = true
+				  wait_for_pool_ready = true
+				}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.public_ip"),
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.public_ip"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.public_ip"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.public_ip", "public_ip_disabled", "false"),
+					testAccCheckK8SPoolPublicIP(tt, "scaleway_k8s_cluster.public_ip", "scaleway_k8s_pool.public_ip", false),
+					acctest.CheckResourceIDChanged("scaleway_k8s_pool.public_ip", &poolID),
 				),
 			},
 		},

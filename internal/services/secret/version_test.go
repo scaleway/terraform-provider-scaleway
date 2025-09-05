@@ -10,6 +10,7 @@ import (
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
@@ -208,14 +209,19 @@ func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckF
 				return err
 			}
 
-			_, err = api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
+			secretVersion, err := api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
 				SecretID: id,
 				Region:   region,
 				Revision: revision,
 			})
-
 			if err == nil {
-				return fmt.Errorf("secret version (%s) still exists", rs.Primary.ID)
+				if secretVersion.DeletionRequestedAt == nil {
+					return fmt.Errorf("secret version (%s) was not scheduled for deletion", rs.Primary.ID)
+				}
+
+				logging.L.Infof("Secret version (%s) is scheduled for deletion", rs.Primary.ID)
+
+				return nil
 			}
 
 			if !httperrors.Is404(err) {

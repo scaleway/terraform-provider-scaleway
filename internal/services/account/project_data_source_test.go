@@ -119,6 +119,7 @@ func TestAccDataSourceProject_Extract(t *testing.T) {
 	})
 }
 
+// This test was recorded using the hashicorp test account and expects projects from the 'terraform-provider-scaleway' organization
 func TestAccDataSourceProject_List(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -141,11 +142,15 @@ func TestAccDataSourceProject_List(t *testing.T) {
 						organization_id = "%s"
 					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.#", "8"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.id", "6867048b-fe12-4e96-835e-41c79a39604b"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.id", "8cc8dd4d-a094-407a-89a3-9d004674e936"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.#", "4"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.id", "105bdce1-64c0-48ab-899d-868455867ecf"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.id", "c567f266-af4f-4da0-a35b-98c34086f991"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.2.id", "fe479fbe-6cae-44c5-bb7a-7fc9f04acad5"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.3.id", "f5375b18-7efc-4416-ab13-c42af955602c"),
 					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.name", "default"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.name", "tf_tests_container_trigger_sqs"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.name", "Packer Plugin Scaleway"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.2.name", "SDK Python"),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.3.name", "ansible"),
 				),
 			},
 		},

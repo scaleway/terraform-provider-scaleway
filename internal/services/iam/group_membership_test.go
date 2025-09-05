@@ -114,21 +114,21 @@ func TestAccGroupMembership_User(t *testing.T) {
 			testAccCheckIamApplicationDestroy(tt),
 		), Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_iam_group main {
 						name = "tf-tests-iam-group-membership-user"
 						external_membership = true
 					}
 
 					data "scaleway_iam_user" "main" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "%s"
 					}
 
 					resource scaleway_iam_group_membership main {
 						group_id = scaleway_iam_group.main.id
 						user_id = data.scaleway_iam_user.main.id
 					}
-				`,
+				`, terraformTestAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupMembershipUserInGroup(tt, "scaleway_iam_group_membership.main", "data.scaleway_iam_user.main"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_group_membership.main", "id"),
