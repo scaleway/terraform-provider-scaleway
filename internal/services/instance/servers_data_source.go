@@ -162,12 +162,14 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.ListServers(&instance.ListServersRequest{
+	req := &instance.ListServersRequest{
 		Zone:    zone,
 		Name:    types.ExpandStringPtr(d.Get("name")),
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Tags:    types.ExpandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	}
+
+	res, err := instanceAPI.ListServers(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

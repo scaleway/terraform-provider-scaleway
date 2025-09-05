@@ -1,6 +1,7 @@
 package iam_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -57,16 +58,16 @@ func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_iam_application" "app00" {
 					  name = "tf_tests_iam_group_ds_app"
 					}
 					
 					data "scaleway_iam_user" "user00" {
-					  user_id         = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
+					  user_id         = "%s"
 					}
 					data "scaleway_iam_user" "user01" {
-					  user_id         = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
+					  user_id         = "%s"
 					}
 					
 					resource "scaleway_iam_group" "main_ds_mix" {
@@ -89,7 +90,7 @@ func TestAccDataSourceGroup_UsersAndApplications(t *testing.T) {
 					  name            = scaleway_iam_group.main_ds_mix.name
 					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
 					}
-				`,
+				`, terraformTestAccountUserID, devtoolsAccountUserID),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamGroupExists(tt, "scaleway_iam_group.main_ds_mix"),
 					resource.TestCheckResourceAttr("data.scaleway_iam_group.find_by_id_mix", "name", "tf_test_data_source_mix"),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,7 +30,7 @@ func TestAccApiKey_WithApplication(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_key_basic"
+							name = "tf_tests_api_key_with_app"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -47,7 +48,7 @@ func TestAccApiKey_WithApplication(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_key_basic"
+							name = "tf_tests_api_key_with_app"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -141,6 +142,8 @@ func TestAccApiKey_Expires(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	expiresAt := time.Date(2025, time.September, 20, 11, 22, 0, 0, time.UTC).Format("2006-01-02T15:04:05Z")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -149,7 +152,7 @@ func TestAccApiKey_Expires(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_expires_at"
 						}
@@ -157,18 +160,18 @@ func TestAccApiKey_Expires(t *testing.T) {
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
 							description = "tf_tests_expires"
-							expires_at = "2025-07-06T11:00:00+02:00"
+							expires_at = "%s"
 						}
-					`,
+					`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_expires"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", "2025-07-06T09:00:00Z"),
+					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "expires_at", expiresAt),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_app_expires_at"
 						}
@@ -176,9 +179,9 @@ func TestAccApiKey_Expires(t *testing.T) {
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
 							description = "tf_tests_expires"
-							expires_at = "2025-07-06T09:00:00Z"
+							expires_at = "%s"
 						}
-					`,
+					`, expiresAt),
 				PlanOnly: true,
 			},
 		},
