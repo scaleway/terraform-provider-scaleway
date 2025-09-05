@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	lbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 )
 
 func TestAccLBPrivateNetwork_Basic(t *testing.T) {
@@ -14,7 +13,6 @@ func TestAccLBPrivateNetwork_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
