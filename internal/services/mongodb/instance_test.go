@@ -100,6 +100,61 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	})
 }
 
+func TestAccMongoDBInstance_SnapshotSchedule(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-snapshot-schedule"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						snapshot_schedule_frequency_hours = 24
+						snapshot_schedule_retention_days = 7
+						is_snapshot_schedule_enabled = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_frequency_hours", "24"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_retention_days", "7"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "is_snapshot_schedule_enabled", "true"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-snapshot-schedule"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						snapshot_schedule_frequency_hours = 12
+						snapshot_schedule_retention_days = 14
+						is_snapshot_schedule_enabled = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_frequency_hours", "12"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_retention_days", "14"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "is_snapshot_schedule_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
