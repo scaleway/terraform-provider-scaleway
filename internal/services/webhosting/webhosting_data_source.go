@@ -35,8 +35,10 @@ func DataSourceWebhosting() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Schema:      dsSchema,
-		ReadContext: DataSourceWebhostingRead,
+		Schema:                            dsSchema,
+		ReadContext:                       DataSourceWebhostingRead,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 

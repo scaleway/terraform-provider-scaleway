@@ -1,10 +1,12 @@
 package instance_test
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -13,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/require"
 )
@@ -559,35 +562,37 @@ func isSecurityGroupPresent(tt *acctest.TestTools, n string) resource.TestCheckF
 
 func isSecurityGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+		api := instanceSDK.NewAPI(tt.Meta.ScwClient())
+		ctx := context.Background()
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_security_group" {
-				continue
+		return retry.RetryContext(ctx, instancechecks.DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_security_group" {
+					continue
+				}
+
+				zone, id, err := zonal.ParseID(rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetSecurityGroup(&instanceSDK.GetSecurityGroupRequest{
+					Zone:            zone,
+					SecurityGroupID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("security group (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			zone, ID, err := zonal.ParseID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetSecurityGroup(&instanceSDK.GetSecurityGroupRequest{
-				Zone:            zone,
-				SecurityGroupID: ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("security group (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 

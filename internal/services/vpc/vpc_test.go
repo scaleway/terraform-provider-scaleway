@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
+	vpctestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccVPC_Basic(t *testing.T) {
@@ -223,7 +224,8 @@ func testAccCheckVPCExists(tt *acctest.TestTools, n string) resource.TestCheckFu
 func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+    
+		return retry.RetryContext(ctx, vpctestfuncs.DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc" {
 					continue
@@ -238,6 +240,7 @@ func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					Region: region,
 					VpcID:  id,
 				})
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC (%s) still exists", rs.Primary.ID))
@@ -247,6 +250,7 @@ func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
+
 			return nil
 		})
 	}

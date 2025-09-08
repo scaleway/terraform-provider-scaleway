@@ -1,9 +1,12 @@
 package account_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
@@ -11,6 +14,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
+
+var DestroyWaitTimeout = 3 * time.Minute
 
 func TestAccProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -101,29 +106,31 @@ func isProjectPresent(tt *acctest.TestTools, name string) resource.TestCheckFunc
 }
 
 func isProjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_account_project" {
-				continue
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+		api := account.NewProjectAPI(tt.Meta)
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_account_project" {
+					continue
+				}
+
+				_, err := api.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
+					ProjectID: rs.Primary.ID,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("resource %s(%s) still exists", rs.Type, rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			accountAPI := account.NewProjectAPI(tt.Meta)
-
-			_, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
-				ProjectID: rs.Primary.ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
