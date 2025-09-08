@@ -9,7 +9,9 @@ import (
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
@@ -54,6 +56,32 @@ func customDiffCannotShrink(key string) schema.CustomizeDiffFunc {
 
 		return oldValue > newValue
 	})
+}
+
+func customDiffSnapshot(key string) schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
+		if !diff.HasChange(key) {
+			return nil
+		}
+
+		oldValue, newValue := diff.GetChange(key)
+		if dsf.Locality(key, oldValue.(string), newValue.(string), nil) {
+			return nil
+		}
+
+		blockAPI := block.NewAPI(meta.ExtractScwClient(i))
+		zone, id, _ := locality.ParseLocalizedID(oldValue.(string))
+
+		_, err := blockAPI.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: id,
+			Zone:       scw.Zone(zone),
+		})
+		if (httperrors.Is403(err) || httperrors.Is404(err)) && newValue == "" {
+			return nil
+		}
+
+		return diff.ForceNew(key)
+	}
 }
 
 func migrateInstanceToBlockVolume(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumeID string, timeout time.Duration) (*block.Volume, error) {

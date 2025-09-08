@@ -112,6 +112,18 @@ linters:
     - varnamelen # checks that the length of a variable's name matches its scope [fast: false, auto-fix: false]
 
   settings:
+    depguard:
+      rules:
+        testing:
+          files:
+            - "**/*_test.go"
+          deny:
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+              desc: use github.com/hashicorp/terraform-plugin-testing/helper/acctest
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+              desc: use github.com/hashicorp/terraform-plugin-testing/helper/resource
+            - pkg: "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+              desc: use github.com/hashicorp/terraform-plugin-testing/terraform
     govet:
       disable-all: true
       enable:

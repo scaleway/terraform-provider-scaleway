@@ -148,6 +148,12 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				ValidateFunc: validation.StringLenBetween(0, 255),
 				Description:  "Some description to associate to the server, max 255 characters",
 			},
+			"protected": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "If true, the baremetal server is protected against accidental deletion via the Scaleway API.",
+			},
 			"tags": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
@@ -179,8 +185,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 				Elem:        ResourceServerIP(),
 			},
 			"domain": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Description: "Domain associated with the server",
+				Computed:    true,
 			},
 			"options": {
 				Type:        schema.TypeSet,
@@ -357,6 +364,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		Description: d.Get("description").(string),
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
+		Protected:   d.Get("protected").(bool),
 	}
 
 	partitioningSchema := baremetal.Schema{}
@@ -505,6 +513,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("ips", flattenIPs(server.IPs))
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
+	_ = d.Set("protected", server.Protected)
 
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
@@ -698,6 +707,11 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("protected") {
+		req.Protected = types.ExpandBoolPtr(d.Get("protected").(bool))
 		hasChanged = true
 	}
 

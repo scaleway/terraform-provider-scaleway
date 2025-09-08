@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
@@ -46,9 +46,11 @@ func TestAccACL_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_k8s_acl.acl_basic", "cluster_id", "scaleway_k8s_cluster.acl_basic", "id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "no_ip_allowed", "false"),
 					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.scaleway_ranges", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.description", "First rule"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_basic", "acl_rules.*", map[string]string{
+						"ip":              "1.2.3.4/32",
+						"description":     "First rule",
+						"scaleway_ranges": "false",
+					}),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.0.id"),
 				),
 			},
@@ -77,13 +79,17 @@ func TestAccACL_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("scaleway_k8s_acl.acl_basic", "cluster_id", "scaleway_k8s_cluster.acl_basic", "id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.scaleway_ranges", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.description", ""),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_basic", "acl_rules.*", map[string]string{
+						"ip":              "1.2.3.4/32",
+						"description":     "",
+						"scaleway_ranges": "false",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_basic", "acl_rules.*", map[string]string{
+						"ip":              "5.6.7.0/30",
+						"description":     "",
+						"scaleway_ranges": "false",
+					}),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.0.id"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.ip", "5.6.7.0/30"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.scaleway_ranges", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.description", ""),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.1.id"),
 				),
 			},
@@ -113,13 +119,17 @@ func TestAccACL_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrPair("scaleway_k8s_acl.acl_basic", "cluster_id", "scaleway_k8s_cluster.acl_basic", "id"),
 					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.#", "2"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.ip", "1.2.3.4/32"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.scaleway_ranges", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.description", "First rule"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_basic", "acl_rules.*", map[string]string{
+						"ip":              "1.2.3.4/32",
+						"description":     "First rule",
+						"scaleway_ranges": "false",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_basic", "acl_rules.*", map[string]string{
+						"ip":              "",
+						"description":     "Scaleway ranges rule",
+						"scaleway_ranges": "true",
+					}),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.0.id"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.ip", ""),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.scaleway_ranges", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.1.description", "Scaleway ranges rule"),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.1.id"),
 				),
 			},
@@ -160,6 +170,108 @@ func TestAccACL_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterAllowedIPs(tt, "scaleway_k8s_cluster.acl_basic", "0.0.0.0/0"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccACL_RulesOrder(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	clusterName := "k8s-acl-order"
+	latestK8sVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckK8SClusterDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "acl_order" {}
+			
+					resource "scaleway_k8s_cluster" "acl_order" {
+						name = "%s"
+						version = "%s"
+						cni = "cilium"
+						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.acl_order.id
+					}
+			
+					resource "scaleway_k8s_acl" "acl_order" {
+						cluster_id = scaleway_k8s_cluster.acl_order.id
+						acl_rules {
+							ip = "12.2.3.4/32"
+							description = "First rule"
+						}
+						acl_rules {
+							ip = "11.2.3.4/32"
+							description = "Second rule"
+						}
+						acl_rules {
+							ip = "1.2.3.7/32"
+							description = "Third rule"
+						}
+						acl_rules {
+							ip = "1.2.3.4/32"
+							description = "Fourth rule"
+						}
+					}`, clusterName, latestK8sVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("scaleway_k8s_acl.acl_order", "cluster_id", "scaleway_k8s_cluster.acl_order", "id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_acl.acl_order", "acl_rules.#", "4"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_order", "acl_rules.*", map[string]string{
+						"ip":          "12.2.3.4/32",
+						"description": "First rule",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_order", "acl_rules.*", map[string]string{
+						"ip":          "11.2.3.4/32",
+						"description": "Second rule",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_order", "acl_rules.*", map[string]string{
+						"ip":          "1.2.3.7/32",
+						"description": "Third rule",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_acl.acl_order", "acl_rules.*", map[string]string{
+						"ip":          "1.2.3.4/32",
+						"description": "Fourth rule",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "acl_order" {}
+			
+					resource "scaleway_k8s_cluster" "acl_order" {
+						name = "%s"
+						version = "%s"
+						cni = "cilium"
+						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.acl_order.id
+					}
+			
+					resource "scaleway_k8s_acl" "acl_order" {
+						cluster_id = scaleway_k8s_cluster.acl_order.id
+						acl_rules {
+							ip = "12.2.3.4/32"
+							description = "First rule"
+						}
+						acl_rules {
+							ip = "11.2.3.4/32"
+							description = "Second rule"
+						}
+						acl_rules {
+							ip = "1.2.3.7/32"
+							description = "Third rule"
+						}
+						acl_rules {
+							ip = "1.2.3.4/32"
+							description = "Fourth rule"
+						}
+					}`, clusterName, latestK8sVersion),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
 			},
 		},
 	})

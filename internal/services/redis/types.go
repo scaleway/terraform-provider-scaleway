@@ -130,10 +130,17 @@ func flattenPrivateNetwork(endpoints []*redis.Endpoint) (any, bool) {
 			serviceIps = append(serviceIps, ip.String())
 		}
 
+		ips := []any(nil)
+		for _, ip := range endpoint.IPs {
+			ips = append(ips, ip.String())
+		}
+
 		pnFlat = append(pnFlat, map[string]any{
 			"endpoint_id": endpoint.ID,
 			"zone":        pn.Zone,
 			"id":          pnRegionalID,
+			"port":        int(endpoint.Port),
+			"ips":         ips,
 			"service_ips": serviceIps,
 		})
 	}

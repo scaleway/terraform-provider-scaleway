@@ -10,6 +10,8 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
+permissions:
+  contents: write
 on:
   push:
     tags:
@@ -20,7 +22,7 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Unshallow
         run: git fetch --prune --unshallow

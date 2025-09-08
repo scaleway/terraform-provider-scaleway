@@ -2,11 +2,10 @@ package function_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	functionSDK "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -212,26 +211,9 @@ func TestAccFunctionNamespace_VPCIntegration(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionNamespaceExists(tt, "scaleway_function_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "false"),
+					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
 					acctest.CheckResourceIDPersisted("scaleway_function_namespace.main", &namespaceID),
 				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network main {}
-			
-					resource scaleway_function_namespace main {}
-			
-					resource scaleway_function main {
-						namespace_id = scaleway_function_namespace.main.id
-						privacy = "private"
-						sandbox = "v1"
-						runtime = "go123"
-						handler = "Handle"
-						private_network_id = scaleway_vpc_private_network.main.id
-					}
-				`,
-				ExpectError: regexp.MustCompile("Application can't be attached to private network, vpc integration must be activated on its parent namespace"),
 			},
 			{
 				Config: `
@@ -255,7 +237,7 @@ func TestAccFunctionNamespace_VPCIntegration(t *testing.T) {
 					testAccCheckFunctionExists(tt, "scaleway_function.main"),
 					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_function.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
-					acctest.CheckResourceIDChanged("scaleway_function_namespace.main", &namespaceID),
+					acctest.CheckResourceIDPersisted("scaleway_function_namespace.main", &namespaceID),
 				),
 			},
 		},

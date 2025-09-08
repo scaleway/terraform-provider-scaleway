@@ -296,7 +296,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, recordData, dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -408,7 +408,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", flattenDomainData(record.Data, record.Type).(string))
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
@@ -494,52 +494,6 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	d.SetId("")
-
-	// for non-root zone, if the zone have only NS records, then delete the zone
-	if d.Get("root_zone").(bool) {
-		return nil
-	}
-
-	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-		DNSZone: d.Get("dns_zone").(string),
-	})
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	for _, r := range res.Records {
-		if r.Type != domain.RecordTypeNS {
-			// The zone isn't empty, keep it
-			return nil
-		}
-
-		tflog.Debug(ctx, fmt.Sprintf("record [%s], type [%s]", r.Name, r.Type))
-	}
-
-	_, err = waitForDNSZone(ctx, domainAPI, d.Get("dns_zone").(string), d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-		DNSZone:   d.Get("dns_zone").(string),
-		ProjectID: d.Get("project_id").(string),
-	})
-	if err != nil {
-		if httperrors.Is404(err) || httperrors.Is403(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
 
 	return nil
 }

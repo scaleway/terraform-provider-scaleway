@@ -93,8 +93,13 @@ func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []any {
 
 	for i, ip := range ips {
 		flattenedIPs[i] = map[string]any{
-			"id":      zonal.NewIDString(zone, ip.ID),
-			"address": ip.Address.String(),
+			"id":                zonal.NewIDString(zone, ip.ID),
+			"address":           ip.Address.String(),
+			"gateway":           ip.Gateway.String(),
+			"netmask":           ip.Netmask,
+			"family":            ip.Family.String(),
+			"dynamic":           ip.Dynamic,
+			"provisioning_mode": ip.ProvisioningMode.String(),
 		}
 	}
 

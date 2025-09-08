@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -1512,6 +1512,12 @@ func TestAccServer_IPs(t *testing.T) {
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "public_ips.0.address"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.gateway", "62.210.0.1"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.netmask", "32"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.family", "inet"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.dynamic", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.provisioning_mode", "dhcp"),
 				),
 			},
 			{

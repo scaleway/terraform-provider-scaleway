@@ -20,8 +20,9 @@ func DataSourceConsumptions() *schema.Resource {
 			"organization_id": account.OrganizationIDSchema(),
 			"project_id":      account.ProjectIDSchema(),
 			"consumptions": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of the consumptions.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"value": {
@@ -63,8 +64,9 @@ func DataSourceConsumptions() *schema.Resource {
 				},
 			},
 			"updated_at": {
-				Computed: true,
-				Type:     schema.TypeString,
+				Computed:    true,
+				Description: "Date and time when the consumption was updated",
+				Type:        schema.TypeString,
 			},
 		},
 	}

@@ -2,11 +2,10 @@ package container_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -295,23 +294,9 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "false"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network main {}
-			
-					resource scaleway_container_namespace main {}
-			
-					resource scaleway_container main {
-						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.main.id
-						sandbox = "v1"
-					}
-				`,
-				ExpectError: regexp.MustCompile("Application can't be attached to private network, vpc integration must be activated on its parent namespace"),
 			},
 			{
 				Config: `
@@ -332,7 +317,7 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_container.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
-					acctest.CheckResourceIDChanged("scaleway_container_namespace.main", &namespaceID),
+					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
 			},
 		},

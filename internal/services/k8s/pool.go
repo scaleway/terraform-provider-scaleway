@@ -190,8 +190,9 @@ func ResourcePool() *schema.Resource {
 				Description: "The actual size of the pool",
 			},
 			"nodes": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of nodes in the pool",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -250,11 +251,12 @@ func ResourcePool() *schema.Resource {
 				Description: "The status of the pool",
 			},
 			"security_group_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The ID of the security group",
+				Type:             schema.TypeString,
+				Computed:         true,
+				Optional:         true,
+				ForceNew:         true,
+				Description:      "The ID of the security group",
+				DiffSuppressFunc: dsf.Locality,
 			},
 		},
 	}

@@ -47,12 +47,14 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 			},
 			"topic_arn": {
 				Type:         schema.TypeString,
+				Description:  "ARN of the topic",
 				Optional:     true,
 				AtLeastOneOf: []string{"topic_id"},
 				ForceNew:     true,
 			},
 			"topic_id": {
 				Type:         schema.TypeString,
+				Description:  "ID of the topic",
 				Optional:     true,
 				AtLeastOneOf: []string{"topic_arn"},
 				ForceNew:     true,

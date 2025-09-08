@@ -27,8 +27,9 @@ func DataSourceFrontends() *schema.Resource {
 				Description: "frontends with a name like it are listed.",
 			},
 			"frontends": {
-				Type:     schema.TypeList,
-				Computed: true,
+				Type:        schema.TypeList,
+				Description: "List of frontends.",
+				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {

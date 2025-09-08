@@ -102,12 +102,14 @@ func ResourceWebhosting() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "ID of the active option",
 						},
 						"name": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the option",
 						},
 					},
 				},
@@ -124,12 +126,14 @@ func ResourceWebhosting() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"dashboard": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URL to connect to dashboard interface",
 						},
 						"webmail": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "URL to connect to Webmail interface",
 						},
 					},
 				},
@@ -145,12 +149,36 @@ func ResourceWebhosting() *schema.Resource {
 				Description: "List of DNS records associated with the webhosting.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"name":     {Type: schema.TypeString, Computed: true},
-						"type":     {Type: schema.TypeString, Computed: true},
-						"ttl":      {Type: schema.TypeInt, Computed: true},
-						"value":    {Type: schema.TypeString, Computed: true},
-						"priority": {Type: schema.TypeInt, Computed: true},
-						"status":   {Type: schema.TypeString, Computed: true},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Name of the DNS record",
+						},
+						"type": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Type of the DNS record",
+						},
+						"ttl": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Time to live in seconds of the record",
+						},
+						"value": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Value of the DNS record",
+						},
+						"priority": {
+							Type:        schema.TypeInt,
+							Computed:    true,
+							Description: "Priority of DNS records associated with the webhosting.",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Status of the hosting record",
+						},
 					},
 				},
 			},
@@ -160,9 +188,21 @@ func ResourceWebhosting() *schema.Resource {
 				Description: "List of nameservers associated with the webhosting.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"hostname":   {Type: schema.TypeString, Computed: true},
-						"status":     {Type: schema.TypeString, Computed: true},
-						"is_default": {Type: schema.TypeBool, Computed: true},
+						"hostname": {
+							Description: "Hostname of the server",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"status": {
+							Description: "Status of the nameserver",
+							Type:        schema.TypeString,
+							Computed:    true,
+						},
+						"is_default": {
+							Description: "Whether or not the webhosting is the default one",
+							Type:        schema.TypeBool,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -190,6 +230,8 @@ func ResourceWebhosting() *schema.Resource {
 
 			return nil
 		},
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 
