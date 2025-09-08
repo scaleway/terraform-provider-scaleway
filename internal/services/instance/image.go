@@ -59,7 +59,6 @@ func ResourceImage() *schema.Resource {
 			"additional_volume_ids": {
 				Type:     schema.TypeList,
 				Optional: true,
-				MaxItems: 1,
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
