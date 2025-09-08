@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,8 +13,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
-
-var DestroyWaitTimeout = 3 * time.Minute
 
 func TestAccMongoDBUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
