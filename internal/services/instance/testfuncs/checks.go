@@ -1,8 +1,11 @@
 package instancetestfuncs
 
 import (
+	"context"
 	"fmt"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -42,107 +45,116 @@ func CheckIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 
 func IsServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_server" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_server" {
+					continue
+				}
+
+				api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetServer(&instanceSDK.GetServerRequest{
+					ServerID: id,
+					Zone:     zone,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("server (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetServer(&instanceSDK.GetServerRequest{
-				ServerID: ID,
-				Zone:     zone,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
 func IsServerRootVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_server" {
-				continue
+		ctx := context.Background()
+		api := instancehelpers.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_server" {
+					continue
+				}
+
+				localizedRootVolumeID, exists := rs.Primary.Attributes["root_volume.0.volume_id"]
+				if !exists {
+					continue
+				}
+
+				zoneStr, _, err := locality.ParseLocalizedID(rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				rootVolumeID := locality.ExpandID(localizedRootVolumeID)
+
+				_, err = api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+					VolumeID: rootVolumeID,
+					Zone:     scw.Zone(zoneStr),
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("server's root volume (%s) still exists", rootVolumeID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			localizedRootVolumeID, exists := rs.Primary.Attributes["root_volume.0.volume_id"]
-			if !exists {
-				return fmt.Errorf("root_volume ID not found in resource %s", rs.Primary.ID)
-			}
-
-			zone, _, err := locality.ParseLocalizedID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			rootVolumeID := locality.ExpandID(localizedRootVolumeID)
-
-			api := instancehelpers.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
-
-			_, err = api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
-				VolumeID: rootVolumeID,
-				Zone:     scw.Zone(zone),
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("server's root volume (%s) still exists", rootVolumeID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
 func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_instance_ip" {
-				continue
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_ip" {
+					continue
+				}
+
+				api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetIP(&instanceSDK.GetIPRequest{
+					Zone: zone,
+					IP:   id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("instance IP (%s) still exists", rs.Primary.ID))
+				// Unexpected api error we return it
+				// We check for 403 because instanceSDK API return 403 for deleted IP
+				case httperrors.Is404(err) || httperrors.Is403(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			instanceAPI, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, errIP := instanceAPI.GetIP(&instanceSDK.GetIPRequest{
-				Zone: zone,
-				IP:   id,
-			})
-
-			// If no error resource still exist
-			if errIP == nil {
-				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			// We check for 403 because instanceSDK API return 403 for deleted IP
-			if !httperrors.Is404(errIP) && !httperrors.Is403(errIP) {
-				return errIP
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
@@ -201,34 +213,36 @@ func IsVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		instanceAPI := instanceSDK.NewAPI(tt.Meta.ScwClient())
+		ctx := context.Background()
+		api := instanceSDK.NewAPI(tt.Meta.ScwClient())
 
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_volume" {
-				continue
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_volume" {
+					continue
+				}
+
+				zone, id, err := zonal.ParseID(rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetVolume(&instanceSDK.GetVolumeRequest{
+					Zone:     zone,
+					VolumeID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("volume (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			zone, id, err := zonal.ParseID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetVolume(&instanceSDK.GetVolumeRequest{
-				Zone:     zone,
-				VolumeID: id,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("volume (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

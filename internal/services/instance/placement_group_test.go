@@ -1,9 +1,12 @@
 package instance_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -169,32 +172,35 @@ func isPlacementGroupPresent(tt *acctest.TestTools, n string) resource.TestCheck
 
 func isPlacementGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_placement_group" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_placement_group" {
+					continue
+				}
+
+				api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetPlacementGroup(&instanceSDK.GetPlacementGroupRequest{
+					Zone:             zone,
+					PlacementGroupID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("placement group (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetPlacementGroup(&instanceSDK.GetPlacementGroupRequest{
-				Zone:             zone,
-				PlacementGroupID: ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("placement group (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

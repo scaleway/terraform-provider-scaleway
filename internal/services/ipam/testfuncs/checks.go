@@ -43,7 +43,7 @@ func CheckIPDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
-			
+
 			return nil
 		})
 	}
