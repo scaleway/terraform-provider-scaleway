@@ -261,7 +261,7 @@ func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 			}
-			
+
 			return nil
 		})
 	}

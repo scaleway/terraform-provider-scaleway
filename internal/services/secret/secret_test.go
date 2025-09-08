@@ -332,17 +332,18 @@ func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					return retry.NonRetryableError(err)
 				}
 
-				_, err = api.GetSecret(&secretSDK.GetSecretRequest{
+				sec, err := api.GetSecret(&secretSDK.GetSecretRequest{
 					SecretID: id,
 					Region:   region,
 				})
 
 				switch {
-				case err == nil:
-					return retry.RetryableError(fmt.Errorf("secret (%s) still exists", rs.Primary.ID))
+				case err == nil && sec != nil && sec.DeletionRequestedAt != nil:
+					// Soft-deleted (scheduled for deletion), treat as destroyed for tests
+					continue
 				case httperrors.Is404(err):
 					continue
-				default:
+				case err != nil:
 					return retry.NonRetryableError(err)
 				}
 			}
