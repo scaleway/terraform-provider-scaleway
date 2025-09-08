@@ -114,6 +114,7 @@ func testAccCheckWebhostingDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 					if res != nil && res.Status != webhostingSDK.HostingStatusUnknownStatus {
 						return retry.RetryableError(fmt.Errorf("hosting (%s) still exists", rs.Primary.ID))
 					}
+
 					continue
 				case httperrors.Is404(err):
 					continue

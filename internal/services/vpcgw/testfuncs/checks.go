@@ -24,10 +24,12 @@ func IsGatewayNetworkDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if rs.Type != "scaleway_vpc_gateway_network" {
 					continue
 				}
+
 				api, zone, id, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
+
 				_, err = api.GetGatewayNetwork(&v2.GetGatewayNetworkRequest{
 					GatewayNetworkID: id,
 					Zone:             zone,
@@ -57,10 +59,12 @@ func IsGatewayDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if rs.Type != "scaleway_vpc_public_gateway" {
 					continue
 				}
+
 				api, zone, id, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
+
 				_, err = api.GetGateway(&v2.GetGatewayRequest{
 					GatewayID: id,
 					Zone:      zone,
@@ -90,10 +94,12 @@ func IsDHCPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if rs.Type != "scaleway_vpc_public_gateway_dhcp" {
 					continue
 				}
+
 				api, zone, id, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID) // v1 API helper
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
+
 				_, err = api.GetDHCP(&vpcgwSDK.GetDHCPRequest{
 					DHCPID: id,
 					Zone:   zone,
@@ -123,10 +129,12 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if rs.Type != "scaleway_vpc_public_gateway_ip" {
 					continue
 				}
+
 				api, zone, id, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
+
 				_, err = api.GetIP(&v2.GetIPRequest{
 					IPID: id,
 					Zone: zone,
