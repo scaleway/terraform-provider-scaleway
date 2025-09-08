@@ -18,6 +18,8 @@ import (
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
 
@@ -550,7 +552,7 @@ func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_k8s_cluster" {
 					continue

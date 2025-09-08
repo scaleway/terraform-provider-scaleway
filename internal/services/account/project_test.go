@@ -15,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccProject_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -108,7 +110,7 @@ func isProjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		ctx := context.Background()
 		api := account.NewProjectAPI(tt.Meta)
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_account_project" {
 					continue

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -203,7 +202,7 @@ func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckF
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_secret_version" {
 					continue

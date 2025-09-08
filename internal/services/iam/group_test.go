@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -13,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
 func TestAccGroup_Basic(t *testing.T) {
@@ -484,7 +484,7 @@ func testAccCheckIamGroupDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 		api := iam.NewAPI(tt.Meta)
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, iamchecks.DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range s.RootModule().Resources {
 				if rs.Type != "scaleway_iam_group" {
 					continue

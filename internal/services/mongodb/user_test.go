@@ -15,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccMongoDBUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -186,7 +188,7 @@ func testAccCheckMongoDBUserDestroy(tt *acctest.TestTools) resource.TestCheckFun
 		api := mongodbSDK.NewAPI(tt.Meta.ScwClient())
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range s.RootModule().Resources {
 				if rs.Type != "scaleway_mongodb_user" {
 					continue

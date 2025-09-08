@@ -15,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccNamespace_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -85,7 +87,7 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_registry_namespace" {
 					continue

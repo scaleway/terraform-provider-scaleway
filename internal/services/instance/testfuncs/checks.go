@@ -19,6 +19,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func CheckIPExists(tt *acctest.TestTools, name string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
@@ -47,7 +49,7 @@ func IsServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_instance_server" {
 					continue
@@ -83,7 +85,7 @@ func IsServerRootVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		ctx := context.Background()
 		api := instancehelpers.NewBlockAndInstanceAPI(meta.ExtractScwClient(tt.Meta))
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_instance_server" {
 					continue
@@ -125,7 +127,7 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_instance_ip" {
 					continue
@@ -216,7 +218,7 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 		ctx := context.Background()
 		api := instanceSDK.NewAPI(tt.Meta.ScwClient())
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_instance_volume" {
 					continue

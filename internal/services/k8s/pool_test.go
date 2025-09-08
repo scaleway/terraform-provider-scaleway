@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -682,7 +681,7 @@ func testAccCheckK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCh
 
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, 3*time.Minute, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			api, region, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return retry.NonRetryableError(err)
