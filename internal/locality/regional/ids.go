@@ -1,6 +1,7 @@
 package regional
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -127,5 +128,5 @@ func ResolveRegionAndID(
 		return region, ID, nil
 	}
 
-	return "", "", fmt.Errorf("cannot resolve identity: both identity.id and state ID are empty")
+	return "", "", errors.New("cannot resolve identity: both identity.id and state ID are empty")
 }
