@@ -31,7 +31,6 @@ func Schema() *schema.Schema {
 		Description:      "The zone you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
-		Computed:         true,
 		ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(AllZones(), "zone"),
 	}
 }

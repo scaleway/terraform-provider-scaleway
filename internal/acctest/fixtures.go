@@ -32,7 +32,7 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 
 	providers := map[string]func() (*schema.Provider, error){
 		"side": func() (*schema.Provider, error) {
-			return provider.Provider(&provider.Config{Meta: metaSide})(), nil
+			return provider.SDKProvider(&provider.Config{Meta: metaSide})(), nil
 		},
 	}
 

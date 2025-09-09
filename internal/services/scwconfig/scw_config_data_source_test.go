@@ -38,7 +38,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"default": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaDefault})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaDefault})(), nil
 				},
 			}
 		}(),
@@ -91,7 +91,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"other": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaOther})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaOther})(), nil
 				},
 			}
 		}(),
@@ -145,7 +145,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"mixed": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaMixed})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaMixed})(), nil
 				},
 			}
 		}(),
