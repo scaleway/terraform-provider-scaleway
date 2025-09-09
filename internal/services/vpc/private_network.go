@@ -266,7 +266,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
-	_ = d.Set("region", pn.Region.String())
+	_ = d.Set("region", region)
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
 
