@@ -136,6 +136,7 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	if err = identity.Set("id", res.ID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = identity.Set("region", region); err != nil {
 		return diag.FromErr(err)
 	}

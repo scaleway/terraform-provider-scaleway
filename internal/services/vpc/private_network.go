@@ -255,6 +255,7 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 	if err = identity.Set("id", pn.ID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = identity.Set("region", region); err != nil {
 		return diag.FromErr(err)
 	}

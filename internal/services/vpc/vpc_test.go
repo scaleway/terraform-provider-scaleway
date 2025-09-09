@@ -180,6 +180,7 @@ func TestAccVPC_ImportByIdentity(t *testing.T) {
 								if !validation.IsUUID(s) {
 									return fmt.Errorf("identity.id is not a valid UUID: %s", s)
 								}
+
 								return nil
 							}),
 							"region": knownvalue.StringExact("fr-par"),

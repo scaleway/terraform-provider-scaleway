@@ -136,6 +136,7 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 	if err = identity.Set("id", res.ID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err = identity.Set("region", region); err != nil {
 		return diag.FromErr(err)
 	}
