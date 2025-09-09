@@ -47,7 +47,8 @@ func NewAPIWithRegionAndIDFromState(m interface{}, d *schema.ResourceData) (
 	*vpc.API,
 	scw.Region,
 	string,
-	error) {
+	error,
+) {
 	vpcAPI := vpc.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ResolveRegionAndID(d, func(d *schema.ResourceData) (scw.Region, error) {
