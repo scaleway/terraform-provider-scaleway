@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -224,7 +223,7 @@ func testAccCheckVPCExists(tt *acctest.TestTools, n string) resource.TestCheckFu
 func testAccCheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
-    
+
 		return retry.RetryContext(ctx, vpctestfuncs.DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_vpc" {

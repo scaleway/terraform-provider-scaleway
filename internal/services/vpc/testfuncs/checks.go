@@ -35,7 +35,7 @@ func CheckPrivateNetworkDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 					Region:           region,
 					PrivateNetworkID: id,
 				})
-        
+
 				switch {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("VPC private network (%s) still exists", rs.Primary.ID))
