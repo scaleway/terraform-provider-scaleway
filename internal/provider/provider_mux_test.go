@@ -27,7 +27,6 @@ func TestMuxServer(t *testing.T) {
 				}
 
 				muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
-
 				if err != nil {
 					return nil, err
 				}
