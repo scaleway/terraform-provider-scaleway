@@ -224,8 +224,10 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m a
 	directAccess, privateNetwork := flattenReadReplicaEndpoints(rr.Endpoints)
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
+
+	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
-	_ = d.Set("region", rr.Region.String())
+	_ = d.Set("region", regionStr)
 	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
 
 	return nil
