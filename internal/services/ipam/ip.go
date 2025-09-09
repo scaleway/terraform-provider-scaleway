@@ -281,7 +281,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("is_ipv6", res.IsIPv6)
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region.String())
 
 	if res.Zone != nil {
 		_ = d.Set("zone", res.Zone.String())

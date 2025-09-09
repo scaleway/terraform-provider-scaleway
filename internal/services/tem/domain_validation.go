@@ -126,6 +126,7 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	_ = d.Set("validated", domain.Status == "checked")
+	_ = d.Set("region", domain.Region.String())
 
 	return nil
 }
