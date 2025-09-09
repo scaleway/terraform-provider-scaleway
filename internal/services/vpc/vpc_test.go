@@ -151,7 +151,7 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 	})
 }
 
-func TestAccVPC_ImportByIdentity(t *testing.T) {
+func TestAccVPC_ByIdentity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
