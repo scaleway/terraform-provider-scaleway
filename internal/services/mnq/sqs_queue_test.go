@@ -127,7 +127,7 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"scaleway": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaProd})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaProd})(), nil
 				},
 			}
 		}(),

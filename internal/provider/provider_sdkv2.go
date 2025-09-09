@@ -82,8 +82,8 @@ func addBetaResources(provider *schema.Provider) {
 	}
 }
 
-// Provider returns a terraform.ResourceProvider.
-func Provider(config *Config) plugin.ProviderFunc {
+// SDKProvider returns a terraform.ResourceProvider.
+func SDKProvider(config *Config) plugin.ProviderFunc {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
