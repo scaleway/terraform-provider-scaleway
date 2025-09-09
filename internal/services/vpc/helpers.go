@@ -43,7 +43,7 @@ func NewAPIWithRegionAndID(m any, id string) (*vpc.API, scw.Region, string, erro
 	return vpcAPI, region, ID, err
 }
 
-func NewAPIWithRegionAndIDFromState(m interface{}, d *schema.ResourceData) (
+func NewAPIWithRegionAndIDFromState(m any, d *schema.ResourceData) (
 	*vpc.API,
 	scw.Region,
 	string,
