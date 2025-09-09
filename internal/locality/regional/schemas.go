@@ -32,10 +32,6 @@ func Schema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(allRegions(), "region"),
-		DiffSuppressFunc: suppressSDKNullAssignment,
+		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
-}
-
-func suppressSDKNullAssignment(k, old, new string, d *schema.ResourceData) bool {
-	return new == "" && old != ""
 }
