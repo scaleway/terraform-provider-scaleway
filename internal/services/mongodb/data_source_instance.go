@@ -35,7 +35,7 @@ func DataSourceInstance() *schema.Resource {
 }
 
 func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, zone, region, err := newAPIWithZoneAndRegion(d, m)
+	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -65,10 +65,10 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 		instanceID = foundInstance.ID
 	}
 
-	zonedID := datasource.NewZonedID(instanceID, zone)
-	d.SetId(zonedID)
+	regionalID := datasource.NewRegionalID(instanceID, region)
+	d.SetId(regionalID)
 
-	err = d.Set("instance_id", zonedID)
+	err = d.Set("instance_id", regionalID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

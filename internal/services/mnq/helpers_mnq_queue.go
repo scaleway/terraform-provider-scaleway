@@ -155,6 +155,8 @@ var SQSAttributesToResourceMap = map[string]string{
 	string(awstype.QueueAttributeNameContentBasedDeduplication):     "content_based_deduplication",
 	string(awstype.QueueAttributeNameReceiveMessageWaitTimeSeconds): "receive_wait_time_seconds",
 	string(awstype.QueueAttributeNameVisibilityTimeout):             "visibility_timeout_seconds",
+	string(awstype.QueueAttributeNameRedrivePolicy):                 "dead_letter_queue",
+	string(awstype.QueueAttributeNameQueueArn):                      "arn",
 }
 
 // Returns all managed SQS attribute names
@@ -206,6 +208,28 @@ func resourceMNQQueueCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ 
 	contentBasedDeduplication := d.Get("content_based_deduplication").(bool)
 	if !isSQSFifo && contentBasedDeduplication {
 		return errors.New("content-based deduplication can only be set for FIFO queue")
+	}
+
+	// Validate dead-letter queue configuration
+	if deadLetterConfig, ok := d.GetOk("dead_letter_queue"); ok {
+		deadLetterList := deadLetterConfig.([]any)
+		if len(deadLetterList) > 0 {
+			config := deadLetterList[0].(map[string]any)
+			queueID := config["id"].(string)
+			maxReceiveCount := config["max_receive_count"].(int)
+
+			if queueID == "" || strings.Contains(queueID, "scaleway_mnq_sqs_queue") {
+				return nil
+			}
+
+			if queueID == "" {
+				return errors.New("dead-letter queue ID cannot be empty")
+			}
+
+			if maxReceiveCount < 1 || maxReceiveCount > 1000 {
+				return errors.New("max_receive_count must be between 1 and 1,000")
+			}
+		}
 	}
 
 	if !nameRegex.MatchString(name) {

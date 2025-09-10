@@ -8,7 +8,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func flattenDomainData(data string, recordType domain.RecordType) any {
+// FlattenDomainData normalizes domain record data based on record type
+func FlattenDomainData(data string, recordType domain.RecordType) any {
 	switch recordType {
 	case domain.RecordTypeMX: // API return this format: "{priority} {data}"
 		dataSplit := strings.SplitN(data, " ", 2)
@@ -17,9 +18,57 @@ func flattenDomainData(data string, recordType domain.RecordType) any {
 		}
 	case domain.RecordTypeTXT:
 		return strings.Trim(data, "\"")
+	case domain.RecordTypeSRV:
+		return NormalizeSRVData(data)
 	}
 
 	return data
+}
+
+// NormalizeSRVData normalizes SRV record data by handling weight field and zone domain suffixes
+func NormalizeSRVData(data string) string {
+	parts := strings.Fields(data)
+
+	if len(parts) >= 4 {
+		priority, weight, port, target := parts[0], parts[1], parts[2], parts[3]
+		target = RemoveZoneDomainSuffix(target)
+
+		return strings.Join([]string{priority, weight, port, target}, " ")
+	}
+
+	if len(parts) == 3 {
+		priority, port, target := parts[0], parts[1], parts[2]
+
+		return strings.Join([]string{priority, "0", port, target}, " ")
+	}
+
+	return data
+}
+
+// RemoveZoneDomainSuffix removes the zone domain suffix from a target
+func RemoveZoneDomainSuffix(target string) string {
+	if !strings.Contains(target, ".") {
+		return target
+	}
+
+	hadTrailingDot := strings.HasSuffix(target, ".")
+
+	targetParts := strings.Split(strings.TrimSuffix(target, "."), ".")
+
+	switch {
+	case len(targetParts) > 4:
+		target = strings.Join(targetParts[:len(targetParts)-3], ".")
+	case len(targetParts) > 3:
+		target = strings.Join(targetParts[:len(targetParts)-2], ".")
+	default:
+		target = strings.TrimSuffix(target, ".")
+	}
+
+	if hadTrailingDot {
+		target += "."
+	}
+
+	return target
 }
 
 func flattenDomainGeoIP(config *domain.RecordGeoIPConfig) any {

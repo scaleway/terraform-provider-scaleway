@@ -32,17 +32,29 @@ func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []
 	var currentRecord *domain.Record
 
 	for _, r := range records {
-		flattedData := flattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := flattenDomainData(strings.ToLower(data), r.Type).(string)
+		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type).(string)
+		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type).(string)
 
-		if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
-			if currentRecord != nil {
-				return nil, errors.New("multiple records found with same type and data")
+		if dnsType == domain.RecordTypeSRV {
+			if flattedData == flattenCurrentData {
+				if currentRecord != nil {
+					return nil, fmt.Errorf("multiple records found with same type and data: existing record %s (ID: %s) conflicts with new record data %s", currentRecord.Data, currentRecord.ID, data)
+				}
+
+				currentRecord = r
+
+				break
 			}
+		} else {
+			if strings.HasPrefix(flattedData, flattenCurrentData) && r.Type == dnsType {
+				if currentRecord != nil {
+					return nil, fmt.Errorf("multiple records found with same type and data: existing record %s (ID: %s) conflicts with new record data %s", currentRecord.Data, currentRecord.ID, data)
+				}
 
-			currentRecord = r
+				currentRecord = r
 
-			break
+				break
+			}
 		}
 	}
 

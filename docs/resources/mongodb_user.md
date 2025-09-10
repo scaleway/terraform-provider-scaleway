@@ -1,0 +1,115 @@
+---
+subcategory: "MongoDB®"
+page_title: "Scaleway: scaleway_mongodb_user"
+---
+
+# Resource: scaleway_mongodb_user
+
+Creates and manages Scaleway MongoDB® users.
+For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-user"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "initial_user"
+  password          = "initial_password123"
+  volume_size_in_gb = 5
+}
+
+resource "scaleway_mongodb_user" "main" {
+  instance_id = scaleway_mongodb_instance.main.id
+  name        = "my_user"
+  password    = "my_password123"
+  
+  roles {
+    role          = "read_write"
+    database_name = "my_database"
+  }
+}
+```
+
+### With Multiple Users
+
+```terraform
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-multi-user"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "admin_user"
+  password          = "admin_password123"
+  volume_size_in_gb = 5
+}
+
+resource "scaleway_mongodb_user" "app_user" {
+  instance_id = scaleway_mongodb_instance.main.id
+  name        = "app_user"
+  password    = "app_password123"
+  
+  roles {
+    role          = "read_write"
+    database_name = "app_database"
+  }
+  
+  roles {
+    role          = "read"
+    database_name = "logs_database"
+  }
+}
+
+resource "scaleway_mongodb_user" "admin_user" {
+  instance_id = scaleway_mongodb_instance.main.id
+  name        = "admin_user"
+  password    = "admin_password123"
+  
+  roles {
+    role          = "db_admin"
+    database_name = "admin"
+  }
+  
+  roles {
+    role         = "read"
+    any_database = true
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `instance_id` - (Required) The ID of the MongoDB® instance.
+
+- `name` - (Required) The name of the MongoDB® user.
+
+- `password` - (Required) The password of the MongoDB® user.
+
+- `roles` - (Optional) List of roles assigned to the user. Each role block supports:
+    - `role` - (Required) The role name. Valid values are `read`, `read_write`, `db_admin`, `sync`.
+    - `database_name` - (Optional) The database name for the role. Cannot be used with `any_database`.
+    - `any_database` - (Optional) Apply the role to all databases. Cannot be used with `database_name`.
+
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® user should be created.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the MongoDB® user.
+
+- `roles` - The list of roles assigned to the user.
+
+## Import
+
+MongoDB® users can be imported using the `{region}/{instance_id}/{name}`, e.g.
+
+```bash
+terraform import scaleway_mongodb_user.main fr-par/11111111-1111-1111-1111-111111111111/my_user
+```

@@ -296,7 +296,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, recordData, dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -408,7 +408,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", flattenDomainData(record.Data, record.Type).(string))
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))

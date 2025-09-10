@@ -202,6 +202,8 @@ func DataSourceOffer() *schema.Resource {
 			},
 			"region": regional.Schema(),
 		},
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 

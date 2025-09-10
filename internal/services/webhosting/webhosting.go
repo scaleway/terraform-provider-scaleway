@@ -230,6 +230,8 @@ func ResourceWebhosting() *schema.Resource {
 
 			return nil
 		},
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 

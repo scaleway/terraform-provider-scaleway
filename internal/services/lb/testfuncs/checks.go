@@ -3,6 +3,7 @@ package lbtestfuncs
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,62 +17,60 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_lb_ip" {
-				continue
-			}
+		ctx := context.Background()
 
-			lbAPI, zone, ID, err := lb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			lbID, lbExist := rs.Primary.Attributes["lb_id"]
-			if lbExist && len(lbID) > 0 {
-				retryInterval := lb.DefaultWaitLBRetryInterval
-
-				if transport.DefaultWaitRetryInterval != nil {
-					retryInterval = *transport.DefaultWaitRetryInterval
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_lb_ip" {
+					continue
 				}
 
-				_, err := lbAPI.WaitForLbInstances(&lb2.ZonedAPIWaitForLBInstancesRequest{
-					Zone:          zone,
-					LBID:          lbID,
-					Timeout:       scw.TimeDurationPtr(instance.DefaultInstanceServerWaitTimeout),
-					RetryInterval: &retryInterval,
-				}, scw.WithContext(context.Background()))
-
-				// Unexpected api error we return it
-				if !httperrors.Is404(err) {
-					return err
+				lbAPI, zone, ID, err := lb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
 				}
-			}
 
-			err = retry.RetryContext(context.Background(), lb.RetryLbIPInterval, func() *retry.RetryError {
-				_, errGet := lbAPI.GetIP(&lb2.ZonedAPIGetIPRequest{
+				if lbID, ok := rs.Primary.Attributes["lb_id"]; ok && lbID != "" {
+					retryInterval := lb.DefaultWaitLBRetryInterval
+					if transport.DefaultWaitRetryInterval != nil {
+						retryInterval = *transport.DefaultWaitRetryInterval
+					}
+
+					_, waitErr := lbAPI.WaitForLbInstances(&lb2.ZonedAPIWaitForLBInstancesRequest{
+						Zone:          zone,
+						LBID:          lbID,
+						Timeout:       scw.TimeDurationPtr(instance.DefaultInstanceServerWaitTimeout),
+						RetryInterval: &retryInterval,
+					}, scw.WithContext(ctx))
+
+					// Unexpected api error we return it
+					if waitErr != nil && !httperrors.Is404(waitErr) {
+						return retry.NonRetryableError(waitErr)
+					}
+				}
+
+				_, err = lbAPI.GetIP(&lb2.ZonedAPIGetIPRequest{
 					Zone: zone,
 					IPID: ID,
 				})
-				if httperrors.Is403(errGet) {
-					return retry.RetryableError(errGet)
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("IP (%s) still exists", rs.Primary.ID))
+				case httperrors.Is403(err):
+					return retry.RetryableError(err)
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
 				}
-
-				return retry.NonRetryableError(errGet)
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("IP (%s) still exists", rs.Primary.ID)
 			}
 
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

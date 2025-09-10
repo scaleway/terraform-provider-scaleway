@@ -33,7 +33,7 @@ The following arguments are supported:
 
 ~> **Important:** Once set, `expires_at` cannot be removed.
 
-- `region` - (Defaults to [provider](../index.md) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
 
 ## Attributes Reference
 
@@ -58,5 +58,5 @@ In addition to all arguments above, the following attributes are exported:
 MongoDB® snapshots can be imported using the `{region}/{id}`, e.g.
 
 ```bash
-terraform import scaleway_mongodb_snapshot.main fr-par-1/11111111-1111-1111-1111-111111111111
+terraform import scaleway_mongodb_snapshot.main fr-par/11111111-1111-1111-1111-111111111111
 ```
