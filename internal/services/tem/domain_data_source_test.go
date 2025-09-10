@@ -72,7 +72,6 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 
 					resource "scaleway_tem_domain_validation" "valid" {
 						domain_id = scaleway_tem_domain.main.id
-						region    = scaleway_tem_domain.main.region
 						timeout   = 3600
 					}
 

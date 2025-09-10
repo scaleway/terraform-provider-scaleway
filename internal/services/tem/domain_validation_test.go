@@ -38,7 +38,6 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 
 					resource scaleway_tem_domain_validation valid {
   						domain_id = scaleway_tem_domain.cr01.id
-  						region = scaleway_tem_domain.cr01.region
 						timeout = 3600
 					}
 				`, domainNameValidation, subDomainName),
@@ -76,7 +75,6 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 
                     resource scaleway_tem_domain_validation valid {
                         domain_id = scaleway_tem_domain.cr01.id
-                        region    = scaleway_tem_domain.cr01.region
                         timeout   = 1
                     }
                 `, domainNameValidation, subDomainName),

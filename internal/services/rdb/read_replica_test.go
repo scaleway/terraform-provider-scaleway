@@ -407,7 +407,6 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 
 					resource "scaleway_rdb_read_replica" "different_zone" {
   						instance_id = scaleway_rdb_instance.different_zone.id
-						region = scaleway_rdb_instance.different_zone.region
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
 							enable_ipam = true
@@ -440,7 +439,6 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 
 					resource "scaleway_rdb_read_replica" "different_zone" {
   						instance_id = scaleway_rdb_instance.different_zone.id
-						region = scaleway_rdb_instance.different_zone.region
 						same_zone = true
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
@@ -474,7 +472,6 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 
 					resource "scaleway_rdb_read_replica" "different_zone" {
   						instance_id = scaleway_rdb_instance.different_zone.id
-						region = scaleway_rdb_instance.different_zone.region
 						same_zone = false
 						private_network {
 							private_network_id = scaleway_vpc_private_network.different_zone.id
