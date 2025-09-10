@@ -26,7 +26,6 @@ func ResourcePrivateNetwork() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Read:    schema.DefaultTimeout(defaultLbLbTimeout),
-			Update:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Delete:  schema.DefaultTimeout(defaultLbLbTimeout),
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
@@ -78,7 +77,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 	}
 }
 
-func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,7 +121,7 @@ func resourceLbPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceLbPrivateNetworkRead(ctx, d, m)
 }
 
-func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -177,7 +176,7 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLbPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, _, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
