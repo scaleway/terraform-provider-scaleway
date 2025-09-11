@@ -31,7 +31,11 @@ func Schema() *schema.Schema {
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
-		Computed:         true,
 		ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(allRegions(), "region"),
+		DiffSuppressFunc: suppressSDKNullAssignment,
 	}
+}
+
+func suppressSDKNullAssignment(k, old, new string, d *schema.ResourceData) bool {
+	return new == "" && old != ""
 }
