@@ -20,7 +20,24 @@ func ResourceACL() *schema.Resource {
 		UpdateContext: ResourceVPCACLUpdate,
 		DeleteContext: ResourceVPCACLDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+						Description:       "The ACL ID (e.g. `11111111-1111-1111-1111-111111111111`)",
+					},
+					"region": {
+						Type:              schema.TypeString,
+						OptionalForImport: true,
+						Description:       "The region of the VPC. If omitted during import, defaults from provider",
+					},
+				}
+			},
 		},
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
@@ -133,11 +150,16 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	d.SetId(regional.NewIDString(region, regional.ExpandID(d.Get("vpc_id").(string)).ID))
 
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", regional.ExpandID(d.Get("vpc_id").(string)).ID)
+		_ = identity.Set("region", region)
+	}
+
 	return ResourceVPCACLRead(ctx, d, m)
 }
 
 func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -164,7 +186,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 }
 
 func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -194,7 +216,7 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 }
 
 func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

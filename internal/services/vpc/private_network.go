@@ -25,7 +25,24 @@ func ResourcePrivateNetwork() *schema.Resource {
 		UpdateContext: ResourceVPCPrivateNetworkUpdate,
 		DeleteContext: ResourceVPCPrivateNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+						Description:       "The Private Network ID (e.g. `11111111-1111-1111-1111-111111111111`)",
+					},
+					"region": {
+						Type:              schema.TypeString,
+						OptionalForImport: true,
+						Description:       "The region of the VPC. If omitted during import, defaults from provider",
+					},
+				}
+			},
 		},
 		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
@@ -230,11 +247,24 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(regional.NewIDString(region, pn.ID))
 
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("id", pn.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("region", region); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
 
 func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -274,11 +304,16 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
 	_ = d.Set("ipv6_subnets", ipv6Subnets)
 
+	if identity, err := d.Identity(); err == nil && identity != nil {
+		_ = identity.Set("id", pn.ID)
+		_ = identity.Set("region", region)
+	}
+
 	return nil
 }
 
 func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -298,7 +333,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
