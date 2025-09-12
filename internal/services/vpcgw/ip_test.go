@@ -15,6 +15,7 @@ import (
 func TestAccVPCPublicGatewayIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      vpcgwchecks.IsIPDestroyed(tt),
@@ -37,6 +38,7 @@ func TestAccVPCPublicGatewayIP_Basic(t *testing.T) {
 func TestAccVPCPublicGatewayIP_WithZone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      vpcgwchecks.IsIPDestroyed(tt),
@@ -68,6 +70,7 @@ func TestAccVPCPublicGatewayIP_WithZone(t *testing.T) {
 func TestAccVPCPublicGatewayIP_WithTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      vpcgwchecks.IsIPDestroyed(tt),

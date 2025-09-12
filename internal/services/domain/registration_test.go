@@ -191,7 +191,6 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 				domainResp, getErr := registrarAPI.GetDomain(&domainSDK.RegistrarAPIGetDomainRequest{
 					Domain: domainName,
 				})
-
 				if getErr != nil {
 					return fmt.Errorf("failed to get details for domain %s: %w", domainName, getErr)
 				}

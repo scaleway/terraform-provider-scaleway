@@ -23,6 +23,7 @@ import (
 func TestAccServer_Minimal1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -79,6 +80,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 func TestAccServer_Minimal2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -202,6 +204,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 func TestAccServer_RootVolume_Boot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -252,6 +255,7 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -288,6 +292,7 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -349,6 +354,7 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_State1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -418,6 +424,7 @@ func TestAccServer_State1(t *testing.T) {
 func TestAccServer_State2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -468,6 +475,7 @@ func TestAccServer_State2(t *testing.T) {
 func TestAccServer_UserData_WithCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -501,6 +509,7 @@ EOF
 func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -554,6 +563,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -632,6 +642,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -699,6 +710,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 func TestAccServer_WithPlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -739,6 +751,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 func TestAccServer_Ipv6(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -783,6 +796,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 func TestAccServer_Basic2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -813,6 +827,7 @@ func TestAccServer_Basic2(t *testing.T) {
 func TestAccServer_WithReservedIP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -979,6 +994,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 func TestAccServer_AlterTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1022,6 +1038,7 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1056,6 +1073,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1092,6 +1110,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 func TestAccServer_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1246,6 +1265,7 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 func TestAccServer_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1294,6 +1314,7 @@ func TestAccServer_Migrate(t *testing.T) {
 func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1336,6 +1357,7 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 func TestAccServer_CustomDiffImage(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1490,6 +1512,7 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 func TestAccServer_IPs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1574,6 +1597,7 @@ func TestAccServer_IPs(t *testing.T) {
 func TestAccServer_IPRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1620,6 +1644,7 @@ func TestAccServer_IPRemoved(t *testing.T) {
 func TestAccServer_IPsRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1669,6 +1694,7 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 func TestAccServer_BlockExternal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1817,6 +1843,7 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1869,6 +1896,7 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1944,6 +1972,7 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -2178,6 +2207,7 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 
 func TestGetEndOfServiceDate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
+
 	client := meta.ExtractScwClient(tt.Meta)
 	defer tt.Cleanup()
 

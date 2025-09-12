@@ -142,7 +142,6 @@ func isSNSCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SnsCredentialsID: id,
 				Region:           region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq sns credentials (%s) still exists", rs.Primary.ID)
 			}

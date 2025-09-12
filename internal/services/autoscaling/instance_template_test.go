@@ -166,7 +166,6 @@ func testAccCheckInstanceTemplateDestroy(tt *acctest.TestTools) resource.TestChe
 				TemplateID: id,
 				Zone:       zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance template (%s) still exists", rs.Primary.ID)
 			}
