@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -18,12 +19,25 @@ type terraformResourceData interface {
 	GetOk(string) (any, bool)
 	Get(string) any
 	Id() string
+	GetRawConfig() cty.Value
+	GetRawConfigAt(valPath cty.Path) (cty.Value, diag.Diagnostics)
 }
+
+var (
+	_ terraformResourceData = (*schema.ResourceData)(nil)
+	_ terraformResourceData = (*schema.ResourceDiff)(nil)
+)
 
 // ExtractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
 func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
+	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("zone"))
+	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			return scw.ParseZone(rawConfig.AsString())
+		}
+	}
 	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -41,6 +55,12 @@ func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 //   - region field of the resource data
 //   - default region from config
 func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
+	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("region"))
+	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			return scw.ParseRegion(rawConfig.AsString())
+		}
+	}
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -59,6 +79,12 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 //   - default region given in argument
 //   - default region from config
 func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.Region) (scw.Region, error) {
+	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("region"))
+	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			return scw.ParseRegion(rawConfig.AsString())
+		}
+	}
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
