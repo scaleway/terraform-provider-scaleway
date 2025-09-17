@@ -3,8 +3,10 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -20,11 +22,11 @@ func NewFrameworkProvider() func() provider.Provider {
 	}
 }
 
-func (p *ScalewayProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *ScalewayProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "scaleway"
 }
 
-func (p *ScalewayProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"access_key": schema.StringAttribute{
@@ -76,4 +78,12 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{}
+}
+
+func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
+	return []func() action.Action{}
+}
+
+func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
+	return []func() list.ListResource{}
 }
