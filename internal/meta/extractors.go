@@ -38,6 +38,7 @@ func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 			return scw.ParseZone(rawConfig.AsString())
 		}
 	}
+
 	rawZone, exist := d.GetOk("zone")
 	if exist {
 		return scw.ParseZone(rawZone.(string))
@@ -61,6 +62,7 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 			return scw.ParseRegion(rawConfig.AsString())
 		}
 	}
+
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
@@ -85,6 +87,7 @@ func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.
 			return scw.ParseRegion(rawConfig.AsString())
 		}
 	}
+
 	rawRegion, exist := d.GetOk("region")
 	if exist {
 		return scw.ParseRegion(rawRegion.(string))
