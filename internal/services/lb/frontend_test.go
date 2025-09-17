@@ -20,6 +20,7 @@ import (
 func TestAccFrontend_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -248,6 +249,7 @@ func isFrontendDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func TestAccFrontend_ACLBasic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -460,6 +462,7 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 func TestAccFrontend_ACLRedirectAction(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

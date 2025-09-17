@@ -136,7 +136,6 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SnapshotID: ID,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("snapshot (%s) still exists", rs.Primary.ID)
 			}

@@ -154,7 +154,6 @@ func testAccCheckInstanceGroupDestroy(tt *acctest.TestTools) resource.TestCheckF
 				InstanceGroupID: id,
 				Zone:            zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance group (%s) still exists", rs.Primary.ID)
 			}

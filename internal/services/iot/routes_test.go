@@ -145,6 +145,7 @@ func TestAccRoute_S3(t *testing.T) {
 func TestAccRoute_REST(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

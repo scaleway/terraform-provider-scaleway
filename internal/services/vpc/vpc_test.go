@@ -19,6 +19,7 @@ import (
 func TestAccVPC_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -47,6 +48,7 @@ func TestAccVPC_Basic(t *testing.T) {
 func TestAccVPC_WithRegion(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -82,6 +84,7 @@ func TestAccVPC_WithRegion(t *testing.T) {
 func TestAccVPC_WithTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -119,6 +122,7 @@ func TestAccVPC_WithTags(t *testing.T) {
 func TestAccVPC_DisableRouting(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

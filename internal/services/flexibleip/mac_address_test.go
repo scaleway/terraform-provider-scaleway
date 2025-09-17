@@ -16,6 +16,7 @@ import (
 func TestAccFlexibleIPMACAddress_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
@@ -44,6 +45,7 @@ func TestAccFlexibleIPMACAddress_Basic(t *testing.T) {
 func TestAccFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
@@ -99,6 +101,7 @@ func TestAccFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 func TestAccFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(

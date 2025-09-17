@@ -75,7 +75,6 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				VolumeID: id,
 				Zone:     zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("block volume (%s) still exists", rs.Primary.ID)
 			}
@@ -105,7 +104,6 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SnapshotID: id,
 				Zone:       zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("block snapshot (%s) still exists", rs.Primary.ID)
 			}

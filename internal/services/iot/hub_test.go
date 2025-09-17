@@ -20,6 +20,7 @@ var DestroyWaitTimeout = 3 * time.Minute
 func TestAccHub_Minimal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -69,6 +70,7 @@ func TestAccHub_Minimal(t *testing.T) {
 func TestAccHub_Dedicated(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
