@@ -35,6 +35,7 @@ func ExtractRawConfigString(d terraformResourceData, field string) (string, diag
 			return rawConfig.AsString(), nil
 		}
 	}
+
 	return "", diags
 }
 
