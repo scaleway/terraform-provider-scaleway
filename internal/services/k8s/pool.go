@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
@@ -286,12 +287,18 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
 	}
 
-	if v, ok := d.GetOk("region"); ok {
-		req.Region = scw.Region(v.(string))
+	rawConfig, diags := d.GetRawConfigAt(cty.GetAttrPath("region"))
+	if diags == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			req.Region = scw.Region(rawConfig.AsString())
+		}
 	}
 
-	if v, ok := d.GetOk("zone"); ok {
-		req.Zone = scw.Zone(v.(string))
+	rawConfig, diags = d.GetRawConfigAt(cty.GetAttrPath("zone"))
+	if diags == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			req.Zone = scw.Zone(rawConfig.AsString())
+		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
