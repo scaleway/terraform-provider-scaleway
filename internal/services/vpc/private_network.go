@@ -264,7 +264,7 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 }
 
 func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -313,7 +313,7 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -333,7 +333,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 }
 
 func ResourceVPCPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

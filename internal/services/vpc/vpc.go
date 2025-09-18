@@ -145,7 +145,7 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 }
 
 func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,7 +187,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 }
 
 func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -246,7 +246,7 @@ func ResourceVPCUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.
 }
 
 func ResourceVPCDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

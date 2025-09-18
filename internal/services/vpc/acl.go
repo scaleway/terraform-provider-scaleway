@@ -159,7 +159,7 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 }
 
 func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,7 +186,7 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 }
 
 func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -216,7 +216,7 @@ func ResourceVPCACLUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 }
 
 func ResourceVPCACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}

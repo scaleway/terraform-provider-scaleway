@@ -145,7 +145,7 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +192,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 }
 
 func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -250,7 +250,7 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 }
 
 func ResourceRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(m, d)
+	vpcAPI, region, ID, err := NewAPIWithRegionAndIDFromState(ctx, m, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
