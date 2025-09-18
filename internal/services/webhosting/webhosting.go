@@ -230,8 +230,6 @@ func ResourceWebhosting() *schema.Resource {
 
 			return nil
 		},
-		EnableLegacyTypeSystemPlanErrors:  true,
-		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 
@@ -325,7 +323,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String()) //nolint:staticcheck
 	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.Platform.ControlPanel.URLs))
 	_ = d.Set("username", webhostingResponse.User.Username)
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", webhostingResponse.Region)
 	_ = d.Set("organization_id", "")
 	_ = d.Set("project_id", webhostingResponse.ProjectID)
 

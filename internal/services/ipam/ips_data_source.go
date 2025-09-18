@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -158,7 +159,6 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 	req := &ipam.ListIPsRequest{
 		Region:           region,
 		ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
-		Zonal:            types.ExpandStringPtr(d.Get("zonal")),
 		PrivateNetworkID: types.ExpandStringPtr(d.Get("private_network_id")),
 		ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 		ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
@@ -166,6 +166,11 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 		MacAddress:       types.ExpandStringPtr(d.Get("mac_address")),
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
+	}
+
+	rawConfigZonal, diags := meta.ExtractRawConfigString(d, "zonal")
+	if diags == nil && rawConfigZonal != "" {
+		req.Zonal = types.ExpandStringPtr(rawConfigZonal)
 	}
 
 	attached, attachedExists := d.GetOk("attached")
