@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -167,11 +168,9 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 		OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
 	}
 
-	rawConfig, diagError := d.GetRawConfigAt(cty.GetAttrPath("zonal"))
-	if diagError == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
-		if rawConfig.AsString() != "" {
-			req.Zonal = types.ExpandStringPtr(rawConfig.AsString())
-		}
+	rawConfigZonal, diags := meta.ExtractRawConfigString(d, "zonal")
+	if diags == nil && rawConfigZonal != "" {
+		req.Zonal = types.ExpandStringPtr(rawConfigZonal)
 	}
 
 	attached, attachedExists := d.GetOk("attached")

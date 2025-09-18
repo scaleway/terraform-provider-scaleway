@@ -28,15 +28,23 @@ var (
 	_ terraformResourceData = (*schema.ResourceDiff)(nil)
 )
 
+func ExtractRawConfigString(d terraformResourceData, field string) (string, diag.Diagnostics) {
+	rawConfig, diags := d.GetRawConfigAt(cty.GetAttrPath(field))
+	if diags == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			return rawConfig.AsString(), nil
+		}
+	}
+	return "", diags
+}
+
 // ExtractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
 func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
-	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("zone"))
-	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
-		if rawConfig.AsString() != "" {
-			return scw.ParseZone(rawConfig.AsString())
-		}
+	rawConfigZone, diags := ExtractRawConfigString(d, "zone")
+	if diags == nil && rawConfigZone != "" {
+		return scw.ParseZone(rawConfigZone)
 	}
 
 	rawZone, exist := d.GetOk("zone")
@@ -56,11 +64,9 @@ func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 //   - region field of the resource data
 //   - default region from config
 func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
-	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("region"))
-	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
-		if rawConfig.AsString() != "" {
-			return scw.ParseRegion(rawConfig.AsString())
-		}
+	rawConfigZone, diags := ExtractRawConfigString(d, "region")
+	if diags == nil && rawConfigZone != "" {
+		return scw.ParseRegion(rawConfigZone)
 	}
 
 	rawRegion, exist := d.GetOk("region")
@@ -81,11 +87,9 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 //   - default region given in argument
 //   - default region from config
 func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.Region) (scw.Region, error) {
-	rawConfig, err := d.GetRawConfigAt(cty.GetAttrPath("region"))
-	if err == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
-		if rawConfig.AsString() != "" {
-			return scw.ParseRegion(rawConfig.AsString())
-		}
+	rawConfigZone, diags := ExtractRawConfigString(d, "region")
+	if diags == nil && rawConfigZone != "" {
+		return scw.ParseRegion(rawConfigZone)
 	}
 
 	rawRegion, exist := d.GetOk("region")
