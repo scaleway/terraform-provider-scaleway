@@ -98,6 +98,7 @@ func TestAccPool_Basic(t *testing.T) {
 func TestAccPool_Wait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },

@@ -244,6 +244,7 @@ func TestAccSecurityGroup_ICMP(t *testing.T) {
 func TestAccSecurityGroup_ANY(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -385,6 +386,7 @@ func TestAccSecurityGroup_RemovePort(t *testing.T) {
 func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -442,6 +444,7 @@ func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 func TestAccSecurityGroup_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -599,6 +602,7 @@ func isSecurityGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
