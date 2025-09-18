@@ -170,7 +170,7 @@ func resourceLbPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("status", foundPN.Status.String())
 	_ = d.Set("created_at", types.FlattenTime(foundPN.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(foundPN.UpdatedAt))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", foundPN.LB.Zone)
 	_ = d.Set("project_id", foundPN.LB.ProjectID)
 
 	return nil
