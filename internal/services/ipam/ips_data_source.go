@@ -158,7 +158,6 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 	req := &ipam.ListIPsRequest{
 		Region:           region,
 		ProjectID:        types.ExpandStringPtr(d.Get("project_id")),
-		Zonal:            types.ExpandStringPtr(d.Get("zonal")),
 		PrivateNetworkID: types.ExpandStringPtr(d.Get("private_network_id")),
 		ResourceID:       types.ExpandStringPtr(expandLastID(d.Get("resource.0.id"))),
 		ResourceType:     ipam.ResourceType(d.Get("resource.0.type").(string)),
@@ -166,6 +165,13 @@ func DataSourceIPAMIPsRead(ctx context.Context, d *schema.ResourceData, m any) d
 		MacAddress:       types.ExpandStringPtr(d.Get("mac_address")),
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		OrganizationID:   types.ExpandStringPtr(d.Get("organization_id")),
+	}
+
+	rawConfig, diagError := d.GetRawConfigAt(cty.GetAttrPath("zonal"))
+	if diagError == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
+		if rawConfig.AsString() != "" {
+			req.Zonal = types.ExpandStringPtr(rawConfig.AsString())
+		}
 	}
 
 	attached, attachedExists := d.GetOk("attached")
