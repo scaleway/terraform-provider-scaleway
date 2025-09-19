@@ -61,7 +61,7 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 						cpu_limit = 120
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
-						timeout = "20m"
+						timeout = "20m0s"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -78,7 +78,7 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 						cpu_limit = 120
 						memory_limit = 256
 						image_uri = "docker.io/alpine:latest"
-						timeout = "1h30m"
+						timeout = "1h30m0s"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
