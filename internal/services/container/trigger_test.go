@@ -198,7 +198,6 @@ func isTriggerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				TriggerID: id,
 				Region:    region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container trigger (%s) still exists", rs.Primary.ID)
 			}

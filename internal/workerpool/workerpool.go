@@ -29,6 +29,7 @@ func NewWorkerPool(size int) *WorkerPool {
 
 func (p *WorkerPool) AddTask(task Task) {
 	p.tasksWaitingGroup.Add(1)
+
 	p.tasksToDispatch <- task
 }
 

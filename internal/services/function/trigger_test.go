@@ -260,7 +260,6 @@ func testAccCheckFunctionTriggerDestroy(tt *acctest.TestTools) resource.TestChec
 				TriggerID: id,
 				Region:    region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function trigger (%s) still exists", rs.Primary.ID)
 			}

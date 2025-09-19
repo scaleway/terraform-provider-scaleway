@@ -87,6 +87,7 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -109,6 +110,7 @@ func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 func TestAccVPCPrivateNetwork_Subnets(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -214,6 +216,7 @@ func TestAccVPCPrivateNetwork_Subnets(t *testing.T) {
 func TestAccVPCPrivateNetwork_OneSubnet(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
