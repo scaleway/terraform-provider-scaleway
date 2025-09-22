@@ -1,6 +1,9 @@
 package acctest
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"encoding/xml"
 	"flag"
 	"net/http"
 	"os"
@@ -19,6 +22,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
 // UpdateCassettes will update all cassettes of a given test
@@ -33,10 +38,42 @@ type TestTools struct {
 	Cleanup           func()
 }
 
+// s3Encoder encodes binary payloads as base64 because serialization changed on go-vcr.v4
+func s3Encoder(i *cassette.Interaction) error {
+	if strings.HasSuffix(i.Request.Host, "scw.cloud") {
+		if i.Request.Body != "" && i.Request.Headers.Get("Content-Type") == "application/octet-stream" {
+			requestBody := []byte(i.Request.Body)
+			if !json.Valid(requestBody) {
+				err := xml.Unmarshal(requestBody, new(any))
+				if err != nil {
+					i.Request.Body = base64.StdEncoding.EncodeToString(requestBody)
+				}
+			}
+		}
+
+		if i.Response.Body != "" && i.Response.Headers.Get("Content-Type") == "binary/octet-stream" {
+			responseBody := []byte(i.Response.Body)
+			if !json.Valid(responseBody) {
+				err := xml.Unmarshal(responseBody, new(any))
+				if err != nil {
+					i.Response.Body = base64.StdEncoding.EncodeToString(responseBody)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func NewRecordedClient(t *testing.T, pkgFolder string, update bool) (client *http.Client, cleanup func(), err error) {
 	t.Helper()
 
-	r, err := vcr.NewHTTPRecorder(t, pkgFolder, update)
+	s3EncoderHook := vcr.AdditionalHook{
+		HookFunc: s3Encoder,
+		Kind:     recorder.AfterCaptureHook,
+	}
+
+	r, err := vcr.NewHTTPRecorder(t, pkgFolder, update, nil, s3EncoderHook)
 	if err != nil {
 		return nil, nil, err
 	}
