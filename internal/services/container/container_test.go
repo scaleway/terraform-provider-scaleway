@@ -655,12 +655,11 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "test-acc-container-pn-pn01"
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container c00 {
 						name = "test-acc-container-pn-c00"
+						description = "Container with index 0"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
@@ -682,12 +681,11 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "test-acc-container-pn-pn01"
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container c00 {
 						name = "test-acc-container-pn-c00"
+						description = "Container with index 0"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
@@ -695,6 +693,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 
 					resource scaleway_container c01 {
 						name = "test-acc-container-pn-c01"
+						description = "Container with index 1"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
@@ -702,6 +701,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 
 					resource scaleway_container c02 {
 						name = "test-acc-container-pn-c02"
+						description = "Container with index 2"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
@@ -728,18 +728,18 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "test-acc-container-pn-pn01"
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container c00 {
 						name = "test-acc-container-pn-c00"
+						description = "Container with index 0"
 						namespace_id = scaleway_container_namespace.main.id
 						sandbox = "v1"
 					}
 
 					resource scaleway_container c01 {
 						name = "test-acc-container-pn-c01"
+						description = "Container with index 1"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						sandbox = "v1"
@@ -747,6 +747,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 
 					resource scaleway_container c02 {
 						name = "test-acc-container-pn-c02"
+						description = "Container with index 2"
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
