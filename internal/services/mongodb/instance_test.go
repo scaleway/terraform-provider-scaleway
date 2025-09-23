@@ -329,11 +329,13 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 					}
 				`,
@@ -346,11 +348,13 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 					}
 
@@ -380,11 +384,13 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 					}
 
@@ -414,11 +420,13 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 				Config: `
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 					}
 
