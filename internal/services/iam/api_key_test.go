@@ -88,10 +88,12 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_api_key_app_change"
+							description = "App to be attached on step 1"
 						}
 
 						resource "scaleway_iam_application" "main2" {
 							name = "tf_tests_api_key_app_change2"
+							description = "App to be attached on step 2"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -110,10 +112,12 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 				Config: `
 						resource "scaleway_iam_application" "main" {
 							name = "tf_tests_api_key_app_change"
+							description = "App to be attached on step 1"
 						}
 
 						resource "scaleway_iam_application" "main2" {
 							name = "tf_tests_api_key_app_change2"
+							description = "App to be attached on step 2"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
@@ -142,7 +146,7 @@ func TestAccApiKey_Expires(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	expiresAt := time.Date(2025, time.September, 20, 11, 22, 0, 0, time.UTC).Format("2006-01-02T15:04:05Z")
+	expiresAt := time.Date(2025, time.September, 30, 11, 22, 0, 0, time.UTC).Format("2006-01-02T15:04:05Z")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
