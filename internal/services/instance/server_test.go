@@ -2023,6 +2023,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 				ImportState:  true,
 				ImportStateIdFunc: func(state *terraform.State) (string, error) {
 					serverID := state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID
+
 					pnicID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
 					if !exists {
 						return "", errors.New("private_network.0.pnic_id not found")
@@ -2066,7 +2067,9 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 						if !exists {
 							return errors.New("private_network.0.pnic_id not found")
 						}
+
 						localizedPNICID := state.RootModule().Resources["scaleway_instance_private_nic.pnic"].Primary.ID
+
 						_, pnicID, _, err := zonal.ParseNestedID(localizedPNICID)
 						if err != nil {
 							return err

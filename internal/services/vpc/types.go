@@ -39,7 +39,7 @@ func expandSubnets(d *schema.ResourceData) (ipv4Subnets []scw.IPNet, ipv6Subnets
 		}
 	}
 
-	return
+	return ipv4Subnets, ipv6Subnets, err
 }
 
 func FlattenAndSortSubnets(sub any) (any, any) {

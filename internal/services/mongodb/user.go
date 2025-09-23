@@ -96,6 +96,7 @@ func ResourceUser() *schema.Resource {
 						if databaseName != "" && anyDatabase {
 							return errors.New("database_name and any_database are mutually exclusive")
 						}
+
 						if databaseName == "" && !anyDatabase {
 							return errors.New("either database_name or any_database must be specified")
 						}

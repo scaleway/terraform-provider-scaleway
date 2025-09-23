@@ -264,6 +264,7 @@ func ResourceInstance() *schema.Resource {
 			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 				if d.HasChange("version") {
 					v := d.Get("version").(string)
+
 					parts := strings.Split(v, ".")
 					if len(parts) > 2 {
 						majorMinor := parts[0] + "." + parts[1]
