@@ -732,7 +732,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
-						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group", "${count.index}" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base.0"),
