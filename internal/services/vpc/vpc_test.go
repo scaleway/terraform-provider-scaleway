@@ -8,8 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	vpcSDK "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
+	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
@@ -147,6 +150,52 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 					}
 				`,
 				ExpectError: regexp.MustCompile("routing cannot be disabled on this VPC"),
+			},
+		},
+	})
+}
+
+func TestAccVPC_ByIdentity(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          func() { acctest.PreCheck(t) },
+		ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:      testAccCheckVPCDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name   = "test-vpc-import"
+					  region = "fr-par"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCExists(tt, "scaleway_vpc.vpc01"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "name", "test-vpc-import"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "region", "fr-par"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectIdentity(
+						"scaleway_vpc.vpc01",
+						map[string]knownvalue.Check{
+							"id": knownvalue.StringFunc(func(s string) error {
+								if !validation.IsUUID(s) {
+									return fmt.Errorf("identity.id is not a valid UUID: %s", s)
+								}
+
+								return nil
+							}),
+							"region": knownvalue.StringExact("fr-par"),
+						},
+					),
+				},
+			},
+			{
+				ResourceName:    "scaleway_vpc.vpc01",
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
 			},
 		},
 	})
