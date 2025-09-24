@@ -13,12 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const (
-	appendUserAgentEnvVar            = "TF_APPEND_USER_AGENT"
 	CredentialsSourceEnvironment     = "Environment variable"
 	CredentialsSourceDefault         = "Default"
 	CredentialsSourceActiveProfile   = "Active Profile in config.yaml"
@@ -197,7 +197,7 @@ type Config struct {
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
 	userAgent := fmt.Sprintf("terraform-provider/%s terraform/%s", providerVersion, terraformVersion)
 
-	if appendUserAgent := os.Getenv(appendUserAgentEnvVar); appendUserAgent != "" {
+	if appendUserAgent := os.Getenv(env.AppendUserAgent); appendUserAgent != "" {
 		userAgent += " " + appendUserAgent
 	}
 
