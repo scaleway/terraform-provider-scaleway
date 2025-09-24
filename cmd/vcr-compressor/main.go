@@ -7,7 +7,7 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
-	"gopkg.in/dnaeon/go-vcr.v3/cassette"
+	"gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 )
 
 var transientStates = map[string]bool{

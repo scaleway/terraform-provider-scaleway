@@ -729,7 +729,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
-						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group", "${count.index}" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base.0"),
@@ -2206,6 +2206,8 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 }
 
 func TestGetEndOfServiceDate(t *testing.T) {
+	t.Skip("There are currently no server-type with a scheduled End Of Life")
+
 	tt := acctest.NewTestTools(t)
 
 	client := meta.ExtractScwClient(tt.Meta)
