@@ -185,3 +185,10 @@ tool (
 	github.com/katbyte/terrafmt
 	gotest.tools/gotestsum
 )
+
+ignore (
+	./docs
+	./examples
+	./scripts
+	./templates
+)
