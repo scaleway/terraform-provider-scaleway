@@ -5,6 +5,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -22,11 +23,11 @@ var (
 )
 
 func init() {
-	testDomainPtr := flag.String("test-domain", os.Getenv("TF_TEST_DOMAIN"), "Test domain")
+	testDomainPtr := flag.String("test-domain", os.Getenv(env.TestDomain), "Test domain")
 	if testDomainPtr != nil && *testDomainPtr != "" {
 		TestDomain = *testDomainPtr
 	} else {
-		logging.L.Infof("environment variable TF_TEST_DOMAIN is required")
+		logging.L.Infof("environment variable %s is required", env.TestDomain)
 
 		return
 	}
@@ -43,18 +44,18 @@ func init() {
 	}
 
 	if isReserved {
-		logging.L.Warningf("TF_TEST_DOMAIN cannot be a Scaleway required domain. Please use another one.")
+		logging.L.Warningf("%s cannot be a Scaleway required domain. Please use another one.", env.TestDomain)
 
 		return
 	}
 
 	logging.L.Infof("start domain record test with domain: %s", TestDomain)
 
-	testDomainZonePtr := flag.String("test-domain-zone", os.Getenv("TF_TEST_DOMAIN_ZONE"), "Test domain zone")
+	testDomainZonePtr := flag.String("test-domain-zone", os.Getenv(env.TestDomainZone), "Test domain zone")
 	if testDomainZonePtr != nil && *testDomainZonePtr != "" {
 		TestDomainZone = *testDomainZonePtr
 	} else {
-		logging.L.Infof("environment variable TF_TEST_DOMAIN_ZONE is required")
+		logging.L.Infof("environment variable %s is required", env.TestDomainZone)
 
 		return
 	}
