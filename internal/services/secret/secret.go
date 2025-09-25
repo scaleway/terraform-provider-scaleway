@@ -84,6 +84,7 @@ func ResourceSecret() *schema.Resource {
 				Type:     schema.TypeString,
 				Description: func() string {
 					var t secret.SecretType
+
 					secretTypes := t.Values()
 
 					return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)

@@ -124,6 +124,7 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 						if !exists {
 							return errors.New("failed to find resource")
 						}
+
 						name, exists := topic.Primary.Attributes["name"]
 						if !exists {
 							return errors.New("failed to find atttribute")
