@@ -471,7 +471,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		req.PlacementGroup = types.ExpandStringPtr(zonal.ExpandID(placementGroupID).ID)
 	}
 
-	if adminPasswordEncryptionSSHKeyID, ok := d.GetOk("admin_password_encryption_key_ssh_id"); ok {
+	if adminPasswordEncryptionSSHKeyID, ok := d.GetOk("admin_password_encryption_ssh_key_id"); ok {
 		req.AdminPasswordEncryptionSSHKeyID = types.ExpandStringPtr(adminPasswordEncryptionSSHKeyID)
 	}
 
