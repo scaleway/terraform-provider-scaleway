@@ -1,6 +1,6 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
@@ -185,4 +185,11 @@ tool (
 	github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	github.com/katbyte/terrafmt
 	gotest.tools/gotestsum
+)
+
+ignore (
+	./docs
+	./examples
+	./scripts
+	./templates
 )
