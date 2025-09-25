@@ -303,7 +303,17 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
     - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
 
-- `default_pool` - (Deprecated) See below.
+- `pod_cidr` - (Optional) The subnet used for the Pod CIDR.
+
+~> **Important:** Changes to this field will recreate a new resource.
+
+- `service_cidr` - (Optional) The subnet used for the Service CIDR.
+
+~> **Important:** Changes to this field will recreate a new resource.
+
+- `service_dns_ip` - (Optional) The IP used for the DNS Service. If unset, defaults to Service CIDR's network + 10.
+
+~> **Important:** Changes to this field will recreate a new resource.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
