@@ -2,18 +2,26 @@ package acctest_test
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
+
+const servicesDir = "../services"
 
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
@@ -35,16 +43,16 @@ func exceptionsCassettesCases() map[string]struct{} {
 }
 
 // getTestFiles returns a map of cassettes files
-func getTestFiles() (map[string]struct{}, error) {
+func getTestFiles(includeExceptions bool) (map[string]struct{}, error) {
 	filesMap := make(map[string]struct{})
 	exceptions := exceptionsCassettesCases()
 
-	err := filepath.WalkDir("../services", func(path string, _ fs.DirEntry, _ error) error {
-		isCassette := strings.Contains(path, "cassette")
-		_, isException := exceptions[path]
-
-		if isCassette && !isException {
-			filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
+	err := filepath.WalkDir(servicesDir, func(path string, _ fs.DirEntry, _ error) error {
+		if isCassette := strings.Contains(path, "cassette"); isCassette {
+			_, isException := exceptions[path]
+			if !isException || includeExceptions {
+				filesMap[fileNameWithoutExtSuffix(path)] = struct{}{}
+			}
 		}
 
 		return nil
@@ -57,7 +65,7 @@ func getTestFiles() (map[string]struct{}, error) {
 }
 
 func TestAccCassettes_Validator(t *testing.T) {
-	paths, err := getTestFiles()
+	paths, err := getTestFiles(false)
 	require.NoError(t, err)
 
 	for path := range paths {
@@ -128,4 +136,77 @@ func isTransientStateError(i *cassette.Interaction) bool {
 	}
 
 	return scwError.Type == "transient_state"
+}
+
+func listAccTestFunctions() (map[string]string, error) {
+	fset := token.NewFileSet()
+	testFuncs := map[string]string{}
+
+	err := filepath.WalkDir(servicesDir, func(path string, _ fs.DirEntry, _ error) error {
+		if strings.HasSuffix(path, "_test.go") {
+			pkgFolder := filepath.Base(filepath.Dir(path))
+
+			node, err := parser.ParseFile(fset, path, nil, 0)
+			if err != nil {
+				return err
+			}
+
+			for _, decl := range node.Decls {
+				if fn, ok := decl.(*ast.FuncDecl); ok {
+					if strings.HasPrefix(fn.Name.Name, "Test") && fn.Name.Name != "TestMain" && fn.Recv == nil {
+						expectedCassettePath := fmt.Sprintf("%s/%s", servicesDir, acctest.BuildCassetteName(fn.Name.Name, pkgFolder, ".cassette"))
+						testFuncs[expectedCassettePath] = fmt.Sprintf("%s/%s", pkgFolder, fn.Name.Name)
+					}
+				}
+			}
+		}
+
+		return nil
+	})
+
+	return testFuncs, err
+}
+
+func TestAccCassettes_CheckOrphans(t *testing.T) {
+	// List actual cassettes
+	actualCassettesPaths, err := getTestFiles(true)
+	if err != nil {
+		t.Fatalf("Failed to list cassettes: %v", err)
+	}
+
+	// List actual acceptance tests functions and their expected cassettes' paths
+	expectedCassettesPaths, err := listAccTestFunctions()
+	if err != nil {
+		t.Fatalf("Failed to list acceptance tests: %v", err)
+	}
+
+	testWithNoCassetteErrs := []string(nil)
+	cassetteWithNoTestErrs := []error(nil)
+
+	// Look for tests with no matching cassette
+	for expectedCassettePath, testName := range expectedCassettesPaths {
+		if _, ok := actualCassettesPaths[expectedCassettePath]; !ok {
+			testWithNoCassetteErrs = append(testWithNoCassetteErrs, fmt.Sprintf("- %s has no matching cassette", testName))
+		}
+	}
+
+	// Look for cassettes with no matching test
+	for actualCassettePath := range actualCassettesPaths {
+		if _, ok := expectedCassettesPaths[actualCassettePath]; !ok {
+			cassetteWithNoTestErrs = append(cassetteWithNoTestErrs, fmt.Errorf("+ cassette [%s] has no matching test", actualCassettePath))
+		}
+	}
+
+	// Print results:
+	// If a cassette has no test, it should result in an error, but if a test has no cassette, it should only result in
+	// a warning (e.g. for tests that are currently skipped and which cassette had to be removed because of a 500, or else)
+	sort.Strings(testWithNoCassetteErrs)
+	t.Log("WARNING:\n", strings.Join(testWithNoCassetteErrs, "\n"))
+
+	if len(cassetteWithNoTestErrs) > 0 {
+		sort.Slice(cassetteWithNoTestErrs, func(i, j int) bool {
+			return cassetteWithNoTestErrs[i].Error() < cassetteWithNoTestErrs[j].Error()
+		})
+		t.Error(errors.Join(cassetteWithNoTestErrs...))
+	}
 }
