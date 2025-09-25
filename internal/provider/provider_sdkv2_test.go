@@ -40,10 +40,10 @@ func TestAccProvider_InstanceIPZones(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"prod": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaProd})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaProd})(), nil
 				},
 				"dev": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaDev})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaDev})(), nil
 				},
 			}
 		}(),
@@ -96,10 +96,10 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"prod": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaProd})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaProd})(), nil
 				},
 				"dev": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaDev})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaDev})(), nil
 				},
 			}
 		}(),

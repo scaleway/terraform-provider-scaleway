@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -286,12 +287,14 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
 	}
 
-	if v, ok := d.GetOk("region"); ok {
-		req.Region = scw.Region(v.(string))
+	rawConfigRegion, diags := meta.ExtractRawConfigString(d, "region")
+	if diags == nil && rawConfigRegion != "" {
+		req.Region = scw.Region(rawConfigRegion)
 	}
 
-	if v, ok := d.GetOk("zone"); ok {
-		req.Zone = scw.Zone(v.(string))
+	rawConfigZone, diags := meta.ExtractRawConfigString(d, "zone")
+	if diags == nil && rawConfigZone != "" {
+		req.Region = scw.Region(rawConfigRegion)
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
