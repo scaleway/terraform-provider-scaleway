@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -46,7 +47,17 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
+		// If no recording is happening, the delay to retry to interactions should be 0
 		tmp := 0 * time.Second
+		transport.DefaultWaitRetryInterval = &tmp
+	} else if os.Getenv(env.RetryDelay) != "" {
+		// Overriding the delay interval is helpful to reduce the amount of requests performed while waiting for a ressource to be available
+		tmp, err := time.ParseDuration(os.Getenv(env.RetryDelay))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("delay retry set to: %v", tmp)
 		transport.DefaultWaitRetryInterval = &tmp
 	}
 
