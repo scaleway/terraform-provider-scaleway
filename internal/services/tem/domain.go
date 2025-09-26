@@ -109,6 +109,21 @@ func ResourceDomain() *schema.Resource {
 				Computed:    true,
 				Description: "DMARC record for the domain, as should be recorded in the DNS zone",
 			},
+			"dkim_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "DKIM name for the domain, as should be recorded in the DNS zone",
+			},
+			"spf_value": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Complete SPF record value for the domain, as should be recorded in the DNS zone",
+			},
+			"mx_config": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "MX record configuration for the domain blackhole",
+			},
 			"smtp_host": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -243,12 +258,27 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
 
-	if domain.Records != nil && domain.Records.Dmarc != nil {
-		_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
-		_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
+	if domain.Records != nil {
+		// DMARC
+		if domain.Records.Dmarc != nil {
+			_ = d.Set("dmarc_name", domain.Records.Dmarc.Name)
+			_ = d.Set("dmarc_config", domain.Records.Dmarc.Value)
+		} else {
+			_ = d.Set("dmarc_name", "")
+			_ = d.Set("dmarc_config", "")
+		}
+
+		// TODO: These fields will be available in a future SDK version
+		// DKIM, SPF, and MX records will be added to DomainRecords
+		_ = d.Set("dkim_name", "")
+		_ = d.Set("spf_value", "")
+		_ = d.Set("mx_config", "")
 	} else {
 		_ = d.Set("dmarc_name", "")
 		_ = d.Set("dmarc_config", "")
+		_ = d.Set("dkim_name", "")
+		_ = d.Set("spf_value", "")
+		_ = d.Set("mx_config", "")
 	}
 
 	_ = d.Set("smtp_host", tem.SMTPHost)
