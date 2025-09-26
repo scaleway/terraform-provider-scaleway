@@ -206,6 +206,8 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 	if len(updatedAttributes) > 0 {
 		for attributeName, attributeValue := range updatedAttributes {
+			attributeName := attributeName   // capture loop variable
+			attributeValue := attributeValue // capture loop variable
 			_, err := snsClient.SetTopicAttributes(ctx, &sns.SetTopicAttributesInput{
 				AttributeName:  scw.StringPtr(attributeName),
 				AttributeValue: &attributeValue,

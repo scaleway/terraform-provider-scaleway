@@ -297,6 +297,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		for _, nicID := range privateNICIDs {
+			nicID := nicID // capture loop variable
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceType: &resourceType,
 				ResourceID:   &nicID,

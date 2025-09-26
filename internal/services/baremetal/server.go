@@ -551,6 +551,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
+		privateNetworkID := privateNetworkID // capture loop variable
 		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
 			ResourceType:     &resourceType,

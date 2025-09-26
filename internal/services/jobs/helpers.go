@@ -163,6 +163,7 @@ func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []
 	secretConfigs := []*jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
 
 	for _, parsedSecretRef := range jobSecrets {
+		parsedSecretRef := parsedSecretRef // capture loop variable
 		secretConfig := &jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
 
 		secretConfigs = append(secretConfigs, secretConfig)
@@ -220,12 +221,14 @@ func DiffJobDefinitionSecrets(oldSecretRefs, newSecretRefs []JobDefinitionSecret
 	// hash the new and old secret sets
 	oldSecretRefsMap := make(map[int]JobDefinitionSecret, len(oldSecretRefs))
 	for _, secret := range oldSecretRefs {
+		secret := secret // capture loop variable
 		oldSecretRefsMap[hashJobDefinitionSecret(&secret)] = secret
 	}
 
 	newSecretRefsMap := make(map[int]JobDefinitionSecret, len(newSecretRefs))
 
 	for _, secret := range newSecretRefs {
+		secret := secret // capture loop variable
 		if err := validateJobDefinitionSecret(&secret); err != nil {
 			return toCreate, toDelete, err
 		}

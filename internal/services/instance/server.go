@@ -897,6 +897,7 @@ You can check the full list of compatible server types:
 	}
 
 	for _, nicID := range privateNICIDs {
+		nicID := nicID // capture loop variable
 		opts := &ipam.GetResourcePrivateIPsOptions{
 			ResourceType: &resourceType,
 			ResourceID:   &nicID,

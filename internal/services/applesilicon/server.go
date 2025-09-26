@@ -309,6 +309,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	authorized := true
 
 	for _, privateNetworkID := range privateNetworkIDs {
+		privateNetworkID := privateNetworkID // capture loop variable
 		resourceType := ipamAPI.ResourceTypeAppleSiliconPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
 			ResourceType:     &resourceType,

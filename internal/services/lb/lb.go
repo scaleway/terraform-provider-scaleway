@@ -363,6 +363,7 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	resourceType := ipamAPI.ResourceTypeLBServer
 
 	for _, privateNetworkID := range privateNetworkIDs {
+		privateNetworkID := privateNetworkID // capture loop variable
 		opts := &ipam.GetResourcePrivateIPsOptions{
 			ResourceType:     &resourceType,
 			PrivateNetworkID: &privateNetworkID,

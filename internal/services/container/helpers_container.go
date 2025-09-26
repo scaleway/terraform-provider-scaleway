@@ -499,6 +499,7 @@ func filterSecretEnvsToPatch(oldEnv []*container.Secret, newEnv []*container.Sec
 
 	// delete
 	for _, env := range oldEnv {
+		env := env // capture loop variable
 		if !slices.ContainsFunc(newEnv, func(s *container.Secret) bool {
 			return s.Key == env.Key
 		}) {

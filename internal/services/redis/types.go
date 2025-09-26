@@ -127,11 +127,13 @@ func flattenPrivateNetwork(endpoints []*redis.Endpoint) (any, bool) {
 
 		serviceIps := []any(nil)
 		for _, ip := range pn.ServiceIPs {
+			ip := ip // capture loop variable
 			serviceIps = append(serviceIps, ip.String())
 		}
 
 		ips := []any(nil)
 		for _, ip := range endpoint.IPs {
+			ip := ip // capture loop variable
 			ips = append(ips, ip.String())
 		}
 

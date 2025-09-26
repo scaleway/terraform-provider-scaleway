@@ -495,6 +495,7 @@ func deleteMarkerBucket(ctx context.Context, conn *s3.Client, bucketName string,
 	var nObject int64
 
 	for _, deleteMarkerEntry := range page.DeleteMarkers {
+		deleteMarkerEntry := deleteMarkerEntry // capture loop variable
 		pool.AddTask(func() error {
 			deleteMarkerKey := aws.ToString(deleteMarkerEntry.Key)
 			deleteMarkerVersionsID := aws.ToString(deleteMarkerEntry.VersionId)
@@ -517,6 +518,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 	var nObject int64
 
 	for _, objectVersion := range page.Versions {
+		objectVersion := objectVersion // capture loop variable
 		pool.AddTask(func() error {
 			objectKey := aws.ToString(objectVersion.Key)
 			objectVersionID := aws.ToString(objectVersion.VersionId)
