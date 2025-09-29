@@ -305,15 +305,18 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
 - `pod_cidr` - (Optional) The subnet used for the Pod CIDR.
 
-~> **Important:** Changes to this field will recreate a new resource.
+~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
+unsetting it to go back to the default value will not have any effect.
 
 - `service_cidr` - (Optional) The subnet used for the Service CIDR.
 
-~> **Important:** Changes to this field will recreate a new resource.
+~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
+unsetting it to go back to the default value will not have any effect.
 
 - `service_dns_ip` - (Optional) The IP used for the DNS Service. If unset, defaults to Service CIDR's network + 10.
 
-~> **Important:** Changes to this field will recreate a new resource.
+~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
+unsetting it to go back to the default value will not have any effect.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
