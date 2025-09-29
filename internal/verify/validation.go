@@ -1,4 +1,4 @@
-package locality
+package verify
 
 import (
 	"github.com/hashicorp/go-cty/cty"

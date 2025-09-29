@@ -3,7 +3,7 @@ package zonal
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 // ComputedSchema returns a standard schema for a zone
@@ -32,6 +32,6 @@ func Schema() *schema.Schema {
 		Optional:         true,
 		ForceNew:         true,
 		Computed:         true,
-		ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(AllZones(), "zone"),
+		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllZones(), "zone"),
 	}
 }
