@@ -271,9 +271,14 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -282,9 +287,14 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -327,14 +337,20 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -344,14 +360,20 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -378,14 +400,20 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -412,14 +440,20 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {

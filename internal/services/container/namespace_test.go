@@ -283,7 +283,11 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network main {}
+					resource scaleway_vpc main {}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource scaleway_container_namespace main {}
 
@@ -300,7 +304,11 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network main {}
+					resource scaleway_vpc main {}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource scaleway_container_namespace main {
 						activate_vpc_integration = true

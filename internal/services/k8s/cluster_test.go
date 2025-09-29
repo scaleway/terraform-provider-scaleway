@@ -653,10 +653,16 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 
 func testAccCheckK8SClusterConfigAutoscaler(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
@@ -682,9 +688,14 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigAutoscalerChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"

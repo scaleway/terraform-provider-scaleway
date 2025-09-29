@@ -861,9 +861,14 @@ resource "scaleway_k8s_pool" "placement_group_2" {
   zone               = scaleway_instance_placement_group.placement_group.zone
 }
 
+resource "scaleway_vpc" "main" {
+	region = "nl-ams"
+}
+
 resource "scaleway_vpc_private_network" "placement_group" {
 	name = "test-pool-placement-group"
 	region = "nl-ams"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "placement_group_2" {

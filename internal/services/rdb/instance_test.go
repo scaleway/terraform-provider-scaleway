@@ -330,8 +330,11 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_rdb_instance main {
@@ -362,11 +365,16 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep ipam config
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					resource scaleway_rdb_instance main {
@@ -398,11 +406,16 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change ipam config -> static
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					locals {
@@ -437,11 +450,16 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep static config
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					locals {
@@ -477,8 +495,11 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change static config -> ipam
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					resource scaleway_rdb_instance main {

@@ -426,11 +426,16 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
@@ -456,11 +461,16 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
@@ -511,11 +521,16 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
