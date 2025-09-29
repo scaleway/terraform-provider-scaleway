@@ -64,11 +64,20 @@ func ResourceCluster() *schema.Resource {
 				Description: "The version of the cluster",
 			},
 			"cni": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The CNI plugin of the cluster",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.CNI](),
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The CNI plugin of the cluster",
+				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+					var cniValues []k8s.CNI
+
+					cniStringValues := []string(nil)
+					for _, cniValue := range cniValues {
+						cniStringValues = append(cniStringValues, cniValue.String())
+					}
+
+					return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
+				},
 			},
 			"tags": {
 				Type: schema.TypeList,
