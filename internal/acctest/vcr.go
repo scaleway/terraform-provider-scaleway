@@ -62,14 +62,11 @@ func removeKeyRecursive(m map[string]any, key string) {
 	}
 }
 
-// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
-func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
-	t.Helper()
-
+func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
-	fileName := strings.ReplaceAll(t.Name(), "/", "-")
+	fileName := strings.ReplaceAll(testName, "/", "-")
 
 	fileName = strcase.ToBashArg(fileName)
 
@@ -80,6 +77,13 @@ func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	fileName = strings.TrimPrefix(fileName, "test-acc-")
 
 	return filepath.Join(pkgFolder, "testdata", fileName)
+}
+
+// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
+func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
+	t.Helper()
+
+	return BuildCassetteName(t.Name(), pkgFolder, suffix)
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies
