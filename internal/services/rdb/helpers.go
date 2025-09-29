@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -118,4 +119,15 @@ func LoadBalancerDiffSuppressFunc(k, oldValue, newValue string, d *schema.Resour
 	}
 
 	return false
+}
+
+// retryRDBReadOnTransient wraps a read action to handle transient_state (HTTP 409) by
+// waiting for the instance to be ready, then retrying the action.
+func retryRDBReadOnTransient[T any](ctx context.Context, api *rdb.API, region scw.Region, instanceID string, action func() (T, error)) (T, error) {
+	return transport.RetryOnTransientStateError(
+		action,
+		func() (*rdb.Instance, error) {
+			return waitForRDBInstance(ctx, api, region, instanceID, defaultInstanceTimeout)
+		},
+	)
 }
