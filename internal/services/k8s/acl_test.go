@@ -209,7 +209,11 @@ func TestAccACL_RulesOrder(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_private_network" "acl_order" {}
+					resource scaleway_vpc main {}
+
+					resource "scaleway_vpc_private_network" "acl_order" {
+						vpc_id = scaleway_vpc.main.id
+					}
 			
 					resource "scaleway_k8s_cluster" "acl_order" {
 						name = "%s"
@@ -261,7 +265,11 @@ func TestAccACL_RulesOrder(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc_private_network" "acl_order" {}
+					resource scaleway_vpc main {}
+
+					resource "scaleway_vpc_private_network" "acl_order" {
+						vpc_id = scaleway_vpc.main.id
+					}
 			
 					resource "scaleway_k8s_cluster" "acl_order" {
 						name = "%s"

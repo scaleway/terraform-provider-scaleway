@@ -372,9 +372,13 @@ func TestAccPool_Size(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "test-pool-size" {
 					name = "test-pool-size"
+					vpc_id = scaleway_vpc.main.id
 				}
+
 				resource "scaleway_k8s_cluster" "test-pool-size" {
 				  name    = "test-pool-size"
 				  version = "%s"
@@ -400,9 +404,13 @@ func TestAccPool_Size(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "test-pool-size" {
 					name = "test-pool-size"
+					vpc_id = scaleway_vpc.main.id
 				}
+
 				resource "scaleway_k8s_cluster" "test-pool-size" {
 				  name    = "test-pool-size"
 				  version = "%s"
@@ -452,8 +460,11 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "public_ip" {
 				  name       = "test-k8s-public-ip"
+					vpc_id = scaleway_vpc.main.id
 				}
 			
 				resource "scaleway_k8s_cluster" "public_ip" {
@@ -485,8 +496,11 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "public_ip" {
 				  name       = "test-k8s-public-ip"
+					vpc_id = scaleway_vpc.main.id
 				}
 
 				resource "scaleway_vpc_public_gateway" "public_ip" {
@@ -755,8 +769,11 @@ resource "scaleway_k8s_pool" "default" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "default" ]
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "minimal" {
 	name = "test-pool-minimal"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "minimal" {
@@ -797,8 +814,11 @@ resource "scaleway_k8s_pool" "default" {
 	wait_for_pool_ready = true
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "minimal" {
 	name = "test-pool-wait"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "minimal" {
@@ -828,8 +848,11 @@ resource "scaleway_k8s_pool" "placement_group" {
     size               = 1
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "placement_group" {
 	name = "test-pool-placement-group"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "placement_group" {
@@ -928,8 +951,11 @@ resource "scaleway_k8s_pool" "upgrade_policy" {
 	}
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "upgrade_policy" {
 	name = "test-pool-upgrade-policy"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "upgrade_policy" {
@@ -957,8 +983,11 @@ resource "scaleway_k8s_pool" "kubelet_args" {
 	}
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "kubelet_args" {
 	name = "test-pool-kubelet-args"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "kubelet_args" {
@@ -984,8 +1013,11 @@ resource "scaleway_k8s_pool" "zone" {
 	zone = "%s"
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "zone" {
 	name = "test-pool-zone"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "zone" {
