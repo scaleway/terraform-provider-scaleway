@@ -663,6 +663,7 @@ func testAccCheckK8SClusterConfigAutoscaler(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
   region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscaler"
 }
 
 resource "scaleway_vpc_private_network" "autoscaler" {
@@ -698,6 +699,7 @@ func testAccCheckK8SClusterConfigAutoscalerChange(version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
   region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscalerChange"
 }
 
 resource "scaleway_vpc_private_network" "autoscaler" {
@@ -729,7 +731,9 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigOIDC(version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDC"
+}
 
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
@@ -756,7 +760,9 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterConfigOIDCChange(version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDCChange"
+}
 
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
@@ -783,7 +789,9 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterAutoUpgrade"
+}
 
 resource "scaleway_vpc_private_network" "auto_upgrade" {
   name       = "test-auto-upgrade"
@@ -807,7 +815,9 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkLinked"
+}
 
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
@@ -827,7 +837,9 @@ resource "scaleway_k8s_cluster" "private_network" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkChange(version string) string {
 	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkChange"
+}
 
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"

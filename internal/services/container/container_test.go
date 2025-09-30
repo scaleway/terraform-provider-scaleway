@@ -648,7 +648,9 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
 
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"
@@ -679,7 +681,9 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
 
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"
@@ -729,7 +733,9 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
 
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"

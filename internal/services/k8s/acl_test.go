@@ -25,7 +25,9 @@ func TestAccACL_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccACL_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "acl_basic" {
 						vpc_id = scaleway_vpc.main.id
@@ -60,7 +62,9 @@ func TestAccACL_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccACL_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "acl_basic" {
 						vpc_id = scaleway_vpc.main.id
@@ -103,7 +107,9 @@ func TestAccACL_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccACL_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "acl_basic" {
 						vpc_id = scaleway_vpc.main.id
@@ -147,7 +153,9 @@ func TestAccACL_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccACL_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "acl_basic" {
 						vpc_id = scaleway_vpc.main.id
@@ -174,7 +182,9 @@ func TestAccACL_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccACL_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "acl_basic" {
 						vpc_id = scaleway_vpc.main.id

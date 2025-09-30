@@ -52,7 +52,9 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccVPCPrivateNetwork_Basic"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name =                             "%s"

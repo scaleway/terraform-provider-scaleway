@@ -167,7 +167,9 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc main {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
 
 				resource scaleway_vpc_private_network private_network {
 					vpc_id = scaleway_vpc.main.id
@@ -203,7 +205,9 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc main {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
 
 				resource scaleway_vpc_private_network private_network {
 					vpc_id = scaleway_vpc.main.id

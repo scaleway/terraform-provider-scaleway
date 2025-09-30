@@ -35,7 +35,7 @@ variable "machine_count" {
 
 # SCALEWAY VPC PRIVATE NETWORK
 resource scaleway_vpc "main" {
-    region = "fr-par"
+  region = "fr-par"
 }
 
 resource scaleway_vpc_private_network "pn" {

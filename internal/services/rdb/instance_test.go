@@ -330,7 +330,9 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
@@ -365,7 +367,9 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep ipam config
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
@@ -406,7 +410,9 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change ipam config -> static
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
@@ -450,7 +456,9 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep static config
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
@@ -495,7 +503,9 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change static config -> ipam
 			{
 				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"

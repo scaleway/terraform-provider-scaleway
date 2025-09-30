@@ -26,7 +26,9 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Basic"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Basic"
@@ -67,7 +69,9 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"
@@ -94,7 +98,9 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"
@@ -124,7 +130,9 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc main {}
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"

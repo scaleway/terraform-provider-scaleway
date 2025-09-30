@@ -848,7 +848,9 @@ resource "scaleway_k8s_pool" "placement_group" {
     size               = 1
 }
 
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigPlacementGroup"
+}
 
 resource "scaleway_vpc_private_network" "placement_group" {
 	name = "test-pool-placement-group"
@@ -885,6 +887,7 @@ resource "scaleway_k8s_pool" "placement_group_2" {
 }
 
 resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigPlacementGroupWithCustomZone"
 	region = "nl-ams"
 }
 
@@ -951,7 +954,9 @@ resource "scaleway_k8s_pool" "upgrade_policy" {
 	}
 }
 
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigUpgradePolicy"
+}
 
 resource "scaleway_vpc_private_network" "upgrade_policy" {
 	name = "test-pool-upgrade-policy"
@@ -983,7 +988,9 @@ resource "scaleway_k8s_pool" "kubelet_args" {
 	}
 }
 
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigKubeletArgs"
+}
 
 resource "scaleway_vpc_private_network" "kubelet_args" {
 	name = "test-pool-kubelet-args"
@@ -1013,7 +1020,9 @@ resource "scaleway_k8s_pool" "zone" {
 	zone = "%s"
 }
 
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigZone"
+}
 
 resource "scaleway_vpc_private_network" "zone" {
 	name = "test-pool-zone"
