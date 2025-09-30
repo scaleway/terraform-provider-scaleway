@@ -109,7 +109,9 @@ func TestAccCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_vpc" "main" {}
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
 
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"
@@ -144,7 +146,9 @@ resource "scaleway_k8s_cluster" "minimal" {
 			},
 			{
 				Config: fmt.Sprintf(`
-resource scaleway_vpc main {}
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
 
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"

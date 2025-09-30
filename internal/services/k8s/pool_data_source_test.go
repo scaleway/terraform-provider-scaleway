@@ -27,7 +27,9 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_vpc" "main" {}
+					resource "scaleway_vpc" "main" {
+						name = "TestAccDataSourcePool_Basic"
+					}
 
 					resource "scaleway_vpc_private_network" "main" {
 						name = "test-data-source-pool"
