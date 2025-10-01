@@ -52,10 +52,15 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccVPCPrivateNetwork_Basic"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name =                             "%s"
 						tags =                             ["tag0", "tag1"]
                         enable_default_route_propagation = true
+						vpc_id = scaleway_vpc.main.id
 					}
 				`, privateNetworkName),
 				Check: resource.ComposeTestCheckFunc(
@@ -94,7 +99,13 @@ func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 		CheckDestroy:      vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `resource scaleway_vpc_private_network main {}`,
+				Config: `
+					resource scaleway_vpc main {}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(
 						tt,
