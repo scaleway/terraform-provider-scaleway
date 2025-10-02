@@ -152,7 +152,7 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	}
 
 	_ = d.Set("cluster_id", regional.NewIDString(region, clusterID))
-	_ = d.Set("region", region)
+	_ = d.Set("region", acls.)
 	_ = d.Set("acl_rules", flattenACL(acls.Rules))
 
 	return nil

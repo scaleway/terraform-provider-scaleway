@@ -663,7 +663,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	_ = d.Set("read_replicas", []string{})
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", res.Region.String())
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
 

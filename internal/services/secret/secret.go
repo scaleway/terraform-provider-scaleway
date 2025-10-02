@@ -266,7 +266,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
 	_ = d.Set("version_count", int(versions.TotalCount))
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", secretResponse.Region.String())
 	_ = d.Set("project_id", secretResponse.ProjectID)
 	_ = d.Set("path", secretResponse.Path)
 	_ = d.Set("protected", secretResponse.Protected)

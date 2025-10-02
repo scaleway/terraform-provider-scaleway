@@ -204,7 +204,7 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	zonedID := datasource.NewZonedID(offer.ID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("offer_id", zonedID)
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", offer.zone)
 	_ = d.Set("name", offer.Name)
 	_ = d.Set("subscription_period", offer.SubscriptionPeriod)
 	_ = d.Set("include_disabled", !offer.Enable)

@@ -160,7 +160,7 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		_ = d.Set("size", int(*res.Size))
 	}
 
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region.String())
 
 	return nil
 }

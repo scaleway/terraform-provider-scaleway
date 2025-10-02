@@ -203,6 +203,7 @@ func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("updated_at", types.FlattenTime(model.UpdatedAt))
 	_ = d.Set("has_eula", model.HasEula)
 	_ = d.Set("nodes_support", flattenNodeSupport(model.NodesSupport))
+	_ = d.Set("region", model.Region.String())
 
 	return nil
 }

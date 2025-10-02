@@ -550,7 +550,7 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", cluster.Region.String())
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("type", cluster.Type)
 	_ = d.Set("organization_id", cluster.OrganizationID)

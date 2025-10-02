@@ -272,7 +272,7 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", response.reg string(region))
 	_ = d.Set("name", response.Name)
 	_ = d.Set("hub_id", response.HubID)
 	_ = d.Set("topic", response.Topic)

@@ -165,7 +165,7 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("name", res.Volume.Name)
 	_ = d.Set("organization_id", res.Volume.Organization)
 	_ = d.Set("project_id", res.Volume.Project)
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", res.Volume.Zone.String())
 	_ = d.Set("type", res.Volume.VolumeType.String())
 	_ = d.Set("tags", res.Volume.Tags)
 

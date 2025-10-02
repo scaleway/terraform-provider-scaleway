@@ -142,7 +142,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
 	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region.String())
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)

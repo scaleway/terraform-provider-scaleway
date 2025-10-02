@@ -172,7 +172,7 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("address", address)
 	_ = d.Set("prefix", prefix)
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", res.IP.Zone.String())
 	_ = d.Set("organization_id", res.IP.Organization)
 	_ = d.Set("project_id", res.IP.Project)
 	_ = d.Set("reverse", res.IP.Reverse)

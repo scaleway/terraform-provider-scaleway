@@ -229,7 +229,7 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", response.Region.String())
 	_ = d.Set("organization_id", response.OrganizationID)
 	_ = d.Set("project_id", response.ProjectID)
 	_ = d.Set("name", response.Name)

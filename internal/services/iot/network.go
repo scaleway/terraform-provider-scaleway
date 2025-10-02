@@ -135,7 +135,7 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("hub_id", regional.NewID(region, network.HubID).String())
 	_ = d.Set("created_at", network.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("topic_prefix", network.TopicPrefix)
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", network.string(region))
 
 	return nil
 }

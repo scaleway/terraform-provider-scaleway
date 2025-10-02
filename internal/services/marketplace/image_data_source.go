@@ -57,7 +57,7 @@ func DataSourceMarketplaceImageRead(ctx context.Context, d *schema.ResourceData,
 
 	zonedID := datasource.NewZonedID(image.ID, zone)
 	d.SetId(zonedID)
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", image.Zone.String())
 	_ = d.Set("label", image.Label)
 	_ = d.Set("instance_type", d.Get("instance_type").(string))
 	_ = d.Set("image_type", image.Type)

@@ -160,7 +160,7 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", res.SecurityGroup.Zone.String())
 	_ = d.Set("organization_id", res.SecurityGroup.Organization)
 	_ = d.Set("project_id", res.SecurityGroup.Project)
 	_ = d.Set("name", res.SecurityGroup.Name)
