@@ -43,7 +43,7 @@ func NewAPIWithRegionAndID(m any, id string) (*ipam.API, scw.Region, string, err
 	return ipamAPI, region, ID, err
 }
 
-func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+func DiffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema.ResourceData) bool {
 	parseIPOrCIDR := func(s string) net.IP {
 		if ip, _, err := net.ParseCIDR(s); err == nil {
 			return ip

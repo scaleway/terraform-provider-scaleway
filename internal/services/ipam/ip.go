@@ -38,7 +38,7 @@ func ResourceIP() *schema.Resource {
 				ForceNew:         true,
 				Description:      "Request a specific IP in the requested source pool",
 				ValidateFunc:     validation.IsIPAddress,
-				DiffSuppressFunc: diffSuppressFuncStandaloneIPandCIDR,
+				DiffSuppressFunc: DiffSuppressFuncStandaloneIPandCIDR,
 			},
 			"source": {
 				Type:        schema.TypeList,
