@@ -14,5 +14,10 @@ func main() {
 
 	path := os.Args[1]
 
-	acctest.CompressCassette(path)
+	report, err := acctest.CompressCassette(path)
+	if err != nil {
+		panic(err)
+	}
+
+	report.Print()
 }

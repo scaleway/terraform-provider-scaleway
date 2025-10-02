@@ -96,6 +96,15 @@ func (report *CompressReport) AddErrorLog(log string) {
 	report.ErrorLogs = append(report.ErrorLogs, log)
 }
 
+func (report *CompressReport) Print() {
+	log.Printf("On cassette: %s\n", report.Path)
+	log.Printf("%d skipped interactions\n", report.SkippedInteraction)
+
+	for _, msg := range report.ErrorLogs {
+		log.Println(msg)
+	}
+}
+
 func CompressCassette(path string) (CompressReport, error) {
 	inputCassette, err := cassette.Load(path)
 	if err != nil {
