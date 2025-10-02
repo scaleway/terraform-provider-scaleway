@@ -82,10 +82,18 @@ var transientStates = map[string]bool{
 }
 
 type CompressReport struct {
-	SkippedInteraction int
 	Path               string
 	Logs               []string
 	ErrorLogs          []string
+	SkippedInteraction int
+}
+
+func (report *CompressReport) AddLog(log string) {
+	report.Logs = append(report.Logs, log)
+}
+
+func (report *CompressReport) AddErrorLog(log string) {
+	report.ErrorLogs = append(report.ErrorLogs, log)
 }
 
 func CompressCassette(path string) (CompressReport, error) {
@@ -112,14 +120,14 @@ func CompressCassette(path string) (CompressReport, error) {
 		if requestMethod != "GET" {
 			transitioning = false
 
-			report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s is not a GET request. Recording it\n", i, path))
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s is not a GET request. Recording it\n", i, path))
 			outputCassette.AddInteraction(interaction)
 
 			continue
 		}
 
 		if responseBody == "" {
-			report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s got an empty response body. Recording it\n", i, path))
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s got an empty response body. Recording it\n", i, path))
 			outputCassette.AddInteraction(interaction)
 
 			continue
@@ -129,14 +137,14 @@ func CompressCassette(path string) (CompressReport, error) {
 
 		err := json.Unmarshal([]byte(responseBody), &m)
 		if err != nil {
-			report.ErrorLogs = append(report.ErrorLogs, fmt.Sprintf("Interaction %d in test %s have an error with unmarshalling response body: %v. Recording it\n", i, path, err))
+			report.AddErrorLog(fmt.Sprintf("Interaction %d in test %s have an error with unmarshalling response body: %v. Recording it\n", i, path, err))
 			outputCassette.AddInteraction(interaction)
 
 			continue
 		}
 
 		if m["status"] == nil {
-			report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s does not contain a status field. Recording it\n", i, path))
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s does not contain a status field. Recording it\n", i, path))
 			outputCassette.AddInteraction(interaction)
 
 			continue
@@ -146,10 +154,10 @@ func CompressCassette(path string) (CompressReport, error) {
 		// We test if the state is transient
 		if _, ok := transientStates[status]; ok {
 			if transitioning {
-				report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s is in a transient state while we are already in transitient state. No need to record it: %s\n", i, path, status))
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is in a transient state while we are already in transitient state. No need to record it: %s\n", i, path, status))
 				report.SkippedInteraction++
 			} else {
-				report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s is in a transient state: %s, Recording it\n", i, path, status))
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is in a transient state: %s, Recording it\n", i, path, status))
 
 				transitioning = true
 
@@ -157,11 +165,12 @@ func CompressCassette(path string) (CompressReport, error) {
 			}
 		} else {
 			if transitioning {
-				report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s is not in a transient state anymore: %s, Recording it\n", i, path, status))
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is not in a transient state anymore: %s, Recording it\n", i, path, status))
 				outputCassette.AddInteraction(interaction)
+
 				transitioning = false
 			} else {
-				report.Logs = append(report.Logs, fmt.Sprintf("Interaction %d in test %s is not in a transient state: %s, Recording it\n", i, path, status))
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is not in a transient state: %s, Recording it\n", i, path, status))
 				outputCassette.AddInteraction(interaction)
 			}
 		}
@@ -169,7 +178,7 @@ func CompressCassette(path string) (CompressReport, error) {
 
 	err = outputCassette.Save()
 	if err != nil {
-		return report, fmt.Errorf("error while saving file: %v", err)
+		return report, fmt.Errorf("error while saving file: %w", err)
 	}
 
 	return report, nil

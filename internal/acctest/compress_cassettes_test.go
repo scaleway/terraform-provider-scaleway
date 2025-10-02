@@ -17,8 +17,9 @@ func TestAccCassettes_Compressed(t *testing.T) {
 	for path := range paths {
 		g.Go(func() error {
 			report, errCompression := acctest.CompressCassette(path)
-			require.Nil(t, errCompression)
+			require.NoError(t, errCompression)
 			require.Zero(t, report.SkippedInteraction, "Issue with cassette: %s", report.Path)
+
 			return nil
 		})
 	}
