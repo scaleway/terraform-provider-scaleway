@@ -44,29 +44,17 @@ func NewAPIWithRegionAndID(m any, id string) (*ipam.API, scw.Region, string, err
 }
 
 func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-	oldIP, oldNet, errOld := net.ParseCIDR(oldValue)
-	if errOld != nil {
-		oldIP = net.ParseIP(oldValue)
+	parseIPOrCIDR := func(s string) net.IP {
+		if ip, _, err := net.ParseCIDR(s); err == nil {
+			return ip
+		}
+		return net.ParseIP(s)
 	}
 
-	newIP, newNet, errNew := net.ParseCIDR(newValue)
-	if errNew != nil {
-		newIP = net.ParseIP(newValue)
-	}
+	oldIP := parseIPOrCIDR(oldValue)
+	newIP := parseIPOrCIDR(newValue)
 
-	if oldIP != nil && newIP != nil && oldIP.Equal(newIP) {
-		return true
-	}
-
-	if oldNet != nil && newIP != nil && oldNet.Contains(newIP) {
-		return true
-	}
-
-	if newNet != nil && oldIP != nil && newNet.Contains(oldIP) {
-		return true
-	}
-
-	return false
+	return oldIP != nil && newIP != nil && oldIP.Equal(newIP)
 }
 
 type GetResourcePrivateIPsOptions struct {
