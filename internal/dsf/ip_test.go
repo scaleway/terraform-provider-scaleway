@@ -1,9 +1,9 @@
-package ipam_test
+package dsf_test
 
 import (
 	"testing"
 
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 )
 
 func TestDiffSuppress_IPAMIP(t *testing.T) {
@@ -77,7 +77,7 @@ func TestDiffSuppress_IPAMIP(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ipam.DiffSuppressFuncStandaloneIPandCIDR("", tt.oldValue, tt.newValue, nil)
+			got := dsf.DiffSuppressFuncStandaloneIPandCIDR("", tt.oldValue, tt.newValue, nil)
 			if got != tt.want {
 				t.Fatalf("diffSuppress(%q, %q) = %v, want %v", tt.oldValue, tt.newValue, got, tt.want)
 			}
