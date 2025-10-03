@@ -93,7 +93,7 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 
 	_ = d.Set("account_id", credentials.NatsAccountID)
 	_ = d.Set("name", credentials.Name)
-	_ = d.Set("region", region)
+	_ = d.Set("region", credentials)
 
 	return nil
 }

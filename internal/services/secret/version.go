@@ -131,7 +131,7 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
 	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", secretResponse.)
 
 	return nil
 }

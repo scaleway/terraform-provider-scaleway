@@ -124,7 +124,7 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("created_at", ip.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", ip.Zone.String())
 	_ = d.Set("tags", ip.Tags)
 	_ = d.Set("reverse", ip.Reverse)
 

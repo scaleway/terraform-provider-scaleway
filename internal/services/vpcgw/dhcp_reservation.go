@@ -149,7 +149,7 @@ func ResourceVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.
 	_ = d.Set("gateway_network_id", zonal.NewIDString(zone, entry.GatewayNetworkID))
 	_ = d.Set("created_at", entry.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", entry.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", entry.Zone.String())
 
 	return nil
 }

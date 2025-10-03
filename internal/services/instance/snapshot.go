@@ -199,6 +199,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Snapshot.Tags)
+	_ = d.Set("zone", snapshot.Snapshot.Zone.String())
 
 	return nil
 }

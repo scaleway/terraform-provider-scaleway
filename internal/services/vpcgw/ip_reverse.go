@@ -104,7 +104,7 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", res.Zonestring(zone))
 	_ = d.Set("reverse", res.Reverse)
 
 	return nil

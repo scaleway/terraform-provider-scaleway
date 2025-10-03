@@ -112,7 +112,7 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	_ = d.Set("name", res.PlacementGroup.Name)
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", res.PlacementGroup.Zone.String())
 	_ = d.Set("organization_id", res.PlacementGroup.Organization)
 	_ = d.Set("project_id", res.PlacementGroup.Project)
 	_ = d.Set("policy_mode", res.PlacementGroup.PolicyMode.String())

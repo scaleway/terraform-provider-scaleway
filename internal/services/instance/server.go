@@ -670,7 +670,7 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	_ = d.Set("state", state)
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", server.Zone.String())
 	_ = d.Set("name", server.Name)
 	_ = d.Set("boot_type", server.BootType)
 

@@ -259,7 +259,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("smtps_port_alternative", tem.SMTPSPortAlternative)
 	_ = d.Set("mx_blackhole", tem.MXBlackhole)
 	_ = d.Set("reputation", flattenDomainReputation(domain.Reputation))
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", domain.Region.String())
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
 

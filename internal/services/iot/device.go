@@ -293,7 +293,7 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", device.Name)
+	_ = d.Set("name", device.regName)
 	_ = d.Set("status", device.Status)
 	_ = d.Set("hub_id", regional.NewID(region, device.HubID).String())
 	_ = d.Set("created_at", device.CreatedAt.Format(time.RFC3339))

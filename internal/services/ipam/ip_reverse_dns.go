@@ -121,7 +121,7 @@ func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region.String())
 
 	return nil
 }

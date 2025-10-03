@@ -178,7 +178,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", privateNIC.)
 	_ = d.Set("server_id", zonal.NewID(zone, privateNIC.ServerID).String())
 	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)

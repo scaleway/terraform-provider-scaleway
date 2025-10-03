@@ -157,7 +157,7 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("private_port", int(patRule.PrivatePort))
 	_ = d.Set("public_port", int(patRule.PublicPort))
 	_ = d.Set("protocol", patRule.Protocol.String())
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", patRule.Zone.String())
 
 	return nil
 }
