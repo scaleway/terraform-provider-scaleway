@@ -28,24 +28,13 @@ var (
 	_ terraformResourceData = (*schema.ResourceDiff)(nil)
 )
 
-func ExtractRawConfigString(d terraformResourceData, field string) (string, diag.Diagnostics) {
-	rawConfig, diags := d.GetRawConfigAt(cty.GetAttrPath(field))
-	if diags == nil && rawConfig.IsKnown() && !rawConfig.IsNull() {
-		if rawConfig.AsString() != "" {
-			return rawConfig.AsString(), nil
-		}
-	}
-
-	return "", diags
-}
-
 // ExtractZone will try to guess the zone from the following:
 //   - zone field of the resource data
 //   - default zone from config
 func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
-	rawConfigZone, diags := ExtractRawConfigString(d, "zone")
-	if diags == nil && rawConfigZone != "" {
-		return scw.ParseZone(rawConfigZone)
+	rawConfigZone, ok := GetRawConfigForKey(d, "zone", cty.String)
+	if ok && rawConfigZone != "" {
+		return scw.ParseZone(rawConfigZone.(string))
 	}
 
 	rawZone, exist := d.GetOk("zone")
@@ -65,9 +54,9 @@ func ExtractZone(d terraformResourceData, m any) (scw.Zone, error) {
 //   - region field of the resource data
 //   - default region from config
 func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
-	rawConfigZone, diags := ExtractRawConfigString(d, "region")
-	if diags == nil && rawConfigZone != "" {
-		return scw.ParseRegion(rawConfigZone)
+	rawConfigZone, ok := GetRawConfigForKey(d, "region", cty.String)
+	if ok && rawConfigZone != "" {
+		return scw.ParseRegion(rawConfigZone.(string))
 	}
 
 	rawRegion, exist := d.GetOk("region")
@@ -88,9 +77,9 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 //   - default region given in argument
 //   - default region from config
 func ExtractRegionWithDefault(d terraformResourceData, m any, defaultRegion scw.Region) (scw.Region, error) {
-	rawConfigZone, diags := ExtractRawConfigString(d, "region")
-	if diags == nil && rawConfigZone != "" {
-		return scw.ParseRegion(rawConfigZone)
+	rawConfigZone, ok := GetRawConfigForKey(d, "region", cty.String)
+	if ok && rawConfigZone != "" {
+		return scw.ParseRegion(rawConfigZone.(string))
 	}
 
 	rawRegion, exist := d.GetOk("region")
@@ -193,7 +182,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 
 // GetRawConfigForKey returns the value for a specific key in the user's raw configuration, which can be useful on resources' update
 // The value for the key to look for must be a primitive type (bool, string, number) and the expected type of the value should be passed as the ty parameter
-func GetRawConfigForKey(d *schema.ResourceData, key string, ty cty.Type) (any, bool) {
+func GetRawConfigForKey(d terraformResourceData, key string, ty cty.Type) (any, bool) {
 	rawConfig := d.GetRawConfig()
 	if rawConfig.IsNull() {
 		return nil, false
