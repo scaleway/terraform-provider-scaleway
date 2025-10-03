@@ -33,6 +33,7 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
+		Identity:      blockIdentity(),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -151,6 +152,11 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	d.SetId(zonal.NewIDString(zone, snapshot.ID))
 
+	diags := applySnapshotIdentity(d, snapshot.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -201,6 +207,28 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	_ = d.Set("tags", snapshot.Tags)
+
+	diags := applySnapshotIdentity(d, snapshot.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
+	return nil
+}
+
+func applySnapshotIdentity(d *schema.ResourceData, snapshotID string, zone scw.Zone) diag.Diagnostics {
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("snapshot_id", snapshotID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("zone", zone); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -281,4 +309,24 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	return nil
+}
+
+func blockIdentity() *schema.ResourceIdentity {
+	return &schema.ResourceIdentity{
+		Version: 0,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"snapshot_id": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Snapshot ID",
+				},
+				"zone": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Zone ID",
+				},
+			}
+		},
+	}
 }
