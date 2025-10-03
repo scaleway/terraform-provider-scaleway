@@ -66,7 +66,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		Meta: m,
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			"scaleway": func() (*schema.Provider, error) {
-				return provider.Provider(&provider.Config{Meta: m})(), nil
+				return provider.SDKProvider(&provider.Config{Meta: m})(), nil
 			},
 		},
 		Cleanup: cleanup,
