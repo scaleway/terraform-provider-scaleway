@@ -292,6 +292,7 @@ func Provider(config *Config) plugin.ProviderFunc {
 				"scaleway_instance_security_group":             instance.DataSourceSecurityGroup(),
 				"scaleway_instance_server":                     instance.DataSourceServer(),
 				"scaleway_instance_servers":                    instance.DataSourceServers(),
+				"scaleway_instance_server_type":                instance.DataSourceServerType(),
 				"scaleway_instance_snapshot":                   instance.DataSourceSnapshot(),
 				"scaleway_instance_volume":                     instance.DataSourceVolume(),
 				"scaleway_iot_device":                          iot.DataSourceDevice(),
