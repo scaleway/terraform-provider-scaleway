@@ -34,9 +34,14 @@ variable "machine_count" {
 }
 
 # SCALEWAY VPC PRIVATE NETWORK
+resource scaleway_vpc "main" {
+  region = "fr-par"
+}
+
 resource scaleway_vpc_private_network "pn" {
   name = "myprivatenetwork"
   zone = "fr-par-1"
+  vpc_id = scaleway_vpc.main.id
 }
 
 # SCALEWAY VPC VIRTUAL MACHINES

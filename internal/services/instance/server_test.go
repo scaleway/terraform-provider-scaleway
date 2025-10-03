@@ -1118,8 +1118,14 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network internal {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1146,8 +1152,14 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1172,12 +1184,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1201,12 +1220,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1241,12 +1267,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1980,7 +2013,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2004,7 +2043,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2037,7 +2082,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{ // We import private nic as a separate resource to trigger its deletion.
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2085,7 +2136,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2110,7 +2167,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"

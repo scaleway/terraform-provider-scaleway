@@ -23,11 +23,12 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "TestAccDataSourceVPCPublicGatewayPATRule_Basic"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "pn_test_network"
+						vpc_id = scaleway_vpc.vpc01.id
 						ipv4_subnet {
 							subnet = "172.16.32.0/22"
 						}
@@ -41,11 +42,12 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "TestAccDataSourceVPCPublicGatewayPATRule_Basic"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "pn_test_network"
+						vpc_id = scaleway_vpc.vpc01.id
 						ipv4_subnet {
 							subnet = "172.16.32.0/22"
 						}

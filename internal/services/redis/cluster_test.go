@@ -167,7 +167,13 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
+
+				resource scaleway_vpc_private_network private_network {
+					vpc_id = scaleway_vpc.main.id
+				}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_ipam"
@@ -199,7 +205,13 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
+
+				resource scaleway_vpc_private_network private_network {
+					vpc_id = scaleway_vpc.main.id
+				}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_ipam"

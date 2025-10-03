@@ -109,9 +109,15 @@ func TestAccCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
+
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
@@ -140,9 +146,15 @@ resource "scaleway_k8s_cluster" "minimal" {
 			},
 			{
 				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
+
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
@@ -653,10 +665,17 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 
 func testAccCheckK8SClusterConfigAutoscaler(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscaler"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
@@ -682,10 +701,17 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigAutoscalerChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscalerChange"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
@@ -709,9 +735,15 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigOIDC(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDC"
+}
+
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
@@ -732,9 +764,15 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterConfigOIDCChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDCChange"
+}
+
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
@@ -755,9 +793,15 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterAutoUpgrade"
+}
+
 resource "scaleway_vpc_private_network" "auto_upgrade" {
   name       = "test-auto-upgrade"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "auto_upgrade" {
 	cni = "calico"
 	version = "%s"
@@ -775,9 +819,15 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkLinked"
+}
+
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"
 	version = "%s"
@@ -791,12 +841,20 @@ resource "scaleway_k8s_cluster" "private_network" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkChange"
+}
+
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_vpc_private_network" "private_network_2" {
   name       = "other-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"
 	version = "%s"
@@ -833,8 +891,11 @@ func testAccCheckK8SClusterTypeChange(clusterType, cni, version string) string {
 
 	if isKapsule {
 		config = `
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "type-change" {
   name       = "test-type-change"
+  vpc_id = scaleway_vpc.main.id
 }`
 	}
 

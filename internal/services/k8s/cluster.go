@@ -69,9 +69,9 @@ func ResourceCluster() *schema.Resource {
 				ForceNew:    true,
 				Description: "The CNI plugin of the cluster",
 				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					var cniValues []k8s.CNI
+					cniValues := k8s.CNI("").Values()
 
-					cniStringValues := []string(nil)
+					cniStringValues := make([]string, 0, len(cniValues))
 					for _, cniValue := range cniValues {
 						cniStringValues = append(cniStringValues, cniValue.String())
 					}

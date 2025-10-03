@@ -23,10 +23,6 @@ resource "scaleway_instance_volume" "server_volume" {
 The following arguments are supported:
 
 - `type` - (Required) The type of the volume. The possible values are: `l_ssd` (Local SSD), `scratch` (Local Scratch SSD).
-
-~> **Important:** Volumes with type `b_ssd` (Block SSD) are deprecated and cannot be managed using the `scaleway_instance_volume` resource anymore. Please use the `scaleway_block_volume` resource instead.
-If you want to migrate existing volumes, you can visit [this page](https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/) for more information.
-
 - `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb` and `from_snapshot_id` should be specified.
 - `from_snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb` and `from_snapshot_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
