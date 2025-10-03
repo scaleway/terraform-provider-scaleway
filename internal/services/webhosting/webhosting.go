@@ -303,7 +303,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	dnsRecordsResponse, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
-		Domain: webhostingResponse.Domain,
+		Domain: *webhostingResponse.Domain, //nolint:staticcheck // deprecated in SDK, kept until domain_info fully propagated
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -314,7 +314,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("tags", webhostingResponse.Tags)
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.Offer.ID))
-	_ = d.Set("domain", webhostingResponse.Domain)
+	_ = d.Set("domain", webhostingResponse.Domain) //nolint:staticcheck // deprecated in SDK, exported for backward compatibility
 	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(webhostingResponse.UpdatedAt))
 	_ = d.Set("status", webhostingResponse.Status.String())
