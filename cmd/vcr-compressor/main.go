@@ -16,7 +16,7 @@ func main() {
 
 	report, err := acctest.CompressCassette(path)
 	if err != nil {
-		panic(err)
+		log.Fatalf("%s", err)
 	}
 
 	report.Print()
