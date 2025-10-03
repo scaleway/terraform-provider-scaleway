@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -16,6 +17,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
@@ -39,11 +41,15 @@ var transientStates = map[string]bool{
 
 	container.ContainerStatusCreating.String(): true,
 	container.ContainerStatusDeleting.String(): true,
+	container.ContainerStatusPending.String():  true,
+
+	domain.DNSZoneStatusPending.String(): true,
 
 	file.FileSystemStatusCreating.String(): true,
 
 	function.FunctionStatusCreating.String(): true,
 	function.FunctionStatusDeleting.String(): true,
+	function.FunctionStatusPending.String():  true,
 
 	instance.ServerStateStarting.String(): true,
 	instance.ServerStateStopping.String(): true,
@@ -79,6 +85,8 @@ var transientStates = map[string]bool{
 	redis.ClusterStatusProvisioning.String(): true,
 	redis.ClusterStatusDeleting.String():     true,
 	redis.ClusterStatusInitializing.String(): true,
+
+	tem.DomainStatusPending.String(): true,
 }
 
 type CompressReport struct {
