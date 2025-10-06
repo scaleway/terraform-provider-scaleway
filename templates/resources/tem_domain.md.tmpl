@@ -85,7 +85,7 @@ data "scaleway_tem_domain" "my_domain" {
   name = var.domain_name
 }
 
-resource "gitlab_project_variable" "smtp_host" {
+resource "gitlab_project_variable" "smtp_auth_user" {
   key   = "SMTP_AUTH_USER"
   value = data.scaleway_tem_domain.my_domain.smtps_auth_user
 }
