@@ -13,9 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var (
-	_ action.Action = (*ServerAction)(nil)
-)
+var _ action.Action = (*ServerAction)(nil)
 
 type ServerAction struct {
 	instanceAPI *instance.API
@@ -46,8 +44,8 @@ func (a *ServerAction) Metadata(ctx context.Context, req action.MetadataRequest,
 type ServerActionModel struct {
 	ServerID types.String `tfsdk:"server_id"`
 	Zone     types.String `tfsdk:"zone"`
-	Wait     types.Bool   `tfsdk:"wait"`
 	Action   types.String `tfsdk:"action"`
+	Wait     types.Bool   `tfsdk:"wait"`
 }
 
 func NewServerAction() action.Action {
@@ -91,6 +89,7 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 	var data ServerActionModel
 	// Read action config data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -105,6 +104,7 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 			"error in server action",
 			fmt.Sprintf("%s", err))
 	}
+
 	if data.Wait.ValueBool() {
 		_, errWait := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 			ServerID: data.ServerID.String(),
