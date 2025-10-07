@@ -4,18 +4,24 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-type ServerReboot struct {
+var (
+	_ action.Action = (*ServerAction)(nil)
+)
+
+type ServerAction struct {
 	instanceAPI *instance.API
 }
 
-func (a *ServerReboot) Configure(ctx context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
+func (a *ServerAction) Configure(ctx context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -33,23 +39,38 @@ func (a *ServerReboot) Configure(ctx context.Context, req action.ConfigureReques
 	a.instanceAPI = instance.NewAPI(client)
 }
 
-func (a *ServerReboot) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
+func (a *ServerAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_instance_server_reboot"
 }
 
-type ServerRebootModel struct {
+type ServerActionModel struct {
 	ServerID types.String `tfsdk:"server_id"`
 	Zone     types.String `tfsdk:"zone"`
 	Wait     types.Bool   `tfsdk:"wait"`
+	Action   types.String `tfsdk:"action"`
 }
 
-func NewServerReboot() action.Action {
-	return &ServerReboot{}
+func NewServerAction() action.Action {
+	return &ServerAction{}
 }
 
-func (a *ServerReboot) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
+func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
+	actionsValues := instance.ServerAction("").Values()
+
+	actionStringValues := make([]string, 0, len(actionsValues))
+	for _, actionValue := range actionsValues {
+		actionStringValues = append(actionStringValues, actionValue.String())
+	}
+
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"action": schema.StringAttribute{
+				Required:    true,
+				Description: "Type of action to perform",
+				Validators: []validator.String{
+					stringvalidator.OneOfCaseInsensitive(actionStringValues...),
+				},
+			},
 			"server_id": schema.StringAttribute{
 				Required:    true,
 				Description: "Server id to reboot",
@@ -66,8 +87,8 @@ func (a *ServerReboot) Schema(ctx context.Context, req action.SchemaRequest, res
 	}
 }
 
-func (a *ServerReboot) Invoke(ctx context.Context, req action.InvokeRequest, resp *action.InvokeResponse) {
-	var data ServerRebootModel
+func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, resp *action.InvokeResponse) {
+	var data ServerActionModel
 	// Read action config data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -77,7 +98,7 @@ func (a *ServerReboot) Invoke(ctx context.Context, req action.InvokeRequest, res
 	_, err := a.instanceAPI.ServerAction(&instance.ServerActionRequest{
 		ServerID: data.ServerID.String(),
 		Zone:     scw.Zone(data.Zone.String()),
-		Action:   instance.ServerActionReboot,
+		Action:   instance.ServerAction(data.Action.String()),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(

@@ -84,7 +84,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	var res []func() action.Action
-	res = append(res, instance.NewServerReboot)
+	res = append(res, instance.NewServerAction)
 	return res
 }
 
