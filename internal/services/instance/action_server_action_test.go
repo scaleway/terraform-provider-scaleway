@@ -21,18 +21,19 @@ func TestAccActionServerReboot_Basic(t *testing.T) {
 						name = "test-terraform-datasource-private-nic"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
-					}`,
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-datasource-private-nic"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
+
+					  lifecycle {
+						action_trigger {
+						  events  = [after_create]
+						  actions = [action.scaleway_instance_server_action.main]
+						}
+					  }
 					}
 
-					action "scaleway_instance_server_reboot" "main" {
-						server_id = scaleway_instance_server.main.id
+					action "scaleway_instance_server_action" "main" {
+						config {
+							server_id = scaleway_instance_server.main.id
+						}
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(),
