@@ -18,6 +18,7 @@ import (
 func TestAccContainer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -135,6 +136,7 @@ func TestAccContainer_Basic(t *testing.T) {
 func TestAccContainer_Env(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -278,6 +280,7 @@ func TestAccContainer_WithIMG(t *testing.T) {
 func TestAccContainer_HTTPOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -334,6 +337,7 @@ func TestAccContainer_HTTPOption(t *testing.T) {
 func TestAccContainer_Sandbox(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -404,6 +408,7 @@ func TestAccContainer_Sandbox(t *testing.T) {
 func TestAccContainer_HealthCheck(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -458,6 +463,7 @@ func TestAccContainer_HealthCheck(t *testing.T) {
 func TestAccContainer_ScalingOption(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -547,6 +553,7 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 func TestAccContainer_CommandAndArgs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -629,6 +636,7 @@ func TestAccContainer_CommandAndArgs(t *testing.T) {
 func TestAccContainer_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -640,11 +648,17 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-container-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_container_namespace main {
@@ -667,11 +681,17 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-container-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_container_namespace main {
@@ -713,11 +733,18 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccContainer_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-container-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-container-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_container_namespace main {
@@ -797,7 +824,6 @@ func isContainerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				ContainerID: id,
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container (%s) still exists", rs.Primary.ID)
 			}

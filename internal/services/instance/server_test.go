@@ -23,6 +23,7 @@ import (
 func TestAccServer_Minimal1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -79,6 +80,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 func TestAccServer_Minimal2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -202,6 +204,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 func TestAccServer_RootVolume_Boot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -252,6 +255,7 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -288,6 +292,7 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -349,6 +354,7 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_State1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -418,6 +424,7 @@ func TestAccServer_State1(t *testing.T) {
 func TestAccServer_State2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -468,6 +475,7 @@ func TestAccServer_State2(t *testing.T) {
 func TestAccServer_UserData_WithCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -501,6 +509,7 @@ EOF
 func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -554,6 +563,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -632,6 +642,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -699,6 +710,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 func TestAccServer_WithPlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -739,6 +751,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 func TestAccServer_Ipv6(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -783,6 +796,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 func TestAccServer_Basic2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -813,6 +827,7 @@ func TestAccServer_Basic2(t *testing.T) {
 func TestAccServer_WithReservedIP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -979,6 +994,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 func TestAccServer_AlterTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1022,6 +1038,7 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1056,6 +1073,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1092,6 +1110,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 func TestAccServer_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1099,8 +1118,14 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network internal {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1127,8 +1152,14 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1153,12 +1184,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1182,12 +1220,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1222,12 +1267,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1246,6 +1298,7 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 func TestAccServer_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1294,6 +1347,7 @@ func TestAccServer_Migrate(t *testing.T) {
 func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1336,6 +1390,7 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 func TestAccServer_CustomDiffImage(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1490,6 +1545,7 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 func TestAccServer_IPs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1574,6 +1630,7 @@ func TestAccServer_IPs(t *testing.T) {
 func TestAccServer_IPRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1620,6 +1677,7 @@ func TestAccServer_IPRemoved(t *testing.T) {
 func TestAccServer_IPsRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1669,6 +1727,7 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 func TestAccServer_BlockExternal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1817,6 +1876,7 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1869,6 +1929,7 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1944,6 +2005,7 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -1951,7 +2013,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -1975,7 +2043,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -1994,6 +2068,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 				ImportState:  true,
 				ImportStateIdFunc: func(state *terraform.State) (string, error) {
 					serverID := state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID
+
 					pnicID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
 					if !exists {
 						return "", errors.New("private_network.0.pnic_id not found")
@@ -2007,7 +2082,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{ // We import private nic as a separate resource to trigger its deletion.
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2037,7 +2118,9 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 						if !exists {
 							return errors.New("private_network.0.pnic_id not found")
 						}
+
 						localizedPNICID := state.RootModule().Resources["scaleway_instance_private_nic.pnic"].Primary.ID
+
 						_, pnicID, _, err := zonal.ParseNestedID(localizedPNICID)
 						if err != nil {
 							return err
@@ -2053,7 +2136,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2078,7 +2167,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2178,6 +2273,7 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 
 func TestGetEndOfServiceDate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
+
 	client := meta.ExtractScwClient(tt.Meta)
 	defer tt.Cleanup()
 

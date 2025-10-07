@@ -29,7 +29,9 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
+
 			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
+
 			metaDefault, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
@@ -38,7 +40,7 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"default": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaDefault})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaDefault})(), nil
 				},
 			}
 		}(),
@@ -81,8 +83,10 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
+
 			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			t.Setenv("SCW_PROFILE", "other")
+
 			metaOther, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
@@ -91,7 +95,7 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"other": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaOther})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaOther})(), nil
 				},
 			}
 		}(),
@@ -134,9 +138,11 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
+
 			t.Setenv("SCW_CONFIG_PATH", "./testfixture/test_config.yaml")
 			t.Setenv("SCW_PROFILE", "incomplete")
 			t.Setenv("SCW_DEFAULT_PROJECT_ID", "77777777-7777-7777-7777-777777777777")
+
 			metaMixed, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
 				HTTPClient:       tt.Meta.HTTPClient(),
@@ -145,7 +151,7 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 
 			return map[string]func() (*schema.Provider, error){
 				"mixed": func() (*schema.Provider, error) {
-					return provider.Provider(&provider.Config{Meta: metaMixed})(), nil
+					return provider.SDKProvider(&provider.Config{Meta: metaMixed})(), nil
 				},
 			}
 		}(),

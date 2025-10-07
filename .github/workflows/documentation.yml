@@ -15,16 +15,12 @@ on:
       - .github/workflows/documentation.yml
       - docs/**
 
-env:
-  GO_VERSION: "1.24.0"
-  GO111MODULE: on
-
 jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: gaurav-nelson/github-action-markdown-link-check@1.0.17
+      - uses: actions/checkout@v5
+      - uses: tcort/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: 'yes'
           use-verbose-mode: 'yes'
@@ -34,7 +30,7 @@ jobs:
   markdown-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: avto-dev/markdown-lint@v1.5.0
         with:
           config: '.markdownlint.yml'
@@ -43,10 +39,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: stable
       - uses: actions/cache@v4
         continue-on-error: true
         timeout-minutes: 2
@@ -59,10 +55,12 @@ jobs:
   tfplugindocs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: stable
       - uses: hashicorp/setup-terraform@v3
       - run: go tool tfplugindocs validate
+      - run: rm -fr ./docs
       - run: go tool tfplugindocs generate
+      - run: git diff --exit-code docs

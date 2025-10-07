@@ -139,7 +139,6 @@ func isNatsCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NatsCredentialsID: id,
 				Region:            region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq nats credentials (%s) still exists", rs.Primary.ID)
 			}

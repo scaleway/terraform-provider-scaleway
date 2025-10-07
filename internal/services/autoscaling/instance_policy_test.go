@@ -170,7 +170,6 @@ func testAccCheckInstancePolicyDestroy(tt *acctest.TestTools) resource.TestCheck
 				PolicyID: id,
 				Zone:     zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance policy (%s) still exists", rs.Primary.ID)
 			}

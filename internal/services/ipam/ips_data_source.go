@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func DataSourceIPs() *schema.Resource {
@@ -71,7 +72,12 @@ func DataSourceIPs() *schema.Resource {
 				Optional:    true,
 				Description: "IP Type (ipv4, ipv6) to filter for",
 			},
-			"zonal":           zonal.Schema(),
+			"zonal": {
+				Type:             schema.TypeString,
+				Description:      "The zone you want to filter upon",
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
+			},
 			"region":          regional.Schema(),
 			"project_id":      account.ProjectIDSchema(),
 			"organization_id": account.OrganizationIDSchema(),

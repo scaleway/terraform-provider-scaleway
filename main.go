@@ -25,8 +25,8 @@ func main() {
 	}
 
 	providers := []func() tfprotov5.ProviderServer{
-		// Provider using terraform-plugin-sdk
-		provider.Provider(provider.DefaultConfig())().GRPCProvider,
+		// SDKProvider using terraform-plugin-sdk
+		provider.SDKProvider(provider.DefaultConfig())().GRPCProvider,
 	}
 
 	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)

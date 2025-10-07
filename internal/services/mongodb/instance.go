@@ -20,7 +20,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -216,6 +215,24 @@ func ResourceInstance() *schema.Resource {
 				},
 				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
 			},
+			"snapshot_schedule_frequency_hours": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Snapshot schedule frequency in hours",
+			},
+			"snapshot_schedule_retention_days": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Computed:    true,
+				Description: "Snapshot schedule retention in days",
+			},
+			"is_snapshot_schedule_enabled": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable or disable automatic snapshot scheduling",
+			},
 			"settings": {
 				Type:        schema.TypeMap,
 				Description: "Map of settings to define for the instance.",
@@ -247,6 +264,7 @@ func ResourceInstance() *schema.Resource {
 			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 				if d.HasChange("version") {
 					v := d.Get("version").(string)
+
 					parts := strings.Split(v, ".")
 					if len(parts) > 2 {
 						majorMinor := parts[0] + "." + parts[1]
@@ -263,7 +281,7 @@ func ResourceInstance() *schema.Resource {
 }
 
 func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, zone, err := newAPIWithZone(d, m)
+	mongodbAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -361,9 +379,14 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	d.SetId(regional.NewIDString(region, res.ID))
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = configureSnapshotScheduleOnCreate(ctx, d, mongodbAPI, region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -401,6 +424,12 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("tags", instance.Tags)
 	_ = d.Set("created_at", instance.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("region", instance.Region.String())
+
+	if instance.SnapshotSchedule != nil {
+		_ = d.Set("snapshot_schedule_frequency_hours", int(instance.SnapshotSchedule.FrequencyHours))
+		_ = d.Set("snapshot_schedule_retention_days", int(instance.SnapshotSchedule.RetentionDays))
+		_ = d.Set("is_snapshot_schedule_enabled", instance.SnapshotSchedule.Enabled)
+	}
 
 	if instance.Volume != nil {
 		_ = d.Set("volume_type", instance.Volume.Type)
@@ -554,6 +583,10 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
+	if updateSnapshotScheduleFields(d, req) {
+		shouldUpdateInstance = true
+	}
+
 	if shouldUpdateInstance {
 		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 		if err != nil {
@@ -688,6 +721,64 @@ func ResourceInstanceDelete(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	d.SetId("")
+
+	return nil
+}
+
+func updateSnapshotScheduleFields(d *schema.ResourceData, req *mongodb.UpdateInstanceRequest) bool {
+	hasUpdates := false
+
+	if d.HasChange("snapshot_schedule_frequency_hours") {
+		req.SnapshotScheduleFrequencyHours = types.ExpandUint32Ptr(d.Get("snapshot_schedule_frequency_hours"))
+		hasUpdates = true
+	}
+
+	if d.HasChange("snapshot_schedule_retention_days") {
+		req.SnapshotScheduleRetentionDays = types.ExpandUint32Ptr(d.Get("snapshot_schedule_retention_days"))
+		hasUpdates = true
+	}
+
+	if d.HasChange("is_snapshot_schedule_enabled") {
+		req.IsSnapshotScheduleEnabled = types.ExpandBoolPtr(d.Get("is_snapshot_schedule_enabled"))
+		hasUpdates = true
+	}
+
+	return hasUpdates
+}
+
+func configureSnapshotScheduleOnCreate(ctx context.Context, d *schema.ResourceData, mongodbAPI *mongodb.API, region scw.Region, instanceID string) error {
+	mustUpdate := false
+	updateReq := &mongodb.UpdateInstanceRequest{
+		Region:     region,
+		InstanceID: instanceID,
+	}
+
+	if snapshotFrequency, ok := d.GetOk("snapshot_schedule_frequency_hours"); ok {
+		updateReq.SnapshotScheduleFrequencyHours = scw.Uint32Ptr(uint32(snapshotFrequency.(int)))
+		mustUpdate = true
+	}
+
+	if snapshotRetention, ok := d.GetOk("snapshot_schedule_retention_days"); ok {
+		updateReq.SnapshotScheduleRetentionDays = scw.Uint32Ptr(uint32(snapshotRetention.(int)))
+		mustUpdate = true
+	}
+
+	if snapshotEnabled, ok := d.GetOk("is_snapshot_schedule_enabled"); ok {
+		updateReq.IsSnapshotScheduleEnabled = scw.BoolPtr(snapshotEnabled.(bool))
+		mustUpdate = true
+	}
+
+	if mustUpdate {
+		_, err := mongodbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+
+		_, err = waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

@@ -50,13 +50,13 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.24.0
+          go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
       # This allows quick fixes without code changes when tests break due to external factors.
       #
@@ -110,14 +110,14 @@ jobs:
             echo "Pattern: $SKIP_PATTERN"
             echo ""
             echo "Tests that will be skipped:"
-            go test -list=. ./internal/services/${{ matrix.products }} | grep -E "$SKIP_PATTERN" || true
+            go tool gotestsum --format github-actions -- -list=. ./internal/services/${{ matrix.products }} | grep -E "$SKIP_PATTERN" || true
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             echo ""
 
-            go test -v ./internal/services/${{ matrix.products }} -timeout=2h -skip="$SKIP_PATTERN"
+            go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=2h -skip="$SKIP_PATTERN"
             TEST_RESULT=$?
           else
-            go test -v ./internal/services/${{ matrix.products }} -timeout=2h
+            go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=2h
             TEST_RESULT=$?
           fi
 
@@ -147,15 +147,15 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.24.0
+          go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Run scwconfig tests
-        run: go test -v ./internal/services/scwconfig -timeout=2m
+        run: go tool gotestsum --format github-actions -- ./internal/services/scwconfig -timeout=2m
         env:
           TF_LOG: DEBUG
           TF_ACC: 1

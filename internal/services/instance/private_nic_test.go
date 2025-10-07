@@ -1,20 +1,24 @@
 package instance_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
 func TestAccPrivateNIC_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -22,8 +26,13 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Basic"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Basic"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "server01" {
@@ -52,6 +61,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 func TestAccPrivateNIC_Tags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -59,8 +69,13 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "server01" {
@@ -83,8 +98,13 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "server01" {
@@ -110,8 +130,13 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccPrivateNIC_Tags"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "TestAccScalewayInstancePrivateNIC_Tags"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "server01" {
@@ -140,6 +165,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -230,35 +256,36 @@ func isPrivateNICPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 
 func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_private_nic" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, instancechecks.DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_instance_private_nic" {
+					continue
+				}
+
+				api, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
+					ServerID:     outerID, // parent
+					PrivateNicID: innerID, // child
+					Zone:         zone,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("instance private NIC (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			instanceAPI, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = instanceAPI.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
-				ServerID:     outerID,
-				PrivateNicID: innerID,
-				Zone:         zone,
-			})
-
-			if err == nil {
-				return fmt.Errorf(
-					"instanceSDK private NIC %s still exists",
-					rs.Primary.ID,
-				)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

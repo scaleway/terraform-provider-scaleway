@@ -178,7 +178,7 @@ func ExpandGroupMembershipID(id string) (groupID string, userID string, applicat
 		applicationID = elems[2]
 	}
 
-	return
+	return groupID, userID, applicationID, err
 }
 
 func MakeGroupRequest(ctx context.Context, api *iam.API, request any) (*iam.Group, error) {

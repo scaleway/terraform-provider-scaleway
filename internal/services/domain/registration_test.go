@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 )
@@ -191,7 +192,6 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 				domainResp, getErr := registrarAPI.GetDomain(&domainSDK.RegistrarAPIGetDomainRequest{
 					Domain: domainName,
 				})
-
 				if getErr != nil {
 					return fmt.Errorf("failed to get details for domain %s: %w", domainName, getErr)
 				}
@@ -269,9 +269,9 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 // If `TF_UPDATE_CASSETTES=true`, the test is **only executed if `TF_ACC_DOMAIN_REGISTRATION=true`**.
 // Otherwise, the test is skipped to prevent unintended domain reservations.
 func shouldBeSkipped() bool {
-	if os.Getenv("TF_UPDATE_CASSETTES") == "false" {
+	if os.Getenv(env.UpdateCassettes) == "false" {
 		return false
 	}
 
-	return os.Getenv("TF_ACC_DOMAIN_REGISTRATION") != "true"
+	return os.Getenv(env.AccDomainRegistration) != "true"
 }

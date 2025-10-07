@@ -35,8 +35,10 @@ func DataSourceWebhosting() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Schema:      dsSchema,
-		ReadContext: DataSourceWebhostingRead,
+		Schema:                            dsSchema,
+		ReadContext:                       DataSourceWebhostingRead,
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 
@@ -62,7 +64,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any
 
 		foundDomain, err := datasource.FindExact(
 			res.Hostings,
-			func(s *webhosting.HostingSummary) bool { return s.Domain == hostingDomain },
+			func(s *webhosting.HostingSummary) bool { return *s.Domain == hostingDomain }, //nolint:staticcheck // deprecated in SDK, used until domain_info available here
 			hostingDomain,
 		)
 		if err != nil {

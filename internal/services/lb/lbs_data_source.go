@@ -165,6 +165,7 @@ func DataSourceLbs() *schema.Resource {
 							Computed: true,
 							Description: func() string {
 								var t lb.SSLCompatibilityLevel
+
 								values := t.Values()
 
 								return fmt.Sprintf("SSL compatibility level possible values are %s", values)

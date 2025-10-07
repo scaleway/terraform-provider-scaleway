@@ -26,8 +26,13 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccDataSourceCluster_Basic"
+					}
+
 					resource "scaleway_vpc_private_network" "main" {
 						name = "test-data-source-cluster"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_k8s_cluster" "main" {

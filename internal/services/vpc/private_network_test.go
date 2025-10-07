@@ -52,10 +52,15 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccVPCPrivateNetwork_Basic"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name =                             "%s"
 						tags =                             ["tag0", "tag1"]
                         enable_default_route_propagation = true
+						vpc_id = scaleway_vpc.main.id
 					}
 				`, privateNetworkName),
 				Check: resource.ComposeTestCheckFunc(
@@ -87,13 +92,20 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:      vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `resource scaleway_vpc_private_network main {}`,
+				Config: `
+					resource scaleway_vpc main {}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					vpcchecks.IsPrivateNetworkPresent(
 						tt,
@@ -109,6 +121,7 @@ func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 func TestAccVPCPrivateNetwork_Subnets(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,
@@ -214,6 +227,7 @@ func TestAccVPCPrivateNetwork_Subnets(t *testing.T) {
 func TestAccVPCPrivateNetwork_OneSubnet(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
 		ProviderFactories: tt.ProviderFactories,

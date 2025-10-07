@@ -1,11 +1,13 @@
 package k8s_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
@@ -96,6 +98,7 @@ func TestAccPool_Basic(t *testing.T) {
 func TestAccPool_Wait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:          func() { acctest.PreCheck(t) },
@@ -369,9 +372,13 @@ func TestAccPool_Size(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "test-pool-size" {
 					name = "test-pool-size"
+					vpc_id = scaleway_vpc.main.id
 				}
+
 				resource "scaleway_k8s_cluster" "test-pool-size" {
 				  name    = "test-pool-size"
 				  version = "%s"
@@ -397,9 +404,13 @@ func TestAccPool_Size(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "test-pool-size" {
 					name = "test-pool-size"
+					vpc_id = scaleway_vpc.main.id
 				}
+
 				resource "scaleway_k8s_cluster" "test-pool-size" {
 				  name    = "test-pool-size"
 				  version = "%s"
@@ -449,8 +460,11 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "public_ip" {
 				  name       = "test-k8s-public-ip"
+					vpc_id = scaleway_vpc.main.id
 				}
 			
 				resource "scaleway_k8s_cluster" "public_ip" {
@@ -482,8 +496,11 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+				resource "scaleway_vpc" "main" {}
+
 				resource "scaleway_vpc_private_network" "public_ip" {
 				  name       = "test-k8s-public-ip"
+					vpc_id = scaleway_vpc.main.id
 				}
 
 				resource "scaleway_vpc_public_gateway" "public_ip" {
@@ -677,25 +694,28 @@ func testAccCheckK8SPoolDestroy(tt *acctest.TestTools, n string) resource.TestCh
 			return nil
 		}
 
-		k8sAPI, region, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
+		ctx := context.Background()
 
-		_, err = k8sAPI.WaitForPool(&k8sSDK.WaitForPoolRequest{
-			Region: region,
-			PoolID: poolID,
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			api, region, poolID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			if err != nil {
+				return retry.NonRetryableError(err)
+			}
+
+			_, err = api.GetPool(&k8sSDK.GetPoolRequest{
+				Region: region,
+				PoolID: poolID,
+			})
+
+			switch {
+			case err == nil:
+				return retry.RetryableError(fmt.Errorf("k8s pool (%s) still exists", rs.Primary.ID))
+			case httperrors.Is404(err):
+				return nil
+			default:
+				return retry.NonRetryableError(err)
+			}
 		})
-		// If no error resource still exist
-		if err == nil {
-			return fmt.Errorf("pool (%s) still exists", rs.Primary.ID)
-		}
-		// Unexpected api error we return it
-		if !httperrors.Is404(err) {
-			return err
-		}
-
-		return nil
 	}
 }
 
@@ -749,8 +769,11 @@ resource "scaleway_k8s_pool" "default" {
 	tags = [ "terraform-test", "scaleway_k8s_cluster", "default" ]
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "minimal" {
 	name = "test-pool-minimal"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "minimal" {
@@ -791,8 +814,11 @@ resource "scaleway_k8s_pool" "default" {
 	wait_for_pool_ready = true
 }
 
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "minimal" {
 	name = "test-pool-wait"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "minimal" {
@@ -822,8 +848,13 @@ resource "scaleway_k8s_pool" "placement_group" {
     size               = 1
 }
 
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigPlacementGroup"
+}
+
 resource "scaleway_vpc_private_network" "placement_group" {
 	name = "test-pool-placement-group"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "placement_group" {
@@ -855,9 +886,15 @@ resource "scaleway_k8s_pool" "placement_group_2" {
   zone               = scaleway_instance_placement_group.placement_group.zone
 }
 
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigPlacementGroupWithCustomZone"
+	region = "nl-ams"
+}
+
 resource "scaleway_vpc_private_network" "placement_group" {
 	name = "test-pool-placement-group"
 	region = "nl-ams"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "placement_group_2" {
@@ -917,8 +954,13 @@ resource "scaleway_k8s_pool" "upgrade_policy" {
 	}
 }
 
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigUpgradePolicy"
+}
+
 resource "scaleway_vpc_private_network" "upgrade_policy" {
 	name = "test-pool-upgrade-policy"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "upgrade_policy" {
@@ -946,8 +988,13 @@ resource "scaleway_k8s_pool" "kubelet_args" {
 	}
 }
 
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigKubeletArgs"
+}
+
 resource "scaleway_vpc_private_network" "kubelet_args" {
 	name = "test-pool-kubelet-args"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "kubelet_args" {
@@ -973,8 +1020,13 @@ resource "scaleway_k8s_pool" "zone" {
 	zone = "%s"
 }
 
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigZone"
+}
+
 resource "scaleway_vpc_private_network" "zone" {
 	name = "test-pool-zone"
+	vpc_id = scaleway_vpc.main.id
 }
 
 resource "scaleway_k8s_cluster" "zone" {

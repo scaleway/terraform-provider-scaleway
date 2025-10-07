@@ -3,7 +3,6 @@ package ipam
 import (
 	"context"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -41,32 +40,6 @@ func NewAPIWithRegionAndID(m any, id string) (*ipam.API, scw.Region, string, err
 	}
 
 	return ipamAPI, region, ID, err
-}
-
-func diffSuppressFuncStandaloneIPandCIDR(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-	oldIP, oldNet, errOld := net.ParseCIDR(oldValue)
-	if errOld != nil {
-		oldIP = net.ParseIP(oldValue)
-	}
-
-	newIP, newNet, errNew := net.ParseCIDR(newValue)
-	if errNew != nil {
-		newIP = net.ParseIP(newValue)
-	}
-
-	if oldIP != nil && newIP != nil && oldIP.Equal(newIP) {
-		return true
-	}
-
-	if oldNet != nil && newIP != nil && oldNet.Contains(newIP) {
-		return true
-	}
-
-	if newNet != nil && oldIP != nil && newNet.Contains(oldIP) {
-		return true
-	}
-
-	return false
 }
 
 type GetResourcePrivateIPsOptions struct {
