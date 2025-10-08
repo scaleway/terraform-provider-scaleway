@@ -1226,7 +1226,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:   zone,
 			IP:     zonal.ExpandID(ipID).ID,
 			Server: &instanceSDK.NullableStringValue{Null: true},
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			log.Print("[WARN] Failed to detach eip of server")
 		}
@@ -1237,18 +1237,27 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:           zone,
 			PlacementGroup: &instanceSDK.NullableStringValue{Null: true},
 			ServerID:       id,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			log.Print("[WARN] Failed remove server from instanceSDK group")
 		}
 	}
-	// reach stopped state
-	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
-	if httperrors.Is404(err) {
-		return nil
+
+	// reach running state (mandatory for termination)
+	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateRunning)
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
 	}
 
-	if err != nil {
+	timeout := d.Timeout(schema.TimeoutDelete)
+
+	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
+		Zone:     zone,
+		ServerID: id,
+		Action:   instanceSDK.ServerActionTerminate,
+		Timeout:  &timeout,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
@@ -1268,24 +1277,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 		}
-	}
-
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
-		Zone:     zone,
-		ServerID: id,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
 	}
 
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
