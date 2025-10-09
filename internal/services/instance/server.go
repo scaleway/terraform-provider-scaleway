@@ -1262,6 +1262,24 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	// Delete private-nic if managed by instance_server resource
+	if raw, ok := d.GetOk("private_network"); ok {
+		ph, err := newPrivateNICHandler(api.API, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for index := range raw.([]any) {
+			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+			pn := d.Get(pnKey)
+
+			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
