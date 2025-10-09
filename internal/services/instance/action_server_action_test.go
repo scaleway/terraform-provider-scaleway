@@ -32,6 +32,8 @@ func TestAccActionServerReboot_Basic(t *testing.T) {
 
 					action "scaleway_instance_server_action" "main" {
 						config {
+						  action = "reboot"
+						
 							server_id = scaleway_instance_server.main.id
 						}
 					}
