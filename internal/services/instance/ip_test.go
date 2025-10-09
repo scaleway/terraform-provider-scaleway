@@ -134,8 +134,8 @@ func TestAccIP_RoutedIPV6_Attached(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
