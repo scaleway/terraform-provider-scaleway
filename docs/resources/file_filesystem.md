@@ -9,7 +9,7 @@ page_title: "Scaleway: scaleway_file_filesystem"
 
 Creates and manages a Scaleway File Storage filesystem in a specific region. A filesystem is a scalable storage resource that can be mounted on Compute instances and is typically used for share persistent storage between multiple instances (RWX).
 
-This resource allows you to defie and manage the size, tags, and region of a filesystem, and track its creation and update timestamps, current status, and number of active attachments.
+This resource allows you to define and manage the size, tags, and region of a filesystem, and track its creation and update timestamps, current status, and number of active attachments.
 
 ## Example Usage
 
