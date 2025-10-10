@@ -22,7 +22,7 @@ func TestAccReadReplica_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),
@@ -65,7 +65,7 @@ func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),
@@ -113,7 +113,7 @@ func TestAccReadReplica_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),
@@ -330,7 +330,7 @@ func TestAccReadReplica_MultipleEndpoints(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),
@@ -382,7 +382,7 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),
@@ -499,7 +499,7 @@ func TestAccReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			isReadReplicaDestroyed(tt),

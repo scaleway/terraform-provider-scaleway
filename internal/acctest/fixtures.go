@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -33,11 +33,14 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 
 	providers := map[string]func() (tfprotov6.ProviderServer, error){
 		"side": func() (tfprotov6.ProviderServer, error) {
-			providers := provider.NewProviderList(&provider.Config{Meta: metaSide})
+			providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: metaSide})
+			if errProvider != nil {
+				return nil, errProvider
+			}
 
-			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
-			if err != nil {
-				return nil, err
+			muxServer, errMux := tf6muxserver.NewMuxServer(ctx, providers...)
+			if errMux != nil {
+				return nil, errMux
 			}
 
 			return muxServer.ProviderServer(), nil

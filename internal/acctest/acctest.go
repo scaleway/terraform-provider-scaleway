@@ -1,7 +1,6 @@
 package acctest
 
 import (
-	"context"
 	"os"
 	"strconv"
 	"strings"
@@ -9,7 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
@@ -68,10 +67,9 @@ func NewTestTools(t *testing.T) *TestTools {
 		Meta: m,
 		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"scaleway": func() (tfprotov6.ProviderServer, error) {
-				ctx := context.Background()
-				providers := provider.NewProviderList(&provider.Config{Meta: m})
+				providers, err := provider.NewProviderList(ctx, &provider.Config{Meta: m})
 
-				muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+				muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 				if err != nil {
 					return nil, err
 				}

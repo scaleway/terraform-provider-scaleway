@@ -17,7 +17,7 @@ func TestAccDataSourceIPAMIP_Instance(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -71,7 +71,7 @@ func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -131,7 +131,7 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -187,7 +187,7 @@ func TestAccDataSourceIPAMIP_ID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{

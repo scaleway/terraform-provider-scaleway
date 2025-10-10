@@ -30,7 +30,7 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSQueueDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{
@@ -179,7 +179,7 @@ func TestAccSQSQueue_DeadLetterQueue(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSQueueDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{

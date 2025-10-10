@@ -41,7 +41,7 @@ func TestAccDevice_Minimal(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -77,7 +77,7 @@ func TestAccDevice_MessageFilters(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -134,7 +134,7 @@ func TestAccDevice_AllowInsecure(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -190,7 +190,7 @@ func TestAccDevice_Certificate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{

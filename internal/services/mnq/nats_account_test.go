@@ -18,7 +18,7 @@ func TestAccNatsAccount_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsAccountDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

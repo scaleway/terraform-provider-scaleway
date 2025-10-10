@@ -14,7 +14,7 @@ func TestAccVolume_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -44,7 +44,7 @@ func TestAccVolume_UpdateSize(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -105,7 +105,7 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -144,7 +144,7 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -184,7 +184,7 @@ func TestAccVolume_UpdateIops(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

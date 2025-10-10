@@ -13,7 +13,7 @@ func TestMuxServer(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

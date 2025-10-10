@@ -16,7 +16,7 @@ func TestAccDataSourceVPCPublicGateway_Basic(t *testing.T) {
 	pgName := "TestAccScalewayDataSourceVPCPublicGateway_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsGatewayDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

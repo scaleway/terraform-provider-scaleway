@@ -27,7 +27,7 @@ func TestAccObjectBucketWebsiteConfiguration_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			objectchecks.IsWebsiteConfigurationDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),
@@ -80,7 +80,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithPolicy(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			objectchecks.IsWebsiteConfigurationDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),
@@ -156,7 +156,7 @@ func TestAccObjectBucketWebsiteConfiguration_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			objectchecks.IsWebsiteConfigurationDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),
@@ -236,7 +236,7 @@ func TestAccObjectBucketWebsiteConfiguration_WithBucketName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			objectchecks.IsWebsiteConfigurationDestroyed(tt),
 			objectchecks.IsBucketDestroyed(tt),

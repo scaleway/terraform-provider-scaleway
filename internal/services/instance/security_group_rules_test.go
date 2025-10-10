@@ -13,7 +13,7 @@ func TestAccSecurityGroupRules_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -183,7 +183,7 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -243,7 +243,7 @@ func TestAccSecurityGroupRules_Basic2(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

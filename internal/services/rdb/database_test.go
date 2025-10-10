@@ -25,7 +25,7 @@ func TestAccDatabase_Basic(t *testing.T) {
 	instanceName := "TestAccScalewayRdbDatabase_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -59,7 +59,7 @@ func TestAccDatabase_ManualDelete(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

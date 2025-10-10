@@ -24,7 +24,7 @@ func TestAccRoute_RDB(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isHubDestroyed(tt),
@@ -92,7 +92,7 @@ func TestAccRoute_S3(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			isHubDestroyed(tt),
@@ -153,7 +153,7 @@ func TestAccRoute_REST(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
