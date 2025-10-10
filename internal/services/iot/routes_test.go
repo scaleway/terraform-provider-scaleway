@@ -101,30 +101,35 @@ func TestAccRoute_S3(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "minimal" {
-							name = "%s"
-						}
+		locals {
+			bucket_region = "fr-par"
+		}
 
-						resource "scaleway_iot_hub" "minimal" {
-							name         = "minimal"
-							product_plan = "plan_shared"
-						}
+		resource "scaleway_object_bucket" "minimal" {
+			name   = "%s"
+			region = local.bucket_region
+		}
 
-						resource "scaleway_iot_route" "default" {
-							name   = "default"
-							hub_id = scaleway_iot_hub.minimal.id
-							topic  = "#"
+		resource "scaleway_iot_hub" "minimal" {
+			name         = "minimal"
+			product_plan = "plan_shared"
+		}
 
-							s3 {
-								bucket_region = scaleway_object_bucket.minimal.region
-								bucket_name   = scaleway_object_bucket.minimal.name
-								object_prefix = "foo"
-								strategy      = "per_topic"
-							}
-							
-							depends_on = [scaleway_object_bucket.minimal]
-						}
-						`, bucketName),
+		resource "scaleway_iot_route" "default" {
+			name   = "default"
+			hub_id = scaleway_iot_hub.minimal.id
+			topic  = "#"
+
+			s3 {
+				bucket_region = local.bucket_region
+				bucket_name   = scaleway_object_bucket.minimal.name
+				object_prefix = "foo"
+				strategy      = "per_topic"
+			}
+			
+			depends_on = [scaleway_object_bucket.minimal]
+		}
+		`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.minimal", true),
 					isHubPresent(tt, "scaleway_iot_hub.minimal"),
