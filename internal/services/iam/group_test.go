@@ -20,8 +20,8 @@ func TestAccGroup_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIamGroupDestroy(tt),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckIamGroupDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -108,7 +108,7 @@ func TestAccGroup_Applications(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamGroupDestroy(tt),
 			testAccCheckIamApplicationDestroy(tt),
@@ -207,7 +207,7 @@ func TestAccGroup_Users(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamGroupDestroy(tt),
 		),
@@ -299,7 +299,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamGroupDestroy(tt),
 			testAccCheckIamApplicationDestroy(tt),

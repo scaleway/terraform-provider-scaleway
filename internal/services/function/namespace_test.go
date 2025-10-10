@@ -18,9 +18,9 @@ func TestAccFunctionNamespace_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionNamespaceDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -110,9 +110,9 @@ func TestAccFunctionNamespace_NoName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionNamespaceDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -132,9 +132,9 @@ func TestAccFunctionNamespace_EnvironmentVariables(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionNamespaceDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -187,8 +187,8 @@ func TestAccFunctionNamespace_VPCIntegration(t *testing.T) {
 	namespaceID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckFunctionNamespaceDestroy(tt),
 			testAccCheckFunctionDestroy(tt),
