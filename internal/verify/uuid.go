@@ -1,7 +1,11 @@
 package verify
 
 import (
+	"context"
+
 	"github.com/hashicorp/go-cty/cty"
+	diagFramework "github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/validation"
@@ -117,5 +121,42 @@ Then, you can reference the datasource's attributes in your resources.`,
 		}
 
 		return nil
+	}
+}
+
+type UUIDValidator struct{}
+
+func (U UUIDValidator) Description(ctx context.Context) string {
+	return "Will check that a string is indeed an UUID"
+}
+
+func (U UUIDValidator) MarkdownDescription(ctx context.Context) string {
+	return U.Description(ctx)
+}
+
+func (U UUIDValidator) ValidateString(ctx context.Context, request validator.StringRequest, response *validator.StringResponse) {
+	if !validation.IsUUID(request.ConfigValue.String()) {
+		response.Diagnostics.AddError("is not an uuid", "is not a UUID")
+	}
+}
+
+// UUIDorUUIDWithLocalityValidator validates the schema is a UUID or the combination of a locality and a UUID
+// e.g. "6ba7b810-9dad-11d1-80b4-00c04fd430c8" or "fr-par-1/6ba7b810-9dad-11d1-80b4-00c04fd430c8".
+type UUIDorUUIDWithLocalityValidator struct{}
+
+func (U UUIDorUUIDWithLocalityValidator) Description(ctx context.Context) string {
+	return "UUIDorUUIDWithLocalityValidator validates the schema is a UUID or the combination of a locality and a UUID"
+}
+
+func (U UUIDorUUIDWithLocalityValidator) MarkdownDescription(ctx context.Context) string {
+	return U.Description(ctx)
+}
+
+func (U UUIDorUUIDWithLocalityValidator) ValidateString(ctx context.Context, request validator.StringRequest, response *validator.StringResponse) {
+	if !validation.IsUUID(locality.ExpandID(request.ConfigValue.String())) {
+		response.Diagnostics.Append(diagFramework.NewErrorDiagnostic(
+			"invalid UUID: "+request.ConfigValue.String(),
+			"format should be 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' (36) and contains valid hexadecimal characters",
+		))
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
 var _ provider.Provider = &ScalewayProvider{}
@@ -69,7 +70,9 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 }
 
 func (p *ScalewayProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		secret.NewResourceSecret,
+	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
@@ -77,7 +80,9 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		secret.NewDataSourceSecret,
+	}
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {

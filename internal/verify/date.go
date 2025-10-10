@@ -1,9 +1,11 @@
 package verify
 
 import (
+	"context"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -55,5 +57,25 @@ func IsDuration() schema.SchemaValidateDiagFunc {
 		}
 
 		return nil
+	}
+}
+
+type DurationValidator struct{}
+
+func (d DurationValidator) Description(ctx context.Context) string {
+	return "Check that the string passed is a duration"
+}
+
+func (d DurationValidator) MarkdownDescription(ctx context.Context) string {
+	return d.Description(ctx)
+}
+
+func (d DurationValidator) ValidateString(ctx context.Context, request validator.StringRequest, response *validator.StringResponse) {
+	_, err := time.ParseDuration(request.ConfigValue.String())
+	if err != nil {
+		response.Diagnostics.AddError(
+			"invalid input, expected a valid duration",
+			err.Error(),
+		)
 	}
 }

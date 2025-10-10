@@ -1,7 +1,11 @@
 package verify
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -24,4 +28,19 @@ func ValidateStringInSliceWithWarning(correctValues []string, field string) sche
 
 		return res
 	}
+}
+
+type StructWithValues[T fmt.Stringer] interface {
+	Values() []T
+}
+
+func ValidatorFromEnum[T fmt.Stringer](enum StructWithValues[T]) validator.String {
+	enumValues := enum.Values()
+
+	enumStringValues := make([]string, 0, len(enumValues))
+	for _, enumValue := range enumValues {
+		enumStringValues = append(enumStringValues, enumValue.String())
+	}
+
+	return stringvalidator.OneOf(enumStringValues...)
 }

@@ -1,6 +1,9 @@
 package account
 
 import (
+	dataSourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -32,5 +35,25 @@ func ProjectIDSchema() *schema.Schema {
 		ForceNew:         true,
 		Computed:         true,
 		ValidateDiagFunc: verify.IsUUID(),
+	}
+}
+
+func ResourceProjectIDSchema(description string) resourceSchema.StringAttribute {
+	return resourceSchema.StringAttribute{
+		Description: description,
+		Optional:    true,
+		Validators: []validator.String{
+			verify.UUIDValidator{},
+		},
+	}
+}
+
+func DatasourceOrganizationIDSchema(description string) dataSourceSchema.StringAttribute {
+	return dataSourceSchema.StringAttribute{
+		Description: description,
+		Optional:    true,
+		Validators: []validator.String{
+			verify.UUIDValidator{},
+		},
 	}
 }
