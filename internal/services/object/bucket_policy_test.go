@@ -80,10 +80,10 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ErrorCheck:        object.ErrorCheck(t, EndpointsID),
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: tfConfig,
@@ -166,10 +166,10 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ErrorCheck:        object.ErrorCheck(t, EndpointsID),
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: tfConfig,
@@ -200,10 +200,10 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ErrorCheck:        object.ErrorCheck(t, EndpointsID),
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

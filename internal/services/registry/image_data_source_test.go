@@ -20,9 +20,9 @@ func TestAccDataSourceImage_Basic(t *testing.T) {
 	ubuntuImageID := "4b5a47c0-6fbf-4388-8783-c07c28d3c2eb"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNamespaceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

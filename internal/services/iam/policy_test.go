@@ -22,7 +22,7 @@ func TestAccPolicy_Basic(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -96,7 +96,7 @@ func TestAccPolicy_NoUpdate(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -162,7 +162,7 @@ func TestAccPolicy_ChangeLinkedEntity(t *testing.T) {
 	randGroupName := "tf-tests-scaleway-iam-group-policy-permissions"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -265,7 +265,7 @@ func TestAccPolicy_ChangePermissions(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -356,7 +356,7 @@ func TestAccPolicy_ProjectID(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -422,7 +422,7 @@ func TestAccPolicy_Condition(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -517,7 +517,7 @@ func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()

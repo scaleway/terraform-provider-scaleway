@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
@@ -24,10 +23,7 @@ func main() {
 		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
 	}
 
-	providers := []func() tfprotov5.ProviderServer{
-		// SDKProvider using terraform-plugin-sdk
-		provider.SDKProvider(provider.DefaultConfig())().GRPCProvider,
-	}
+	providers := provider.NewProviderList(nil)
 
 	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
 	if err != nil {
