@@ -354,7 +354,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 			terraformVersion := p.TerraformVersion
 
 			// If we provide meta in config use it. This is useful for tests
-			if config.Meta != nil {
+			if config != nil && config.Meta != nil {
 				return config.Meta, nil
 			}
 
