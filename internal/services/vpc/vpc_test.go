@@ -22,7 +22,7 @@ func TestAccVPC_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -51,7 +51,7 @@ func TestAccVPC_WithRegion(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -87,7 +87,7 @@ func TestAccVPC_WithTags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -125,7 +125,7 @@ func TestAccVPC_DisableRouting(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{

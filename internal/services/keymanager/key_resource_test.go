@@ -18,7 +18,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -51,7 +51,7 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -130,7 +130,7 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

@@ -26,7 +26,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -83,7 +83,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -156,7 +156,7 @@ func TestAccServer_RootVolume1(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -207,7 +207,7 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -258,7 +258,7 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -295,7 +295,7 @@ func TestAccServer_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -357,7 +357,7 @@ func TestAccServer_State1(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -427,7 +427,7 @@ func TestAccServer_State2(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -478,7 +478,7 @@ func TestAccServer_UserData_WithCloudInitAtStart(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -512,7 +512,7 @@ func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -566,7 +566,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -645,7 +645,7 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
@@ -713,7 +713,7 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -754,7 +754,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -799,7 +799,7 @@ func TestAccServer_Basic2(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -830,7 +830,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -997,7 +997,7 @@ func TestAccServer_AlterTags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1041,7 +1041,7 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1076,7 +1076,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1113,7 +1113,7 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1301,7 +1301,7 @@ func TestAccServer_Migrate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1350,7 +1350,7 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1393,7 +1393,7 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1548,7 +1548,7 @@ func TestAccServer_IPs(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1633,7 +1633,7 @@ func TestAccServer_IPRemoved(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1680,7 +1680,7 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1730,7 +1730,7 @@ func TestAccServer_BlockExternal(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1821,7 +1821,7 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
 			instancechecks.IsServerRootVolumeDestroyed(tt),
@@ -1879,7 +1879,7 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -1932,7 +1932,7 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -2008,7 +2008,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -2207,7 +2207,7 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
 			iamchecks.CheckSSHKeyDestroy(tt),

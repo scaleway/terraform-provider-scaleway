@@ -10,22 +10,18 @@
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.10.x
--	[Go](https://golang.org/doc/install) 1.11 (to build the provider plugin)
+-	[Terraform](https://www.terraform.io/downloads.html) 1.0
+-	[Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
 
 ## Building The Provider
 
-Clone repository to: `$GOPATH/src/github.com/scaleway/terraform-provider-scaleway`
-
 ```sh
-$ mkdir -p $GOPATH/src/github.com/scaleway; cd $GOPATH/src/github.com/scaleway
 $ git clone git@github.com:scaleway/terraform-provider-scaleway.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/scaleway/terraform-provider-scaleway
 $ make build
 ```
 

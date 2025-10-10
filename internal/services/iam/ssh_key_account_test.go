@@ -19,7 +19,7 @@ func TestAccSSHKeyAccount_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             iamchecks.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -62,7 +62,7 @@ func TestAccSSHKeyAccount_WithNewLine(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             iamchecks.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -92,7 +92,7 @@ func TestAccSSHKeyAccount_ChangeResourceName(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             iamchecks.CheckSSHKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{

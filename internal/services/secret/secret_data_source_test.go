@@ -20,7 +20,7 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -67,7 +67,7 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

@@ -20,7 +20,7 @@ func TestAccDataSourceServerType_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -203,7 +203,7 @@ func TestAccDataSourceServerType_CompareWithPCU(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps:                    steps,
 	})
 }

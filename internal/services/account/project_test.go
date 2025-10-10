@@ -22,7 +22,7 @@ func TestAccProject_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -60,7 +60,7 @@ func TestAccProject_NoUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

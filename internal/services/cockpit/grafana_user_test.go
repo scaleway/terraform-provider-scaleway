@@ -22,7 +22,7 @@ func TestAccGrafanaUser_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isGrafanaUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -66,7 +66,7 @@ func TestAccGrafanaUser_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isGrafanaUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

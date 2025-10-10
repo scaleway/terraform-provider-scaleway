@@ -18,7 +18,7 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -52,7 +52,7 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

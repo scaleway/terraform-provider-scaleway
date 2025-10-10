@@ -33,7 +33,7 @@ func TestAccObjectBucketLockConfiguration_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckBucketLockConfigurationDestroy(tt),
 			objectchecks.IsBucketDestroyed(tt),
@@ -132,7 +132,7 @@ func TestAccObjectBucketLockConfiguration_Update(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckBucketLockConfigurationDestroy(tt),
 			objectchecks.IsBucketDestroyed(tt),
@@ -226,7 +226,7 @@ func TestAccObjectBucketLockConfiguration_WithBucketName(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckBucketLockConfigurationDestroy(tt),
 			objectchecks.IsBucketDestroyed(tt),

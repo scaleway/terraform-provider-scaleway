@@ -17,7 +17,7 @@ func TestAccUser_Member(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

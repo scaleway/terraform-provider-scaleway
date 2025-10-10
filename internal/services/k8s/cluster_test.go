@@ -101,7 +101,7 @@ func TestAccCluster_Basic(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -194,7 +194,7 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -270,7 +270,7 @@ func TestAccCluster_OIDC(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -340,7 +340,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -422,7 +422,7 @@ func TestAccCluster_PrivateNetwork(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -461,7 +461,7 @@ func TestAccCluster_Multicloud(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -487,7 +487,7 @@ func TestAccCluster_TypeChange(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),

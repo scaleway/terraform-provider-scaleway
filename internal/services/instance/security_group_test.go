@@ -32,7 +32,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -182,7 +182,7 @@ func TestAccSecurityGroup_ICMP(t *testing.T) {
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -247,7 +247,7 @@ func TestAccSecurityGroup_ANY(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -295,7 +295,7 @@ func TestAccSecurityGroup_WithNoPort(t *testing.T) {
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -331,7 +331,7 @@ func TestAccSecurityGroup_RemovePort(t *testing.T) {
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -389,7 +389,7 @@ func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -447,7 +447,7 @@ func TestAccSecurityGroup_Tags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -605,7 +605,7 @@ func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

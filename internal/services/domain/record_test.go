@@ -32,7 +32,7 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -177,7 +177,7 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -251,7 +251,7 @@ func TestAccDomainRecord_Arobase(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -298,7 +298,7 @@ func TestAccDomainRecord_GeoIP(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -394,7 +394,7 @@ func TestAccDomainRecord_HTTPService(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -481,7 +481,7 @@ func TestAccDomainRecord_View(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -573,7 +573,7 @@ func TestAccDomainRecord_Weighted(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -665,7 +665,7 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -707,7 +707,7 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -803,7 +803,7 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{

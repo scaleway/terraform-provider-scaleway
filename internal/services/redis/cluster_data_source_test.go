@@ -15,7 +15,7 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
