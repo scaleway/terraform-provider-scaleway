@@ -24,6 +24,9 @@ func main() {
 	}
 
 	providers, err := provider.NewProviderList(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
 	if err != nil {

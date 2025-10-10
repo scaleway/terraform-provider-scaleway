@@ -67,11 +67,14 @@ func NewTestTools(t *testing.T) *TestTools {
 		Meta: m,
 		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"scaleway": func() (tfprotov6.ProviderServer, error) {
-				providers, err := provider.NewProviderList(ctx, &provider.Config{Meta: m})
+				providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: m})
+				if errProvider != nil {
+					return nil, errProvider
+				}
 
-				muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
-				if err != nil {
-					return nil, err
+				muxServer, errMux := tf6muxserver.NewMuxServer(ctx, providers...)
+				if errMux != nil {
+					return nil, errMux
 				}
 
 				return muxServer.ProviderServer(), nil
