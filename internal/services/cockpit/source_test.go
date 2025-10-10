@@ -22,9 +22,9 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -63,9 +63,9 @@ func TestAccCockpitSource_Basic_logs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -104,9 +104,9 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -146,9 +146,9 @@ func TestAccCockpitSource_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			// Initial creation
 			{

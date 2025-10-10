@@ -21,9 +21,9 @@ func TestAccDataSourceObjectBucket_Basic(t *testing.T) {
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      objectchecks.IsBucketDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -99,8 +99,8 @@ func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
@@ -149,8 +149,8 @@ func TestAccDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()

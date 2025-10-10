@@ -23,8 +23,8 @@ func TestAccRoute_RDB(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isHubDestroyed(tt),
@@ -91,8 +91,8 @@ func TestAccRoute_S3(t *testing.T) {
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-iot-route-s3")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			isHubDestroyed(tt),
@@ -152,8 +152,8 @@ func TestAccRoute_REST(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{

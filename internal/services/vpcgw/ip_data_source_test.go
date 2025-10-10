@@ -13,9 +13,9 @@ func TestAccDataSourceVPCPublicGatewayIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcgwchecks.IsIPDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             vpcgwchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

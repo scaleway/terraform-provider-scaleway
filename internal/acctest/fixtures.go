@@ -3,7 +3,8 @@ package acctest
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
@@ -17,7 +18,7 @@ import (
 // given project and API key as default profile configuration.
 //
 // This is useful to test resources that need to create resources in another project.
-func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *account.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *account.Project, iamAPIKey *iam.APIKey) map[string]func() (tfprotov5.ProviderServer, error) {
 	t := tt.T
 
 	metaSide, err := meta.NewMeta(ctx, &meta.Config{
@@ -30,9 +31,16 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 	})
 	require.NoError(t, err)
 
-	providers := map[string]func() (*schema.Provider, error){
-		"side": func() (*schema.Provider, error) {
-			return provider.SDKProvider(&provider.Config{Meta: metaSide})(), nil
+	providers := map[string]func() (tfprotov5.ProviderServer, error){
+		"side": func() (tfprotov5.ProviderServer, error) {
+			providers := provider.NewProviderList(&provider.Config{Meta: metaSide})
+
+			muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+			if err != nil {
+				return nil, err
+			}
+
+			return muxServer.ProviderServer(), nil
 		},
 	}
 

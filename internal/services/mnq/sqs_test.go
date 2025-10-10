@@ -18,9 +18,9 @@ func TestAccSQS_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSQSDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -47,9 +47,9 @@ func TestAccSQS_AlreadyActivated(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSQSDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

@@ -12,9 +12,9 @@ func TestAccDataSourceLbs_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isLbDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Create one IP first because its POST request cannot be matched correctly

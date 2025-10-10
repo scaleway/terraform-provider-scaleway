@@ -17,9 +17,9 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -50,9 +50,9 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

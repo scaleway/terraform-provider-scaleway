@@ -29,8 +29,8 @@ func TestAccFlexibleIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -55,8 +55,8 @@ func TestAccFlexibleIP_WithZone(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -87,8 +87,8 @@ func TestAccFlexibleIP_IPv6(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
+		ProtoV5ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -114,7 +114,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 	name := "TestAccScalewayFlexibleIP_CreateAndAttachToBaremetalServer"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckFlexibleIPDestroy(tt),
 			baremetalchecks.CheckServerDestroy(tt),
@@ -208,7 +208,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 	SSHKeyName := "TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer"
 	name := "TestAccScalewayFlexibleIP_AttachAndDetachFromBaremetalServer"
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV5ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckFlexibleIPDestroy(tt),
 			baremetalchecks.CheckServerDestroy(tt),
