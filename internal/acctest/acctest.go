@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -22,7 +22,7 @@ func PreCheck(_ *testing.T) {}
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta
-	ProviderFactories map[string]func() (tfprotov5.ProviderServer, error)
+	ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 	Cleanup           func()
 }
 
@@ -66,8 +66,8 @@ func NewTestTools(t *testing.T) *TestTools {
 	return &TestTools{
 		T:    t,
 		Meta: m,
-		ProviderFactories: map[string]func() (tfprotov5.ProviderServer, error){
-			"scaleway": func() (tfprotov5.ProviderServer, error) {
+		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"scaleway": func() (tfprotov6.ProviderServer, error) {
 				ctx := context.Background()
 				providers := provider.NewProviderList(&provider.Config{Meta: m})
 
