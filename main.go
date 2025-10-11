@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
 func main() {

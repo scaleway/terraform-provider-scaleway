@@ -16,9 +16,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 )
 

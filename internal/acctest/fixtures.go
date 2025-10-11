@@ -9,8 +9,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	provider2 "github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 )
 
@@ -33,7 +33,7 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 
 	providers := map[string]func() (tfprotov6.ProviderServer, error){
 		"side": func() (tfprotov6.ProviderServer, error) {
-			providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: metaSide})
+			providers, errProvider := provider2.NewProviderList(ctx, &provider2.Config{Meta: metaSide})
 			if errProvider != nil {
 				return nil, errProvider
 			}

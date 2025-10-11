@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	provider2 "github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 )
 
@@ -67,7 +67,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		Meta: m,
 		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"scaleway": func() (tfprotov6.ProviderServer, error) {
-				providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: m})
+				providers, errProvider := provider2.NewProviderList(ctx, &provider2.Config{Meta: m})
 				if errProvider != nil {
 					return nil, errProvider
 				}
