@@ -26,6 +26,7 @@ func ResourceVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: volumeIdentity(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultBlockTimeout),
 			Read:    schema.DefaultTimeout(defaultBlockTimeout),
@@ -83,6 +84,26 @@ func ResourceVolume() *schema.Resource {
 	}
 }
 
+func volumeIdentity() *schema.ResourceIdentity {
+	return &schema.ResourceIdentity{
+		Version: 0,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"volume_id": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Volume ID",
+				},
+				"zone": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+					Description:       "Zone",
+				},
+			}
+		},
+	}
+}
+
 func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
@@ -136,6 +157,11 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 
 	d.SetId(zonal.NewIDString(zone, volume.ID))
 
+	diags := applyVolumeIdentity(d, volume.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
 	_, err = waitForBlockVolume(ctx, api.BlockAPI, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -185,6 +211,28 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	_ = d.Set("snapshot_id", snapshotID)
+
+	diags := applyVolumeIdentity(d, volume.ID, zone)
+	if diags != nil {
+		return diags
+	}
+
+	return nil
+}
+
+func applyVolumeIdentity(d *schema.ResourceData, volumeID string, zone scw.Zone) diag.Diagnostics {
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("volume_id", volumeID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.Set("zone", zone); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
