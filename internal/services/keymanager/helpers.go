@@ -55,23 +55,52 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 	return client, region, keyID, nil
 }
 
-func ExpandKeyUsage(usage string) *key_manager.KeyUsage {
+func ExpandKeyUsage(usage string, algorithm string) *key_manager.KeyUsage {
 	switch usage {
 	case "symmetric_encryption":
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
+		if algorithm != "" {
+			alg = key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
+		}
 
 		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
 	case "asymmetric_encryption":
 		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
+		if algorithm != "" {
+			alg = key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
+		}
 
 		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
 	case "asymmetric_signing":
 		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
+		if algorithm != "" {
+			alg = key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
+		}
 
 		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
 	default:
 		return nil
 	}
+}
+
+func AlgorithmFromKeyUsage(u *key_manager.KeyUsage) string {
+	if u == nil {
+		return ""
+	}
+
+	if u.SymmetricEncryption != nil {
+		return string(*u.SymmetricEncryption)
+	}
+
+	if u.AsymmetricEncryption != nil {
+		return string(*u.AsymmetricEncryption)
+	}
+
+	if u.AsymmetricSigning != nil {
+		return string(*u.AsymmetricSigning)
+	}
+
+	return ""
 }
 
 func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {

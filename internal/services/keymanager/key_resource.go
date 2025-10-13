@@ -35,6 +35,12 @@ func ResourceKeyManagerKey() *schema.Resource {
 				}, false),
 				Description: "Key usage. Keys with a usage set to 'symmetric_encryption' can encrypt and decrypt data using the AES-256-GCM key algorithm. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
 			},
+			"algorithm": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Algorithm for the key. If not specified, a default algorithm is chosen based on usage. See Key Manager documentation for supported algorithms.",
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -116,7 +122,8 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
-	createReq.Usage = ExpandKeyUsage(d.Get("usage").(string))
+	algorithm := d.Get("algorithm").(string)
+	createReq.Usage = ExpandKeyUsage(d.Get("usage").(string), algorithm)
 
 	key, err := api.CreateKey(createReq)
 	if err != nil {
@@ -146,6 +153,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("project_id", key.ProjectID)
 	_ = d.Set("region", key.Region.String())
 	_ = d.Set("usage", UsageToString(key.Usage))
+	_ = d.Set("algorithm", AlgorithmFromKeyUsage(key.Usage))
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
 	_ = d.Set("rotation_count", int(key.RotationCount))
