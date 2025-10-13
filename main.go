@@ -5,9 +5,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
-	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 )
 
@@ -19,22 +18,22 @@ func main() {
 	flag.BoolVar(&debugMode, "debuggable", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	var serveOpts []tf5server.ServeOpt
+	var serveOpts []tf6server.ServeOpt
 	if debugMode {
-		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
+		serveOpts = append(serveOpts, tf6server.WithManagedDebug())
 	}
 
-	providers := []func() tfprotov5.ProviderServer{
-		// SDKProvider using terraform-plugin-sdk
-		provider.SDKProvider(provider.DefaultConfig())().GRPCProvider,
-	}
-
-	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+	providers, err := provider.NewProviderList(ctx, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = tf5server.Serve(
+	muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = tf6server.Serve(
 		"registry.terraform.io/scaleway/scaleway",
 		muxServer.ProviderServer,
 		serveOpts...,

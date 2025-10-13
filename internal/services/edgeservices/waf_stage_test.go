@@ -13,9 +13,9 @@ func TestAccEdgeServicesWAF_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      edgeservicestestfuncs.CheckEdgeServicesWAFDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesWAFDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

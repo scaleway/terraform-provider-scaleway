@@ -20,7 +20,7 @@ func TestAccApiKey_WithApplication(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamAPIKeyDestroy(tt),
 			testAccCheckIamApplicationDestroy(tt),
@@ -77,7 +77,7 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamAPIKeyDestroy(tt),
 			testAccCheckIamApplicationDestroy(tt),
@@ -142,7 +142,7 @@ func TestAccApiKey_Expires(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamAPIKeyDestroy(tt),
 			testAccCheckIamApplicationDestroy(tt),
@@ -190,8 +190,8 @@ func TestAccApiKey_NoUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckIamAPIKeyDestroy(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckIamAPIKeyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

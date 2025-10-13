@@ -31,9 +31,9 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -181,9 +181,9 @@ func TestAccSecurityGroup_ICMP(t *testing.T) {
 	ipnetTest, err := types.ExpandIPNet("8.8.8.8")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -246,9 +246,9 @@ func TestAccSecurityGroup_ANY(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -294,9 +294,9 @@ func TestAccSecurityGroup_WithNoPort(t *testing.T) {
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -330,9 +330,9 @@ func TestAccSecurityGroup_RemovePort(t *testing.T) {
 	ipnetZero, err := types.ExpandIPNet("0.0.0.0/0")
 	require.NoError(t, err)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -388,9 +388,9 @@ func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -446,9 +446,9 @@ func TestAccSecurityGroup_Tags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -604,9 +604,9 @@ func TestAccSecurityGroup_EnableDefaultSecurity(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSecurityGroupDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

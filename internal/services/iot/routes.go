@@ -51,17 +51,13 @@ func ResourceRoute() *schema.Resource {
 				Description: "The Topic the route subscribes to (wildcards allowed)",
 			},
 			"database": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Database Route parameters",
-				ExactlyOneOf: []string{
-					iot.RouteRouteTypeDatabase.String(),
-					iot.RouteRouteTypeRest.String(),
-					iot.RouteRouteTypeS3.String(),
-				},
+				Type:          schema.TypeList,
+				MinItems:      1,
+				MaxItems:      1,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "Database Route parameters",
+				ConflictsWith: []string{"rest", "s3"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"query": {
@@ -105,12 +101,13 @@ func ResourceRoute() *schema.Resource {
 				},
 			},
 			"rest": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Rest Route parameters",
+				Type:          schema.TypeList,
+				MinItems:      1,
+				MaxItems:      1,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "Rest Route parameters",
+				ConflictsWith: []string{"database", "s3"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"verb": {
@@ -140,12 +137,13 @@ func ResourceRoute() *schema.Resource {
 				},
 			},
 			"s3": {
-				Type:        schema.TypeList,
-				MinItems:    1,
-				MaxItems:    1,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "S3 Route parameters",
+				Type:          schema.TypeList,
+				MinItems:      1,
+				MaxItems:      1,
+				Optional:      true,
+				ForceNew:      true,
+				Description:   "S3 Route parameters",
+				ConflictsWith: []string{"database", "rest"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"bucket_region": {

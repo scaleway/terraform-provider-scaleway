@@ -18,8 +18,8 @@ func TestAccFlexibleIPMACAddress_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -47,8 +47,8 @@ func TestAccFlexibleIPMACAddress_MoveToAnotherFlexibleIP(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFlexibleIPDestroy(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFlexibleIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -103,7 +103,7 @@ func TestAccFlexibleIPMACAddress_DuplicateOnOtherFlexibleIPs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckFlexibleIPDestroy(tt),
 			baremetalchecks.CheckServerDestroy(tt),

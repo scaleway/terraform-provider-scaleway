@@ -17,9 +17,9 @@ func TestAccVPCPublicGatewayPATRule_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckVPCPublicGatewayPATRuleDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckVPCPublicGatewayPATRuleDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

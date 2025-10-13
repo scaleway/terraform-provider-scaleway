@@ -19,8 +19,8 @@ func TestAccIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -41,8 +41,8 @@ func TestAccIP_WithZone(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -73,8 +73,8 @@ func TestAccIP_Tags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -106,8 +106,8 @@ func TestAccIP_RoutedIPV6(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsIPDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

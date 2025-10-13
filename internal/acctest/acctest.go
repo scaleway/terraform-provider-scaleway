@@ -7,7 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
@@ -20,7 +21,7 @@ func PreCheck(_ *testing.T) {}
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta
-	ProviderFactories map[string]func() (*schema.Provider, error)
+	ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 	Cleanup           func()
 }
 
@@ -64,9 +65,19 @@ func NewTestTools(t *testing.T) *TestTools {
 	return &TestTools{
 		T:    t,
 		Meta: m,
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			"scaleway": func() (*schema.Provider, error) {
-				return provider.SDKProvider(&provider.Config{Meta: m})(), nil
+		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"scaleway": func() (tfprotov6.ProviderServer, error) {
+				providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: m})
+				if errProvider != nil {
+					return nil, errProvider
+				}
+
+				muxServer, errMux := tf6muxserver.NewMuxServer(ctx, providers...)
+				if errMux != nil {
+					return nil, errMux
+				}
+
+				return muxServer.ProviderServer(), nil
 			},
 		},
 		Cleanup: cleanup,

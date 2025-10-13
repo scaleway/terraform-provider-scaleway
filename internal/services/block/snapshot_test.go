@@ -16,9 +16,9 @@ func TestAccSnapshot_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsSnapshotDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -48,8 +48,8 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			blocktestfuncs.IsSnapshotDestroyed(tt),
 			objectchecks.IsObjectDestroyed(tt),
@@ -92,8 +92,8 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			blocktestfuncs.IsSnapshotDestroyed(tt),
 			objectchecks.IsObjectDestroyed(tt),
