@@ -13,7 +13,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-var _ action.Action = (*ServerAction)(nil)
+var (
+	_ action.Action              = (*ServerAction)(nil)
+	_ action.ActionWithConfigure = (*ServerAction)(nil)
+)
 
 type ServerAction struct {
 	instanceAPI *instance.API
@@ -38,7 +41,7 @@ func (a *ServerAction) Configure(ctx context.Context, req action.ConfigureReques
 }
 
 func (a *ServerAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_instance_server_reboot"
+	resp.TypeName = req.ProviderTypeName + "_instance_server_action"
 }
 
 type ServerActionModel struct {
@@ -71,15 +74,15 @@ func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, res
 			},
 			"server_id": schema.StringAttribute{
 				Required:    true,
-				Description: "Server id to reboot",
+				Description: "Server id to send the action to",
 			},
 			"zone": schema.StringAttribute{
 				Optional:    true,
-				Description: "Zone of server to reboot",
+				Description: "Zone of server to send the action to",
 			},
 			"wait": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Wait for server to finish reboot",
+				Description: "Wait for server to finish action",
 			},
 		},
 	}
