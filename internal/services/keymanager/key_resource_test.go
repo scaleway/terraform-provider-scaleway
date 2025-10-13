@@ -158,3 +158,65 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 		},
 	})
 }
+
+func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "rsa_4096" {
+				  name         = "tf-test-kms-key-rsa4096"
+				  region       = "fr-par"
+				  usage        = "asymmetric_encryption"
+				  algorithm    = "rsa_oaep_4096_sha256"
+				  description  = "Test key with RSA-4096 algorithm"
+				  unprotected  = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "name", "tf-test-kms-key-rsa4096"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "usage", "asymmetric_encryption"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "algorithm", "rsa_oaep_4096_sha256"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.rsa_4096", "description", "Test key with RSA-4096 algorithm"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccKeyManagerKey_DefaultAlgorithm(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "default_alg" {
+				  name         = "tf-test-kms-key-default-alg"
+				  region       = "fr-par"
+				  usage        = "asymmetric_encryption"
+				  description  = "Test key with default algorithm"
+				  unprotected  = true
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.default_alg", "name", "tf-test-kms-key-default-alg"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.default_alg", "usage", "asymmetric_encryption"),
+					// Verify default algorithm is set (RSA-OAEP-3072-SHA256)
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.default_alg", "algorithm", "rsa_oaep_3072_sha256"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.default_alg", "description", "Test key with default algorithm"),
+				),
+			},
+		},
+	})
+}
