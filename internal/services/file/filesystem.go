@@ -14,6 +14,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+// Resource: scaleway_file_filesystem
+//
+// -> **This product is currently in private beta. To request access, please contact your Technical Account Manager.**
+//
+// Creates and manages a Scaleway File Storage (NFS) filesystem in a specific region.
+// A filesystem is a scalable storage resource that can be mounted on Compute instances
+// and is typically used for shared, persistent storage.
+
 func ResourceFileSystem() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceFileSystemCreate,
