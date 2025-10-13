@@ -25,6 +25,19 @@ resource "scaleway_key_manager_key" "main" {
 }
 ```
 
+### Example: Asymmetric Key with Custom Algorithm
+
+```terraform
+resource "scaleway_key_manager_key" "rsa_4096" {
+  name        = "rsa-4096-key"
+  region      = "fr-par"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"  # Specify RSA-4096 instead of default RSA-3072
+  description = "Key for encrypting large files with RSA-4096"
+  unprotected = true
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -36,6 +49,11 @@ The following arguments are supported:
     - `symmetric_encryption`
     - `asymmetric_encryption`
     - `asymmetric_signing`
+- `algorithm` (String, Optional) – The algorithm to use for the key. If not specified, a default algorithm is chosen based on the `usage`:
+    - For `symmetric_encryption`: defaults to `aes_256_gcm`
+    - For `asymmetric_encryption`: defaults to `rsa_oaep_3072_sha256`. Other options include `rsa_oaep_2048_sha256`, `rsa_oaep_4096_sha256`
+    - For `asymmetric_signing`: defaults to `ec_p256_sha256`. Other options include `rsa_pss_2048_sha256`, etc.
+    - See [Scaleway Key Manager documentation](https://www.scaleway.com/en/docs/key-manager/concepts/) for the full list of supported algorithms.
 - `description` (String, Optional) – A description for the key.
 - `tags` (List of String, Optional) – A list of tags to assign to the key.
 - `unprotected` (Boolean, Optional) – If `true`, the key can be deleted. Defaults to `false` (protected).
@@ -50,6 +68,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` – The ID of the key.
+- `algorithm` – The algorithm used by the key (computed if not specified).
 - `state` – The state of the key (e.g., `enabled`).
 - `created_at` – The date and time when the key was created.
 - `updated_at` – The date and time when the key was last updated.
