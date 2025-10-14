@@ -46,6 +46,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 		},
 	})
 }
+
 func TestAccKeyManagerKey_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -95,6 +96,7 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 		},
 	})
 }
+
 func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -164,6 +166,7 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 		},
 	})
 }
+
 func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -194,6 +197,7 @@ func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 		},
 	})
 }
+
 func TestAccKeyManagerKey_DefaultAlgorithm(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
