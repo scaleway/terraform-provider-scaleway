@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceKeyManagerKey() *schema.Resource {
@@ -40,11 +42,31 @@ func ResourceKeyManagerKey() *schema.Resource {
 				}, false),
 				Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
 			},
-		"algorithm": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
-		},
+			"algorithm": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+					var allKnownAlgos []string
+
+					symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
+					for _, algo := range symAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
+					for _, algo := range asymEncAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+					for _, algo := range asymSignAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
+				},
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -128,10 +150,12 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	usage := d.Get("usage").(string)
 	algorithm := d.Get("algorithm").(string)
+
 	keyUsage, err := expandUsageAlgorithm(usage, algorithm)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	createReq.Usage = keyUsage
 
 	key, err := api.CreateKey(createReq)
@@ -247,8 +271,6 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 
 func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
 	return func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
-		// No strict validation here - we let the API validate the algorithm
-		// This prevents the provider from being a bottleneck when new algorithms are added
 		return nil
 	}
 }
@@ -256,18 +278,18 @@ func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
 func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error) {
 	switch usage {
 	case usageSymmetricEncryption:
-		// Accept any algorithm for symmetric encryption - let API validate
 		typedAlgo := key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
+
 		return &key_manager.KeyUsage{SymmetricEncryption: &typedAlgo}, nil
 
 	case usageAsymmetricEncryption:
-		// Accept any algorithm for asymmetric encryption - let API validate
 		typedAlgo := key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
+
 		return &key_manager.KeyUsage{AsymmetricEncryption: &typedAlgo}, nil
 
 	case usageAsymmetricSigning:
-		// Accept any algorithm for asymmetric signing - let API validate
 		typedAlgo := key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
+
 		return &key_manager.KeyUsage{AsymmetricSigning: &typedAlgo}, nil
 
 	default:
