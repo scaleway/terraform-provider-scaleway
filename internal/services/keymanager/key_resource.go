@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceKeyManagerKey() *schema.Resource {
@@ -44,12 +45,10 @@ func ResourceKeyManagerKey() *schema.Resource {
 				},
 			},
 			"usage_symmetric_encryption": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"aes_256_gcm",
-				}, false),
-				Description: "Algorithm for symmetric encryption. Possible values: aes_256_gcm",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmSymmetricEncryption](),
+				Description:      "Algorithm for symmetric encryption",
 				ExactlyOneOf: []string{
 					"usage",
 					"usage_symmetric_encryption",
@@ -58,14 +57,10 @@ func ResourceKeyManagerKey() *schema.Resource {
 				},
 			},
 			"usage_asymmetric_encryption": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"rsa_oaep_2048_sha256",
-					"rsa_oaep_3072_sha256",
-					"rsa_oaep_4096_sha256",
-				}, false),
-				Description: "Algorithm for asymmetric encryption. Possible values: rsa_oaep_2048_sha256, rsa_oaep_3072_sha256, rsa_oaep_4096_sha256",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmAsymmetricEncryption](),
+				Description:      "Algorithm for asymmetric encryption",
 				ExactlyOneOf: []string{
 					"usage",
 					"usage_symmetric_encryption",
@@ -74,14 +69,10 @@ func ResourceKeyManagerKey() *schema.Resource {
 				},
 			},
 			"usage_asymmetric_signing": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"ec_p256_sha256",
-					"rsa_pss_2048_sha256",
-					"rsa_pkcs1_2048_sha256",
-				}, false),
-				Description: "Algorithm for asymmetric signing. Possible values: ec_p256_sha256, rsa_pss_2048_sha256, rsa_pkcs1_2048_sha256",
+				Type:             schema.TypeString,
+				Optional:         true,
+				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmAsymmetricSigning](),
+				Description:      "Algorithm for asymmetric signing",
 				ExactlyOneOf: []string{
 					"usage",
 					"usage_symmetric_encryption",
