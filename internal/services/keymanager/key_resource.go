@@ -29,17 +29,65 @@ func ResourceKeyManagerKey() *schema.Resource {
 			"region":     regional.Schema(),
 			"usage": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
+				Computed: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
 				}, false),
-				Description: "Key usage. Keys with a usage set to 'symmetric_encryption' can encrypt and decrypt data using the AES-256-GCM key algorithm. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+				Deprecated:  "Use usage_symmetric_encryption, usage_asymmetric_encryption, or usage_asymmetric_signing instead",
+				Description: "DEPRECATED: Use usage_symmetric_encryption, usage_asymmetric_encryption, or usage_asymmetric_signing instead. Key usage. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+				ExactlyOneOf: []string{
+					"usage",
+					"usage_symmetric_encryption",
+					"usage_asymmetric_encryption",
+					"usage_asymmetric_signing",
+				},
 			},
-			"algorithm": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Algorithm for the key. If not specified, a default algorithm is chosen based on usage. See Key Manager documentation for supported algorithms.",
+			"usage_symmetric_encryption": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"aes_256_gcm",
+				}, false),
+				Description: "Algorithm for symmetric encryption. Possible values: aes_256_gcm",
+				ExactlyOneOf: []string{
+					"usage",
+					"usage_symmetric_encryption",
+					"usage_asymmetric_encryption",
+					"usage_asymmetric_signing",
+				},
+			},
+			"usage_asymmetric_encryption": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"rsa_oaep_2048_sha256",
+					"rsa_oaep_3072_sha256",
+					"rsa_oaep_4096_sha256",
+				}, false),
+				Description: "Algorithm for asymmetric encryption. Possible values: rsa_oaep_2048_sha256, rsa_oaep_3072_sha256, rsa_oaep_4096_sha256",
+				ExactlyOneOf: []string{
+					"usage",
+					"usage_symmetric_encryption",
+					"usage_asymmetric_encryption",
+					"usage_asymmetric_signing",
+				},
+			},
+			"usage_asymmetric_signing": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"ec_p256_sha256",
+					"rsa_pss_2048_sha256",
+					"rsa_pkcs1_2048_sha256",
+				}, false),
+				Description: "Algorithm for asymmetric signing. Possible values: ec_p256_sha256, rsa_pss_2048_sha256, rsa_pkcs1_2048_sha256",
+				ExactlyOneOf: []string{
+					"usage",
+					"usage_symmetric_encryption",
+					"usage_asymmetric_encryption",
+					"usage_asymmetric_signing",
+				},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -122,8 +170,7 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
-	algorithm := d.Get("algorithm").(string)
-	createReq.Usage = ExpandKeyUsage(d.Get("usage").(string), algorithm)
+	createReq.Usage = ExpandKeyUsageFromFields(d)
 
 	key, err := api.CreateKey(createReq)
 	if err != nil {
@@ -152,8 +199,25 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", key.Name)
 	_ = d.Set("project_id", key.ProjectID)
 	_ = d.Set("region", key.Region.String())
-	_ = d.Set("usage", UsageToString(key.Usage))
-	_ = d.Set("algorithm", AlgorithmFromKeyUsage(key.Usage))
+
+	usageType := UsageToString(key.Usage)
+	algorithm := AlgorithmFromKeyUsage(key.Usage)
+
+	_ = d.Set("usage", usageType)
+
+	_, usesLegacy := d.GetOk("usage")
+
+	if !usesLegacy {
+		switch usageType {
+		case "symmetric_encryption":
+			_ = d.Set("usage_symmetric_encryption", algorithm)
+		case "asymmetric_encryption":
+			_ = d.Set("usage_asymmetric_encryption", algorithm)
+		case "asymmetric_signing":
+			_ = d.Set("usage_asymmetric_signing", algorithm)
+		}
+	}
+
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
 	_ = d.Set("rotation_count", int(key.RotationCount))

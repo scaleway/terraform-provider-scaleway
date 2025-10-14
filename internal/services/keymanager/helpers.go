@@ -55,28 +55,39 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 	return client, region, keyID, nil
 }
 
-func ExpandKeyUsage(usage string, algorithm string) *key_manager.KeyUsage {
+func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
+	if v, ok := d.GetOk("usage_symmetric_encryption"); ok {
+		alg := key_manager.KeyAlgorithmSymmetricEncryption(v.(string))
+		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
+	}
+
+	if v, ok := d.GetOk("usage_asymmetric_encryption"); ok {
+		alg := key_manager.KeyAlgorithmAsymmetricEncryption(v.(string))
+		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
+	}
+
+	if v, ok := d.GetOk("usage_asymmetric_signing"); ok {
+		alg := key_manager.KeyAlgorithmAsymmetricSigning(v.(string))
+		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
+	}
+
+	if v, ok := d.GetOk("usage"); ok {
+		return ExpandKeyUsageLegacy(v.(string))
+	}
+
+	return nil
+}
+
+func ExpandKeyUsageLegacy(usage string) *key_manager.KeyUsage {
 	switch usage {
 	case "symmetric_encryption":
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
-		if algorithm != "" {
-			alg = key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
-		}
-
 		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
 	case "asymmetric_encryption":
 		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
-		if algorithm != "" {
-			alg = key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
-		}
-
 		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
 	case "asymmetric_signing":
 		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
-		if algorithm != "" {
-			alg = key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
-		}
-
 		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
 	default:
 		return nil
@@ -128,7 +139,6 @@ func ExpandKeyRotationPolicy(v any) (*key_manager.KeyRotationPolicy, error) {
 		RotationPeriod: scw.NewDurationFromTimeDuration(period),
 	}
 
-	// Handle next_rotation_at if provided
 	if nextRotationStr, ok := m["next_rotation_at"].(string); ok && nextRotationStr != "" {
 		nextRotation, err := time.Parse(time.RFC3339, nextRotationStr)
 		if err != nil {
