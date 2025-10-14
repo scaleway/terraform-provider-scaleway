@@ -22,7 +22,7 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -60,7 +60,7 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -102,7 +102,7 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -146,7 +146,7 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -175,7 +175,7 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{

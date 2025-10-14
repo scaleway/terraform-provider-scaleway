@@ -27,7 +27,7 @@ func TestAccSecret_Basic(t *testing.T) {
 	secretDescription := "secret description"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -95,7 +95,7 @@ func TestAccSecret_Path(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -171,7 +171,7 @@ func TestAccSecret_Protected(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -224,7 +224,7 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{

@@ -22,7 +22,7 @@ func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	ctx := t.Context()
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSNSTopicSubscriptionDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
 			{

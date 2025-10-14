@@ -15,7 +15,7 @@ func TestAccCockpit_Simple(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCockpitDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -39,7 +39,7 @@ func TestAccCockpit_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCockpitDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -73,7 +73,7 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCockpitDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

@@ -20,7 +20,7 @@ func TestAccVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 	testDNSZone := "tf-reverse-vpcgw." + acctest.TestDomain
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

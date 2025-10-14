@@ -13,7 +13,7 @@ func TestAccDataSourceMongoDBInstance_ByName(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -48,7 +48,7 @@ func TestAccDataSourceMongoDBInstance_ByID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

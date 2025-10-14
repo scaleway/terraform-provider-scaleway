@@ -18,7 +18,7 @@ func TestAccRoute_WithSNI(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -98,7 +98,7 @@ func TestAccRoute_WithHostHeader(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -143,7 +143,7 @@ func TestAccRoute_WithPathBegin(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

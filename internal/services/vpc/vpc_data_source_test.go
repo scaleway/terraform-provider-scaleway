@@ -15,7 +15,7 @@ func TestAccDataSourceVPC_Basic(t *testing.T) {
 	vpcName := "DataSourceVPC_Basic"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -54,7 +54,7 @@ func TestAccDataSourceVPC_Default(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

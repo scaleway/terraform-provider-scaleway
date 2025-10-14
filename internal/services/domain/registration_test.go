@@ -27,7 +27,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -109,7 +109,7 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{

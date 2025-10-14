@@ -23,7 +23,7 @@ func TestAccDomain_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -57,7 +57,7 @@ func TestAccDomain_Tos(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -81,7 +81,7 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -131,7 +131,7 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

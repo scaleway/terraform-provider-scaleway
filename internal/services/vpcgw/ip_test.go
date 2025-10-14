@@ -17,7 +17,7 @@ func TestAccVPCPublicGatewayIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -40,7 +40,7 @@ func TestAccVPCPublicGatewayIP_WithZone(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
@@ -72,7 +72,7 @@ func TestAccVPCPublicGatewayIP_WithTags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

@@ -30,7 +30,7 @@ func TestAccPartitionSchemaDataSource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -98,7 +98,7 @@ func TestAccPartitionSchemaDataSource_WithoutExtraPart(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -165,7 +165,7 @@ func TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -232,7 +232,7 @@ func TestAccPartitionSchemaDataSource_WithAlternateOffer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -301,7 +301,7 @@ func TestAccPartitionSchemaDataSource_IncompatibleOS(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -363,7 +363,7 @@ func TestAccPartitionSchemaDataSource_IncompatibleOffer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),

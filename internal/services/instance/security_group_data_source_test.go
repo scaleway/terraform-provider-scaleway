@@ -15,7 +15,7 @@ func TestAccDataSourceSecurityGroup_Basic(t *testing.T) {
 	securityGroupName := "tf-security-group"
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSecurityGroupDestroyed(tt),
 		Steps: []resource.TestStep{
 			{

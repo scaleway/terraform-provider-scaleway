@@ -14,7 +14,7 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -61,7 +61,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
 		Steps: []resource.TestStep{
 			{

@@ -68,7 +68,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -120,7 +120,7 @@ func TestAccFunctionTrigger_Nats(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
@@ -149,7 +149,7 @@ func TestAccFunctionTrigger_Error(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV5ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionTriggerDestroy(tt),
 		Steps: []resource.TestStep{
 			{
