@@ -13,21 +13,27 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+const (
+	usageSymmetricEncryption  = "symmetric_encryption"
+	usageAsymmetricEncryption = "asymmetric_encryption"
+	usageAsymmetricSigning    = "asymmetric_signing"
+)
+
 func UsageToString(u *key_manager.KeyUsage) string {
 	if u == nil {
 		return ""
 	}
 
 	if u.SymmetricEncryption != nil {
-		return "symmetric_encryption"
+		return usageSymmetricEncryption
 	}
 
 	if u.AsymmetricEncryption != nil {
-		return "asymmetric_encryption"
+		return usageAsymmetricEncryption
 	}
 
 	if u.AsymmetricSigning != nil {
-		return "asymmetric_signing"
+		return usageAsymmetricSigning
 	}
 
 	return ""
@@ -58,16 +64,19 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 	if v, ok := d.GetOk("usage_symmetric_encryption"); ok {
 		alg := key_manager.KeyAlgorithmSymmetricEncryption(v.(string))
+
 		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_encryption"); ok {
 		alg := key_manager.KeyAlgorithmAsymmetricEncryption(v.(string))
+
 		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_signing"); ok {
 		alg := key_manager.KeyAlgorithmAsymmetricSigning(v.(string))
+
 		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
 	}
 
@@ -80,14 +89,17 @@ func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 
 func ExpandKeyUsageLegacy(usage string) *key_manager.KeyUsage {
 	switch usage {
-	case "symmetric_encryption":
+	case usageSymmetricEncryption:
 		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
+
 		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
-	case "asymmetric_encryption":
+	case usageAsymmetricEncryption:
 		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
+
 		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
-	case "asymmetric_signing":
+	case usageAsymmetricSigning:
 		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
+
 		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
 	default:
 		return nil

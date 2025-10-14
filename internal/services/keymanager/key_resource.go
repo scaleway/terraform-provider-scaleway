@@ -209,11 +209,11 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 
 	if !usesLegacy {
 		switch usageType {
-		case "symmetric_encryption":
+		case usageSymmetricEncryption:
 			_ = d.Set("usage_symmetric_encryption", algorithm)
-		case "asymmetric_encryption":
+		case usageAsymmetricEncryption:
 			_ = d.Set("usage_asymmetric_encryption", algorithm)
-		case "asymmetric_signing":
+		case usageAsymmetricSigning:
 			_ = d.Set("usage_asymmetric_signing", algorithm)
 		}
 	}
