@@ -8,7 +8,7 @@ on:
   merge_group:
 
 jobs:
-  tests:
+  terraform:
     strategy:
       fail-fast: false
       matrix:
@@ -163,4 +163,139 @@ jobs:
           TF_TEST_DOMAIN: scaleway-terraform.com
           TF_TEST_DOMAIN_ZONE: tf
           SCW_DEBUG: 0
+          SCW_ENABLE_BETA: true
+  opentofu:
+    strategy:
+      fail-fast: false
+      matrix:
+        products:
+          - account
+          - applesilicon
+          - az
+          - baremetal
+          - billing
+          - block
+          - cockpit
+          - container
+          - domain
+          - file
+          - flexibleip
+          - function
+          - iam
+          - instance
+          - inference
+          - iot
+          - ipam
+          - jobs
+          - k8s
+          - lb
+          - marketplace
+          - mnq
+          - mongodb
+          - object
+          - rdb
+          - redis
+          - registry
+          - sdb
+          - secret
+          - tem
+          - vpc
+          - vpcgw
+          - webhosting
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      # This CI supports skipping flaky or broken tests via GitHub repository variables.
+      # This allows quick fixes without code changes when tests break due to external factors.
+      #
+      # HOW TO SKIP TESTS:
+      # 1. Go to: Settings → Secrets and variables → Actions → Variables
+      # 2. Create or edit Repository variables:
+      #    - SKIP_TESTS_<PRODUCT>: Skip patterns for any product (uppercase)
+      #    - SKIP_TESTS_ALL: Skip patterns applied to ALL products
+      #
+      # PATTERN SYNTAX:
+      # - Single test: TestAccServer_Basic
+      # - Multiple tests: TestAccServer_Basic|TestAccServer_Other
+      # - Wildcard: TestAccServer.*
+      # - Contains: .*IPAM.*
+      #
+      # EXAMPLE:
+      # Variable: SKIP_TESTS_BAREMETAL
+      # Value: TestAccServer_Basic|TestAccServer_WithIPAMPrivateNetwork
+      - name: Determine Skip Pattern
+        id: skip-config
+        run: |
+          PRODUCT="${{ matrix.products }}"
+          SKIP_PATTERN=""
+
+          case "$PRODUCT" in
+            baremetal)
+              SKIP_PATTERN="$SKIP_TESTS_BAREMETAL"
+              ;;
+          esac
+
+          if [ -n "$SKIP_TESTS_ALL" ]; then
+            if [ -n "$SKIP_PATTERN" ]; then
+              SKIP_PATTERN="${SKIP_PATTERN}|${SKIP_TESTS_ALL}"
+            else
+              SKIP_PATTERN="$SKIP_TESTS_ALL"
+            fi
+          fi
+
+          echo "skip_pattern=$SKIP_PATTERN" >> $GITHUB_OUTPUT
+        env:
+          SKIP_TESTS_BAREMETAL: ${{ vars.SKIP_TESTS_BAREMETAL }}
+          SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
+      - name: Run Acceptance Tests
+        run: |
+          SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
+
+          if [ -n "$SKIP_PATTERN" ]; then
+            echo ""
+            echo "SKIPPING TESTS"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Pattern: $SKIP_PATTERN"
+            echo ""
+            echo "Tests that will be skipped:"
+            go tool gotestsum --format github-actions -- -list=. ./internal/services/${{ matrix.products }} | grep -E "$SKIP_PATTERN" || true
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+
+            go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=2h -skip="$SKIP_PATTERN"
+            TEST_RESULT=$?
+          else
+            go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=2h
+            TEST_RESULT=$?
+          fi
+
+          if [ -n "$SKIP_PATTERN" ]; then
+            echo ""
+            echo "CI Skip Configuration:"
+            echo "Pattern: $SKIP_PATTERN"
+            echo "To modify: Update SKIP_TESTS_$(echo ${{ matrix.products }} | tr '[:lower:]' '[:upper:]') in GitHub repository variables"
+          fi
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+          exit $TEST_RESULT
+        env:
+          TF_ACC_TERRAFORM_PATH: tofu
+          TF_ACC_PROVIDER_NAMESPACE: hashicorp
+          TF_ACC_PROVIDER_HOST: registry.opentofu.org
+          TF_LOG: DEBUG
+          TF_ACC: 1
+          TF_UPDATE_CASSETTES: false
+          TF_TEST_DOMAIN: scaleway-terraform.com
+          TF_TEST_DOMAIN_ZONE: tf
+          SCW_DEBUG: 0
+          SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
+          SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_ENABLE_BETA: true
