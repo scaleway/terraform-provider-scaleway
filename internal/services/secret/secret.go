@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
@@ -56,18 +55,11 @@ func (r *ResourceSecret) Configure(ctx context.Context, request resource.Configu
 			"Cannot get meta from provider",
 			"cannot get meta from provider",
 		)
-	}
-
-	client := m.ScwClient()
-	if !ok {
-		response.Diagnostics.AddError(
-			"Unexpected Action Configure Type",
-			fmt.Sprintf("Expected *scw.Client, got: %T. Please report this issue to the provider developers.", request.ProviderData),
-		)
 
 		return
 	}
 
+	client := m.ScwClient()
 	r.secretAPI = secret.NewAPI(client)
 }
 
@@ -271,22 +263,29 @@ func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequ
 			//	},
 			//},
 		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx,
-				timeouts.Opts{
-					Create: true,
-				},
-			),
-		},
+		//Blocks: map[string]schema.Block{
+		//	"timeouts": timeouts.Block(ctx,
+		//		timeouts.Opts{
+		//			Create:            true,
+		//			CreateDescription: "Timeout to apply on Create",
+		//			Read:              true,
+		//			ReadDescription:   "Timeout to apply on Read",
+		//			Update:            true,
+		//			UpdateDescription: "Timeout to apply on Update",
+		//			Delete:            true,
+		//			DeleteDescription: "Timeout to apply on Delete",
+		//		},
+		//	),
+		//},
 	}
 }
 
 type ResourceSecretModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Protected   types.Bool   `tfsdk:"protected"`
-	Type        types.String `tfsdk:"type"`
-	Tags        types.List   `tfsdk:"tags"`
+	ID        types.String `tfsdk:"id"`
+	Name      types.String `tfsdk:"name"`
+	Protected types.Bool   `tfsdk:"protected"`
+	Type      types.String `tfsdk:"type"`
+	// Tags        types.List   `tfsdk:"tags"`
 	Description types.String `tfsdk:"description"`
 	Path        types.String `tfsdk:"path"`
 	// EphemeralPolicy types.String      `tfsdk:"ephemeral_policy"`
@@ -297,7 +296,24 @@ type ResourceSecretModel struct {
 	CreatedAt    types.String `tfsdk:"created_at"`
 	UpdatedAt    types.String `tfsdk:"updated_at"`
 	// Versions     types.List     `tfsdk:"versions"`
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	// Timeouts timeouts.Value `tfsdk:"timeouts"`
+}
+
+func NewModelFromSecret(s secret.Secret) *ResourceSecretModel {
+	return &ResourceSecretModel{
+		Name:         types.StringValue(s.Name),
+		Status:       types.StringValue(s.Status.String()),
+		ProjectID:    types.StringValue(s.ProjectID),
+		Protected:    types.BoolValue(s.Protected),
+		Description:  types.StringPointerValue(s.Description),
+		CreatedAt:    types.StringValue(s.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:    types.StringValue(s.UpdatedAt.Format(time.RFC3339)),
+		Type:         types.StringValue(s.Type.String()),
+		VersionCount: types.Int32Value(int32(s.VersionCount)),
+		ID:           types.StringValue(regional.NewIDString(s.Region, s.ID)),
+		Region:       types.StringValue(s.Region.String()),
+		Path:         types.StringValue(s.Path),
+	}
 }
 
 func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
@@ -348,6 +364,8 @@ func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequ
 			"error while creating secret",
 			err.Error(),
 		)
+
+		return
 	}
 	if apiResponse == nil {
 		response.Diagnostics.AddError(
@@ -366,19 +384,9 @@ func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequ
 	response.Diagnostics.Append(response.Identity.Set(ctx, identity)...)
 
 	// Save data into Terraform state
-	data.ID = types.StringValue(regional.NewIDString(apiResponse.Region, apiResponse.ID))
-	data.Name = types.StringValue(apiResponse.Name)
-	data.Description = types.StringPointerValue(apiResponse.Description)
-	data.Region = types.StringValue(apiResponse.Region.String())
-	data.Path = types.StringValue(apiResponse.Path)
-	data.VersionCount = types.Int32Value(int32(apiResponse.VersionCount))
-	data.ProjectID = types.StringValue(apiResponse.ProjectID)
-	data.Type = types.StringValue(apiResponse.Type.String())
-	data.Status = types.StringValue(apiResponse.Status.String())
-	data.CreatedAt = types.StringValue(apiResponse.CreatedAt.Format(time.RFC3339))
-	data.UpdatedAt = types.StringValue(apiResponse.UpdatedAt.Format(time.RFC3339))
-	data.Protected = types.BoolValue(apiResponse.Protected)
-	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+	dataToSave := NewModelFromSecret(*apiResponse)
+
+	response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
 }
 
 func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
@@ -394,6 +402,7 @@ func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest,
 	if err != nil {
 		if httperrors.Is404(err) {
 			response.State.RemoveResource(ctx)
+
 			return
 		}
 
@@ -422,17 +431,8 @@ func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest,
 	//	return diag.FromErr(err)
 	//}
 
-	data.Name = types.StringValue(secretResponse.Name)
-	data.Description = types.StringPointerValue(secretResponse.Description)
-	data.Region = types.StringValue(secretResponse.Region.String())
-	data.Path = types.StringValue(secretResponse.Path)
 	// data.VersionCount = types.Int32Value(int32(versions.TotalCount))
-	data.ProjectID = types.StringValue(secretResponse.ProjectID)
-	data.Type = types.StringValue(secretResponse.Type.String())
-	data.Status = types.StringValue(secretResponse.Status.String())
-	data.CreatedAt = types.StringValue(secretResponse.CreatedAt.Format(time.RFC3339))
-	data.UpdatedAt = types.StringValue(secretResponse.UpdatedAt.Format(time.RFC3339))
-	data.Protected = types.BoolValue(secretResponse.Protected)
+
 	//_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
 
 	//versionsList := make([]map[string]any, 0, len(versions.Versions))
@@ -451,7 +451,8 @@ func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest,
 	//_ = d.Set("versions", versionsList)
 
 	// Save updated data into Terraform state
-	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
+	dataToSave := NewModelFromSecret(*secretResponse)
+	response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
 }
 
 func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
@@ -505,22 +506,14 @@ func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequ
 				"unable to update secret",
 				err.Error(),
 			)
+
+			return
 		}
 
-		plan.Name = types.StringValue(secretResponse.Name)
-		plan.Description = types.StringPointerValue(secretResponse.Description)
-		plan.Region = types.StringValue(secretResponse.Region.String())
-		plan.Path = types.StringValue(secretResponse.Path)
-		// data.VersionCount = types.Int32Value(int32(versions.TotalCount))
-		plan.ProjectID = types.StringValue(secretResponse.ProjectID)
-		plan.Type = types.StringValue(secretResponse.Type.String())
-		plan.Status = types.StringValue(secretResponse.Status.String())
-		plan.CreatedAt = types.StringValue(secretResponse.CreatedAt.Format(time.RFC3339))
-		plan.UpdatedAt = types.StringValue(secretResponse.UpdatedAt.Format(time.RFC3339))
-		plan.Protected = types.BoolValue(secretResponse.Protected)
+		dataToSave := NewModelFromSecret(*secretResponse)
 
 		// Save updated data into Terraform state
-		response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
+		response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
 	}
 
 	//if !plan.Protected.Equal(state.Protected) {
