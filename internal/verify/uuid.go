@@ -2,6 +2,7 @@ package verify
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
 	diagFramework "github.com/hashicorp/terraform-plugin-framework/diag"
@@ -135,8 +136,10 @@ func (U UUIDValidator) MarkdownDescription(ctx context.Context) string {
 }
 
 func (U UUIDValidator) ValidateString(ctx context.Context, request validator.StringRequest, response *validator.StringResponse) {
-	if !validation.IsUUID(request.ConfigValue.String()) {
-		response.Diagnostics.AddError("is not an uuid", "is not a UUID")
+	if !request.ConfigValue.IsNull() && !validation.IsUUID(request.ConfigValue.String()) {
+		response.Diagnostics.AddError(
+			fmt.Sprintf("String attribute is not an uuid: %s", request.PathExpression.String()),
+			fmt.Sprintf("At path: %s, value %s is not a UUID", request.Path, request.ConfigValue))
 	}
 }
 

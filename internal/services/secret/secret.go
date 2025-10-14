@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-timetypes/timetypes"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -19,40 +20,45 @@ import (
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/planModifiers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
-	_ resource.Resource                = ResourceSecret{}
-	_ resource.ResourceWithConfigure   = ResourceSecret{}
-	_ resource.ResourceWithIdentity    = ResourceSecret{}
-	_ resource.ResourceWithImportState = ResourceSecret{}
+	_ resource.Resource                = &ResourceSecret{}
+	_ resource.ResourceWithConfigure   = &ResourceSecret{}
+	_ resource.ResourceWithIdentity    = &ResourceSecret{}
+	_ resource.ResourceWithImportState = &ResourceSecret{}
 )
 
 type ResourceSecret struct {
 	secretAPI *secret.API
-	region    scw.Region
-	projectID string
-	id        string
 }
 
 func NewResourceSecret() resource.Resource {
 	return &ResourceSecret{}
 }
 
-func (r ResourceSecret) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *ResourceSecret) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r ResourceSecret) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
+func (r *ResourceSecret) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
 	if request.ProviderData == nil {
 		return
 	}
+	m, ok := request.ProviderData.(*meta.Meta)
+	if !ok {
+		response.Diagnostics.AddError(
+			"Cannot get meta from provider",
+			"cannot get meta from provider",
+		)
+	}
 
-	client, ok := request.ProviderData.(*scw.Client)
+	client := m.ScwClient()
 	if !ok {
 		response.Diagnostics.AddError(
 			"Unexpected Action Configure Type",
@@ -70,20 +76,22 @@ type ResourceSecretIdentityModel struct {
 	Region types.String `tfsdk:"region"`
 }
 
-func (r ResourceSecret) IdentitySchema(ctx context.Context, request resource.IdentitySchemaRequest, response *resource.IdentitySchemaResponse) {
+func (r *ResourceSecret) IdentitySchema(ctx context.Context, request resource.IdentitySchemaRequest, response *resource.IdentitySchemaResponse) {
 	response.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
 			"id": identityschema.StringAttribute{
 				RequiredForImport: true,
+				Description:       "ID of the secret",
 			},
 			"region": identityschema.StringAttribute{
 				OptionalForImport: true,
+				Description:       "Region of the secret",
 			},
 		},
 	}
 }
 
-func (r ResourceSecret) Metadata(ctx context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
+func (r *ResourceSecret) Metadata(ctx context.Context, request resource.MetadataRequest, response *resource.MetadataResponse) {
 	response.TypeName = request.ProviderTypeName + "_secret"
 }
 
@@ -119,9 +127,18 @@ func (m cleanUpFilePath) PlanModifyString(_ context.Context, req planmodifier.St
 	resp.PlanValue = types.StringValue(filepath.Clean(req.StateValue.String()))
 }
 
-func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequest, response *resource.SchemaResponse) {
+func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequest, response *resource.SchemaResponse) {
 	response.Schema = schema.Schema{
+		Description:         "Schema for secret",
+		MarkdownDescription: "Schema for secret",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Secret ID",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The secret name",
@@ -148,6 +165,7 @@ func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaReque
 			},
 			"path": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Location of the secret in the directory structure.",
 				Default:     stringdefault.StaticString("/"),
 				PlanModifiers: []planmodifier.String{
@@ -155,7 +173,11 @@ func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaReque
 				},
 			},
 			"protected": schema.BoolAttribute{
-				Optional:    true,
+				Optional: true,
+				Computed: true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
 			},
 			"tags": schema.ListAttribute{
@@ -175,6 +197,7 @@ func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaReque
 					return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
 				}(),
 				Optional: true,
+				Computed: true,
 				Default:  stringdefault.StaticString(secret.SecretTypeOpaque.String()),
 				Validators: []validator.String{
 					verify.ValidatorFromEnum[secret.SecretType](secret.SecretType("")),
@@ -182,71 +205,71 @@ func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaReque
 			},
 			"region":     regional.ResourceSchema("The region you want to attach the resource to"),
 			"project_id": account.ResourceProjectIDSchema("The project ID you want to attach the secret to"),
-			"ephemeral_policy": schema.ListNestedAttribute{
-				Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
-				Optional:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"ttl": schema.StringAttribute{
-							Optional:    true,
-							Description: "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
-							Validators: []validator.String{
-								verify.DurationValidator{},
-							},
-							PlanModifiers: []planmodifier.String{
-								planModifiers.Duration{},
-							},
-						},
-						"expires_once_accessed": schema.BoolAttribute{
-							Optional:    true,
-							Description: "True if the secret version expires after a single user access.",
-						},
-						"action": schema.StringAttribute{
-							Required: true,
-							Validators: []validator.String{
-								verify.ValidatorFromEnum[secret.EphemeralPolicyAction](secret.EphemeralPolicyAction("")),
-							},
-							Description: "Action to perform when the version of a secret expires.",
-						},
-					},
-				},
-			},
-			"versions": schema.ListNestedAttribute{
-				Description: "List of the versions of the secret",
-				Computed:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"revision": schema.StringAttribute{
-							Computed:    true,
-							Description: "The revision of secret version",
-						},
-						"secret_id": schema.StringAttribute{
-							Computed:    true,
-							Description: "The secret ID associated with this version",
-						},
-						"status": schema.StringAttribute{
-							Computed:    true,
-							Description: "Status of the secret version",
-						},
-						"created_at": schema.StringAttribute{
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"updated_at": schema.StringAttribute{
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"description": schema.StringAttribute{
-							Optional:    true,
-							Description: "Description of the secret version",
-						},
-						"latest": schema.BoolAttribute{
-							Optional:    true,
-							Description: "Returns true if the version is the latest.",
-						},
-					},
-				},
-			},
+			//"ephemeral_policy": schema.ListNestedAttribute{
+			//	Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
+			//	Optional:    true,
+			//	NestedObject: schema.NestedAttributeObject{
+			//		Attributes: map[string]schema.Attribute{
+			//			"ttl": schema.StringAttribute{
+			//				Optional:    true,
+			//				Description: "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
+			//				Validators: []validator.String{
+			//					verify.DurationValidator{},
+			//				},
+			//				PlanModifiers: []planmodifier.String{
+			//					planModifiers.Duration{},
+			//				},
+			//			},
+			//			"expires_once_accessed": schema.BoolAttribute{
+			//				Optional:    true,
+			//				Description: "True if the secret version expires after a single user access.",
+			//			},
+			//			"action": schema.StringAttribute{
+			//				Required: true,
+			//				Validators: []validator.String{
+			//					verify.ValidatorFromEnum[secret.EphemeralPolicyAction](secret.EphemeralPolicyAction("")),
+			//				},
+			//				Description: "Action to perform when the version of a secret expires.",
+			//			},
+			//		},
+			//	},
+			//},
+			//"versions": schema.ListNestedAttribute{
+			//	Description: "List of the versions of the secret",
+			//	Computed:    true,
+			//	NestedObject: schema.NestedAttributeObject{
+			//		Attributes: map[string]schema.Attribute{
+			//			"revision": schema.StringAttribute{
+			//				Computed:    true,
+			//				Description: "The revision of secret version",
+			//			},
+			//			"secret_id": schema.StringAttribute{
+			//				Computed:    true,
+			//				Description: "The secret ID associated with this version",
+			//			},
+			//			"status": schema.StringAttribute{
+			//				Computed:    true,
+			//				Description: "Status of the secret version",
+			//			},
+			//			"created_at": schema.StringAttribute{
+			//				Computed:    true,
+			//				Description: "Date and time of secret version's creation (RFC 3339 format)",
+			//			},
+			//			"updated_at": schema.StringAttribute{
+			//				Computed:    true,
+			//				Description: "Date and time of secret version's creation (RFC 3339 format)",
+			//			},
+			//			"description": schema.StringAttribute{
+			//				Optional:    true,
+			//				Description: "Description of the secret version",
+			//			},
+			//			"latest": schema.BoolAttribute{
+			//				Optional:    true,
+			//				Description: "Returns true if the version is the latest.",
+			//			},
+			//		},
+			//	},
+			//},
 		},
 		Blocks: map[string]schema.Block{
 			"timeouts": timeouts.Block(ctx,
@@ -259,34 +282,41 @@ func (r ResourceSecret) Schema(ctx context.Context, request resource.SchemaReque
 }
 
 type ResourceSecretModel struct {
-	ID              types.String      `tfsdk:"id"`
-	Name            types.String      `tfsdk:"name"`
-	Protected       types.Bool        `tfsdk:"protected"`
-	Type            types.String      `tfsdk:"type"`
-	Tags            types.List        `tfsdk:"tags"`
-	Description     types.String      `tfsdk:"description"`
-	Path            types.String      `tfsdk:"path"`
-	EphemeralPolicy types.String      `tfsdk:"ephemeral_policy"`
-	Region          types.String      `tfsdk:"region"`
-	ProjectID       types.String      `tfsdk:"project_id"`
-	VersionCount    types.Int32       `tfsdk:"version_count"`
-	Status          types.String      `tfsdk:"status"`
-	CreatedAt       timetypes.RFC3339 `tfsdk:"created_at"`
-	UpdatedAt       timetypes.RFC3339 `tfsdk:"updated_at"`
-	Versions        types.ListType    `tfsdk:"versions"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Protected   types.Bool   `tfsdk:"protected"`
+	Type        types.String `tfsdk:"type"`
+	Tags        types.List   `tfsdk:"tags"`
+	Description types.String `tfsdk:"description"`
+	Path        types.String `tfsdk:"path"`
+	// EphemeralPolicy types.String      `tfsdk:"ephemeral_policy"`
+	Region       types.String `tfsdk:"region"`
+	ProjectID    types.String `tfsdk:"project_id"`
+	VersionCount types.Int32  `tfsdk:"version_count"`
+	Status       types.String `tfsdk:"status"`
+	CreatedAt    types.String `tfsdk:"created_at"`
+	UpdatedAt    types.String `tfsdk:"updated_at"`
+	// Versions     types.List     `tfsdk:"versions"`
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r ResourceSecret) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
+func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
 	var data ResourceSecretModel
 
 	response.Diagnostics.Append(request.Plan.Get(ctx, &data)...)
 
 	secretCreateRequest := &secret.CreateSecretRequest{
-		Region:    r.region,
-		ProjectID: r.projectID,
-		Name:      data.Name.String(),
+		Name:      data.Name.ValueString(),
 		Protected: data.Protected.ValueBool(),
-		Type:      secret.SecretType(data.Type.String()),
+		Type:      secret.SecretType(data.Type.ValueString()),
+	}
+
+	if !data.Region.IsNull() {
+		secretCreateRequest.Region = scw.Region(data.Region.ValueString())
+	}
+
+	if !data.ProjectID.IsNull() {
+		secretCreateRequest.ProjectID = data.ProjectID.ValueString()
 	}
 
 	//if !data.Tags.IsNull() {
@@ -337,18 +367,29 @@ func (r ResourceSecret) Create(ctx context.Context, request resource.CreateReque
 
 	// Save data into Terraform state
 	data.ID = types.StringValue(regional.NewIDString(apiResponse.Region, apiResponse.ID))
+	data.Name = types.StringValue(apiResponse.Name)
+	data.Description = types.StringPointerValue(apiResponse.Description)
+	data.Region = types.StringValue(apiResponse.Region.String())
+	data.Path = types.StringValue(apiResponse.Path)
+	data.VersionCount = types.Int32Value(int32(apiResponse.VersionCount))
+	data.ProjectID = types.StringValue(apiResponse.ProjectID)
+	data.Type = types.StringValue(apiResponse.Type.String())
+	data.Status = types.StringValue(apiResponse.Status.String())
+	data.CreatedAt = types.StringValue(apiResponse.CreatedAt.Format(time.RFC3339))
+	data.UpdatedAt = types.StringValue(apiResponse.UpdatedAt.Format(time.RFC3339))
+	data.Protected = types.BoolValue(apiResponse.Protected)
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r ResourceSecret) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
+func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest, response *resource.ReadResponse) {
 	var data ResourceSecretModel
 
 	// Read Terraform prior state data into the model
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
 	secretResponse, err := r.secretAPI.GetSecret(&secret.GetSecretRequest{
-		Region:   scw.Region(data.Region.String()),
-		SecretID: data.ID.String(),
+		Region:   scw.Region(data.Region.ValueString()),
+		SecretID: locality.ExpandID(data.ID.ValueString()),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -389,8 +430,8 @@ func (r ResourceSecret) Read(ctx context.Context, request resource.ReadRequest, 
 	data.ProjectID = types.StringValue(secretResponse.ProjectID)
 	data.Type = types.StringValue(secretResponse.Type.String())
 	data.Status = types.StringValue(secretResponse.Status.String())
-	data.CreatedAt = timetypes.NewRFC3339TimeValue(*secretResponse.CreatedAt)
-	data.UpdatedAt = timetypes.NewRFC3339TimeValue(*secretResponse.UpdatedAt)
+	data.CreatedAt = types.StringValue(secretResponse.CreatedAt.Format(time.RFC3339))
+	data.UpdatedAt = types.StringValue(secretResponse.UpdatedAt.Format(time.RFC3339))
 	data.Protected = types.BoolValue(secretResponse.Protected)
 	//_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
 
@@ -413,15 +454,15 @@ func (r ResourceSecret) Read(ctx context.Context, request resource.ReadRequest, 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
 
-func (r ResourceSecret) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
+func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequest, response *resource.UpdateResponse) {
 	var plan, state ResourceSecretModel
 
 	response.Diagnostics.Append(request.Plan.Get(ctx, &plan)...)
 	response.Diagnostics.Append(request.State.Get(ctx, &state)...)
 
 	updateRequest := &secret.UpdateSecretRequest{
-		Region:   scw.Region(plan.Region.String()),
-		SecretID: plan.ID.String(),
+		Region:   scw.Region(plan.Region.ValueString()),
+		SecretID: locality.ExpandID(plan.ID.ValueString()),
 	}
 
 	hasChanged := false
@@ -458,13 +499,28 @@ func (r ResourceSecret) Update(ctx context.Context, request resource.UpdateReque
 	//}
 
 	if hasChanged {
-		_, err := r.secretAPI.UpdateSecret(updateRequest, scw.WithContext(ctx))
+		secretResponse, err := r.secretAPI.UpdateSecret(updateRequest, scw.WithContext(ctx))
 		if err != nil {
 			response.Diagnostics.AddError(
 				"unable to update secret",
 				err.Error(),
 			)
 		}
+
+		plan.Name = types.StringValue(secretResponse.Name)
+		plan.Description = types.StringPointerValue(secretResponse.Description)
+		plan.Region = types.StringValue(secretResponse.Region.String())
+		plan.Path = types.StringValue(secretResponse.Path)
+		// data.VersionCount = types.Int32Value(int32(versions.TotalCount))
+		plan.ProjectID = types.StringValue(secretResponse.ProjectID)
+		plan.Type = types.StringValue(secretResponse.Type.String())
+		plan.Status = types.StringValue(secretResponse.Status.String())
+		plan.CreatedAt = types.StringValue(secretResponse.CreatedAt.Format(time.RFC3339))
+		plan.UpdatedAt = types.StringValue(secretResponse.UpdatedAt.Format(time.RFC3339))
+		plan.Protected = types.BoolValue(secretResponse.Protected)
+
+		// Save updated data into Terraform state
+		response.Diagnostics.Append(response.State.Set(ctx, &plan)...)
 	}
 
 	//if !plan.Protected.Equal(state.Protected) {
@@ -504,15 +560,15 @@ func (r ResourceSecret) Update(ctx context.Context, request resource.UpdateReque
 	//}
 }
 
-func (r ResourceSecret) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
+func (r *ResourceSecret) Delete(ctx context.Context, request resource.DeleteRequest, response *resource.DeleteResponse) {
 	var data ResourceSecretModel
 
 	// Read Terraform prior state data into the model
 	response.Diagnostics.Append(request.State.Get(ctx, &data)...)
 
 	err := r.secretAPI.DeleteSecret(&secret.DeleteSecretRequest{
-		Region:   scw.Region(data.Region.String()),
-		SecretID: data.ID.String(),
+		Region:   scw.Region(data.Region.ValueString()),
+		SecretID: data.ID.ValueString(),
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		response.Diagnostics.AddError(
