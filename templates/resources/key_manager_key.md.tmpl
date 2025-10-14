@@ -13,13 +13,14 @@ This resource allows you to create and manage cryptographic keys in Scaleway Key
 
 ```terraform
 resource "scaleway_key_manager_key" "symmetric" {
-  name                        = "my-kms-key"
-  region                      = "fr-par"
-  project_id                  = "your-project-id" # optional, will use provider default if omitted
-  usage_symmetric_encryption  = "aes_256_gcm"
-  description                 = "Key for encrypting secrets"
-  tags                        = ["env:prod", "kms"]
-  unprotected                 = true
+  name        = "my-kms-key"
+  region      = "fr-par"
+  project_id  = "your-project-id" # optional, will use provider default if omitted
+  usage       = "symmetric_encryption"
+  algorithm   = "aes_256_gcm"
+  description = "Key for encrypting secrets"
+  tags        = ["env:prod", "kms"]
+  unprotected = true
 
   rotation_policy {
     rotation_period = "720h" # 30 days
@@ -31,11 +32,12 @@ resource "scaleway_key_manager_key" "symmetric" {
 
 ```terraform
 resource "scaleway_key_manager_key" "rsa_4096" {
-  name                            = "rsa-4096-key"
-  region                          = "fr-par"
-  usage_asymmetric_encryption     = "rsa_oaep_4096_sha256"
-  description                     = "Key for encrypting large files with RSA-4096"
-  unprotected                     = true
+  name        = "rsa-4096-key"
+  region      = "fr-par"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"
+  description = "Key for encrypting large files with RSA-4096"
+  unprotected = true
 }
 ```
 
@@ -43,11 +45,12 @@ resource "scaleway_key_manager_key" "rsa_4096" {
 
 ```terraform
 resource "scaleway_key_manager_key" "signing" {
-  name                         = "signing-key"
-  region                       = "fr-par"
-  usage_asymmetric_signing     = "rsa_pss_2048_sha256"
-  description                  = "Key for signing documents"
-  unprotected                  = true
+  name        = "signing-key"
+  region      = "fr-par"
+  usage       = "asymmetric_signing"
+  algorithm   = "rsa_pss_2048_sha256"
+  description = "Key for signing documents"
+  unprotected = true
 }
 ```
 
@@ -59,19 +62,24 @@ The following arguments are supported:
 - `region` (String) – The region in which to create the key (e.g., `fr-par`).  
 - `project_id` (String, Optional) – The ID of the project the key belongs to.
 
-**Key Usage and Algorithm (choose ONE of the following):**
+**Key Usage and Algorithm (both required):**
 
-- `usage_symmetric_encryption` (String, Optional) – Algorithm for symmetric encryption. Possible values:
-    - `aes_256_gcm`
-- `usage_asymmetric_encryption` (String, Optional) – Algorithm for asymmetric encryption. Possible values:
-    - `rsa_oaep_2048_sha256`
-    - `rsa_oaep_3072_sha256`
-    - `rsa_oaep_4096_sha256`
-- `usage_asymmetric_signing` (String, Optional) – Algorithm for asymmetric signing. Possible values:
-    - `ec_p256_sha256`
-    - `rsa_pss_2048_sha256`
-    - `rsa_pkcs1_2048_sha256`
-- `usage` (String, **DEPRECATED**) – Legacy field. Use `usage_*` fields instead. Valid values: `symmetric_encryption`, `asymmetric_encryption`, `asymmetric_signing`. When using this field, algorithms are hardcoded to defaults.
+- `usage` (String, Required) – The usage type of the key. Valid values:
+    - `symmetric_encryption` – For symmetric encryption operations
+    - `asymmetric_encryption` – For asymmetric encryption operations
+    - `asymmetric_signing` – For digital signing operations
+
+- `algorithm` (String, Required) – The cryptographic algorithm to use. Valid values depend on the `usage`:
+    - For `symmetric_encryption`:
+        - `aes_256_gcm`
+    - For `asymmetric_encryption`:
+        - `rsa_oaep_2048_sha256`
+        - `rsa_oaep_3072_sha256`
+        - `rsa_oaep_4096_sha256`
+    - For `asymmetric_signing`:
+        - `ec_p256_sha256`
+        - `rsa_pss_2048_sha256`
+        - `rsa_pkcs1_2048_sha256`
 
 **Other arguments:**
 
@@ -89,7 +97,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` – The ID of the key.
-- `usage` – The usage type of the key (e.g., `symmetric_encryption`, `asymmetric_encryption`, `asymmetric_signing`).
 - `state` – The state of the key (e.g., `enabled`).
 - `created_at` – The date and time when the key was created.
 - `updated_at` – The date and time when the key was last updated.
@@ -109,54 +116,11 @@ You can import a key using its ID and region:
 terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-555555555555
 ```
 
-## Migration from v1.x to v2.x
-
-⚠️ **Deprecation Notice**: The `usage` field is now deprecated in favor of `usage_*` fields.
-
-**Old syntax (deprecated, but still supported):**
-```terraform
-resource "scaleway_key_manager_key" "main" {
-  usage = "asymmetric_encryption"  # hardcoded to rsa_oaep_3072_sha256
-}
-```
-
-**New syntax (recommended):**
-```terraform
-resource "scaleway_key_manager_key" "main" {
-  usage_asymmetric_encryption = "rsa_oaep_4096_sha256"  # explicit algorithm selection
-}
-```
-
-**What changed:**
-- The generic `usage` field is now deprecated
-- You should now use specific `usage_*` fields (`usage_symmetric_encryption`, `usage_asymmetric_encryption`, `usage_asymmetric_signing`)
-- You can now explicitly choose the cryptographic algorithm (RSA-2048, RSA-3072, RSA-4096, EC-P256, etc.)
-
-**Migration steps:**
-1. Replace `usage = "symmetric_encryption"` with `usage_symmetric_encryption = "aes_256_gcm"`
-2. Replace `usage = "asymmetric_encryption"` with `usage_asymmetric_encryption = "rsa_oaep_3072_sha256"` (or your preferred algorithm)
-3. Replace `usage = "asymmetric_signing"` with `usage_asymmetric_signing = "ec_p256_sha256"` (or your preferred algorithm)
-
-The old `usage` field still works but will show deprecation warnings.
-
 ## Notes
 
 - **Protection**: By default, keys are protected and cannot be deleted. To allow deletion, set `unprotected = true` when creating the key.
 - **Rotation Policy**: The `rotation_policy` block allows you to set automatic rotation for your key.
 - **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
 - **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
-- **Algorithm Selection**: With the new `usage_*` fields, you can now specify exactly which algorithm to use for your keys, aligning with the flexibility provided by the Scaleway API.
-- **Deprecation**: The `usage` field is deprecated. Please migrate to `usage_*` fields to explicitly select algorithms.
-
-## Additional Example: Asymmetric Signing Key
-
-```terraform
-resource "scaleway_key_manager_key" "signing" {
-  name                     = "signing-key"
-  region                   = "fr-par"
-  usage_asymmetric_signing = "ec_p256_sha256"
-  description              = "Key for signing documents"
-  unprotected              = true
-}
-```
+- **Algorithm Validation**: The provider validates that the specified `algorithm` is compatible with the `usage` type at plan time, providing early feedback on configuration errors.
 

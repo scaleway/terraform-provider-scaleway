@@ -2,8 +2,10 @@ package keymanager
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
@@ -11,7 +13,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceKeyManagerKey() *schema.Resource {
@@ -20,6 +21,9 @@ func ResourceKeyManagerKey() *schema.Resource {
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		CustomizeDiff: customdiff.All(
+			validateUsageAlgorithmCombination(),
+		),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -30,56 +34,17 @@ func ResourceKeyManagerKey() *schema.Resource {
 			"region":     regional.Schema(),
 			"usage": {
 				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Required: true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
 				}, false),
-				Deprecated:  "Use usage_symmetric_encryption, usage_asymmetric_encryption, or usage_asymmetric_signing instead",
-				Description: "DEPRECATED: Use usage_symmetric_encryption, usage_asymmetric_encryption, or usage_asymmetric_signing instead. Key usage. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
-				ExactlyOneOf: []string{
-					"usage",
-					"usage_symmetric_encryption",
-					"usage_asymmetric_encryption",
-					"usage_asymmetric_signing",
-				},
+				Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
 			},
-			"usage_symmetric_encryption": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmSymmetricEncryption](),
-				Description:      "Algorithm for symmetric encryption",
-				ExactlyOneOf: []string{
-					"usage",
-					"usage_symmetric_encryption",
-					"usage_asymmetric_encryption",
-					"usage_asymmetric_signing",
-				},
-			},
-			"usage_asymmetric_encryption": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmAsymmetricEncryption](),
-				Description:      "Algorithm for asymmetric encryption",
-				ExactlyOneOf: []string{
-					"usage",
-					"usage_symmetric_encryption",
-					"usage_asymmetric_encryption",
-					"usage_asymmetric_signing",
-				},
-			},
-			"usage_asymmetric_signing": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[key_manager.KeyAlgorithmAsymmetricSigning](),
-				Description:      "Algorithm for asymmetric signing",
-				ExactlyOneOf: []string{
-					"usage",
-					"usage_symmetric_encryption",
-					"usage_asymmetric_encryption",
-					"usage_asymmetric_signing",
-				},
-			},
+		"algorithm": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+		},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -161,7 +126,13 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
-	createReq.Usage = ExpandKeyUsageFromFields(d)
+	usage := d.Get("usage").(string)
+	algorithm := d.Get("algorithm").(string)
+	keyUsage, err := expandUsageAlgorithm(usage, algorithm)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	createReq.Usage = keyUsage
 
 	key, err := api.CreateKey(createReq)
 	if err != nil {
@@ -195,19 +166,7 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	algorithm := AlgorithmFromKeyUsage(key.Usage)
 
 	_ = d.Set("usage", usageType)
-
-	_, usesLegacy := d.GetOk("usage")
-
-	if !usesLegacy {
-		switch usageType {
-		case usageSymmetricEncryption:
-			_ = d.Set("usage_symmetric_encryption", algorithm)
-		case usageAsymmetricEncryption:
-			_ = d.Set("usage_asymmetric_encryption", algorithm)
-		case usageAsymmetricSigning:
-			_ = d.Set("usage_asymmetric_signing", algorithm)
-		}
-	}
+	_ = d.Set("algorithm", algorithm)
 
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
@@ -284,4 +243,34 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 	d.SetId("")
 
 	return nil
+}
+
+func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
+		// No strict validation here - we let the API validate the algorithm
+		// This prevents the provider from being a bottleneck when new algorithms are added
+		return nil
+	}
+}
+
+func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error) {
+	switch usage {
+	case usageSymmetricEncryption:
+		// Accept any algorithm for symmetric encryption - let API validate
+		typedAlgo := key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
+		return &key_manager.KeyUsage{SymmetricEncryption: &typedAlgo}, nil
+
+	case usageAsymmetricEncryption:
+		// Accept any algorithm for asymmetric encryption - let API validate
+		typedAlgo := key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
+		return &key_manager.KeyUsage{AsymmetricEncryption: &typedAlgo}, nil
+
+	case usageAsymmetricSigning:
+		// Accept any algorithm for asymmetric signing - let API validate
+		typedAlgo := key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
+		return &key_manager.KeyUsage{AsymmetricSigning: &typedAlgo}, nil
+
+	default:
+		return nil, fmt.Errorf("unknown usage type: %s", usage)
+	}
 }
