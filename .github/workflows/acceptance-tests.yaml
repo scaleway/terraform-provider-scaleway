@@ -287,7 +287,7 @@ jobs:
 
           exit $TEST_RESULT
         env:
-          TF_ACC_TERRAFORM_PATH: tofu
+          TF_ACC_TERRAFORM_PATH: ${{ env.TOFU_CLI_PATH }}/tofu
           TF_ACC_PROVIDER_NAMESPACE: hashicorp
           TF_ACC_PROVIDER_HOST: registry.opentofu.org
           TF_LOG: DEBUG
