@@ -1014,6 +1014,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("admin_password_encryption_ssh_key_id") {
+		serverShouldUpdate = true
 		updateRequest.AdminPasswordEncryptionSSHKeyID = types.ExpandUpdatedStringPtr(d.Get("admin_password_encryption_ssh_key_id").(string))
 	}
 
@@ -1226,7 +1227,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:   zone,
 			IP:     zonal.ExpandID(ipID).ID,
 			Server: &instanceSDK.NullableStringValue{Null: true},
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			log.Print("[WARN] Failed to detach eip of server")
 		}
@@ -1237,19 +1238,28 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:           zone,
 			PlacementGroup: &instanceSDK.NullableStringValue{Null: true},
 			ServerID:       id,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			log.Print("[WARN] Failed remove server from instanceSDK group")
 		}
 	}
-	// reach stopped state
-	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
-	if httperrors.Is404(err) {
-		return nil
-	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	// Delete private-nic if managed by instance_server resource
+	if raw, ok := d.GetOk("private_network"); ok {
+		ph, err := newPrivateNICHandler(api.API, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for index := range raw.([]any) {
+			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+			pn := d.Get(pnKey)
+
+			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	// Delete private-nic if managed by instance_server resource
@@ -1275,17 +1285,12 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
-		Zone:     zone,
-		ServerID: id,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+	err = terminateServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		err = deleteServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
@@ -1303,6 +1308,54 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	// reach running state (mandatory for termination)
+	err := reachState(ctx, api, zone, id, instanceSDK.ServerStateRunning)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
+		Zone:     zone,
+		ServerID: id,
+		Action:   instanceSDK.ServerActionTerminate,
+		Timeout:  &timeout,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	return nil
+}
+
+func deleteServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	_, err := waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	// reach stopped state
+	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	_, err = waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
 	}
 
 	return nil
