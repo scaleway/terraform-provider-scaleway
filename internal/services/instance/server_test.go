@@ -1522,7 +1522,7 @@ func imageIDMatchLabel(tt *acctest.TestTools, resourceWithImageID, resourceWithI
 		if expectMatch && expectedImageID != localImageIDFromLabel.ID {
 			return fmt.Errorf("unexpected image ID for label %q: expected %s, got %s", imageLabel, expectedImageID, localImageIDFromLabel.ID)
 		} else if !expectMatch && expectedImageID == localImageIDFromLabel.ID {
-			return fmt.Errorf("images IDs match when they should not")
+			return errors.New("images IDs match when they should not")
 		}
 
 		return nil
@@ -2188,6 +2188,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 
 func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 	t.Skip("There is currently a bug when resetting the field, we should reinstate the test once the fix has been deployed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
