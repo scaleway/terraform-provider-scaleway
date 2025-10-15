@@ -184,7 +184,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 				VolumeID:      volume.ID,
 				Zone:          zone,
 				RetryInterval: transport.DefaultWaitRetryInterval,
-			})
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
@@ -193,7 +193,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 				Zone:          zone,
 				VolumeID:      volume.ID,
 				RetryInterval: transport.DefaultWaitRetryInterval,
-			})
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
@@ -207,7 +207,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 			Zone:          zone,
 			Timeout:       scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout),
 			RetryInterval: transport.DefaultWaitRetryInterval,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			return err
 		}
