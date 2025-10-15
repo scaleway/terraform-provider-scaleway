@@ -6,11 +6,14 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	diagFramework "github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -101,22 +104,22 @@ func (m cleanUpFilePath) MarkdownDescription(ctx context.Context) string {
 }
 
 func (m cleanUpFilePath) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
-	// Do nothing if there is no state (resource is being created).
-	if req.State.Raw.IsNull() {
+	// Do nothing if there is no state (resource is being created)
+	// or if we're not in a refresh operation (since PlanOnly tests check for no changes)
+	if req.State.Raw.IsNull() || !req.PlanValue.IsUnknown() {
 		return
 	}
 
-	// Do nothing if there is a known planned value.
-	if !req.PlanValue.IsUnknown() {
-		return
+	// For refresh operations, we want to ensure the state matches the API
+	// The API likely normalizes paths, so we should clean them
+	cleanedPath := filepath.Clean(req.StateValue.String())
+
+	// Special case: if the cleaned path is empty or root, ensure it's "/"
+	if cleanedPath == "." {
+		cleanedPath = "/"
 	}
 
-	// Do nothing if there is an unknown configuration value, otherwise interpolation gets messed up.
-	if req.ConfigValue.IsUnknown() {
-		return
-	}
-
-	resp.PlanValue = types.StringValue(filepath.Clean(req.StateValue.String()))
+	resp.PlanValue = types.StringValue(cleanedPath)
 }
 
 func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequest, response *resource.SchemaResponse) {
@@ -137,7 +140,9 @@ func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequ
 			},
 			"description": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Description of the secret",
+				Default:     stringdefault.StaticString(""),
 			},
 			"status": schema.StringAttribute{
 				Computed:    true,
@@ -176,6 +181,8 @@ func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequ
 				ElementType: types.StringType,
 				Description: "List of tags [\"tag1\", \"tag2\", ...] associated to secret",
 				Optional:    true,
+				Computed:    true,
+				Default:     listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})),
 			},
 			"type": schema.StringAttribute{
 				PlanModifiers: []planmodifier.String{
@@ -281,11 +288,11 @@ func (r *ResourceSecret) Schema(ctx context.Context, request resource.SchemaRequ
 }
 
 type ResourceSecretModel struct {
-	ID        types.String `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	Protected types.Bool   `tfsdk:"protected"`
-	Type      types.String `tfsdk:"type"`
-	// Tags        types.List   `tfsdk:"tags"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Protected   types.Bool   `tfsdk:"protected"`
+	Type        types.String `tfsdk:"type"`
+	Tags        types.List   `tfsdk:"tags"`
 	Description types.String `tfsdk:"description"`
 	Path        types.String `tfsdk:"path"`
 	// EphemeralPolicy types.String      `tfsdk:"ephemeral_policy"`
@@ -299,8 +306,8 @@ type ResourceSecretModel struct {
 	// Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func NewModelFromSecret(s secret.Secret) *ResourceSecretModel {
-	return &ResourceSecretModel{
+func NewModelFromSecret(ctx context.Context, s secret.Secret) (*ResourceSecretModel, diagFramework.Diagnostics) {
+	model := &ResourceSecretModel{
 		Name:         types.StringValue(s.Name),
 		Status:       types.StringValue(s.Status.String()),
 		ProjectID:    types.StringValue(s.ProjectID),
@@ -314,6 +321,11 @@ func NewModelFromSecret(s secret.Secret) *ResourceSecretModel {
 		Region:       types.StringValue(s.Region.String()),
 		Path:         types.StringValue(s.Path),
 	}
+
+	tags, diags := types.ListValueFrom(ctx, types.StringType, s.Tags)
+	model.Tags = tags
+
+	return model, diags
 }
 
 func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequest, response *resource.CreateResponse) {
@@ -321,10 +333,17 @@ func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequ
 
 	response.Diagnostics.Append(request.Plan.Get(ctx, &data)...)
 
+	if response.Diagnostics.HasError() {
+		return
+	}
+
 	secretCreateRequest := &secret.CreateSecretRequest{
 		Name:      data.Name.ValueString(),
 		Protected: data.Protected.ValueBool(),
-		Type:      secret.SecretType(data.Type.ValueString()),
+	}
+
+	if !data.Type.IsNull() {
+		secretCreateRequest.Type = secret.SecretType(data.Type.ValueString())
 	}
 
 	if !data.Region.IsNull() {
@@ -335,9 +354,12 @@ func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequ
 		secretCreateRequest.ProjectID = data.ProjectID.ValueString()
 	}
 
-	//if !data.Tags.IsNull() {
-	//	secretCreateRequest.Tags = data.Tags.Elements()
-	//}
+	if !data.Tags.IsNull() {
+		elements := make([]string, 0, len(data.Tags.Elements()))
+		diags := data.Tags.ElementsAs(ctx, &elements, false)
+		response.Diagnostics.Append(diags...)
+		secretCreateRequest.Tags = elements
+	}
 
 	if !data.Description.IsNull() {
 		secretCreateRequest.Description = data.Description.ValueStringPointer()
@@ -384,7 +406,7 @@ func (r *ResourceSecret) Create(ctx context.Context, request resource.CreateRequ
 	response.Diagnostics.Append(response.Identity.Set(ctx, identity)...)
 
 	// Save data into Terraform state
-	dataToSave := NewModelFromSecret(*apiResponse)
+	dataToSave, _ := NewModelFromSecret(ctx, *apiResponse)
 
 	response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
 }
@@ -451,7 +473,7 @@ func (r *ResourceSecret) Read(ctx context.Context, request resource.ReadRequest,
 	//_ = d.Set("versions", versionsList)
 
 	// Save updated data into Terraform state
-	dataToSave := NewModelFromSecret(*secretResponse)
+	dataToSave, _ := NewModelFromSecret(ctx, *secretResponse)
 	response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
 }
 
@@ -469,7 +491,8 @@ func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequ
 	hasChanged := false
 
 	if !plan.Description.Equal(state.Description) {
-		updateRequest.Description = plan.Description.ValueStringPointer()
+		desc := plan.Description.ValueString()
+		updateRequest.Description = &desc
 		hasChanged = true
 	}
 
@@ -478,13 +501,19 @@ func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequ
 		hasChanged = true
 	}
 
-	//if !plan.Tags.Equal(state.Tags) {
-	//	updateRequest.Tags = plan.Tags.
-	//	hasChanged = true
-	//}
-	//if d.HasChange("tags") {
-	//	updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	//}
+	if !plan.Tags.Equal(state.Tags) {
+		updateRequest.Tags = &[]string{}
+
+		elements := make([]string, 0, len(plan.Tags.Elements()))
+		diags := plan.Tags.ElementsAs(ctx, &elements, false)
+		response.Diagnostics.Append(diags...)
+
+		if elements != nil {
+			updateRequest.Tags = &elements
+		}
+
+		hasChanged = true
+	}
 
 	if !plan.Path.Equal(state.Path) {
 		updateRequest.Path = plan.Path.ValueStringPointer()
@@ -510,7 +539,7 @@ func (r *ResourceSecret) Update(ctx context.Context, request resource.UpdateRequ
 			return
 		}
 
-		dataToSave := NewModelFromSecret(*secretResponse)
+		dataToSave, _ := NewModelFromSecret(ctx, *secretResponse)
 
 		// Save updated data into Terraform state
 		response.Diagnostics.Append(response.State.Set(ctx, &dataToSave)...)
