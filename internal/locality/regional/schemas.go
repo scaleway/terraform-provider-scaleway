@@ -1,6 +1,9 @@
 package regional
 
 import (
+	resourceSchema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -34,5 +37,16 @@ func Schema() *schema.Schema {
 		ForceNew:         true,
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
+	}
+}
+
+func ResourceSchema(description string) resourceSchema.Attribute {
+	return resourceSchema.StringAttribute{
+		Description: description,
+		Optional:    true,
+		Computed:    true,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
 	}
 }

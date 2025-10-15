@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
 var _ provider.Provider = &ScalewayProvider{}
@@ -66,10 +68,43 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 }
 
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	terraformVersion := req.TerraformVersion
+
+	m, err := meta.NewMeta(ctx, &meta.Config{
+		TerraformVersion: terraformVersion,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error in creating the meta",
+			"error in creating the meta")
+	}
+
+	ok, message, err := m.HasMultipleVariableSources()
+	if err != nil {
+		resp.Diagnostics.AddWarning(
+			"Error checking multiple variable sources",
+			err.Error(),
+		)
+	}
+
+	if ok && err == nil {
+		resp.Diagnostics.AddWarning(
+			"Multiple variable sources detected, please make sure the right credentials are used",
+			message,
+		)
+	}
+
+	resp.ActionData = m
+	resp.DataSourceData = m
+	resp.EphemeralResourceData = m
+	resp.ListResourceData = m
+	resp.ResourceData = m
 }
 
 func (p *ScalewayProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		secret.NewResourceSecret,
+	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
@@ -77,7 +112,9 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		secret.NewDataSourceSecret,
+	}
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
