@@ -1014,6 +1014,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("admin_password_encryption_ssh_key_id") {
+		serverShouldUpdate = true
 		updateRequest.AdminPasswordEncryptionSSHKeyID = types.ExpandUpdatedStringPtr(d.Get("admin_password_encryption_ssh_key_id").(string))
 	}
 
@@ -1243,24 +1244,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// reach running state (mandatory for termination)
-	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateRunning)
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	timeout := d.Timeout(schema.TimeoutDelete)
-
-	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
-		Zone:     zone,
-		ServerID: id,
-		Action:   instanceSDK.ServerActionTerminate,
-		Timeout:  &timeout,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
 	// Delete private-nic if managed by instance_server resource
 	if raw, ok := d.GetOk("private_network"); ok {
 		ph, err := newPrivateNICHandler(api.API, id, zone)
@@ -1279,6 +1262,19 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	err = terminateServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		err = deleteServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 	_, rootVolumeAttributeSet := d.GetOk("root_volume")
 	if d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet {
@@ -1294,6 +1290,54 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	// reach running state (mandatory for termination)
+	err := reachState(ctx, api, zone, id, instanceSDK.ServerStateRunning)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
+		Zone:     zone,
+		ServerID: id,
+		Action:   instanceSDK.ServerActionTerminate,
+		Timeout:  &timeout,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	return nil
+}
+
+func deleteServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	_, err := waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	// reach stopped state
+	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	_, err = waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
 	}
 
 	return nil
