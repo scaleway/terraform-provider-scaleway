@@ -74,7 +74,7 @@ func ResourceServer() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				Description:      "The instanceSDK type of the server", // TODO: link to scaleway pricing in the doc
+				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"protected": {
@@ -158,7 +158,7 @@ func ResourceServer() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
-							Description: "Force deletion of the root volume on instanceSDK termination",
+							Description: "Force deletion of the root volume on instance termination",
 						},
 						"boot": {
 							Type:        schema.TypeBool,
@@ -265,7 +265,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    8,
-				Description: "List of private network to connect with your instanceSDK",
+				Description: "List of private network to connect with your instance",
 				Elem: &schema.Resource{
 					Timeouts: &schema.ResourceTimeout{
 						Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
@@ -302,7 +302,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
-				Description: "List of public IPs attached to your instanceSDK",
+				Description: "List of private IPv4 and IPv6 addresses attached to your instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -347,18 +347,18 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Optional:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
+				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
+							Description: "The ID of the IP address resource",
 						},
 						"address": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The private IPv4 address",
+							Description: "The private IP address",
 						},
 					},
 				},
@@ -930,7 +930,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Null: true}
 		} else {
 			if !isStopped {
-				return diag.FromErr(errors.New("instanceSDK must be stopped to change placement group"))
+				return diag.FromErr(errors.New("instance must be stopped to change placement group"))
 			}
 
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Value: placementGroupID}
@@ -974,7 +974,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "instanceSDK may need to be rebooted to use the new boot type",
+				Summary:  "instance may need to be rebooted to use the new boot type",
 			})
 		}
 	}
@@ -998,7 +998,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			if !isStopped && d.HasChange("user_data.cloud-init") {
 				warnings = append(warnings, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "instanceSDK may need to be rebooted to use the new cloud init config",
+					Summary:  "instance may need to be rebooted to use the new cloud init config",
 				})
 			}
 		}
@@ -1132,7 +1132,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			ServerID:       id,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			log.Print("[WARN] Failed remove server from instanceSDK group")
+			log.Print("[WARN] Failed remove server from instance group")
 		}
 	}
 

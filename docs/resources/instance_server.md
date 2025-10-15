@@ -286,11 +286,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Instance servers' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group ressource](instance_placement_group.md) to known when the placement group policy is respected.
+- `placement_group_policy_respected` - (Deprecated) Always false, use [instance_placement_group resource](instance_placement_group.md) to known when the placement group policy is respected.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
-- `private_ip` - The Scaleway internal IP address of the server (Deprecated use [ipam_ip datasource](../data-sources/ipam_ip.md#instance-private-network-ip) instead).
-- `public_ip` -  The public IP address of the server (Deprecated use `public_ips` instead).
 - `public_ips` - The list of public IPs of the server.
     - `id` - The ID of the IP.
     - `address` - The address of the IP.
@@ -299,6 +297,9 @@ In addition to all arguments above, the following attributes are exported:
     - `family` - The IP address' family.
     - `dynamic` - Whether the IP is dynamic.
     - `provisioning_mode` - The provisioning mode of the IP
+- `private_ips` - The list of private IPs of the server.
+    - `id` - The ID of the IP.
+    - `address` - The address of the IP.
 - `boot_type` - The boot Type of the server. Possible values are: `local`, `bootscript` or `rescue`.
 - `organization_id` - The organization ID the server is associated with.
 
