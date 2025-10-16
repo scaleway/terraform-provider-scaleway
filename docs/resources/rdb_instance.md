@@ -25,37 +25,6 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-### Example Engine Upgrade
-
-```terraform
-resource "scaleway_rdb_instance" "main" {
-  name           = "test-rdb-upgrade"
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-14"  # Start with older version
-  is_ha_cluster  = false
-  disable_backup = true
-  user_name      = "my_user"
-  password       = "thiZ_is_v&ry_s3cret"
-}
-
-# Upgrade to newer version by changing the engine value
-# Available versions can be found in the upgradable_versions attribute
-resource "scaleway_rdb_instance" "upgraded" {
-  name           = "test-rdb-upgrade"
-  node_type      = "DB-DEV-S"
-  engine         = "PostgreSQL-15"  # Upgrade to newer version
-  is_ha_cluster  = false
-  disable_backup = true
-  user_name      = "my_user"
-  password       = "thiZ_is_v&ry_s3cret"
-}
-
-# Check available upgrade versions
-output "upgradable_versions" {
-  value = scaleway_rdb_instance.main.upgradable_versions
-}
-```
-
 ### Example Block Storage Low Latency
 
 ```terraform
@@ -106,6 +75,38 @@ resource "scaleway_rdb_instance" "main" {
   backup_schedule_frequency = 24 # every day
   backup_schedule_retention = 7  # keep it one week
 }
+```
+
+### Example Engine Upgrade
+
+```terraform
+# Initial creation with PostgreSQL 14
+resource "scaleway_rdb_instance" "main" {
+  name           = "my-database"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+# Check available versions for upgrade
+output "upgradable_versions" {
+  value = scaleway_rdb_instance.main.upgradable_versions
+}
+
+# To upgrade to PostgreSQL 15, simply change the engine value
+# This will trigger a blue/green upgrade with automatic endpoint migration
+# resource "scaleway_rdb_instance" "main" {
+#   name           = "my-database"
+#   node_type      = "DB-DEV-S"
+#   engine         = "PostgreSQL-15"  # Changed from PostgreSQL-14
+#   is_ha_cluster  = false
+#   disable_backup = true
+#   user_name      = "my_user"
+#   password       = "thiZ_is_v&ry_s3cret"
+# }
 ```
 
 ### Examples of endpoint configuration
@@ -174,7 +175,7 @@ interruption.
 
 - `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
 
-~> **Important** Updates to `engine` will perform a blue/green upgrade using a snapshot and endpoint migration. This ensures minimal downtime but any writes between the snapshot and the switch will be lost. Available upgrade versions can be found in the `upgradable_versions` computed attribute.
+~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
@@ -275,12 +276,12 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `id` - The ID of the IPv4 address resource.
     - `address` - The private IPv4 address.
 - `certificate` - Certificate of the Database Instance.
-- `upgradable_versions` - List of available engine versions for upgrade.
-    - `id` - Version ID for upgrade requests.
-    - `name` - Engine name.
-    - `version` - Version string.
-    - `minor_version` - Minor version string.
 - `organization_id` - The organization ID the Database Instance is associated with.
+- `upgradable_versions` - List of available engine versions for upgrade. Each version contains:
+    - `id` - Version ID to use in upgrade requests.
+    - `name` - Engine version name (e.g., `PostgreSQL-15`).
+    - `version` - Version string (e.g., `15.5`).
+    - `minor_version` - Minor version string (e.g., `15.5.0`).
 
 ## Limitations
 

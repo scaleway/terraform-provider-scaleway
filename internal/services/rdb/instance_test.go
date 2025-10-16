@@ -2,12 +2,14 @@ package rdb_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
@@ -1601,6 +1603,234 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-engine-upgrade"),
 					// Verify endpoints are preserved
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EngineUpgrade_InvalidVersion(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-invalid-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "invalid-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestVersion),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-invalid-upgrade"
+						node_type      = "db-dev-s"
+						engine         = "PostgreSQL-99.99"
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "invalid-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`),
+				ExpectError: regexp.MustCompile(`engine version PostgreSQL-99\.99 is not available for upgrade`),
+			},
+		},
+	})
+}
+
+func TestAccInstance_UpgradableVersionsRead(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-upgradable-versions"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+
+					output "upgradable_versions" {
+						value = scaleway_rdb_instance.main.upgradable_versions
+					}
+				`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "upgradable_versions.#"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: scaleway_rdb_instance.main")
+						}
+
+						upgradableVersionsCount := rs.Primary.Attributes["upgradable_versions.#"]
+						if upgradableVersionsCount == "" || upgradableVersionsCount == "0" {
+							return fmt.Errorf("expected at least one upgradable version, got %s", upgradableVersionsCount)
+						}
+
+						// Check that each version has the required fields
+						for i := 0; ; i++ {
+							idKey := fmt.Sprintf("upgradable_versions.%d.id", i)
+							if _, ok := rs.Primary.Attributes[idKey]; !ok {
+								break
+							}
+							nameKey := fmt.Sprintf("upgradable_versions.%d.name", i)
+							versionKey := fmt.Sprintf("upgradable_versions.%d.version", i)
+							minorKey := fmt.Sprintf("upgradable_versions.%d.minor_version", i)
+
+							if rs.Primary.Attributes[nameKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].name is empty", i)
+							}
+							if rs.Primary.Attributes[versionKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].version is empty", i)
+							}
+							if rs.Primary.Attributes[minorKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].minor_version is empty", i)
+							}
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EngineUpgrade_OldInstanceDestroyed(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	var oldInstanceID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-old-destroyed"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "old-instance-check"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: scaleway_rdb_instance.main")
+						}
+						_, _, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+						oldInstanceID = ID
+						return nil
+					},
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-old-destroyed"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "old-instance-check"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return fmt.Errorf("resource not found: scaleway_rdb_instance.main")
+						}
+
+						rdbAPI, region, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						// Verify the instance ID has changed
+						if newInstanceID == oldInstanceID {
+							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
+						}
+
+						// Verify the old instance is destroyed (should return 404)
+						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+							Region:     region,
+							InstanceID: oldInstanceID,
+						})
+						if err == nil {
+							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
+						}
+
+						// Check that the error is a 404
+						if !httperrors.Is404(err) {
+							return fmt.Errorf("expected 404 error for old instance %s, got: %v", oldInstanceID, err)
+						}
+
+						return nil
+					},
 				),
 			},
 		},

@@ -969,6 +969,14 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				newEngineStr, oldEngine.(string), availableVersions))
 		}
 
+		// MajorUpgradeWorkflow performs a blue/green deployment:
+		// 1. Creates a snapshot of the current instance
+		// 2. Creates a new instance with the target engine version
+		// 3. Restores data from the snapshot
+		// 4. Migrates endpoints (WithEndpoints=true) to the new instance
+		// 5. Returns the new instance with a different ID
+		// Note: Scaleway manages the lifecycle of the source instance. It remains available
+		// for potential rollback and is eventually cleaned up by Scaleway's infrastructure.
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
