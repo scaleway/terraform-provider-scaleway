@@ -1544,29 +1544,6 @@ func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	})
 }
 
-func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		rdbAPI, region, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-			InstanceID: ID,
-			Region:     region,
-		})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
 func TestAccInstance_EngineUpgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1731,3 +1708,26 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 	})
 }
 
+func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		rdbAPI, region, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+			InstanceID: ID,
+			Region:     region,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}

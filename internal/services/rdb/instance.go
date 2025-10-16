@@ -968,15 +968,6 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(fmt.Errorf("engine version %s is not available for upgrade from %s. Available versions: %v",
 				newEngineStr, oldEngine.(string), availableVersions))
 		}
-
-		// MajorUpgradeWorkflow performs a blue/green deployment:
-		// 1. Creates a snapshot of the current instance
-		// 2. Creates a new instance with the target engine version
-		// 3. Restores data from the snapshot
-		// 4. Migrates endpoints (WithEndpoints=true) to the new instance
-		// 5. Returns the new instance with a different ID
-		// Note: Scaleway manages the lifecycle of the source instance. It remains available
-		// for potential rollback and is eventually cleaned up by Scaleway's infrastructure.
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
@@ -988,7 +979,6 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			})
 	}
 
-	// Carry out the upgrades
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
@@ -1002,13 +992,41 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
+			oldInstanceID := ID
 			ID = upgradedInstance.ID
 			d.SetId(regional.NewIDString(region, ID))
-		}
 
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))
+			} else {
+				_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil && !httperrors.Is404(err) {
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
+				} else {
+					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+						Region:     region,
+						InstanceID: oldInstanceID,
+						Timeout:    scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+					}, scw.WithContext(ctx))
+					if err != nil && !httperrors.Is404(err) {
+						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
+					}
+				}
+			}
+		} else {
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
