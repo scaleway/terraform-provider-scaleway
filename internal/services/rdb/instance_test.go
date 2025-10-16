@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -1588,7 +1589,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
 						if !ok {
-							return fmt.Errorf("resource not found: scaleway_rdb_instance.main")
+							return errors.New("resource not found: scaleway_rdb_instance.main")
 						}
 
 						// Capture the old instance ID
@@ -1596,6 +1597,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 						if err != nil {
 							return err
 						}
+
 						oldInstanceID = ID
 
 						// Verify upgradable_versions is populated
@@ -1610,6 +1612,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							if _, ok := rs.Primary.Attributes[idKey]; !ok {
 								break
 							}
+
 							nameKey := fmt.Sprintf("upgradable_versions.%d.name", i)
 							versionKey := fmt.Sprintf("upgradable_versions.%d.version", i)
 							minorKey := fmt.Sprintf("upgradable_versions.%d.minor_version", i)
@@ -1617,9 +1620,11 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							if rs.Primary.Attributes[nameKey] == "" {
 								return fmt.Errorf("upgradable_versions[%d].name is empty", i)
 							}
+
 							if rs.Primary.Attributes[versionKey] == "" {
 								return fmt.Errorf("upgradable_versions[%d].version is empty", i)
 							}
+
 							if rs.Primary.Attributes[minorKey] == "" {
 								return fmt.Errorf("upgradable_versions[%d].minor_version is empty", i)
 							}
@@ -1673,7 +1678,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
 						if !ok {
-							return fmt.Errorf("resource not found: scaleway_rdb_instance.main")
+							return errors.New("resource not found: scaleway_rdb_instance.main")
 						}
 
 						rdbAPI, region, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
@@ -1697,7 +1702,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 
 						// Check that the error is a 404
 						if !httperrors.Is404(err) {
-							return fmt.Errorf("expected 404 error for old instance %s, got: %v", oldInstanceID, err)
+							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
 						}
 
 						return nil

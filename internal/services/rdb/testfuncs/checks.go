@@ -85,6 +85,7 @@ func GetEngineVersionsForUpgrade(tt *acctest.TestTools, engineName string) (stri
 	for _, engine := range engines.Engines {
 		if engine.Name == engineName {
 			var availableVersions []string
+
 			for _, version := range engine.Versions {
 				if !version.Disabled {
 					availableVersions = append(availableVersions, version.Name)
@@ -98,5 +99,6 @@ func GetEngineVersionsForUpgrade(tt *acctest.TestTools, engineName string) (stri
 	}
 
 	tt.T.Fatalf("Could not find two different versions for engine %s", engineName)
+
 	return "", ""
 }

@@ -708,6 +708,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 			"minor_version": version.MinorVersion,
 		}
 	}
+
 	_ = d.Set("upgradable_versions", upgradableVersions)
 
 	// set user and password
@@ -955,11 +956,13 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		newEngineStr := newEngine.(string)
 
 		targetVersionID := ""
+
 		var availableVersions []string
 		for _, version := range rdbInstance.UpgradableVersion {
 			availableVersions = append(availableVersions, version.Name)
 			if version.ID == newEngineStr || version.Version == newEngineStr || version.Name == newEngineStr {
 				targetVersionID = version.ID
+
 				break
 			}
 		}
@@ -968,6 +971,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(fmt.Errorf("engine version %s is not available for upgrade from %s. Available versions: %v",
 				newEngineStr, oldEngine.(string), availableVersions))
 		}
+
 		upgradeInstanceRequests = append(upgradeInstanceRequests,
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
