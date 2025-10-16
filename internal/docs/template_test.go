@@ -19,17 +19,24 @@ func TestGoTypeDefined(t *testing.T) {
 			if err != nil {
 				t.Fatalf("cannot open %s", path)
 			}
-			defer f.Close()
+			defer func(f *os.File) {
+				err := f.Close()
+				if err != nil {
+					t.Fatal(err.Error())
+				}
+			}(f)
 
 			scanner := bufio.NewScanner(f)
 			if !scanner.Scan() {
 				t.Logf("❌ %s: file is empty", path)
 				t.Fail()
 			}
+
 			firstLine := scanner.Text()
 			if gotypeRE.MatchString(firstLine) {
 				return nil
 			}
+
 			t.Logf("gotype missing at top of file: %s", path)
 			t.Fail()
 		}
