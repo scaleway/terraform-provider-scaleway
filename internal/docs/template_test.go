@@ -1,4 +1,4 @@
-package template_test
+package docs_test
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ import (
 var gotypeRE = regexp.MustCompile(`\{\{.*gotype:.*}}`)
 
 func TestGoTypeDefined(t *testing.T) {
-	err := filepath.WalkDir("resources", func(path string, _ fs.DirEntry, _ error) error {
+	err := filepath.WalkDir("../../templates/resources", func(path string, _ fs.DirEntry, _ error) error {
 		if isTemplate := strings.Contains(path, "tmpl"); isTemplate {
 			f, err := os.Open(path)
 			if err != nil {
