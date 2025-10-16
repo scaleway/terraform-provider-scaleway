@@ -2183,8 +2183,6 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 }
 
 func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
-	t.Skip("There is currently a bug when resetting the field, we should reinstate the test once the fix has been deployed")
-
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
