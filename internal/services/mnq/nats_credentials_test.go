@@ -17,9 +17,9 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -50,9 +50,9 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNatsCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -139,7 +139,6 @@ func isNatsCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NatsCredentialsID: id,
 				Region:            region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq nats credentials (%s) still exists", rs.Primary.ID)
 			}

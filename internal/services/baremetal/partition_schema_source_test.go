@@ -29,8 +29,8 @@ func TestAccPartitionSchemaDataSource_Basic(t *testing.T) {
 	serverName := "TestAccPartitionSchemaDataSource_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -97,8 +97,8 @@ func TestAccPartitionSchemaDataSource_WithoutExtraPart(t *testing.T) {
 	serverName := "TestAccPartitionSchemaDataSource_WithoutExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -164,8 +164,8 @@ func TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart(t *testing.T) {
 	serverName := "TestAccPartitionSchemaDataSource_WithoutSwapAndExtraPart"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -231,8 +231,8 @@ func TestAccPartitionSchemaDataSource_WithAlternateOffer(t *testing.T) {
 	name := "TestAccPartitionSchemaDataSource_WithAlternateOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -300,8 +300,8 @@ func TestAccPartitionSchemaDataSource_IncompatibleOS(t *testing.T) {
 	name := "TestAccPartitionSchemaDataSource_IncompatibleOS"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),
@@ -362,8 +362,8 @@ func TestAccPartitionSchemaDataSource_IncompatibleOffer(t *testing.T) {
 	name := "TestAccPartitionSchemaDataSource_IncompatibleOffer"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
 		),

@@ -16,6 +16,7 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/strcase"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/stretchr/testify/require"
@@ -24,7 +25,7 @@ import (
 )
 
 // UpdateCassettes will update all cassettes of a given test
-var UpdateCassettes = flag.Bool("cassettes", os.Getenv("TF_UPDATE_CASSETTES") == "true", "Record Cassettes")
+var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
 // SensitiveFields is a map with keys listing fields that should be anonymized
 // value will be set in place of its old value
@@ -61,14 +62,11 @@ func removeKeyRecursive(m map[string]any, key string) {
 	}
 }
 
-// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
-func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
-	t.Helper()
-
+func BuildCassetteName(testName string, pkgFolder string, suffix string) string {
 	specialChars := regexp.MustCompile(`[\\?%*:|"<>. ]`)
 
 	// Replace nested tests separators.
-	fileName := strings.ReplaceAll(t.Name(), "/", "-")
+	fileName := strings.ReplaceAll(testName, "/", "-")
 
 	fileName = strcase.ToBashArg(fileName)
 
@@ -79,6 +77,13 @@ func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
 	fileName = strings.TrimPrefix(fileName, "test-acc-")
 
 	return filepath.Join(pkgFolder, "testdata", fileName)
+}
+
+// getTestFilePath returns a valid filename path based on the go test name and suffix. (Take care of non fs friendly char)
+func getTestFilePath(t *testing.T, pkgFolder string, suffix string) string {
+	t.Helper()
+
+	return BuildCassetteName(t.Name(), pkgFolder, suffix)
 }
 
 // cassetteMatcher is a custom matcher that will juste check equivalence of request bodies

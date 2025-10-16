@@ -134,11 +134,13 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m an
 }
 
 func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, dbName string) (*rdb.Database, error) {
-	res, err := api.ListDatabases(&rdb.ListDatabasesRequest{
-		Region:     r,
-		InstanceID: instanceID,
-		Name:       &dbName,
-	}, scw.WithContext(ctx))
+	res, err := retryRDBReadOnTransient(ctx, api, r, instanceID, func() (*rdb.ListDatabasesResponse, error) {
+		return api.ListDatabases(&rdb.ListDatabasesRequest{
+			Region:     r,
+			InstanceID: instanceID,
+			Name:       &dbName,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return nil, err
 	}

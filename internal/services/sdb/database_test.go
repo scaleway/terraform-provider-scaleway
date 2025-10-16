@@ -17,9 +17,9 @@ func TestAccServerlessSQLDBDatabase_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckServerlessSQLDBDatabaseDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckServerlessSQLDBDatabaseDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -123,7 +123,6 @@ func testAccCheckServerlessSQLDBDatabaseDestroy(tt *acctest.TestTools) resource.
 				DatabaseID: id,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("serverless_sql database (%s) still exists", rs.Primary.ID)
 			}

@@ -20,9 +20,9 @@ func TestAccRdbSnapshot_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsSnapshotDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -62,9 +62,9 @@ func TestAccRdbSnapshot_Update(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsSnapshotDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -136,7 +136,6 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SnapshotID: ID,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("snapshot (%s) still exists", rs.Primary.ID)
 			}

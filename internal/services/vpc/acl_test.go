@@ -15,10 +15,11 @@ import (
 func TestAccACL_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isACLDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -64,10 +65,11 @@ func TestAccACL_Basic(t *testing.T) {
 func TestAccACL_WithRules(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isACLDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -224,7 +226,6 @@ func isACLDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				VpcID:  ID,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("acl (%s) still exists", rs.Primary.ID)
 			}

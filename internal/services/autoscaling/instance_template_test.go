@@ -17,9 +17,9 @@ func TestAccInstanceTemplate_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceTemplateDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInstanceTemplateDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -74,9 +74,9 @@ func TestAccInstanceTemplate_PrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceTemplateDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInstanceTemplateDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -166,7 +166,6 @@ func testAccCheckInstanceTemplateDestroy(tt *acctest.TestTools) resource.TestChe
 				TemplateID: id,
 				Zone:       zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance template (%s) still exists", rs.Primary.ID)
 			}

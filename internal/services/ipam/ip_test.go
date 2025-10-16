@@ -15,10 +15,11 @@ import (
 func TestAccIPAMIP_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      ipamchecks.CheckIPDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -56,10 +57,11 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 func TestAccIPAMIP_WithStandaloneAddress(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      ipamchecks.CheckIPDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -93,10 +95,11 @@ func TestAccIPAMIP_WithStandaloneAddress(t *testing.T) {
 func TestAccIPAMIP_WithTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      ipamchecks.CheckIPDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -160,10 +163,11 @@ func TestAccIPAMIP_WithTags(t *testing.T) {
 func TestAccIPAMIP_WithCustomResource(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      ipamchecks.CheckIPDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

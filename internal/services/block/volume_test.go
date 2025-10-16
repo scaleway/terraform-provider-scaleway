@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
-	instancetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
 func TestAccVolume_Basic(t *testing.T) {
@@ -14,9 +13,9 @@ func TestAccVolume_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -44,9 +43,9 @@ func TestAccVolume_UpdateSize(t *testing.T) {
 	var volumeID string
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -105,9 +104,9 @@ func TestAccVolume_FromSnapshot(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -144,9 +143,9 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -179,99 +178,14 @@ func TestAccVolume_FromSnapshotWithSize(t *testing.T) {
 	})
 }
 
-func TestAccVolume_FromInstance(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	// Store volumeID to ensure it is never deleted
-	volumeID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancetestfuncs.IsVolumeDestroyed(tt),
-			blocktestfuncs.IsVolumeDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_instance_volume volume {
-						type = "b_ssd"
-						name = "test-block-volume-from-instance"
-						size_in_gb = 20
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancetestfuncs.IsVolumePresent(tt, "scaleway_instance_volume.volume"),
-					acctest.CheckResourceAttrUUID("scaleway_instance_volume.volume", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_volume.volume", &volumeID),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_instance_volume volume {
-						type = "b_ssd"
-						name = "test-block-volume-from-instance"
-						size_in_gb = 20
-						migrate_to_sbs = true
-					}
-
-					resource scaleway_block_volume volume {
-						iops = 5000
-						instance_volume_id = scaleway_instance_volume.volume.id
-						size_in_gb = 20
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
-					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
-					resource.TestCheckResourceAttrPair("scaleway_instance_volume.volume", "name", "scaleway_block_volume.volume", "name"),
-					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_block_volume volume {
-						iops = 5000
-						size_in_gb = 20
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
-					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
-					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_block_volume volume {
-						iops = 5000
-						size_in_gb = 20
-					}
-				`,
-				PlanOnly: true,
-				Check: resource.ComposeTestCheckFunc(
-					blocktestfuncs.IsVolumePresent(tt, "scaleway_block_volume.volume"),
-					acctest.CheckResourceAttrUUID("scaleway_block_volume.volume", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_block_volume.volume", &volumeID),
-					resource.TestCheckResourceAttr("scaleway_block_volume.volume", "name", "test-block-volume-from-instance"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccVolume_UpdateIops(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      blocktestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

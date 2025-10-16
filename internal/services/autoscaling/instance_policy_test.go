@@ -17,9 +17,9 @@ func TestAccInstancePolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstancePolicyDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInstancePolicyDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -170,7 +170,6 @@ func testAccCheckInstancePolicyDestroy(tt *acctest.TestTools) resource.TestCheck
 				PolicyID: id,
 				Zone:     zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance policy (%s) still exists", rs.Primary.ID)
 			}

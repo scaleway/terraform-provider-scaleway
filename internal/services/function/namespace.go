@@ -88,9 +88,9 @@ func ResourceNamespace() *schema.Resource {
 			},
 			"activate_vpc_integration": {
 				Type:        schema.TypeBool,
-				ForceNew:    true,
+				Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 				Description: "Activate VPC integration for the namespace",
 			},
 			"region":          regional.Schema(),
@@ -113,15 +113,12 @@ func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
+		ActivateVpcIntegration:     scw.BoolPtr(true),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
 	if tagExist {
 		createReq.Tags = types.ExpandStrings(rawTag)
-	}
-
-	if activateVPC, ok := d.GetOk("activate_vpc_integration"); ok {
-		createReq.ActivateVpcIntegration = activateVPC.(bool)
 	}
 
 	ns, err := api.CreateNamespace(createReq, scw.WithContext(ctx))

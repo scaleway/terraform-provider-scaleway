@@ -32,6 +32,55 @@ resource "scaleway_rdb_acl" "main" {
 }
 ```
 
+### Multiple ACL Rules
+
+```terraform
+resource "scaleway_rdb_acl" "main" {
+  instance_id = scaleway_rdb_instance.main.id
+  
+  acl_rules {
+    ip          = "1.2.3.4/32"
+    description = "Office IP"
+  }
+  
+  acl_rules {
+    ip          = "5.6.7.8/32"
+    description = "Home IP"
+  }
+  
+  acl_rules {
+    ip          = "10.0.0.0/24"
+    description = "Internal network"
+  }
+}
+```
+
+### Dynamic ACL Rules with Variables
+
+```terraform
+variable "allowed_ips" {
+  description = "Map of allowed IPs with descriptions"
+  type        = map(string)
+  default = {
+    "1.2.3.4/32"   = "Office IP"
+    "5.6.7.8/32"   = "Home IP"
+    "10.0.0.0/24"  = "Internal network"
+  }
+}
+
+resource "scaleway_rdb_acl" "main" {
+  instance_id = scaleway_rdb_instance.main.id
+  
+  dynamic "acl_rules" {
+    for_each = var.allowed_ips
+    content {
+      ip          = acl_rules.key
+      description = acl_rules.value
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -41,6 +90,8 @@ The following arguments are supported:
 ~> **Important:** Updates to `instance_id` will recreate the Database ACL.
 
 - `acl_rules` - A list of ACLs (structure is described below)
+
+~> **Important:** The `scaleway_rdb_acl` resource replaces **all** ACL rules for the given instance. Multiple `scaleway_rdb_acl` resources targeting the same `instance_id` will conflict with each other. Use multiple `acl_rules` blocks within a single resource instead.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 

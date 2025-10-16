@@ -12,10 +12,11 @@ import (
 func TestAccVolume_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -53,10 +54,11 @@ func TestAccVolume_Basic(t *testing.T) {
 func TestAccVolume_DifferentNameGenerated(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -83,10 +85,11 @@ func TestAccVolume_ResizeBlock(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -117,10 +120,11 @@ func TestAccVolume_ResizeBlock(t *testing.T) {
 func TestAccVolume_ResizeNotBlock(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -150,10 +154,11 @@ func TestAccVolume_CannotResizeBlockDown(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -177,10 +182,11 @@ func TestAccVolume_CannotResizeBlockDown(t *testing.T) {
 func TestAccVolume_Scratch(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancetestfuncs.IsVolumeDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

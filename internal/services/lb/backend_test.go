@@ -17,10 +17,11 @@ import (
 func TestAccBackend_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isBackendDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -134,10 +135,11 @@ func TestAccBackend_Basic(t *testing.T) {
 func TestAccBackend_HealthCheck(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isBackendDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -239,9 +241,10 @@ func TestAccBackend_WithFailoverHost(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isBackendDestroyed(tt),
 			objectchecks.IsObjectDestroyed(tt),
@@ -385,10 +388,11 @@ func TestAccBackend_WithFailoverHost(t *testing.T) {
 func TestAccBackend_HealthCheck_Port(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isBackendDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

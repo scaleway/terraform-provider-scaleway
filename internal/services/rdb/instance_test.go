@@ -25,9 +25,9 @@ func TestAccInstance_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -106,9 +106,9 @@ func TestAccInstance_WithCluster(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -147,9 +147,9 @@ func TestAccInstance_LogsPolicy(t *testing.T) {
 
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -208,9 +208,9 @@ func TestAccInstance_Settings(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -252,9 +252,9 @@ func TestAccInstance_InitSettings(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, mySQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -290,9 +290,9 @@ func TestAccInstance_Capitalize(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -321,8 +321,8 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -330,8 +330,13 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_rdb_instance main {
@@ -362,11 +367,18 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep ipam config
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					resource scaleway_rdb_instance main {
@@ -398,11 +410,18 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change ipam config -> static
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					locals {
@@ -437,11 +456,18 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Change PN but keep static config
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn02 {
 						name = "my_second_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					locals {
@@ -477,8 +503,13 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 			// Keep PN but change static config -> ipam
 			{
 				Config: fmt.Sprintf(`
+					resource scaleway_vpc main {
+						name = "TestAccInstance_PrivateNetworkUpdate"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						vpc_id = scaleway_vpc.main.id
 					}
 			
 					resource scaleway_rdb_instance main {
@@ -517,9 +548,9 @@ func TestAccInstance_PrivateNetwork(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -643,9 +674,9 @@ func TestAccInstance_BackupSchedule(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -683,9 +714,9 @@ func TestAccInstance_Volume(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -758,9 +789,9 @@ func TestAccInstance_SBSVolume(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -839,9 +870,9 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -900,8 +931,8 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: func() { acctest.PreCheck(t) },
 
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -956,9 +987,9 @@ func TestAccInstance_Endpoints(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -1063,9 +1094,9 @@ func TestAccInstance_EncryptionAtRest(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -1107,9 +1138,9 @@ func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -1151,9 +1182,9 @@ func TestAccInstance_UpdateEncryptionAtRest(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      rdbchecks.IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			// Step 1: Create without encryption
 			{
@@ -1206,9 +1237,9 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsSnapshotDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			// Step 1: Create an instance and a snapshot
 			{
@@ -1303,9 +1334,9 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsSnapshotDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			// Step 1: Create an instance, private network, and a snapshot
 			{
@@ -1385,8 +1416,8 @@ func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -1435,8 +1466,8 @@ func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),

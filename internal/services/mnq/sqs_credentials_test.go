@@ -17,9 +17,9 @@ func TestAccSQSCredentials_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSQSCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSQSCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -142,7 +142,6 @@ func isSQSCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SqsCredentialsID: id,
 				Region:           region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq sqs credentials (%s) still exists", rs.Primary.ID)
 			}

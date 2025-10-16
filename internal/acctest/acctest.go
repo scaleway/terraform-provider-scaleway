@@ -7,10 +7,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,7 +21,7 @@ func PreCheck(_ *testing.T) {}
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta
-	ProviderFactories map[string]func() (*schema.Provider, error)
+	ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 	Cleanup           func()
 }
 
@@ -46,16 +48,36 @@ func NewTestTools(t *testing.T) *TestTools {
 	require.NoError(t, err)
 
 	if !*UpdateCassettes {
+		// If no recording is happening, the delay to retry to interactions should be 0
 		tmp := 0 * time.Second
+		transport.DefaultWaitRetryInterval = &tmp
+	} else if os.Getenv(env.RetryDelay) != "" {
+		// Overriding the delay interval is helpful to reduce the amount of requests performed while waiting for a ressource to be available
+		tmp, err := time.ParseDuration(os.Getenv(env.RetryDelay))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("delay retry set to: %v", tmp)
 		transport.DefaultWaitRetryInterval = &tmp
 	}
 
 	return &TestTools{
 		T:    t,
 		Meta: m,
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			"scaleway": func() (*schema.Provider, error) {
-				return provider.Provider(&provider.Config{Meta: m})(), nil
+		ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"scaleway": func() (tfprotov6.ProviderServer, error) {
+				providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: m})
+				if errProvider != nil {
+					return nil, errProvider
+				}
+
+				muxServer, errMux := tf6muxserver.NewMuxServer(ctx, providers...)
+				if errMux != nil {
+					return nil, errMux
+				}
+
+				return muxServer.ProviderServer(), nil
 			},
 		},
 		Cleanup: cleanup,

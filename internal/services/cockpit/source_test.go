@@ -1,9 +1,12 @@
 package cockpit_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
@@ -12,14 +15,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -58,9 +63,9 @@ func TestAccCockpitSource_Basic_logs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -99,9 +104,9 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -141,9 +146,9 @@ func TestAccCockpitSource_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSourceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			// Initial creation
 			{
@@ -231,30 +236,35 @@ func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 func isSourceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_cockpit_source" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_cockpit_source" {
+					continue
+				}
+
+				api, region, id, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
+					Region:       region,
+					DataSourceID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("cockpit source (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, ID, err := cockpit.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
-				Region:       region,
-				DataSourceID: ID,
-			})
-
-			if err == nil {
-				return fmt.Errorf("cockpit source (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

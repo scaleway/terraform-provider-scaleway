@@ -1,10 +1,12 @@
 package secret_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
@@ -22,9 +24,9 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 	secretVersionDescription := "secret version description"
 	secretVersionData := "my_super_secret"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretVersionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -125,9 +127,9 @@ func TestAccSecretVersion_Type(t *testing.T) {
 	secretVersionDataInvalid := "{\"key\": \"value\", \"invalid\": {}}"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretVersionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -198,31 +200,54 @@ func testAccCheckSecretVersionExists(tt *acctest.TestTools, n string) resource.T
 
 func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_secret_version" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_secret_version" {
+					continue
+				}
+
+				api, region, id, revision, err := secret.NewVersionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				secAPI, _, _, err := secret.NewAPIWithRegionAndID(tt.Meta, fmt.Sprintf("%s/%s", region, id))
+				if err == nil {
+					sec, err := secAPI.GetSecret(&secretSDK.GetSecretRequest{
+						SecretID: id,
+						Region:   region,
+					})
+
+					switch {
+					case err == nil && sec != nil && sec.DeletionRequestedAt != nil:
+						// Parent is in scheduled deletion: version will be purged, accept as gone
+						continue
+					case httperrors.Is404(err):
+						continue
+					case err != nil:
+						return retry.NonRetryableError(err)
+					}
+				}
+
+				_, err = api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
+					SecretID: id,
+					Region:   region,
+					Revision: revision,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("secret version (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, id, revision, err := secret.NewVersionAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.GetSecretVersion(&secretSDK.GetSecretVersionRequest{
-				SecretID: id,
-				Region:   region,
-				Revision: revision,
-			})
-
-			if err == nil {
-				return fmt.Errorf("secret version (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

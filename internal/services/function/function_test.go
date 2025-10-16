@@ -20,9 +20,9 @@ func TestAccFunction_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -59,9 +59,9 @@ func TestAccFunction_Timeout(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -94,9 +94,9 @@ func TestAccFunction_NoName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionNamespaceDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionNamespaceDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -123,9 +123,9 @@ func TestAccFunction_EnvironmentVariables(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -186,9 +186,9 @@ func TestAccFunction_Upload(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -216,9 +216,9 @@ func TestAccFunction_Deploy(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -266,9 +266,9 @@ func TestAccFunction_HTTPOption(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -332,9 +332,9 @@ func TestAccFunction_Sandbox(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -414,9 +414,10 @@ func TestAccFunction_Sandbox(t *testing.T) {
 func TestAccFunction_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckFunctionNamespaceDestroy(tt),
 			testAccCheckFunctionDestroy(tt),
@@ -425,11 +426,18 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccFunction_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
@@ -455,11 +463,18 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccFunction_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
@@ -510,11 +525,18 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccFunction_PrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn00 {
 						name = "test-acc-function-pn-pn00"
+						vpc_id = scaleway_vpc.main.id
 					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "test-acc-function-pn-pn01"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_function_namespace main {
@@ -603,7 +625,6 @@ func testAccCheckFunctionDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 				FunctionID: id,
 				Region:     region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function (%s) still exists", rs.Primary.ID)
 			}

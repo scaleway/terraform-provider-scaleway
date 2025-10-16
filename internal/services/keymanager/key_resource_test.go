@@ -17,9 +17,9 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsKeyManagerKeyDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -50,9 +50,9 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsKeyManagerKeyDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -122,4 +122,39 @@ func IsKeyManagerKeyDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+				resource "scaleway_key_manager_key" "main" {
+				  name         = "tf-test-kms-key-rotation"
+				  region       = "fr-par"
+				  usage        = "symmetric_encryption"
+				  description  = "Test key with rotation policy"
+				  unprotected  = true
+				  
+				  rotation_policy {
+				    rotation_period = "720h"
+					next_rotation_at = "2026-01-01T00:00:00Z"
+				  }
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-rotation"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "usage", "symmetric_encryption"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key with rotation policy"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "720h0m0s"),
+				),
+			},
+		},
+	})
 }

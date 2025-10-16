@@ -62,22 +62,22 @@ func NewIDString(region scw.Region, id string) string {
 func ParseNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
 	loc, innerID, outerID, err := locality.ParseLocalizedNestedID(regionalNestedID)
 	if err != nil {
-		return
+		return region, outerID, innerID, err
 	}
 
 	region, err = scw.ParseRegion(loc)
 
-	return
+	return region, outerID, innerID, err
 }
 
 // ParseID parses a regionalID and extracts the resource region and id.
 func ParseID(regionalID string) (region scw.Region, id string, err error) {
 	loc, id, err := locality.ParseLocalizedID(regionalID)
 	if err != nil {
-		return
+		return region, id, err
 	}
 
 	region, err = scw.ParseRegion(loc)
 
-	return
+	return region, id, err
 }

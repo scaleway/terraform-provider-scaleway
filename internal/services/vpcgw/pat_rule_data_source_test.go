@@ -12,9 +12,9 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckVPCPublicGatewayPATRuleDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckVPCPublicGatewayPATRuleDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -23,11 +23,12 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "TestAccDataSourceVPCPublicGatewayPATRule_Basic"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "pn_test_network"
+						vpc_id = scaleway_vpc.vpc01.id
 						ipv4_subnet {
 							subnet = "172.16.32.0/22"
 						}
@@ -41,11 +42,12 @@ func TestAccDataSourceVPCPublicGatewayPATRule_Basic(t *testing.T) {
 					}
 
 					resource scaleway_vpc vpc01 {
-						name = "my vpc"
+						name = "TestAccDataSourceVPCPublicGatewayPATRule_Basic"
 					}
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "pn_test_network"
+						vpc_id = scaleway_vpc.vpc01.id
 						ipv4_subnet {
 							subnet = "172.16.32.0/22"
 						}

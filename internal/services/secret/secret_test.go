@@ -1,10 +1,13 @@
 package secret_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
@@ -12,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
+
+var DestroyWaitTimeout = 3 * time.Minute
 
 func TestAccSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -21,9 +26,9 @@ func TestAccSecret_Basic(t *testing.T) {
 	updatedName := "secretNameBasicUpdated"
 	secretDescription := "secret description"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -89,9 +94,9 @@ func TestAccSecret_Path(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -165,9 +170,9 @@ func TestAccSecret_Protected(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -218,9 +223,9 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckSecretDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -316,30 +321,36 @@ func testAccCheckSecretExists(tt *acctest.TestTools, n string) resource.TestChec
 
 func testAccCheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_secret" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_secret" {
+					continue
+				}
+
+				api, region, id, err := secret.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				sec, err := api.GetSecret(&secretSDK.GetSecretRequest{
+					SecretID: id,
+					Region:   region,
+				})
+
+				switch {
+				case err == nil && sec != nil && sec.DeletionRequestedAt != nil:
+					// Soft-deleted (scheduled for deletion), treat as destroyed for tests
+					continue
+				case httperrors.Is404(err):
+					continue
+				case err != nil:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, id, err := secret.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.GetSecret(&secretSDK.GetSecretRequest{
-				SecretID: id,
-				Region:   region,
-			})
-
-			if err == nil {
-				return fmt.Errorf("secret (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

@@ -3,13 +3,14 @@ package acctest
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/provider"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +18,7 @@ import (
 // given project and API key as default profile configuration.
 //
 // This is useful to test resources that need to create resources in another project.
-func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *account.Project, iamAPIKey *iam.APIKey) map[string]func() (*schema.Provider, error) {
+func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *account.Project, iamAPIKey *iam.APIKey) map[string]func() (tfprotov6.ProviderServer, error) {
 	t := tt.T
 
 	metaSide, err := meta.NewMeta(ctx, &meta.Config{
@@ -30,9 +31,19 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 	})
 	require.NoError(t, err)
 
-	providers := map[string]func() (*schema.Provider, error){
-		"side": func() (*schema.Provider, error) {
-			return provider.Provider(&provider.Config{Meta: metaSide})(), nil
+	providers := map[string]func() (tfprotov6.ProviderServer, error){
+		"side": func() (tfprotov6.ProviderServer, error) {
+			providers, errProvider := provider.NewProviderList(ctx, &provider.Config{Meta: metaSide})
+			if errProvider != nil {
+				return nil, errProvider
+			}
+
+			muxServer, errMux := tf6muxserver.NewMuxServer(ctx, providers...)
+			if errMux != nil {
+				return nil, errMux
+			}
+
+			return muxServer.ProviderServer(), nil
 		},
 	}
 

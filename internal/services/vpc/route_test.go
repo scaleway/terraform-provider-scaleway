@@ -15,10 +15,11 @@ import (
 func TestAccVPCRoute_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isRouteDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isRouteDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -164,7 +165,6 @@ func isRouteDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				RouteID: ID,
 				Region:  region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("route (%s) still exists", rs.Primary.ID)
 			}
