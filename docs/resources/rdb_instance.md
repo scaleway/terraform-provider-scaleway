@@ -25,6 +25,37 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
+### Example Engine Upgrade
+
+```terraform
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb-upgrade"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-14"  # Start with older version
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+# Upgrade to newer version by changing the engine value
+# Available versions can be found in the upgradable_versions attribute
+resource "scaleway_rdb_instance" "upgraded" {
+  name           = "test-rdb-upgrade"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-15"  # Upgrade to newer version
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+# Check available upgrade versions
+output "upgradable_versions" {
+  value = scaleway_rdb_instance.main.upgradable_versions
+}
+```
+
 ### Example Block Storage Low Latency
 
 ```terraform
@@ -143,7 +174,7 @@ interruption.
 
 - `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
 
-~> **Important** Updates to `engine` will recreate the Database Instance.
+~> **Important** Updates to `engine` will perform a blue/green upgrade using a snapshot and endpoint migration. This ensures minimal downtime but any writes between the snapshot and the switch will be lost. Available upgrade versions can be found in the `upgradable_versions` computed attribute.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
@@ -244,6 +275,11 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `id` - The ID of the IPv4 address resource.
     - `address` - The private IPv4 address.
 - `certificate` - Certificate of the Database Instance.
+- `upgradable_versions` - List of available engine versions for upgrade.
+    - `id` - Version ID for upgrade requests.
+    - `name` - Engine name.
+    - `version` - Version string.
+    - `minor_version` - Minor version string.
 - `organization_id` - The organization ID the Database Instance is associated with.
 
 ## Limitations

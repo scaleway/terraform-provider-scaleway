@@ -1542,6 +1542,71 @@ func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	})
 }
 
+func TestAccInstance_EngineUpgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	// Get two different PostgreSQL versions for upgrade testing
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Step 1: Create instance with older engine version
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "upgradable_versions.#"),
+				),
+			},
+			// Step 2: Upgrade to newer engine version
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-engine-upgrade"),
+					// Verify endpoints are preserved
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
