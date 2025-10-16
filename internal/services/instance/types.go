@@ -57,31 +57,37 @@ func expandImageExtraVolumesUpdateTemplates(snapshotIDs []string) map[string]*in
 	return volTemplates
 }
 
+func flattenImageRootVolume(volume *instance.VolumeSummary, zone scw.Zone) any {
+	volumeFlat := map[string]any{
+		"id":          zonal.NewIDString(zone, volume.ID),
+		"name":        volume.Name,
+		"size":        volume.Size,
+		"volume_type": volume.VolumeType,
+	}
+
+	return []map[string]any{volumeFlat}
+}
+
 func flattenImageExtraVolumes(volumes map[string]*instance.Volume, zone scw.Zone) any {
 	volumesFlat := []map[string]any(nil)
 
-	for _, volume := range volumes {
-		server := map[string]any{}
-		if volume.Server != nil {
-			server["id"] = volume.Server.ID
-			server["name"] = volume.Server.Name
-		}
+	for index := 1; index < len(volumes)+1; index++ {
+		volume := volumes[strconv.Itoa(index)]
 
 		volumeFlat := map[string]any{
-			"id":                zonal.NewIDString(zone, volume.ID),
-			"name":              volume.Name,
-			"export_uri":        volume.ExportURI, //nolint:staticcheck
-			"size":              volume.Size,
-			"volume_type":       volume.VolumeType,
-			"creation_date":     volume.CreationDate,
-			"modification_date": volume.ModificationDate,
-			"organization":      volume.Organization,
-			"project":           volume.Project,
-			"tags":              volume.Tags,
-			"state":             volume.State,
-			"zone":              volume.Zone,
-			"server":            server,
+			"id":          zonal.NewIDString(zone, volume.ID),
+			"name":        volume.Name,
+			"size":        volume.Size,
+			"volume_type": volume.VolumeType,
+			"tags":        volume.Tags,
 		}
+		if volume.Server != nil {
+			server := map[string]any{}
+			server["id"] = volume.Server.ID
+			server["name"] = volume.Server.Name
+			volumeFlat["server"] = server
+		}
+
 		volumesFlat = append(volumesFlat, volumeFlat)
 	}
 

@@ -38,9 +38,10 @@ WuePu1khrEuTaXKyaiLD3pmxM86F/6Ho6V86mJpKXr/wmMU56TcKk9UURucVQZ1o
 func TestAccDevice_Minimal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -73,9 +74,10 @@ func TestAccDevice_MessageFilters(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -129,9 +131,10 @@ func TestAccDevice_MessageFilters(t *testing.T) {
 func TestAccDevice_AllowInsecure(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -184,9 +187,10 @@ func TestAccDevice_AllowInsecure(t *testing.T) {
 func TestAccDevice_Certificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
 		Steps: []resource.TestStep{

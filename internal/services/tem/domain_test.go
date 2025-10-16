@@ -22,9 +22,9 @@ func TestAccDomain_Basic(t *testing.T) {
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDomainDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -36,8 +36,11 @@ func TestAccDomain_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", domainName),
-					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc.terraform-rs"),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_config", "v=DMARC1; p=none"),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", regexp.MustCompile(`^_dmarc\.terraform-rs\.test\.local\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dkim_name", regexp.MustCompile(`^[a-f0-9-]+\._domainkey\.terraform-rs\.test\.local\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "spf_value", regexp.MustCompile(`^v=spf1 include:terraform-rs\.test\.local -all$`)),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "10 blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),
@@ -53,9 +56,9 @@ func TestAccDomain_Tos(t *testing.T) {
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDomainDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -77,9 +80,9 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 	subDomainName := "test-autoconfig"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDomainDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -106,8 +109,11 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", subDomainName+"."+domainNameValidation),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "true"),
-					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"+"."+subDomainName),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_config", "v=DMARC1; p=none"),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", regexp.MustCompile(`^_dmarc\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dkim_name", regexp.MustCompile(`^[a-f0-9-]+\._domainkey\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "spf_value", regexp.MustCompile(`^v=spf1 include:`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+` -all$`)),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "10 blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
@@ -124,9 +130,9 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 	subDomainName := "test-autoconfig-update"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isDomainDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -146,8 +152,11 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", subDomainName+"."+domainNameValidation),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "false"),
-					resource.TestCheckResourceAttrSet("scaleway_tem_domain.cr01", "dmarc_config"),
-					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", "_dmarc"+"."+subDomainName),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_config", "v=DMARC1; p=none"),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", regexp.MustCompile(`^_dmarc\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dkim_name", regexp.MustCompile(`^[a-f0-9-]+\._domainkey\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
+					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "spf_value", regexp.MustCompile(`^v=spf1 include:`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+` -all$`)),
+					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "10 blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
 					acctest.CheckResourceAttrUUID("scaleway_tem_domain.cr01", "id"),
 				),

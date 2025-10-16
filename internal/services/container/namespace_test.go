@@ -2,7 +2,6 @@ package container_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -23,9 +22,9 @@ func TestAccNamespace_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNamespaceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -181,9 +180,9 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isNamespaceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -243,8 +242,8 @@ func TestAccNamespace_DestroyRegistry(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isNamespaceDestroyed(tt),
 			isRegistryDestroyed(tt),
@@ -274,8 +273,8 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 	namespaceID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isNamespaceDestroyed(tt),
 			isContainerDestroyed(tt),
@@ -284,7 +283,13 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network main {}
+					resource scaleway_vpc main {
+						name = "TestAccNamespace_VPCIntegration"
+					}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource scaleway_container_namespace main {}
 
@@ -295,27 +300,19 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "false"),
+					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network main {}
-			
-					resource scaleway_container_namespace main {}
-			
-					resource scaleway_container main {
-						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.main.id
-						sandbox = "v1"
+					resource scaleway_vpc main {
+						name = "TestAccNamespace_VPCIntegration"
 					}
-				`,
-				ExpectError: regexp.MustCompile("Application can't be attached to private network, vpc integration must be activated on its parent namespace"),
-			},
-			{
-				Config: `
-					resource scaleway_vpc_private_network main {}
+
+					resource scaleway_vpc_private_network main {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource scaleway_container_namespace main {
 						activate_vpc_integration = true
@@ -332,7 +329,7 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_container.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
-					acctest.CheckResourceIDChanged("scaleway_container_namespace.main", &namespaceID),
+					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
 			},
 		},
@@ -379,7 +376,6 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NamespaceID: id,
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container namespace (%s) still exists", rs.Primary.ID)
 			}
@@ -409,7 +405,6 @@ func isRegistryDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				NamespaceID: rs.Primary.Attributes["registry_namespace_id"],
 				Region:      region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
 			}

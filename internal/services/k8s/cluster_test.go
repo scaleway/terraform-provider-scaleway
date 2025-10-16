@@ -1,10 +1,13 @@
 package k8s_test
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	k8sSDK "github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
@@ -14,6 +17,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
+
+var DestroyWaitTimeout = 3 * time.Minute
 
 func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
 	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
@@ -96,7 +101,7 @@ func TestAccCluster_Basic(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -104,9 +109,15 @@ func TestAccCluster_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
+
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
@@ -135,9 +146,15 @@ resource "scaleway_k8s_cluster" "minimal" {
 			},
 			{
 				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+	name = "TestAccCluster_Basic"
+}
+
 resource "scaleway_vpc_private_network" "minimal" {
   name       = "test-minimal"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "minimal" {
 	cni = "calico"
 	version = "%s"
@@ -177,7 +194,7 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -253,7 +270,7 @@ func TestAccCluster_OIDC(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -323,7 +340,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -405,7 +422,7 @@ func TestAccCluster_PrivateNetwork(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -444,8 +461,8 @@ func TestAccCluster_Multicloud(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckK8SClusterDestroy(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckK8SClusterMulticloud(latestK8SVersion),
@@ -470,7 +487,7 @@ func TestAccCluster_TypeChange(t *testing.T) {
 		PreCheck: func() {
 			acctest.PreCheck(t)
 		},
-		ProviderFactories: tt.ProviderFactories,
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
@@ -545,33 +562,36 @@ func TestAccCluster_TypeChange(t *testing.T) {
 
 func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_k8s_cluster" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_k8s_cluster" {
+					continue
+				}
+
+				api, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetCluster(&k8sSDK.GetClusterRequest{
+					Region:    region,
+					ClusterID: clusterID,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("k8s cluster (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			k8sAPI, region, clusterID, err := k8s.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = k8sAPI.WaitForCluster(&k8sSDK.WaitForClusterRequest{
-				Region:    region,
-				ClusterID: clusterID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 
@@ -645,10 +665,17 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 
 func testAccCheckK8SClusterConfigAutoscaler(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscaler"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
@@ -674,10 +701,17 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigAutoscalerChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  region = "nl-ams"
+  name = "testAccCheckK8SClusterConfigAutoscalerChange"
+}
+
 resource "scaleway_vpc_private_network" "autoscaler" {
   name       = "test-autoscaler"
   region 	 = "nl-ams"
+  vpc_id     = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "autoscaler" {
 	cni = "calico"
 	version = "%s"
@@ -701,9 +735,15 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 
 func testAccCheckK8SClusterConfigOIDC(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDC"
+}
+
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
@@ -724,9 +764,15 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterConfigOIDCChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigOIDCChange"
+}
+
 resource "scaleway_vpc_private_network" "oidc" {
   name       = "test-oidc"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "oidc" {
 	cni = "cilium"
 	version = "%s"
@@ -747,9 +793,15 @@ resource "scaleway_k8s_cluster" "oidc" {
 
 func testAccCheckK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterAutoUpgrade"
+}
+
 resource "scaleway_vpc_private_network" "auto_upgrade" {
   name       = "test-auto-upgrade"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "auto_upgrade" {
 	cni = "calico"
 	version = "%s"
@@ -767,9 +819,15 @@ resource "scaleway_k8s_cluster" "auto_upgrade" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkLinked(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkLinked"
+}
+
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"
 	version = "%s"
@@ -783,12 +841,20 @@ resource "scaleway_k8s_cluster" "private_network" {
 
 func testAccCheckK8SClusterConfigPrivateNetworkChange(version string) string {
 	return fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "testAccCheckK8SClusterConfigPrivateNetworkChange"
+}
+
 resource "scaleway_vpc_private_network" "private_network" {
   name       = "k8s-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_vpc_private_network" "private_network_2" {
   name       = "other-private-network"
+  vpc_id = scaleway_vpc.main.id
 }
+
 resource "scaleway_k8s_cluster" "private_network" {
 	cni = "calico"
 	version = "%s"
@@ -825,8 +891,11 @@ func testAccCheckK8SClusterTypeChange(clusterType, cni, version string) string {
 
 	if isKapsule {
 		config = `
+resource "scaleway_vpc" "main" {}
+
 resource "scaleway_vpc_private_network" "type-change" {
   name       = "test-type-change"
+  vpc_id = scaleway_vpc.main.id
 }`
 	}
 

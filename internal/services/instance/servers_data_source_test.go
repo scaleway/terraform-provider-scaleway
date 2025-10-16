@@ -11,10 +11,11 @@ import (
 func TestAccDataSourceServers_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -92,10 +93,11 @@ func TestAccDataSourceServers_Basic(t *testing.T) {
 func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -108,7 +110,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						state = "stopped"
-						tags  = [ "terraform-test", "data_scaleway_instance_servers", "basic" ]
+						tags  = [ "terraform-test", "data_scaleway_instance_servers", "private-ips" ]
 
 					    private_network {
 						  pn_id = scaleway_vpc_private_network.pn01.id
@@ -126,7 +128,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						state = "stopped"
-						tags  = [ "terraform-test", "data_scaleway_instance_servers", "basic" ]
+						tags  = [ "terraform-test", "data_scaleway_instance_servers", "private-ips" ]
 
 					    private_network {
 						  pn_id = scaleway_vpc_private_network.pn01.id
@@ -138,7 +140,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						state = "stopped"
-						tags  = [ "terraform-test", "data_scaleway_instance_servers", "basic" ]
+						tags  = [ "terraform-test", "data_scaleway_instance_servers", "private-ips" ]
 
 					    private_network {
 						  pn_id = scaleway_vpc_private_network.pn01.id
@@ -156,7 +158,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						state = "stopped"
-						tags  = [ "terraform-test", "data_scaleway_instance_servers", "basic" ]
+						tags  = [ "terraform-test", "data_scaleway_instance_servers", "private-ips" ]
 
 					    private_network {
 						  pn_id = scaleway_vpc_private_network.pn01.id
@@ -168,7 +170,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						state = "stopped"
-						tags  = [ "terraform-test", "data_scaleway_instance_servers", "basic" ]
+						tags  = [ "terraform-test", "data_scaleway_instance_servers", "private-ips" ]
 
 					    private_network {
 						  pn_id = scaleway_vpc_private_network.pn01.id
@@ -180,7 +182,7 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 					}
 					
 					data "scaleway_instance_servers" "servers_by_tag" {
-						tags = ["data_scaleway_instance_servers", "terraform-test"]
+						tags = ["data_scaleway_instance_servers", "terraform-test", "private-ips"]
 					}
 
 					data "scaleway_instance_servers" "servers_by_name_other_zone" {

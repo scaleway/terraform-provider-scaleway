@@ -1,9 +1,12 @@
 package webhosting_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	webhostingSDK "github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
@@ -12,14 +15,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccWebhosting_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckWebhostingDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckWebhostingDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -88,30 +93,39 @@ func testAccCheckWebhostingExists(tt *acctest.TestTools, n string) resource.Test
 
 func testAccCheckWebhostingDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_webhosting" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_webhosting" {
+					continue
+				}
+
+				api, region, id, err := webhosting.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				res, err := api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
+					HostingID: id,
+					Region:    region,
+				})
+
+				switch {
+				case err == nil:
+					if res != nil && res.Status != webhostingSDK.HostingStatusUnknownStatus {
+						return retry.RetryableError(fmt.Errorf("hosting (%s) still exists", rs.Primary.ID))
+					}
+
+					continue
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			api, region, id, err := webhosting.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			res, err := api.GetHosting(&webhostingSDK.HostingAPIGetHostingRequest{
-				HostingID: id,
-				Region:    region,
-			})
-
-			if err == nil && res.Status != webhostingSDK.HostingStatusUnknownStatus {
-				return fmt.Errorf("hosting (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

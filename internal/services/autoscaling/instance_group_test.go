@@ -17,9 +17,9 @@ func TestAccInstanceGroup_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckInstanceGroupDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInstanceGroupDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -154,7 +154,6 @@ func testAccCheckInstanceGroupDestroy(tt *acctest.TestTools) resource.TestCheckF
 				InstanceGroupID: id,
 				Zone:            zone,
 			})
-
 			if err == nil {
 				return fmt.Errorf("autoscaling instance group (%s) still exists", rs.Primary.ID)
 			}

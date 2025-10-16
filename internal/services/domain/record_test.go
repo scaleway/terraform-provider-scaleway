@@ -31,9 +31,9 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -176,9 +176,9 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 	priority := 0
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -250,9 +250,9 @@ func TestAccDomainRecord_Arobase(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -297,9 +297,9 @@ func TestAccDomainRecord_GeoIP(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -393,9 +393,9 @@ func TestAccDomainRecord_HTTPService(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -480,9 +480,9 @@ func TestAccDomainRecord_View(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -572,9 +572,9 @@ func TestAccDomainRecord_Weighted(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -664,9 +664,9 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 	priority := 100 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -686,6 +686,72 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "ttl", strconv.Itoa(ttl)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.proxy_srv", "priority", strconv.Itoa(priority)),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.proxy_srv", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-srv-duplication." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_SRVWithDomainDuplication: test dns zone: %s", testDNSZone)
+
+	name := "_test_srv_bug"
+	recordType := "SRV"
+	data := "0 0 1234 foo.example.com."
+	ttl := 60
+	priority := 0
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "srv_test" {
+						dns_zone = "%[1]s"
+						name     = "%[2]s"
+						type     = "%[3]s"
+						data     = "%[4]s"
+						priority = %[5]d
+						ttl      = %[6]d
+					}
+				`, testDNSZone, name, recordType, data, priority, ttl),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.srv_test"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "0 0 1234 foo.example.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", strconv.Itoa(ttl)),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", strconv.Itoa(priority)),
+					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "srv_test" {
+						dns_zone = "%[1]s"
+						name     = "%[2]s"
+						type     = "%[3]s"
+						data     = "10 0 5678 bar.example.com."
+						priority = 10
+						ttl      = 300
+					}
+				`, testDNSZone, name, recordType),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.srv_test"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "dns_zone", testDNSZone),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "name", name),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "type", recordType),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "data", "10 0 5678 bar.example.com."),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "ttl", "300"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.srv_test", "priority", "10"),
+					acctest.CheckResourceAttrUUID("scaleway_domain_record.srv_test", "id"),
 				),
 			},
 		},
@@ -736,9 +802,9 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckDomainRecordDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

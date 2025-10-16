@@ -64,11 +64,20 @@ func ResourceCluster() *schema.Resource {
 				Description: "The version of the cluster",
 			},
 			"cni": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The CNI plugin of the cluster",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.CNI](),
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "The CNI plugin of the cluster",
+				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+					cniValues := k8s.CNI("").Values()
+
+					cniStringValues := make([]string, 0, len(cniValues))
+					for _, cniValue := range cniValues {
+						cniStringValues = append(cniStringValues, cniValue.String())
+					}
+
+					return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
+				},
 			},
 			"tags": {
 				Type: schema.TypeList,
@@ -233,6 +242,7 @@ func ResourceCluster() *schema.Resource {
 				if okAutoUpgradeEnable && autoUpgradeEnable.(bool) && !versionIsOnlyMinor {
 					return errors.New("only minor version x.y can be used with auto upgrade enabled")
 				}
+
 				if versionIsOnlyMinor && !autoUpgradeEnable.(bool) {
 					return errors.New("minor version x.y must only be used with auto upgrade enabled")
 				}
@@ -257,11 +267,13 @@ func ResourceCluster() *schema.Resource {
 							// If no private network has been set yet, migrate the cluster in the Update function
 							return nil
 						}
+
 						if planned != "" {
 							_, plannedPNID, err := locality.ParseLocalizedID(planned.(string))
 							if err != nil {
 								return err
 							}
+
 							if plannedPNID == actual {
 								// If the private network ID is the same, do nothing
 								return nil
@@ -283,6 +295,7 @@ func ResourceCluster() *schema.Resource {
 					if err != nil {
 						return err
 					}
+
 					possibleTypes, err := k8sAPI.ListClusterAvailableTypes(&k8s.ListClusterAvailableTypesRequest{
 						Region:    region,
 						ClusterID: clusterID,
@@ -297,6 +310,7 @@ func ResourceCluster() *schema.Resource {
 							return nil
 						}
 					}
+
 					err = diff.ForceNew("type")
 					if err != nil {
 						return err

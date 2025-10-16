@@ -15,9 +15,10 @@ import (
 func TestAccUser_Member(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isUserDestroyed(tt),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

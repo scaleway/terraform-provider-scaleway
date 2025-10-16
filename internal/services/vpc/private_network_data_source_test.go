@@ -15,9 +15,9 @@ func TestAccDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 
 	pnName := "TestAccScalewayDataSourceVPCPrivateNetwork_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcchecks.CheckPrivateNetworkDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -80,10 +80,11 @@ func TestAccDataSourceVPCPrivateNetwork_Basic(t *testing.T) {
 func TestAccDataSourceVPCPrivateNetwork_VpcID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      vpcchecks.CheckPrivateNetworkDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

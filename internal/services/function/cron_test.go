@@ -17,9 +17,9 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionCronDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -57,9 +57,9 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionCronDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -123,9 +123,9 @@ func TestAccFunctionCron_WithArgs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionCronDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -199,7 +199,6 @@ func testAccCheckFunctionCronDestroy(tt *acctest.TestTools) resource.TestCheckFu
 				CronID: id,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function cron (%s) still exists", rs.Primary.ID)
 			}

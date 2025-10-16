@@ -10,12 +10,12 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourcePrivateNetwork() *schema.Resource {
@@ -172,7 +172,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 				Optional:         true,
 				Computed:         true,
 				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
-				ValidateDiagFunc: locality.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
+				ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
 			},
 			"region": regional.Schema(),
 			// Computed elements

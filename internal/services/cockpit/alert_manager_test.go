@@ -21,9 +21,9 @@ func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
@@ -59,9 +59,9 @@ func TestAccCockpitAlertManager_CreateWithMultipleContacts(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
@@ -101,9 +101,9 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts([]map[string]string{
@@ -145,9 +145,9 @@ func TestAccCockpitAlertManager_EnableDisable(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCockpitAlertManagerEnableConfig(true),
@@ -174,9 +174,9 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCockpitAlertManagerAndContactsDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

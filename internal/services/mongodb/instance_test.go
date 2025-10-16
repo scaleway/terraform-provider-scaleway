@@ -1,10 +1,13 @@
 package mongodb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
@@ -13,14 +16,16 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccMongoDBInstance_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -53,9 +58,9 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -95,14 +100,69 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	})
 }
 
+func TestAccMongoDBInstance_SnapshotSchedule(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-snapshot-schedule"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						snapshot_schedule_frequency_hours = 24
+						snapshot_schedule_retention_days = 7
+						is_snapshot_schedule_enabled = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_frequency_hours", "24"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_retention_days", "7"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "is_snapshot_schedule_enabled", "true"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-snapshot-schedule"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						snapshot_schedule_frequency_hours = 12
+						snapshot_schedule_retention_days = 14
+						is_snapshot_schedule_enabled = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_frequency_hours", "12"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "snapshot_schedule_retention_days", "14"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "is_snapshot_schedule_enabled", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -157,9 +217,9 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -205,15 +265,21 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_WithPrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -222,9 +288,15 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_WithPrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -261,20 +333,27 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 	var previousPrivateNetworkID string
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_UpdatePrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -284,14 +363,21 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_UpdatePrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -318,14 +404,21 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_UpdatePrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -352,14 +445,21 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						region = "fr-par"
+						name = "TestAccMongoDBInstance_UpdatePrivateNetwork"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
 						region = "fr-par"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_mongodb_instance main {
@@ -385,12 +485,16 @@ func TestAccMongoDBInstance_WithPublicNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      IsInstanceDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource "scaleway_vpc" "main" {
+					name = "TestAccMongoDBInstance_WithPublicNetwork"
+					region = "fr-par"
+				}
 
 				resource "scaleway_vpc_private_network" "pn01" {
   					name   = "my_private_network"
@@ -497,35 +601,35 @@ func isMongoDBInstancePresent(tt *acctest.TestTools, n string) resource.TestChec
 
 func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_mongodb_instance" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_mongodb_instance" {
+					continue
+				}
+
+				api, region, id, err := mongodb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetInstance(&mongodbSDK.GetInstanceRequest{
+					InstanceID: id,
+					Region:     region,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("mongodb instance (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			mongodbAPI, zone, ID, err := mongodb.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			extractRegion, err := zone.Region()
-			if err != nil {
-				return err
-			}
-
-			_, err = mongodbAPI.GetInstance(&mongodbSDK.GetInstanceRequest{
-				InstanceID: ID,
-				Region:     extractRegion,
-			})
-
-			if err == nil {
-				return fmt.Errorf("instance (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }

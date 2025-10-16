@@ -21,13 +21,13 @@ func TestAccToken_Basic(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /tokens" request.
-		expiresAt = "2025-01-28T15:28:16+01:00"
+		expiresAt = "2025-08-28T17:05:34+02:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isTokenDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isTokenDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -101,7 +101,6 @@ func isTokenDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				TokenID: id,
 				Region:  region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("container token (%s) still exists", rs.Primary.ID)
 			}

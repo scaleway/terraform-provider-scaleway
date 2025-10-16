@@ -1,12 +1,15 @@
 package redis_test
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
@@ -16,15 +19,17 @@ import (
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
+var DestroyWaitTimeout = 3 * time.Minute
+
 func TestAccCluster_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -88,11 +93,12 @@ func TestAccCluster_Basic(t *testing.T) {
 func TestAccCluster_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -151,16 +157,23 @@ func TestAccCluster_Migrate(t *testing.T) {
 func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	clusterID := ""
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
+
+				resource scaleway_vpc_private_network private_network {
+					vpc_id = scaleway_vpc.main.id
+				}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_ipam"
@@ -192,7 +205,13 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_vpc_private_network private_network {}
+				resource scaleway_vpc main {
+					name = "TestAccCluster_MigrateClusterSizeWithIPAMEndpoint"
+				}
+
+				resource scaleway_vpc_private_network private_network {
+					vpc_id = scaleway_vpc.main.id
+				}
 
 				resource "scaleway_redis_cluster" "main" {
 				  name         = "test_redis_migrate_cluster_size_ipam"
@@ -235,11 +254,12 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 func TestAccCluster_ACL(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -311,11 +331,12 @@ func TestAccCluster_ACL(t *testing.T) {
 func TestAccCluster_Settings(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -387,11 +408,12 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Step 1: First we define a single private network
@@ -579,11 +601,12 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Step 1: We define a single private network
@@ -645,11 +668,12 @@ func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 func TestAccCluster_Certificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -686,11 +710,12 @@ func TestAccCluster_Certificate(t *testing.T) {
 func TestAccCluster_NoCertificate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -727,12 +752,13 @@ func TestAccCluster_NoCertificate(t *testing.T) {
 func TestAccCluster_MigrateToHAMode(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	latestRedisVersion := getLatestVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isClusterDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -760,31 +786,36 @@ func TestAccCluster_MigrateToHAMode(t *testing.T) {
 
 func isClusterDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_redis_cluster" {
-				continue
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_redis_cluster" {
+					continue
+				}
+
+				api, zone, id, err := redis.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = api.GetCluster(&redisSDK.GetClusterRequest{
+					ClusterID: id,
+					Zone:      zone,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("redis cluster (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
 			}
 
-			redisAPI, zone, ID, err := redis.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = redisAPI.GetCluster(&redisSDK.GetClusterRequest{
-				ClusterID: ID,
-				Zone:      zone,
-			})
-
-			if err == nil {
-				return fmt.Errorf("cluster (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
+			return nil
+		})
 	}
 }
 

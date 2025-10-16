@@ -17,9 +17,9 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isSNSCredentialsDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isSNSCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -142,7 +142,6 @@ func isSNSCredentialsDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				SnsCredentialsID: id,
 				Region:           region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("mnq sns credentials (%s) still exists", rs.Primary.ID)
 			}

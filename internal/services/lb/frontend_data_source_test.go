@@ -11,10 +11,11 @@ import (
 func TestAccDataSourceFrontend_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      lbchecks.IsIPDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `

@@ -17,8 +17,8 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 	poolName := "tf-pool"
 	version := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),
 			testAccCheckK8SClusterDestroy(tt),
@@ -27,8 +27,13 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "TestAccDataSourcePool_Basic"
+					}
+
 					resource "scaleway_vpc_private_network" "main" {
 						name = "test-data-source-pool"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_k8s_cluster" "main" {
@@ -50,8 +55,11 @@ func TestAccDataSourcePool_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {}
+
 					resource "scaleway_vpc_private_network" "main" {
 						name = "test-data-source-pool"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_k8s_cluster" "main" {

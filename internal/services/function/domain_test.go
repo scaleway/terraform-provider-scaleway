@@ -21,9 +21,9 @@ func TestAccFunctionDomain_Basic(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayContainerDomain_Basic: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      testAccCheckFunctionDomainDestroy(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckFunctionDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -100,7 +100,6 @@ func testAccCheckFunctionDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 				DomainID: id,
 				Region:   region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("function domain (%s) still exists", rs.Primary.ID)
 			}

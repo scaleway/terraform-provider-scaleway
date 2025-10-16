@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -52,8 +53,8 @@ func ResourceKeyManagerKey() *schema.Resource {
 				Description: "Key rotation policy.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"rotation_period":  {Type: schema.TypeString, Optional: true, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
-						"next_rotation_at": {Type: schema.TypeString, Computed: true, Description: "Timestamp indicating the next scheduled rotation."},
+						"rotation_period":  {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
+						"next_rotation_at": {Type: schema.TypeString, Optional: true, Description: "Timestamp indicating the next scheduled rotation."},
 					},
 				},
 			},

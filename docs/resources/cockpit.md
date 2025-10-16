@@ -5,6 +5,14 @@ page_title: "Scaleway: scaleway_cockpit"
 
 # Resource: scaleway_cockpit
 
+~> **Important:** The resource `scaleway_cockpit` has been deprecated and will no longer be supported after January 1st, 2025. Instead, use the new specialized resources:
+
+- `scaleway_cockpit_source` for managing data sources (metrics, logs, traces)
+- `scaleway_cockpit_alert_manager` for managing alert manager
+- `scaleway_cockpit_grafana_user` for managing Grafana users
+
+For detailed migration instructions, see the [Cockpit Migration Guide](../guides/migration_guide_cockpit_plan.md).
+
 -> **Note:**
 As of September 2024, Cockpit has introduced [regionalization](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#region) to offer more flexibility and resilience.
 If you have created customized dashboards with data for your Scaleway resources before April 2024, you will need to update your queries in Grafana, with the new regionalized [data sources](../resources/cockpit_source.md).
@@ -74,7 +82,11 @@ resource "grafana_folder" "test_folder" {
 - `plan` - (Deprecated) Name of the plan to use. Available plans are: free, premium, and custom.
 ~> **Important:** The plan field is deprecated. Any modification or selection will have no effect.
 
+~> **Warning:** This entire resource is deprecated and will be removed after January 1st, 2025. Please migrate to the new specialized resources as described in the [Cockpit Migration Guide](../guides/migration_guide_cockpit_plan.md).
+
 ## Attributes Reference
+
+~> **Warning:** This entire resource is deprecated and will be removed after January 1st, 2025. All attributes below are deprecated and will no longer be available.
 
 In addition to all arguments above, the following attributes are exported:
 
@@ -86,6 +98,14 @@ In addition to all arguments above, the following attributes are exported:
     - `grafana_url` - (Deprecated) URL for Grafana.
     - `traces_url` - (Deprecated) URL for [traces](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#traces) to retrieve in the [Data sources tab](https://console.scaleway.com/cockpit/dataSource) of the Scaleway console.
 
+## Migration
+
+This resource is deprecated and will be removed after January 1st, 2025. To migrate to the new infrastructure, please refer to the [Cockpit Migration Guide](../guides/migration_guide_cockpit_plan.md) which provides step-by-step instructions for transitioning to:
+
+- `scaleway_cockpit_source` for managing data sources (metrics, logs, traces)
+- `scaleway_cockpit_alert_manager` for managing alert manager  
+- `scaleway_cockpit_grafana_user` for managing Grafana users
+
 ## Import
 
 This section explains how to import a Cockpit using its `{project_id}`.
@@ -93,3 +113,5 @@ This section explains how to import a Cockpit using its `{project_id}`.
 ```bash
 terraform import scaleway_cockpit.main 11111111-1111-1111-1111-111111111111
 ```
+
+~> **Note:** Import functionality will be removed when this resource is deprecated.

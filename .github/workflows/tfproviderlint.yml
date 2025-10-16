@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: 1.24.0
+          go-version: stable
       - name: Install tfproviderlint
         run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
       - name: Run tfproviderlint
@@ -27,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
         with:
-            go-version: 1.24.0
+            go-version: stable
       - uses: hashicorp/setup-terraform@v3
       - run: go install github.com/bflad/tfproviderdocs@latest
       - run: make tfproviderdocs

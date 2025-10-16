@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -20,13 +21,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const marketplaceImageType = "instance_sbs"
+
 func TestAccServer_Minimal1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -79,10 +83,11 @@ func TestAccServer_Minimal1(t *testing.T) {
 func TestAccServer_Minimal2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -153,9 +158,9 @@ func TestAccServer_RootVolume1(t *testing.T) {
 	serverID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -202,10 +207,11 @@ func TestAccServer_RootVolume1(t *testing.T) {
 func TestAccServer_RootVolume_Boot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -252,10 +258,11 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -288,10 +295,11 @@ func TestAccServer_RootVolume_ID(t *testing.T) {
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// DEV1-M
@@ -349,10 +357,11 @@ func TestAccServer_Basic(t *testing.T) {
 func TestAccServer_State1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// started
@@ -418,10 +427,11 @@ func TestAccServer_State1(t *testing.T) {
 func TestAccServer_State2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// stopped
@@ -468,10 +478,11 @@ func TestAccServer_State2(t *testing.T) {
 func TestAccServer_UserData_WithCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -501,10 +512,11 @@ EOF
 func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// Without cloud-init
@@ -554,10 +566,11 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				// With additional local
@@ -632,9 +645,10 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsVolumeDestroyed(tt),
 			instancechecks.IsServerDestroyed(tt),
@@ -699,10 +713,11 @@ func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
 func TestAccServer_WithPlacementGroup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -739,10 +754,11 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 func TestAccServer_Ipv6(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -783,10 +799,11 @@ func TestAccServer_Ipv6(t *testing.T) {
 func TestAccServer_Basic2(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -813,10 +830,11 @@ func TestAccServer_Basic2(t *testing.T) {
 func TestAccServer_WithReservedIP(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -979,10 +997,11 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 func TestAccServer_AlterTags(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1022,10 +1041,11 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1056,10 +1076,11 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1092,15 +1113,22 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 func TestAccServer_PrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network internal {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1127,8 +1155,14 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1153,12 +1187,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1182,12 +1223,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1222,12 +1270,19 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 			},
 			{
 				Config: `
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetwork"
+						region = "fr-par"
+					}
+
 					resource scaleway_vpc_private_network pn01 {
 						name = "private_network_instance"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "private_network_instance_02"
+						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource "scaleway_instance_server" "base" {
@@ -1246,10 +1301,11 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 func TestAccServer_Migrate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1294,10 +1350,11 @@ func TestAccServer_Migrate(t *testing.T) {
 func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1336,151 +1393,136 @@ func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
 func TestAccServer_CustomDiffImage(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	var mainServerID, controlServerID string
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
+						name = "main-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
+					}
+					resource "scaleway_instance_server" "control" {
+						name = "control-server"
+						image = "ubuntu_jammy"
+						type = "DEV1-S"
+						state = "stopped"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.main"),
+					isServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
 			},
 			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
-					}
-					resource "scaleway_instance_server" "copy" {
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.copy"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
-				),
-				ResourceName: "scaleway_instance_server.copy",
-				ImportState:  true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					return state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID, nil
-				},
-				ImportStatePersist: true,
-			},
-			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_marketplace_image" "jammy" {
 						label = "ubuntu_jammy"
+						image_type = "%s"
 					}
 					resource "scaleway_instance_server" "main" {
+						name = "main-server"
 						image = data.scaleway_marketplace_image.jammy.id
 						type = "DEV1-S"
 						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
 					}
-					resource "scaleway_instance_server" "copy" {
+					resource "scaleway_instance_server" "control" {
+						name = "control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
 					}
-				`,
+				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.copy"),
+					isServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
+					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", true),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
 			},
 			{
-				RefreshState: true,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.copy"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "id", "scaleway_instance_server.copy", "id"),
-				),
-			},
-			{
-				Config: `
+				Config: fmt.Sprintf(`
 					data "scaleway_marketplace_image" "focal" {
 						label = "ubuntu_focal"
+						image_type = "%s"
 					}
 					resource "scaleway_instance_server" "main" {
+						name = "main-server"
 						image = data.scaleway_marketplace_image.focal.id
 						type = "DEV1-S"
 						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
 					}
-					resource "scaleway_instance_server" "copy" {
+					resource "scaleway_instance_server" "control" {
+						name = "control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						root_volume {
-							volume_type = "l_ssd" // Keep this while data.scaleway_marketplace_image does not provide a image_type filter.
-						}
 					}
-				`,
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: true,
+				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.main"),
+					isServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.focal", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.copy", "image", "ubuntu_jammy"),
-					serverIDsAreDifferent("scaleway_instance_server.main", "scaleway_instance_server.copy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
+					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", false),
+					acctest.CheckResourceIDChanged("scaleway_instance_server.main", &mainServerID),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
 			},
 		},
 	})
 }
 
-func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc {
+func imageIDMatchLabel(tt *acctest.TestTools, resourceWithImageID, resourceWithImageLabel string, expectMatch bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[nameFirst]
+		rs, ok := s.RootModule().Resources[resourceWithImageID]
 		if !ok {
-			return fmt.Errorf("resource was not found: %s", nameFirst)
+			return fmt.Errorf("resource was not found: %s", resourceWithImageID)
 		}
 
-		idFirst := rs.Primary.ID
+		zonedImageID := zonal.ExpandID(rs.Primary.Attributes["image"])
+		expectedImageID := zonedImageID.ID
+		zone := zonedImageID.Zone
+		commercialType := rs.Primary.Attributes["type"]
 
-		rs, ok = s.RootModule().Resources[nameSecond]
+		rs, ok = s.RootModule().Resources[resourceWithImageLabel]
 		if !ok {
-			return fmt.Errorf("resource was not found: %s", nameSecond)
+			return fmt.Errorf("resource was not found: %s", resourceWithImageLabel)
 		}
 
-		idSecond := rs.Primary.ID
+		imageLabel := rs.Primary.Attributes["image"]
 
-		if idFirst == idSecond {
-			return fmt.Errorf("IDs of both resources were equal when they should not have been (%s and %s)", nameFirst, nameSecond)
+		client := meta.ExtractScwClient(tt.Meta)
+		api := marketplace.NewAPI(client)
+
+		localImageIDFromLabel, err := api.GetLocalImageByLabel(&marketplace.GetLocalImageByLabelRequest{
+			ImageLabel:     imageLabel,
+			Zone:           zone,
+			CommercialType: commercialType,
+			Type:           marketplaceImageType,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to get local image by label: %w", err)
+		}
+
+		if expectMatch && expectedImageID != localImageIDFromLabel.ID {
+			return fmt.Errorf("unexpected image ID for label %q: expected %s, got %s", imageLabel, expectedImageID, localImageIDFromLabel.ID)
+		} else if !expectMatch && expectedImageID == localImageIDFromLabel.ID {
+			return errors.New("images IDs match when they should not")
 		}
 
 		return nil
@@ -1490,10 +1532,11 @@ func serverIDsAreDifferent(nameFirst, nameSecond string) resource.TestCheckFunc 
 func TestAccServer_IPs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1574,10 +1617,11 @@ func TestAccServer_IPs(t *testing.T) {
 func TestAccServer_IPRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1620,10 +1664,11 @@ func TestAccServer_IPRemoved(t *testing.T) {
 func TestAccServer_IPsRemoved(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1669,10 +1714,11 @@ func TestAccServer_IPsRemoved(t *testing.T) {
 func TestAccServer_BlockExternal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1761,8 +1807,8 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 	serverID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
 			instancechecks.IsServerRootVolumeDestroyed(tt),
@@ -1817,10 +1863,11 @@ func TestAccServer_BlockExternalRootVolume(t *testing.T) {
 func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1869,10 +1916,11 @@ func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
 func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -1944,14 +1992,21 @@ func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
 func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      instancechecks.IsServerDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -1975,7 +2030,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -1994,6 +2055,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 				ImportState:  true,
 				ImportStateIdFunc: func(state *terraform.State) (string, error) {
 					serverID := state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID
+
 					pnicID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
 					if !exists {
 						return "", errors.New("private_network.0.pnic_id not found")
@@ -2007,7 +2069,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{ // We import private nic as a separate resource to trigger its deletion.
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2037,7 +2105,9 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 						if !exists {
 							return errors.New("private_network.0.pnic_id not found")
 						}
+
 						localizedPNICID := state.RootModule().Resources["scaleway_instance_private_nic.pnic"].Primary.ID
+
 						_, pnicID, _, err := zonal.ParseNestedID(localizedPNICID)
 						if err != nil {
 							return err
@@ -2053,7 +2123,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2078,7 +2154,13 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 			},
 			{
 				Config: `
-					resource scaleway_vpc_private_network pn {}
+					resource scaleway_vpc main {
+						name = "TestAccServer_PrivateNetworkMissingPNIC"
+					}
+
+					resource scaleway_vpc_private_network pn {
+						vpc_id = scaleway_vpc.main.id
+					}
 
 					resource "scaleway_instance_server" "main" {
 						image = "ubuntu_jammy"
@@ -2105,14 +2187,16 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 }
 
 func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
+	t.Skip("There is currently a bug when resetting the field, we should reinstate the test once the fix has been deployed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	sshKey := "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEEYrzDOZmhItdKaDAEqJQ4ORS2GyBMtBozYsK5kiXXX opensource@scaleway.com"
+	sshKey := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFNaFderD6JUbMr6LoL7SdTaQ31gLcXwKv07Zyw0t4pq6Y8CGaeEvevS54TBR2iNJHa3hlIIUmA2qvH7Oh4v1QmMG2djWi2cD1lDEl8/8PYakaEBGh6snp3TMyhoqHOZqqKwDhPW0gJbe2vXfAgWSEzI8h1fs1D7iEkC1L/11hZjkqbUX/KduWFLyIRWdSuI3SWk4CXKRXwIkeYeSYb8AiIGY21u2z8H2J7YmhRzE85Kj/Fk4tST5gLW/IfLD4TMJjC/cZiJevETjs+XVmzTMIyU2sTQKufSQTj2qZ7RfgGwTHDoOeFvylgAdMGLZ/Un+gzeEPj9xUSPvvnbA9UPIKV4AffgtT1y5gcSWuHaqRxpUTY204mh6kq0EdVN2UsiJTgX+xnJgnOrKg6G3dkM8LSi2QtbjYbRXcuDJ9YUbUFK8M5Vo7LhMsMFb1hPtY68kbDUqD01RuMD5KhGIngCRRBZJriRQclUCJS4D3jr/Frw9ruNGh+NTIvIwdv0Y2brU= opensource@scaleway.com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
 			iamchecks.CheckSSHKeyDestroy(tt),
@@ -2177,7 +2261,9 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 }
 
 func TestGetEndOfServiceDate(t *testing.T) {
+	t.Skip("There are currently no Instance type scheduled for EndOfService")
 	tt := acctest.NewTestTools(t)
+
 	client := meta.ExtractScwClient(tt.Meta)
 	defer tt.Cleanup()
 

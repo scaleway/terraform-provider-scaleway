@@ -17,9 +17,9 @@ func TestAccCron_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isCronDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -80,9 +80,9 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:          func() { acctest.PreCheck(t) },
-		ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:      isCronDestroyed(tt),
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -182,7 +182,6 @@ func isCronDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				CronID: id,
 				Region: region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("containerSDK cron (%s) still exists", rs.Primary.ID)
 			}

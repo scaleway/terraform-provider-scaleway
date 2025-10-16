@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -281,7 +282,6 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		Autohealing:      d.Get("autohealing").(bool),
 		Size:             uint32(d.Get("size").(int)),
 		Tags:             types.ExpandStrings(d.Get("tags")),
-		Zone:             scw.Zone(d.Get("zone").(string)),
 		KubeletArgs:      expandKubeletArgs(d.Get("kubelet_args")),
 		PublicIPDisabled: d.Get("public_ip_disabled").(bool),
 	}
@@ -290,8 +290,9 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.Region = scw.Region(v.(string))
 	}
 
-	if v, ok := d.GetOk("zone"); ok {
-		req.Zone = scw.Zone(v.(string))
+	zone, err := meta.ExtractZone(d, m)
+	if zone != "" && err == nil {
+		req.Zone = zone
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
