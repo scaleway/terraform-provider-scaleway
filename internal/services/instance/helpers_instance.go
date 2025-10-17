@@ -599,3 +599,15 @@ func DeleteASGServers(
 
 	return nil
 }
+
+// FindIPInList looks for an IP in a list to avoid using the deprecated server.PublicIP field
+func FindIPInList(ipID string, ips []*instance.ServerIP) *instance.ServerIP {
+	id := zonal.ExpandID(ipID).ID
+	for _, ip := range ips {
+		if ip.ID == id {
+			return ip
+		}
+	}
+
+	return nil
+}
