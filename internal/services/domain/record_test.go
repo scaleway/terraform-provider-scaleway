@@ -876,6 +876,54 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 	})
 }
 
+func TestAccDomainRecord_NameDiffSuppress(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-name-diff." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_NameDiffSuppress: test dns zone: %s", testDNSZone)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc"
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+				`, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "data", "v=DMARC1; p=none"),
+				),
+			},
+			{
+				// Use FQDN format - should not cause replacement
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+				`, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
@@ -910,3 +958,5 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 		return nil
 	}
 }
+
+
