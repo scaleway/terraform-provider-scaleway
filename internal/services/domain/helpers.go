@@ -643,3 +643,24 @@ func BuildZoneName(subdomain, domain string) string {
 
 	return fmt.Sprintf("%s.%s", subdomain, domain)
 }
+
+
+func normalizeRecordName(name, dnsZone string) string {
+	if name == "" || name == "@" {
+		return ""
+	}
+
+	name = strings.TrimSuffix(name, ".")
+	dnsZone = strings.TrimSuffix(dnsZone, ".")
+
+	if name == dnsZone {
+		return ""
+	}
+
+	suffix := "." + dnsZone
+	if strings.HasSuffix(name, suffix) {
+		return strings.TrimSuffix(name, suffix)
+	}
+
+	return name
+}

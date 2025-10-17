@@ -73,6 +73,14 @@ func ResourceRecord() *schema.Resource {
 
 					return value
 				},
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					dnsZone := d.Get("dns_zone").(string)
+
+					normalizedOld := normalizeRecordName(oldValue, dnsZone)
+					normalizedNew := normalizeRecordName(newValue, dnsZone)
+
+					return normalizedOld == normalizedNew
+				},
 			},
 			"type": {
 				Type:             schema.TypeString,
