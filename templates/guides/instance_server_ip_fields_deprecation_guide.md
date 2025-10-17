@@ -38,7 +38,7 @@ resource "scaleway_lb" "lb" {
 resource "scaleway_lb_backend" "backend" {
   lb_id = scaleway_lb.lb.id
   forward_port     = 80
-  forward_protocol = "http
+  forward_protocol = "http"
 
   server_ips = [ scaleway_instance_server.server.public_ip ]
 }

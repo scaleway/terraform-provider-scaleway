@@ -38,7 +38,7 @@ resource "scaleway_lb" "lb" {
 resource "scaleway_lb_backend" "backend" {
   lb_id = scaleway_lb.lb.id
   forward_port     = 80
-  forward_protocol = "http
+  forward_protocol = "http"
 
   server_ips = [ scaleway_instance_server.server.public_ip ]
 }
@@ -171,7 +171,7 @@ These fields were:
 
 - `enable_ipv6`, which was false in the state, but is now true for all servers.
 - `ipv6_address`, which was null in the state, but can now be retrieved in the `[public|private]_ips.X.address` whether
-the IP is public or private.
+  the IP is public or private.
 - `ipv6_gateway`, which was null in the state, but can now be retrieved in the `[public|private]_ips.X.gateway` whether
-the IP is public or private.
+  the IP is public or private.
 - `ipv6_prefix_length`, which was 0 in the state.
