@@ -1585,14 +1585,12 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "upgradable_versions.#"),
-					// Capture old instance ID and verify upgradable_versions fields
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
 						if !ok {
 							return errors.New("resource not found: scaleway_rdb_instance.main")
 						}
 
-						// Capture the old instance ID
 						_, _, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 						if err != nil {
 							return err
@@ -1600,13 +1598,11 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 
 						oldInstanceID = ID
 
-						// Verify upgradable_versions is populated
 						upgradableVersionsCount := rs.Primary.Attributes["upgradable_versions.#"]
 						if upgradableVersionsCount == "" || upgradableVersionsCount == "0" {
 							return fmt.Errorf("expected at least one upgradable version, got %s", upgradableVersionsCount)
 						}
 
-						// Check that each version has the required fields
 						for i := 0; ; i++ {
 							idKey := fmt.Sprintf("upgradable_versions.%d.id", i)
 							if _, ok := rs.Primary.Attributes[idKey]; !ok {
@@ -1672,9 +1668,7 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 					isInstancePresent(tt, "scaleway_rdb_instance.main"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-engine-upgrade"),
-					// Verify endpoints are preserved
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
-					// Verify instance ID changed and old instance is destroyed
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
 						if !ok {
@@ -1686,12 +1680,10 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return err
 						}
 
-						// Verify the instance ID has changed
 						if newInstanceID == oldInstanceID {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						// Verify the old instance is destroyed (should return 404)
 						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 							Region:     region,
 							InstanceID: oldInstanceID,
@@ -1700,7 +1692,6 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
 						}
 
-						// Check that the error is a 404
 						if !httperrors.Is404(err) {
 							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
 						}

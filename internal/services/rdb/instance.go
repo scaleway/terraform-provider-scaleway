@@ -699,9 +699,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
 	}
 
-	upgradableVersions := make([]map[string]interface{}, len(res.UpgradableVersion))
+	upgradableVersions := make([]map[string]any, len(res.UpgradableVersion))
 	for i, version := range res.UpgradableVersion {
-		upgradableVersions[i] = map[string]interface{}{
+		upgradableVersions[i] = map[string]any{
 			"id":            version.ID,
 			"name":          version.Name,
 			"version":       version.Version,
