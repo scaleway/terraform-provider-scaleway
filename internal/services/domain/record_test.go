@@ -905,7 +905,6 @@ func TestAccDomainRecord_NameDiffSuppress(t *testing.T) {
 				),
 			},
 			{
-				// Use FQDN format - should not cause replacement
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_record" "dmarc" {
 						dns_zone = "%s"
@@ -937,7 +936,6 @@ func TestAccDomainRecord_TEMIntegration(t *testing.T) {
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_record" "dmarc" {
 						dns_zone = "%s"

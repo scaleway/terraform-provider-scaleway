@@ -66,8 +66,6 @@ func ResourceRecord() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 				StateFunc: func(val any) string {
-					// This function normalizes the name before storing it in state
-					// It converts FQDN (e.g., "_dmarc.example.com.") to relative format (e.g., "_dmarc")
 					value := val.(string)
 					if value == "@" || value == "" {
 						return ""
@@ -259,7 +257,6 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordType := domain.RecordType(d.Get("type").(string))
 	recordData := d.Get("data").(string)
-	// Normalize the record name to relative format (handles FQDN with trailing dot)
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Data:              recordData,
@@ -373,7 +370,6 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 
 		idRecord := locality.ExpandID(d.Id())
-		// Normalize the record name to relative format (handles FQDN with trailing dot)
 		recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
@@ -454,7 +450,6 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	geoIP, okGeoIP := d.GetOk("geo_ip")
-	// Normalize the record name to relative format (handles FQDN with trailing dot)
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Name:              recordName,
