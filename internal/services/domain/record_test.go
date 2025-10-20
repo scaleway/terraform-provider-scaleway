@@ -958,5 +958,3 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 		return nil
 	}
 }
-
-

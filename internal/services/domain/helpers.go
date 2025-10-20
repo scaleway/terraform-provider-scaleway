@@ -644,7 +644,6 @@ func BuildZoneName(subdomain, domain string) string {
 	return fmt.Sprintf("%s.%s", subdomain, domain)
 }
 
-
 func normalizeRecordName(name, dnsZone string) string {
 	if name == "" || name == "@" {
 		return ""
