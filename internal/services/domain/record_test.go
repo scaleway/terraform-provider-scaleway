@@ -924,6 +924,95 @@ func TestAccDomainRecord_NameDiffSuppress(t *testing.T) {
 	})
 }
 
+func TestAccDomainRecord_TEMIntegration(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-tem-integration." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_TEMIntegration: test dns zone: %s", testDNSZone)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "type", "TXT"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc"
+						type     = "TXT"
+						data     = "v=DMARC1; p=quarantine"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "data", "v=DMARC1; p=quarantine"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		for _, rs := range state.RootModule().Resources {
