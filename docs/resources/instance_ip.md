@@ -30,6 +30,11 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Instance IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
 - `address` - The IP address.
+
+~> **Important:** For IPv6 addresses, the full address is not readable from the "scaleway_instance_ip" resource, only the prefix.
+To get the full address, the IP must be attached to another resource and read from the latter.
+For example, for a server, the address will be listed in the "public_ips" or "private_ips" attribute of the "scaleway_instance_server".
+
 - `prefix` - The IP Prefix.
 - `reverse` - The reverse dns attached to this IP
 - `organization_id` - The organization ID the IP is associated with.
