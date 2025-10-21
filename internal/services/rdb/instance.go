@@ -960,7 +960,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		var availableVersions []string
 		for _, version := range rdbInstance.UpgradableVersion {
 			availableVersions = append(availableVersions, version.Name)
-			if version.ID == newEngineStr || version.Version == newEngineStr || version.Name == newEngineStr {
+			if version.Name == newEngineStr {
 				targetVersionID = version.ID
 
 				break
