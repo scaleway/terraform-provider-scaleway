@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -18,10 +19,17 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+var NetworkingDefaultValues = map[string]string{
+	"pod_cidr":       "100.64.0.0/15",
+	"service_cidr":   "10.32.0.0/20",
+	"service_dns_ip": "10.32.0.10",
+}
 
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
@@ -166,6 +174,30 @@ func ResourceCluster() *schema.Resource {
 				Description:      "The ID of the cluster's private network",
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 				DiffSuppressFunc: dsf.Locality,
+			},
+			"pod_cidr": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				Description:  "The subnet used for the Pod CIDR.",
+				ValidateFunc: validation.IsCIDR,
+			},
+			"service_cidr": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				Description:  "The subnet used for the Service CIDR.",
+				ValidateFunc: validation.IsCIDR,
+			},
+			"service_dns_ip": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				Computed:     true,
+				Description:  "The IP used for the DNS Service.",
+				ValidateFunc: validation.IsIPAddress,
 			},
 			"region":          regional.Schema(),
 			"organization_id": account.OrganizationIDSchema(),
@@ -506,6 +538,23 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		req.PrivateNetworkID = scw.StringPtr(regional.ExpandID(pnID.(string)).ID)
 	}
 
+	// Networking configuration
+
+	if podCIDR, ok := d.GetOk("pod_cidr"); ok {
+		podCIDRIPNet, _ := types.ExpandIPNet(podCIDR.(string))
+		req.PodCidr = &podCIDRIPNet
+	}
+
+	if serviceCIDR, ok := d.GetOk("service_cidr"); ok {
+		serviceCIDRIPNet, _ := types.ExpandIPNet(serviceCIDR.(string))
+		req.ServiceCidr = &serviceCIDRIPNet
+	}
+
+	if serviceDNSIP, ok := d.GetOk("service_dns_ip"); ok {
+		serviceDNSIPNetIP := net.ParseIP(serviceDNSIP.(string))
+		req.ServiceDNSIP = &serviceDNSIPNetIP
+	}
+
 	// Cluster creation
 
 	res, err := k8sAPI.CreateCluster(req, scw.WithContext(ctx))
@@ -586,6 +635,11 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	// private_network
 	_ = d.Set("private_network_id", types.FlattenStringPtr(cluster.PrivateNetworkID))
+
+	// networking
+	_ = d.Set("pod_cidr", cluster.PodCidr.String())
+	_ = d.Set("service_cidr", cluster.ServiceCidr.String())
+	_ = d.Set("service_dns_ip", cluster.ServiceDNSIP.String())
 
 	////
 	// Read kubeconfig
@@ -873,6 +927,21 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 			if err != nil {
 				return append(diag.FromErr(err), diags...)
 			}
+		}
+	}
+
+	// Display warning if an update of networking fields is requested
+	// Setting the value can be done with ForceNew, but unsetting is not possible at the time because Terraform doesn't
+	// detect changes on fields that are both optional and computed, and those fields are not updatable with the API.
+	for _, key := range []string{"pod_cidr", "service_cidr", "service_dns_ip"} {
+		raw, ok := meta.GetRawConfigForKey(d, key, cty.String)
+		if !ok || raw == "" && d.Get(key) != NetworkingDefaultValues[key] {
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("It is not possible to unset %q at the time", key),
+				Detail:        "Once it has been set to a custom value, unsetting it in order to go back to the default value will not have any effect.",
+				AttributePath: cty.GetAttrPath(key),
+			})
 		}
 	}
 
