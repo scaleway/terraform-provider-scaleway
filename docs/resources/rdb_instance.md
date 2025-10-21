@@ -173,7 +173,7 @@ interruption.
 
 ~> **Important** Once your Database Instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the `node_type`, and if you are using `bssd` storage, you should increase the volume size before making any other changes to your Database Instance.
 
-- `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
+- `engine` - (Required) Database Instance's engine version name (e.g. `PostgreSQL-16`, `MySQL-8`).
 
 ~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
 
