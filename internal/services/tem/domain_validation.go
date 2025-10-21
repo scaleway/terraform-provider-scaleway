@@ -83,6 +83,8 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 			DomainID: domain.ID,
 		})
 		if domainCheck == nil || domainCheck.Status == "pending" || domainCheck.Status == "unchecked" || domainCheck.Status == "autoconfiguring" {
+			// Sleep to avoid busy-wait loop and reduce API load
+			time.Sleep(15 * time.Second)
 			return retry.RetryableError(errors.New("retry"))
 		}
 
