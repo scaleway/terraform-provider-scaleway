@@ -55,16 +55,16 @@ func ResourceInstance() *schema.Resource {
 				Description:      "The type of database instance you want to create",
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
-			"engine": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "Database's engine version id. Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
-				DiffSuppressFunc: dsf.IgnoreCase,
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
+		"engine": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
+			DiffSuppressFunc: dsf.IgnoreCase,
+			ConflictsWith: []string{
+				"snapshot_id",
 			},
+		},
 			"snapshot_id": {
 				Type:        schema.TypeString,
 				Optional:    true,
