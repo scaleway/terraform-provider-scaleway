@@ -948,7 +948,7 @@ func TestAccDomainRecord_TEMIntegration(t *testing.T) {
 						dns_zone = "%s"
 						name     = "scw1._domainkey.%s."
 						type     = "TXT"
-						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+						data     = "test-dkim-record"
 					}
 				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
@@ -973,7 +973,7 @@ func TestAccDomainRecord_TEMIntegration(t *testing.T) {
 						dns_zone = "%s"
 						name     = "scw1._domainkey.%s."
 						type     = "TXT"
-						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+						data     = "test-dkim-record"
 					}
 				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
@@ -996,7 +996,7 @@ func TestAccDomainRecord_TEMIntegration(t *testing.T) {
 						dns_zone = "%s"
 						name     = "scw1._domainkey.%s."
 						type     = "TXT"
-						data     = "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQ"
+						data     = "test-dkim-record"
 					}
 				`, testDNSZone, testDNSZone, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
