@@ -2185,6 +2185,7 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,

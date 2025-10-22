@@ -564,6 +564,7 @@ func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs
 			if err != nil {
 				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
 			}
+
 			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
 			if err != nil {
 				return err
@@ -585,6 +586,7 @@ func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs
 			if err != nil {
 				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
 			}
+
 			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
 			if err != nil && !httperrors.Is404(err) {
 				return err
