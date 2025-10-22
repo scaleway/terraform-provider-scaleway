@@ -192,6 +192,26 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
+			"filesystems": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Computed:    true,
+				Description: "Filesystems attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filesystem_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The filesystem ID attached to the server",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the filesystem",
+						},
+					},
+				},
+			},
 			"ip_id": {
 				Type:             schema.TypeString,
 				Optional:         true,
@@ -552,6 +572,31 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	///
+	// Attach Filesystem
+	///
+
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for _, filesystem := range filesystems.([]any) {
+			fs := filesystem.(map[string]any)
+			filesystemID := fs["filesystem_id"]
+
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
+				ServerID:     res.Server.ID,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	////
 	// Private Network
 	////
@@ -633,6 +678,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("type", server.CommercialType)
 	if len(server.Tags) > 0 {
 		_ = d.Set("tags", server.Tags)
+	}
+
+	if server.Filesystems != nil {
+		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
 	}
 
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
@@ -1015,6 +1064,33 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
+	// Update server filesystems
+	///
+
+	if d.HasChange("filesystems") {
+		oldRaw, newRaw := d.GetChange("filesystems")
+
+		oldList := oldRaw.([]any)
+		newList := newRaw.([]any)
+
+		oldIDs := make(map[string]struct{})
+		newIDs := make(map[string]struct{})
+
+		collectFilesystemIDs(oldList, oldIDs)
+		collectFilesystemIDs(newList, newIDs)
+
+		err := detachOldFileSystem(ctx, oldIDs, newIDs, api.API, zone, server)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = attachNewFileSystem(ctx, newIDs, oldIDs, api.API, zone, server)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	////
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
@@ -1148,6 +1224,40 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			pn := d.Get(pnKey)
 
 			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	// Detach filesystem
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		fsList := filesystems.([]any)
+		for i, fsRaw := range fsList {
+			fsMap := fsRaw.(map[string]any)
+
+			fsIDRaw, ok := fsMap["filesystem_id"]
+			if !ok || fsIDRaw == nil {
+				return diag.Errorf("filesystem_id is missing or nil for filesystem at index %d", i)
+			}
+
+			fsID := fsIDRaw.(string)
+
+			newFileSystemID := types.ExpandStringPtr(fsID)
+			if newFileSystemID == nil {
+				return diag.Errorf("failed to expand filesystem_id pointer at index %d", i)
+			}
+
+			_, err = api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     id,
+				FilesystemID: locality.ExpandID(*newFileSystemID),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
 			if err != nil {
 				return diag.FromErr(err)
 			}
