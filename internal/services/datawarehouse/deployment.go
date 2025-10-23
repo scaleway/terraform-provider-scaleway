@@ -91,7 +91,6 @@ func ResourceDeployment() *schema.Resource {
 			"public_network": {
 				Type:        schema.TypeList,
 				Computed:    true,
-				MaxItems:    1,
 				Description: "Public endpoint configuration. A public endpoint is created by default.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
