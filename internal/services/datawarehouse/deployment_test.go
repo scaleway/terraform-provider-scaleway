@@ -113,6 +113,7 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if err == nil {
 				return fmt.Errorf("deployment %s still exists", id)
 			}
+
 			if !httperrors.Is404(err) {
 				return err
 			}

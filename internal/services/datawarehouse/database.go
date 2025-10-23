@@ -93,6 +93,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	var found *datawarehouseapi.Database
+
 	for _, db := range resp.Databases {
 		if db.Name == name {
 			found = db

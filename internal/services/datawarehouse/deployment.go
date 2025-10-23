@@ -9,7 +9,6 @@ import (
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -253,6 +252,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if changed {
 		resp, err := api.UpdateDeployment(req, scw.WithContext(ctx))
 		_ = resp
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
