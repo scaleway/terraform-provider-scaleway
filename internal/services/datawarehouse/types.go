@@ -15,20 +15,20 @@ func flattenPublicNetwork(endpoints []*datawarehouseapi.Endpoint) (interface{}, 
 			continue
 		}
 
-		// "DNSRecord" is a single string; Services is a slice—take the first service if present.
-		protocol := ""
-		port := 0
+		// Flatten all services
+		services := make([]map[string]interface{}, 0, len(endpoint.Services))
 
-		if len(endpoint.Services) > 0 {
-			protocol = string(endpoint.Services[0].Protocol)
-			port = int(endpoint.Services[0].Port)
+		for _, svc := range endpoint.Services {
+			services = append(services, map[string]interface{}{
+				"protocol": string(svc.Protocol),
+				"port":     int(svc.Port),
+			})
 		}
 
 		publicFlat = append(publicFlat, map[string]interface{}{
 			"id":         endpoint.ID,
 			"dns_record": endpoint.DNSRecord,
-			"protocol":   protocol,
-			"port":       port,
+			"services":   services,
 		})
 
 		break

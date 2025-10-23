@@ -2,9 +2,11 @@ package datawarehouse
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -28,6 +30,18 @@ func ResourceDeployment() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
+		CustomizeDiff: customdiff.All(
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+				cpuMin := diff.Get("cpu_min").(int)
+				cpuMax := diff.Get("cpu_max").(int)
+
+				if cpuMin > cpuMax {
+					return fmt.Errorf("cpu_min (%d) must be <= cpu_max (%d)", cpuMin, cpuMax)
+				}
+
+				return nil
+			},
+		),
 		Schema: map[string]*schema.Schema{
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
@@ -45,6 +59,7 @@ func ResourceDeployment() *schema.Resource {
 			"version": {
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				Description: "ClickHouse version to use",
 			},
 			"replica_count": {
@@ -71,36 +86,63 @@ func ResourceDeployment() *schema.Resource {
 				Type:        schema.TypeString,
 				Sensitive:   true,
 				Optional:    true,
+				ForceNew:    true,
 				Description: "Password for the first user of the deployment",
 			},
 			"public_network": {
 				Type:        schema.TypeList,
 				Computed:    true,
+				MaxItems:    1,
 				Description: "Public endpoint configuration. A public endpoint is created by default.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "ID of the public endpoint (computed)",
+							Description: "ID of the public endpoint",
 						},
 						"dns_record": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "DNS record for the public endpoint (computed)",
+							Description: "DNS record for the public endpoint",
 						},
-						"protocol": {
-							Type:        schema.TypeString,
+						"services": {
+							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Service protocol (e.g. \"tcp\", \"https\", \"mysql\") for the public endpoint",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port number for the public endpoint",
+							Description: "List of services exposed on the public endpoint",
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"protocol": {
+										Type:        schema.TypeString,
+										Computed:    true,
+										Description: "Service protocol (e.g. \"tcp\", \"https\", \"mysql\")",
+									},
+									"port": {
+										Type:        schema.TypeInt,
+										Computed:    true,
+										Description: "TCP port number",
+									},
+								},
+							},
 						},
 					},
 				},
+			},
+			// Computed
+			"status": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The status of the deployment",
+			},
+			"created_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date and time of deployment creation (RFC 3339 format)",
+			},
+			"updated_at": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Date and time of deployment last update (RFC 3339 format)",
 			},
 		},
 	}
@@ -153,7 +195,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta in
 	region := scw.Region(d.Get("region").(string))
 	id := d.Id()
 
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
+	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,6 +214,8 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
+	_ = d.Set("region", string(region))
+	_ = d.Set("project_id", deployment.ProjectID)
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", flattenStringList(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
@@ -179,6 +223,9 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
 	_ = d.Set("cpu_max", int(deployment.CPUMax))
 	_ = d.Set("ram_per_cpu", int(deployment.RAMPerCPU))
+	_ = d.Set("status", string(deployment.Status))
+	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
+	_ = d.Set("updated_at", deployment.UpdatedAt.Format(time.RFC3339))
 
 	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints)
 	if hasPublic {
@@ -198,7 +245,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	region := scw.Region(d.Get("region").(string))
 	id := d.Id()
 
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
+	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -256,6 +303,11 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	readDiags := resourceDeploymentRead(ctx, d, meta)
@@ -269,7 +321,7 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	region := scw.Region(d.Get("region").(string))
 	id := d.Id()
 
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
+	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -282,12 +334,10 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return nil
 }
