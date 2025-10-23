@@ -180,6 +180,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta in
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
 	_ = d.Set("cpu_max", int(deployment.CPUMax))
 	_ = d.Set("ram_per_cpu", int(deployment.RAMPerCPU))
+
 	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints)
 	if hasPublic {
 		_ = d.Set("public_network", publicBlock.([]map[string]interface{}))
@@ -192,6 +193,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta in
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := NewAPI(meta)
+
 	var diags diag.Diagnostics
 
 	region := scw.Region(d.Get("region").(string))
@@ -212,10 +214,12 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		req.Name = scw.StringPtr(d.Get("name").(string))
 		changed = true
 	}
+
 	if d.HasChange("tags") {
 		req.Tags = scw.StringsPtr(expandStringList(d.Get("tags").([]interface{})))
 		changed = true
 	}
+
 	if d.HasChange("cpu_min") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -225,6 +229,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		req.CPUMin = scw.Uint32Ptr(uint32(d.Get("cpu_min").(int)))
 		changed = true
 	}
+
 	if d.HasChange("cpu_max") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -234,6 +239,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		req.CPUMax = scw.Uint32Ptr(uint32(d.Get("cpu_max").(int)))
 		changed = true
 	}
+
 	if d.HasChange("replica_count") {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -251,7 +257,9 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 	}
+
 	readDiags := resourceDeploymentRead(ctx, d, meta)
+
 	return append(diags, readDiags...)
 }
 
@@ -260,6 +268,7 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	region := scw.Region(d.Get("region").(string))
 	id := d.Id()
+
 	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -272,11 +281,13 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutCreate))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
+
 	return nil
 }

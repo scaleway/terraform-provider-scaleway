@@ -26,5 +26,6 @@ func waitForDatawarehouseDeployment(ctx context.Context, api *datawarehouse.API,
 	if err != nil {
 		return nil, err
 	}
+
 	return deployment, nil
 }

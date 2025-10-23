@@ -19,13 +19,16 @@ func TestAccDeployment_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	api := datawarehouse.NewAPI(tt.Meta)
+
 	versionsResp, err := api.ListVersions(&datawarehouseSDK.ListVersionsRequest{}, scw.WithAllPages())
 	if err != nil {
 		t.Fatalf("unable to fetch datawarehouse versions: %s", err)
 	}
+
 	if len(versionsResp.Versions) == 0 {
 		t.Fatal("no datawarehouse versions available")
 	}
+
 	latestVersion := versionsResp.Versions[0].Version
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -97,10 +100,12 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_datawarehouse_deployment" {
 				continue
 			}
+
 			id := rs.Primary.ID
 			region := rs.Primary.Attributes["region"]
 
 			api := datawarehouse.NewAPI(tt.Meta)
+
 			_, err := api.GetDeployment(&datawarehouseSDK.GetDeploymentRequest{
 				Region:       scw.Region(region),
 				DeploymentID: id,
@@ -112,6 +117,7 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 		}
+
 		return nil
 	}
 }

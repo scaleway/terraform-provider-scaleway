@@ -23,7 +23,6 @@ func ResourceDatabase() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-
 			"region":     regional.Schema(),
 			"project_id": account.ProjectIDSchema(),
 			"deployment_id": {
@@ -66,6 +65,7 @@ func resourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	d.SetId(ResourceDatabaseID(region, deploymentID, name))
+
 	return resourceDatabaseRead(ctx, d, meta)
 }
 
@@ -85,8 +85,10 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta inte
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -94,12 +96,14 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta inte
 	for _, db := range resp.Databases {
 		if db.Name == name {
 			found = db
+
 			break
 		}
 	}
 
 	if found == nil {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -129,6 +133,7 @@ func resourceDatabaseDelete(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	d.SetId("")
+
 	return nil
 }
 
@@ -141,5 +146,6 @@ func ResourceDatabaseParseID(id string) (scw.Region, string, string, error) {
 	if len(parts) != 3 {
 		return "", "", "", fmt.Errorf("unexpected format of ID (%s), expected region/deployment_id/name", id)
 	}
+
 	return scw.Region(parts[0]), parts[1], parts[2], nil
 }

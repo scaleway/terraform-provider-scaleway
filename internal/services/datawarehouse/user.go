@@ -76,6 +76,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	d.SetId(ResourceUserID(region, deploymentID, name))
+
 	return resourceUserRead(ctx, d, meta)
 }
 
@@ -83,6 +84,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	api := NewAPI(meta)
 
 	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	resp, err := api.ListUsers(&datawarehouseapi.ListUsersRequest{
 		Region:       region,
@@ -92,21 +96,26 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
 	var found *datawarehouseapi.User
+
 	for _, u := range resp.Users {
 		if u.Name == userName {
 			found = u
+
 			break
 		}
 	}
 
 	if found == nil {
 		d.SetId("")
+
 		return nil
 	}
 
@@ -136,6 +145,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		req.Password = scw.StringPtr(d.Get("password").(string))
 		changed = true
 	}
+
 	if d.HasChange("is_admin") {
 		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
 		changed = true
@@ -169,6 +179,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	d.SetId("")
+
 	return nil
 }
 

@@ -100,12 +100,14 @@ func isUserPresent(tt *acctest.TestTools, resourceName string) resource.TestChec
 		}
 
 		id := rs.Primary.ID // format: region/deployment_id/name
+
 		region, deploymentID, userName, err := datawarehouse.ResourceUserParseID(id)
 		if err != nil {
 			return fmt.Errorf("unexpected ID format (%s), expected region/deployment_id/name", id)
 		}
 
 		api := datawarehouse.NewAPI(tt.Meta)
+
 		resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
@@ -120,6 +122,7 @@ func isUserPresent(tt *acctest.TestTools, resourceName string) resource.TestChec
 				return nil
 			}
 		}
+
 		return fmt.Errorf("user %q not found in deployment %s", userName, deploymentID)
 	}
 }
@@ -130,13 +133,16 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_datawarehouse_user" {
 				continue
 			}
+
 			id := rs.Primary.ID // format: region/deployment_id/name
+
 			region, deploymentID, userName, err := datawarehouse.ResourceUserParseID(id)
 			if err != nil {
 				return fmt.Errorf("unexpected ID format (%s), expected region/deployment_id/name", id)
 			}
 
 			api := datawarehouse.NewAPI(tt.Meta)
+
 			resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
@@ -155,6 +161,7 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				}
 			}
 		}
+
 		return nil
 	}
 }

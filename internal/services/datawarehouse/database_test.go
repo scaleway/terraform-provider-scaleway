@@ -20,13 +20,16 @@ func TestAccDatabase_Basic(t *testing.T) {
 
 	// Fetch latest ClickHouse version
 	api := datawarehouse.NewAPI(tt.Meta)
+
 	versionsResp, err := api.ListVersions(&datawarehouseSDK.ListVersionsRequest{}, scw.WithAllPages())
 	if err != nil {
 		t.Fatalf("unable to fetch datawarehouse versions: %s", err)
 	}
+
 	if len(versionsResp.Versions) == 0 {
 		t.Fatal("no datawarehouse versions available")
 	}
+
 	latestVersion := versionsResp.Versions[0].Version
 
 	// Terraform acceptance test
@@ -69,13 +72,16 @@ func isDatabasePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if !ok {
 			return fmt.Errorf("resource not found: %s", n)
 		}
+
 		id := rs.Primary.ID // format: region/deployment_id/name
+
 		region, deploymentID, dbName, err := datawarehouse.ResourceDatabaseParseID(id)
 		if err != nil {
 			return fmt.Errorf("unexpected ID format (%s), expected region/deployment_id/name", id)
 		}
 
 		api := datawarehouse.NewAPI(tt.Meta)
+
 		resp, err := api.ListDatabases(&datawarehouseSDK.ListDatabasesRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
@@ -84,11 +90,13 @@ func isDatabasePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		if err != nil {
 			return err
 		}
+
 		for _, db := range resp.Databases {
 			if db.Name == dbName {
 				return nil
 			}
 		}
+
 		return fmt.Errorf("database %s not found", dbName)
 	}
 }
@@ -99,12 +107,16 @@ func isDatabaseDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			if rs.Type != "scaleway_datawarehouse_database" {
 				continue
 			}
+
 			id := rs.Primary.ID // format: region/deployment_id/name
+
 			region, deploymentID, dbName, err := datawarehouse.ResourceDatabaseParseID(id)
 			if err != nil {
 				return fmt.Errorf("unexpected ID format (%s), expected region/deployment_id/name", id)
 			}
+
 			api := datawarehouse.NewAPI(tt.Meta)
+
 			resp, err := api.ListDatabases(&datawarehouseSDK.ListDatabasesRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
@@ -114,14 +126,17 @@ func isDatabaseDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				if httperrors.Is404(err) {
 					continue
 				}
+
 				return err
 			}
+
 			for _, db := range resp.Databases {
 				if db.Name == dbName {
 					return fmt.Errorf("database %s still exists", dbName)
 				}
 			}
 		}
+
 		return nil
 	}
 }

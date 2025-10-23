@@ -29,6 +29,7 @@ func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			Region:       scw.Region(region),
 			DeploymentID: id,
 		}, scw.WithContext(context.Background()))
+
 		return err
 	}
 }
