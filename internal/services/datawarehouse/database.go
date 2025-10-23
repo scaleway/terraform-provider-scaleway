@@ -11,7 +11,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 func ResourceDatabase() *schema.Resource {
@@ -23,8 +22,7 @@ func ResourceDatabase() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+			"region": regional.Schema(),
 			"deployment_id": {
 				Type:        schema.TypeString,
 				Required:    true,
