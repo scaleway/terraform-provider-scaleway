@@ -86,7 +86,6 @@ func ResourceDeployment() *schema.Resource {
 				Type:        schema.TypeString,
 				Sensitive:   true,
 				Optional:    true,
-				ForceNew:    true,
 				Description: "Password for the first user of the deployment",
 			},
 			"public_network": {

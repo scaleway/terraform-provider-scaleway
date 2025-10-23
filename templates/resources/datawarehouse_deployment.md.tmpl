@@ -45,17 +45,17 @@ resource "scaleway_datawarehouse_deployment" "main" {
 The following arguments are supported:
 
 - `name` - (Required) Name of the Data Warehouse deployment.
-- `version` - (Required) ClickHouse version to use (e.g., "v25").
+- `version` - (Required, Forces new resource) ClickHouse version to use (e.g., "v25"). Changing this forces recreation of the deployment.
 - `replica_count` - (Required) Number of replicas.
-- `cpu_min` - (Required) Minimum CPU count.
-- `cpu_max` - (Required) Maximum CPU count.
+- `cpu_min` - (Required) Minimum CPU count. Must be less than or equal to `cpu_max`.
+- `cpu_max` - (Required) Maximum CPU count. Must be greater than or equal to `cpu_min`.
 - `ram_per_cpu` - (Required) RAM per CPU in GB.
-- `password` - (Optional) Password for the first user of the deployment. If not specified, a random password will be generated.
+- `password` - (Optional) Password for the first user of the deployment. If not specified, a random password will be generated. Note: password is only used during deployment creation.
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
-~> **Important:** Private endpoints are not yet supported by the API. A public endpoint is always created.
+~> **Important:** Private endpoints are not yet supported by the API. A public endpoint is always created automatically.
 
 ~> **Note:** During the private beta phase, modifying `cpu_min`, `cpu_max`, and `replica_count` has no effect until the feature is launched in general availability.
 
@@ -64,11 +64,15 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the deployment.
-- `public_network` - Public endpoint information.
+- `status` - The status of the deployment (e.g., "ready", "provisioning").
+- `created_at` - Date and time of deployment creation (RFC 3339 format).
+- `updated_at` - Date and time of deployment last update (RFC 3339 format).
+- `public_network` - Public endpoint information (always created automatically).
     - `id` - The ID of the public endpoint.
     - `dns_record` - DNS record for the public endpoint.
-    - `protocol` - Service protocol (e.g., "tcp", "https", "mysql").
-    - `port` - TCP port number for the public endpoint.
+    - `services` - List of services exposed on the public endpoint.
+        - `protocol` - Service protocol (e.g., "tcp", "https", "mysql").
+        - `port` - TCP port number.
 
 ## Import
 
