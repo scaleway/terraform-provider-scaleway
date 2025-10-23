@@ -5,6 +5,7 @@ import (
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -110,6 +111,20 @@ func flattenServerPublicIPs(zone scw.Zone, ips []*instance.ServerIP) []any {
 	}
 
 	return flattenedIPs
+}
+
+func flattenServerFileSystem(zone scw.Zone, fs []*instance.ServerFilesystem) []any {
+	filesystems := make([]any, len(fs))
+	region, _ := zone.Region()
+
+	for i, f := range fs {
+		filesystems[i] = map[string]any{
+			"filesystem_id": regional.NewIDString(region, f.FilesystemID),
+			"status":        f.State,
+		}
+	}
+
+	return filesystems
 }
 
 func flattenServerIPIDs(ips []*instance.ServerIP) []any {

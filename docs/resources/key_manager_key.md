@@ -9,19 +9,48 @@ This resource allows you to create and manage cryptographic keys in Scaleway Key
 
 ## Example Usage
 
+### Symmetric Encryption Key
+
 ```terraform
-resource "scaleway_key_manager_key" "main" {
-  name         = "my-kms-key"
-  region       = "fr-par"
-  project_id   = "your-project-id" # optional, will use provider default if omitted
-  usage        = "symmetric_encryption"
-  description  = "Key for encrypting secrets"
-  tags         = ["env:prod", "kms"]
-  unprotected  = true
+resource "scaleway_key_manager_key" "symmetric" {
+  name        = "my-kms-key"
+  region      = "fr-par"
+  project_id  = "your-project-id" # optional, will use provider default if omitted
+  usage       = "symmetric_encryption"
+  algorithm   = "aes_256_gcm"
+  description = "Key for encrypting secrets"
+  tags        = ["env:prod", "kms"]
+  unprotected = true
 
   rotation_policy {
     rotation_period = "720h" # 30 days
   }
+}
+```
+
+### Asymmetric Encryption Key with RSA-4096
+
+```terraform
+resource "scaleway_key_manager_key" "rsa_4096" {
+  name        = "rsa-4096-key"
+  region      = "fr-par"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"
+  description = "Key for encrypting large files with RSA-4096"
+  unprotected = true
+}
+```
+
+### Asymmetric Signing Key
+
+```terraform
+resource "scaleway_key_manager_key" "signing" {
+  name        = "signing-key"
+  region      = "fr-par"
+  usage       = "asymmetric_signing"
+  algorithm   = "rsa_pss_2048_sha256"
+  description = "Key for signing documents"
+  unprotected = true
 }
 ```
 
@@ -31,11 +60,29 @@ The following arguments are supported:
 
 - `name` (String) – The name of the key.  
 - `region` (String) – The region in which to create the key (e.g., `fr-par`).  
-- `project_id` (String, Optional) – The ID of the project the key belongs to.  
-- `usage` (String, **Required**) – The usage of the key. Valid values are:
-    - `symmetric_encryption`
-    - `asymmetric_encryption`
-    - `asymmetric_signing`
+- `project_id` (String, Optional) – The ID of the project the key belongs to.
+
+**Key Usage and Algorithm (both required):**
+
+- `usage` (String, Required) – The usage type of the key. Valid values:
+    - `symmetric_encryption` – For symmetric encryption operations
+    - `asymmetric_encryption` – For asymmetric encryption operations
+    - `asymmetric_signing` – For digital signing operations
+
+- `algorithm` (String, Required) – The cryptographic algorithm to use. Valid values depend on the `usage`:
+    - For `symmetric_encryption`:
+        - `aes_256_gcm`
+    - For `asymmetric_encryption`:
+        - `rsa_oaep_2048_sha256`
+        - `rsa_oaep_3072_sha256`
+        - `rsa_oaep_4096_sha256`
+    - For `asymmetric_signing`:
+        - `ec_p256_sha256`
+        - `rsa_pss_2048_sha256`
+        - `rsa_pkcs1_2048_sha256`
+
+**Other arguments:**
+
 - `description` (String, Optional) – A description for the key.
 - `tags` (List of String, Optional) – A list of tags to assign to the key.
 - `unprotected` (Boolean, Optional) – If `true`, the key can be deleted. Defaults to `false` (protected).
@@ -57,8 +104,6 @@ In addition to all arguments above, the following attributes are exported:
 - `protected` – Whether the key is protected from deletion.
 - `locked` – Whether the key is locked.
 - `rotated_at` – The date and time when the key was last rotated.
-- `origin_read` – The origin of the key as returned by the API.
-- `region_read` – The region of the key as returned by the API.
 - `rotation_policy` (Block)
     - `rotation_period` – The period between key rotations.
     - `next_rotation_at` – The date and time of the next scheduled rotation.
@@ -77,15 +122,5 @@ terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-55
 - **Rotation Policy**: The `rotation_policy` block allows you to set automatic rotation for your key.
 - **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
 - **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
+- **Algorithm Validation**: The provider validates that the specified `algorithm` is compatible with the `usage` type at plan time, providing early feedback on configuration errors.
 
-## Example: Asymmetric Key
-
-```terraform
-resource "scaleway_key_manager_key" "asym" {
-  name        = "asymmetric-key"
-  region      = "fr-par"
-  usage       = "asymmetric_signing"
-  description = "Key for signing documents"
-  unprotected = true
-}
-```

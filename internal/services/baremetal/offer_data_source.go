@@ -175,7 +175,7 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		for _, offer := range res.Offers {
 			if offer.Name == d.Get("name") {
 				if !offer.Enable && !d.Get("include_disabled").(bool) {
-					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
+					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add include_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
 				}
 
 				matches = append(matches, offer)

@@ -67,11 +67,19 @@ func ResourceRecord() *schema.Resource {
 				Optional:    true,
 				StateFunc: func(val any) string {
 					value := val.(string)
-					if value == "@" {
+					if value == "@" || value == "" {
 						return ""
 					}
 
 					return value
+				},
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					dnsZone := d.Get("dns_zone").(string)
+
+					normalizedOld := normalizeRecordName(oldValue, dnsZone)
+					normalizedNew := normalizeRecordName(newValue, dnsZone)
+
+					return normalizedOld == normalizedNew
 				},
 			},
 			"type": {
@@ -249,9 +257,10 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordType := domain.RecordType(d.Get("type").(string))
 	recordData := d.Get("data").(string)
+	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Data:              recordData,
-		Name:              d.Get("name").(string),
+		Name:              recordName,
 		TTL:               uint32(d.Get("ttl").(int)),
 		Type:              recordType,
 		Priority:          uint32(d.Get("priority").(int)),
@@ -289,7 +298,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	dnsZoneData, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
-		Name:    d.Get("name").(string),
+		Name:    recordName,
 		Type:    recordType,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
@@ -361,10 +370,11 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 
 		idRecord := locality.ExpandID(d.Id())
+		recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 			DNSZone: dnsZone,
-			Name:    d.Get("name").(string),
+			Name:    recordName,
 			Type:    recordType,
 			ID:      &idRecord,
 		}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -433,14 +443,16 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 	domainAPI := NewDomainAPI(m)
 
+	dnsZone := d.Get("dns_zone").(string)
 	req := &domain.UpdateDNSZoneRecordsRequest{
-		DNSZone:          d.Get("dns_zone").(string),
+		DNSZone:          dnsZone,
 		ReturnAllRecords: scw.BoolPtr(false),
 	}
 
 	geoIP, okGeoIP := d.GetOk("geo_ip")
+	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
-		Name:              d.Get("name").(string),
+		Name:              recordName,
 		Data:              d.Get("data").(string),
 		Priority:          uint32(d.Get("priority").(int)),
 		TTL:               uint32(d.Get("ttl").(int)),
@@ -465,7 +477,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForDNSRecordExist(ctx, domainAPI, d.Get("dns_zone").(string), record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForDNSRecordExist(ctx, domainAPI, dnsZone, record.Name, record.Type, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}

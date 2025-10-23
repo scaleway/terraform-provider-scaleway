@@ -127,7 +127,6 @@ $ terraform state show scaleway_server.main
 # scaleway_server.main:
 resource "scaleway_server" "main" {
     boot_type    = "local"
-    enable_ipv6  = false
     id           = "11111111-1111-1111-1111-111111111111"
     image        = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
     name         = "foobar"

@@ -53,7 +53,7 @@ test-compile:
 website:
 	@echo "Use this site to preview markdown rendering: https://registry.terraform.io/tools/doc-preview"
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website
+.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website docs
 
 tfproviderlint:
 	go tool tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
@@ -63,3 +63,8 @@ tfproviderdocs:
 
 tfproviderlintx:
 	go tool tfproviderlintx -XR001=false -XS002=false ./...
+
+docs:
+	go tool tfplugindocs validate
+	rm -fr ./docs
+	go tool tfplugindocs generate

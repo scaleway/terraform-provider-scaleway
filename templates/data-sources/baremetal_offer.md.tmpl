@@ -31,7 +31,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 
 - `offer_id` - (Optional) The offer id. Only one of `name` and `offer_id` should be specified.
 
-- `allow_disabled` - (Optional, default `false`) Include disabled offers.
+- `include_disabled` - (Optional, default `false`) Include disabled offers.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the offer should be created.
 

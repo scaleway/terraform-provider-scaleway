@@ -20,7 +20,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
-	size := int64(100_000_000_000)
+	sizeInGB := 100
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -31,25 +31,25 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = %d
+						size_in_gb = %d
 					}
-				`, fileSystemName, size),
+				`, fileSystemName, sizeInGB),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(size, 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = %d
+						size_in_gb = %d
 					}
-				`, fileSystemNameUpdated, size),
+				`, fileSystemNameUpdated, sizeInGB),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
-					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size", strconv.FormatInt(size, 10)),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
 		},
@@ -61,7 +61,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
-	size := int64(10_000_000_000)
+	sizeInGB := 10
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -72,9 +72,9 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = %d
+						size_in_gb = %d
 					}
-				`, fileSystemName, size),
+				`, fileSystemName, sizeInGB),
 				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
 			},
 		},
@@ -86,7 +86,7 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_InvalidSizeGranularityFails"
-	size := int64(25_000_000_000)
+	sizeInGB := 250
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -97,10 +97,10 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "fs" {
 						name = "%s"
-						size = %d
+						size_in_gb = %d
 					}
-				`, fileSystemName, size),
-				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
+				`, fileSystemName, sizeInGB),
+				ExpectError: regexp.MustCompile("size does not respect constraint, size must be a multiple of 100000000000"),
 			},
 		},
 	})

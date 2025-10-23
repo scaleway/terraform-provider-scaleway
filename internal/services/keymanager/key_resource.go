@@ -2,8 +2,11 @@ package keymanager
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
@@ -11,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceKeyManagerKey() *schema.Resource {
@@ -19,6 +23,9 @@ func ResourceKeyManagerKey() *schema.Resource {
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		CustomizeDiff: customdiff.All(
+			validateUsageAlgorithmCombination(),
+		),
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:        schema.TypeString,
@@ -33,7 +40,32 @@ func ResourceKeyManagerKey() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
 				}, false),
-				Description: "Key usage. Keys with a usage set to 'symmetric_encryption' can encrypt and decrypt data using the AES-256-GCM key algorithm. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+				Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+			},
+			"algorithm": {
+				Type:        schema.TypeString,
+				Required:    true,
+				Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+					var allKnownAlgos []string
+
+					symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
+					for _, algo := range symAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
+					for _, algo := range asymEncAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+					for _, algo := range asymSignAlgos {
+						allKnownAlgos = append(allKnownAlgos, string(algo))
+					}
+
+					return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
+				},
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -116,7 +148,15 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		createReq.Origin = key_manager.KeyOrigin(v.(string))
 	}
 
-	createReq.Usage = ExpandKeyUsage(d.Get("usage").(string))
+	usage := d.Get("usage").(string)
+	algorithm := d.Get("algorithm").(string)
+
+	keyUsage, err := expandUsageAlgorithm(usage, algorithm)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	createReq.Usage = keyUsage
 
 	key, err := api.CreateKey(createReq)
 	if err != nil {
@@ -145,7 +185,13 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", key.Name)
 	_ = d.Set("project_id", key.ProjectID)
 	_ = d.Set("region", key.Region.String())
-	_ = d.Set("usage", UsageToString(key.Usage))
+
+	usageType := UsageToString(key.Usage)
+	algorithm := AlgorithmFromKeyUsage(key.Usage)
+
+	_ = d.Set("usage", usageType)
+	_ = d.Set("algorithm", algorithm)
+
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
 	_ = d.Set("rotation_count", int(key.RotationCount))
@@ -221,4 +267,32 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 	d.SetId("")
 
 	return nil
+}
+
+func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
+		return nil
+	}
+}
+
+func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error) {
+	switch usage {
+	case usageSymmetricEncryption:
+		typedAlgo := key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
+
+		return &key_manager.KeyUsage{SymmetricEncryption: &typedAlgo}, nil
+
+	case usageAsymmetricEncryption:
+		typedAlgo := key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
+
+		return &key_manager.KeyUsage{AsymmetricEncryption: &typedAlgo}, nil
+
+	case usageAsymmetricSigning:
+		typedAlgo := key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
+
+		return &key_manager.KeyUsage{AsymmetricSigning: &typedAlgo}, nil
+
+	default:
+		return nil, fmt.Errorf("unknown usage type: %s", usage)
+	}
 }
