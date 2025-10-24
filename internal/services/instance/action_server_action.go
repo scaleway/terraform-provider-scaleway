@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var (
@@ -27,7 +29,7 @@ func (a *ServerAction) Configure(ctx context.Context, req action.ConfigureReques
 		return
 	}
 
-	client, ok := req.ProviderData.(*scw.Client)
+	m, ok := req.ProviderData.(*meta.Meta)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Action Configure Type",
@@ -37,6 +39,7 @@ func (a *ServerAction) Configure(ctx context.Context, req action.ConfigureReques
 		return
 	}
 
+	client := m.ScwClient()
 	a.instanceAPI = instance.NewAPI(client)
 }
 
@@ -97,11 +100,15 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		return
 	}
 
-	_, err := a.instanceAPI.ServerAction(&instance.ServerActionRequest{
-		ServerID: data.ServerID.String(),
-		Zone:     scw.Zone(data.Zone.String()),
-		Action:   instance.ServerAction(data.Action.String()),
-	})
+	actionReq := &instance.ServerActionRequest{
+		ServerID: locality.ExpandID(data.ServerID.ValueString()),
+		Action:   instance.ServerAction(data.Action.ValueString()),
+	}
+	if !data.Zone.IsNull() {
+		actionReq.Zone = scw.Zone(data.Zone.String())
+	}
+
+	_, err := a.instanceAPI.ServerAction(actionReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"error in server action",
@@ -109,10 +116,16 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 	}
 
 	if data.Wait.ValueBool() {
-		_, errWait := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
-			ServerID: data.ServerID.String(),
+		waitReq := &instance.WaitForServerRequest{
+			ServerID: locality.ExpandID(data.ServerID.ValueString()),
 			Zone:     scw.Zone(data.Zone.String()),
-		})
+		}
+
+		if !data.Zone.IsNull() {
+			waitReq.Zone = scw.Zone(data.Zone.String())
+		}
+
+		_, errWait := a.instanceAPI.WaitForServer(waitReq)
 		if errWait != nil {
 			resp.Diagnostics.AddError(
 				"error in wait server",

@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -73,7 +74,7 @@ func TestAccActionServer_UnknownVerb(t *testing.T) {
 						}
 					}
 				`,
-				Check: resource.ComposeTestCheckFunc(),
+				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
 		},
 	})
