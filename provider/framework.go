@@ -10,9 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 )
 
-var _ provider.Provider = &ScalewayProvider{}
+var (
+	_ provider.Provider            = &ScalewayProvider{}
+	_ provider.ProviderWithActions = (*ScalewayProvider)(nil)
+)
 
 type ScalewayProvider struct{}
 
@@ -81,7 +85,11 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
-	return []func() action.Action{}
+	var res []func() action.Action
+
+	res = append(res, instance.NewServerAction)
+
+	return res
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
