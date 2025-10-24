@@ -59,8 +59,7 @@ func ResourceInstance() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				Computed:         true,
-				ForceNew:         true,
-				Description:      "Database's engine version id",
+				Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
 				DiffSuppressFunc: dsf.IgnoreCase,
 				ConflictsWith: []string{
 					"snapshot_id",
@@ -326,6 +325,35 @@ func ResourceInstance() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Description: "Enable or disable encryption at rest for the database instance",
+			},
+			"upgradable_versions": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of available engine versions for upgrade",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Version ID for upgrade requests",
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Engine name",
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Version string",
+						},
+						"minor_version": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "Minor version string",
+						},
+					},
+				},
 			},
 			"private_ip": {
 				Type:        schema.TypeList,
@@ -671,6 +699,18 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
 	}
 
+	upgradableVersions := make([]map[string]any, len(res.UpgradableVersion))
+	for i, version := range res.UpgradableVersion {
+		upgradableVersions[i] = map[string]any{
+			"id":            version.ID,
+			"name":          version.Name,
+			"version":       version.Version,
+			"minor_version": version.MinorVersion,
+		}
+	}
+
+	_ = d.Set("upgradable_versions", upgradableVersions)
+
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
 		_ = d.Set("user_name", user.(string))
@@ -911,21 +951,86 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			})
 	}
 
-	// Carry out the upgrades
+	if d.HasChange("engine") {
+		oldEngine, newEngine := d.GetChange("engine")
+		newEngineStr := newEngine.(string)
+
+		targetVersionID := ""
+
+		var availableVersions []string
+		for _, version := range rdbInstance.UpgradableVersion {
+			availableVersions = append(availableVersions, version.Name)
+			if version.Name == newEngineStr {
+				targetVersionID = version.ID
+
+				break
+			}
+		}
+
+		if targetVersionID == "" {
+			return diag.FromErr(fmt.Errorf("engine version %s is not available for upgrade from %s. Available versions: %v",
+				newEngineStr, oldEngine.(string), availableVersions))
+		}
+
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				MajorUpgradeWorkflow: &rdb.UpgradeInstanceRequestMajorUpgradeWorkflow{
+					UpgradableVersionID: targetVersionID,
+					WithEndpoints:       true,
+				},
+			})
+	}
+
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
+		upgradedInstance, err := rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
+		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
+			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
+			oldInstanceID := ID
+			ID = upgradedInstance.ID
+			d.SetId(regional.NewIDString(region, ID))
+
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))
+			} else {
+				_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil && !httperrors.Is404(err) {
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
+				} else {
+					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+						Region:     region,
+						InstanceID: oldInstanceID,
+						Timeout:    scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+					}, scw.WithContext(ctx))
+					if err != nil && !httperrors.Is404(err) {
+						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
+					}
+				}
+			}
+		} else {
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
