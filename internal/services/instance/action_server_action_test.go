@@ -7,7 +7,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-func TestAccActionServerReboot_Basic(t *testing.T) {
+func TestAccActionServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -43,7 +43,7 @@ func TestAccActionServerReboot_Basic(t *testing.T) {
 	})
 }
 
-func TestAccActionServerAction_UncorrectVerb(t *testing.T) {
+func TestAccActionServer_UnknownVerb(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -68,7 +68,7 @@ func TestAccActionServerAction_UncorrectVerb(t *testing.T) {
 
 					action "scaleway_instance_server_action" "main" {
 						config {
-						  	action = "incorrectVerb"
+						  	action = "unknownVerb"
 							server_id = scaleway_instance_server.main.id
 						}
 					}
