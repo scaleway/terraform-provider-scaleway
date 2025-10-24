@@ -445,6 +445,7 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 	defer tt.Cleanup()
 
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	poolID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },

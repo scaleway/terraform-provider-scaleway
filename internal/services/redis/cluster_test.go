@@ -155,6 +155,8 @@ func TestAccCluster_Migrate(t *testing.T) {
 }
 
 func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
+	t.Skip("Should be skipped until IPAM IPs get properly detached when deleting a Redis cluster")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

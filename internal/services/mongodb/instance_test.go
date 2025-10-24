@@ -346,12 +346,14 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
@@ -370,12 +372,14 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
@@ -411,12 +415,14 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
@@ -452,12 +458,14 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 
 					resource scaleway_vpc_private_network pn01 {
 						name = "my_private_network"
+						tags = [ "pn01" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
 
 					resource scaleway_vpc_private_network pn02 {
 						name = "update_private_network"
+						tags = [ "pn02" ]
 						region = "fr-par"
 						vpc_id = scaleway_vpc.main.id
 					}
