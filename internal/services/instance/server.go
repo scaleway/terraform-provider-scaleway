@@ -74,7 +74,7 @@ func ResourceServer() *schema.Resource {
 			"type": {
 				Type:             schema.TypeString,
 				Required:         true,
-				Description:      "The instanceSDK type of the server", // TODO: link to scaleway pricing in the doc
+				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
 				DiffSuppressFunc: dsf.IgnoreCase,
 			},
 			"protected": {
@@ -158,7 +158,7 @@ func ResourceServer() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     true,
-							Description: "Force deletion of the root volume on instanceSDK termination",
+							Description: "Force deletion of the root volume on instance termination",
 						},
 						"boot": {
 							Type:        schema.TypeBool,
@@ -192,24 +192,25 @@ func ResourceServer() *schema.Resource {
 				Optional:    true,
 				Description: "The additional volumes attached to the server",
 			},
-			"enable_ipv6": {
-				Type:        schema.TypeBool,
+			"filesystems": {
+				Type:        schema.TypeList,
 				Optional:    true,
-				Default:     false,
-				Description: "Determines if IPv6 is enabled for the server",
-				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
-			},
-			"private_ip": {
-				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The Scaleway internal IP address of the server",
-				Deprecated:  "Use ipam_ip datasource instead to fetch your server's IP in your private network.",
-			},
-			"public_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The public IPv4 address of the server",
-				Deprecated:  "Use public_ips instead",
+				Description: "Filesystems attach to the server",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"filesystem_id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The filesystem ID attached to the server",
+						},
+						"status": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The state of the filesystem",
+						},
+					},
+				},
 			},
 			"ip_id": {
 				Type:             schema.TypeString,
@@ -228,24 +229,6 @@ func ResourceServer() *schema.Resource {
 					Description:      "ID of the reserved IP for the server",
 					DiffSuppressFunc: dsf.Locality,
 				},
-			},
-			"ipv6_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The default public IPv6 address routed to the server.",
-				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
-			},
-			"ipv6_gateway": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IPv6 gateway address",
-				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
-			},
-			"ipv6_prefix_length": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Deprecated:  "Please use a scaleway_instance_ip with a `routed_ipv6` type",
-				Description: "The IPv6 prefix length routed to the server.",
 			},
 			"enable_dynamic_ip": {
 				Type:        schema.TypeBool,
@@ -302,7 +285,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    8,
-				Description: "List of private network to connect with your instanceSDK",
+				Description: "List of private network to connect with your instance",
 				Elem: &schema.Resource{
 					Timeouts: &schema.ResourceTimeout{
 						Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
@@ -339,7 +322,7 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Computed:    true,
-				Description: "List of public IPs attached to your instanceSDK",
+				Description: "List of private IPv4 and IPv6 addresses attached to your instance",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
@@ -384,18 +367,18 @@ func ResourceServer() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Optional:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
+				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
+							Description: "The ID of the IP address resource",
 						},
 						"address": {
 							Type:        schema.TypeString,
 							Computed:    true,
-							Description: "The private IPv4 address",
+							Description: "The private IP address",
 						},
 					},
 				},
@@ -449,21 +432,14 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		Protected:         d.Get("protected").(bool),
 	}
 
-	enableIPv6, ok := d.GetOk("enable_ipv6")
-	if ok {
-		req.EnableIPv6 = scw.BoolPtr(enableIPv6.(bool)) //nolint:staticcheck
-	}
-
 	if bootType, ok := d.GetOk("boot_type"); ok {
 		bootType := instanceSDK.BootType(bootType.(string))
 		req.BootType = &bootType
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
-		req.PublicIP = types.ExpandStringPtr(zonal.ExpandID(ipID).ID) //nolint:staticcheck
-	}
-
-	if ipIDs, ok := d.GetOk("ip_ids"); ok {
+		req.PublicIPs = &[]string{zonal.ExpandID(ipID).ID}
+	} else if ipIDs, ok := d.GetOk("ip_ids"); ok {
 		req.PublicIPs = types.ExpandSliceIDsPtr(ipIDs)
 	}
 
@@ -596,6 +572,31 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	///
+	// Attach Filesystem
+	///
+
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		for _, filesystem := range filesystems.([]any) {
+			fs := filesystem.(map[string]any)
+			filesystemID := fs["filesystem_id"]
+
+			_, err := api.AttachServerFileSystem(&instanceSDK.AttachServerFileSystemRequest{
+				Zone:         zone,
+				FilesystemID: regional.ExpandID(filesystemID.(string)).ID,
+				ServerID:     res.Server.ID,
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	////
 	// Private Network
 	////
@@ -679,9 +680,11 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("tags", server.Tags)
 	}
 
+	if server.Filesystems != nil {
+		_ = d.Set("filesystems", flattenServerFileSystem(server.Zone, server.Filesystems))
+	}
+
 	_ = d.Set("security_group_id", zonal.NewID(zone, server.SecurityGroup.ID).String())
-	// EnableIPv6 is deprecated
-	_ = d.Set("enable_ipv6", server.EnableIPv6) //nolint:staticcheck
 	_ = d.Set("enable_dynamic_ip", server.DynamicIPRequired)
 	_ = d.Set("organization_id", server.Organization)
 	_ = d.Set("project_id", server.Project)
@@ -698,13 +701,10 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("placement_group_policy_respected", server.PlacementGroup.PolicyRespected)
 	}
 
-	if server.PrivateIP != nil {
-		_ = d.Set("private_ip", types.FlattenStringPtr(server.PrivateIP))
-	}
-
-	if _, hasIPID := d.GetOk("ip_id"); server.PublicIP != nil && hasIPID { //nolint:staticcheck
-		if !server.PublicIP.Dynamic { //nolint:staticcheck
-			_ = d.Set("ip_id", zonal.NewID(zone, server.PublicIP.ID).String()) //nolint:staticcheck
+	if ipID, hasIPID := d.GetOk("ip_id"); hasIPID {
+		publicIP := FindIPInList(ipID.(string), server.PublicIPs)
+		if publicIP != nil && !publicIP.Dynamic {
+			_ = d.Set("ip_id", zonal.NewID(zone, publicIP.ID).String())
 		} else {
 			_ = d.Set("ip_id", "")
 		}
@@ -712,43 +712,21 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("ip_id", "")
 	}
 
-	if server.PublicIP != nil { //nolint:staticcheck
-		_ = d.Set("public_ip", server.PublicIP.Address.String()) //nolint:staticcheck
-		d.SetConnInfo(map[string]string{
-			"type": "ssh",
-			"host": server.PublicIP.Address.String(), //nolint:staticcheck
-		})
-	} else {
-		_ = d.Set("public_ip", "")
-		d.SetConnInfo(nil)
-	}
-
 	if len(server.PublicIPs) > 0 {
 		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+		d.SetConnInfo(map[string]string{
+			"type": "ssh",
+			"host": server.PublicIPs[0].Address.String(),
+		})
 	} else {
 		_ = d.Set("public_ips", []any{})
+		d.SetConnInfo(nil)
 	}
 
 	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
 		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
 	} else {
 		_ = d.Set("ip_ids", []any{})
-	}
-
-	if server.IPv6 != nil { //nolint:staticcheck
-		_ = d.Set("ipv6_address", server.IPv6.Address.String()) //nolint:staticcheck
-		_ = d.Set("ipv6_gateway", server.IPv6.Gateway.String()) //nolint:staticcheck
-
-		prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_ = d.Set("ipv6_prefix_length", prefixLength)
-	} else {
-		_ = d.Set("ipv6_address", nil)
-		_ = d.Set("ipv6_gateway", nil)
-		_ = d.Set("ipv6_prefix_length", nil)
 	}
 
 	if server.AdminPasswordEncryptionSSHKeyID != nil {
@@ -973,11 +951,6 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	if d.HasChange("enable_ipv6") {
-		serverShouldUpdate = true
-		updateRequest.EnableIPv6 = scw.BoolPtr(d.Get("enable_ipv6").(bool))
-	}
-
 	if d.HasChange("enable_dynamic_ip") {
 		serverShouldUpdate = true
 		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
@@ -1006,7 +979,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Null: true}
 		} else {
 			if !isStopped {
-				return diag.FromErr(errors.New("instanceSDK must be stopped to change placement group"))
+				return diag.FromErr(errors.New("instance must be stopped to change placement group"))
 			}
 
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Value: placementGroupID}
@@ -1014,6 +987,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("admin_password_encryption_ssh_key_id") {
+		serverShouldUpdate = true
 		updateRequest.AdminPasswordEncryptionSSHKeyID = types.ExpandUpdatedStringPtr(d.Get("admin_password_encryption_ssh_key_id").(string))
 	}
 
@@ -1021,45 +995,13 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	// Update reserved IP
 	////
 	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
-		server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
-		// If an IP is already attached, and it's not a dynamic IP we detach it.
-		if server.PublicIP != nil && !server.PublicIP.Dynamic { //nolint:staticcheck
-			_, err = api.UpdateIP(&instanceSDK.UpdateIPRequest{
-				Zone:   zone,
-				IP:     server.PublicIP.ID, //nolint:staticcheck
-				Server: &instanceSDK.NullableStringValue{Null: true},
-			})
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			// we wait to ensure to not detach the new ip.
-			_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		// If a new IP is provided, we attach it to the server
-		if ipID != "" {
-			_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			_, err = api.UpdateIP(&instanceSDK.UpdateIPRequest{
-				Zone:   zone,
-				IP:     ipID,
-				Server: &instanceSDK.NullableStringValue{Value: id},
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
+		if ipID == "" {
+			emptyIPList := make([]string, 0)
+			updateRequest.PublicIPs = &emptyIPList
+			serverShouldUpdate = true
+		} else {
+			err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id, "ip_id")
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1067,7 +1009,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChange("ip_ids") {
-		err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id)
+		err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id, "ip_ids")
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1081,7 +1023,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  "instanceSDK may need to be rebooted to use the new boot type",
+				Summary:  "instance may need to be rebooted to use the new boot type",
 			})
 		}
 	}
@@ -1105,7 +1047,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			if !isStopped && d.HasChange("user_data.cloud-init") {
 				warnings = append(warnings, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "instanceSDK may need to be rebooted to use the new cloud init config",
+					Summary:  "instance may need to be rebooted to use the new cloud init config",
 				})
 			}
 		}
@@ -1116,6 +1058,33 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		err = api.SetAllServerUserData(userDataRequests)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	////
+	// Update server filesystems
+	///
+
+	if d.HasChange("filesystems") {
+		oldRaw, newRaw := d.GetChange("filesystems")
+
+		oldList := oldRaw.([]any)
+		newList := newRaw.([]any)
+
+		oldIDs := make(map[string]struct{})
+		newIDs := make(map[string]struct{})
+
+		collectFilesystemIDs(oldList, oldIDs)
+		collectFilesystemIDs(newList, newIDs)
+
+		err := detachOldFileSystem(ctx, oldIDs, newIDs, api.API, zone, server)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = attachNewFileSystem(ctx, newIDs, oldIDs, api.API, zone, server)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -1226,7 +1195,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:   zone,
 			IP:     zonal.ExpandID(ipID).ID,
 			Server: &instanceSDK.NullableStringValue{Null: true},
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
 			log.Print("[WARN] Failed to detach eip of server")
 		}
@@ -1237,19 +1206,62 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			Zone:           zone,
 			PlacementGroup: &instanceSDK.NullableStringValue{Null: true},
 			ServerID:       id,
-		})
+		}, scw.WithContext(ctx))
 		if err != nil {
-			log.Print("[WARN] Failed remove server from instanceSDK group")
+			log.Print("[WARN] Failed remove server from instance group")
 		}
 	}
-	// reach stopped state
-	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
-	if httperrors.Is404(err) {
-		return nil
+
+	// Delete private-nic if managed by instance_server resource
+	if raw, ok := d.GetOk("private_network"); ok {
+		ph, err := newPrivateNICHandler(api.API, id, zone)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		for index := range raw.([]any) {
+			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+			pn := d.Get(pnKey)
+
+			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
-	if err != nil {
-		return diag.FromErr(err)
+	// Detach filesystem
+	if filesystems, ok := d.GetOk("filesystems"); ok {
+		fsList := filesystems.([]any)
+		for i, fsRaw := range fsList {
+			fsMap := fsRaw.(map[string]any)
+
+			fsIDRaw, ok := fsMap["filesystem_id"]
+			if !ok || fsIDRaw == nil {
+				return diag.Errorf("filesystem_id is missing or nil for filesystem at index %d", i)
+			}
+
+			fsID := fsIDRaw.(string)
+
+			newFileSystemID := types.ExpandStringPtr(fsID)
+			if newFileSystemID == nil {
+				return diag.Errorf("failed to expand filesystem_id pointer at index %d", i)
+			}
+
+			_, err = api.DetachServerFileSystem(&instanceSDK.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     id,
+				FilesystemID: locality.ExpandID(*newFileSystemID),
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	// Delete private-nic if managed by instance_server resource
@@ -1275,17 +1287,12 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
-		Zone:     zone,
-		ServerID: id,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+	err = terminateServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		err = deleteServer(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
@@ -1303,6 +1310,54 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	// reach running state (mandatory for termination)
+	err := reachState(ctx, api, zone, id, instanceSDK.ServerStateRunning)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.ServerActionAndWait(&instanceSDK.ServerActionAndWaitRequest{
+		Zone:     zone,
+		ServerID: id,
+		Action:   instanceSDK.ServerActionTerminate,
+		Timeout:  &timeout,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	return nil
+}
+
+func deleteServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	_, err := waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	// reach stopped state
+	err = reachState(ctx, api, zone, id, instanceSDK.ServerStateStopped)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.DeleteServer(&instanceSDK.DeleteServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	_, err = waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
 	}
 
 	return nil
@@ -1482,13 +1537,22 @@ func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData, instanceAPI *instanceSDK.API, zone scw.Zone, id string) error {
+func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData, instanceAPI *instanceSDK.API, zone scw.Zone, id string, attribute string) error {
 	server, err := waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return err
 	}
 
-	schemaIPs := d.Get("ip_ids").([]any)
+	var schemaIPs []any
+
+	switch attribute {
+	case "ip_id":
+		schemaIP := d.Get(attribute).(string)
+		schemaIPs = append(schemaIPs, schemaIP)
+	case "ip_ids":
+		schemaIPs = d.Get(attribute).([]any)
+	}
+
 	requestedIPs := make(map[string]bool, len(schemaIPs))
 
 	// Gather request IPs in a map

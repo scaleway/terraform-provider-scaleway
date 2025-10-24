@@ -59,8 +59,6 @@ You find all the available types on the [pricing page](https://www.scaleway.com/
 - `additional_volume_ids` - The [additional volumes](https://developers.scaleway.com/en/products/instance/api/#volumes-7e8a39)
 attached to the server.
 
-- `enable_ipv6` - Determines if IPv6 is enabled for the server.
-
 - `enable_dynamic_ip` - True if dynamic IP in enable on the server.
 
 - `state` - The state of the server. Possible values are: `started`, `stopped` or `standby`.
@@ -78,16 +76,10 @@ attached to the server.
 - `root_volume`
     - `volume_id` - The volume ID of the root volume of the server.
 
-- `private_ip` - The Scaleway internal IP address of the server.
-
-- `public_ip` - The public IP address of the server.
-
 - `public_ips` - The list of public IPs of the server
     - `id` - The ID of the IP
     - `address` - The address of the IP
 
-- `ipv6_address` - The default ipv6 address routed to the server. ( Only set when enable_ipv6 is set to true )
-
-- `ipv6_gateway` - The ipv6 gateway address. ( Only set when enable_ipv6 is set to true )
-
-- `ipv6_prefix_length` - The prefix length of the ipv6 subnet routed to the server. ( Only set when enable_ipv6 is set to true )
+- `private_ips` - The list of private IPs of the server.
+    - `id` - The ID of the IP address resource.
+    - `address` - The private IP address.

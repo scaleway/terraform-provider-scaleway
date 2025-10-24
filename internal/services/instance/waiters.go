@@ -91,3 +91,19 @@ func waitForImage(ctx context.Context, api *instance.API, zone scw.Zone, id stri
 
 	return image, err
 }
+
+func waitForFilesystems(ctx context.Context, api *instance.API, zone scw.Zone, id string, timeout time.Duration) (*instance.Server, error) {
+	retryInterval := instancehelpers.DefaultInstanceRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	server, err := api.WaitForServerFileSystem(&instance.WaitForServerFileSystemRequest{
+		ServerID:      id,
+		Zone:          zone,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+
+	return server, err
+}
