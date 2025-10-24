@@ -18,7 +18,7 @@ func TestAccPolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -92,7 +92,7 @@ func TestAccPolicy_NoUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -155,7 +155,7 @@ func TestAccPolicy_ChangeLinkedEntity(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	randAppName := "tf-tests-scaleway-iam-app-policy-permissions"
@@ -261,7 +261,7 @@ func TestAccPolicy_ChangePermissions(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -352,7 +352,7 @@ func TestAccPolicy_ProjectID(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -418,7 +418,7 @@ func TestAccPolicy_Condition(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -513,7 +513,7 @@ func TestAccPolicy_ChangeRulePrincipal(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
