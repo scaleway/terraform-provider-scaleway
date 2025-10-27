@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -46,12 +45,6 @@ func DataSourceServers() *schema.Resource {
 							Description: "UUID of the server.",
 							Type:        schema.TypeString,
 						},
-						"public_ip": {
-							Computed:    true,
-							Description: "Public IP address.",
-							Type:        schema.TypeString,
-							Deprecated:  "Use public_ips instead",
-						},
 						"public_ips": {
 							Type:        schema.TypeList,
 							Description: "Public IPs associated with this server.",
@@ -70,11 +63,6 @@ func DataSourceServers() *schema.Resource {
 									},
 								},
 							},
-						},
-						"private_ip": {
-							Computed:    true,
-							Description: "Private IP address of the server.",
-							Type:        schema.TypeString,
 						},
 						"private_ips": {
 							Type:        schema.TypeList,
@@ -135,11 +123,6 @@ func DataSourceServers() *schema.Resource {
 							Description: "Security group ID",
 							Type:        schema.TypeString,
 						},
-						"enable_ipv6": {
-							Computed:    true,
-							Description: "Whether to enable IPv6 support",
-							Type:        schema.TypeBool,
-						},
 						"enable_dynamic_ip": {
 							Computed:    true,
 							Description: "Whether to enable dynamic IP addresses on this server",
@@ -159,21 +142,6 @@ func DataSourceServers() *schema.Resource {
 							Computed:    true,
 							Description: "Whether the placement group policy respected or not",
 							Type:        schema.TypeBool,
-						},
-						"ipv6_address": {
-							Computed:    true,
-							Description: "IPv6 Address for this server",
-							Type:        schema.TypeString,
-						},
-						"ipv6_gateway": {
-							Computed:    true,
-							Description: "IPv6 gateway address",
-							Type:        schema.TypeString,
-						},
-						"ipv6_prefix_length": {
-							Computed:    true,
-							Description: "IPv6 prefix length",
-							Type:        schema.TypeInt,
 						},
 						"zone":            zonal.Schema(),
 						"organization_id": account.OrganizationIDSchema(),
@@ -212,16 +180,8 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		rawServer := make(map[string]any)
 		rawServer["id"] = zonal.NewID(server.Zone, server.ID).String()
 
-		if server.PublicIP != nil { //nolint:staticcheck
-			rawServer["public_ip"] = server.PublicIP.Address.String() //nolint:staticcheck
-		}
-
 		if server.PublicIPs != nil {
 			rawServer["public_ips"] = flattenServerPublicIPs(server.Zone, server.PublicIPs)
-		}
-
-		if server.PrivateIP != nil {
-			rawServer["private_ip"] = *server.PrivateIP
 		}
 
 		state, err := serverStateFlatten(server.State)
@@ -242,9 +202,6 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		rawServer["security_group_id"] = zonal.NewID(zone, server.SecurityGroup.ID).String()
-		if server.EnableIPv6 != nil { //nolint:staticcheck
-			rawServer["enable_ipv6"] = server.EnableIPv6 //nolint:staticcheck
-		}
 
 		rawServer["enable_dynamic_ip"] = server.DynamicIPRequired
 		rawServer["organization_id"] = server.Organization
@@ -257,20 +214,6 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		if server.PlacementGroup != nil {
 			rawServer["placement_group_id"] = zonal.NewID(zone, server.PlacementGroup.ID).String()
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
-		}
-
-		if server.IPv6 != nil { //nolint:staticcheck
-			rawServer["ipv6_address"] = server.IPv6.Address.String() //nolint:staticcheck
-			rawServer["ipv6_gateway"] = server.IPv6.Gateway.String() //nolint:staticcheck
-
-			prefixLength, err := strconv.Atoi(server.IPv6.Netmask) //nolint:staticcheck
-			if err != nil {
-				diags = append(diags, diag.FromErr(fmt.Errorf("failed to read ipv6 netmask: %w", err))...)
-
-				continue
-			}
-
-			rawServer["ipv6_prefix_length"] = prefixLength
 		}
 
 		ph, err := newPrivateNICHandler(instanceAPI, server.ID, zone)

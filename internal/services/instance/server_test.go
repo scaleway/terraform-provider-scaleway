@@ -786,9 +786,6 @@ func TestAccServer_Ipv6(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.server01"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_address", ""),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_gateway", ""),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "ipv6_prefix_length", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "public_ips.#", "0"),
 				),
 			},
@@ -848,7 +845,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ip"), // public_ip is deprecated
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
@@ -866,7 +863,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					isIPAttachedToServer(tt, "scaleway_instance_ip.second", "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ip"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
 				),
 			},
@@ -883,7 +880,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ips.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
@@ -901,7 +898,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
-					acctest.CheckResourceAttrIPv4("scaleway_instance_server.base", "public_ip"),
+					acctest.CheckResourceAttrIPv4("scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
 				),
 			},
@@ -983,7 +980,7 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		rootVolumeName, ok := rs.Primary.Attributes["root_volume.0.name"]
 		if !ok {
-			return errors.New("instanceSDK root_volume has no name")
+			return errors.New("instance root_volume has no name")
 		}
 
 		if strings.HasPrefix(rootVolumeName, "tf") {
@@ -1638,7 +1635,6 @@ func TestAccServer_IPRemoved(t *testing.T) {
 					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.address", "scaleway_instance_server.main", "public_ip"),
 				),
 			},
 			{
@@ -2186,9 +2182,154 @@ func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
 	})
 }
 
-func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
-	t.Skip("There is currently a bug when resetting the field, we should reinstate the test once the fix has been deployed")
+func TestAccServer_AttachDetachFileSystem(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
 
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "POP2-HM-2C-16G"
+					  state = "started"
+                      image = "ubuntu_jammy"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+			{
+				Config: `
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
+						name="filesystem-instance-terraform-test-2"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "POP2-HM-2C-16G"
+					  state = "started"
+					  image = "ubuntu_jammy"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+
+					   filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
+						name="filesystem-instance-terraform-test-2"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "POP2-HM-2C-16G"
+					  state = "started"
+ 					  image = "ubuntu_jammy"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
+					  }
+					  filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "volume" {
+						iops = 15000
+						size_in_gb = 15
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
+						name="filesystem-instance-terraform-test"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
+						name="filesystem-instance-terraform-test-2"
+						size_in_gb = 100
+					}
+
+					resource "scaleway_instance_server" "base" {
+					  type  = "POP2-HM-2C-16G"
+					  state = "started"
+					  image = "ubuntu_jammy"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+
+					   filesystems {
+						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
+					  }
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
