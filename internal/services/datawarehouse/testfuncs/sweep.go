@@ -18,7 +18,7 @@ func AddTestSweepers() {
 }
 
 func testSweepDatawarehouseDeployment(_ string) error {
-	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
+	return acctest.SweepRegions((&datawarehouseSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
 		datawarehouseAPI := datawarehouseSDK.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying datawarehouse deployments in (%s)", region)
