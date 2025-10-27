@@ -23,12 +23,12 @@ func TestAccActionServer_Basic(t *testing.T) {
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
 
-					  lifecycle {
-						action_trigger {
-						  events  = [after_create]
-						  actions = [action.scaleway_instance_server_action.main]
-						}
-					  }
+					  	lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_server_action.main]
+							}
+					  	}
 					}
 
 					action "scaleway_instance_server_action" "main" {
@@ -38,7 +38,6 @@ func TestAccActionServer_Basic(t *testing.T) {
 						}
 					}
 				`,
-				Check: resource.ComposeTestCheckFunc(),
 			},
 		},
 	})
