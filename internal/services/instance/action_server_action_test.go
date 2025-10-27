@@ -54,23 +54,10 @@ func TestAccActionServer_UnknownVerb(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-datasource-private-nic"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  lifecycle {
-						action_trigger {
-						  events  = [after_create]
-						  actions = [action.scaleway_instance_server_action.main]
-						}
-					  }
-					}
-
 					action "scaleway_instance_server_action" "main" {
 						config {
 						  	action = "unknownVerb"
-							server_id = scaleway_instance_server.main.id
+							server_id = "11111111-1111-1111-1111-111111111111"
 						}
 					}
 				`,
