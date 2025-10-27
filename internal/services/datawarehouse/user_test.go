@@ -18,19 +18,7 @@ func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	// Fetch a valid ClickHouse version to create a deployment
-	api := datawarehouse.NewAPI(tt.Meta)
-
-	versionsResp, err := api.ListVersions(&datawarehouseSDK.ListVersionsRequest{}, scw.WithAllPages())
-	if err != nil {
-		t.Fatalf("unable to fetch datawarehouse versions: %s", err)
-	}
-
-	if len(versionsResp.Versions) == 0 {
-		t.Fatal("no datawarehouse versions available")
-	}
-
-	latestVersion := versionsResp.Versions[0].Version
+	latestVersion := fetchLatestClickHouseVersion(t, tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
