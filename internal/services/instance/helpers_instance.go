@@ -33,7 +33,7 @@ const (
 	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
 	InstanceServerStateStandby = "standby"
 
-	DefaultInstanceServerWaitTimeout        = 10 * time.Minute
+	DefaultInstanceServerWaitTimeout        = 20 * time.Minute
 	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
 	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
 	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
@@ -553,6 +553,59 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 	return server.Server.Project, nil
 }
 
+func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
+	for id := range newIDs {
+		if _, alreadyAttached := oldIDs[id]; !alreadyAttached {
+			_, err := api.AttachServerFileSystem(&instance.AttachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
+			}
+
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
+	for id := range oldIDs {
+		if _, stillPresent := newIDs[id]; !stillPresent {
+			_, err := api.DetachServerFileSystem(&instance.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
+			}
+
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			if err != nil && !httperrors.Is404(err) {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func collectFilesystemIDs(fsList []any, target map[string]struct{}) {
+	for _, fs := range fsList {
+		if fsMap, ok := fs.(map[string]any); ok {
+			id := fsMap["filesystem_id"].(string)
+			target[id] = struct{}{}
+		}
+	}
+}
+
 func DeleteASGServers(
 	ctx context.Context,
 	api *instance.API,
@@ -594,6 +647,18 @@ func DeleteASGServers(
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// FindIPInList looks for an IP in a list to avoid using the deprecated server.PublicIP field
+func FindIPInList(ipID string, ips []*instance.ServerIP) *instance.ServerIP {
+	id := zonal.ExpandID(ipID).ID
+	for _, ip := range ips {
+		if ip.ID == id {
+			return ip
 		}
 	}
 
