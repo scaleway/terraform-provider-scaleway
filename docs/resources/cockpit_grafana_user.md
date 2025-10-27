@@ -5,6 +5,8 @@ page_title: "Scaleway: scaleway_cockpit_grafana_user"
 
 # Resource: scaleway_cockpit_grafana_user
 
+-> **Important:** This resource is deprecated and will be removed in a future version. Scaleway is deprecating Grafana users in favor of alternative authentication methods. Please refer to Scaleway's documentation for migration guidance.
+
 The `scaleway_cockpit_grafana_user` resource allows you to create and manage [Grafana users](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#grafana-users) in Scaleway Cockpit.
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
