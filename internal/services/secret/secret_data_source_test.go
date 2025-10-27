@@ -16,7 +16,7 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 
 	ctx := t.Context()
 	secretName := "scalewayDataSourceSecret"
-	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
+	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
