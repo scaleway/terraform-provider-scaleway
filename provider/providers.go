@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -18,7 +19,12 @@ func NewProviderList(ctx context.Context, providerConfig *Config) ([]func() tfpr
 		return nil, err
 	}
 
-	frameworkProvider := NewFrameworkProvider(providerConfig.Meta)
+	var frameworkProvider func() provider.Provider
+	if providerConfig != nil {
+		frameworkProvider = NewFrameworkProvider(providerConfig.Meta)
+	} else {
+		frameworkProvider = NewFrameworkProvider(nil)
+	}
 
 	return []func() tfprotov6.ProviderServer{
 		// Provider using terraform-plugin-framework
