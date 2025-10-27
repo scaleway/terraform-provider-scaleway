@@ -100,6 +100,15 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		return
 	}
 
+	if a.instanceAPI == nil {
+		resp.Diagnostics.AddError(
+			"Unconfigured instanceAPI",
+			"The action was not properly configured. The Scaleway client is missing. "+
+				"This is usually a bug in the provider. Please report it to the maintainers.",
+		)
+		return
+	}
+
 	actionReq := &instance.ServerActionRequest{
 		ServerID: locality.ExpandID(data.ServerID.ValueString()),
 		Action:   instance.ServerAction(data.Action.ValueString()),
