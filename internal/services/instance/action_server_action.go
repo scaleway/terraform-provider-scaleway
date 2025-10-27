@@ -106,6 +106,7 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 			"The action was not properly configured. The Scaleway client is missing. "+
 				"This is usually a bug in the provider. Please report it to the maintainers.",
 		)
+
 		return
 	}
 

@@ -90,20 +90,25 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 	// Read configuration data into model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	var m *meta.Meta
+
 	if p.providerMeta != nil {
 		// Use pre-injected meta (from tests or config)
 		resp.Diagnostics.Append(diag.NewWarningDiagnostic("using provider meta already initialized", "meta provider not empty"))
+
 		m = p.providerMeta
 	} else {
 		config := &meta.Config{
 			TerraformVersion: req.TerraformVersion,
 		}
+
 		var err error
+
 		m, err = meta.NewMeta(ctx, config)
 		if err != nil {
 			resp.Diagnostics.AddError("error while configuring the provider", err.Error())
