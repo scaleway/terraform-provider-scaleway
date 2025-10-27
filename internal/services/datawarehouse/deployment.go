@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func ResourceDeployment() *schema.Resource {
@@ -163,7 +164,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
-		req.Tags = expandStringList(v.([]any))
+		req.Tags = types.ExpandStrings(v)
 	}
 
 	req.Endpoints = []*datawarehouseapi.EndpointSpec{
@@ -215,7 +216,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", deployment.ProjectID)
 	_ = d.Set("name", deployment.Name)
-	_ = d.Set("tags", flattenStringList(deployment.Tags))
+	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
 	_ = d.Set("replica_count", int(deployment.ReplicaCount))
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
@@ -260,7 +261,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(expandStringList(d.Get("tags").([]any)))
+		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
 		changed = true
 	}
 
