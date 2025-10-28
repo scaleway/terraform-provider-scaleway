@@ -214,6 +214,17 @@ func (api *BlockAndInstanceAPI) DeleteUnknownVolume(req *DeleteUnknownVolumeRequ
 	}
 
 	if unknownVolume.IsBlockVolume() {
+		targetStatus := block.VolumeStatusAvailable
+
+		_, err = api.BlockAPI.WaitForVolume(&block.WaitForVolumeRequest{
+			Zone:           req.Zone,
+			VolumeID:       req.VolumeID,
+			TerminalStatus: &targetStatus,
+		}, opts...)
+		if err != nil {
+			return err
+		}
+
 		err = api.BlockAPI.DeleteVolume(&block.DeleteVolumeRequest{
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
