@@ -17,9 +17,10 @@ import (
 
 func ResourceCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitGrafanaUserCreate,
-		ReadContext:   ResourceCockpitGrafanaUserRead,
-		DeleteContext: ResourceCockpitGrafanaUserDelete,
+		CreateContext:      ResourceCockpitGrafanaUserCreate,
+		ReadContext:        ResourceCockpitGrafanaUserRead,
+		DeleteContext:      ResourceCockpitGrafanaUserDelete,
+		DeprecationMessage: "This resource is deprecated and will be removed in a future version. Scaleway is deprecating Grafana users in favor of alternative authentication methods.",
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
