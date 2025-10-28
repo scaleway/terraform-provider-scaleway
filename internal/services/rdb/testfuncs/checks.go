@@ -73,3 +73,32 @@ func GetLatestEngineVersion(tt *acctest.TestTools, engineName string) string {
 
 	return latestEngineVersion
 }
+
+func GetEngineVersionsForUpgrade(tt *acctest.TestTools, engineName string) (string, string) {
+	api := rdbSDK.NewAPI(tt.Meta.ScwClient())
+
+	engines, err := api.ListDatabaseEngines(&rdbSDK.ListDatabaseEnginesRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get engine versions: %s", err)
+	}
+
+	for _, engine := range engines.Engines {
+		if engine.Name == engineName {
+			var availableVersions []string
+
+			for _, version := range engine.Versions {
+				if !version.Disabled {
+					availableVersions = append(availableVersions, version.Name)
+				}
+			}
+
+			if len(availableVersions) >= 2 {
+				return availableVersions[1], availableVersions[0]
+			}
+		}
+	}
+
+	tt.T.Fatalf("Could not find two different versions for engine %s", engineName)
+
+	return "", ""
+}
