@@ -19,6 +19,8 @@ jobs:
           go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'terraform_1.14.0-rc1'
       - name: Run sweepers
         run: make sweep
         env:

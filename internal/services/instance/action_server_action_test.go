@@ -1,0 +1,67 @@
+package instance_test
+
+import (
+	"regexp"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+)
+
+func TestAccActionServer_Basic(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "main" {
+						name = "test-terraform-datasource-private-nic"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+
+					  	lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_server_action.main]
+							}
+					  	}
+					}
+
+					action "scaleway_instance_server_action" "main" {
+						config {
+						  	action = "reboot"
+							server_id = scaleway_instance_server.main.id
+						}
+					}
+				`,
+			},
+		},
+	})
+}
+
+func TestAccActionServer_UnknownVerb(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					action "scaleway_instance_server_action" "main" {
+						config {
+						  	action = "unknownVerb"
+							server_id = "11111111-1111-1111-1111-111111111111"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
+			},
+		},
+	})
+}

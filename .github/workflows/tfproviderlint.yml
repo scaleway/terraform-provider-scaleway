@@ -31,6 +31,9 @@ jobs:
       - uses: actions/setup-go@v6
         with:
             go-version: stable
-      - uses: hashicorp/setup-terraform@v3
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'terraform_1.14.0-rc1'
       - run: go install github.com/bflad/tfproviderdocs@latest
       - run: make tfproviderdocs
