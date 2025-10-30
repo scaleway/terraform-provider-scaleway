@@ -18,7 +18,7 @@ func TestAccUser_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestVersion := fetchLatestClickHouseVersion(t, tt)
+	latestVersion := fetchLatestClickHouseVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },

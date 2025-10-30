@@ -148,9 +148,11 @@ func ResourceDeployment() *schema.Resource {
 }
 
 func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
+	api, region, err := datawarehouseAPIWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	region := scw.Region(d.Get("region").(string))
 	req := &datawarehouseapi.CreateDeploymentRequest{
 		Region:       region,
 		ProjectID:    d.Get("project_id").(string),
@@ -183,18 +185,18 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(deployment.ID)
+	d.SetId(regional.NewIDString(region, deployment.ID))
 
 	return resourceDeploymentRead(ctx, d, meta)
 }
 
 func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
+	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	region := scw.Region(d.Get("region").(string))
-	id := d.Id()
-
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -213,7 +215,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	_ = d.Set("region", string(deployment.Region))
 	_ = d.Set("project_id", deployment.ProjectID)
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
@@ -237,14 +239,14 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 }
 
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
+	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	var diags diag.Diagnostics
 
-	region := scw.Region(d.Get("region").(string))
-	id := d.Id()
-
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -315,12 +317,12 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
+	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	region := scw.Region(d.Get("region").(string))
-	id := d.Id()
-
-	_, err := waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

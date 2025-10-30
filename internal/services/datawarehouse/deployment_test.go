@@ -18,7 +18,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	latestVersion := fetchLatestClickHouseVersion(t, tt)
+	latestVersion := fetchLatestClickHouseVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -78,10 +78,6 @@ resource "scaleway_datawarehouse_deployment" "main" {
 		},
 	})
 }
-
-// Helpers
-
-// isDeploymentPresent is now defined in helpers_test.go
 
 func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

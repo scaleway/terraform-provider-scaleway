@@ -3,7 +3,6 @@ package datawarehouse_test
 import (
 	"context"
 	"fmt"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -16,18 +15,18 @@ import (
 // Common helper functions shared across all datawarehouse tests
 
 // fetchLatestClickHouseVersion returns the latest available ClickHouse version for testing purposes
-func fetchLatestClickHouseVersion(t *testing.T, tt *acctest.TestTools) string {
-	t.Helper()
+func fetchLatestClickHouseVersion(tt *acctest.TestTools) string {
+	tt.T.Helper()
 
 	api := datawarehouse.NewAPI(tt.Meta)
 
 	versionsResp, err := api.ListVersions(&datawarehouseSDK.ListVersionsRequest{}, scw.WithAllPages())
 	if err != nil {
-		t.Fatalf("unable to fetch datawarehouse versions: %s", err)
+		tt.T.Fatalf("unable to fetch datawarehouse versions: %s", err)
 	}
 
 	if len(versionsResp.Versions) == 0 {
-		t.Fatal("no datawarehouse versions available")
+		tt.T.Fatal("no datawarehouse versions available")
 	}
 
 	return versionsResp.Versions[0].Version
