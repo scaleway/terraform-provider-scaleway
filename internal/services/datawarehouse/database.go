@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -24,10 +26,11 @@ func ResourceDatabase() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"region": regional.Schema(),
 			"deployment_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID of the Datawarehouse deployment to which this database belongs.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "ID of the Datawarehouse deployment to which this database belongs.",
+				DiffSuppressFunc: dsf.Locality,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -45,10 +48,12 @@ func ResourceDatabase() *schema.Resource {
 }
 
 func resourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
+	api, region, err := datawarehouseAPIWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	region := scw.Region(d.Get("region").(string))
-	deploymentID := d.Get("deployment_id").(string)
+	deploymentID := locality.ExpandID(d.Get("deployment_id").(string))
 	name := d.Get("name").(string)
 
 	req := &datawarehouseapi.CreateDatabaseRequest{
@@ -57,7 +62,7 @@ func resourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, meta an
 		Name:         name,
 	}
 
-	_, err := api.CreateDatabase(req, scw.WithContext(ctx))
+	_, err = api.CreateDatabase(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

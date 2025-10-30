@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -25,10 +27,11 @@ func ResourceUser() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"region": regional.Schema(),
 			"deployment_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID of the Datawarehouse deployment to which this user belongs.",
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				Description:      "ID of the Datawarehouse deployment to which this user belongs.",
+				DiffSuppressFunc: dsf.Locality,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -53,9 +56,12 @@ func ResourceUser() *schema.Resource {
 }
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api := NewAPI(meta)
-	region := scw.Region(d.Get("region").(string))
-	deploymentID := d.Get("deployment_id").(string)
+	api, region, err := datawarehouseAPIWithRegion(d, meta)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	deploymentID := locality.ExpandID(d.Get("deployment_id").(string))
 	name := d.Get("name").(string)
 	password := d.Get("password").(string)
 	isAdmin := d.Get("is_admin").(bool)
@@ -68,7 +74,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		IsAdmin:      isAdmin,
 	}
 
-	_, err := api.CreateUser(req, scw.WithContext(ctx))
+	_, err = api.CreateUser(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}

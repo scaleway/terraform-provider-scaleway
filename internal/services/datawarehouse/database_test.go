@@ -18,21 +18,8 @@ func TestAccDatabase_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	// Fetch latest ClickHouse version
-	api := datawarehouse.NewAPI(tt.Meta)
+	latestVersion := fetchLatestClickHouseVersion(tt)
 
-	versionsResp, err := api.ListVersions(&datawarehouseSDK.ListVersionsRequest{}, scw.WithAllPages())
-	if err != nil {
-		t.Fatalf("unable to fetch datawarehouse versions: %s", err)
-	}
-
-	if len(versionsResp.Versions) == 0 {
-		t.Fatal("no datawarehouse versions available")
-	}
-
-	latestVersion := versionsResp.Versions[0].Version
-
-	// Terraform acceptance test
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,

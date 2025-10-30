@@ -39,12 +39,13 @@ func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		id := rs.Primary.ID
-		region := rs.Primary.Attributes["region"]
+		api, region, id, err := datawarehouse.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
-		api := datawarehouse.NewAPI(tt.Meta)
-		_, err := api.GetDeployment(&datawarehouseSDK.GetDeploymentRequest{
-			Region:       scw.Region(region),
+		_, err = api.GetDeployment(&datawarehouseSDK.GetDeploymentRequest{
+			Region:       region,
 			DeploymentID: id,
 		}, scw.WithContext(context.Background()))
 
