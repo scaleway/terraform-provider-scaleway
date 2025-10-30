@@ -35,9 +35,10 @@ type TestTools struct {
 
 var foldersUsingVCRv4 = []string{
 	"instance",
+	"k8s",
 }
 
-func folderUsesVCRv4(fullFolderPath string) bool {
+func FolderUsesVCRv4(fullFolderPath string) bool {
 	fullPathSplit := strings.Split(fullFolderPath, "/")
 
 	folder := fullPathSplit[len(fullPathSplit)-1]
@@ -120,7 +121,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		cleanup    func()
 	)
 
-	if folderUsesVCRv4(folder) {
+	if FolderUsesVCRv4(folder) {
 		httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
 	} else {
 		httpClient, cleanup, err = getHTTPRecoder(t, folder, *UpdateCassettes)
