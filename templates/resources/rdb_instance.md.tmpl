@@ -78,6 +78,38 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
+### Example Engine Upgrade
+
+```terraform
+# Initial creation with PostgreSQL 14
+resource "scaleway_rdb_instance" "main" {
+  name           = "my-database"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
+  disable_backup = true
+  user_name      = "my_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+# Check available versions for upgrade
+output "upgradable_versions" {
+  value = scaleway_rdb_instance.main.upgradable_versions
+}
+
+# To upgrade to PostgreSQL 15, simply change the engine value
+# This will trigger a blue/green upgrade with automatic endpoint migration
+# resource "scaleway_rdb_instance" "main" {
+#   name           = "my-database"
+#   node_type      = "DB-DEV-S"
+#   engine         = "PostgreSQL-15"  # Changed from PostgreSQL-14
+#   is_ha_cluster  = false
+#   disable_backup = true
+#   user_name      = "my_user"
+#   password       = "thiZ_is_v&ry_s3cret"
+# }
+```
+
 ### Examples of endpoint configuration
 
 Database Instances can have a maximum of 1 public endpoint and 1 private endpoint. They can have both, or none.
@@ -142,9 +174,9 @@ interruption.
 
 ~> **Important** Once your Database Instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the `node_type`, and if you are using `bssd` storage, you should increase the volume size before making any other changes to your Database Instance.
 
-- `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
+- `engine` - (Required) Database Instance's engine version name (e.g. `PostgreSQL-16`, `MySQL-8`).
 
-~> **Important** Updates to `engine` will recreate the Database Instance.
+~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
@@ -246,6 +278,11 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `address` - The private IPv4 address.
 - `certificate` - Certificate of the Database Instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
+- `upgradable_versions` - List of available engine versions for upgrade. Each version contains:
+    - `id` - Version ID to use in upgrade requests.
+    - `name` - Engine version name (e.g., `PostgreSQL-15`).
+    - `version` - Version string (e.g., `15.5`).
+    - `minor_version` - Minor version string (e.g., `15.5.0`).
 
 ## Limitations
 

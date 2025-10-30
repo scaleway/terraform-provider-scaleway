@@ -57,7 +57,7 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 // CreateFakeIAMManager creates a temporary project with a temporary IAM application and policy manager.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, *iam.Policy, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -81,10 +81,10 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	})
 	if err != nil {
 		if err := terminate(); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	terminateFunctions = append(terminateFunctions, func() error {
@@ -100,10 +100,10 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	})
 	if err != nil {
 		if err := terminate(); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	terminateFunctions = append(terminateFunctions, func() error {
@@ -124,10 +124,10 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	})
 	if err != nil {
 		if err := terminate(); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	terminateFunctions = append(terminateFunctions, func() error {
@@ -142,10 +142,10 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 	})
 	if err != nil {
 		if err := terminate(); err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	terminateFunctions = append(terminateFunctions, func() error {
@@ -154,7 +154,7 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, FakeSid
 		})
 	})
 
-	return project, iamAPIKey, terminate, nil
+	return project, iamAPIKey, iamPolicy, terminate, nil
 }
 
 type FakeSideProjectTerminateFunc func() error

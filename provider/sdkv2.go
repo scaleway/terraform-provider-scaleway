@@ -285,6 +285,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_function_namespace":                  function.DataSourceNamespace(),
 				"scaleway_iam_application":                     iam.DataSourceApplication(),
 				"scaleway_iam_group":                           iam.DataSourceGroup(),
+				"scaleway_iam_policy":                          iam.DataSourcePolicy(),
 				"scaleway_iam_ssh_key":                         iam.DataSourceSSHKey(),
 				"scaleway_iam_user":                            iam.DataSourceUser(),
 				"scaleway_iam_api_key":                         iam.DataSourceAPIKey(),
