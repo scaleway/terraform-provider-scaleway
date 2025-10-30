@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
@@ -13,8 +14,19 @@ func main() {
 	}
 
 	path := os.Args[1]
+	folder := strings.Split(path, "/")[2]
 
-	report, err := acctest.CompressCassette(path)
+	var (
+		report acctest.CompressReport
+		err    error
+	)
+
+	if acctest.FolderUsesVCRv4(folder) {
+		report, err = acctest.CompressCassetteV4(path)
+	} else {
+		report, err = acctest.CompressCassetteV3(path)
+	}
+
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
