@@ -9,52 +9,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
-const domainNameValidation = "scaleway-terraform.com"
-
-func TestAccDomainValidation_Validation(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	subDomainName := "validation-validation"
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isDomainDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-
-					resource "scaleway_domain_zone" "test" {
-  						domain    = "%s"
-  						subdomain = "%s"
-					}
-
-					resource scaleway_tem_domain cr01 {
-						name       = scaleway_domain_zone.test.id
-						accept_tos = true
-						autoconfig = true
-					}
-
-					resource scaleway_tem_domain_validation valid {
-  						domain_id = scaleway_tem_domain.cr01.id
-  						region = scaleway_tem_domain.cr01.region
-						timeout = 3600
-					}
-				`, domainNameValidation, subDomainName),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
-				),
-			},
-		},
-	})
-}
+// NOTE: TestAccDomainValidation_Validation was removed as it's a duplicate of TestAccDomain_Autoconfig in domain_test.go
+// Both tests verify autoconfig + validation, so we keep only one to avoid CI timeout issues
 
 func TestAccDomainValidation_TimeoutError(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "validation-timeout"
+	domainName := "terraform-timeout.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 func() { acctest.PreCheck(t) },
@@ -63,15 +25,10 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-
-                    resource "scaleway_domain_zone" "test" {
-                        domain    = "%s"
-                        subdomain = "%s"
-                    }
-
                     resource scaleway_tem_domain cr01 {
-                        name       = scaleway_domain_zone.test.id
+                        name       = "%s"
                         accept_tos = true
+                        autoconfig = false
                     }
 
                     resource scaleway_tem_domain_validation valid {
@@ -79,7 +36,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
                         region    = scaleway_tem_domain.cr01.region
                         timeout   = 1
                     }
-                `, domainNameValidation, subDomainName),
+                `, domainName),
 				ExpectError: regexp.MustCompile("(?i)domain validation did not complete"),
 			},
 		},
