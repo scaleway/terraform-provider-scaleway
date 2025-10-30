@@ -726,25 +726,25 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 						policy_type = "max_availability"
 					}
 					
-					resource "scaleway_instance_server" "base" {
+					resource "scaleway_instance_server" "ha" {
 						count = 3
 						name = "tf-tests-server-${count.index}-with-placement-group"
 						image = "ubuntu_focal"
 						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
-						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
+						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group", "${count.index}" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base.0"),
-					isServerPresent(tt, "scaleway_instance_server.base.1"),
-					isServerPresent(tt, "scaleway_instance_server.base.2"),
+					isServerPresent(tt, "scaleway_instance_server.ha.0"),
+					isServerPresent(tt, "scaleway_instance_server.ha.1"),
+					isServerPresent(tt, "scaleway_instance_server.ha.2"),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.ha"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.ha", "policy_respected", "true"),
 
 					// placement_group_policy_respected is deprecated and should always be false.
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.0", "placement_group_policy_respected", "false"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.1", "placement_group_policy_respected", "false"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base.2", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.ha.0", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.ha.1", "placement_group_policy_respected", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.ha.2", "placement_group_policy_respected", "false"),
 				),
 			},
 		},
@@ -1405,12 +1405,14 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
 						name = "control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "control" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -1433,12 +1435,14 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = data.scaleway_marketplace_image.jammy.id
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
 						name = "control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "conntrol" ]
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
@@ -1462,12 +1466,14 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image = data.scaleway_marketplace_image.focal.id
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
 						name = "control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
+						tags = [ "conntrol" ]
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
