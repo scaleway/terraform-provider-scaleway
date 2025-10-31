@@ -19,6 +19,8 @@ func DataSourceIP() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
 
+	datasource.AddOptionalFieldsToSchema(dsSchema, "zone", "project_id")
+
 	dsSchema["id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
