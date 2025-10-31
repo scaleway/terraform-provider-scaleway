@@ -36,6 +36,7 @@ type TestTools struct {
 var foldersUsingVCRv4 = []string{
 	"instance",
 	"k8s",
+	"marketplace",
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
