@@ -53,6 +53,8 @@ jobs:
         uses: actions/checkout@v5
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'terraform_1.14.0-rc1'
       - name: Install Go
         uses: actions/setup-go@v6
         with:
@@ -154,6 +156,8 @@ jobs:
           go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 'terraform_1.14.0-rc1'
       - name: Run scwconfig tests
         run: go tool gotestsum --format github-actions -- ./internal/services/scwconfig -timeout=2m
         env:
