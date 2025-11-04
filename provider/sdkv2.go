@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
@@ -257,6 +258,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.DataSourceProject(),
 				"scaleway_account_projects":                    account.DataSourceProjects(),
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
+				"scaleway_audit_trail_event":                   audittrail.DataSourceEvent(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
 				"scaleway_baremetal_partition_schema":          baremetal.DataPartitionSchema(),
