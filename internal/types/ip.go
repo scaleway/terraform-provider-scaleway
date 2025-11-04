@@ -43,3 +43,32 @@ func FlattenIPNet(ipNet scw.IPNet) (string, error) {
 
 	return string(raw[1 : len(raw)-1]), nil // remove quotes
 }
+
+// NormalizeIPToCIDR converts a standalone IP address to CIDR notation with default mask
+// If the input is already in CIDR notation, it returns it unchanged
+// IPv4 addresses get /32 mask, IPv6 addresses get /128 mask
+func NormalizeIPToCIDR(raw string) (string, error) {
+	if raw == "" {
+		return "", nil
+	}
+
+	// Check if it's already a valid CIDR
+	if _, _, err := net.ParseCIDR(raw); err == nil {
+		return raw, nil
+	}
+
+	// Try to parse as standalone IP
+	ip := net.ParseIP(raw)
+	if ip == nil {
+		return "", fmt.Errorf("invalid IP address or CIDR notation: %s", raw)
+	}
+
+	// Add default mask based on IP version
+	if ip.To4() != nil {
+		// IPv4 address
+		return raw + "/32", nil
+	}
+
+	// IPv6 address
+	return raw + "/128", nil
+}

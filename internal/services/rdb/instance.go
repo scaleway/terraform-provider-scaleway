@@ -177,13 +177,14 @@ func ResourceInstance() *schema.Resource {
 							Computed:    true,
 							Description: "The endpoint ID",
 						},
-						"ip_net": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsCIDR,
-							Description:  "The IP with the given mask within the private subnet",
-						},
+					"ip_net": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: verify.IsStandaloneIPorCIDR(),
+						DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
+						Description:      "The IP with the given mask within the private subnet",
+					},
 						"ip": {
 							Type:        schema.TypeString,
 							Computed:    true,

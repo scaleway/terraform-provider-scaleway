@@ -53,9 +53,15 @@ func expandPrivateNetwork(data any, exist bool, ipamConfig *bool, staticConfig *
 		}
 
 		if staticConfig != nil {
-			ip, err := types.ExpandIPNet(*staticConfig)
+			// Normalize IP to CIDR notation if needed (e.g., 10.0.0.1 -> 10.0.0.1/32)
+			normalizedIP, err := types.NormalizeIPToCIDR(*staticConfig)
 			if err != nil {
-				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %w", r["ip_net"], err))...)
+				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to normalize private_network ip_net (%s): %w", r["ip_net"], err))...)
+			}
+
+			ip, err := types.ExpandIPNet(normalizedIP)
+			if err != nil {
+				return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network ip_net (%s): %w", normalizedIP, err))...)
 			}
 
 			spec.PrivateNetwork.ServiceIP = &ip
@@ -175,9 +181,15 @@ func expandReadReplicaEndpointsSpecPrivateNetwork(data any, ipamConfig *bool, st
 	}
 
 	if staticConfig != nil {
-		ipNet, err := types.ExpandIPNet(*staticConfig)
+		// Normalize IP to CIDR notation if needed (e.g., 10.0.0.1 -> 10.0.0.1/32)
+		normalizedIP, err := types.NormalizeIPToCIDR(*staticConfig)
 		if err != nil {
-			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %w", rawEndpoint["service_ip"], err))...)
+			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to normalize private_network service_ip (%s): %w", rawEndpoint["service_ip"], err))...)
+		}
+
+		ipNet, err := types.ExpandIPNet(normalizedIP)
+		if err != nil {
+			return nil, append(diags, diag.FromErr(fmt.Errorf("failed to parse private_network service_ip (%s): %w", normalizedIP, err))...)
 		}
 
 		endpoint.PrivateNetwork.ServiceIP = &ipNet

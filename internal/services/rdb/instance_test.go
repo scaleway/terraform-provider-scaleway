@@ -1704,6 +1704,157 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 	})
 }
 
+func TestAccInstance_PrivateNetworkWithStandaloneIP(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 func() { acctest.PreCheck(t) },
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			rdbchecks.IsInstanceDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			// Test with standalone IP address (without CIDR notation)
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "test-rdb-standalone-ip"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name   = "test-pn-standalone-ip"
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.213.254.0/24"
+						}
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-standalone-ip"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-standalone-ip"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							ip_net = "10.213.254.4/28"
+							pn_id  = scaleway_vpc_private_network.pn.id
+							port   = 5432
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.port", "5432"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "10.213.254.4/28"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network.0.ip"),
+				),
+			},
+			// Test with explicit CIDR notation /28
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "test-rdb-standalone-ip"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name   = "test-pn-standalone-ip"
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.213.254.0/24"
+						}
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-standalone-ip"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-standalone-ip"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							ip_net = "10.213.254.20/28"
+							pn_id  = scaleway_vpc_private_network.pn.id
+							port   = 5432
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.port", "5432"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.pn_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "10.213.254.20/28"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network.0.ip"),
+				),
+			},
+			// Test update with a different CIDR
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "test-rdb-standalone-ip"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name   = "test-pn-standalone-ip"
+						vpc_id = scaleway_vpc.main.id
+						ipv4_subnet {
+							subnet = "10.213.254.0/24"
+						}
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-standalone-ip"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-standalone-ip"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							ip_net = "10.213.254.36/28"
+							pn_id  = scaleway_vpc_private_network.pn.id
+							port   = 5432
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.ip_net", "10.213.254.36/28"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "private_network.0.ip"),
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
