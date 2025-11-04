@@ -24,8 +24,6 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
-func PreCheck(_ *testing.T) {}
-
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta

@@ -19,7 +19,6 @@ func TestAccBackend_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -137,7 +136,6 @@ func TestAccBackend_HealthCheck(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -243,7 +241,6 @@ func TestAccBackend_WithFailoverHost(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isBackendDestroyed(tt),
@@ -390,7 +387,6 @@ func TestAccBackend_HealthCheck_Port(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{

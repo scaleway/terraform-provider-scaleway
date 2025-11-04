@@ -21,7 +21,6 @@ func TestAccDataSourceObjectBucket_Basic(t *testing.T) {
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -99,7 +98,6 @@ func TestAccDataSourceObjectBucket_ProjectIDAllowed(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
@@ -149,7 +147,6 @@ func TestAccDataSourceObjectBucket_ProjectIDForbidden(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {

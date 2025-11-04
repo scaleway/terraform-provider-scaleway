@@ -23,7 +23,6 @@ func TestAccRoute_RDB(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -91,7 +90,6 @@ func TestAccRoute_S3(t *testing.T) {
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-iot-route-s3")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -152,7 +150,6 @@ func TestAccRoute_REST(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		// Destruction is done via the hub destruction.
 		CheckDestroy: isHubDestroyed(tt),
