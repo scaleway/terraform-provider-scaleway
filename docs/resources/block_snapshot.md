@@ -97,7 +97,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the snapshot.
 
-~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID migt be `fr-par-1/11111111-1111-1111-1111-111111111111`.
+~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID might be `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 ## Import
 
