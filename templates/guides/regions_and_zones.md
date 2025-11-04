@@ -6,7 +6,7 @@ page_title: "Scaleway Zones and Regions"
 
 Scaleway's products are deployed across multiple datacenter in the world.
 
-For technical and legal reasons, some products are splitted by Region or by Availability Zones.
+For technical and legal reasons, some products are split by Region or by Availability Zones.
 When using such product, you can choose the location that better fits your need (country, latency, ...).
 
 ## Regions
