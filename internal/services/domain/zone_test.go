@@ -21,7 +21,6 @@ func TestAccDomainZone_Basic(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayDomainZone_Basic: test dns zone: %s, with domain: %s", testDNSZone, acctest.TestDomain)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainZoneDestroy(tt),
 		Steps: []resource.TestStep{
@@ -50,7 +49,6 @@ func TestAccDomainZone_RootZone(t *testing.T) {
 	logging.L.Debugf("TestAccDomainZone_RootZone: test root zone with domain: %s", acctest.TestDomain)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainZoneDestroy(tt),
 		Steps: []resource.TestStep{

@@ -22,7 +22,6 @@ func TestAccBlockedList_Basic(t *testing.T) {
 	blockedEmail := "spam@example.com"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBlockedEmailDestroyed(tt),
 		Steps: []resource.TestStep{

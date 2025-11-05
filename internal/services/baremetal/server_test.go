@@ -34,7 +34,6 @@ func TestAccServer_Basic(t *testing.T) {
 	name := "TestAccServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -126,7 +125,6 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -151,7 +149,6 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -191,7 +188,6 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	name := "TestAccServer_CreateServerWithCustomInstallConfig"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -245,7 +241,6 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 	password := "HelloWorld678!"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -302,7 +297,6 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -368,7 +362,6 @@ func TestAccServer_AddOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -460,7 +453,6 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -615,7 +607,6 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -687,7 +678,6 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -800,7 +790,6 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -926,7 +915,6 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -1105,7 +1093,6 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),

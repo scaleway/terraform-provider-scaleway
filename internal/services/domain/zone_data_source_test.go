@@ -15,7 +15,6 @@ func TestAccDataSourceDomainZone_Basic(t *testing.T) {
 	testDNSZone := "test-zone2"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainZoneDestroy(tt),
 		Steps: []resource.TestStep{

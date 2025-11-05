@@ -27,7 +27,6 @@ func TestAccCluster_Basic(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -96,7 +95,6 @@ func TestAccCluster_Migrate(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -161,7 +159,6 @@ func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
 	latestRedisVersion := getLatestVersion(tt)
 	clusterID := ""
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -257,7 +254,6 @@ func TestAccCluster_ACL(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -334,7 +330,6 @@ func TestAccCluster_Settings(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -411,7 +406,6 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -604,7 +598,6 @@ func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -671,7 +664,6 @@ func TestAccCluster_Certificate(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -713,7 +705,6 @@ func TestAccCluster_NoCertificate(t *testing.T) {
 
 	latestRedisVersion := getLatestVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -756,7 +747,6 @@ func TestAccCluster_MigrateToHAMode(t *testing.T) {
 	latestRedisVersion := getLatestVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isClusterDestroyed(tt),
 		Steps: []resource.TestStep{

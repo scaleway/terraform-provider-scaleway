@@ -17,7 +17,6 @@ func TestAccACL_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -67,7 +66,6 @@ func TestAccACL_WithRules(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{

@@ -34,7 +34,7 @@ This section lists the arguments that are supported:
 
 - `login` - (Required) The username of the Grafana user. The `admin` user is not yet available for creation. You need your Grafana username to log in to Grafana and access your dashboards.
 - `role` - (Required) The role assigned to the Grafana user. Must be `editor` or `viewer`.
-- `project_id` - (Defaults to Project ID speficied in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
+- `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 
 ## Attributes Reference
 

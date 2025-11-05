@@ -24,8 +24,6 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v4/pkg/recorder"
 )
 
-func PreCheck(_ *testing.T) {}
-
 type TestTools struct {
 	T                 *testing.T
 	Meta              *meta.Meta
@@ -34,10 +32,13 @@ type TestTools struct {
 }
 
 var foldersUsingVCRv4 = []string{
+	"container",
 	"instance",
+	"k8s",
+	"marketplace",
 }
 
-func folderUsesVCRv4(fullFolderPath string) bool {
+func FolderUsesVCRv4(fullFolderPath string) bool {
 	fullPathSplit := strings.Split(fullFolderPath, "/")
 
 	folder := fullPathSplit[len(fullPathSplit)-1]
@@ -120,7 +121,7 @@ func NewTestTools(t *testing.T) *TestTools {
 		cleanup    func()
 	)
 
-	if folderUsesVCRv4(folder) {
+	if FolderUsesVCRv4(folder) {
 		httpClient, cleanup, err = NewRecordedClient(t, folder, *UpdateCassettes)
 	} else {
 		httpClient, cleanup, err = getHTTPRecoder(t, folder, *UpdateCassettes)

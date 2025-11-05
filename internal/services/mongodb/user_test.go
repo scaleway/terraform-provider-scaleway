@@ -19,7 +19,6 @@ func TestAccMongoDBUser_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckMongoDBUserDestroy(tt),
 		Steps: []resource.TestStep{
@@ -101,7 +100,6 @@ func TestAccMongoDBUser_StateImport(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckMongoDBUserDestroy(tt),
 		Steps: []resource.TestStep{

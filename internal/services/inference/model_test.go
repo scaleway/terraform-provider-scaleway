@@ -24,7 +24,6 @@ func TestAccModel_Basic(t *testing.T) {
 	modelName := "TestAccModel_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             inferencetestfuncs.IsModelDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -50,7 +49,6 @@ func TestAccModel_DeployModelOnServer(t *testing.T) {
 	modelName := "TestAccModel_DeployModelOnServer"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             inferencetestfuncs.IsModelDestroyed(tt),
 		Steps: []resource.TestStep{

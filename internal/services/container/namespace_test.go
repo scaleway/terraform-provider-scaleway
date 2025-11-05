@@ -22,7 +22,6 @@ func TestAccNamespace_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -180,7 +179,6 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -242,7 +240,6 @@ func TestAccNamespace_DestroyRegistry(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isNamespaceDestroyed(tt),
@@ -273,7 +270,6 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 	namespaceID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isNamespaceDestroyed(tt),

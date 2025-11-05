@@ -21,7 +21,6 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -124,7 +123,6 @@ func TestAccDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 	secretName := "dataSourceSecretVersionByNameSecret"
 	secretVersionData := "my_super_secret"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{

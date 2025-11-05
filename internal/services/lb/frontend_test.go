@@ -22,7 +22,6 @@ func TestAccFrontend_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -108,7 +107,6 @@ func TestAccFrontend_Certificate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -251,7 +249,6 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -464,7 +461,6 @@ func TestAccFrontend_ACLRedirectAction(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{

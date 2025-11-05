@@ -98,9 +98,6 @@ func TestAccCluster_Basic(t *testing.T) {
 	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -197,9 +194,6 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -273,9 +267,6 @@ func TestAccCluster_OIDC(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -343,9 +334,6 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 	previousK8SVersionMinor := testAccK8SClusterGetPreviousK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -425,9 +413,6 @@ func TestAccCluster_PrivateNetwork(t *testing.T) {
 	clusterID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -464,9 +449,6 @@ func TestAccCluster_Multicloud(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -490,9 +472,6 @@ func TestAccCluster_TypeChange(t *testing.T) {
 	clusterID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -931,9 +910,6 @@ func TestAccCluster_Networking(t *testing.T) {
 	clusterID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),

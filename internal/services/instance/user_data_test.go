@@ -13,7 +13,6 @@ func TestAccServerUserData_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{

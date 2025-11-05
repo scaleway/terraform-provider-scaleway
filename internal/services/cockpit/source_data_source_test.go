@@ -13,7 +13,6 @@ func TestAccCockpitSource_DataSource_ByID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -49,7 +48,6 @@ func TestAccCockpitSource_DataSource_ByName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -92,7 +90,6 @@ func TestAccCockpitSource_DataSource_Defaults(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 
 		Steps: []resource.TestStep{
@@ -135,7 +132,6 @@ func TestAccCockpitSource_DataSource_ByRegion(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{

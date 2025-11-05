@@ -20,7 +20,6 @@ func TestAccPlacementGroup_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isPlacementGroupDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -67,7 +66,6 @@ func TestAccPlacementGroup_Rename(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isPlacementGroupDestroyed(tt),
 		Steps: []resource.TestStep{
