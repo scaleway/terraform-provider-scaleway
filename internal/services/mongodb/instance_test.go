@@ -23,7 +23,6 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -58,7 +57,6 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -105,7 +103,6 @@ func TestAccMongoDBInstance_SnapshotSchedule(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -160,7 +157,6 @@ func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -217,7 +213,6 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -265,7 +260,6 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -333,7 +327,6 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 	var previousPrivateNetworkID string
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -485,7 +478,6 @@ func TestAccMongoDBInstance_WithPublicNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{

@@ -29,7 +29,6 @@ func TestAccSQSQueue_Basic(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSQueueDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
@@ -117,7 +116,6 @@ func TestAccSQSQueue_DefaultProject(t *testing.T) {
 	projectID = project.ID
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			metaProd, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
@@ -178,7 +176,6 @@ func TestAccSQSQueue_DeadLetterQueue(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSQueueDestroyed(ctx, tt),
 		Steps: []resource.TestStep{

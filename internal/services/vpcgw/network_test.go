@@ -18,7 +18,6 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			vpcgwchecks.IsGatewayNetworkDestroyed(tt),
