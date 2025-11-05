@@ -21,7 +21,6 @@ func TestAccUser_Basic(t *testing.T) {
 	latestVersion := fetchLatestClickHouseVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isUserDestroyed(tt),
 		Steps: []resource.TestStep{

@@ -21,7 +21,6 @@ func TestAccDatabase_Basic(t *testing.T) {
 	latestVersion := fetchLatestClickHouseVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDatabaseDestroyed(tt),
 		Steps: []resource.TestStep{
