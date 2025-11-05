@@ -24,7 +24,6 @@ func TestAccSecretVersion_Basic(t *testing.T) {
 	secretVersionDescription := "secret version description"
 	secretVersionData := "my_super_secret"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -127,7 +126,6 @@ func TestAccSecretVersion_Type(t *testing.T) {
 	secretVersionDataInvalid := "{\"key\": \"value\", \"invalid\": {}}"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretVersionDestroy(tt),
 		Steps: []resource.TestStep{

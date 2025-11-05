@@ -17,7 +17,6 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -52,7 +51,6 @@ func TestAccKeyManagerKey_Update(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -135,7 +133,6 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -172,7 +169,6 @@ func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -203,7 +199,6 @@ func TestAccKeyManagerKey_DefaultAlgorithm(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
 		Steps: []resource.TestStep{

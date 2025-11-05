@@ -25,7 +25,6 @@ func TestAccFunctionToken_Basic(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionTokenDestroy(tt),
 		Steps: []resource.TestStep{
