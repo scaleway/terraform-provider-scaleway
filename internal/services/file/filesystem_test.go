@@ -23,7 +23,6 @@ func TestAccFileSystem_Basic(t *testing.T) {
 	sizeInGB := 100
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
@@ -64,7 +63,6 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	sizeInGB := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{
@@ -89,7 +87,6 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 	sizeInGB := 250
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
 		Steps: []resource.TestStep{

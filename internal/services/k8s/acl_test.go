@@ -19,7 +19,6 @@ func TestAccACL_Basic(t *testing.T) {
 	latestK8sVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -213,7 +212,6 @@ func TestAccACL_RulesOrder(t *testing.T) {
 	latestK8sVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{

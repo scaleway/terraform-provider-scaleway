@@ -20,7 +20,6 @@ func TestAccSnapshot_Server(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -51,7 +50,6 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-instance-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isSnapshotDestroyed(tt),

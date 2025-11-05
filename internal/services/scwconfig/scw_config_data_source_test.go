@@ -26,7 +26,6 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 
@@ -80,7 +79,6 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 
@@ -135,7 +133,6 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 

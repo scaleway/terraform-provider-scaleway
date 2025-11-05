@@ -20,7 +20,6 @@ func TestAccContainer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -138,7 +137,6 @@ func TestAccContainer_Env(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -224,7 +222,6 @@ func TestAccContainer_WithIMG(t *testing.T) {
 
 	containerNamespace := "test-cr-ns-02"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -282,7 +279,6 @@ func TestAccContainer_HTTPOption(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -339,7 +335,6 @@ func TestAccContainer_Sandbox(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -410,7 +405,6 @@ func TestAccContainer_HealthCheck(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -465,7 +459,6 @@ func TestAccContainer_ScalingOption(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -555,7 +548,6 @@ func TestAccContainer_CommandAndArgs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isContainerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -638,7 +630,6 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isNamespaceDestroyed(tt),

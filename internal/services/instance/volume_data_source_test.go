@@ -15,7 +15,6 @@ func TestAccDataSourceVolume_Basic(t *testing.T) {
 
 	volumeName := "tf-volume"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancetestfuncs.IsVolumeDestroyed(tt),
 		Steps: []resource.TestStep{

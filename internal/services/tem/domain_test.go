@@ -22,7 +22,6 @@ func TestAccDomain_Basic(t *testing.T) {
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -56,7 +55,6 @@ func TestAccDomain_Tos(t *testing.T) {
 	domainName := "terraform-rs.test.local"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -80,7 +78,6 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 	subDomainName := "test-autoconfig"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -130,7 +127,6 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 	subDomainName := "test-autoconfig-update"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{

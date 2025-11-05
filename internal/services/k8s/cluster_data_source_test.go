@@ -16,7 +16,6 @@ func TestAccDataSourceCluster_Basic(t *testing.T) {
 	clusterName := "tf-cluster-basic"
 	version := testAccK8SClusterGetLatestK8SVersion(tt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.default"),

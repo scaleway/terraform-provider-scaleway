@@ -23,7 +23,6 @@ func TestAccSNSTopic_Basic(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSNSTopicDestroyed(ctx, tt),
 		Steps: []resource.TestStep{
