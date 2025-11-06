@@ -9,8 +9,6 @@ import (
 )
 
 func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
-	t.Skip("TestAccDataSourceCockpitGrafana_Basic skipped: test cassettes need to be recorded")
-
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -43,8 +41,6 @@ func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
 }
 
 func TestAccDataSourceCockpitGrafana_DefaultProject(t *testing.T) {
-	t.Skip("TestAccDataSourceCockpitGrafana_DefaultProject skipped: test cassettes need to be recorded")
-
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
