@@ -661,6 +661,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
+						tags = [ "c00" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -694,6 +695,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
+						tags = [ "c00" ]
 					}
 
 					resource scaleway_container c01 {
@@ -701,6 +703,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
+						tags = [ "c01" ]
 					}
 
 					resource scaleway_container c02 {
@@ -708,6 +711,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
+						tags = [ "c02" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -746,6 +750,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "test-acc-container-pn-c00"
 						namespace_id = scaleway_container_namespace.main.id
 						sandbox = "v1"
+						tags = [ "c00" ]
 					}
 
 					resource scaleway_container c01 {
@@ -753,6 +758,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn01.id
 						sandbox = "v1"
+						tags = [ "c01" ]
 					}
 
 					resource scaleway_container c02 {
@@ -760,6 +766,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
+						tags = [ "c02" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
