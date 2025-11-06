@@ -43,6 +43,7 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		projectID = defaultProjectID
 	}
 
@@ -53,6 +54,7 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 		if httperrors.Is404(err) {
 			return diag.Errorf("Grafana instance not found for project %s. Ensure that Cockpit is activated for this project.", projectID)
 		}
+
 		return diag.FromErr(err)
 	}
 

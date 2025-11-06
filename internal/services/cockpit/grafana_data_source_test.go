@@ -14,7 +14,7 @@ func TestAccDataSourceCockpitGrafana_Basic(t *testing.T) {
 
 	projectName := "tf_tests_cockpit_grafana_data_basic"
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -44,7 +44,7 @@ func TestAccDataSourceCockpitGrafana_DefaultProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
