@@ -17,7 +17,6 @@ func TestAccCron_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -80,7 +79,6 @@ func TestAccCron_WithMultiArgs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCronDestroyed(tt),
 		Steps: []resource.TestStep{

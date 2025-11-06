@@ -22,7 +22,6 @@ func TestAccProvider_InstanceIPZones(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			metaProd, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",
@@ -80,7 +79,6 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			metaProd, err := meta.NewMeta(ctx, &meta.Config{
 				TerraformVersion: "terraform-tests",

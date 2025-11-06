@@ -18,7 +18,6 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 	subDomainName := "validation-validation"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -57,7 +56,6 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 	subDomainName := "validation-timeout"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isDomainDestroyed(tt),
 		Steps: []resource.TestStep{

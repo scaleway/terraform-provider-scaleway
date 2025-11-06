@@ -17,7 +17,6 @@ func TestAccServer_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -70,7 +69,6 @@ func TestAccServer_EnableDisabledVPC(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -125,7 +123,6 @@ func TestAccServer_EnableVPC(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -270,7 +267,6 @@ func TestAccServer_Commitment(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
