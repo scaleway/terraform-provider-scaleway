@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_cockpit_grafana_user"
 
 # Resource: scaleway_cockpit_grafana_user
 
-~> **Deprecated:** This resource is deprecated and will be removed on **January 1st, 2026**. 
+~> **Deprecated:** This resource is deprecated and will be removed on **January 1st, 2026**.
 
 ~> **Migration Guide:** Grafana authentication is now managed through [Scaleway IAM (Identity and Access Management)](https://www.scaleway.com/en/docs/identity-and-access-management/iam/). To access your Grafana instance, use the [`scaleway_cockpit_grafana` data source](../data-sources/cockpit_grafana.md) to retrieve the Grafana URL and authenticate using your Scaleway IAM credentials.
 
