@@ -165,30 +165,28 @@ VCR cassettes (recorded API interactions) are essential for reliable acceptance 
    - Manual modifications can break test consistency and lead to unreliable tests
 
 2. **Cassette Compression**
-
-1. **Cassette Compression**
    - Always compress cassettes using the vcr-compressor tool:
    ```bash
-   go run ./cmd/vcr-compressor internal/services/{service}/testdata/{resource}.cassette.yaml
+   go run ./cmd/vcr-compressor internal/services/{service}/testdata/{resource}.cassette
    ```
    - Compressed cassettes are automatically detected and decompressed during testing
 
-2. **Selective Cassette Loading**
+3. **Selective Cassette Loading**
    - Never load all cassettes by default in any context
    - Load only the specific cassette needed for the current operation
    - Use pattern matching to load cassettes by service or resource type when necessary
 
-3. **Cassette Organization**
+4. **Cassette Organization**
    - Store cassettes in `internal/services/{service}/testdata/`
    - Use descriptive names (e.g., `{resource}-basic.cassette.yaml`)
    - Group related cassettes in the same directory
 
-4. **Test Isolation**
+5. **Test Isolation**
    - Each test should use its own cassette when possible
    - Avoid sharing cassettes between unrelated tests
    - Use unique test prefixes to prevent interference
 
-5. **Update Strategy**
+6. **Update Strategy**
    - Only update cassettes when API changes require it
    - Set `TF_UPDATE_CASSETTES=true` explicitly when needed
    - Review cassette changes carefully in pull requests
