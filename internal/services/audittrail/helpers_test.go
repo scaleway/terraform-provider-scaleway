@@ -2,6 +2,7 @@ package audittrail_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -55,9 +56,8 @@ func waitForAuditTrailEvents(t *testing.T, ctx context.Context, api *audit_trail
 		}
 
 		// Not found yet
-		return retry.RetryableError(fmt.Errorf("audit event not found yet for resource, retrying..."))
+		return retry.RetryableError(errors.New("audit event not found yet for resource, retrying..."))
 	})
-
 	if err != nil {
 		t.Fatalf("timed out waiting for audit trail event: %v", err)
 	}

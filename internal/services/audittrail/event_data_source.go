@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	audittrailSDK "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
@@ -32,10 +33,19 @@ func DataSourceEvent() *schema.Resource {
 				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"resource_type": {
-				Type:             schema.TypeString,
-				Description:      "Type of the scaleway resources associated with the listed events",
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[audittrailSDK.ResourceType](),
+				Type:        schema.TypeString,
+				Description: "Type of the scaleway resources associated with the listed events",
+				Optional:    true,
+				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+					resourceTypeValues := audittrailSDK.ResourceType("").Values()
+
+					resourceTypeStringValues := make([]string, 0, len(resourceTypeValues))
+					for _, resourceTypeValue := range resourceTypeValues {
+						resourceTypeStringValues = append(resourceTypeStringValues, resourceTypeValue.String())
+					}
+
+					return verify.ValidateStringInSliceWithWarning(resourceTypeStringValues, "resourceType")(i, p)
+				},
 			},
 			"resource_id": {
 				Type:             schema.TypeString,
