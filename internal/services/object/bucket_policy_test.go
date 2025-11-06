@@ -80,7 +80,6 @@ func TestAccObjectBucketPolicy_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
@@ -166,7 +165,6 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
@@ -200,7 +198,6 @@ func TestAccObjectBucketPolicy_OtherRegionWithBucketName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ErrorCheck:               object.ErrorCheck(t, EndpointsID),
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),

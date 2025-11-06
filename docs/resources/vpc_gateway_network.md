@@ -99,7 +99,7 @@ For more information, please refer to the [dedicated guide](../guides/migration_
 - `dhcp_id` - (Deprecated) Please use `ipam_config`. The ID of the Public Gateway DHCP configuration. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 - `enable_dhcp` - (Deprecated) Please use `ipam_config`. Whether a DHCP configuration should be enabled on this GatewayNetwork. Requires a DHCP ID.
 - `cleanup_dhcp` - (Deprecated) Please use `ipam_config`. Whether to remove DHCP configuration on this GatewayNetwork upon destroy. Requires DHCP ID.
-- `static_address` - (Deprecated) Please use `ipam_config`. Enable DHCP configration on this GatewayNetwork. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
+- `static_address` - (Deprecated) Please use `ipam_config`. Enable DHCP configuration on this GatewayNetwork. Only one of `dhcp_id`, `static_address` and `ipam_config` should be specified.
 
 ## Attributes Reference
 

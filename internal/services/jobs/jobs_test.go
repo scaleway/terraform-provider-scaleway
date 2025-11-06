@@ -22,7 +22,6 @@ func TestAccJobDefinition_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -50,7 +49,6 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -97,7 +95,6 @@ func TestAccJobDefinition_Cron(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -170,7 +167,6 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -289,7 +285,6 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{

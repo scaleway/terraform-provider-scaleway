@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datawarehouse"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
@@ -146,6 +147,9 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_container_namespace":                 container.ResourceNamespace(),
 				"scaleway_container_token":                     container.ResourceToken(),
 				"scaleway_container_trigger":                   container.ResourceTrigger(),
+				"scaleway_datawarehouse_deployment":            datawarehouse.ResourceDeployment(),
+				"scaleway_datawarehouse_user":                  datawarehouse.ResourceUser(),
+				"scaleway_datawarehouse_database":              datawarehouse.ResourceDatabase(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
@@ -322,6 +326,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
 				"scaleway_mongodb_instance":                    mongodb.DataSourceInstance(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
+				"scaleway_object":                              object.DataSourceObject(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
 				"scaleway_rdb_acl":                             rdb.DataSourceACL(),
 				"scaleway_rdb_database":                        rdb.DataSourceDatabase(),
