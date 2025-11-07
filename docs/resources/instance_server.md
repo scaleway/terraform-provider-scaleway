@@ -236,6 +236,7 @@ To retrieve more information by label please use: ```scw marketplace image get l
 ~> **Important:** When updating `placement_group_id` the `state` must be set to `stopped`, otherwise it will fail.
 
 - `root_volume` - (Optional) Root [volume](https://www.scaleway.com/en/developers/api/instance/#path-volume-types-list-volume-types) attached to the server on creation.
+    - `name` - (Optional) Name of the root volume.
     - `volume_id` - (Optional) The volume ID of the root volume of the server, allows you to create server with an existing volume. If empty, will be computed to a created volume ID.
     - `size_in_gb` - (Required) Size of the root volume in gigabytes.
       To find the right size use [this endpoint](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances) and

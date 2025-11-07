@@ -1,12 +1,15 @@
 package instance
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func (ph *privateNICsHandler) flatPrivateNICs() error {
@@ -135,4 +138,33 @@ func flattenServerIPIDs(ips []*instance.ServerIP) []any {
 	}
 
 	return ipIDs
+}
+
+func flattenServerVolume(api *instancehelpers.BlockAndInstanceAPI, serverVolume *instance.VolumeServer, zone scw.Zone) (map[string]any, error) {
+	volumeFlat := make(map[string]any, 1)
+
+	vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+		VolumeID: serverVolume.ID,
+		Zone:     zone,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err)
+	}
+
+	volumeFlat["volume_id"] = zonal.NewID(zone, vol.ID).String()
+	if vol.Size != nil {
+		volumeFlat["size_in_gb"] = int(uint64(*vol.Size) / gb)
+	} else if serverVolume.Size != nil {
+		volumeFlat["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
+	}
+
+	if vol.IsBlockVolume() {
+		volumeFlat["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
+	}
+
+	volumeFlat["name"] = vol.Name
+	volumeFlat["volume_type"] = serverVolume.VolumeType
+	volumeFlat["boot"] = serverVolume.Boot
+
+	return volumeFlat, nil
 }
