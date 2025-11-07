@@ -742,7 +742,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	// Read server's volumes
 	////
 	rootVolume := make(map[string]any, 1)
-	additionalVolumes := make([]map[string]any, 0, len(server.Volumes)-1)
 	additionalVolumesIDs := make([]string, 0, len(server.Volumes)-1)
 
 	for i, serverVolume := range sortVolumeServer(server.Volumes) {
@@ -755,12 +754,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 			_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
 		} else {
-			additionalVolume, err := flattenServerVolume(api, serverVolume, zone)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			additionalVolumes = append(additionalVolumes, additionalVolume)
 			additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 		}
 	}
