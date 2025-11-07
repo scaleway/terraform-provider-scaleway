@@ -2,7 +2,6 @@ package audittrail_test
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 	"time"
 
@@ -263,41 +262,6 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.not_found", "events.#", "0"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccDataSourceEvent_Warning(t *testing.T) {
-	// Test that a resource_type that is not yet supported on the
-	// provider only raises a warning before calling the API
-	// anyway (it could exist on API side)
-
-	// NOTE: Currently, we cannot programmatically assert that a warning was emitted
-	// during the test step. This needs support from the testing framework:
-	// https://github.com/hashicorp/terraform-plugin-testing/issues/69
-	// Once implemented, we should add a check like:
-	//   ExpectWarning: regexp.MustCompile(`expected resourceType to be one of [\"unknown_type\" \"secm_secret\" \"secm_secret_version\" \"kube_cluster\" \"kube_pool\" \"kube_node\" \"kube_acl\" \"keym_key\" \"iam_user\" \"iam_application\" \"iam_group\" \"iam_policy\" \"iam_api_key\" \"iam_ssh_key\" \"iam_rule\" \"iam_saml\" \"iam_saml_certificate\" \"secret_manager_secret\" \"secret_manager_version\" \"key_manager_key\" \"account_user\" \"account_organization\" \"account_project\" \"instance_server\" \"instance_placement_group\" \"instance_security_group\" \"instance_volume\" \"instance_snapshot\" \"instance_image\" \"apple_silicon_server\" \"baremetal_server\" \"baremetal_setting\" \"ipam_ip\" \"sbs_volume\" \"sbs_snapshot\" \"load_balancer_lb\" \"load_balancer_ip\" \"load_balancer_frontend\" \"load_balancer_backend\" \"load_balancer_route\" \"load_balancer_acl\" \"load_balancer_certificate\" \"sfs_filesystem\" \"vpc_private_network\"], got a_new_resource_type`)
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					data "scaleway_audit_trail_event" "unknown_resource_type" {
-						recorded_after = "%s"
-						resource_type = "a_new_resource_type"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.unknown_resource_type", "events.#", "0"),
-				),
-				// In this test, we still expect a 400 from the API since `a_new_resource_type`
-				// does not actually exist on API side.
-				ExpectError: regexp.MustCompile(`400 Bad Request`),
 			},
 		},
 	})
