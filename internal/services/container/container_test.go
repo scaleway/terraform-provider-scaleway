@@ -643,12 +643,8 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "TestAccContainer_PrivateNetwork"
 					}
 
-					resource scaleway_vpc_private_network pn00 {
-						name = "test-acc-container-pn-pn00"
-						vpc_id = scaleway_vpc.main.id
-					}
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-acc-container-pn-pn01"
+					resource scaleway_vpc_private_network start {
+						name = "test-acc-container-pn-start"
 						vpc_id = scaleway_vpc.main.id
 					}
 
@@ -656,19 +652,19 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						activate_vpc_integration = true
 					}
 
-					resource scaleway_container c00 {
-						name = "test-acc-container-pn-c00"
+					resource scaleway_container to_stay {
+						name = "test-acc-container-pn-to-stay"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn00.id
+						private_network_id = scaleway_vpc_private_network.start.id
 						sandbox = "v1"
-						tags = [ "c00" ]
+						tags = [ "to-stay" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isContainerPresent(tt, "scaleway_container.c00"),
+					isContainerPresent(tt, "scaleway_container.to_stay"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
-					resource.TestCheckResourceAttr("scaleway_container.c00", "sandbox", "v1"),
-					resource.TestCheckResourceAttrPair("scaleway_container.c00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.to_stay", "sandbox", "v1"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_stay", "private_network_id", "scaleway_vpc_private_network.start", "id"),
 				),
 			},
 			{
@@ -677,12 +673,8 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "TestAccContainer_PrivateNetwork"
 					}
 
-					resource scaleway_vpc_private_network pn00 {
-						name = "test-acc-container-pn-pn00"
-						vpc_id = scaleway_vpc.main.id
-					}
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-acc-container-pn-pn01"
+					resource scaleway_vpc_private_network start {
+						name = "test-acc-container-pn-start"
 						vpc_id = scaleway_vpc.main.id
 					}
 
@@ -690,40 +682,40 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						activate_vpc_integration = true
 					}
 
-					resource scaleway_container c00 {
-						name = "test-acc-container-pn-c00"
+					resource scaleway_container to_stay {
+						name = "test-acc-container-pn-to-stay"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn00.id
+						private_network_id = scaleway_vpc_private_network.start.id
 						sandbox = "v1"
-						tags = [ "c00" ]
+						tags = [ "to-stay" ]
 					}
 
-					resource scaleway_container c01 {
-						name = "test-acc-container-pn-c01"
+					resource scaleway_container to_change {
+						name = "test-acc-container-pn-to-change"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn00.id
+						private_network_id = scaleway_vpc_private_network.start.id
 						sandbox = "v1"
-						tags = [ "c01" ]
+						tags = [ "to-change" ]
 					}
 
-					resource scaleway_container c02 {
-						name = "test-acc-container-pn-c02"
+					resource scaleway_container to_remove {
+						name = "test-acc-container-pn-to-remove"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn00.id
+						private_network_id = scaleway_vpc_private_network.start.id
 						sandbox = "v1"
-						tags = [ "c02" ]
+						tags = [ "to-remove" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isContainerPresent(tt, "scaleway_container.c00"),
-					isContainerPresent(tt, "scaleway_container.c01"),
-					isContainerPresent(tt, "scaleway_container.c02"),
-					resource.TestCheckResourceAttr("scaleway_container.c00", "sandbox", "v1"),
-					resource.TestCheckResourceAttr("scaleway_container.c01", "sandbox", "v1"),
-					resource.TestCheckResourceAttr("scaleway_container.c02", "sandbox", "v1"),
-					resource.TestCheckResourceAttrPair("scaleway_container.c00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_container.c01", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_container.c02", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+					isContainerPresent(tt, "scaleway_container.to_stay"),
+					isContainerPresent(tt, "scaleway_container.to_change"),
+					isContainerPresent(tt, "scaleway_container.to_remove"),
+					resource.TestCheckResourceAttr("scaleway_container.to_stay", "sandbox", "v1"),
+					resource.TestCheckResourceAttr("scaleway_container.to_change", "sandbox", "v1"),
+					resource.TestCheckResourceAttr("scaleway_container.to_remove", "sandbox", "v1"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_stay", "private_network_id", "scaleway_vpc_private_network.start", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_change", "private_network_id", "scaleway_vpc_private_network.start", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_remove", "private_network_id", "scaleway_vpc_private_network.start", "id"),
 				),
 			},
 			{
@@ -732,13 +724,13 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						name = "TestAccContainer_PrivateNetwork"
 					}
 
-					resource scaleway_vpc_private_network pn00 {
-						name = "test-acc-container-pn-pn00"
+					resource scaleway_vpc_private_network start {
+						name = "test-acc-container-pn-start"
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_vpc_private_network pn01 {
-						name = "test-acc-container-pn-pn01"
+					resource scaleway_vpc_private_network new {
+						name = "test-acc-container-pn-new"
 						vpc_id = scaleway_vpc.main.id
 					}
 
@@ -746,36 +738,36 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						activate_vpc_integration = true
 					}
 
-					resource scaleway_container c00 {
-						name = "test-acc-container-pn-c00"
+					resource scaleway_container to_stay {
+						name = "test-acc-container-pn-to-stay"
 						namespace_id = scaleway_container_namespace.main.id
+						private_network_id = scaleway_vpc_private_network.start.id
 						sandbox = "v1"
-						tags = [ "c00" ]
+						tags = [ "to-stay" ]
 					}
 
-					resource scaleway_container c01 {
-						name = "test-acc-container-pn-c01"
+					resource scaleway_container to_change {
+						name = "test-acc-container-pn-to-change"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn01.id
+						private_network_id = scaleway_vpc_private_network.new.id
 						sandbox = "v1"
-						tags = [ "c01" ]
+						tags = [ "to-change" ]
 					}
 
-					resource scaleway_container c02 {
-						name = "test-acc-container-pn-c02"
+					resource scaleway_container to_remove {
+						name = "test-acc-container-pn-to-remove"
 						namespace_id = scaleway_container_namespace.main.id
-						private_network_id = scaleway_vpc_private_network.pn00.id
 						sandbox = "v1"
-						tags = [ "c02" ]
+						tags = [ "to-remove" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isContainerPresent(tt, "scaleway_container.c00"),
-					isContainerPresent(tt, "scaleway_container.c01"),
-					isContainerPresent(tt, "scaleway_container.c02"),
-					resource.TestCheckResourceAttr("scaleway_container.c00", "private_network_id", ""),
-					resource.TestCheckResourceAttrPair("scaleway_container.c01", "private_network_id", "scaleway_vpc_private_network.pn01", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_container.c02", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
+					isContainerPresent(tt, "scaleway_container.to_stay"),
+					isContainerPresent(tt, "scaleway_container.to_change"),
+					isContainerPresent(tt, "scaleway_container.to_remove"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_stay", "private_network_id", "scaleway_vpc_private_network.start", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_container.to_change", "private_network_id", "scaleway_vpc_private_network.new", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.to_remove", "private_network_id", ""),
 				),
 			},
 		},
