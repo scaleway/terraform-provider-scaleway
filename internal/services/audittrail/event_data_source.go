@@ -2,12 +2,13 @@ package audittrail
 
 import (
 	"context"
-	"strconv"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	audittrailSDK "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -57,6 +58,50 @@ func DataSourceEvent() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Scaleway product associated with the listed events in a hyphenated format",
 				Optional:    true,
+			},
+			"service_name": {
+				Type:        schema.TypeString,
+				Description: "Name of the service of the API call performed",
+				Optional:    true,
+			},
+			"method_name": {
+				Type:        schema.TypeString,
+				Description: "Name of the method of the API call performed",
+				Optional:    true,
+			},
+			"principal_id": {
+				Type:        schema.TypeString,
+				Description: "ID of the User or IAM application at the origin of the event",
+				Optional:    true,
+			},
+			"source_ip": {
+				Type:        schema.TypeString,
+				Description: "IP address at the origin of the event",
+				Optional:    true,
+			},
+			"status": {
+				Type:        schema.TypeInt,
+				Description: "HTTP status code of the request",
+				Optional:    true,
+			},
+			"recorded_after": {
+				Type:        schema.TypeString,
+				Description: "The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601)",
+				Optional:    true,
+			},
+			"recorded_before": {
+				Type:        schema.TypeString,
+				Description: "The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601)",
+				Optional:    true,
+			},
+			"order_by": {
+				Type:        schema.TypeString,
+				Description: "Defines the order in which events are returned. Default value: recorded_at_desc",
+				Optional:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(audittrailSDK.ListAuthenticationEventsRequestOrderByRecordedAtAsc),
+					string(audittrailSDK.ListAuthenticationEventsRequestOrderByRecordedAtDesc),
+				}, true),
 			},
 			"events": {
 				Type:        schema.TypeList,
@@ -154,7 +199,7 @@ func DataSourceEvent() *schema.Resource {
 							Computed:    true,
 						},
 						"status_code": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeInt,
 							Description: "HTTP status code resulting of the API call",
 							Computed:    true,
 						},
@@ -176,20 +221,9 @@ func DataSourceEventsRead(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:         region,
 	}
 
-	if projectID, ok := d.GetOk("project_id"); ok {
-		req.ProjectID = types.ExpandStringPtr(projectID)
-	}
-
-	if resourceType, ok := d.GetOk("resource_type"); ok {
-		req.ResourceType = audittrailSDK.ResourceType(resourceType.(string))
-	}
-
-	if productName, ok := d.GetOk("product_name"); ok {
-		req.ProductName = types.ExpandStringPtr(productName)
-	}
-
-	if resourceID, ok := d.GetOk("resource_id"); ok {
-		req.ResourceID = types.ExpandStringPtr(resourceID)
+	err = readOptionalData(d, &req)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	res, err := auditTrailAPI.ListEvents(&req, scw.WithContext(ctx))
@@ -207,6 +241,65 @@ func DataSourceEventsRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	_ = d.Set("events", flattenedEvents)
+
+	return nil
+}
+
+func readOptionalData(d *schema.ResourceData, req *audittrailSDK.ListEventsRequest) error {
+	if projectID, ok := d.GetOk("project_id"); ok {
+		req.ProjectID = types.ExpandStringPtr(projectID)
+	}
+
+	if resourceType, ok := d.GetOk("resource_type"); ok {
+		req.ResourceType = audittrailSDK.ResourceType(resourceType.(string))
+	}
+
+	if productName, ok := d.GetOk("product_name"); ok {
+		req.ProductName = types.ExpandStringPtr(productName)
+	}
+
+	if resourceID, ok := d.GetOk("resource_id"); ok {
+		req.ResourceID = types.ExpandStringPtr(resourceID)
+	}
+
+	if serviceName, ok := d.GetOk("service_name"); ok {
+		req.ServiceName = types.ExpandStringPtr(serviceName)
+	}
+
+	if methodName, ok := d.GetOk("method_name"); ok {
+		req.MethodName = types.ExpandStringPtr(methodName)
+	}
+
+	if principalID, ok := d.GetOk("principal_id"); ok {
+		req.PrincipalID = types.ExpandStringPtr(principalID)
+	}
+
+	if sourceIP, ok := d.GetOk("source_ip"); ok {
+		req.SourceIP = types.ExpandStringPtr(sourceIP)
+	}
+
+	if status, ok := d.GetOk("status"); ok {
+		req.Status = types.ExpandUint32Ptr(status)
+	}
+
+	if recordedBefore, ok := d.GetOk("recorded_before"); ok {
+		req.RecordedBefore = types.ExpandTimePtr(recordedBefore)
+	}
+
+	if recordedAfter, ok := d.GetOk("recorded_after"); ok {
+		req.RecordedAfter = types.ExpandTimePtr(recordedAfter)
+	}
+
+	if orderBy, ok := d.GetOk("order_by"); ok {
+		switch orderBy.(string) {
+		case "recorded_at_asc":
+			req.OrderBy = audittrailSDK.ListEventsRequestOrderByRecordedAtAsc
+		case "recorded_at_desc":
+			req.OrderBy = audittrailSDK.ListEventsRequestOrderByRecordedAtDesc
+		default:
+			return fmt.Errorf("invalid order_by value: %s, must be 'recorded_at_asc' or 'recorded_at_desc'", orderBy)
+		}
+	}
 
 	return nil
 }
@@ -240,7 +333,7 @@ func flattenEvents(events []*audittrailSDK.Event) ([]map[string]any, error) {
 			"resources":       flattenResources(event.Resources),
 			"request_id":      event.RequestID,
 			"request_body":    requestBody,
-			"status_code":     strconv.FormatUint(uint64(event.StatusCode), 10),
+			"status_code":     event.StatusCode,
 		}
 	}
 

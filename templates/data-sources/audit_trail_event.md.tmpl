@@ -42,6 +42,19 @@ data "scaleway_audit_trail_event" "find_by_product_name" {
   region = "nl-ams"
   product_name = "secret-manager"
 }
+
+# Retrieve audit trail events with various filtering
+data "scaleway_audit_trail_event" "find_with_filters" {
+  region = "fr-par"
+  service_name = "instance"
+  method_name = "CreateServer"
+  principal_id = "11111111-1111-1111-1111-111111111111"
+  source_ip = "192.0.2.1"
+  status = 200
+  recorded_after = "2025-10-01T00:00:00Z"
+  recorded_before = "2025-12-31T23:59:59Z"
+  order_by = "recorded_at_desc"
+}
 ```
 
 ## Argument Reference
@@ -52,6 +65,14 @@ data "scaleway_audit_trail_event" "find_by_product_name" {
 - `resource_type` - (Optional) Type of the scaleway resources associated with the listed events. Possible values are: `secm_secret`, `secm_secret_version`, `kube_cluster`, `kube_pool`, `kube_node`, `kube_acl`, `keym_key`, `iam_user`, `iam_application`, `iam_group`, `iam_policy`, `iam_api_key`, `iam_ssh_key`, `iam_rule`, `iam_saml`, `iam_saml_certificate`, `secret_manager_secret`, `secret_manager_version`, `key_manager_key`, `account_user`, `account_organization`, `account_project`, `instance_server`, `instance_placement_group`, `instance_security_group`, `instance_volume`, `instance_snapshot`, `instance_image`, `apple_silicon_server`, `baremetal_server`, `baremetal_setting`, `ipam_ip`, `sbs_volume`, `sbs_snapshot`, `load_balancer_lb`, `load_balancer_ip`, `load_balancer_frontend`, `load_balancer_backend`, `load_balancer_route`, `load_balancer_acl`, `load_balancer_certificate`, `sfs_filesystem`, or `vpc_private_network`.
 - `resource_id` - (Optional) ID of the Scaleway resource associated with the listed events.
 - `product_name` - (Optional) Name of the Scaleway product in a hyphenated format.
+- `service_name` - (Optional) Name of the service of the API call performed.
+- `method_name` - (Optional) Name of the method of the API call performed.
+- `principal_id` - (Optional) ID of the User or IAM application at the origin of the event.
+- `source_ip` - (Optional) IP address at the origin of the event.
+- `status` - (Optional) HTTP status code of the request.
+- `recorded_after` - (Optional) The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601).
+- `recorded_before` - (Optional) The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601).
+- `order_by` - (Optional) Defines the order in which events are returned. Possible values are `recorded_at_asc` and `recorded_at_desc`. Default value: `recorded_at_desc`.
 
 
 ## Attributes Reference
@@ -77,4 +98,3 @@ In addition to all arguments above, the following attributes are exported:
     - `request_id` - Unique identifier of the request at the origin of the event. (UUID format)
     - `request_body` - Request at the origin of the event.
     - `status_code` - HTTP status code resulting of the API call.
-
