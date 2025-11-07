@@ -137,6 +137,11 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 		case value.Type().IsListType():
 			// If it's a list and the second element of the key is an index, we look for the value in the list at the given index
 			if index, err := strconv.Atoi(keys[1]); err == nil {
+				if value.Length().Equals(cty.NumberIntVal(0)).True() {
+					// If the list is empty, then the value is not set
+					return nil, false
+				}
+
 				return getKeyInRawConfigMap(value.AsValueSlice()[index].AsValueMap(), strings.Join(keys[2:], ""), ty)
 			}
 			// If it's a list and the second element of the key is '#', we look for the value in the list's first element

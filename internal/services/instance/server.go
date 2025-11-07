@@ -514,18 +514,13 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(zonal.NewID(zone, res.Server.ID).String())
 
-	err = renameRootVolumeIfNeeded(d, api, zone, res.Server.Volumes)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	////
-	// Configure Block Volume
+	// Configure Volumes
 	////
 	var diags diag.Diagnostics
 
@@ -534,6 +529,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		if len(updateDiags) > 0 {
 			diags = append(diags, updateDiags...)
 		}
+	}
+
+	err = renameRootVolumeIfNeeded(d, api, zone, res.Server.Volumes)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	////
@@ -767,10 +767,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 
 	_ = d.Set("root_volume", []map[string]any{rootVolume})
 	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
-
-	if len(additionalVolumes) > 0 {
-		_ = d.Set("additional_volumes", additionalVolumes)
-	}
 
 	////
 	// Read server user data
@@ -1706,8 +1702,12 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 }
 
 func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {
-	if rootVolumeName, setbyUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setbyUser {
-		if volumes["0"].Name != nil && *volumes["0"].Name != rootVolumeName {
+	if volumes == nil || volumes["0"] == nil || volumes["0"].Name != nil {
+		return nil
+	}
+
+	if rootVolumeName, setByUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setByUser {
+		if *volumes["0"].Name != rootVolumeName {
 			_, err := api.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
 				Zone:     zone,
 				VolumeID: volumes["0"].ID,
