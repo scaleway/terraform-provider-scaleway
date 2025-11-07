@@ -24,6 +24,9 @@ The following arguments are supported:
 
 - `type` - (Required) The type of the volume. The possible values are: `l_ssd` (Local SSD), `scratch` (Local Scratch SSD).
 - `size_in_gb` - (Optional) The size of the volume. Only one of `size_in_gb` and `from_snapshot_id` should be specified.
+
+~> **Important:** It is not possible to resize local and scratch volumes. Updates to this field will recreate the resource.
+
 - `from_snapshot_id` - (Optional) If set, the new volume will be created from this snapshot. Only one of `size_in_gb` and `from_snapshot_id` should be specified.
 - `name` - (Optional) The name of the volume. If not provided it will be randomly generated.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume should be created.

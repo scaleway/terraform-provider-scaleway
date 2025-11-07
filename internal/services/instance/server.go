@@ -1189,7 +1189,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// detach eip to ensure to free eip even if instanceSDK won't stop
+	// detach eip to ensure to free eip even if instance won't stop
 	if ipID, ok := d.GetOk("ip_id"); ok {
 		_, err := api.UpdateIP(&instanceSDK.UpdateIPRequest{
 			Zone:   zone,
@@ -1200,7 +1200,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			log.Print("[WARN] Failed to detach eip of server")
 		}
 	}
-	// Remove instanceSDK from placement group to free it even if instanceSDK won't stop
+	// Remove instance from placement group to free it even if instance won't stop
 	if _, ok := d.GetOk("placement_group_id"); ok {
 		_, err := api.UpdateServer(&instanceSDK.UpdateServerRequest{
 			Zone:           zone,
