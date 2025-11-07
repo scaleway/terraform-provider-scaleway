@@ -97,28 +97,21 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 						type       = "traces"
 					}
 					
-					resource "scaleway_cockpit_alert_manager" "alert_manager" {
-						project_id = scaleway_account_project.project.id
-						enable_managed_alerts = true
-					}
-
-					resource "scaleway_cockpit_grafana_user" "main" {
-					  project_id = scaleway_account_project.project.id
-					  login = "cockpit_test_endpoint"
-					  role = "editor"
-					}
-					
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-						plan       = "premium"
-						depends_on = [
-								scaleway_cockpit_source.metrics,
-								scaleway_cockpit_source.logs,
-								scaleway_cockpit_source.traces,
-								scaleway_cockpit_alert_manager.alert_manager,
-								scaleway_cockpit_grafana_user.main
-							]
-					}
+				resource "scaleway_cockpit_alert_manager" "alert_manager" {
+					project_id = scaleway_account_project.project.id
+					enable_managed_alerts = true
+				}
+				
+				resource "scaleway_cockpit" "main" {
+					project_id = scaleway_account_project.project.id
+					plan       = "premium"
+					depends_on = [
+							scaleway_cockpit_source.metrics,
+							scaleway_cockpit_source.logs,
+							scaleway_cockpit_source.traces,
+							scaleway_cockpit_alert_manager.alert_manager
+						]
+				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "premium"),

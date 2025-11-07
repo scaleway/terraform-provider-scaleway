@@ -10,7 +10,7 @@ page_title: "Scaleway: scaleway_cockpit"
 
 - `scaleway_cockpit_source` for managing data sources (metrics, logs, traces)
 - `scaleway_cockpit_alert_manager` for managing alert manager
-- `scaleway_cockpit_grafana_user` for managing Grafana users
+- `scaleway_cockpit_grafana` data source for accessing Grafana (authentication via IAM)
 
 For detailed migration instructions, see the [Cockpit Migration Guide](../guides/migration_guide_cockpit_plan.md).
 
@@ -21,7 +21,7 @@ If you have created customized dashboards with data for your Scaleway resources 
 -> **Note:**
 From January 1st 2025, Cockpit plans have been deprecated. You can now edit the retention period for all your datasources (metrics, logs, and traces) separately. Refer to our product documentation for more information on [possible retention values](https://www.scaleway.com/en/docs/cockpit/concepts/#retention) and [pricing](https://www.scaleway.com/en/docs/cockpit/faq/#how-am-i-billed-for-increasing-data-retention-period).
 
-Please note that even if you provide the grafana_url, it will only be active if a [Grafana user](../resources/cockpit_grafana_user.md) is created first. Make sure to create a Grafana user in your Cockpit instance to enable full access to Grafana.
+~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated. Use the [`scaleway_cockpit_grafana` data source](../data-sources/cockpit_grafana.md) to retrieve the Grafana URL and authenticate using your Scaleway IAM credentials.
 
 The `scaleway_cockpit` resource allows you to create and manage Scaleway Cockpit instances.
 
@@ -54,27 +54,30 @@ resource "scaleway_cockpit" "main" {
 }
 ```
 
-### Use the Grafana Terraform provider
+### Use the Grafana Terraform provider (Deprecated)
+
+~> **Note:** This example is deprecated. Use the `scaleway_cockpit_grafana` data source with IAM authentication instead.
 
 ```terraform
-// Use the Grafana Terraform provider to create a Grafana user and a Grafana folder in the default Project's Cockpit
+// Old approach (deprecated) - Using scaleway_cockpit_grafana_user
+// resource "scaleway_cockpit_grafana_user" "main" {
+//   project_id = scaleway_cockpit.main.project_id
+//   login      = "example"
+//   role       = "editor"
+// }
+//
+// provider "grafana" {
+//   url  = scaleway_cockpit.main.endpoints.0.grafana_url
+//   auth = "${scaleway_cockpit_grafana_user.main.login}:${scaleway_cockpit_grafana_user.main.password}"
+// }
 
-resource "scaleway_cockpit_grafana_user" "main" {
+// New approach - Use scaleway_cockpit_grafana data source with IAM auth
+data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_cockpit.main.project_id
-  login      = "example"
-  role       = "editor"
 }
 
-resource "scaleway_cockpit" "main" {}
-
-provider "grafana" {
-  url  = scaleway_cockpit.main.endpoints.0.grafana_url
-  auth = "${scaleway_cockpit_grafana_user.main.login}:${scaleway_cockpit_grafana_user.main.password}"
-}
-
-resource "grafana_folder" "test_folder" {
-  title = "Test Folder"
-}
+// Note: Grafana provider with IAM auth requires proper token setup
+// See Grafana provider documentation for IAM authentication
 ```
 
 ## Argument Reference
@@ -105,7 +108,7 @@ This resource is deprecated and will be removed after January 1st, 2025. To migr
 
 - `scaleway_cockpit_source` for managing data sources (metrics, logs, traces)
 - `scaleway_cockpit_alert_manager` for managing alert manager  
-- `scaleway_cockpit_grafana_user` for managing Grafana users
+- `scaleway_cockpit_grafana` data source for accessing Grafana (with IAM authentication)
 
 ## Import
 

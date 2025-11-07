@@ -17,9 +17,10 @@ import (
 
 func ResourceCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitGrafanaUserCreate,
-		ReadContext:   ResourceCockpitGrafanaUserRead,
-		DeleteContext: ResourceCockpitGrafanaUserDelete,
+		CreateContext:      ResourceCockpitGrafanaUserCreate,
+		ReadContext:        ResourceCockpitGrafanaUserRead,
+		DeleteContext:      ResourceCockpitGrafanaUserDelete,
+		DeprecationMessage: "This resource is deprecated and will be removed on January 1st, 2026. Grafana authentication is now managed through Scaleway IAM (Identity and Access Management). Use the 'scaleway_cockpit_grafana' data source to retrieve Grafana connection details. See https://www.scaleway.com/en/docs/observability/cockpit/",
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
