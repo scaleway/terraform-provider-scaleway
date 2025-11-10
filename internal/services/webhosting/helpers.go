@@ -2,6 +2,7 @@ package webhosting
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -79,9 +80,15 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 
 func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
 	result := []map[string]any{}
+
 	for _, r := range records {
+		name := r.Name
+		if name == "" {
+			name = extractDNSRecordName(r.RawData)
+		}
+
 		result = append(result, map[string]any{
-			"name":     r.Name,
+			"name":     name,
 			"type":     r.Type.String(),
 			"ttl":      r.TTL,
 			"value":    r.Value,
@@ -91,6 +98,15 @@ func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
 	}
 
 	return result
+}
+
+func extractDNSRecordName(raw string) string {
+	fields := strings.Fields(raw)
+	if len(fields) == 0 {
+		return ""
+	}
+
+	return strings.TrimSuffix(fields[0], ".")
 }
 
 func flattenNameServers(servers []*webhosting.Nameserver) []map[string]any {
