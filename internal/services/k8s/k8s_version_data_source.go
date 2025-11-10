@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,7 +20,12 @@ func DataSourceVersion() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "Name of the Kubernetes version",
+				Description: "Name of the Kubernetes version in the form x.y.z",
+			},
+			"major_minor_only": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The name of the version in the form x.y (ignoring patch version)",
 			},
 			"available_cnis": {
 				Type:     schema.TypeList,
@@ -88,12 +94,27 @@ func DataSourceK8SVersionRead(ctx context.Context, d *schema.ResourceData, m any
 		version = res
 	}
 
+	majorMinor, err := VersionNameWithoutPatch(version.Name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.SetId(fmt.Sprintf("%s/%s", region, version.Name))
 	_ = d.Set("name", version.Name)
+	_ = d.Set("major_minor_only", majorMinor)
 	_ = d.Set("available_cnis", version.AvailableCnis)
 	_ = d.Set("available_container_runtimes", version.AvailableContainerRuntimes)
 	_ = d.Set("available_feature_gates", version.AvailableFeatureGates)
 	_ = d.Set("region", region)
 
 	return nil
+}
+
+func VersionNameWithoutPatch(version string) (string, error) {
+	versionSplit := strings.Split(version, ".")
+	if len(versionSplit) != 3 {
+		return "", fmt.Errorf("version name must contain 3 parts, got %q", version)
+	}
+
+	return strings.Join(versionSplit[:2], "."), nil
 }
