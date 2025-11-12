@@ -63,6 +63,11 @@ func ResourceDNSStage() *schema.Resource {
 				Computed:    true,
 				Description: "The type of the stage",
 			},
+			"default_fqdn": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Default Fully Qualified Domain Name attached to the stage",
+			},
 			"created_at": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -120,6 +125,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("created_at", types.FlattenTime(dnsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
 	_ = d.Set("type", dnsStage.Type.String())
+	_ = d.Set("default_fqdn", dnsStage.DefaultFqdn)
 
 	oldFQDNs := d.Get("fqdns").([]any)
 	oldFQDNsSet := make(map[string]bool)
