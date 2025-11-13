@@ -8,19 +8,19 @@ GOPATH?=$(HOME)/go
 
 default: build
 
-build: fmtcheck
-	go install
+build:
+	go build
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m
 
-test: fmtcheck
+test:
 	go test $(TEST) || exit 1
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=10
 
-testacc: fmtcheck
+testacc:
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
 
 vet:
@@ -32,11 +32,8 @@ vet:
 		exit 1; \
 	fi
 
-fmt:
-	gofmt -w $(GOFMT_FILES)
-
-fmtcheck:
-	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
+format:
+	golangci-lint fmt -v ./...
 
 errcheck:
 	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
@@ -53,7 +50,7 @@ test-compile:
 website:
 	@echo "Use this site to preview markdown rendering: https://registry.terraform.io/tools/doc-preview"
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website docs
+.PHONY: build test testacc vet format errcheck test-compile website docs
 
 tfproviderlint:
 	go tool tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
@@ -68,3 +65,11 @@ docs:
 	go tool tfplugindocs validate
 	rm -fr ./docs
 	go tool tfplugindocs generate
+
+golangci-lint:
+	golangci-lint run  ./...
+
+typos:
+	typos
+
+lint: typos tfproviderlint tfproviderdocs tfproviderlintx golangci-lint
