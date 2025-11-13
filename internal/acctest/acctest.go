@@ -36,6 +36,7 @@ var foldersUsingVCRv4 = []string{
 	"instance",
 	"k8s",
 	"marketplace",
+	"object",
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
