@@ -207,6 +207,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_lb_certificate":                      lb.ResourceCertificate(),
 				"scaleway_lb_frontend":                         lb.ResourceFrontend(),
 				"scaleway_lb_ip":                               lb.ResourceIP(),
+				"scaleway_lb_private_network":                  lb.ResourcePrivateNetwork(),
 				"scaleway_lb_route":                            lb.ResourceRoute(),
 				"scaleway_mnq_nats_account":                    mnq.ResourceNatsAccount(),
 				"scaleway_mnq_nats_credentials":                mnq.ResourceNatsCredentials(),
