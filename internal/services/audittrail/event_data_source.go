@@ -71,14 +71,16 @@ func DataSourceEvent() *schema.Resource {
 				Optional:    true,
 			},
 			"principal_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the User or IAM application at the origin of the event",
-				Optional:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the User or IAM application at the origin of the event",
+				Optional:         true,
+				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"source_ip": {
-				Type:        schema.TypeString,
-				Description: "IP address at the origin of the event",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "IP address at the origin of the event",
+				Optional:     true,
+				ValidateFunc: validation.IsIPAddress,
 			},
 			"status": {
 				Type:        schema.TypeInt,
