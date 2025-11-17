@@ -88,8 +88,8 @@ In addition to all arguments above, the following attributes are exported:
     - `project_id` - Project of the resource attached to the event. (UUID format)
     - `source_ip` - IP address at the origin of the event. (IP address)
     - `user_agent` - User Agent at the origin of the event.
-    - `product_name` - Scaleway product associated with the listed events in a hyphenated format.
-    - `service_name` - API name called to trigger the event.
+    - `product_name` - Scaleway product associated with the listed events in a hyphenated format. Possible values are: `secret-manager`, `key-manager`, `iam`, `kubernetes`, `account`, `apple-silicon`, `instance`, `baremetal`, `load-balancer`, or `edge-services`.
+    - `service_name` - API name called to trigger the event. Possible values are: `scaleway.secret_manager.v1beta1.Api`, `scaleway.key_manager.v1alpha1.Api`, `scaleway.iam.v1alpha1.Api`, `scaleway.iam.v1alpha1.UnauthenticatedApi`, `scaleway.k8s.v1.Api`, `scaleway.account.v3.UserApi`, `scaleway.account.v3.OrganizationApi`, `scaleway.account.v2.GDPRApi`, `scaleway.apple_silicon.v1alpha1.Api`, `scaleway.instance.v1.Api`, `scaleway.baremetal.v1.Api`, or `scaleway.lb.v1.ZonedApi`.
     - `method_name` - API method called to trigger the event.
     - `resources` - List of resources attached to the event.
         - `id` - ID of the resource attached to the event. (UUID format)
