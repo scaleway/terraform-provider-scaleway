@@ -59,112 +59,30 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 					data "scaleway_audit_trail_event" "by_project" {
 						project_id = scaleway_secret.main.project_id
 					}
-				`, secretName, project.ID),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_project", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "by_type" {
 						project_id = scaleway_secret.main.project_id
 						resource_type = "%s"
-					}
-				`, secretName, project.ID, resourceType),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_type", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
 					}
 
 					data "scaleway_audit_trail_event" "by_id" {
 						project_id = scaleway_secret.main.project_id
 						resource_id = split("/", scaleway_secret.main.id)[1]
 					}
-				`, secretName, project.ID),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "by_id_with_locality" {
 						project_id = scaleway_secret.main.project_id
 						resource_id = scaleway_secret.main.id
-					}
-				`, secretName, project.ID),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id_with_locality", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
 					}
 
 					data "scaleway_audit_trail_event" "by_product" {
 						project_id = scaleway_secret.main.project_id
 						product_name = "%s"
 					}
-				`, secretName, project.ID, productName),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_product", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "by_service" {
 						project_id = scaleway_secret.main.project_id
 						service_name = "%s"
-					}
-				`, secretName, project.ID, serviceName),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_service", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
-
-					data "scaleway_audit_trail_event" "by_method" {
-						project_id = scaleway_secret.main.project_id
-						method_name = "%s"
-					}
-				`, secretName, project.ID, methodCreate),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_method", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
 					}
 
 					data "scaleway_audit_trail_event" "by_method" {
@@ -176,95 +94,45 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 						project_id = scaleway_secret.main.project_id
 						principal_id = data.scaleway_audit_trail_event.by_method.events.0.principal_id
 					}
-				`, secretName, project.ID, methodCreate),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_principal", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
-
-					data "scaleway_audit_trail_event" "by_method" {
-						project_id = scaleway_secret.main.project_id
-						method_name = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "by_ip" {
 						project_id = scaleway_secret.main.project_id
 						source_ip = data.scaleway_audit_trail_event.by_method.events.0.source_ip
-					}
-				`, secretName, project.ID, methodCreate),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_ip", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
 					}
 
 					data "scaleway_audit_trail_event" "by_status" {
 						project_id = scaleway_secret.main.project_id
 						status = 200
 					}
-				`, secretName, project.ID),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_status", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "recorded_after" {
 						project_id = scaleway_secret.main.project_id
 						recorded_after = "%s"
-					}
-				`, secretName, project.ID, time.Now().Add(-time.Minute*10).Format(time.RFC3339)),
-				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.recorded_after", orgID),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
 					}
 
 					data "scaleway_audit_trail_event" "recorded_before" {
 						project_id = scaleway_secret.main.project_id
 						recorded_before = "%s"
 					}
-				`, secretName, project.ID, time.Now().Add(-time.Minute*30).Format(time.RFC3339)),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.recorded_before", "events.#", "0"),
-				),
-			},
-			{
-				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
-				Config: fmt.Sprintf(`
-					resource "scaleway_secret" "main" {
-					  name        = "%s"
-					  description = "DataSourceAuditTrail test description"
-					  project_id  = "%s"
-					}
 
 					data "scaleway_audit_trail_event" "order_by" {
 						project_id = scaleway_secret.main.project_id
 						order_by = "recorded_at_asc"
 					}
-				`, secretName, project.ID),
+				`, secretName, project.ID, resourceType, productName, serviceName, methodCreate, time.Now().Add(-time.Minute*10).Format(time.RFC3339), time.Now().Add(-time.Minute*30).Format(time.RFC3339)),
 				Check: resource.ComposeTestCheckFunc(
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_project", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_type", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id_with_locality", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_product", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_service", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_method", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_principal", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_ip", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_status", orgID),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.recorded_after", orgID),
+					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.recorded_before", "events.#", "0"),
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.order_by", "events.#"),
 				),
 			},
