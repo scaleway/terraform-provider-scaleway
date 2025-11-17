@@ -1,0 +1,72 @@
+---
+subcategory: "Load Balancers"
+page_title: "Scaleway: scaleway_lb_private_network"
+---
+
+# Resource: scaleway_lb_private_network
+
+Creates and manages Scaleway Load Balancer Private Network attachments.
+
+For more information, see the [main documentation](https://www.scaleway.com/en/docs/load-balancer/how-to/use-with-private-network/).
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name = "my vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn01" {
+  vpc_id = scaleway_vpc.vpc01.id
+  ipv4_subnet {
+    subnet = "172.16.32.0/22"
+  }
+}
+
+resource "scaleway_ipam_ip" "ip01" {
+  address = "172.16.32.7"
+  source {
+    private_network_id = scaleway_vpc_private_network.pn01.id
+  }
+}
+
+resource "scaleway_lb" "lb01" {
+  name = "test-lb-private-network"
+  type = "LB-S"
+}
+
+resource "scaleway_lb_private_network" "lbpn01" {
+  lb_id              = scaleway_lb.lb01.id
+  private_network_id = scaleway_vpc_private_network.pn01.id
+  ipam_ip_ids        = [scaleway_ipam_ip.ip01.id]
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Private Network should be attached.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Private Network attachment is associated with.
+- `lb_id` - (Required) The load-balancer ID to attach the private network to.
+- `private_network_id` - (Required) The private network ID to attach.
+- `ipam_ip_ids` - (Required) The IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the Private Network attachment, which is of the form `{zone}/{lb-id}/{private-network-id}` e.g. `fr-par-1/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111`
+- `status` - The status of the Private Network attachment.
+- `created_at` -  The date and time of the creation of the Private Network attachment (RFC 3339 format).
+- `updated_at` -  The date and time of the last update of the Private Network attachment (RFC 3339 format).
+
+## Import
+
+Private Network attachments can be imported using `{zone}/{lb-id}/{private-network-id}`, e.g.
+
+```bash
+terraform import scaleway_lb_private_network.lbpn01 fr-par-1/11111111-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
+```

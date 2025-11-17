@@ -35,7 +35,7 @@ func TestAccWebhosting_Basic(t *testing.T) {
 				resource "scaleway_webhosting" "main" {
 				  offer_id     = data.scaleway_webhosting_offer.by_name.offer_id
 				  email        = "hashicorp@scaleway.com"
-				  domain       = "scaleway.com"
+				  domain       = "devtools-tf-tests.scaleway.com"
 				  tags         = ["devtools", "provider", "terraform"]
 				}
 				`,
@@ -43,7 +43,7 @@ func TestAccWebhosting_Basic(t *testing.T) {
 					testAccCheckWebhostingExists(tt, "scaleway_webhosting.main"),
 					resource.TestCheckResourceAttrPair("scaleway_webhosting.main", "offer_id", "data.scaleway_webhosting_offer.by_name", "offer_id"),
 					resource.TestCheckResourceAttr("scaleway_webhosting.main", "email", "hashicorp@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_webhosting.main", "domain", "scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_webhosting.main", "domain", "devtools-tf-tests.scaleway.com"),
 					resource.TestCheckResourceAttr("scaleway_webhosting.main", "status", webhostingSDK.HostingStatusReady.String()),
 					resource.TestCheckResourceAttr("scaleway_webhosting.main", "tags.0", "devtools"),
 					resource.TestCheckResourceAttr("scaleway_webhosting.main", "tags.1", "provider"),
