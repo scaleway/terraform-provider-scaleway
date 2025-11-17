@@ -61,6 +61,33 @@ output "grafana_connection_info" {
 }
 ```
 
+### Using the Grafana Terraform provider
+
+When you need to configure Grafana resources programmatically, supply the IAM secret key as an `X-Auth-Token` header. The Grafana provider itself stays in `anonymous` mode.
+
+```terraform
+variable "scaleway_secret_key" {
+  description = "Scaleway IAM secret key reused by the Grafana provider"
+  type        = string
+  sensitive   = true
+}
+
+data "scaleway_cockpit_grafana" "main" {
+  project_id = scaleway_account_project.project.id
+}
+
+provider "grafana" {
+  url  = data.scaleway_cockpit_grafana.main.grafana_url
+  auth = "anonymous"
+
+  http_headers = {
+    "X-Auth-Token" = var.scaleway_secret_key
+  }
+}
+```
+
+Keep the secret key in a secure backend (environment variables, Vault, etc.) and never commit it to source control.
+
 ## Argument Reference
 
 - `project_id` - (Optional) The ID of the project the Grafana instance is associated with. If not provided, the default project configured in the provider is used.
