@@ -103,6 +103,22 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 					  project_id  = "%s"
 					}
 
+					data "scaleway_audit_trail_event" "by_id_with_locality" {
+						project_id = scaleway_secret.main.project_id
+						resource_id = scaleway_secret.main.id
+					}
+				`, secretName, project.ID),
+				Check: createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id_with_locality", orgID),
+			},
+			{
+				PreConfig: func() { waitForAuditTrailEvents(t, ctx, auditTrailAPI, project) },
+				Config: fmt.Sprintf(`
+					resource "scaleway_secret" "main" {
+					  name        = "%s"
+					  description = "DataSourceAuditTrail test description"
+					  project_id  = "%s"
+					}
+
 					data "scaleway_audit_trail_event" "by_product" {
 						project_id = scaleway_secret.main.project_id
 						product_name = "%s"

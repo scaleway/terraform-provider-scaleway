@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	audittrailSDK "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -52,7 +53,7 @@ func DataSourceEvent() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "ID of the Scaleway resource associated with the listed events",
 				Optional:         true,
-				ValidateDiagFunc: verify.IsUUID(),
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			"product_name": {
 				Type:        schema.TypeString,
@@ -259,7 +260,7 @@ func readOptionalData(d *schema.ResourceData, req *audittrailSDK.ListEventsReque
 	}
 
 	if resourceID, ok := d.GetOk("resource_id"); ok {
-		req.ResourceID = types.ExpandStringPtr(resourceID)
+		req.ResourceID = types.ExpandStringPtr(locality.ExpandID(resourceID))
 	}
 
 	if serviceName, ok := d.GetOk("service_name"); ok {
