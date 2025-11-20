@@ -996,7 +996,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ip.base", "address_cidr"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address_cidr", "data.scaleway_ipam_ip.base", "address_cidr"),
 				),
 			},
 			{
@@ -1328,7 +1328,7 @@ func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string
 				break
 			}
 
-			ip := rs.Primary.Attributes["address"]
+			ip := rs.Primary.Attributes["address_cidr"]
 			if !expectedIPs[ip] {
 				return fmt.Errorf("IP %q from resource %s not found in data source %s", ip, resourceName, ipamDataSource)
 			}
