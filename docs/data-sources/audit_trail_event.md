@@ -13,7 +13,6 @@ For more information refer to the [Audit Trail API documentation](https://www.sc
 ```hcl
 # Retrieve all audit trail events on the default organization
 data "scaleway_audit_trail_event" "find_all" {
-  region = "fr-par"
 }
 
 # Retrieve audit trail events on a specific organization
@@ -23,7 +22,6 @@ data "scaleway_audit_trail_event" "find_by_org" {
 
 # Retrieve audit trail events on a specific project
 data "scaleway_audit_trail_event" "find_by_project" {
-  region = "fr-par"
   project_id = "11111111-1111-1111-1111-111111111111"
 }
 
@@ -39,7 +37,6 @@ data "scaleway_audit_trail_event" "find_by_resource_id" {
 
 # Retrieve audit trail for a specific Scaleway product
 data "scaleway_audit_trail_event" "find_by_product_name" {
-  region = "nl-ams"
   product_name = "secret-manager"
 }
 
