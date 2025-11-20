@@ -34,6 +34,7 @@ type TestTools struct {
 var foldersUsingVCRv4 = []string{
 	"account",
 	"container",
+	"iam",
 	"instance",
 	"k8s",
 	"marketplace",
