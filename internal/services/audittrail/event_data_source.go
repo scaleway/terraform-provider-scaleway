@@ -106,8 +106,8 @@ func DataSourceEvent() *schema.Resource {
 				Description: "Defines the order in which events are returned. Default value: recorded_at_desc",
 				Optional:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					string(audittrailSDK.ListAuthenticationEventsRequestOrderByRecordedAtAsc),
-					string(audittrailSDK.ListAuthenticationEventsRequestOrderByRecordedAtDesc),
+					string(audittrailSDK.ListEventsRequestOrderByRecordedAtAsc),
+					string(audittrailSDK.ListEventsRequestOrderByRecordedAtDesc),
 				}, true),
 			},
 			"events": {
