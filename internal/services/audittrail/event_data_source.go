@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -25,6 +26,7 @@ func DataSourceEvent() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "ID of the organization containing the Audit Trail events.",
 				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: verify.IsUUID(),
 			},
 			"region": regional.Schema(),
@@ -88,14 +90,16 @@ func DataSourceEvent() *schema.Resource {
 				Optional:    true,
 			},
 			"recorded_after": {
-				Type:        schema.TypeString,
-				Description: "The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601)",
-				Optional:    true,
+				Type:             schema.TypeString,
+				Description:      "The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601)",
+				Optional:         true,
+				ValidateDiagFunc: verify.IsDate(),
 			},
 			"recorded_before": {
-				Type:        schema.TypeString,
-				Description: "The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601)",
-				Optional:    true,
+				Type:             schema.TypeString,
+				Description:      "The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601)",
+				Optional:         true,
+				ValidateDiagFunc: verify.IsDate(),
 			},
 			"order_by": {
 				Type:        schema.TypeString,
@@ -214,13 +218,13 @@ func DataSourceEvent() *schema.Resource {
 }
 
 func DataSourceEventsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	auditTrailAPI, region, orgID, err := newAPIWithRegionAndOrgID(d, m)
+	auditTrailAPI, region, err := newAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	req := audittrailSDK.ListEventsRequest{
-		OrganizationID: orgID,
+		OrganizationID: types.FlattenStringPtr(account.GetOrganizationID(m, d)).(string),
 		Region:         region,
 	}
 
@@ -235,7 +239,6 @@ func DataSourceEventsRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	d.SetId(uuid.New().String())
-	_ = d.Set("organization_id", orgID)
 	_ = d.Set("region", region)
 
 	flattenedEvents, err := flattenEvents(res.Events)
@@ -286,11 +289,11 @@ func readOptionalData(d *schema.ResourceData, req *audittrailSDK.ListEventsReque
 	}
 
 	if recordedBefore, ok := d.GetOk("recorded_before"); ok {
-		req.RecordedBefore = types.ExpandTimePtr(recordedBefore)
+		req.RecordedBefore = types.ExpandTimePtr(recordedBefore.(string))
 	}
 
 	if recordedAfter, ok := d.GetOk("recorded_after"); ok {
-		req.RecordedAfter = types.ExpandTimePtr(recordedAfter)
+		req.RecordedAfter = types.ExpandTimePtr(recordedAfter.(string))
 	}
 
 	if orderBy, ok := d.GetOk("order_by"); ok {

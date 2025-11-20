@@ -116,24 +116,6 @@ func ExtractProjectID(d terraformResourceData, m any) (projectID string, isDefau
 	return "", false, ErrProjectIDNotFound
 }
 
-// ExtractOrganizationID will try to guess the organization id from the following:
-//   - organization_id field of the resource data
-//   - default organization_id from config
-func ExtractOrganizationID(d terraformResourceData, m any) (organizationID string, err error) {
-	rawOrgID, exist := d.GetOk("organization_id")
-
-	if exist {
-		return rawOrgID.(string), nil
-	}
-
-	defaultOrgID, defaultOrgIDExists := m.(*Meta).ScwClient().GetDefaultOrganizationID()
-	if defaultOrgIDExists {
-		return defaultOrgID, nil
-	}
-
-	return "", ErrOrganizationIDNotFound
-}
-
 func ExtractScwClient(m any) *scw.Client {
 	return m.(*Meta).ScwClient()
 }

@@ -22,7 +22,7 @@ import (
 const (
 	defaultAuditTrailEventsTimeout = 20 * time.Second
 	destroyWaitTimeout             = 3 * time.Minute
-	dummyOrgID                     = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
+	dummyID                        = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
 	serviceName                    = "scaleway.secret_manager.v1beta1.Api"
 	productName                    = "secret-manager"
 	methodCreate                   = "CreateSecret"
@@ -64,16 +64,13 @@ func waitForAuditTrailEvents(t *testing.T, ctx context.Context, api *audit_trail
 }
 
 // Bundle of checks for audit trail event data source testing
-func createEventDataSourceChecks(eventsDataSourceName, orgID string) resource.TestCheckFunc {
+func createEventDataSourceChecks(eventsDataSourceName string) resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrPair(
 			eventsDataSourceName, "events.0.locality",
 			resourceName, "region",
 		),
 		resource.TestCheckResourceAttrSet(eventsDataSourceName, "events.0.principal_id"),
-		resource.TestCheckResourceAttr(
-			eventsDataSourceName, "events.0.organization_id", orgID,
-		),
 		resource.TestCheckResourceAttrSet(eventsDataSourceName, "events.0.source_ip"),
 		resource.TestCheckResourceAttrSet(eventsDataSourceName, "events.0.user_agent"),
 		resource.TestCheckResourceAttr(

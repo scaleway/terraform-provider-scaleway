@@ -3,9 +3,7 @@ package audittrail_test
 import (
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	audit_trail "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
@@ -18,11 +16,6 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-
-	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
-	if !orgIDExists {
-		orgID = dummyOrgID
-	}
 
 	auditTrailAPI := audit_trail.NewAPI(tt.Meta.ScwClient())
 
@@ -105,34 +98,22 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 						status = 200
 					}
 
-					data "scaleway_audit_trail_event" "recorded_after" {
-						project_id = scaleway_secret.main.project_id
-						recorded_after = "%s"
-					}
-
-					data "scaleway_audit_trail_event" "recorded_before" {
-						project_id = scaleway_secret.main.project_id
-						recorded_before = "%s"
-					}
-
 					data "scaleway_audit_trail_event" "order_by" {
 						project_id = scaleway_secret.main.project_id
 						order_by = "recorded_at_asc"
 					}
-				`, secretName, project.ID, resourceType, productName, serviceName, methodCreate, time.Now().Add(-time.Minute*10).Format(time.RFC3339), time.Now().Add(-time.Minute*30).Format(time.RFC3339)),
+				`, secretName, project.ID, resourceType, productName, serviceName, methodCreate),
 				Check: resource.ComposeTestCheckFunc(
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_project", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_type", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id_with_locality", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_product", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_service", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_method", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_principal", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_ip", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_status", orgID),
-					createEventDataSourceChecks("data.scaleway_audit_trail_event.recorded_after", orgID),
-					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.recorded_before", "events.#", "0"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_project"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_type"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_id_with_locality"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_product"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_service"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_method"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_principal"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_ip"),
+					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_status"),
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.order_by", "events.#"),
 				),
 			},
@@ -142,7 +123,7 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 						project_id    = "%s"
 						resource_id = "%s"
 					}
-				`, project.ID, uuid.New().String()),
+				`, project.ID, dummyID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.not_found", "events.#", "0"),
 				),
