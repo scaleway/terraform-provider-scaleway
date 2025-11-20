@@ -98,11 +98,17 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 						status = 200
 					}
 
+					data "scaleway_audit_trail_event" "by_timerange" {
+						project_id = scaleway_secret.main.project_id
+						recorded_after = "%s"
+						recorded_before = "%s"
+					}
+
 					data "scaleway_audit_trail_event" "order_by" {
 						project_id = scaleway_secret.main.project_id
 						order_by = "recorded_at_asc"
 					}
-				`, secretName, project.ID, resourceType, productName, serviceName, methodCreate),
+				`, secretName, project.ID, resourceType, productName, serviceName, methodCreate, recordedAfter, recordedBefore),
 				Check: resource.ComposeTestCheckFunc(
 					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_project"),
 					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_type"),
@@ -114,6 +120,7 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_principal"),
 					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_ip"),
 					createEventDataSourceChecks("data.scaleway_audit_trail_event.by_status"),
+					resource.TestCheckResourceAttr("data.scaleway_audit_trail_event.by_timerange", "events.#", "0"),
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.order_by", "events.#"),
 				),
 			},

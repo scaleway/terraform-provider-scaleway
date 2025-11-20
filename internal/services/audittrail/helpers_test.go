@@ -23,6 +23,8 @@ const (
 	defaultAuditTrailEventsTimeout = 20 * time.Second
 	destroyWaitTimeout             = 3 * time.Minute
 	dummyID                        = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
+	recordedAfter                  = "2025-11-01T00:00:00Z"
+	recordedBefore                 = "2025-11-01T10:00:00Z"
 	serviceName                    = "scaleway.secret_manager.v1beta1.Api"
 	productName                    = "secret-manager"
 	methodCreate                   = "CreateSecret"
