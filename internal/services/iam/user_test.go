@@ -23,8 +23,8 @@ func TestAccUser_Member(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_user" "member_user" {
-						email = "foo@scaleway.com"
-						username = "foo"
+						email = "testuser@scaleway.com"
+						username = "testuser"
 						first_name = "Foo"
 						last_name = "Bar"
 						password = "Firstaccesspsw123"
@@ -34,8 +34,8 @@ func TestAccUser_Member(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamUserExists(tt, "scaleway_iam_user.member_user"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_user.member_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "foo"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "testuser@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "testuser"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "first_name", "Foo"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "last_name", "Bar"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "password", "Firstaccesspsw123"),

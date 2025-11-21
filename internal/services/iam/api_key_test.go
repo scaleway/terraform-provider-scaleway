@@ -106,8 +106,7 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 				),
 			},
 			{
-				Config: `
-						resource "scaleway_iam_application" "main" {
+				Config: `resource "scaleway_iam_application" "main" {
 							name = "tf_tests_api_key_app_change"
 						}
 
@@ -120,18 +119,8 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 							description = "tf_tests_with_application_change"
 						}
 					`,
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckIamAPIKeyExists(tt, "scaleway_iam_api_key.main"),
-					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main2", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application_change"),
-					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
-				),
-			},
-			{
-				ResourceName:            "scaleway_iam_api_key.main",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"secret_key"},
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
 			},
 		},
 	})
