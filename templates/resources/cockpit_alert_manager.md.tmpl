@@ -88,7 +88,7 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 This section lists the arguments that are supported:
 
-- `preconfigured_alert_ids` - (Optional, Set of String) A set of preconfigured alert rule IDs to enable. Use the [`scaleway_cockpit_preconfigured_alert`](../data-sources/cockpit_preconfigured_alert.md) data source to list available alerts.
+- `preconfigured_alert_ids` - (Optional, Set of String) A set of preconfigured alert rule IDs to enable explicitly. Use the [`scaleway_cockpit_preconfigured_alert`](../data-sources/cockpit_preconfigured_alert.md) data source to list available alerts.
 - `enable_managed_alerts` - **Deprecated** (Optional, Boolean) Use `preconfigured_alert_ids` instead. This field will be removed in a future version.
 - `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alerts. Each map should contain a single key `email`.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
@@ -99,6 +99,7 @@ This section lists the arguments that are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `alert_manager_url` - The URL of the alert manager.
+- `default_preconfigured_alert_ids` - (Set of String) A set of preconfigured alert rule IDs that are enabled automatically by the API when the alert manager is activated. This is a computed field that shows which alerts the API enables by default.
 
 ## Import
 

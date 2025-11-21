@@ -31,34 +31,40 @@ func ResourceCockpitAlertManager() *schema.Resource {
 func alertManagerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": account.ProjectIDSchema(),
-		"enable_managed_alerts": {
-			Type:        schema.TypeBool,
-			Optional:    true,
-			Computed:    true,
-			Deprecated:  "Use 'preconfigured_alert_ids' instead. This field will be removed in a future version.",
-			Description: "Enable or disable the alert manager (deprecated)",
-		},
-		"preconfigured_alert_ids": {
-			Type:        schema.TypeSet,
-			Optional:    true,
-			Description: "List of preconfigured alert rule IDs to enable. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
-			Elem:        &schema.Schema{Type: schema.TypeString},
-		},
-		"contact_points": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Description: "A list of contact points",
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"email": {
-						Type:             schema.TypeString,
-						Optional:         true,
-						ValidateDiagFunc: verify.IsEmail(),
-						Description:      "Email addresses for the alert receivers",
-					},
+	"enable_managed_alerts": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Computed:    true,
+		Deprecated:  "Use 'preconfigured_alert_ids' instead. This field will be removed in a future version.",
+		Description: "Enable or disable the alert manager (deprecated)",
+	},
+	"preconfigured_alert_ids": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Description: "List of preconfigured alert rule IDs to enable explicitly. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+	"default_preconfigured_alert_ids": {
+		Type:        schema.TypeSet,
+		Computed:    true,
+		Description: "List of preconfigured alert rule IDs enabled automatically by the API when alert manager is activated.",
+		Elem:        &schema.Schema{Type: schema.TypeString},
+	},
+	"contact_points": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		Description: "A list of contact points",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"email": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					ValidateDiagFunc: verify.IsEmail(),
+					Description:      "Email addresses for the alert receivers",
 				},
 			},
 		},
+	},
 		"region": regional.Schema(),
 		"alert_manager_url": {
 			Type:        schema.TypeString,
@@ -162,48 +168,58 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
 
-	// Get enabled preconfigured alerts
-	// Only track the alerts that were explicitly requested by the user in the configuration.
-	// The API may enable additional alerts automatically, but we ignore those to prevent perpetual drift.
-	// We set the field based on what was requested in the config, not what the API returns.
+	// Get enabled preconfigured alerts and separate user-requested vs API-default alerts
+	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
+		Region:          region,
+		ProjectID:       projectID,
+		IsPreconfigured: scw.BoolPtr(true),
+	}, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Build a map of alert statuses
+	alertStatusMap := make(map[string]cockpit.AlertStatus)
+	for _, alert := range alerts.Alerts {
+		if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
+			alertStatusMap[alert.PreconfiguredData.PreconfiguredRuleID] = alert.RuleStatus
+		}
+	}
+
+	// Separate user-requested alerts from API-default alerts
+	var userRequestedIDs []string
+	var defaultEnabledIDs []string
+
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
 		requestedIDs := expandStringSet(v.(*schema.Set))
-		
-		// List all preconfigured alerts to verify their status
-		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
-			Region:          region,
-			ProjectID:       projectID,
-			IsPreconfigured: scw.BoolPtr(true),
-		}, scw.WithContext(ctx), scw.WithAllPages())
-		if err != nil {
-			return diag.FromErr(err)
+		requestedMap := make(map[string]bool)
+		for _, id := range requestedIDs {
+			requestedMap[id] = true
 		}
 
-		// Build a map of alert statuses
-		alertStatusMap := make(map[string]cockpit.AlertStatus)
-		for _, alert := range alerts.Alerts {
-			if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
-				alertStatusMap[alert.PreconfiguredData.PreconfiguredRuleID] = alert.RuleStatus
-			}
-		}
-
-		// Keep the requested IDs that are enabled/enabling
-		// This ensures we only track what the user explicitly configured
-		var enabledRequestedIDs []string
-		for _, requestedID := range requestedIDs {
-			if status, found := alertStatusMap[requestedID]; found {
-				// Include if enabled or enabling
-				if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
-					enabledRequestedIDs = append(enabledRequestedIDs, requestedID)
+		// Check all enabled/enabling alerts
+		for ruleID, status := range alertStatusMap {
+			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
+				if requestedMap[ruleID] {
+					// This alert was explicitly requested by the user
+					userRequestedIDs = append(userRequestedIDs, ruleID)
+				} else {
+					// This alert was enabled automatically by the API
+					defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
 				}
 			}
 		}
-
-		_ = d.Set("preconfigured_alert_ids", enabledRequestedIDs)
 	} else {
-		// No alerts requested, set empty list
-		_ = d.Set("preconfigured_alert_ids", []string{})
+		// No alerts explicitly requested, all enabled alerts are API defaults
+		for ruleID, status := range alertStatusMap {
+			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
+				defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
+			}
+		}
 	}
+
+	_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
+	_ = d.Set("default_preconfigured_alert_ids", defaultEnabledIDs)
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
