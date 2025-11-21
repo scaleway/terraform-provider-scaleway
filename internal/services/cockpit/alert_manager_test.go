@@ -417,6 +417,11 @@ func TestAccCockpitAlertManager_WithPreconfiguredAlerts(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "region"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "alert_manager_url"),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "test@example.com"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "2"),
+					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
+					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "eb8a941e-698d-47d6-b62d-4b6c13f7b4b7"),
+					// Check that default alerts may be present (computed field)
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 		},
@@ -453,6 +458,10 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "project_id"),
 					testAccCheckPreconfiguredAlertsCount(tt, "scaleway_cockpit_alert_manager.main", 1),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "1"),
+					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
+					// Check that default alerts may be present (computed field)
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 			{
@@ -477,6 +486,11 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckPreconfiguredAlertsCount(tt, "scaleway_cockpit_alert_manager.main", 2),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "2"),
+					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
+					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "eb8a941e-698d-47d6-b62d-4b6c13f7b4b7"),
+					// Check that default alerts may be present (computed field)
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 			{
@@ -499,6 +513,8 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "0"),
 					testAccCheckPreconfiguredAlertsCount(tt, "scaleway_cockpit_alert_manager.main", 0),
+					// Default alerts might still be present even when user requests none
+					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 		},
