@@ -32,6 +32,7 @@ type TestTools struct {
 }
 
 var foldersUsingVCRv4 = []string{
+	"audittrail",
 	"account",
 	"container",
 	"iam",
