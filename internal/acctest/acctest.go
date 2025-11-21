@@ -35,6 +35,7 @@ var foldersUsingVCRv4 = []string{
 	"audittrail",
 	"account",
 	"container",
+	"iam",
 	"instance",
 	"k8s",
 	"marketplace",
