@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -19,8 +20,8 @@ func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceCockpitAlertManagerCreate,
 		ReadContext:   ResourceCockpitAlertManagerRead,
-		UpdateContext: ResourceCockpitAlertManagerUpdate,
-		DeleteContext: ResourceCockpitAlertManagerDelete,
+	UpdateContext: ResourceCockpitAlertManagerUpdate,
+	DeleteContext: ResourceCockpitAlertManagerDelete,
 	Importer: &schema.ResourceImporter{
 		StateContext: schema.ImportStatePassthroughContext,
 	},
@@ -31,40 +32,35 @@ func ResourceCockpitAlertManager() *schema.Resource {
 func alertManagerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"project_id": account.ProjectIDSchema(),
-	"enable_managed_alerts": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Computed:    true,
-		Deprecated:  "Use 'preconfigured_alert_ids' instead. This field will be removed in a future version.",
-		Description: "Enable or disable the alert manager (deprecated)",
-	},
-	"preconfigured_alert_ids": {
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Description: "List of preconfigured alert rule IDs to enable explicitly. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
-	"default_preconfigured_alert_ids": {
-		Type:        schema.TypeSet,
-		Computed:    true,
-		Description: "List of preconfigured alert rule IDs enabled automatically by the API when alert manager is activated.",
-		Elem:        &schema.Schema{Type: schema.TypeString},
-	},
-	"contact_points": {
-		Type:        schema.TypeList,
-		Optional:    true,
-		Description: "A list of contact points",
-		Elem: &schema.Resource{
-			Schema: map[string]*schema.Schema{
-				"email": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ValidateDiagFunc: verify.IsEmail(),
-					Description:      "Email addresses for the alert receivers",
+		"enable_managed_alerts": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Deprecated:  "Use 'preconfigured_alert_ids' instead. This field will be removed in a future version.",
+			Description: "Enable or disable the alert manager (deprecated)",
+		},
+		"preconfigured_alert_ids": {
+			Type:             schema.TypeSet,
+			Optional:         true,
+			Description:      "List of preconfigured alert rule IDs to enable explicitly. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
+			Elem:             &schema.Schema{Type: schema.TypeString},
+			DiffSuppressFunc: diffSuppressPreconfiguredAlertIDs,
+		},
+		"contact_points": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "A list of contact points",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"email": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: verify.IsEmail(),
+						Description:      "Email addresses for the alert receivers",
+					},
 				},
 			},
 		},
-	},
 		"region": regional.Schema(),
 		"alert_manager_url": {
 			Type:        schema.TypeString,
@@ -183,10 +179,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
 
-	// Get enabled preconfigured alerts and separate user-requested vs API-default alerts
-	// Handle permission errors gracefully to allow the resource to work without cockpit read permissions
 	var userRequestedIDs []string
-	var defaultEnabledIDs []string
 
 	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
@@ -196,7 +189,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// Build a map of alert statuses
+
 	alertStatusMap := make(map[string]cockpit.AlertStatus)
 	for _, alert := range alerts.Alerts {
 		if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
@@ -211,29 +204,16 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 			requestedMap[id] = true
 		}
 
-		// Check all enabled/enabling alerts
 		for ruleID, status := range alertStatusMap {
 			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
 				if requestedMap[ruleID] {
-					// This alert was explicitly requested by the user
 					userRequestedIDs = append(userRequestedIDs, ruleID)
-				} else {
-					// This alert was enabled automatically by the API
-					defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
 				}
-			}
-		}
-	} else {
-		// No alerts explicitly requested, all enabled alerts are API defaults
-		for ruleID, status := range alertStatusMap {
-			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
-				defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
 			}
 		}
 	}
 
 	_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
-	_ = d.Set("default_preconfigured_alert_ids", defaultEnabledIDs)
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -463,4 +443,35 @@ func expandStringSet(set *schema.Set) []string {
 	}
 
 	return result
+}
+
+func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) bool {
+	baseKey := strings.TrimSuffix(k, ".#")
+	oldSet, newSet := d.GetChange(baseKey)
+	
+	var oldList, newList []string
+	
+	if oldSetTyped, ok := oldSet.(*schema.Set); ok {
+		oldList = expandStringSet(oldSetTyped)
+	} else if oldListAny, ok := oldSet.([]any); ok {
+		oldList = make([]string, len(oldListAny))
+		for i, v := range oldListAny {
+			oldList[i] = v.(string)
+		}
+	} else {
+		return false
+	}
+	
+	if newSetTyped, ok := newSet.(*schema.Set); ok {
+		newList = expandStringSet(newSetTyped)
+	} else if newListAny, ok := newSet.([]any); ok {
+		newList = make([]string, len(newListAny))
+		for i, v := range newListAny {
+			newList[i] = v.(string)
+		}
+	} else {
+		return false
+	}
+	
+	return types.CompareStringListsIgnoringOrder(oldList, newList)
 }

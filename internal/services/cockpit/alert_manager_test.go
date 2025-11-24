@@ -330,8 +330,6 @@ func TestAccCockpitAlertManager_WithPreconfiguredAlerts(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "2"),
 					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
 					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "eb8a941e-698d-47d6-b62d-4b6c13f7b4b7"),
-					// Check that default alerts may be present (computed field)
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 		},
@@ -364,8 +362,6 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 					testAccCheckPreconfiguredAlertsCount(tt, "scaleway_cockpit_alert_manager.main", 1),
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "1"),
 					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
-					// Check that default alerts may be present (computed field)
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 			{
@@ -387,8 +383,6 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "2"),
 					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "6c6843af-1815-46df-9e52-6feafcf31fd7"),
 					resource.TestCheckTypeSetElemAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.*", "eb8a941e-698d-47d6-b62d-4b6c13f7b4b7"),
-					// Check that default alerts may be present (computed field)
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 			{
@@ -405,8 +399,6 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "0"),
 					testAccCheckPreconfiguredAlertsCount(tt, "scaleway_cockpit_alert_manager.main", 0),
-					// Default alerts might still be present even when user requests none
-					resource.TestCheckResourceAttrSet("scaleway_cockpit_alert_manager.main", "default_preconfigured_alert_ids.#"),
 				),
 			},
 		},
@@ -420,32 +412,51 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 			return errors.New("alert manager not found: " + resourceName)
 		}
 
+		actualCountStr := rs.Primary.Attributes["preconfigured_alert_ids.#"]
+		actualCount, err := strconv.Atoi(actualCountStr)
+		if err != nil {
+			return fmt.Errorf("failed to parse preconfigured_alert_ids count: %w", err)
+		}
+
+		if actualCount != expectedCount {
+			return fmt.Errorf("expected %d user-requested preconfigured alerts in state, got %d", expectedCount, actualCount)
+		}
+
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 		projectID := rs.Primary.Attributes["project_id"]
 		region := scw.Region(rs.Primary.Attributes["region"])
 
-		// List all preconfigured alerts
+		userRequestedIDs := make(map[string]bool)
+		for i := 0; i < actualCount; i++ {
+			alertID := rs.Primary.Attributes[fmt.Sprintf("preconfigured_alert_ids.%d", i)]
+			if alertID != "" {
+				userRequestedIDs[alertID] = true
+			}
+		}
+
 		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 			Region:          region,
 			ProjectID:       projectID,
 			IsPreconfigured: scw.BoolPtr(true),
 		}, scw.WithAllPages())
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to list alerts: %w", err)
 		}
 
-		// Count alerts that are enabled or enabling
-		enabledCount := 0
+		enabledUserAlertsCount := 0
 		for _, alert := range alerts.Alerts {
-			if alert.PreconfiguredData != nil {
-				if alert.RuleStatus == cockpit.AlertStatusEnabled || alert.RuleStatus == cockpit.AlertStatusEnabling {
-					enabledCount++
+			if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
+				ruleID := alert.PreconfiguredData.PreconfiguredRuleID
+				if userRequestedIDs[ruleID] {
+					if alert.RuleStatus == cockpit.AlertStatusEnabled || alert.RuleStatus == cockpit.AlertStatusEnabling {
+						enabledUserAlertsCount++
+					}
 				}
 			}
 		}
 
-		if enabledCount != expectedCount {
-			return fmt.Errorf("expected %d enabled preconfigured alerts, got %d", expectedCount, enabledCount)
+		if enabledUserAlertsCount != expectedCount {
+			return fmt.Errorf("expected %d user-requested alerts to be enabled in API, got %d", expectedCount, enabledUserAlertsCount)
 		}
 
 		return nil
