@@ -20,13 +20,13 @@ func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceCockpitAlertManagerCreate,
 		ReadContext:   ResourceCockpitAlertManagerRead,
-	UpdateContext: ResourceCockpitAlertManagerUpdate,
-	DeleteContext: ResourceCockpitAlertManagerDelete,
-	Importer: &schema.ResourceImporter{
-		StateContext: schema.ImportStatePassthroughContext,
-	},
-	SchemaFunc: alertManagerSchema,
-}
+		UpdateContext: ResourceCockpitAlertManagerUpdate,
+		DeleteContext: ResourceCockpitAlertManagerDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaFunc: alertManagerSchema,
+	}
 }
 
 func alertManagerSchema() map[string]*schema.Schema {
@@ -448,9 +448,9 @@ func expandStringSet(set *schema.Set) []string {
 func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) bool {
 	baseKey := strings.TrimSuffix(k, ".#")
 	oldSet, newSet := d.GetChange(baseKey)
-	
+
 	var oldList, newList []string
-	
+
 	if oldSetTyped, ok := oldSet.(*schema.Set); ok {
 		oldList = expandStringSet(oldSetTyped)
 	} else if oldListAny, ok := oldSet.([]any); ok {
@@ -461,7 +461,7 @@ func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) b
 	} else {
 		return false
 	}
-	
+
 	if newSetTyped, ok := newSet.(*schema.Set); ok {
 		newList = expandStringSet(newSetTyped)
 	} else if newListAny, ok := newSet.([]any); ok {
@@ -472,6 +472,6 @@ func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) b
 	} else {
 		return false
 	}
-	
+
 	return types.CompareStringListsIgnoringOrder(oldList, newList)
 }
