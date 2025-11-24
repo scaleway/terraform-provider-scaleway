@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -72,13 +73,16 @@ func TestAccActionServer_Basic(t *testing.T) {
 					func(state *terraform.State) error {
 						rs, ok := state.RootModule().Resources["data.scaleway_audit_trail_event.instance"]
 						if !ok {
-							return fmt.Errorf("not found: data.scaleway_audit_trail_event.instance")
+							return errors.New("not found: data.scaleway_audit_trail_event.instance")
 						}
+
 						countStr := rs.Primary.Attributes["events.#"]
+
 						count, err := strconv.Atoi(countStr)
 						if err != nil {
-							return fmt.Errorf("could not parse events.# as integer: %v", err)
+							return fmt.Errorf("could not parse events.# as integer: %w", err)
 						}
+
 						if count < 1 {
 							return fmt.Errorf("expected events count > 1, got %d", count)
 						}
