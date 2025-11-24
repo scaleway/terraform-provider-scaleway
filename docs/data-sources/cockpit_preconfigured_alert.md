@@ -84,18 +84,18 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the resource (project ID with region).
 - `alerts` - List of preconfigured alerts. Each alert contains:
-  - `name` - Name of the alert rule.
-  - `rule` - PromQL expression defining the alert condition.
-  - `duration` - Duration for which the condition must be true before the alert fires (e.g., "5m").
-  - `rule_status` - Status of the alert rule (`enabled`, `disabled`, `enabling`, `disabling`).
-  - `state` - Current state of the alert (`inactive`, `pending`, `firing`).
-  - `annotations` - Map of annotations attached to the alert.
-  - `preconfigured_rule_id` - Unique identifier of the preconfigured rule. Use this ID in `scaleway_cockpit_alert_manager` resource.
-  - `display_name` - Human-readable name of the alert.
-  - `display_description` - Human-readable description of the alert.
-  - `product_name` - Scaleway product associated with the alert (e.g., "instance", "rdb", "kubernetes").
-  - `product_family` - Family of the product (e.g., "compute", "storage", "network").
-  - `data_source_id` - ID of the data source containing the alert rule.
+    - `name` - Name of the alert rule.
+    - `rule` - PromQL expression defining the alert condition.
+    - `duration` - Duration for which the condition must be true before the alert fires (e.g., "5m").
+    - `rule_status` - Status of the alert rule (`enabled`, `disabled`, `enabling`, `disabling`).
+    - `state` - Current state of the alert (`inactive`, `pending`, `firing`).
+    - `annotations` - Map of annotations attached to the alert.
+    - `preconfigured_rule_id` - Unique identifier of the preconfigured rule. Use this ID in `scaleway_cockpit_alert_manager` resource.
+    - `display_name` - Human-readable name of the alert.
+    - `display_description` - Human-readable description of the alert.
+    - `product_name` - Scaleway product associated with the alert (e.g., "instance", "rdb", "kubernetes").
+    - `product_family` - Family of the product (e.g., "compute", "storage", "network").
+    - `data_source_id` - ID of the data source containing the alert rule.
 
 
 
