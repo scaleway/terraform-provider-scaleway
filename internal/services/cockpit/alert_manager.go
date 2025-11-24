@@ -81,6 +81,13 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	projectID := d.Get("project_id").(string)
+	if projectID == "" {
+		projectID, err = getDefaultProjectID(ctx, meta)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		_ = d.Set("project_id", projectID)
+	}
 	contactPoints := d.Get("contact_points").([]any)
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
@@ -104,8 +111,16 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 				return diag.FromErr(err)
 			}
 
-			// Note: Waiting for alerts to be enabled will be handled by SDK waiters when available
-			// For now, we continue without waiting as the Read function handles enabling/enabled states
+			// Wait for alerts to be enabled
+			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+				Region:             region,
+				ProjectID:          projectID,
+				PreconfiguredRules: alertIDs,
+				TargetStatus:       cockpit.AlertStatusEnabled,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -179,50 +194,46 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		IsPreconfigured: scw.BoolPtr(true),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		// If we can't read alerts (e.g., permission denied), just set empty arrays
-		// This allows the resource to work even without cockpit read permissions
-		_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
-		_ = d.Set("default_preconfigured_alert_ids", defaultEnabledIDs)
-	} else {
-		// Build a map of alert statuses
-		alertStatusMap := make(map[string]cockpit.AlertStatus)
-		for _, alert := range alerts.Alerts {
-			if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
-				alertStatusMap[alert.PreconfiguredData.PreconfiguredRuleID] = alert.RuleStatus
-			}
+		return diag.FromErr(err)
+	}
+	// Build a map of alert statuses
+	alertStatusMap := make(map[string]cockpit.AlertStatus)
+	for _, alert := range alerts.Alerts {
+		if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
+			alertStatusMap[alert.PreconfiguredData.PreconfiguredRuleID] = alert.RuleStatus
+		}
+	}
+
+	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
+		requestedIDs := expandStringSet(v.(*schema.Set))
+		requestedMap := make(map[string]bool)
+		for _, id := range requestedIDs {
+			requestedMap[id] = true
 		}
 
-		if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
-			requestedIDs := expandStringSet(v.(*schema.Set))
-			requestedMap := make(map[string]bool)
-			for _, id := range requestedIDs {
-				requestedMap[id] = true
-			}
-
-			// Check all enabled/enabling alerts
-			for ruleID, status := range alertStatusMap {
-				if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
-					if requestedMap[ruleID] {
-						// This alert was explicitly requested by the user
-						userRequestedIDs = append(userRequestedIDs, ruleID)
-					} else {
-						// This alert was enabled automatically by the API
-						defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
-					}
-				}
-			}
-		} else {
-			// No alerts explicitly requested, all enabled alerts are API defaults
-			for ruleID, status := range alertStatusMap {
-				if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
+		// Check all enabled/enabling alerts
+		for ruleID, status := range alertStatusMap {
+			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
+				if requestedMap[ruleID] {
+					// This alert was explicitly requested by the user
+					userRequestedIDs = append(userRequestedIDs, ruleID)
+				} else {
+					// This alert was enabled automatically by the API
 					defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
 				}
 			}
 		}
-
-		_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
-		_ = d.Set("default_preconfigured_alert_ids", defaultEnabledIDs)
+	} else {
+		// No alerts explicitly requested, all enabled alerts are API defaults
+		for ruleID, status := range alertStatusMap {
+			if status == cockpit.AlertStatusEnabled || status == cockpit.AlertStatusEnabling {
+				defaultEnabledIDs = append(defaultEnabledIDs, ruleID)
+			}
+		}
 	}
+
+	_ = d.Set("preconfigured_alert_ids", userRequestedIDs)
+	_ = d.Set("default_preconfigured_alert_ids", defaultEnabledIDs)
 
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
@@ -277,7 +288,16 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 				return diag.FromErr(err)
 			}
 
-			// Note: Waiting for alerts to be disabled will be handled by SDK waiters when available
+			// Wait for alerts to be disabled
+			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+				Region:             region,
+				ProjectID:          projectID,
+				PreconfiguredRules: toDisable,
+				TargetStatus:       cockpit.AlertStatusDisabled,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 
 		// IDs to enable: in new but not in old
@@ -292,7 +312,16 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 				return diag.FromErr(err)
 			}
 
-			// Note: Waiting for alerts to be enabled will be handled by SDK waiters when available
+			// Wait for alerts to be enabled
+			_, err = api.WaitForPreconfiguredAlerts(&cockpit.WaitForPreconfiguredAlertsRequest{
+				Region:             region,
+				ProjectID:          projectID,
+				PreconfiguredRules: toEnable,
+				TargetStatus:       cockpit.AlertStatusEnabled,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
