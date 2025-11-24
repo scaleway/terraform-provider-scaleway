@@ -98,3 +98,4 @@ In addition to all arguments above, the following attributes are exported:
   - `data_source_id` - ID of the data source containing the alert rule.
 
 
+
