@@ -577,7 +577,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
+	_ = d.Set("versioning", FlattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
 	lifecycle, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{

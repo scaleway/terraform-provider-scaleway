@@ -260,7 +260,7 @@ func TestAccGroup_Users(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_iam_user" "user02" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 
 					resource "scaleway_iam_group" "main_user" {
@@ -374,7 +374,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 					data "scaleway_iam_user" "user01" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
 					}
 
 					resource "scaleway_iam_group" "main_mix" {
@@ -411,7 +411,7 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 					data "scaleway_iam_user" "user03" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "88b4dde1-f3d4-478a-a281-784d53399a30"
 					}
 					data "scaleway_iam_user" "user04" {
 						user_id = "84d20ae1-9650-419a-ab74-7ab09b6262e0"
