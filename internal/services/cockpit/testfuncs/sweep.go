@@ -88,7 +88,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 				continue
 			}
 
-			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{
+			listGrafanaUsers, err := cockpitAPI.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 				ProjectID: project.ID,
 			}, scw.WithAllPages())
 			if err != nil {
@@ -100,7 +100,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 			}
 
 			for _, grafanaUser := range listGrafanaUsers.GrafanaUsers {
-				err = cockpitAPI.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{
+				err = cockpitAPI.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 					ProjectID:     project.ID,
 					GrafanaUserID: grafanaUser.ID,
 				})
