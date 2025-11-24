@@ -35,10 +35,10 @@ func ResourceCockpitAlertManager() *schema.Resource {
 				Description: "Enable or disable the alert manager (deprecated)",
 			},
 			"preconfigured_alert_ids": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "List of preconfigured alert rule IDs to enable explicitly. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type:             schema.TypeSet,
+				Optional:         true,
+				Description:      "List of preconfigured alert rule IDs to enable explicitly. Use the scaleway_cockpit_preconfigured_alert data source to list available alerts.",
+				Elem:             &schema.Schema{Type: schema.TypeString},
 				DiffSuppressFunc: diffSuppressPreconfiguredAlertIDs,
 			},
 			"contact_points": {
@@ -444,9 +444,9 @@ func expandStringSet(set *schema.Set) []string {
 func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) bool {
 	baseKey := strings.TrimSuffix(k, ".#")
 	oldSet, newSet := d.GetChange(baseKey)
-	
+
 	var oldList, newList []string
-	
+
 	if oldSetTyped, ok := oldSet.(*schema.Set); ok {
 		oldList = expandStringSet(oldSetTyped)
 	} else if oldListAny, ok := oldSet.([]any); ok {
@@ -457,7 +457,7 @@ func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) b
 	} else {
 		return false
 	}
-	
+
 	if newSetTyped, ok := newSet.(*schema.Set); ok {
 		newList = expandStringSet(newSetTyped)
 	} else if newListAny, ok := newSet.([]any); ok {
@@ -468,6 +468,6 @@ func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) b
 	} else {
 		return false
 	}
-	
+
 	return types.CompareStringListsIgnoringOrder(oldList, newList)
 }
