@@ -40,6 +40,11 @@ func ResourceIP() *schema.Resource {
 				ValidateFunc:     validation.IsIPAddress,
 				DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
 			},
+			"address_cidr": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The IP address with a CIDR notation",
+			},
 			"source": {
 				Type:        schema.TypeList,
 				Required:    true,
@@ -269,12 +274,14 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		}
 	}
 
-	address, err := types.FlattenIPNet(res.Address)
+	addressCidr, err := types.FlattenIPNet(res.Address)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	address := res.Address.IP.String()
 	_ = d.Set("address", address)
+	_ = d.Set("address_cidr", addressCidr)
 	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
 	_ = d.Set("resource", flattenIPResource(res.Resource))
 	_ = d.Set("project_id", res.ProjectID)

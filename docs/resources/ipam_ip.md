@@ -126,6 +126,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the IP in IPAM.
+- `address_cidr` - the IP address in CIDR notation.
 - `resource` - The IP resource.
     - `id` - The ID of the resource that the IP is attached to.
     - `type` - The type of resource the IP is attached to.

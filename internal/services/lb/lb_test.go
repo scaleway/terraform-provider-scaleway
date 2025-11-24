@@ -417,7 +417,7 @@ func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
 						"scaleway_lb.lb01", "private_network.0.ipam_ids.0",
 						"scaleway_ipam_ip.ip01", "id"),
 					resource.TestCheckResourceAttrPair(
-						"scaleway_ipam_ip.ip01", "address",
+						"scaleway_ipam_ip.ip01", "address_cidr",
 						"data.scaleway_ipam_ip.by_name", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_lb.lb01", "private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_lb.lb01", "private_ips.0.address"),
