@@ -98,7 +98,6 @@ This section lists the arguments that are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `alert_manager_url` - The URL of the alert manager.
-- `default_preconfigured_alert_ids` - (Set of String) A set of preconfigured alert rule IDs that are enabled automatically by the API when the alert manager is activated. This is a computed field that shows which alerts the API enables by default.
 
 ## Import
 
