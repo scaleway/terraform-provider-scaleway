@@ -116,6 +116,7 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		projectID = defaultProjectID
 	}
 

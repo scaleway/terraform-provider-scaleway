@@ -413,6 +413,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 		}
 
 		actualCountStr := rs.Primary.Attributes["preconfigured_alert_ids.#"]
+
 		actualCount, err := strconv.Atoi(actualCountStr)
 		if err != nil {
 			return fmt.Errorf("failed to parse preconfigured_alert_ids count: %w", err)
@@ -427,7 +428,8 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 		region := scw.Region(rs.Primary.Attributes["region"])
 
 		userRequestedIDs := make(map[string]bool)
-		for i := 0; i < actualCount; i++ {
+
+		for i := range actualCount {
 			alertID := rs.Primary.Attributes[fmt.Sprintf("preconfigured_alert_ids.%d", i)]
 			if alertID != "" {
 				userRequestedIDs[alertID] = true

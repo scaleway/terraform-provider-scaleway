@@ -82,8 +82,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		_ = d.Set("project_id", projectID)
 	}
+
 	contactPoints := d.Get("contact_points").([]any)
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
@@ -191,6 +193,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	alertStatusMap := make(map[string]cockpit.AlertStatus)
+
 	for _, alert := range alerts.Alerts {
 		if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
 			alertStatusMap[alert.PreconfiguredData.PreconfiguredRuleID] = alert.RuleStatus
@@ -200,6 +203,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
 		requestedIDs := expandStringSet(v.(*schema.Set))
 		requestedMap := make(map[string]bool)
+
 		for _, id := range requestedIDs {
 			requestedMap[id] = true
 		}
