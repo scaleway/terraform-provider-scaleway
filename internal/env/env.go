@@ -14,4 +14,7 @@ const (
 	AppendUserAgent = "TF_APPEND_USER_AGENT"
 	// AccDomainRegistration if set to "true" will trigger acceptance test for domain registration
 	AccDomainRegistration = "TF_ACC_DOMAIN_REGISTRATION"
+	// AccRunningOpenTofu is set to "true" in the CI to document that we are using OpenTofu. It can be helpful to skip
+	// tests that are not yet compatible with OpenTofu
+	AccRunningOpenTofu = "TF_ACC_OPENTOFU"
 )
