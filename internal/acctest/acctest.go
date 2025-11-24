@@ -32,12 +32,14 @@ type TestTools struct {
 }
 
 var foldersUsingVCRv4 = []string{
+	"audittrail",
 	"account",
 	"container",
 	"iam",
 	"instance",
 	"k8s",
 	"marketplace",
+	"secret",
 }
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
