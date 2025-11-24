@@ -446,6 +446,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 		}
 
 		enabledUserAlertsCount := 0
+
 		for _, alert := range alerts.Alerts {
 			if alert.PreconfiguredData != nil && alert.PreconfiguredData.PreconfiguredRuleID != "" {
 				ruleID := alert.PreconfiguredData.PreconfiguredRuleID
