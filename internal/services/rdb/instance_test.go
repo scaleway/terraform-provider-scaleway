@@ -1441,6 +1441,68 @@ func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
 	})
 }
 
+func TestAccInstance_PrivateNetworkWithIPAMCIDR(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "test-rdb-ipam-cidr"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						vpc_id = scaleway_vpc.main.id
+						name   = "test-rdb-ipam-cidr"
+						ipv4_subnet {
+							subnet = "10.213.254.0/24"
+						}
+					}
+
+					resource "scaleway_ipam_ip" "db_ip" {
+						source {
+							private_network_id = scaleway_vpc_private_network.pn.id
+						}
+						address = "10.213.254.10"
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-ipam-cidr"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-ipam-cidr"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							pn_id  = scaleway_vpc_private_network.pn.id
+							ip_net = scaleway_ipam_ip.db_ip.address_cidr
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.db_ip", "address_cidr"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.ip_net", "scaleway_ipam_ip.db_ip", "address_cidr"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

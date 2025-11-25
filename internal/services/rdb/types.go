@@ -223,8 +223,13 @@ func flattenReadReplicaEndpoints(endpoints []*rdb.Endpoint) (directAccess, priva
 				enableIpam = true
 			}
 
+			serviceIP, err := types.FlattenIPNet(endpoint.PrivateNetwork.ServiceIP)
+			if err != nil {
+				return nil, nil
+			}
+
 			rawEndpoint["private_network_id"] = pnRegionalID
-			rawEndpoint["service_ip"] = endpoint.PrivateNetwork.ServiceIP.String()
+			rawEndpoint["service_ip"] = serviceIP
 			rawEndpoint["zone"] = endpoint.PrivateNetwork.Zone
 			rawEndpoint["enable_ipam"] = enableIpam
 			privateNetwork = rawEndpoint
