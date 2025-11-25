@@ -100,6 +100,10 @@ func TestAccActionServer_Basic(t *testing.T) {
 }
 
 func TestAccActionServer_UnknownVerb(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccActionServer_Basic because action are not yet supported on OpenTofu")
+	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
