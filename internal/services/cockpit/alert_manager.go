@@ -76,14 +76,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	// EnableManagedAlerts and DisableManagedAlerts have been removed from the SDK.
+	// This functionality will be replaced by EnableAlertRules/DisableAlertRules in a future update.
 	if EnableManagedAlerts {
-		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{
-			Region:    region,
-			ProjectID: projectID,
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		// TODO: Replace with EnableAlertRules once preconfigured alerts feature is merged
 	}
 
 	if len(contactPoints) > 0 {
@@ -179,23 +175,10 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	// EnableManagedAlerts and DisableManagedAlerts have been removed from the SDK.
+	// This functionality will be replaced by EnableAlertRules/DisableAlertRules in a future update.
 	if d.HasChange("enable_managed_alerts") {
-		enable := d.Get("enable_managed_alerts").(bool)
-		if enable {
-			_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{
-				Region:    region,
-				ProjectID: projectID,
-			})
-		} else {
-			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
-				Region:    region,
-				ProjectID: projectID,
-			}, scw.WithContext(ctx))
-		}
-
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		// TODO: Replace with EnableAlertRules/DisableAlertRules once preconfigured alerts feature is merged
 	}
 
 	if d.HasChange("contact_points") {
@@ -284,13 +267,9 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
-		Region:    region,
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	// DisableManagedAlerts has been removed from the SDK.
+	// This functionality will be replaced by DisableAlertRules in a future update.
+	// TODO: Replace with DisableAlertRules once preconfigured alerts feature is merged
 
 	_, err = api.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
 		Region:    region,

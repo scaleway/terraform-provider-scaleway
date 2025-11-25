@@ -132,7 +132,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{
+		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 			ProjectID: projectID,
 		}, scw.WithAllPages())
 		if err != nil {
@@ -169,7 +169,7 @@ func isGrafanaUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = api.DeleteGrafanaUser(&cockpitSDK.GlobalAPIDeleteGrafanaUserRequest{
+			err = api.DeleteGrafanaUser(&cockpitSDK.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 				ProjectID:     projectID,
 				GrafanaUserID: grafanaUserID,
 			})
