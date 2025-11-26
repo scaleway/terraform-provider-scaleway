@@ -115,7 +115,7 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		Action:   instance.ServerAction(data.Action.ValueString()),
 	}
 	if !data.Zone.IsNull() {
-		actionReq.Zone = scw.Zone(data.Zone.String())
+		actionReq.Zone = scw.Zone(data.Zone.ValueString())
 	}
 
 	_, err := a.instanceAPI.ServerAction(actionReq)
@@ -128,11 +128,11 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 	if data.Wait.ValueBool() {
 		waitReq := &instance.WaitForServerRequest{
 			ServerID: locality.ExpandID(data.ServerID.ValueString()),
-			Zone:     scw.Zone(data.Zone.String()),
+			Zone:     scw.Zone(data.Zone.ValueString()),
 		}
 
 		if !data.Zone.IsNull() {
-			waitReq.Zone = scw.Zone(data.Zone.String())
+			waitReq.Zone = scw.Zone(data.Zone.ValueString())
 		}
 
 		_, errWait := a.instanceAPI.WaitForServer(waitReq)
