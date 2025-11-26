@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -80,18 +80,17 @@ func TestAccActionServer_Basic(t *testing.T) {
 							return errors.New("not found: data.scaleway_audit_trail_event.instance")
 						}
 
-						countStr := rs.Primary.Attributes["events.#"]
+						for key, value := range rs.Primary.Attributes {
+							if !strings.Contains(key, "request_body") {
+								continue
+							}
 
-						count, err := strconv.Atoi(countStr)
-						if err != nil {
-							return fmt.Errorf("could not parse events.# as integer: %w", err)
+							if value == `{"action":"reboot"}` {
+								return nil
+							}
 						}
 
-						if count < 1 {
-							return fmt.Errorf("expected events count > 1, got %d", count)
-						}
-
-						return nil
+						return fmt.Errorf("did not found the reboot event")
 					},
 				),
 			},
