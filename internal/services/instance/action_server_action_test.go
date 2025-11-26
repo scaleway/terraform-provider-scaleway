@@ -2,7 +2,6 @@ package instance_test
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -90,7 +89,7 @@ func TestAccActionServer_Basic(t *testing.T) {
 							}
 						}
 
-						return fmt.Errorf("did not found the reboot event")
+						return errors.New("did not found the reboot event")
 					},
 				),
 			},
