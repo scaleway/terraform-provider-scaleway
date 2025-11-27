@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -94,6 +95,16 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if shouldEnableLegacyManagedAlerts(d) {
+		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	// Handle preconfigured alerts
@@ -309,6 +320,29 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	if d.HasChange("enable_managed_alerts") {
+		oldVal, newVal := d.GetChange("enable_managed_alerts")
+		oldBool := oldVal.(bool)
+		newBool := newVal.(bool)
+
+		switch {
+		case !newBool && oldBool:
+			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+				Region:    region,
+				ProjectID: projectID,
+			}, scw.WithContext(ctx))
+		case newBool && shouldEnableLegacyManagedAlerts(d):
+			_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+				Region:    region,
+				ProjectID: projectID,
+			}, scw.WithContext(ctx))
+		}
+
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("contact_points") {
 		oldContactPointsInterface, newContactPointsInterface := d.GetChange("contact_points")
 		oldContactPoints := oldContactPointsInterface.([]any)
@@ -389,6 +423,16 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
+	if d.Get("enable_managed_alerts").(bool) {
+		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is403(err) && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
+	}
+
 	contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 		Region:    region,
 		ProjectID: projectID,
@@ -447,6 +491,20 @@ func expandStringSet(set *schema.Set) []string {
 	}
 
 	return result
+}
+
+func shouldEnableLegacyManagedAlerts(d *schema.ResourceData) bool {
+	if !d.Get("enable_managed_alerts").(bool) {
+		return false
+	}
+
+	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
+		if set, ok := v.(*schema.Set); ok && set.Len() > 0 {
+			return false
+		}
+	}
+
+	return true
 }
 
 func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) bool {
