@@ -129,6 +129,35 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 	})
 }
 
+func TestAccCockpitAlertManager_LegacyManagedAlerts(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_cockpit_alert_manager" "main" {
+						enable_managed_alerts = true
+
+						contact_points {
+							email = "legacy@example.com"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "preconfigured_alert_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_cockpit_alert_manager.main", "contact_points.0.email", "legacy@example.com"),
+					testAccCheckCockpitContactPointExists(tt, "scaleway_cockpit_alert_manager.main"),
+					testAccCheckManagedAlertsEnabled(tt, "scaleway_cockpit_alert_manager.main", true),
+				),
+			},
+		},
+	})
+}
+
 func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -429,7 +458,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		userRequestedIDs := make(map[string]bool)
 
-		for i := range actualCount {
+		for i := 0; i < actualCount; i++ {
 			alertID := rs.Primary.Attributes[fmt.Sprintf("preconfigured_alert_ids.%d", i)]
 			if alertID != "" {
 				userRequestedIDs[alertID] = true
@@ -460,6 +489,33 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		if enabledUserAlertsCount != expectedCount {
 			return fmt.Errorf("expected %d user-requested alerts to be enabled in API, got %d", expectedCount, enabledUserAlertsCount)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string, expectedEnabled bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return errors.New("alert manager not found: " + resourceName)
+		}
+
+		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
+		projectID := rs.Primary.Attributes["project_id"]
+		region := scw.Region(rs.Primary.Attributes["region"])
+
+		alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			Region:    region,
+			ProjectID: projectID,
+		})
+		if err != nil {
+			return err
+		}
+
+		if alertManager.ManagedAlertsEnabled != expectedEnabled {
+			return fmt.Errorf("expected managed alerts enabled state %t, got %t", expectedEnabled, alertManager.ManagedAlertsEnabled)
 		}
 
 		return nil
