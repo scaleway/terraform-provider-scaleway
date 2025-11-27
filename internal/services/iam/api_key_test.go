@@ -89,10 +89,6 @@ func TestAccApiKey_WithApplicationChange(t *testing.T) {
 							name = "tf_tests_api_key_app_change"
 						}
 
-						resource "scaleway_iam_application" "main2" {
-							name = "tf_tests_api_key_app_change2"
-						}
-
 						resource "scaleway_iam_api_key" "main" {
 							application_id = scaleway_iam_application.main.id
 							description = "tf_tests_with_application_change"
