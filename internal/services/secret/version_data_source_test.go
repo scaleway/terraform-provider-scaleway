@@ -41,10 +41,6 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_account_project project {
-					name = "tf-tests-secret-version-ds-by-name"
-				}
-
 				resource "scaleway_secret" "main" {
 				  name        = "%[1]s"
 				  description = "%[2]s"
@@ -128,51 +124,39 @@ func TestAccDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_account_project project {
-					name = "tf-tests-secret-version-ds-by-name"
-				}
-
 				resource "scaleway_secret" "main" {
-				  name        = "%[1]s"
+				  name        = "%s"
 				  tags        = ["devtools", "provider", "terraform"]
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "main" {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "%[2]s"
+				  data        = "%s"
 				}
 				`, secretName, secretVersionData),
 			},
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_account_project project {
-					name = "tf-tests-secret-version-ds-by-name"
-				}
-
 				resource "scaleway_secret" "main" {
-				  name = "%[1]s"
+				  name = "%s"
 				  tags = ["devtools", "provider", "terraform"]
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				resource "scaleway_secret_version" "main" {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
-				  data        = "%[2]s"
+				  data        = "%s"
 				}
 
 				data "scaleway_secret_version" "data_by_name" {
 				  secret_name = scaleway_secret.main.name
 				  revision    = "1"
-				  project_id  = scaleway_account_project.project.id
 				}
 
 				data "scaleway_secret_version" "data_by_name_latest" {
 				  secret_name = scaleway_secret.main.name
 				  revision    = "latest"
-				  project_id  = scaleway_account_project.project.id
 				}
 				`, secretName, secretVersionData),
 				Check: resource.ComposeTestCheckFunc(
