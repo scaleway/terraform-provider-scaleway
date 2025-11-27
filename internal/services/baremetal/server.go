@@ -2,8 +2,11 @@ package baremetal
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -297,6 +300,13 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					},
 				},
 			},
+			"cloud_init": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "Configuration data to pass to cloud-init such as a YAML cloud config data or a user-data script",
+				ValidateFunc: validation.StringLenBetween(0, 127998),
+			},
 		},
 		CustomizeDiff: customdiff.Sequence(
 			customDiffOffer(),
@@ -365,6 +375,14 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
 		Protected:   d.Get("protected").(bool),
+	}
+
+	if cloudInit, ok := d.GetOk("cloud_init"); ok {
+		userData, err := LoadUserDataBase64(cloudInit)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.UserData = &userData
 	}
 
 	partitioningSchema := baremetal.Schema{}
@@ -457,6 +475,21 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	return ResourceServerRead(ctx, d, m)
 }
 
+func LoadUserDataBase64(cloudInit interface{}) ([]byte, error) {
+	value := cloudInit.(string)
+	var content []byte
+	if data, err := os.ReadFile(value); errors.Is(err, os.ErrNotExist) {
+		content = []byte(value)
+	} else if err == nil {
+		content = data
+	} else {
+		return nil, err
+	}
+	encoded := base64.StdEncoding.EncodeToString(content)
+	userData := []byte(encoded)
+	return userData, nil
+}
+
 func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zonedID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -514,6 +547,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
 	_ = d.Set("protected", server.Protected)
+	_ = d.Set("cloud_init", server.UserData)
 
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
@@ -695,6 +729,16 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	hasChanged := false
+
+	if d.HasChange("cloud_init") {
+		cloudInit := d.Get("cloud_init").(string)
+		userData, err := LoadUserDataBase64(cloudInit)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.UserData = &userData
+		hasChanged = true
+	}
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
