@@ -69,6 +69,8 @@ func DataSourceConsumptions() *schema.Resource {
 				Type:        schema.TypeString,
 			},
 		},
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 	}
 }
 
