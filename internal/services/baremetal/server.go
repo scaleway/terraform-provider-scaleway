@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -382,6 +384,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.UserData = &userData
 	}
 
@@ -475,18 +478,51 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	return ResourceServerRead(ctx, d, m)
 }
 
-func LoadUserDataBase64(cloudInit interface{}) ([]byte, error) {
+func LoadUserDataBase64(cloudInit any) ([]byte, error) {
 	value := cloudInit.(string)
+
 	var content []byte
-	if data, err := os.ReadFile(value); errors.Is(err, os.ErrNotExist) {
-		content = []byte(value)
-	} else if err == nil {
+
+	// If value refers to an existing file, read it. Otherwise treat value as the content.
+	if fi, err := os.Stat(value); err == nil {
+		// Only allow regular files
+		if !fi.Mode().IsRegular() {
+			return nil, fmt.Errorf("cloud_init path is not a regular file: %s", value)
+		}
+
+		// Resolve absolute path and ensure it is within the current working directory
+		absPath, err := filepath.Abs(value)
+		if err != nil {
+			return nil, err
+		}
+
+		cwd, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+
+		absPath = filepath.Clean(absPath)
+		cwd = filepath.Clean(cwd)
+
+		if absPath != cwd && !strings.HasPrefix(absPath, cwd+string(os.PathSeparator)) {
+			return nil, fmt.Errorf("reading cloud_init from outside working directory is disallowed: %s", value)
+		}
+
+		data, err := os.ReadFile(absPath)
+		if err != nil {
+			return nil, err
+		}
+
 		content = data
+	} else if errors.Is(err, os.ErrNotExist) {
+		content = []byte(value)
 	} else {
 		return nil, err
 	}
+
 	encoded := base64.StdEncoding.EncodeToString(content)
 	userData := []byte(encoded)
+
 	return userData, nil
 }
 
@@ -732,10 +768,12 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChange("cloud_init") {
 		cloudInit := d.Get("cloud_init").(string)
+
 		userData, err := LoadUserDataBase64(cloudInit)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.UserData = &userData
 		hasChanged = true
 	}
