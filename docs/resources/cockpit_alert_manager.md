@@ -67,6 +67,7 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 ### Legacy: Enable managed alerts (Deprecated)
 
 ~> **Deprecated:** The `enable_managed_alerts` field is deprecated. Use `preconfigured_alert_ids` instead.
+~> **Behavior:** Setting `enable_managed_alerts = true` enables *all* Cockpit preconfigured alerts for the project. You cannot filter or disable individual alerts with this legacy flag.
 
 ```terraform
 resource "scaleway_account_project" "project" {
