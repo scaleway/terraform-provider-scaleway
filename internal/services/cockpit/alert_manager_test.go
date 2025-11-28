@@ -458,7 +458,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		userRequestedIDs := make(map[string]bool)
 
-		for i := 0; i < actualCount; i++ {
+		for i := range actualCount {
 			alertID := rs.Primary.Attributes[fmt.Sprintf("preconfigured_alert_ids.%d", i)]
 			if alertID != "" {
 				userRequestedIDs[alertID] = true
