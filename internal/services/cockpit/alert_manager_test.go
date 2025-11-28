@@ -130,6 +130,8 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 }
 
 func TestAccCockpitAlertManager_LegacyManagedAlerts(t *testing.T) {
+	t.Skip("TestAccCockpitAlertManager_LegacyManagedAlerts skipped: encountered HTTP 500 errors from the Scaleway Cockpit API.")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
