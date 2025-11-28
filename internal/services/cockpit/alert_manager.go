@@ -33,7 +33,7 @@ func ResourceCockpitAlertManager() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Deprecated:  "Use 'preconfigured_alert_ids' instead. This field will be removed in a future version.",
-				Description: "Enable or disable the alert manager (deprecated)",
+				Description: "Enable or disable the alert manager (deprecated). When set to true, it enables all preconfigured alerts for the project. You cannot filter or disable individual alerts with this legacy flag.",
 			},
 			"preconfigured_alert_ids": {
 				Type:             schema.TypeSet,
