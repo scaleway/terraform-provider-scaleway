@@ -67,7 +67,6 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 ### Legacy: Enable managed alerts (Deprecated)
 
 ~> **Deprecated:** The `enable_managed_alerts` field is deprecated. Use `preconfigured_alert_ids` instead.
-~> **Behavior:** Setting `enable_managed_alerts = true` enables *all* Cockpit preconfigured alerts for the project. You cannot filter or disable individual alerts with this legacy flag.
 
 ```terraform
 resource "scaleway_account_project" "project" {
@@ -89,7 +88,7 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 This section lists the arguments that are supported:
 
 - `preconfigured_alert_ids` - (Optional, Set of String) A set of preconfigured alert rule IDs to enable explicitly. Use the [`scaleway_cockpit_preconfigured_alert`](../data-sources/cockpit_preconfigured_alert.md) data source to list available alerts.
-- `enable_managed_alerts` - **Deprecated** (Optional, Boolean) Use `preconfigured_alert_ids` instead. This field will be removed in a future version.
+- `enable_managed_alerts` - **Deprecated** (Optional, Boolean) Use `preconfigured_alert_ids` instead. This field will be removed in a future version. When set to `true`, it enables *all* preconfigured alerts for the project. You cannot filter or disable individual alerts with this legacy flag.
 - `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alerts. Each map should contain a single key `email`.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the [alert manager](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#alert-manager) should be enabled.
