@@ -87,7 +87,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		_ = d.Set("project_id", projectID)
 	}
 
-	contactPoints := d.Get("contact_points").([]any)
+	contactPoints, _ := d.Get("contact_points").([]any)
+	if contactPoints == nil {
+		contactPoints = []any{}
+	}
 
 	_, err = api.EnableAlertManager(&cockpit.RegionalAPIEnableAlertManagerRequest{
 		Region:    region,
@@ -109,7 +112,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 
 	// Handle preconfigured alerts
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
-		alertIDs := expandStringSet(v.(*schema.Set))
+		alertIDs := types.ExpandStrings(v.(*schema.Set).List())
 		if len(alertIDs) > 0 {
 			_, err = api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
 				Region:    region,
@@ -166,13 +169,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Parse the ID to get projectID
-	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	api, region, projectID, err := NewAPIWithRegionAndProjectID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -182,6 +179,10 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+			return nil
+		}
 		return diag.FromErr(err)
 	}
 
@@ -212,7 +213,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
-		requestedIDs := expandStringSet(v.(*schema.Set))
+		requestedIDs := types.ExpandStrings(v.(*schema.Set).List())
 		requestedMap := make(map[string]bool)
 
 		for _, id := range requestedIDs {
@@ -255,13 +256,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 }
 
 func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Parse the ID to get projectID
-	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	api, region, projectID, err := NewAPIWithRegionAndProjectID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -272,7 +267,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		newSet := newIDs.(*schema.Set)
 
 		// IDs to disable: in old but not in new
-		toDisable := expandStringSet(oldSet.Difference(newSet))
+		toDisable := types.ExpandStrings(oldSet.Difference(newSet).List())
 		if len(toDisable) > 0 {
 			_, err = api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
 				Region:    region,
@@ -296,7 +291,7 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 
 		// IDs to enable: in new but not in old
-		toEnable := expandStringSet(newSet.Difference(oldSet))
+		toEnable := types.ExpandStrings(newSet.Difference(oldSet).List())
 		if len(toEnable) > 0 {
 			_, err = api.EnableAlertRules(&cockpit.RegionalAPIEnableAlertRulesRequest{
 				Region:    region,
@@ -397,20 +392,14 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 }
 
 func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Parse the ID to get projectID
-	_, projectID, err := ResourceCockpitAlertManagerParseID(d.Id())
+	api, region, projectID, err := NewAPIWithRegionAndProjectID(meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Disable all preconfigured alerts if any are enabled
 	if v, ok := d.GetOk("preconfigured_alert_ids"); ok {
-		alertIDs := expandStringSet(v.(*schema.Set))
+		alertIDs := types.ExpandStrings(v.(*schema.Set).List())
 		if len(alertIDs) > 0 {
 			_, err = api.DisableAlertRules(&cockpit.RegionalAPIDisableAlertRulesRequest{
 				Region:    region,
@@ -473,26 +462,6 @@ func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourc
 	return fmt.Sprintf("%s/%s/1", region, projectID)
 }
 
-// ResourceCockpitAlertManagerParseID extracts region and project ID from the resource identifier.
-// The resource identifier format is "Region/ProjectID/1"
-func ResourceCockpitAlertManagerParseID(resourceID string) (region scw.Region, projectID string, err error) {
-	parts := strings.Split(resourceID, "/")
-	if len(parts) != 3 {
-		return "", "", fmt.Errorf("invalid alert manager ID format: %s", resourceID)
-	}
-
-	return scw.Region(parts[0]), parts[1], nil
-}
-
-func expandStringSet(set *schema.Set) []string {
-	result := make([]string, set.Len())
-	for i, v := range set.List() {
-		result[i] = v.(string)
-	}
-
-	return result
-}
-
 func shouldEnableLegacyManagedAlerts(d *schema.ResourceData) bool {
 	if !d.Get("enable_managed_alerts").(bool) {
 		return false
@@ -514,23 +483,17 @@ func diffSuppressPreconfiguredAlertIDs(k, _, _ string, d *schema.ResourceData) b
 	var oldList, newList []string
 
 	if oldSetTyped, ok := oldSet.(*schema.Set); ok {
-		oldList = expandStringSet(oldSetTyped)
+		oldList = types.ExpandStrings(oldSetTyped.List())
 	} else if oldListAny, ok := oldSet.([]any); ok {
-		oldList = make([]string, len(oldListAny))
-		for i, v := range oldListAny {
-			oldList[i] = v.(string)
-		}
+		oldList = types.ExpandStrings(oldListAny)
 	} else {
 		return false
 	}
 
 	if newSetTyped, ok := newSet.(*schema.Set); ok {
-		newList = expandStringSet(newSetTyped)
+		newList = types.ExpandStrings(newSetTyped.List())
 	} else if newListAny, ok := newSet.([]any); ok {
-		newList = make([]string, len(newListAny))
-		for i, v := range newListAny {
-			newList[i] = v.(string)
-		}
+		newList = types.ExpandStrings(newListAny)
 	} else {
 		return false
 	}
