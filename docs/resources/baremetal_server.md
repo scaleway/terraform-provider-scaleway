@@ -32,8 +32,6 @@ resource "scaleway_baremetal_server" "my_server" {
 
 ### With option
 
-```
-
 ```terraform
 data "scaleway_iam_ssh_key" "my_ssh_key" {
   name       = "main"
@@ -95,7 +93,7 @@ resource "scaleway_baremetal_server" "my_server_ci" {
   os          = "d17d6872-0412-45d9-a198-af82c34d3c5c"
   ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 
-  cloud_init = "cloud-init/userdata.yaml"
+  cloud_init = file("userdata.yaml")
 }
 ```
 
@@ -358,7 +356,6 @@ The following arguments are supported:
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `partitioning` (Optional) The partitioning schema in JSON format
 - `cloud_init` - (Optional) Configuration data to pass to cloud-init such as a YAML cloud config or a user-data script. Accepts either a string containing the content or a path to a file (for example `file("cloud-init.yml")`). Max length: 127998 characters. Updates to `cloud_init` will update the server user-data via the API and do not trigger a reinstall; however, a reboot of the server is required for the OS to re-run cloud-init and apply the changes. Only supported for OSes that have cloud-init enabled.
-- `cloud_init` - (Optional) Configuration data to pass to cloud-init such as a YAML cloud config or a user-data script. Accepts either a string containing the content or a path to a file (for example `file("cloud-init.yml")`). Max length: 127998 characters. Updates to `cloud_init` will update the server user-data via the API and do not trigger a reinstall; however, a reboot of the server is required for the OS to re-run cloud-init and apply the changes. Not all BareMetal offers and OS images support cloud-init — check the OS/offer metadata (for example `cloud_init_supported`) before use.
 - `protected` - (Optional) Set to true to activate server protection option.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
@@ -374,7 +371,6 @@ In addition to all arguments above, the following attributes are exported:
 - `offer_id` - The ID of the offer.
 - `offer_name` - The name of the offer.
 - `os_name` - The name of the os.
-- `cloud_init` - The cloud-init user-data associated with the server. This value can be either a path to a file containing the user-data or the raw user-data content itself. Updating this field requires a server reboot for the changes to take effect. Only available for OS and offers that support cloud-init.
 - `private_network` - The private networks attached to the server.
     - `id` - The ID of the private network.
     - `mapping_id` - The ID of the Server-to-Private Network mapping.
