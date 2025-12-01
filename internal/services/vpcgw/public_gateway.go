@@ -86,6 +86,7 @@ func ResourcePublicGateway() *schema.Resource {
 					if (v >= 1024 && v <= 59999) || v == 61000 {
 						return nil, nil
 					}
+
 					return nil, []error{fmt.Errorf("expected bastion_port to be in the range (1024 - 59999) or default 61000, got %d", v)}
 				},
 			},
