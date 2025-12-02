@@ -46,7 +46,6 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-
 File Storage filesystems can be imported using the `{region}/{id}`, e.g.
 
 ```bash

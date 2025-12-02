@@ -51,4 +51,3 @@ Data Warehouse databases can be imported using the `{region}/{deployment_id}/{na
 ```bash
 terraform import scaleway_datawarehouse_database.main fr-par/11111111-1111-1111-1111-111111111111/my_database
 ```
-

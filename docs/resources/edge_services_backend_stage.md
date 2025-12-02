@@ -97,5 +97,5 @@ In addition to all arguments above, the following attributes are exported:
 Backend stages can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_edge_services_backend_stage.basic 11111111-1111-1111-1111-111111111111
+terraform import scaleway_edge_services_backend_stage.basic 11111111-1111-1111-1111-111111111111
 ```
