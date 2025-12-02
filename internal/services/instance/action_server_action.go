@@ -136,10 +136,24 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		}
 
 		_, errWait := a.instanceAPI.WaitForServer(waitReq)
-		if errWait != nil {
+		if errWait != nil && data.Action.ValueString() != instance.ServerActionTerminate.String() {
 			resp.Diagnostics.AddError(
 				"error in wait server",
 				fmt.Sprintf("%s", err))
+		}
+
+		if data.Action.ValueString() == instance.ServerActionBackup.String() && server != nil {
+			for _, volume := range server.Volumes {
+				_, err := a.instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+					VolumeID: volume.ID,
+					Zone:     scw.Zone(zone),
+				}, scw.WithContext(ctx))
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"error waiting for volume "+volume.ID,
+						err.Error())
+				}
+			}
 		}
 	}
 }
