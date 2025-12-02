@@ -41,7 +41,6 @@ data "scaleway_secret" "by_name" {
 
 This section lists the arguments that you can provide to the `scaleway_secret` data source to filter and retrieve the desired secret:
 
-
 - `name` - (Optional) The name of the secret.
   Only one of `name` and `secret_id` should be specified.
 
@@ -57,7 +56,6 @@ This section lists the arguments that you can provide to the `scaleway_secret` d
 
 - `project_id` - (Optional. Defaults to the Project specified in [provider's configuration](../index.md#project_id)). The ID of the
   Project the secret is associated with.
-
 
 ## Attributes Reference
 

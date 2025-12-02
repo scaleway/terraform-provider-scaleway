@@ -34,10 +34,6 @@ data "scaleway_object" "selected" {
 
 This section lists the arguments that you can provide to the `scaleway_object` data source to filter and retrieve the desired Object Storage bucket. Each argument has a specific purpose:
 
-## Argument Reference
-
-This section lists the arguments that you can provide to the `scaleway_object` data source to filter and retrieve the desired Object Storage bucket. Each argument has a specific purpose:
-
 - `bucket` - (Required) The name of the bucket, or its terraform ID (`{region}/{name}`)
 - `key` - (Required) The key (path or filename) of the object within the bucket.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
@@ -52,4 +48,3 @@ In addition to all above arguments, the following attribute is exported:
 * `id` - The unique identifier of the object.
 
 ~> **Important**: Object IDs are regional, and follow the format {region}/{bucket}/{key}, e.g. fr-par/bucket-name/example.txt.
-

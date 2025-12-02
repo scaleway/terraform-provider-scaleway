@@ -15,7 +15,6 @@ The following commands allow you to:
 - retrieve a Block Storage volume specified by its name
 - retrieve a Block Storage volume specified by its ID
 
-
 ```terraform
 // Get info by volume name
 data "scaleway_block_volume" "my_volume" {

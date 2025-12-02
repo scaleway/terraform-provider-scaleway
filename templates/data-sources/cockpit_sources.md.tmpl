@@ -83,4 +83,3 @@ Each `sources` block contains:
 - `push_url` - The URL endpoint used for pushing data to the cockpit data source.
 - `region` - The region of the data source.
 - `project_id` - The project ID of the data source.
-

@@ -27,7 +27,6 @@ data "scaleway_domain_zone" "main" {
 
 This section lists the arguments that you can provide to the `scaleway_domain_zone` data source to filter and retrieve the desired DNS zone:
 
-
 - `domain` - (Required) The primary domain name where the DNS zone is located. This is a mandatory field.
 
 - `subdomain` - (Required) The subdomain (or zone name) within the primary domain. This is a mandatory field.
