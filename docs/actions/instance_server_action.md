@@ -17,3 +17,5 @@ page_title: "Scaleway: scaleway_instance_server_action"
 
 - `wait` (Boolean) Wait for server to finish action
 - `zone` (String) Zone of server to send the action to
+
+
