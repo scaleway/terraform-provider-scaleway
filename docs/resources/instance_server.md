@@ -299,7 +299,6 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
-
 ## Private Network
 
 ~> **Important:** Updates to `private_network` will recreate a new private network interface.

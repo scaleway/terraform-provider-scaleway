@@ -10,7 +10,6 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ## Example Usage
 
-
 ```terraform
 
 resource "scaleway_mongodb_snapshot" "main" {

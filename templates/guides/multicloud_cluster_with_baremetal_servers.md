@@ -13,8 +13,8 @@ as a node by the apiserver. This can be achieved manually ([method A](#method-a-
 ## Prerequisites
 
 * An SSH key, required to connect to your Elastic Metal server.
-    * If you need help generating an SSH key, visit [this tutorial](https://www.scaleway.com/en/docs/organizations-and-projects/how-to/create-ssh-key/).
-    * You can view your SSH keys in the [console](https://console.scaleway.com/project/credentials) and add a new one.
+  * If you need help generating an SSH key, visit [this tutorial](https://www.scaleway.com/en/docs/organizations-and-projects/how-to/create-ssh-key/).
+  * You can view your SSH keys in the [console](https://console.scaleway.com/project/credentials) and add a new one.
 
 ## Setup
 
@@ -75,9 +75,11 @@ the server, which will trigger a new installation process that will take some ti
 * `kilo` is the only CNI compatible with multicloud clusters
 * In this example, we use data sources to fill the `offer` and `os` fields of the bare metal server rather than giving
 raw values because it allows to check their availability in the zone you want to work with before provisioning the server
-    * See the [baremetal offer datasource](../data-sources/baremetal_offer.md)
-    * See the [baremetal os datasource](../data-sources/baremetal_os.md)
-    * For more information on bare metal servers specs, visit the [resource documentation](../resources/baremetal_server.md)
+
+  * See the [baremetal offer datasource](../data-sources/baremetal_offer.md)
+  * See the [baremetal os datasource](../data-sources/baremetal_os.md)
+  * For more information on bare metal servers specs, visit the [resource documentation](../resources/baremetal_server.md)
+
 * If you want to link any already existing resource, you can import it to the Terraform state by running :
 
    ```bash
@@ -154,7 +156,7 @@ You check that everything went well by :
 
 * In the CLI : by listing the nodes of the cluster|pool with the CLI
 
-    ```
+    ```shell
     scw k8s node list cluster-id=<cluster_id> [pool-id=<pool_id>]
     ```
 
@@ -162,7 +164,7 @@ You check that everything went well by :
 * On the server : by connecting via SSH and checking the `log` file located in `/home/ubuntu`. It should display the
 following lines :
 
-```
+```json lines
 [...]
 {"time":"2023-05-24T16:47:38.750041045Z","level":"DEBUG","msg":"writing kubelet config and CA"}
 {"time":"2023-05-24T16:47:38.750272845Z","level":"DEBUG","msg":"writing kubelet env file and systemd service"}

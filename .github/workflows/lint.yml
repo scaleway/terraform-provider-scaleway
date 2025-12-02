@@ -82,3 +82,15 @@ jobs:
         with:
           version: v2.5.0
           args: --timeout 5m
+
+  rumdl:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install rumdl
+        run: uv tool install rumdl
+      - name: Run rumdl
+        run: rumdl check --output-format github templates/**

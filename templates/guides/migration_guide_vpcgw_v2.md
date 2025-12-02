@@ -22,7 +22,6 @@ Ensure you have at least version v2.38.0 of the Scaleway CLI installed. Then run
 scw vpc-gw gateway move-to-ipam 'id-of-the-public-gateway'
 ```
 
-
 ## Prerequisites
 
 ### Ensure the Latest Provider Version

@@ -1,6 +1,7 @@
 ---
 page_title: "Using Backend Guide"
 ---
+
 # Configuring Terraform Backends: PostgreSQL vs Object Storage
 
 ## Configuring a Terraform Backend with PostgreSQL and State Locking
@@ -123,7 +124,6 @@ AND TABLE_NAME = 'states';
     |         |   "outputs": {},                                        +
     |         |   "resources": [                                        +
     |         |     {
-    
     ....
 ```
 
@@ -185,7 +185,7 @@ data "scaleway_rdb_instance" "mybackend" {
 However, this backend does not support state locking, which is critical when multiple users or automated processes might access the same state concurrently.
 Configure your backend as:
 
-```
+```hcl
 terraform {
   backend "s3" {
     bucket                      = "terraform-state"
@@ -229,7 +229,7 @@ Store your credentials in:
 
 Example ~/.aws/credentials file:
 
-```
+```ini
 [default]
 aws_access_key_id = YOUR_SCW_ACCESS_KEY
 aws_secret_access_key = YOUR_SCW_SECRET_KEY
@@ -242,4 +242,3 @@ Both methods are compatible with Terraform’s S3 backend, which also works with
 For full details, see the official [Terraform S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3#access_key)
 
 For example configuration files, refer to the [Object Storage documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/)
-

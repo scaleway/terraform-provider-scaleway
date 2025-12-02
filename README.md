@@ -3,26 +3,25 @@
 - [Provider Documentation Website](https://www.terraform.io/docs/providers/scaleway/index.html)
 - Slack: [Scaleway-community Slack][slack-scaleway] ([#terraform][slack-terraform])
 - [![Go Report Card](https://goreportcard.com/badge/github.com/scaleway/terraform-provider-scaleway/v2)](https://goreportcard.com/report/github.com/scaleway/terraform-provider-scaleway/v2)
-    
 
 [slack-scaleway]: https://slack.scaleway.com/
 [slack-terraform]: https://scaleway-community.slack.com/app_redirect?channel=terraform
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 1.0
--	[Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 1.0
+- [Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
 
 ## Building The Provider
 
 ```sh
-$ git clone git@github.com:scaleway/terraform-provider-scaleway.git
+git clone git@github.com:scaleway/terraform-provider-scaleway.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ make build
+make build
 ```
 
 ## Using the provider
