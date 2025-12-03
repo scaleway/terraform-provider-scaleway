@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 )
 
 var (
@@ -144,6 +145,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	res = append(res, cockpit.NewTriggerTestAlertAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
 	res = append(res, keymanager.NewRotateKeyAction)
+	res = append(res, mongodb.NewInstanceSnapshotAction)
 
 	return res
 }
