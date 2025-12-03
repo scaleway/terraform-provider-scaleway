@@ -22,7 +22,7 @@ func ExpandBoolPtr(data any) *bool {
 }
 
 func GetBool(d *schema.ResourceData, key string) any {
-	val, ok := d.GetOkExists(key)
+	val, ok := d.GetOkExists(key) //nolint:staticcheck
 	if !ok {
 		return nil
 	}
