@@ -108,4 +108,3 @@ To access Grafana, use your Scaleway IAM credentials:
 3. Your access level is determined by your IAM permissions on the project
 
 For more information about IAM authentication, see the [Scaleway IAM documentation](https://www.scaleway.com/en/docs/identity-and-access-management/iam/).
-

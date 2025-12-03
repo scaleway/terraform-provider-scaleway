@@ -2,6 +2,7 @@ package vpcgw_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -116,6 +117,7 @@ func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 						publicGatewayName,
 					),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_port", "61000"),
 				),
 			},
 			{
@@ -131,6 +133,44 @@ func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "false"),
 				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+						bastion_enabled = true
+						bastion_port = 59999
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_port", "59999"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVPCPublicGateway_BastionInvalidPort(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc_public_gateway" "main" {
+						name           = "public-gateway-bastion-invalid"
+						type           = "VPC-GW-S"
+						bastion_enabled = true
+						bastion_port    = 61001
+					}
+				`,
+				ExpectError: regexp.MustCompile(`expected bastion_port to be in the range \(1024 - 59999\) or default 61000, got 61001`),
 			},
 		},
 	})

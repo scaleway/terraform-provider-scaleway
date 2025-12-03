@@ -141,7 +141,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
 		ProjectID: projectID,
-		Origin:    "external",
+		Origin:    "custom",
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)

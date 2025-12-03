@@ -322,7 +322,6 @@ unsetting it to go back to the default value will not have any effect.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

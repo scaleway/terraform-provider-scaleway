@@ -213,4 +213,3 @@ data "scaleway_cockpit_grafana" "main" {
 ## Conclusion
 
 By following this guide, you can successfully transition from the deprecated `scaleway_cockpit` resource to the new set of specialized resources. This ensures compatibility with the latest Terraform provider and Scaleway's updated infrastructure.
-

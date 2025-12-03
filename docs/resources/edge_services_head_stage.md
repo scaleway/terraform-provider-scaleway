@@ -44,5 +44,5 @@ No additional attributes are exported.
 Head stages can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_edge_services_head_stage.main 11111111-1111-1111-1111-111111111111
+terraform import scaleway_edge_services_head_stage.main 11111111-1111-1111-1111-111111111111
 ```

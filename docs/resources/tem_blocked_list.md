@@ -50,4 +50,3 @@ Blocklists can be imported using the `{region}/{id}`, e.g.
 ```bash
 terraform import scaleway_tem_blocked_list.test fr-par/11111111-1111-1111-1111-111111111111
 ```
-

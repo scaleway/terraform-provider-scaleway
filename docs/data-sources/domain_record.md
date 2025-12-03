@@ -9,7 +9,6 @@ The `scaleway_domain_record` data source is used to get information about an exi
 
 Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and [API documentation](https://www.scaleway.com/en/developers/api/domains-and-dns/) for more information.
 
-
 ## Query domain records
 
 The following commands allow you to:

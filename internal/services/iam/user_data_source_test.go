@@ -9,6 +9,7 @@ import (
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
 func TestAccDataSourceUser_Basic(t *testing.T) {
@@ -17,12 +18,13 @@ func TestAccDataSourceUser_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             iamchecks.CheckUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_iam_user" "main" {
-					  email = "foo@scaleway.com"
-					  username = "foo"
+					  email = "testiamuserbasic@scaleway.com"
+					  username = "testiamuserbasic"
 					}
 
 					data "scaleway_iam_user" "by_id" {
@@ -30,8 +32,7 @@ func TestAccDataSourceUser_Basic(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "by_email" {
-					  email = "hashicorp@scaleway.com"
-					  organization_id = "105bdce1-64c0-48ab-899d-868455867ecf"
+					  email = scaleway_iam_user.main.email
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

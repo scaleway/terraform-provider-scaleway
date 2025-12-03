@@ -71,7 +71,6 @@ data "scaleway_audit_trail_event" "find_with_filters" {
 - `recorded_before` - (Optional) The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601).
 - `order_by` - (Optional) Defines the order in which events are returned. Possible values are `recorded_at_asc` and `recorded_at_desc`. Default value: `recorded_at_desc`.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

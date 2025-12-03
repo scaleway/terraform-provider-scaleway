@@ -53,12 +53,14 @@ export TF_TEST_DOMAIN_ZONE=your-zone
 ```
 
 To ease debugging you can also set:
+
 ```sh
 export TF_LOG=DEBUG
 export SCW_DEBUG=1
 ```
 
 Running a single test:
+
 ```sh
 TF_UPDATE_CASSETTES=true TF_LOG=DEBUG SCW_DEBUG=1 TF_ACC=1 go test ./scaleway -v -run=TestAccScalewayDataSourceRDBInstance_Basic -timeout=120m -parallel=10
 ```

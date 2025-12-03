@@ -100,5 +100,5 @@ In addition to all arguments above, the following attributes are exported:
 Pipelines can be imported using the `{id}`, e.g.
 
 ```bash
-$ terraform import scaleway_edge_services_pipeline.basic 11111111-1111-1111-1111-111111111111
+terraform import scaleway_edge_services_pipeline.basic 11111111-1111-1111-1111-111111111111
 ```

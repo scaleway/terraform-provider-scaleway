@@ -14,7 +14,6 @@ When using such product, you can choose the location that better fits your need 
 A Region is represented as a Geographical area such as France (Paris: `fr-par`) or the Netherlands (Amsterdam: `nl-ams`).
 It can contain multiple Availability Zones.
 
-
 ## Zones
 
 In order to deploy highly available application, a region can be divided in many Availability Zones (AZ).
@@ -55,4 +54,4 @@ If you need to retrieve the raw ID of the resource, you can either :
 
 ---
 
-More information regarding zones and regions can be found [here](https://www.scaleway.com/en/developers/api/#regions-and-zones).
+More information regarding zones and regions can be found [on the reference website](https://www.scaleway.com/en/developers/api/#regions-and-zones).

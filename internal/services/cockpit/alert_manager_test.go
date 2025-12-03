@@ -227,12 +227,16 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 
 func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]string) string {
 	contactsConfig := ""
+
+	var contactsConfigSb230 strings.Builder
 	for _, contact := range contactPoints {
-		contactsConfig += fmt.Sprintf(`
+		contactsConfigSb230.WriteString(fmt.Sprintf(`
 		contact_points {
 			email = "%s"
-		}`, contact["email"])
+		}`, contact["email"]))
 	}
+
+	contactsConfig += contactsConfigSb230.String()
 
 	return fmt.Sprintf(`
 		resource "scaleway_account_project" "project" {

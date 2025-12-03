@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -80,6 +81,14 @@ func ResourcePublicGateway() *schema.Resource {
 				Description: "Port of the SSH bastion",
 				Optional:    true,
 				Computed:    true,
+				ValidateFunc: func(val any, key string) ([]string, []error) {
+					v := val.(int)
+					if (v >= 1024 && v <= 59999) || v == 61000 {
+						return nil, nil
+					}
+
+					return nil, []error{fmt.Errorf("expected bastion_port to be in the range (1024 - 59999) or default 61000, got %d", v)}
+				},
 			},
 			"enable_smtp": {
 				Type:        schema.TypeBool,

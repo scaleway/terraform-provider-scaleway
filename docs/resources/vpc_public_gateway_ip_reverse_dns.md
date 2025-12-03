@@ -44,7 +44,6 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Public Gateway IPs' IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-
 ## Import
 
 Public Gateway IP reverse DNS can be imported using `{zone}/{id}`, e.g.
