@@ -9,7 +9,6 @@ The `scaleway_cockpit_alert_manager` resource allows you to enable and manage th
 
 Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/observability/cockpit/concepts/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api) for more information.
 
-
 ## Example Usage
 
 ### Enable the alert manager and configure managed alerts
@@ -40,7 +39,6 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 }
 ```
 
-
 ## Argument Reference
 
 This section lists the arguments that are supported:
@@ -55,7 +53,6 @@ This section lists the arguments that are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `alert_manager_url` - The URL of the alert manager.
-
 
 ## Import
 

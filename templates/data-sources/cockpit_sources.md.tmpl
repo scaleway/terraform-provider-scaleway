@@ -38,9 +38,9 @@ data "scaleway_cockpit_sources" "my_sources" {
 ### Filter sources by origin
 
 ```hcl
-data "scaleway_cockpit_sources" "external" {
+data "scaleway_cockpit_sources" "custom" {
   project_id = "11111111-1111-1111-1111-111111111111"
-  origin     = "external"
+  origin     = "custom"
 }
 ```
 
@@ -61,7 +61,7 @@ The following arguments are supported:
 - `region` - (Optional) The region in which the cockpit sources are located.
 - `name` - (Optional) Filter sources by name.
 - `type` - (Optional) Filter sources by type. Possible values are: `metrics`, `logs`, `traces`.
-- `origin` - (Optional) Filter sources by origin. Possible values are: `scaleway`, `external`, `custom`.
+- `origin` - (Optional) Filter sources by origin. Possible values are: `scaleway`, `custom`.
 
 ## Attributes Reference
 
@@ -83,4 +83,3 @@ Each `sources` block contains:
 - `push_url` - The URL endpoint used for pushing data to the cockpit data source.
 - `region` - The region of the data source.
 - `project_id` - The project ID of the data source.
-

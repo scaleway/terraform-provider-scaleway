@@ -10,7 +10,6 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ## Example Usage
 
-
 ```terraform
 
 resource "scaleway_mongodb_snapshot" "main" {
@@ -19,7 +18,6 @@ resource "scaleway_mongodb_snapshot" "main" {
   expires_at  = "2024-12-31T23:59:59Z"
 }
 ```
-
 
 ## Argument Reference
 

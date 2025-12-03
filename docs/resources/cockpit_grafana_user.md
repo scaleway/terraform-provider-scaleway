@@ -81,7 +81,6 @@ resource "scaleway_cockpit_grafana_user" "main" {
 }
 ```
 
-
 ## Argument Reference
 
 This section lists the arguments that are supported:
@@ -96,7 +95,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `password` - The password of the Grafana user.
 - `grafana_url` - URL for Grafana.
-
 
 ## Import
 

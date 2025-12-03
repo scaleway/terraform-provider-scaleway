@@ -3,7 +3,6 @@
 - [Provider Documentation Website](https://www.terraform.io/docs/providers/scaleway/index.html)
 - Slack: [Scaleway-community Slack][slack-scaleway] ([#terraform][slack-terraform])
 - [![Go Report Card](https://goreportcard.com/badge/github.com/scaleway/terraform-provider-scaleway/v2)](https://goreportcard.com/report/github.com/scaleway/terraform-provider-scaleway/v2)
-    
 
 [slack-scaleway]: https://slack.scaleway.com/
 [slack-terraform]: https://scaleway-community.slack.com/app_redirect?channel=terraform
@@ -16,13 +15,13 @@
 ## Building The Provider
 
 ```sh
-$ git clone git@github.com:scaleway/terraform-provider-scaleway.git
+git clone git@github.com:scaleway/terraform-provider-scaleway.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ make build
+make build
 ```
 
 ## Using the provider
@@ -38,7 +37,7 @@ To compile the provider, run `make build`. This will build the provider and put 
 You have the option to [override](https://www.terraform.io/cli/config/config-file#development-overrides-for-provider-developers) the intended version
 
 ```sh
-$ make build
+make build
 ...
 $ $GOPATH/bin/terraform-provider-scaleway
 ...

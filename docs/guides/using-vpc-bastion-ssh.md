@@ -130,7 +130,7 @@ resource scaleway_vpc_gateway_network "gn" {
 
 You should add your config on your local config file e.g: `~/.ssh/config`
 
-```
+```text
 Host *.myprivatenetwork
 ProxyJump bastion@<your-public-ip>:<bastion_port>
 ```
