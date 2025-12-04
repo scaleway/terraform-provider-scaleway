@@ -19,6 +19,7 @@ var (
 
 type TriggerTestAlertAction struct {
 	regionalAPI *cockpit.RegionalAPI
+	meta        *meta.Meta
 }
 
 func (a *TriggerTestAlertAction) Configure(ctx context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -38,6 +39,7 @@ func (a *TriggerTestAlertAction) Configure(ctx context.Context, req action.Confi
 
 	client := m.ScwClient()
 	a.regionalAPI = cockpit.NewRegionalAPI(client)
+	a.meta = m
 }
 
 func (a *TriggerTestAlertAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
@@ -61,8 +63,8 @@ func (a *TriggerTestAlertAction) Schema(ctx context.Context, req action.SchemaRe
 				Description: "ID of the Project",
 			},
 			"region": schema.StringAttribute{
-				Required:    true,
-				Description: "Region to target",
+				Optional:    true,
+				Description: "Region to target. If not provided, will use the default region from the provider configuration",
 			},
 		},
 	}
@@ -96,18 +98,27 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 		return
 	}
 
-	if data.Region.IsNull() || data.Region.ValueString() == "" {
-		resp.Diagnostics.AddError(
-			"Missing region",
-			"The region attribute is required to trigger a test alert.",
-		)
+	var region scw.Region
+	if !data.Region.IsNull() && data.Region.ValueString() != "" {
+		region = scw.Region(data.Region.ValueString())
+	} else {
+		// Use default region from provider configuration
+		defaultRegion, exists := a.meta.ScwClient().GetDefaultRegion()
+		if !exists {
+			resp.Diagnostics.AddError(
+				"Missing region",
+				"The region attribute is required to trigger a test alert. Please provide it explicitly or configure a default region in the provider.",
+			)
 
-		return
+			return
+		}
+
+		region = defaultRegion
 	}
 
 	err := a.regionalAPI.TriggerTestAlert(&cockpit.RegionalAPITriggerTestAlertRequest{
 		ProjectID: data.ProjectID.ValueString(),
-		Region:    scw.Region(data.Region.ValueString()),
+		Region:    region,
 	}, scw.WithContext(ctx))
 
 	if err != nil {
@@ -119,4 +130,3 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 		return
 	}
 }
-
