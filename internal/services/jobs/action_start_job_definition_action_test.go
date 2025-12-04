@@ -13,9 +13,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 )
 
-func isJobRunCreated(tt *acctest.TestTools, jobDefinitionID string) resource.TestCheckFunc {
+func isJobRunCreated(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		api, region, id, err := jobs.NewAPIWithRegionAndID(tt.Meta, jobDefinitionID)
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		api, region, id, err := jobs.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -29,7 +34,7 @@ func isJobRunCreated(tt *acctest.TestTools, jobDefinitionID string) resource.Tes
 		}
 
 		if len(jobRuns.JobRuns) == 0 {
-			return fmt.Errorf("no job runs found for job definition %s", jobDefinitionID)
+			return fmt.Errorf("no job runs found for job definition %s", rs.Primary.ID)
 		}
 
 		// Check that at least one job run exists and is in a valid state
@@ -39,7 +44,7 @@ func isJobRunCreated(tt *acctest.TestTools, jobDefinitionID string) resource.Tes
 			}
 		}
 
-		return fmt.Errorf("no job run found for job definition %s", jobDefinitionID)
+		return fmt.Errorf("no job run found for job definition %s", rs.Primary.ID)
 	}
 }
 
@@ -78,7 +83,7 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isJobRunCreated(tt, "scaleway_job_definition.main.id"),
+					isJobRunCreated(tt, "scaleway_job_definition.main"),
 				),
 			},
 		},
