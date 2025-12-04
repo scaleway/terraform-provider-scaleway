@@ -58,7 +58,6 @@ func ResourceRunner() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
-				Optional:    true,
 				Computed:    true,
 				Description: "A list of labels that should be applied to the runner.",
 			},
@@ -66,6 +65,11 @@ func ResourceRunner() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The status of the runner",
+			},
+			"error_message": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The error message of the runner",
 			},
 			"zone":       zonal.Schema(),
 			"project_id": account.ProjectIDSchema(),
@@ -92,7 +96,7 @@ func ResourceAppleSiliconRunnerCreate(ctx context.Context, d *schema.ResourceDat
 		runnerConfig.GithubConfiguration = &applesilicon.GithubRunnerConfiguration{
 			URL:    d.Get("url").(string),
 			Token:  d.Get("token").(string),
-			Labels: types.ExpandStrings(d.Get("labels")),
+			Labels: nil,
 		}
 	}
 
@@ -138,15 +142,18 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", runner.ID)
 	_ = d.Set("name", runner.Configuration.Name)
 	_ = d.Set("ci_provider", runner.Configuration.Provider)
 	_ = d.Set("status", runner.Status)
+	_ = d.Set("error_message", runner.ErrorMessage)
 
 	if runner.Configuration.Provider == "github" {
-		_ = d.Set("token", runner.Configuration.GithubConfiguration.Token)
 		_ = d.Set("url", runner.Configuration.GithubConfiguration.URL)
 		_ = d.Set("labels", runner.Configuration.GithubConfiguration.Labels)
+	}
+
+	if runner.Configuration.Provider == "gitlab" {
+		_ = d.Set("url", runner.Configuration.GitlabConfiguration.URL)
 	}
 
 	return nil
@@ -206,7 +213,7 @@ func ResourceAppleSiliconRunnerDelete(ctx context.Context, d *schema.ResourceDat
 		RunnerID: ID,
 	}
 	err = asAPI.DeleteRunner(runnerDeleteReq, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
+	if err != nil && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
 	return nil

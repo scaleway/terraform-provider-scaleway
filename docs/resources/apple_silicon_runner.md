@@ -15,7 +15,6 @@ resource "scaleway_apple_silicon_runner" "main" {
     ci_provider   = "github"
     url        = "https://github.com/my-org/my-repo"
     token      = "my-token"
-    labels     = ["updated"]
 }
 ```
 
@@ -24,7 +23,6 @@ resource "scaleway_apple_silicon_runner" "main" {
 - `ci_provider` - (Required) The CI/CD provider for the runner. Must be either 'github' or 'gitlab'
 - `token` -  (Required) The token used to authenticate the runner to run
 - `url` - (Required) The URL of the runner to run
-- `labels` - (Optional) A list of labels that should be applied to the runner. Only for github provider
 - `name` - (Optional) The name of the runner
 - `project_id` - (Optional) The project_id you want to attach the resource to
 - `zone` -  (Optional) The zone of the runner
@@ -33,6 +31,8 @@ resource "scaleway_apple_silicon_runner" "main" {
 
 - `id` - The ID of the runner.
 - `status` - The status of the runner
+- `labels` - A list of labels applied to the runner. Only for github provider
+- `error_message` - The error message if the runner is in error state
 
 ## Import
 
