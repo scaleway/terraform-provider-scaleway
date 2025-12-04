@@ -1,9 +1,12 @@
 package mongodb_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
@@ -45,6 +48,61 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 						}
 					}
 				`,
+			},
+			{
+				Config: `
+					resource "scaleway_mongodb_instance" "main" {
+						name        = "test-mongodb-action-snapshot"
+						version     = "7.0.12"
+						node_type   = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name   = "my_initial_user"
+						password    = "thiZ_is_v&ry_s3cret"
+
+						lifecycle {
+							action_trigger {
+								events  = [after_create]
+								actions = [action.scaleway_mongodb_instance_snapshot_action.main]
+							}
+						}
+					}
+
+					action "scaleway_mongodb_instance_snapshot_action" "main" {
+						config {
+							instance_id = scaleway_mongodb_instance.main.id
+							name        = "tf-acc-mongodb-instance-snapshot-action"
+							expires_at  = "2026-11-01T00:00:00Z"
+							wait        = true
+						}
+					}
+
+					data "scaleway_audit_trail_event" "mongodb" {
+						resource_type = "mongodb_instance"
+						resource_id   = scaleway_mongodb_instance.main.id
+						method_name    = "CreateSnapshot"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.mongodb", "events.#"),
+					func(state *terraform.State) error {
+						rs, ok := state.RootModule().Resources["data.scaleway_audit_trail_event.mongodb"]
+						if !ok {
+							return errors.New("not found: data.scaleway_audit_trail_event.mongodb")
+						}
+
+						for key, value := range rs.Primary.Attributes {
+							if !strings.Contains(key, "request_body") {
+								continue
+							}
+
+							if strings.Contains(value, "tf-acc-mongodb-instance-snapshot-action") {
+								return nil
+							}
+						}
+
+						return errors.New("did not find the CreateSnapshot event")
+					},
+				),
 			},
 		},
 	})
