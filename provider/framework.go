@@ -140,8 +140,6 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 	res = append(res, instance.NewServerAction)
 	res = append(res, cockpit.NewTriggerTestAlertAction)
-	res = append(res, cockpit.NewResetGrafanaUserPasswordAction)
-	res = append(res, cockpit.NewSyncGrafanaDataSourcesAction)
 
 	return res
 }

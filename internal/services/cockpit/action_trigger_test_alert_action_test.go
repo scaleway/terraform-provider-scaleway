@@ -29,6 +29,13 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 
 					resource "scaleway_cockpit_alert_manager" "main" {
 						project_id = scaleway_account_project.project.id
+					}
+
+					resource "scaleway_cockpit_source" "metrics" {
+						project_id     = scaleway_account_project.project.id
+						name           = "test-metrics-source"
+						type           = "metrics"
+						retention_days = 31
 
 						lifecycle {
 							action_trigger {
@@ -36,12 +43,13 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 								actions = [action.scaleway_cockpit_trigger_test_alert_action.main]
 							}
 						}
+
+						depends_on = [scaleway_cockpit_alert_manager.main]
 					}
 
 					action "scaleway_cockpit_trigger_test_alert_action" "main" {
 						config {
 							project_id = scaleway_account_project.project.id
-							region     = scaleway_cockpit_alert_manager.main.region
 						}
 					}
 				`,
@@ -54,6 +62,13 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 
 					resource "scaleway_cockpit_alert_manager" "main" {
 						project_id = scaleway_account_project.project.id
+					}
+
+					resource "scaleway_cockpit_source" "metrics" {
+						project_id     = scaleway_account_project.project.id
+						name           = "test-metrics-source"
+						type           = "metrics"
+						retention_days = 31
 
 						lifecycle {
 							action_trigger {
@@ -61,12 +76,13 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 								actions = [action.scaleway_cockpit_trigger_test_alert_action.main]
 							}
 						}
+
+						depends_on = [scaleway_cockpit_alert_manager.main]
 					}
 
 					action "scaleway_cockpit_trigger_test_alert_action" "main" {
 						config {
 							project_id = scaleway_account_project.project.id
-							region     = scaleway_cockpit_alert_manager.main.region
 						}
 					}
 
@@ -100,4 +116,3 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 		},
 	})
 }
-
