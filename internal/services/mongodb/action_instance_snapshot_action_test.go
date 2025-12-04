@@ -1,13 +1,16 @@
 package mongodb_test
 
 import (
-	"errors"
-	"strings"
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	mongodbSDK "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
@@ -75,35 +78,44 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 							wait        = true
 						}
 					}
-
-					data "scaleway_audit_trail_event" "mongodb" {
-						resource_type = "mongodb_instance"
-						resource_id   = scaleway_mongodb_instance.main.id
-						method_name    = "CreateSnapshot"
-					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.mongodb", "events.#"),
-					func(state *terraform.State) error {
-						rs, ok := state.RootModule().Resources["data.scaleway_audit_trail_event.mongodb"]
-						if !ok {
-							return errors.New("not found: data.scaleway_audit_trail_event.mongodb")
-						}
-
-						for key, value := range rs.Primary.Attributes {
-							if !strings.Contains(key, "request_body") {
-								continue
-							}
-
-							if strings.Contains(value, "tf-acc-mongodb-instance-snapshot-action") {
-								return nil
-							}
-						}
-
-						return errors.New("did not find the CreateSnapshot event")
-					},
+					isSnapshotCreated(tt, "scaleway_mongodb_instance.main", "tf-acc-mongodb-instance-snapshot-action"),
 				),
 			},
 		},
 	})
+}
+
+func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[instanceResourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", instanceResourceName)
+		}
+
+		instanceID := rs.Primary.ID
+		region, id, err := regional.ParseID(instanceID)
+		if err != nil {
+			return fmt.Errorf("failed to parse instance ID: %w", err)
+		}
+
+		api := mongodbSDK.NewAPI(tt.Meta.ScwClient())
+
+		snapshots, err := api.ListSnapshots(&mongodbSDK.ListSnapshotsRequest{
+			Region:     region,
+			InstanceID: &id,
+		}, scw.WithAllPages(), scw.WithContext(context.Background()))
+		if err != nil {
+			return fmt.Errorf("failed to list snapshots: %w", err)
+		}
+
+		for _, snapshot := range snapshots.Snapshots {
+			if snapshot.Name == snapshotName {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("snapshot with name %q not found for instance %s", snapshotName, instanceID)
+	}
 }
