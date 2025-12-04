@@ -81,8 +81,8 @@ func (a *InstanceSnapshotAction) Schema(_ context.Context, _ action.SchemaReques
 				Description: "Name of the snapshot. If not set, a name will be generated.",
 			},
 			"expires_at": schema.StringAttribute{
-				Required:    true,
-				Description: "Expiration date of the snapshot in RFC3339 format (ISO 8601).",
+				Optional:    true,
+				Description: "Expiration date of the snapshot in RFC3339 format (ISO 8601). If not set, the snapshot will not expire.",
 			},
 			"wait": schema.BoolAttribute{
 				Optional:    true,
@@ -142,22 +142,27 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 		snapshotName = "tf-mongodb-snapshot"
 	}
 
-	expirationRaw := data.ExpiresAt.ValueString()
+	var expirationTime *time.Time
+	if !data.ExpiresAt.IsNull() && data.ExpiresAt.ValueString() != "" {
+		expirationRaw := data.ExpiresAt.ValueString()
 
-	expirationTime, err := time.Parse(time.RFC3339, expirationRaw)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Invalid expires_at value",
-			fmt.Sprintf("The expires_at attribute must be a valid RFC3339 timestamp. Got %q: %s", expirationRaw, err),
-		)
+		parsedTime, err := time.Parse(time.RFC3339, expirationRaw)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Invalid expires_at value",
+				fmt.Sprintf("The expires_at attribute must be a valid RFC3339 timestamp. Got %q: %s", expirationRaw, err),
+			)
 
-		return
+			return
+		}
+
+		expirationTime = &parsedTime
 	}
 
 	createReq := &mongodb.CreateSnapshotRequest{
 		InstanceID: instanceID,
 		Name:       snapshotName,
-		ExpiresAt:  &expirationTime,
+		ExpiresAt:  expirationTime,
 	}
 
 	if region != "" {
