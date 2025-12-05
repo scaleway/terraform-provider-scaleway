@@ -76,7 +76,6 @@ func testAccCheckVPNGatewayExists(tt *acctest.TestTools, n string) resource.Test
 			GatewayID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -101,7 +100,6 @@ func testAccCheckVPNGatewayDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				GatewayID: id,
 				Region:    region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("VPN gateway (%s) still exists", rs.Primary.ID)
 			}

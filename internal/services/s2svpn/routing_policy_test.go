@@ -60,7 +60,6 @@ func testAccCheckRoutingPolicyExists(tt *acctest.TestTools, n string) resource.T
 			RoutingPolicyID: id,
 			Region:          region,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -85,7 +84,6 @@ func testAccCheckRoutingPolicyDestroy(tt *acctest.TestTools) resource.TestCheckF
 				RoutingPolicyID: id,
 				Region:          region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("routing policy (%s) still exists", rs.Primary.ID)
 			}

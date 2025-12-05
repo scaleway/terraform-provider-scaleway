@@ -60,7 +60,6 @@ func testAccCheckCustomerGatewayExists(tt *acctest.TestTools, n string) resource
 			GatewayID: id,
 			Region:    region,
 		})
-
 		if err != nil {
 			return err
 		}
@@ -85,7 +84,6 @@ func testAccCheckCustomerGatewayDestroy(tt *acctest.TestTools) resource.TestChec
 				GatewayID: id,
 				Region:    region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("customer gateway (%s) still exists", rs.Primary.ID)
 			}

@@ -9,7 +9,7 @@ import (
 )
 
 // NewAPIWithRegion returns a new s2svpn API and the region for a Create request
-func NewAPIWithRegion(d *schema.ResourceData, m interface{}) (*s2svpn.API, scw.Region, error) {
+func NewAPIWithRegion(d *schema.ResourceData, m any) (*s2svpn.API, scw.Region, error) {
 	s2svpnAPI := s2svpn.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
@@ -21,7 +21,7 @@ func NewAPIWithRegion(d *schema.ResourceData, m interface{}) (*s2svpn.API, scw.R
 }
 
 // NewAPIWithRegionAndID returns a new s2svpn API with region and ID extracted from the state
-func NewAPIWithRegionAndID(m interface{}, regionalID string) (*s2svpn.API, scw.Region, string, error) {
+func NewAPIWithRegionAndID(m any, regionalID string) (*s2svpn.API, scw.Region, string, error) {
 	s2svpnAPI := s2svpn.NewAPI(meta.ExtractScwClient(m))
 
 	region, ID, err := regional.ParseID(regionalID)

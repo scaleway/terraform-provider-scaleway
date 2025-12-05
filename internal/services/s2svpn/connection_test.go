@@ -1,6 +1,7 @@
 package s2svpn_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -128,13 +129,12 @@ func testAccCheckConnectionExists(tt *acctest.TestTools, n string) resource.Test
 			ConnectionID: id,
 			Region:       region,
 		})
-
 		if err != nil {
 			return err
 		}
 
 		if connection.Status.String() == "error" {
-			return fmt.Errorf("connection is in error state")
+			return errors.New("connection is in error state")
 		}
 
 		return nil
@@ -157,7 +157,6 @@ func testAccCheckConnectionDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				ConnectionID: id,
 				Region:       region,
 			})
-
 			if err == nil {
 				return fmt.Errorf("s2svpn connection (%s) still exists", rs.Primary.ID)
 			}

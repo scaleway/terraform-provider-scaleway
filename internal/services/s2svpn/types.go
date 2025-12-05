@@ -129,6 +129,7 @@ func flattenBGPSession(region scw.Region, session *s2s_vpn.BgpSession) (any, err
 	if err != nil {
 		return nil, err
 	}
+
 	return []map[string]any{
 		{
 			"routing_policy_id": regional.NewIDString(region, session.RoutingPolicyID),
@@ -154,7 +155,7 @@ func FlattenPrefixFilters(prefixes []scw.IPNet) ([]string, error) {
 }
 
 func flattenConnectionCiphers(ciphers []*s2s_vpn.ConnectionCipher) []any {
-	if ciphers == nil || len(ciphers) == 0 {
+	if len(ciphers) == 0 {
 		return nil
 	}
 
@@ -167,9 +168,11 @@ func flattenConnectionCiphers(ciphers []*s2s_vpn.ConnectionCipher) []any {
 		if c.Integrity != nil {
 			m["integrity"] = c.Integrity.String()
 		}
+
 		if c.DhGroup != nil {
 			m["dh_group"] = c.DhGroup.String()
 		}
+
 		res = append(res, m)
 	}
 

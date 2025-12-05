@@ -225,7 +225,7 @@ func ResourceConnectionBgpSession() *schema.Resource {
 	}
 }
 
-func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -273,7 +273,7 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceConnectionRead(ctx, d, m)
 }
 
-func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -286,8 +286,10 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -316,18 +318,20 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("bgp_session_ipv4", bgpSessionIPv4)
 
 	bgpSessionIPv6, err := flattenBGPSession(region, connection.BgpSessionIPv6)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("bgp_session_ipv6", bgpSessionIPv6)
 
 	return nil
 }
 
-func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -375,7 +379,7 @@ func ResourceConnectionUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceConnectionRead(ctx, d, m)
 }
 
-func ResourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceConnectionDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

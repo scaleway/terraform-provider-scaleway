@@ -2,7 +2,6 @@ package s2svpn
 
 import (
 	"context"
-
 	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -27,7 +26,8 @@ func ResourceVPNGateway() *schema.Resource {
 			Read:    schema.DefaultTimeout(defaulVPNGatewayTimeout),
 			Update:  schema.DefaultTimeout(defaulVPNGatewayTimeout),
 			Delete:  schema.DefaultTimeout(defaulVPNGatewayTimeout),
-			Default: schema.DefaultTimeout(defaulVPNGatewayTimeout)},
+			Default: schema.DefaultTimeout(defaulVPNGatewayTimeout),
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -69,7 +69,8 @@ func ResourceVPNGateway() *schema.Resource {
 							Optional: true,
 						},
 					},
-				}},
+				},
+			},
 			"private_network_id": {
 				Type:        schema.TypeString,
 				Required:    true,
@@ -119,7 +120,7 @@ func ResourceVPNGateway() *schema.Resource {
 	}
 }
 
-func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,7 +156,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceVPNGatewayRead(ctx, d, m)
 }
 
-func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -191,7 +192,7 @@ func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func ResourceVPNGatewayUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPNGatewayUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -229,7 +230,7 @@ func ResourceVPNGatewayUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return ResourceVPNGatewayRead(ctx, d, m)
 }
 
-func ResourceVPNGatewayDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceVPNGatewayDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)

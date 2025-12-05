@@ -2,13 +2,12 @@ package s2svpn
 
 import (
 	"context"
-
 	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
+	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -86,7 +85,7 @@ func ResourceRoutingPolicy() *schema.Resource {
 	}
 }
 
-func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := NewAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -122,7 +121,7 @@ func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceRoutingPolicyRead(ctx, d, m)
 }
 
-func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,8 +134,10 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m in
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -164,7 +165,7 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -199,7 +200,7 @@ func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	return ResourceRoutingPolicyRead(ctx, d, m)
 }
 
-func ResourceRoutingPolicyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func ResourceRoutingPolicyDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
