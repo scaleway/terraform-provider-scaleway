@@ -137,7 +137,7 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("updated_at", types.FlattenTime(gateway.UpdatedAt))
 	_ = d.Set("ipv4_public", types.FlattenIPPtr(gateway.PublicIPv4))
 	_ = d.Set("ipv6_public", types.FlattenIPPtr(gateway.PublicIPv6))
-	_ = d.Set("asn", gateway.Asn)
+	_ = d.Set("asn", int(gateway.Asn))
 
 	return nil
 }
