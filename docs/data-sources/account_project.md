@@ -9,7 +9,6 @@ The `scaleway_account_project` data source is used to retrieve information about
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
-
 ## Retrieve a Scaleway Project
 
 The following commands allow you to:

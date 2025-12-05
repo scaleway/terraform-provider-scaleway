@@ -57,10 +57,10 @@ In order to unify configuration management across all scaleway developer tools, 
 Below you find an overview of changes in the provider config:
 
 | Old provider attribute | New provider attribute |
-| --------------------- | ----------------------- |
-| `access_key`          | `access_key`            |
-| `token`               | `secret_key`            |
-| `organization`        | `project_id`            |
+|------------------------|------------------------|
+| `access_key`           | `access_key`           |
+| `token`                | `secret_key`           |
+| `organization`         | `project_id`           |
 
 ~> **Important:** `access_key` should now only be used for your access key (e.g. `SCWZFD9BPQ4TZ14SM1YS`).
 Your secret key (previously known as _token_) must be set in `secret_key` (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
@@ -69,7 +69,7 @@ You can use the value of your `organization_id` as your default `project_id` if 
 Below you find an overview of the changes in environment variables:
 
 | Old env variable        | New env variable                            |
-| ----------------------- | ------------------------------------------- |
+|-------------------------|---------------------------------------------|
 | `SCALEWAY_ACCESS_KEY`   | `SCW_ACCESS_KEY`                            |
 | `SCALEWAY_TOKEN`        | `SCW_SECRET_KEY`                            |
 | `SCALEWAY_ORGANIZATION` | `SCW_DEFAULT_PROJECT_ID`                    |

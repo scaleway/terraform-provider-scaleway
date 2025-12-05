@@ -123,4 +123,3 @@ terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-55
 - **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
 - **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
 - **Algorithm Validation**: The provider validates that the specified `algorithm` is compatible with the `usage` type at plan time, providing early feedback on configuration errors.
-

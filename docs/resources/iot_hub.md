@@ -38,7 +38,6 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IoT Hub Instance is associated with.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -55,7 +54,6 @@ In addition to all arguments above, the following attributes are exported:
 - `connected_device_count` - The current number of connected devices in the Hub.
 - `mqtt_ca_url` - The MQTT ca url
 - `mqtt_ca` - The MQTT certificate content
-
 
 ## Import
 
