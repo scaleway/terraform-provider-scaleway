@@ -367,6 +367,7 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 
 		// Stop all running or queued job runs
 		var jobRunIDsToWait []string
+
 		for _, jobRun := range jobRuns.JobRuns {
 			if jobRun.State == jobs.JobRunStateQueued || jobRun.State == jobs.JobRunStateRunning {
 				_, stopErr := api.StopJobRun(&jobs.StopJobRunRequest{
@@ -376,6 +377,7 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 				if stopErr != nil && !httperrors.Is404(stopErr) {
 					return diag.FromErr(fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, stopErr))
 				}
+
 				jobRunIDsToWait = append(jobRunIDsToWait, jobRun.ID)
 			}
 		}

@@ -164,6 +164,7 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	if !data.EnvironmentVariables.IsNull() {
 		envVars := make(map[string]string)
 		resp.Diagnostics.Append(data.EnvironmentVariables.ElementsAs(ctx, &envVars, false)...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -179,7 +180,6 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	}
 
 	_, err = a.jobsAPI.StartJobDefinition(startReq, scw.WithContext(ctx))
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error executing Jobs StartJobDefinition action",

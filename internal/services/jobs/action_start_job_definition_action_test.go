@@ -72,6 +72,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 
 			// Stop all running or queued job runs and collect their IDs
 			var jobRunIDsToWait []string
+
 			for _, jobRun := range jobRuns.JobRuns {
 				if jobRun.State == jobsSDK.JobRunStateQueued || jobRun.State == jobsSDK.JobRunStateRunning {
 					_, err := api.StopJobRun(&jobsSDK.StopJobRunRequest{
@@ -81,6 +82,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 					if err != nil && !httperrors.Is404(err) {
 						return fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, err)
 					}
+
 					jobRunIDsToWait = append(jobRunIDsToWait, jobRun.ID)
 				}
 			}
@@ -167,6 +169,7 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	var jobDefinitionID string
+
 	defer func() {
 		if jobDefinitionID != "" {
 			cleanupJobRuns(tt, jobDefinitionID)
@@ -207,6 +210,7 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 						if ok {
 							jobDefinitionID = rs.Primary.ID
 						}
+
 						return nil
 					},
 				),
