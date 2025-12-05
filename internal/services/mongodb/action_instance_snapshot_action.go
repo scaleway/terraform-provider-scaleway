@@ -143,6 +143,7 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 	}
 
 	var expirationTime *time.Time
+
 	if !data.ExpiresAt.IsNull() && data.ExpiresAt.ValueString() != "" {
 		expirationRaw := data.ExpiresAt.ValueString()
 
