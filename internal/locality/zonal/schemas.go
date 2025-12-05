@@ -42,7 +42,7 @@ func OptionalSchema() *schema.Schema {
 		Type:             schema.TypeString,
 		Optional:         true,
 		Computed:         true,
-		Description:      "IThe zone you want to attach the resource to",
+		Description:      "The zone you want to attach the resource to",
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllZones(), "zone"),
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
