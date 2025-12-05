@@ -127,6 +127,7 @@ func ResourceDefinition() *schema.Resource {
 						"secret_reference_id": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Optional:    true,
 							Description: "The secret reference UUID",
 						},
 						"secret_version": {
@@ -151,6 +152,8 @@ func ResourceDefinition() *schema.Resource {
 				},
 			},
 		},
+		EnableLegacyTypeSystemPlanErrors:  true,
+		EnableLegacyTypeSystemApplyErrors: true,
 	}
 }
 
@@ -235,14 +238,22 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("cpu_limit", int(definition.CPULimit))
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
 	_ = d.Set("image_uri", definition.ImageURI)
-	_ = d.Set("command", definition.Command)
-	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
-	_ = d.Set("description", definition.Description)
+	if _, ok := d.GetOk("command"); ok {
+		d.Set("command", definition.Command)
+	}
+	if _, ok := d.GetOk("env"); ok {
+		_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
+	}
+	if _, ok := d.GetOk("description"); ok {
+		_ = d.Set("description", definition.Description)
+	}
 	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
-	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
+	if _, ok := d.GetOk("secret_reference"); ok {
+		_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
+	}
 
 	return nil
 }
