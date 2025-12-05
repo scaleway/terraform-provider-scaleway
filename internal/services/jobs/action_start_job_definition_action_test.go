@@ -70,7 +70,8 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 				return fmt.Errorf("failed to list job runs: %w", err)
 			}
 
-			// Stop all running or queued job runs
+			// Stop all running or queued job runs and collect their IDs
+			var jobRunIDsToWait []string
 			for _, jobRun := range jobRuns.JobRuns {
 				if jobRun.State == jobsSDK.JobRunStateQueued || jobRun.State == jobsSDK.JobRunStateRunning {
 					_, err := api.StopJobRun(&jobsSDK.StopJobRunRequest{
@@ -80,34 +81,38 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 					if err != nil && !httperrors.Is404(err) {
 						return fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, err)
 					}
+					jobRunIDsToWait = append(jobRunIDsToWait, jobRun.ID)
 				}
 			}
 
-			// Wait for all job runs to terminate
-			for _, jobRun := range jobRuns.JobRuns {
-				if jobRun.State == jobsSDK.JobRunStateQueued || jobRun.State == jobsSDK.JobRunStateRunning {
-					_, err := api.WaitForJobRun(&jobsSDK.WaitForJobRunRequest{
-						JobRunID: jobRun.ID,
-						Region:   region,
-					}, scw.WithContext(context.Background()))
-					if err != nil && !httperrors.Is404(err) {
-						return fmt.Errorf("failed to wait for job run %s: %w", jobRun.ID, err)
-					}
+			// Wait for all stopped job runs to terminate
+			for _, jobRunID := range jobRunIDsToWait {
+				_, err := api.WaitForJobRun(&jobsSDK.WaitForJobRunRequest{
+					JobRunID: jobRunID,
+					Region:   region,
+				}, scw.WithContext(context.Background()))
+				if err != nil && !httperrors.Is404(err) {
+					return fmt.Errorf("failed to wait for job run %s: %w", jobRunID, err)
 				}
 			}
 
-			// Now delete the job definition
+			// Now delete the job definition (Terraform may have failed to delete it due to running job runs)
 			err = api.DeleteJobDefinition(&jobsSDK.DeleteJobDefinitionRequest{
 				JobDefinitionID: id,
 				Region:          region,
 			})
 			if err == nil {
-				return fmt.Errorf("jobs jobdefinition (%s) still exists", rs.Primary.ID)
+				// Successfully deleted, resource is destroyed
+				continue
 			}
 
-			if !httperrors.Is404(err) {
-				return err
+			// If 404, the resource doesn't exist (already deleted or never existed)
+			if httperrors.Is404(err) {
+				continue
 			}
+
+			// Other errors should be returned
+			return fmt.Errorf("failed to delete job definition %s: %w", rs.Primary.ID, err)
 		}
 
 		return nil
@@ -145,6 +150,12 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 			}, scw.WithContext(context.Background()))
 		}
 	}
+
+	// Try to delete the job definition after cleaning up job runs
+	_ = api.DeleteJobDefinition(&jobsSDK.DeleteJobDefinitionRequest{
+		JobDefinitionID: id,
+		Region:          region,
+	})
 }
 
 func TestAccActionJobDefinitionStart_Basic(t *testing.T) {

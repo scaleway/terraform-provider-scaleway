@@ -52,10 +52,10 @@ func (a *StartJobDefinitionAction) Metadata(ctx context.Context, req action.Meta
 
 type StartJobDefinitionActionModel struct {
 	JobDefinitionID      types.String `tfsdk:"job_definition_id"`
-	Region                types.String `tfsdk:"region"`
-	Command               types.String `tfsdk:"command"`
-	EnvironmentVariables  types.Map    `tfsdk:"environment_variables"`
-	Replicas              types.Int64  `tfsdk:"replicas"`
+	Region               types.String `tfsdk:"region"`
+	Command              types.String `tfsdk:"command"`
+	EnvironmentVariables types.Map    `tfsdk:"environment_variables"`
+	Replicas             types.Int64  `tfsdk:"replicas"`
 }
 
 func NewStartJobDefinitionAction() action.Action {
@@ -189,4 +189,3 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 		return
 	}
 }
-
