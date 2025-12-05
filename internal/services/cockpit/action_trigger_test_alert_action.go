@@ -120,7 +120,6 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 		ProjectID: data.ProjectID.ValueString(),
 		Region:    region,
 	}, scw.WithContext(ctx))
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error executing Cockpit TriggerTestAlert action",
