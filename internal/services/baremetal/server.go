@@ -297,6 +297,13 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 					},
 				},
 			},
+			"cloud_init": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Computed:     true,
+				Description:  "Configuration data to pass to cloud-init such as a YAML cloud config data or a user-data script",
+				ValidateFunc: validation.StringLenBetween(0, 127998),
+			},
 		},
 		CustomizeDiff: customdiff.Sequence(
 			customDiffOffer(),
@@ -365,6 +372,11 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		OfferID:     offerID.ID,
 		Tags:        types.ExpandStrings(d.Get("tags")),
 		Protected:   d.Get("protected").(bool),
+	}
+
+	if cloudInit, ok := d.GetOk("cloud_init"); ok {
+		cloudInitStr := []byte(cloudInit.(string))
+		req.UserData = &cloudInitStr
 	}
 
 	partitioningSchema := baremetal.Schema{}
@@ -514,6 +526,13 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("ipv4", flattenIPv4s(server.IPs))
 	_ = d.Set("ipv6", flattenIPv6s(server.IPs))
 	_ = d.Set("protected", server.Protected)
+
+	var cloudInit string
+	if server.UserData != nil {
+		cloudInit = string(*server.UserData)
+	}
+
+	_ = d.Set("cloud_init", cloudInit)
 
 	if server.Install != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
@@ -695,6 +714,13 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	hasChanged := false
+
+	if d.HasChange("cloud_init") {
+		cloudInit, _ := d.Get("cloud_init").(string)
+		cloudInitStr := []byte(cloudInit)
+		req.UserData = &cloudInitStr
+		hasChanged = true
+	}
 
 	if d.HasChange("name") {
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))

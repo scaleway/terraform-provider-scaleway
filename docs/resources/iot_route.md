@@ -149,7 +149,6 @@ In addition to all arguments above, the following attributes are exported:
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Route is attached to.
 - `created_at` - The date and time the Route was created.
 
-
 ## Import
 
 IoT Routes can be imported using the `{region}/{id}`, e.g.
@@ -157,4 +156,3 @@ IoT Routes can be imported using the `{region}/{id}`, e.g.
 ```bash
 terraform import scaleway_iot_route.route01 fr-par/11111111-1111-1111-1111-111111111111
 ```
-

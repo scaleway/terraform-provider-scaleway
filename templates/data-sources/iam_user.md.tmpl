@@ -37,4 +37,3 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the IAM user.
 - `tags` - The tags associated with the user.
-

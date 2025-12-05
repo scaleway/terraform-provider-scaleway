@@ -4,32 +4,32 @@ go 1.25.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
-	github.com/aws/aws-sdk-go-v2 v1.39.5
-	github.com/aws/aws-sdk-go-v2/config v1.31.12
+	github.com/aws/aws-sdk-go-v2 v1.40.1
+	github.com/aws/aws-sdk-go-v2/config v1.31.13
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.20
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.88.3
-	github.com/aws/aws-sdk-go-v2/service/sns v1.39.2
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.88.5
+	github.com/aws/aws-sdk-go-v2/service/sns v1.39.8
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.12
-	github.com/aws/smithy-go v1.23.1
+	github.com/aws/smithy-go v1.24.0
 	github.com/docker/docker v28.4.0+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.7.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
-	github.com/hashicorp/aws-sdk-go-base/v2 v2.0.0-beta.67
+	github.com/hashicorp/aws-sdk-go-base/v2 v2.0.0-beta.68
 	github.com/hashicorp/awspolicyequivalence v1.7.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/hashicorp/terraform-plugin-framework v1.16.0
-	github.com/hashicorp/terraform-plugin-framework-validators v0.18.1-0.20250909114857-8e55d8ccabdb
+	github.com/hashicorp/terraform-plugin-framework v1.17.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.29.0
-	github.com/hashicorp/terraform-plugin-log v0.9.0
+	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-mux v0.21.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	github.com/nats-io/jwt/v2 v2.8.0
-	github.com/nats-io/nats.go v1.46.1
+	github.com/nats-io/nats.go v1.47.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.35.0.20251203154337-b29f160ed139
 	github.com/stretchr/testify v1.11.1
@@ -52,16 +52,16 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.55.5 // indirect
-	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.1 // indirect
+	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.2 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.12 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.3 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.9 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.15 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.15 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.2 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.8.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.12 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.10 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.4 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.39.0 // indirect

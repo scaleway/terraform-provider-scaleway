@@ -1,15 +1,11 @@
 package iam_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
+	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
 func TestAccUser_Member(t *testing.T) {
@@ -18,13 +14,13 @@ func TestAccUser_Member(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isUserDestroyed(tt),
+		CheckDestroy:             iamchecks.CheckUserDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_iam_user" "member_user" {
-						email = "foo@scaleway.com"
-						username = "foo"
+						email = "testiamusermember@scaleway.com"
+						username = "testiamusermember"
 						first_name = "Foo"
 						last_name = "Bar"
 						password = "Firstaccesspsw123"
@@ -34,8 +30,8 @@ func TestAccUser_Member(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIamUserExists(tt, "scaleway_iam_user.member_user"),
 					acctest.CheckResourceAttrUUID("scaleway_iam_user.member_user", "id"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "foo@scaleway.com"),
-					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "foo"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "email", "testiamusermember@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "username", "testiamusermember"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "first_name", "Foo"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "last_name", "Bar"),
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "password", "Firstaccesspsw123"),
@@ -76,32 +72,4 @@ func TestAccUser_Member(t *testing.T) {
 			},
 		},
 	})
-}
-
-func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "scaleway_iam_user" {
-				continue
-			}
-
-			iamAPI := iam.NewAPI(tt.Meta)
-
-			_, err := iamAPI.GetUser(&iamSDK.GetUserRequest{
-				UserID: rs.Primary.ID,
-			})
-
-			// If no error resource still exist
-			if err == nil {
-				return fmt.Errorf("resource %s(%s) still exist", rs.Type, rs.Primary.ID)
-			}
-
-			// Unexpected api error we return it
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
-	}
 }
