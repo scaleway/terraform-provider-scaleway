@@ -43,6 +43,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/sdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
@@ -238,6 +239,10 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_rdb_snapshot":                        rdb.ResourceSnapshot(),
 				"scaleway_redis_cluster":                       redis.ResourceCluster(),
 				"scaleway_registry_namespace":                  registry.ResourceNamespace(),
+				"scaleway_s2s_vpn_gateway":                     s2svpn.ResourceVPNGateway(),
+				"scaleway_s2s_vpn_customer_gateway":            s2svpn.ResourceCustomerGateway(),
+				"scaleway_s2s_vpn_connection":                  s2svpn.ResourceConnection(),
+				"scaleway_s2s_vpn_routing_policy":              s2svpn.ResourceRoutingPolicy(),
 				"scaleway_sdb_sql_database":                    sdb.ResourceDatabase(),
 				"scaleway_secret":                              secret.ResourceSecret(),
 				"scaleway_secret_version":                      secret.ResourceVersion(),
