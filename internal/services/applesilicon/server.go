@@ -61,6 +61,16 @@ func ResourceServer() *schema.Resource {
 				Description:      "The commitment period of the server",
 				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
 			},
+			"runner_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				},
+				Description: "List of runner ids attach to the server",
+			},
 			"public_bandwidth": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -207,6 +217,10 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:           zone,
 	}
 
+	if runnerIDs, ok := d.GetOk("runner_ids"); ok {
+		createReq.AppliedRunnerConfigurations.RunnerConfigurationIDs = runnerIDs.([]string)
+	}
+
 	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
 		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
 	}
@@ -283,6 +297,7 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("username", res.SSHUsername)
 	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
 	_ = d.Set("zone", res.Zone)
+	_ = d.Set("runner_ids", res.AppliedRunnerConfigurationIDs)
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
@@ -383,6 +398,10 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	if d.HasChange("public_bandwidth") {
 		publicBandwidth := types.ExpandUint64Ptr(d.Get("public_bandwidth"))
 		req.PublicBandwidthBps = publicBandwidth
+	}
+
+	if d.HasChange("runner_ids") {
+		req.AppliedRunnerConfigurations.RunnerConfigurationIDs = d.Get("runner_ids").([]string)
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
