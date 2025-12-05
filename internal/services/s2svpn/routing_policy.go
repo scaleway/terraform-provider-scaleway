@@ -188,8 +188,6 @@ func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 		hasChanged = true
 	}
 
-	// ask why *[]string for prefix filters
-
 	if hasChanged {
 		_, err = api.UpdateRoutingPolicy(req, scw.WithContext(ctx))
 		if err != nil {
