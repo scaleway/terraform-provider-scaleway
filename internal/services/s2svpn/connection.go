@@ -121,8 +121,9 @@ func ResourceConnection() *schema.Resource {
 				Elem:        ResourceConnectionBgpSession(),
 			},
 			"route_propagation_enabled": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:        schema.TypeBool,
+				Description: "Defines whether route propagation is enabled or not",
+				Computed:    true,
 			},
 			"created_at": {
 				Type:        schema.TypeString,
@@ -169,16 +170,19 @@ func ResourceConnectionCipher() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"encryption": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The encryption algorithm",
+				Required:    true,
 			},
 			"integrity": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The integrity/hash algorithm",
+				Optional:    true,
 			},
 			"dh_group": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The Diffie-Hellman group",
+				Optional:    true,
 			},
 		},
 	}
@@ -188,16 +192,19 @@ func ResourceConnectionRequestBgpConfig() *schema.Resource {
 	return &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"routing_policy_id": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Description: "The ID of the routing policy to use for BGP route filtering",
+				Required:    true,
 			},
 			"private_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The BGP peer IP on Scaleway side",
+				Optional:    true,
 			},
 			"peer_private_ip": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Description: "The BGP peer IP on customer side",
+				Optional:    true,
 			},
 		},
 	}
