@@ -5,49 +5,34 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAccDataSourceSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := t.Context()
 	secretName := "scalewayDataSourceSecret"
-	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
-	require.NoError(t, err)
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
-		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(_ *terraform.State) error {
-				return terminateFakeSideProject()
-			},
-			testAccCheckSecretDestroy(tt),
-		),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_secret" "main" {
 					  name        = "%[1]s"
 					  description = "DataSourceSecret test description"
-					  project_id  = "%[3]s"
 					}
 					
 					data "scaleway_secret" "by_name" {
 					  name            = scaleway_secret.main.name
-					  organization_id = "%[2]s"
-					  project_id      = "%[3]s"
 					}
 					
 					data "scaleway_secret" "by_id" {
 					  secret_id       = scaleway_secret.main.id
-					  organization_id = "%[2]s"
-					  project_id      = "%[3]s"
 					}
-				`, secretName, project.OrganizationID, project.ID),
+				`, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretExists(tt, "data.scaleway_secret.by_name"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_name", "name", secretName),
@@ -65,25 +50,19 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckSecretDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf-tests-secret-ds-path"
-					}
-
 					resource "scaleway_secret" "main" {
 					  name = "test-secret-ds-path"
 					  path = "/test-secret-ds-path-path"
-					  project_id = scaleway_account_project.project.id
 					}
 					
 					data "scaleway_secret" "by_name" {
 					  name = scaleway_secret.main.name
 					  path = "/test-secret-ds-path-path"
-					  project_id = scaleway_account_project.project.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
