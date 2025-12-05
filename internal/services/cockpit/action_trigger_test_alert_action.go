@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
@@ -62,10 +63,7 @@ func (a *TriggerTestAlertAction) Schema(ctx context.Context, req action.SchemaRe
 				Required:    true,
 				Description: "ID of the Project",
 			},
-			"region": schema.StringAttribute{
-				Optional:    true,
-				Description: "Region to target. If not provided, will use the default region from the provider configuration",
-			},
+			"region": regional.SchemaAttribute(),
 		},
 	}
 }
@@ -99,8 +97,19 @@ func (a *TriggerTestAlertAction) Invoke(ctx context.Context, req action.InvokeRe
 	}
 
 	var region scw.Region
+
 	if !data.Region.IsNull() && data.Region.ValueString() != "" {
-		region = scw.Region(data.Region.ValueString())
+		parsedRegion, err := scw.ParseRegion(data.Region.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Invalid region",
+				fmt.Sprintf("The region attribute must be a valid Scaleway region. Got %q: %s", data.Region.ValueString(), err),
+			)
+
+			return
+		}
+
+		region = parsedRegion
 	} else {
 		// Use default region from provider configuration
 		defaultRegion, exists := a.meta.ScwClient().GetDefaultRegion()
