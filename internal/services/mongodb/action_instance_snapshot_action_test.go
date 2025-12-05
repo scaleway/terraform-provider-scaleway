@@ -95,6 +95,7 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 		}
 
 		instanceID := rs.Primary.ID
+
 		region, id, err := regional.ParseID(instanceID)
 		if err != nil {
 			return fmt.Errorf("failed to parse instance ID: %w", err)
