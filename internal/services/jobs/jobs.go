@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -347,10 +348,58 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	// Try to delete the job definition first
 	err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
 		Region:          region,
 		JobDefinitionID: id,
 	}, scw.WithContext(ctx))
+
+	// If deletion fails with 403 (job runs still running), clean them up first
+	if err != nil && httperrors.Is403(err) {
+		// List all job runs for this job definition
+		jobRuns, listErr := api.ListJobRuns(&jobs.ListJobRunsRequest{
+			Region:          region,
+			JobDefinitionID: scw.StringPtr(id),
+		}, scw.WithContext(ctx))
+		if listErr != nil {
+			return diag.FromErr(fmt.Errorf("failed to list job runs before cleanup: %w", listErr))
+		}
+
+		// Stop all running or queued job runs
+		var jobRunIDsToWait []string
+
+		for _, jobRun := range jobRuns.JobRuns {
+			if jobRun.State == jobs.JobRunStateQueued || jobRun.State == jobs.JobRunStateRunning {
+				_, stopErr := api.StopJobRun(&jobs.StopJobRunRequest{
+					JobRunID: jobRun.ID,
+					Region:   region,
+				}, scw.WithContext(ctx))
+				if stopErr != nil && !httperrors.Is404(stopErr) {
+					return diag.FromErr(fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, stopErr))
+				}
+
+				jobRunIDsToWait = append(jobRunIDsToWait, jobRun.ID)
+			}
+		}
+
+		// Wait for all stopped job runs to terminate
+		for _, jobRunID := range jobRunIDsToWait {
+			_, waitErr := api.WaitForJobRun(&jobs.WaitForJobRunRequest{
+				JobRunID: jobRunID,
+				Region:   region,
+			}, scw.WithContext(ctx))
+			if waitErr != nil && !httperrors.Is404(waitErr) {
+				return diag.FromErr(fmt.Errorf("failed to wait for job run %s: %w", jobRunID, waitErr))
+			}
+		}
+
+		// Retry deletion after cleanup
+		err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
+			Region:          region,
+			JobDefinitionID: id,
+		}, scw.WithContext(ctx))
+	}
+
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
