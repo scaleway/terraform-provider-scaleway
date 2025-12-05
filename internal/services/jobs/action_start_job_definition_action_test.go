@@ -114,6 +114,39 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 	}
 }
 
+func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
+	api, region, id, err := jobs.NewAPIWithRegionAndID(tt.Meta, jobDefinitionID)
+	if err != nil {
+		return
+	}
+
+	jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
+		Region:          region,
+		JobDefinitionID: scw.StringPtr(id),
+	}, scw.WithContext(context.Background()))
+	if err != nil {
+		return
+	}
+
+	for _, jobRun := range jobRuns.JobRuns {
+		if jobRun.State == jobsSDK.JobRunStateQueued || jobRun.State == jobsSDK.JobRunStateRunning {
+			_, _ = api.StopJobRun(&jobsSDK.StopJobRunRequest{
+				JobRunID: jobRun.ID,
+				Region:   region,
+			}, scw.WithContext(context.Background()))
+		}
+	}
+
+	for _, jobRun := range jobRuns.JobRuns {
+		if jobRun.State == jobsSDK.JobRunStateQueued || jobRun.State == jobsSDK.JobRunStateRunning {
+			_, _ = api.WaitForJobRun(&jobsSDK.WaitForJobRunRequest{
+				JobRunID: jobRun.ID,
+				Region:   region,
+			}, scw.WithContext(context.Background()))
+		}
+	}
+}
+
 func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccActionJobDefinitionStart_Basic because actions are not yet supported on OpenTofu")
@@ -121,6 +154,13 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	var jobDefinitionID string
+	defer func() {
+		if jobDefinitionID != "" {
+			cleanupJobRuns(tt, jobDefinitionID)
+		}
+	}()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -151,6 +191,13 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isJobRunCreated(tt, "scaleway_job_definition.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_job_definition.main"]
+						if ok {
+							jobDefinitionID = rs.Primary.ID
+						}
+						return nil
+					},
 				),
 			},
 		},
