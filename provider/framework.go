@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 )
 
 var (
@@ -140,6 +141,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 	res = append(res, instance.NewServerAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
+	res = append(res, keymanager.NewRotateKeyAction)
 
 	return res
 }
