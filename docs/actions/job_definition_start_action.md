@@ -18,5 +18,3 @@ page_title: "Scaleway: scaleway_job_definition_start_action"
 - `environment_variables` (Map of String) Contextual environment variables for this specific job run.
 - `region` (String) Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration.
 - `replicas` (Number) Number of jobs to run.
-
-
