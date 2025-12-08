@@ -28,7 +28,7 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_mongodb_instance" "main" {
 						name        = "test-mongodb-action-snapshot"
-						version     = "7.0.12"
+						version     = "7.0"
 						node_type   = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name   = "my_initial_user"
@@ -56,7 +56,7 @@ func TestAccActionMongoDBInstanceSnapshot_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_mongodb_instance" "main" {
 						name        = "test-mongodb-action-snapshot"
-						version     = "7.0.12"
+						version     = "7.0"
 						node_type   = "MGDB-PLAY2-NANO"
 						node_number = 1
 						user_name   = "my_initial_user"

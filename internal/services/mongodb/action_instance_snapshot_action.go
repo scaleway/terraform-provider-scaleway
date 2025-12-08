@@ -25,6 +25,7 @@ var (
 // InstanceSnapshotAction creates a snapshot for a MongoDB instance.
 type InstanceSnapshotAction struct {
 	mongodbAPI *mongodb.API
+	meta       *meta.Meta
 }
 
 func (a *InstanceSnapshotAction) Configure(_ context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -42,6 +43,7 @@ func (a *InstanceSnapshotAction) Configure(_ context.Context, req action.Configu
 		return
 	}
 
+	a.meta = m
 	a.mongodbAPI = newAPI(m)
 }
 
@@ -111,7 +113,7 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 		return
 	}
 
-	if data.InstanceID.IsNull() || data.InstanceID.ValueString() == "" {
+	if data.InstanceID.IsNull() || data.InstanceID.IsUnknown() || data.InstanceID.ValueString() == "" {
 		resp.Diagnostics.AddError(
 			"Missing instance_id",
 			"The instance_id attribute is required to create a MongoDB snapshot.",
@@ -122,19 +124,38 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 
 	instanceID := locality.ExpandID(data.InstanceID.ValueString())
 
-	var (
-		region scw.Region
-		err    error
-	)
+	var region scw.Region
 
-	if !data.Region.IsNull() && data.Region.ValueString() != "" {
+	if !data.Region.IsNull() && !data.Region.IsUnknown() && data.Region.ValueString() != "" {
 		region = scw.Region(data.Region.ValueString())
 	} else {
 		// Try to derive region from the instance_id if it is a regional ID.
 		if derivedRegion, id, parseErr := regional.ParseID(data.InstanceID.ValueString()); parseErr == nil {
 			region = derivedRegion
 			instanceID = id
+		} else if a.meta != nil {
+			// Fallback to provider default region
+			defaultRegion, exists := a.meta.ScwClient().GetDefaultRegion()
+			if !exists {
+				resp.Diagnostics.AddError(
+					"Unable to determine region",
+					"Failed to get default region from provider configuration. Please set the region attribute, use a regional instance_id, or configure a default region in the provider.",
+				)
+
+				return
+			}
+
+			region = defaultRegion
 		}
+	}
+
+	if region == "" {
+		resp.Diagnostics.AddError(
+			"Missing region",
+			"Could not determine region for MongoDB snapshot. Please set the region attribute, use a regional instance_id, or configure a default region in the provider.",
+		)
+
+		return
 	}
 
 	snapshotName := data.Name.ValueString()
@@ -144,7 +165,7 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 
 	var expirationTime *time.Time
 
-	if !data.ExpiresAt.IsNull() && data.ExpiresAt.ValueString() != "" {
+	if !data.ExpiresAt.IsNull() && !data.ExpiresAt.IsUnknown() && data.ExpiresAt.ValueString() != "" {
 		expirationRaw := data.ExpiresAt.ValueString()
 
 		parsedTime, err := time.Parse(time.RFC3339, expirationRaw)
