@@ -75,6 +75,70 @@ resource "scaleway_baremetal_server" "base" {
 }
 ```
 
+### With cloud-init
+
+```terraform
+data "scaleway_iam_ssh_key" "my_ssh_key" {
+  name       = "main"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-I220E-NVME"
+}
+
+resource "scaleway_baremetal_server" "my_server_ci" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+
+  cloud_init = file("userdata.yaml")
+}
+```
+
+```terraform
+data "scaleway_iam_ssh_key" "my_ssh_key" {
+  name       = "main"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-I220E-NVME"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+
+resource "scaleway_baremetal_server" "my_server_ci" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+
+    cloud_init = <<EOF
+#cloud-config
+packages:
+  - htop
+  - curl
+
+runcmd:
+  - echo "Hello from raw cloud-init!" > /home/ubuntu/message.txt
+EOF
+}
+```
+
 ### With private network
 
 ```terraform
@@ -305,6 +369,7 @@ The following arguments are supported:
     - `ipam_ip_ids` - (Optional) List of IPAM IP IDs to assign to the server in the requested private network.
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `partitioning` (Optional) The partitioning schema in JSON format
+- `cloud_init` - (Optional) Configuration data to pass to cloud-init such as a YAML cloud config or a user-data script. Accepts either a string containing the content or a path to a file (for example `file("cloud-init.yml")`). Max length: 127998 characters. Updates to `cloud_init` will update the server user-data via the API and do not trigger a reinstall; however, a reboot of the server is required for the OS to re-run cloud-init and apply the changes. Only supported for Offers that have cloud-init enabled. You can check available offers with `scw baremetal list offers` command.
 - `protected` - (Optional) Set to true to activate server protection option.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
 
