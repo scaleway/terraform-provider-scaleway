@@ -1,0 +1,265 @@
+package instance_test
+
+import (
+	"fmt"
+	"reflect"
+	"regexp"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+)
+
+type snapshotSpecsCheck struct {
+	Name *string
+	Size *scw.Size
+	Type *instanceSDK.VolumeVolumeType
+	Tags []string
+}
+
+func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccAction_InstanceCreateSnapshot_Local because action are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	localVolumeType := instanceSDK.VolumeVolumeTypeLSSD
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			destroyUntrackedSnapshots(tt, "data.scaleway_instance_volume.main"),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "main" {
+						name = "test-terraform-action-instance-create-snapshot"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+
+						root_volume {
+							volume_type = "%s"
+							size_in_gb = 20
+						}
+
+						lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_create_snapshot.main]
+							}
+					  	}
+					}
+
+					data "scaleway_instance_volume" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}
+
+					action "scaleway_instance_create_snapshot" "main" {
+						config {
+						  	volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+							wait = true
+						}
+					}`, localVolumeType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
+					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+						Size: scw.SizePtr(20 * scw.GB),
+						Type: &localVolumeType,
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "main" {
+						name = "test-terraform-action-instance-create-snapshot"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+						tags = [ "add", "tags", "to", "trigger", "update" ]
+			
+						root_volume {
+							volume_type = "%s"
+							size_in_gb = 20
+						}
+			
+						lifecycle {
+							action_trigger {
+						  		events  = [after_update]
+						  		actions = [action.scaleway_instance_create_snapshot.main]
+							}
+					  	}
+					}
+
+					data "scaleway_instance_volume" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}
+
+					action "scaleway_instance_create_snapshot" "main" {
+						config {
+						  	volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+						  	tags = scaleway_instance_server.main.tags
+						  	name = "custom-name-for-snapshot"
+							wait = true
+						}
+					}`, localVolumeType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
+					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+						Name: scw.StringPtr("custom-name-for-snapshot"),
+						Size: scw.SizePtr(20 * scw.GB),
+						Tags: []string{"add", "tags", "to", "trigger", "update"},
+						Type: &localVolumeType,
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAction_InstanceCreateSnapshot_Scratch(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccAction_InstanceCreateSnapshot_Scratch because action are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	scratchVolumeType := instanceSDK.VolumeVolumeTypeScratch
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_volume" "scratch" {
+						type = "%s"
+						size_in_gb = 50
+
+					  	lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_create_snapshot.scratch]
+							}
+					  	}
+					}
+
+					action "scaleway_instance_create_snapshot" "scratch" {
+						config {
+						  	volume_id = scaleway_instance_volume.scratch.id
+							wait = true
+						}
+					}`, scratchVolumeType),
+				ExpectError: regexp.MustCompile("Error when invoking action"), // scratch storage cannot be snapshot
+			},
+		},
+	})
+}
+
+func snapshotMatchesExpectedSpecs(snapshot instanceSDK.Snapshot, expected snapshotSpecsCheck) bool {
+	if expected.Name != nil && *expected.Name != snapshot.Name {
+		return false
+	}
+
+	if expected.Size != nil && *expected.Size != snapshot.Size {
+		return false
+	}
+
+	if len(expected.Tags) > 0 && !reflect.DeepEqual(expected.Tags, snapshot.Tags) {
+		return false
+	}
+
+	if len(snapshot.Tags) > len(expected.Tags) {
+		return false
+	}
+
+	if expected.Type != nil && *expected.Type != snapshot.VolumeType {
+		return false
+	}
+
+	return true
+}
+
+func checkSnapshot(tt *acctest.TestTools, n string, expectedSpecs snapshotSpecsCheck) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		snapshots, err := api.ListSnapshots(&instanceSDK.ListSnapshotsRequest{
+			Zone:         zone,
+			BaseVolumeID: &id,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+
+		if snapshots.TotalCount == 0 {
+			return fmt.Errorf("could not find any snapshot for volume %s", id)
+		}
+
+		for _, snapshot := range snapshots.Snapshots {
+			if snapshotMatchesExpectedSpecs(*snapshot, expectedSpecs) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("could not find any snapshot that matches the specs %+v", expectedSpecs)
+	}
+}
+
+func destroyUntrackedSnapshots(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		snapshots, err := api.ListSnapshots(&instanceSDK.ListSnapshotsRequest{
+			Zone:         zone,
+			BaseVolumeID: &id,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+
+		for _, snapshot := range snapshots.Snapshots {
+			err = api.DeleteSnapshot(&instanceSDK.DeleteSnapshotRequest{
+				Zone:       zone,
+				SnapshotID: snapshot.ID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
