@@ -22,64 +22,68 @@ func ResourceDNSStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The backend stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "tls_stage_id"},
-			},
-			"tls_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The TLS stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "backend_stage_id"},
-			},
-			"cache_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The cache stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "tls_stage_id"},
-			},
-			"fqdns": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the stage",
-			},
-			"default_fqdn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Default Fully Qualified Domain Name attached to the stage",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the DNS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the DNS stage",
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    dnsStageSchema,
+	}
+}
+
+func dnsStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
 		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The backend stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "tls_stage_id"},
+		},
+		"tls_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The TLS stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "backend_stage_id"},
+		},
+		"cache_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The cache stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "tls_stage_id"},
+		},
+		"fqdns": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the stage",
+		},
+		"default_fqdn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Default Fully Qualified Domain Name attached to the stage",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the DNS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the DNS stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

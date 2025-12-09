@@ -12,7 +12,7 @@ import (
 
 func DataSourceDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabase().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
 

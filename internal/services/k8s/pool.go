@@ -36,229 +36,233 @@ func ResourcePool() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"cluster_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the cluster on which this pool will be created",
+		SchemaFunc:    poolSchema,
+	}
+}
+
+func poolSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"cluster_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The ID of the cluster on which this pool will be created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the cluster",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "Server type of the pool servers",
+			DiffSuppressFunc: dsf.IgnoreCaseAndHyphen,
+		},
+		"autoscaling": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable the autoscaling on the pool",
+		},
+		"autohealing": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable the autohealing on the pool",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "Size of the pool",
+		},
+		"min_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     1,
+			Description: "Minimum size of the pool",
+		},
+		"max_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Maximum size of the pool",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the cluster",
+			Optional:    true,
+			Description: "The tags associated with the pool",
+		},
+		"container_runtime": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          k8s.RuntimeContainerd.String(),
+			ForceNew:         true,
+			Description:      "Container runtime for the pool",
+			ValidateDiagFunc: verify.ValidateEnum[k8s.Runtime](),
+		},
+		"wait_for_pool_ready": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Whether to wait for the pool to be ready",
+		},
+		"placement_group_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     nil,
+			Description: "ID of the placement group",
+		},
+		"kubelet_args": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "Server type of the pool servers",
-				DiffSuppressFunc: dsf.IgnoreCaseAndHyphen,
-			},
-			"autoscaling": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the autoscaling on the pool",
-			},
-			"autohealing": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the autohealing on the pool",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Size of the pool",
-			},
-			"min_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Minimum size of the pool",
-			},
-			"max_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Maximum size of the pool",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the pool",
-			},
-			"container_runtime": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          k8s.RuntimeContainerd.String(),
-				ForceNew:         true,
-				Description:      "Container runtime for the pool",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.Runtime](),
-			},
-			"wait_for_pool_ready": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Whether to wait for the pool to be ready",
-			},
-			"placement_group_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     nil,
-				Description: "ID of the placement group",
-			},
-			"kubelet_args": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The Kubelet arguments to be used by this pool",
-			},
-			"upgrade_policy": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The Pool upgrade policy",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"max_unavailable": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     1,
-							Description: "The maximum number of nodes that can be not ready at the same time",
-						},
-						"max_surge": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     0,
-							Description: "The maximum number of nodes to be created during the upgrade",
-						},
+			Optional:    true,
+			Description: "The Kubelet arguments to be used by this pool",
+		},
+		"upgrade_policy": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The Pool upgrade policy",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_unavailable": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     1,
+						Description: "The maximum number of nodes that can be not ready at the same time",
+					},
+					"max_surge": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     0,
+						Description: "The maximum number of nodes to be created during the upgrade",
 					},
 				},
 			},
-			"root_volume_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Computed:         true,
-				Description:      "System volume type of the nodes composing the pool",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.PoolVolumeType](),
-			},
-			"root_volume_size_in_gb": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The size of the system volume of the nodes in gigabyte",
-			},
-			"public_ip_disabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				ForceNew:    true,
-				Description: "Defines if the public IP should be removed from the nodes.",
-			},
-			"zone":   zonal.Schema(),
-			"region": regional.Schema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the pool",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the pool",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Kubernetes version of the pool",
-			},
-			"current_size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The actual size of the pool",
-			},
-			"nodes": {
-				Type:        schema.TypeList,
-				Description: "List of nodes in the pool",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the node",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the node",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The status of the node",
-						},
-						"public_ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The public IPv4 address of the node",
-							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
-						},
-						"public_ip_v6": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The public IPv6 address of the node",
-							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
-						},
-						"private_ips": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Optional:    true,
-							Description: "List of private IPv4 and IPv6 addresses associated with the node",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The ID of the IP address resource",
-									},
-									"address": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The private IP address",
-									},
+		},
+		"root_volume_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Computed:         true,
+			Description:      "System volume type of the nodes composing the pool",
+			ValidateDiagFunc: verify.ValidateEnum[k8s.PoolVolumeType](),
+		},
+		"root_volume_size_in_gb": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			ForceNew:    true,
+			Computed:    true,
+			Description: "The size of the system volume of the nodes in gigabyte",
+		},
+		"public_ip_disabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+			Description: "Defines if the public IP should be removed from the nodes.",
+		},
+		"zone":   zonal.Schema(),
+		"region": regional.Schema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the pool",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the pool",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Kubernetes version of the pool",
+		},
+		"current_size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The actual size of the pool",
+		},
+		"nodes": {
+			Type:        schema.TypeList,
+			Description: "List of nodes in the pool",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the node",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of the node",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The status of the node",
+					},
+					"public_ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The public IPv4 address of the node",
+						Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
+					},
+					"public_ip_v6": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The public IPv6 address of the node",
+						Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
+					},
+					"private_ips": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Optional:    true,
+						Description: "List of private IPv4 and IPv6 addresses associated with the node",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The ID of the IP address resource",
+								},
+								"address": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The private IP address",
 								},
 							},
 						},
 					},
 				},
 			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the pool",
-			},
-			"security_group_id": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The ID of the security group",
-				DiffSuppressFunc: dsf.Locality,
-			},
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the pool",
+		},
+		"security_group_id": {
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The ID of the security group",
+			DiffSuppressFunc: dsf.Locality,
 		},
 	}
 }

@@ -32,50 +32,54 @@ func ResourceDHCPReservation() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultTimeout),
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
-		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"gateway_network_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the owning GatewayNetwork (UUID format).",
-			},
-			"ip_address": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The IP address to give to the machine (IPv4 address).",
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"mac_address": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The MAC address to give a static entry to.",
-				ValidateFunc: validation.IsMACAddress,
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Hostname of the client machine.",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The reservation type, either static (DHCP reservation) or dynamic (DHCP lease). Possible values are reservation and lease",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The configuration creation date.",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The configuration last modification date.",
-			},
-			"zone": zonal.Schema(),
-		},
+		SchemaVersion:      0,
+		SchemaFunc:         dhcpReservation,
 		CustomizeDiff:      cdf.LocalityCheck("gateway_network_id"),
 		DeprecationMessage: "The 'dhcp_reservation' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. You can use IPAM to manage your IPs. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+	}
+}
+
+func dhcpReservation() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"gateway_network_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the owning GatewayNetwork (UUID format).",
+		},
+		"ip_address": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The IP address to give to the machine (IPv4 address).",
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"mac_address": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "The MAC address to give a static entry to.",
+			ValidateFunc: validation.IsMACAddress,
+		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Hostname of the client machine.",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The reservation type, either static (DHCP reservation) or dynamic (DHCP lease). Possible values are reservation and lease",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The configuration creation date.",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The configuration last modification date.",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

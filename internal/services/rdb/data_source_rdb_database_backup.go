@@ -14,7 +14,7 @@ import (
 
 func DataSourceDatabaseBackup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabaseBackup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabaseBackup().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "instance_id")
 

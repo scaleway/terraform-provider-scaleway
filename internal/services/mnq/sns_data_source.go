@@ -12,7 +12,7 @@ import (
 
 func DataSourceSNS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSNS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSNS().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 

@@ -16,43 +16,47 @@ import (
 func DataSourceVersion() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceK8SVersionRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the Kubernetes version in the form x.y.z",
-			},
-			"major_minor_only": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The name of the version in the form x.y (ignoring patch version)",
-			},
-			"available_cnis": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported Container Network Interface (CNI) plugins for this version",
-			},
-			"available_container_runtimes": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported container runtimes for this version",
-			},
-			"available_feature_gates": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The list of supported feature gates for this version",
-			},
-			"region": regional.Schema(),
+		SchemaFunc:  versionSchema,
+	}
+}
+
+func versionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the Kubernetes version in the form x.y.z",
 		},
+		"major_minor_only": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The name of the version in the form x.y (ignoring patch version)",
+		},
+		"available_cnis": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "The list of supported Container Network Interface (CNI) plugins for this version",
+		},
+		"available_container_runtimes": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "The list of supported container runtimes for this version",
+		},
+		"available_feature_gates": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "The list of supported feature gates for this version",
+		},
+		"region": regional.Schema(),
 	}
 }
 

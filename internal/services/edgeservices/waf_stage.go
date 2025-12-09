@@ -22,41 +22,45 @@ func ResourceWAFStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the backend stage to forward requests to after the WAF stage",
-			},
-			"paranoia_level": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The sensitivity level (`1`,`2`,`3`,`4`) to use when classifying requests as malicious. With a high level, requests are more likely to be classed as malicious, and false positives are expected. With a lower level, requests are more likely to be classed as benign",
-			},
-			"mode": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Mode defining WAF behavior (`disable`/`log_only`/`enable`)",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the WAF stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the WAF stage",
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    wafStageSchema,
+	}
+}
+
+func wafStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
 		},
+		"backend_stage_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The ID of the backend stage to forward requests to after the WAF stage",
+		},
+		"paranoia_level": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "The sensitivity level (`1`,`2`,`3`,`4`) to use when classifying requests as malicious. With a high level, requests are more likely to be classed as malicious, and false positives are expected. With a lower level, requests are more likely to be classed as benign",
+		},
+		"mode": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Mode defining WAF behavior (`disable`/`log_only`/`enable`)",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the WAF stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the WAF stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

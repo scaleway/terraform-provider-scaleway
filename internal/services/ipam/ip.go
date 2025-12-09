@@ -30,147 +30,151 @@ func ResourceIP() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Description:      "Request a specific IP in the requested source pool",
-				ValidateFunc:     validation.IsIPAddress,
-				DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
-			},
-			"address_cidr": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address with a CIDR notation",
-			},
-			"source": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "The source in which to book the IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"zonal": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Zone the IP lives in if the IP is a public zoned one",
-						},
-						"private_network_id": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							Description:      "Private Network the IP lives in if the IP is a private IP",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						"subnet_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Private Network subnet the IP lives in if the IP is a private IP in a Private Network",
-						},
-					},
-				},
-			},
-			"custom_resource": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The custom resource in which to book the IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"mac_address": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "MAC address of the custom resource",
-							ValidateFunc: validation.IsMACAddress,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
-						},
-					},
-				},
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Request an IPv6 instead of an IPv4",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the IP",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
-			// Computed elements
-			"resource": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The IP resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of resource the IP is attached to",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the resource the IP is attached to",
-						},
-						"mac_address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "MAC of the resource the IP is attached to",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the resource the IP is attached to",
-						},
-					},
-				},
-			},
-			"reverses": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The reverses DNS for this IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The reverse domain name",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP corresponding to the hostname",
-						},
-					},
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the IP",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the IP",
-			},
-			"zone": zonal.ComputedSchema(),
+		SchemaFunc:    ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "Request a specific IP in the requested source pool",
+			ValidateFunc:     validation.IsIPAddress,
+			DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
 		},
+		"address_cidr": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address with a CIDR notation",
+		},
+		"source": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "The source in which to book the IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"zonal": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Zone the IP lives in if the IP is a public zoned one",
+					},
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						Description:      "Private Network the IP lives in if the IP is a private IP",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"subnet_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Private Network subnet the IP lives in if the IP is a private IP in a Private Network",
+					},
+				},
+			},
+		},
+		"custom_resource": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The custom resource in which to book the IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"mac_address": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "MAC address of the custom resource",
+						ValidateFunc: validation.IsMACAddress,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
+					},
+				},
+			},
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Request an IPv6 instead of an IPv4",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the IP",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
+		// Computed elements
+		"resource": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The IP resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Type of resource the IP is attached to",
+					},
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the resource the IP is attached to",
+					},
+					"mac_address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "MAC of the resource the IP is attached to",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the resource the IP is attached to",
+					},
+				},
+			},
+		},
+		"reverses": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The reverses DNS for this IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The reverse domain name",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP corresponding to the hostname",
+					},
+				},
+			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the IP",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the IP",
+		},
+		"zone": zonal.ComputedSchema(),
 	}
 }
 

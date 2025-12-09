@@ -14,7 +14,7 @@ import (
 
 func DataSourceVPCPublicGateway() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePublicGateway().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePublicGateway().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "project_id")

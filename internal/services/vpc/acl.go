@@ -23,84 +23,88 @@ func ResourceACL() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"vpc_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The VPC in which to create the ACL rule",
-			},
-			"default_policy": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          vpc.ActionAccept,
-				Description:      "The action to take for packets which do not match any rules",
-				ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Defines whether this set of ACL rules is for IPv6 (false = IPv4). Each Network ACL can have rules for only one IP type",
-			},
-			"rules": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The list of Network ACL rules",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"protocol": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Default:          "ANY",
-							Description:      "The protocol to which this rule applies. Default value: ANY",
-							ValidateDiagFunc: verify.ValidateEnum[vpc.ACLRuleProtocol](),
-						},
-						"source": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Source IP range to which this rule applies (CIDR notation with subnet mask)",
-						},
-						"src_port_low": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Starting port of the source port range to which this rule applies (inclusive)",
-						},
-						"src_port_high": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Ending port of the source port range to which this rule applies (inclusive)",
-						},
-						"destination": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Destination IP range to which this rule applies (CIDR notation with subnet mask)",
-						},
-						"dst_port_low": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Starting port of the destination port range to which this rule applies (inclusive)",
-						},
-						"dst_port_high": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Ending port of the destination port range to which this rule applies (inclusive)",
-						},
-						"action": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Description:      "The policy to apply to the packet",
-							ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The rule description",
-						},
+		SchemaFunc:    aclSchema,
+	}
+}
+
+func aclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"vpc_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The VPC in which to create the ACL rule",
+		},
+		"default_policy": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          vpc.ActionAccept,
+			Description:      "The action to take for packets which do not match any rules",
+			ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Defines whether this set of ACL rules is for IPv6 (false = IPv4). Each Network ACL can have rules for only one IP type",
+		},
+		"rules": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The list of Network ACL rules",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"protocol": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Default:          "ANY",
+						Description:      "The protocol to which this rule applies. Default value: ANY",
+						ValidateDiagFunc: verify.ValidateEnum[vpc.ACLRuleProtocol](),
+					},
+					"source": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Source IP range to which this rule applies (CIDR notation with subnet mask)",
+					},
+					"src_port_low": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Starting port of the source port range to which this rule applies (inclusive)",
+					},
+					"src_port_high": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Ending port of the source port range to which this rule applies (inclusive)",
+					},
+					"destination": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Destination IP range to which this rule applies (CIDR notation with subnet mask)",
+					},
+					"dst_port_low": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Starting port of the destination port range to which this rule applies (inclusive)",
+					},
+					"dst_port_high": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Ending port of the destination port range to which this rule applies (inclusive)",
+					},
+					"action": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Description:      "The policy to apply to the packet",
+						ValidateDiagFunc: verify.ValidateEnum[vpc.Action](),
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The rule description",
 					},
 				},
 			},
-			"region": regional.Schema(),
 		},
+		"region": regional.Schema(),
 	}
 }
 

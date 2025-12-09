@@ -31,118 +31,9 @@ func ResourceSQSQueue() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Delete:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Default: schema.DefaultTimeout(defaultMNQQueueTimeout),
-		}, SchemaVersion: 1,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "The name of the queue. Conflicts with name_prefix.",
-				ConflictsWith: []string{"name_prefix"},
-			},
-			"name_prefix": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
-				ConflictsWith: []string{"name"},
-			},
-			"sqs_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sqs.mnq.{region}.scaleway.com",
-				Description: "The sqs endpoint",
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SQS access key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SQS secret key",
-			},
-			"fifo_queue": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Whether the queue is a FIFO queue. If true, the queue name must end with .fifo",
-			},
-			"content_based_deduplication": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Specifies whether to enable content-based deduplication. Allows omitting the deduplication ID",
-			},
-			"receive_wait_time_seconds": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     DefaultQueueReceiveMessageWaitTimeSeconds,
-				Description: "The number of seconds to wait for a message to arrive in the queue before returning.",
-			},
-			"visibility_timeout_seconds": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueVisibilityTimeout,
-				ValidateFunc: validation.IntBetween(0, 43_200),
-				Description:  "The number of seconds a message is hidden from other consumers.",
-			},
-			"message_max_age": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueMessageRetentionPeriod,
-				ValidateFunc: validation.IntBetween(60, 1_209_600),
-				Description:  "The number of seconds the queue retains a message.",
-			},
-			"message_max_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueMaximumMessageSize,
-				ValidateFunc: validation.IntBetween(1024, 262_144),
-				Description:  "The maximum size of a message. Should be in bytes.",
-			},
-			"dead_letter_queue": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Configuration for the dead-letter queue",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The ID or ARN of the dead-letter queue where messages are sent after the maximum receive count is exceeded.",
-						},
-						"max_receive_count": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							ValidateFunc: validation.IntBetween(1, 1000),
-							Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-
-			// Computed
-
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL of the queue",
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ARN of the queue",
-			},
 		},
+		SchemaVersion: 1,
+		SchemaFunc:    sqsQueueSchema,
 		CustomizeDiff: resourceMNQQueueCustomizeDiff,
 		StateUpgraders: []schema.StateUpgrader{
 			{
@@ -150,6 +41,120 @@ func ResourceSQSQueue() *schema.Resource {
 				Type:    resourceMNQSQSQueueResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
 			},
+		},
+	}
+}
+
+func sqsQueueSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "The name of the queue. Conflicts with name_prefix.",
+			ConflictsWith: []string{"name_prefix"},
+		},
+		"name_prefix": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
+			ConflictsWith: []string{"name"},
+		},
+		"sqs_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sqs.mnq.{region}.scaleway.com",
+			Description: "The sqs endpoint",
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SQS access key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SQS secret key",
+		},
+		"fifo_queue": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Whether the queue is a FIFO queue. If true, the queue name must end with .fifo",
+		},
+		"content_based_deduplication": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Specifies whether to enable content-based deduplication. Allows omitting the deduplication ID",
+		},
+		"receive_wait_time_seconds": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     DefaultQueueReceiveMessageWaitTimeSeconds,
+			Description: "The number of seconds to wait for a message to arrive in the queue before returning.",
+		},
+		"visibility_timeout_seconds": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueVisibilityTimeout,
+			ValidateFunc: validation.IntBetween(0, 43_200),
+			Description:  "The number of seconds a message is hidden from other consumers.",
+		},
+		"message_max_age": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueMessageRetentionPeriod,
+			ValidateFunc: validation.IntBetween(60, 1_209_600),
+			Description:  "The number of seconds the queue retains a message.",
+		},
+		"message_max_size": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueMaximumMessageSize,
+			ValidateFunc: validation.IntBetween(1024, 262_144),
+			Description:  "The maximum size of a message. Should be in bytes.",
+		},
+		"dead_letter_queue": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Configuration for the dead-letter queue",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The ID or ARN of the dead-letter queue where messages are sent after the maximum receive count is exceeded.",
+					},
+					"max_receive_count": {
+						Type:         schema.TypeInt,
+						Required:     true,
+						ValidateFunc: validation.IntBetween(1, 1000),
+						Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
+					},
+				},
+			},
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+
+		// Computed
+
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL of the queue",
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ARN of the queue",
 		},
 	}
 }

@@ -23,58 +23,62 @@ func ResourceSQSCredentials() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The credentials name",
-			},
-			"permissions": {
-				Type:        schema.TypeList,
-				Description: "The permissions attached to the credentials",
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"can_publish": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Optional:    true,
-							Description: "Allow publish messages to the service",
-						},
-						"can_receive": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Optional:    true,
-							Description: "Allow receive messages from the service",
-						},
-						"can_manage": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Optional:    true,
-							Description: "Allow manage the associated resource",
-						},
+		SchemaFunc:    sqsCredentialsSchema,
+	}
+}
+
+func sqsCredentialsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The credentials name",
+		},
+		"permissions": {
+			Type:        schema.TypeList,
+			Description: "The permissions attached to the credentials",
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"can_publish": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Optional:    true,
+						Description: "Allow publish messages to the service",
+					},
+					"can_receive": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Optional:    true,
+						Description: "Allow receive messages from the service",
+					},
+					"can_manage": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Optional:    true,
+						Description: "Allow manage the associated resource",
 					},
 				},
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 
-			// Computed
-			"access_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "SQS credentials access key",
-				Sensitive:   true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "SQS credentials secret key",
-				Sensitive:   true,
-			},
+		// Computed
+		"access_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "SQS credentials access key",
+			Sensitive:   true,
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "SQS credentials secret key",
+			Sensitive:   true,
 		},
 	}
 }

@@ -25,69 +25,73 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"protocol": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Protocol of the SNS Topic Subscription.", // TODO: add argument list
-				ForceNew:    true,
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint of the subscription",
-				ForceNew:    true,
-			},
-			"sns_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sns.mnq.{region}.scaleway.com",
-				Description: "SNS endpoint",
-				ForceNew:    true,
-			},
-			"topic_arn": {
-				Type:         schema.TypeString,
-				Description:  "ARN of the topic",
-				Optional:     true,
-				AtLeastOneOf: []string{"topic_id"},
-				ForceNew:     true,
-			},
-			"topic_id": {
-				Type:         schema.TypeString,
-				Description:  "ID of the topic",
-				Optional:     true,
-				AtLeastOneOf: []string{"topic_arn"},
-				ForceNew:     true,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS access key",
-				ForceNew:    true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS secret key",
-				ForceNew:    true,
-			},
-			"redrive_policy": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "JSON Redrive policy",
-				ForceNew:    true,
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    snsTopicSubscriptionSchema,
+	}
+}
+
+func snsTopicSubscriptionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"protocol": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Protocol of the SNS Topic Subscription.", // TODO: add argument list
+			ForceNew:    true,
 		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Endpoint of the subscription",
+			ForceNew:    true,
+		},
+		"sns_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sns.mnq.{region}.scaleway.com",
+			Description: "SNS endpoint",
+			ForceNew:    true,
+		},
+		"topic_arn": {
+			Type:         schema.TypeString,
+			Description:  "ARN of the topic",
+			Optional:     true,
+			AtLeastOneOf: []string{"topic_id"},
+			ForceNew:     true,
+		},
+		"topic_id": {
+			Type:         schema.TypeString,
+			Description:  "ID of the topic",
+			Optional:     true,
+			AtLeastOneOf: []string{"topic_arn"},
+			ForceNew:     true,
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS access key",
+			ForceNew:    true,
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS secret key",
+			ForceNew:    true,
+		},
+		"redrive_policy": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "JSON Redrive policy",
+			ForceNew:    true,
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

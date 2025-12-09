@@ -24,67 +24,71 @@ func ResourceSNSTopic() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Computed:      true,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Name of the SNS Topic.",
-				ConflictsWith: []string{"name_prefix"},
-			},
-			"name_prefix": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "Creates a unique name beginning with the specified prefix.",
-				ConflictsWith: []string{"name"},
-			},
-			"sns_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sns.mnq.{region}.scaleway.com",
-				Description: "SNS endpoint",
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS access key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS secret key",
-			},
-			"content_based_deduplication": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Specifies whether to enable content-based deduplication.",
-			},
-			"fifo_topic": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Whether the topic is a FIFO topic. If true, the topic name must end with .fifo",
-			},
-			"owner": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Owner of the SNS topic, should have format 'project-${project_id}'",
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    snsTopicSchema,
 		CustomizeDiff: resourceMNQSSNSTopicCustomizeDiff,
+	}
+}
+
+func snsTopicSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Computed:      true,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Name of the SNS Topic.",
+			ConflictsWith: []string{"name_prefix"},
+		},
+		"name_prefix": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "Creates a unique name beginning with the specified prefix.",
+			ConflictsWith: []string{"name"},
+		},
+		"sns_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sns.mnq.{region}.scaleway.com",
+			Description: "SNS endpoint",
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS access key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS secret key",
+		},
+		"content_based_deduplication": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Specifies whether to enable content-based deduplication.",
+		},
+		"fifo_topic": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Whether the topic is a FIFO topic. If true, the topic name must end with .fifo",
+		},
+		"owner": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Owner of the SNS topic, should have format 'project-${project_id}'",
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
