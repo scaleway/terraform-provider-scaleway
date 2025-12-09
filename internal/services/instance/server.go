@@ -126,6 +126,7 @@ func ResourceServer() *schema.Resource {
 						"name": {
 							Type:        schema.TypeString,
 							Computed:    true,
+							Optional:    true,
 							Description: "Name of the root volume",
 						},
 						"size_in_gb": {
@@ -519,7 +520,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	////
-	// Configure Block Volume
+	// Configure Volumes
 	////
 	var diags diag.Diagnostics
 
@@ -528,6 +529,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		if len(updateDiags) > 0 {
 			diags = append(diags, updateDiags...)
 		}
+	}
+
+	err = renameRootVolumeIfNeeded(d, api, zone, res.Server.Volumes)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	////
@@ -639,10 +645,6 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
-func errorCheck(err error, message string) bool {
-	return strings.Contains(err.Error(), message)
-}
-
 //gocyclo:ignore
 func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
@@ -701,6 +703,9 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("placement_group_policy_respected", server.PlacementGroup.PolicyRespected)
 	}
 
+	////
+	// Read server's public IPs
+	////
 	if ipID, hasIPID := d.GetOk("ip_id"); hasIPID {
 		publicIP := FindIPInList(ipID.(string), server.PublicIPs)
 		if publicIP != nil && !publicIP.Dynamic {
@@ -733,52 +738,28 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		_ = d.Set("admin_password_encryption_ssh_key_id", server.AdminPasswordEncryptionSSHKeyID)
 	}
 
-	var additionalVolumesIDs []string
+	////
+	// Read server's volumes
+	////
+	rootVolume := make(map[string]any, 1)
+	additionalVolumesIDs := make([]string, 0, len(server.Volumes)-1)
 
 	for i, serverVolume := range sortVolumeServer(server.Volumes) {
 		if i == 0 {
-			rootVolume := map[string]any{}
-
-			vs, ok := d.Get("root_volume").([]map[string]any)
-			if ok && len(vs) > 0 {
-				rootVolume = vs[0]
-			}
-
-			vol, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
-				VolumeID: serverVolume.ID,
-				Zone:     server.Zone,
-			})
+			rootVolume, err = flattenServerVolume(api, serverVolume, zone)
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to read instance volume %s: %w", serverVolume.ID, err))
-			}
-
-			rootVolume["volume_id"] = zonal.NewID(zone, vol.ID).String()
-			if vol.Size != nil {
-				rootVolume["size_in_gb"] = int(uint64(*vol.Size) / gb)
-			} else if serverVolume.Size != nil {
-				rootVolume["size_in_gb"] = int(uint64(*serverVolume.Size) / gb)
-			}
-
-			if vol.IsBlockVolume() {
-				rootVolume["sbs_iops"] = types.FlattenUint32Ptr(vol.Iops)
+				return diag.FromErr(err)
 			}
 
 			_, rootVolumeAttributeSet := d.GetOk("root_volume") // Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 			rootVolume["delete_on_termination"] = d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet
-			rootVolume["volume_type"] = serverVolume.VolumeType
-			rootVolume["boot"] = serverVolume.Boot
-			rootVolume["name"] = serverVolume.Name
-
-			_ = d.Set("root_volume", []map[string]any{rootVolume})
 		} else {
 			additionalVolumesIDs = append(additionalVolumesIDs, zonal.NewID(zone, serverVolume.ID).String())
 		}
 	}
 
+	_ = d.Set("root_volume", []map[string]any{rootVolume})
 	_ = d.Set("additional_volume_ids", additionalVolumesIDs)
-	if len(additionalVolumesIDs) > 0 {
-		_ = d.Set("additional_volume_ids", additionalVolumesIDs)
-	}
 
 	////
 	// Read server user data
@@ -1165,7 +1146,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
+	server, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1181,6 +1162,11 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		warnings = append(warnings, ResourceInstanceServerUpdateRootVolumeIOPS(ctx, api, zone, id, types.ExpandUint32Ptr(d.Get("root_volume.0.sbs_iops")))...)
 	}
 
+	err = renameRootVolumeIfNeeded(d, api, zone, server.Volumes)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
@@ -1189,7 +1175,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// detach eip to ensure to free eip even if instanceSDK won't stop
+	// detach eip to ensure to free eip even if instance won't stop
 	if ipID, ok := d.GetOk("ip_id"); ok {
 		_, err := api.UpdateIP(&instanceSDK.UpdateIPRequest{
 			Zone:   zone,
@@ -1200,7 +1186,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			log.Print("[WARN] Failed to detach eip of server")
 		}
 	}
-	// Remove instanceSDK from placement group to free it even if instanceSDK won't stop
+	// Remove instance from placement group to free it even if instance won't stop
 	if _, ok := d.GetOk("placement_group_id"); ok {
 		_, err := api.UpdateServer(&instanceSDK.UpdateServerRequest{
 			Zone:           zone,
@@ -1706,4 +1692,29 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 	}
 
 	return "", fmt.Errorf("could not find product catalog entry for %q in %s", commercialType, zone)
+}
+
+func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {
+	if volumes == nil || volumes["0"] == nil || volumes["0"].Name != nil {
+		return nil
+	}
+
+	if rootVolumeName, setByUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setByUser {
+		if *volumes["0"].Name != rootVolumeName {
+			_, err := api.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
+				Zone:     zone,
+				VolumeID: volumes["0"].ID,
+				Name:     scw.StringPtr(rootVolumeName.(string)),
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func errorCheck(err error, message string) bool {
+	return strings.Contains(err.Error(), message)
 }

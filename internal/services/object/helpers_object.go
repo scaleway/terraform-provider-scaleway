@@ -257,9 +257,15 @@ func IsS3Err(err error, code string, message string) bool {
 	return false
 }
 
-func flattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]any {
+func FlattenObjectBucketVersioning(versioningResponse *s3.GetBucketVersioningOutput) []map[string]any {
 	vcl := []map[string]any{{}}
-	vcl[0]["enabled"] = versioningResponse.Status == s3Types.BucketVersioningStatusEnabled
+	if versioningResponse != nil {
+		vcl[0]["enabled"] = versioningResponse.Status == s3Types.BucketVersioningStatusEnabled
+
+		return vcl
+	}
+
+	vcl[0]["enabled"] = false
 
 	return vcl
 }

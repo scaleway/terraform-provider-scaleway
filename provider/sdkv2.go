@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/az"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
@@ -207,6 +208,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_lb_certificate":                      lb.ResourceCertificate(),
 				"scaleway_lb_frontend":                         lb.ResourceFrontend(),
 				"scaleway_lb_ip":                               lb.ResourceIP(),
+				"scaleway_lb_private_network":                  lb.ResourcePrivateNetwork(),
 				"scaleway_lb_route":                            lb.ResourceRoute(),
 				"scaleway_mnq_nats_account":                    mnq.ResourceNatsAccount(),
 				"scaleway_mnq_nats_credentials":                mnq.ResourceNatsCredentials(),
@@ -261,6 +263,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.DataSourceProject(),
 				"scaleway_account_projects":                    account.DataSourceProjects(),
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
+				"scaleway_audit_trail_event":                   audittrail.DataSourceEvent(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
 				"scaleway_baremetal_partition_schema":          baremetal.DataPartitionSchema(),
@@ -272,6 +275,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_snapshot":                      block.DataSourceSnapshot(),
 				"scaleway_block_volume":                        block.DataSourceVolume(),
 				"scaleway_cockpit":                             cockpit.DataSourceCockpit(),
+				"scaleway_cockpit_grafana":                     cockpit.DataSourceCockpitGrafana(),
 				"scaleway_cockpit_source":                      cockpit.DataSourceCockpitSource(),
 				"scaleway_cockpit_sources":                     cockpit.DataSourceCockpitSources(),
 				"scaleway_config":                              scwconfig.DataSourceConfig(),

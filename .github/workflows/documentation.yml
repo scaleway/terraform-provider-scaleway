@@ -19,7 +19,7 @@ jobs:
   markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: tcort/github-action-markdown-link-check@v1
         with:
           use-quiet-mode: 'yes'
@@ -30,16 +30,16 @@ jobs:
   markdown-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: avto-dev/markdown-lint@v1.5.0
         with:
           config: '.markdownlint.yml'
-          args: 'docs'
+          args: 'docs templates/** README.md TESTING.md'
   misspell:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: stable
@@ -55,11 +55,12 @@ jobs:
   tfplugindocs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: stable
-      - uses: hashicorp/setup-terraform@v3
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
       - run: go tool tfplugindocs validate
       - run: rm -fr ./docs
       - run: go tool tfplugindocs generate

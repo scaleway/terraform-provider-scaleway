@@ -9,7 +9,6 @@ The `scaleway_account_ssh_key` data source is used to retrieve information about
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/how-to/create-ssh-key/) and [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-ssh-keys) for more information.
 
-
 ## Retrieve the SSH key of a Scaleway account
 
 The following commands allow you to:

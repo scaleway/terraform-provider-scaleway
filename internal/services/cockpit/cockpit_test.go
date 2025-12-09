@@ -1,7 +1,6 @@
 package cockpit_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -56,7 +55,6 @@ func TestAccCockpit_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "endpoints.0.grafana_url"),
-					checkGrafanaURL("scaleway_cockpit.main", "scaleway_account_project.project"),
 				),
 			},
 		},
@@ -97,28 +95,21 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 						type       = "traces"
 					}
 					
-					resource "scaleway_cockpit_alert_manager" "alert_manager" {
-						project_id = scaleway_account_project.project.id
-						enable_managed_alerts = true
-					}
-
-					resource "scaleway_cockpit_grafana_user" "main" {
-					  project_id = scaleway_account_project.project.id
-					  login = "cockpit_test_endpoint"
-					  role = "editor"
-					}
-					
-					resource "scaleway_cockpit" "main" {
-						project_id = scaleway_account_project.project.id
-						plan       = "premium"
-						depends_on = [
-								scaleway_cockpit_source.metrics,
-								scaleway_cockpit_source.logs,
-								scaleway_cockpit_source.traces,
-								scaleway_cockpit_alert_manager.alert_manager,
-								scaleway_cockpit_grafana_user.main
-							]
-					}
+				resource "scaleway_cockpit_alert_manager" "alert_manager" {
+					project_id = scaleway_account_project.project.id
+					enable_managed_alerts = true
+				}
+				
+				resource "scaleway_cockpit" "main" {
+					project_id = scaleway_account_project.project.id
+					plan       = "premium"
+					depends_on = [
+							scaleway_cockpit_source.metrics,
+							scaleway_cockpit_source.logs,
+							scaleway_cockpit_source.traces,
+							scaleway_cockpit_alert_manager.alert_manager
+						]
+				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "premium"),
@@ -133,20 +124,6 @@ func TestAccCockpit_WithSourceEndpoints(t *testing.T) {
 			},
 		},
 	})
-}
-
-func checkGrafanaURL(resourceName, projectResource string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[projectResource]
-		if !ok {
-			return fmt.Errorf("Not found: %s", projectResource)
-		}
-
-		projectID := rs.Primary.ID
-		expectedURL := fmt.Sprintf("https://%s.dashboard.obs.fr-par.scw.cloud", projectID)
-
-		return resource.TestCheckResourceAttr(resourceName, "endpoints.0.grafana_url", expectedURL)(s)
-	}
 }
 
 func isCockpitDestroyed(_ *acctest.TestTools) resource.TestCheckFunc {

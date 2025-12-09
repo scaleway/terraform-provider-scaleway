@@ -39,11 +39,9 @@ The following arguments are supported:
     - `can_receive` - (Optional). Defines whether the user can receive messages from the service.
     - `can_manage` - (Optional). Defines whether the user can manage the associated resource(s).
 
-
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which SQS is enabled.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project in which SQS is enabled.
-
 
 ## Attributes Reference
 

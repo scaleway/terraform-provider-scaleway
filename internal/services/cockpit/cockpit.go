@@ -90,7 +90,7 @@ func ResourceCockpit() *schema.Resource {
 				},
 			},
 		},
-		DeprecationMessage: "The scaleway_cockpit resource is deprecated and will be removed after January 1st, 2025. Use the new specialized resources instead: scaleway_cockpit_source, scaleway_cockpit_alert_manager, and scaleway_cockpit_grafana_user.",
+		DeprecationMessage: "The scaleway_cockpit resource is deprecated and will be removed after January 1st, 2025. Use the new specialized resources instead: scaleway_cockpit_source and scaleway_cockpit_alert_manager. For Grafana access, use the scaleway_cockpit_grafana data source with IAM authentication (the scaleway_cockpit_grafana_user resource is also deprecated).",
 	}
 }
 
@@ -141,7 +141,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 		Region:    region,
 		ProjectID: projectID,
-		Origin:    "external",
+		Origin:    "custom",
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)

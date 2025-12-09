@@ -35,12 +35,10 @@ resource "scaleway_mnq_sqs" "for_project" {
 
 The following arguments are supported:
 
-
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions)
   in which SQS will be enabled.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project in which SQS will be enabled.
-
 
 ## Attributes Reference
 

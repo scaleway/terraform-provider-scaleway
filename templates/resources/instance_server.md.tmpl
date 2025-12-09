@@ -223,6 +223,8 @@ You can check the available labels with our [CLI](https://www.scaleway.com/en/do
 
 To retrieve more information by label please use: ```scw marketplace image get label=<LABEL>```
 
+To obtain a local-image UUID from a label, please use: ```scw marketplace local-image list image-label=<LABEL>```
+
 - `name` - (Optional) The name of the server.
 
 - `tags` - (Optional) The tags associated with the server.
@@ -231,12 +233,12 @@ To retrieve more information by label please use: ```scw marketplace image get l
 
 ~> **Important:** If you don't specify a security group, a default one will be created, which won't be tracked by Terraform unless you import it.
 
-- `placement_group_id` - (Optional) The [placement group](https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group the server is attached to.
-
+- `placement_group_id` - (Optional) The [placement group](<https://www.scaleway.com/en/developers/api/instance/#path-security-groups-update-a-security-group> the server is attached to.
 
 ~> **Important:** When updating `placement_group_id` the `state` must be set to `stopped`, otherwise it will fail.
 
 - `root_volume` - (Optional) Root [volume](https://www.scaleway.com/en/developers/api/instance/#path-volume-types-list-volume-types) attached to the server on creation.
+    - `name` - (Optional) Name of the root volume.
     - `volume_id` - (Optional) The volume ID of the root volume of the server, allows you to create server with an existing volume. If empty, will be computed to a created volume ID.
     - `size_in_gb` - (Required) Size of the root volume in gigabytes.
       To find the right size use [this endpoint](https://www.scaleway.com/en/developers/api/instance/#path-instances-list-all-instances) and
@@ -246,7 +248,8 @@ To retrieve more information by label please use: ```scw marketplace image get l
     - `delete_on_termination` - (Defaults to `true`) Forces deletion of the root volume on instance termination.
     - `sbs_iops` - (Optional) Choose IOPS of your sbs volume, has to be used with `sbs_volume` for root volume type.
 
-~> **Important:** Updates to `root_volume.size_in_gb` will be ignored after the creation of the server.
+~> **Important:** It is not possible to change `root_volume.size_in_gb` for local volumes (`l_ssd`). Changes to this field will recreate the server.
+It is possible to increase `root_volume.size_in_gb` for SBS volumes, but they cannot be resized down without recreating the server.
 
 - `additional_volume_ids` - (Optional) The [additional volumes](https://www.scaleway.com/en/developers/api/instance/#path-volume-types-list-volume-types)
 attached to the server. Updates to this field will trigger a stop/start of the server.
@@ -295,7 +298,6 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
-
 
 ## Private Network
 

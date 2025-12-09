@@ -47,7 +47,6 @@ This section lists the arguments that you can provide to the `scaleway_object_bu
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
 
-
 ## Attributes Reference
 
 The `scaleway_object_bucket` data source exports certain attributes once the bucket information is retrieved. These attributes can be referenced in other parts of your Terraform configuration.

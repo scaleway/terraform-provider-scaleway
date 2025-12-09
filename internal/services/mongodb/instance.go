@@ -294,6 +294,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if exist {
 		restoreSnapshotRequest := &mongodb.RestoreSnapshotRequest{
+			Region:       region,
 			SnapshotID:   regional.ExpandID(snapshotID.(string)).ID,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
 			NodeAmount:   *nodeNumber,
@@ -310,6 +311,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		normalizeVersion := NormalizeMongoDBVersion(version)
 
 		createReq := &mongodb.CreateInstanceRequest{
+			Region:     region,
 			ProjectID:  d.Get("project_id").(string),
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
 			Version:    normalizeVersion,

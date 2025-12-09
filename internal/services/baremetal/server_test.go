@@ -116,6 +116,179 @@ func TestAccServer_Basic(t *testing.T) {
 	})
 }
 
+func TestAccServer_CloudInit(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_CloudInit"
+	name := "TestAccServer_CloudInit"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+					EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+				),
+			},
+
+			{
+				// Update cloud-init + reinstall
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+
+packages:
+ - curl
+EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit", "edited"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr(
+						"scaleway_baremetal_server.base",
+						"cloud_init",
+						"#cloud-config\napt_update: true\napt_upgrade: true\n\npackages:\n - curl\n",
+					),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_CloudInitNotCompatibleOffer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_CloudInitIncompatibleOffer"
+	name := "TestAccServer_CloudInitIncompatibleOffer"
+	OfferNameNotCompatible := "EM-L110X-SATA"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+					EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferNameNotCompatible),
+
+				ExpectError: regexp.MustCompile("cloud-init is not supported on this offer"),
+			},
+		},
+	})
+}
+
 func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -996,7 +1169,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ip.base", "address_cidr"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address_cidr", "data.scaleway_ipam_ip.base", "address_cidr"),
 				),
 			},
 			{
@@ -1328,7 +1501,7 @@ func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string
 				break
 			}
 
-			ip := rs.Primary.Attributes["address"]
+			ip := rs.Primary.Attributes["address_cidr"]
 			if !expectedIPs[ip] {
 				return fmt.Errorf("IP %q from resource %s not found in data source %s", ip, resourceName, ipamDataSource)
 			}

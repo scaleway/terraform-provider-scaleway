@@ -16,6 +16,7 @@ jobs:
         products:
           - account
           - applesilicon
+          - audittrail
           - autoscaling
           - az
           - baremetal
@@ -53,7 +54,7 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Install Go
@@ -109,7 +110,7 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install Go
         uses: actions/setup-go@v6
         with:

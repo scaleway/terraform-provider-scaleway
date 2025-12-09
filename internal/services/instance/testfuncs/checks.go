@@ -147,7 +147,7 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				case err == nil:
 					return retry.RetryableError(fmt.Errorf("instance IP (%s) still exists", rs.Primary.ID))
 				// Unexpected api error we return it
-				// We check for 403 because instanceSDK API return 403 for deleted IP
+				// We check for 403 because instance API return 403 for deleted IP
 				case httperrors.Is404(err) || httperrors.Is403(err):
 					continue
 				default:

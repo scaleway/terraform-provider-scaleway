@@ -1,0 +1,96 @@
+---
+subcategory: "Audit Trail"
+page_title: "Scaleway: scaleway_audit_trail_event"
+---
+
+# scaleway_audit_trail_event
+
+Use this data source to get a list of existing Audit Trail events.
+For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
+
+## Example Usage
+
+```hcl
+# Retrieve all audit trail events on the default organization
+data "scaleway_audit_trail_event" "find_all" {
+}
+
+# Retrieve audit trail events on a specific organization
+data "scaleway_audit_trail_event" "find_by_org" {
+  organization_id = "11111111-1111-1111-1111-111111111111"
+}
+
+# Retrieve audit trail events on a specific project
+data "scaleway_audit_trail_event" "find_by_project" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+
+# Retrieve audit trail events for a specific type of resource
+data "scaleway_audit_trail_event" "find_by_resource_type" {
+  resource_type = "instance_server"
+}
+
+# Retrieve audit trail for a specific resource
+data "scaleway_audit_trail_event" "find_by_resource_id" {
+  resource_id = "11111111-1111-1111-1111-111111111111"
+}
+
+# Retrieve audit trail for a specific Scaleway product
+data "scaleway_audit_trail_event" "find_by_product_name" {
+  product_name = "secret-manager"
+}
+
+# Retrieve audit trail events with various filtering
+data "scaleway_audit_trail_event" "find_with_filters" {
+  region = "fr-par"
+  service_name = "instance"
+  method_name = "CreateServer"
+  principal_id = "11111111-1111-1111-1111-111111111111"
+  source_ip = "192.0.2.1"
+  status = 200
+  recorded_after = "2025-10-01T00:00:00Z"
+  recorded_before = "2025-12-31T23:59:59Z"
+  order_by = "recorded_at_desc"
+}
+```
+
+## Argument Reference
+
+- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) you want to target. Defaults to the region specified in the [provider configuration](../index.md#region).
+- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`) ID of the Organization containing the Audit Trail events.
+- `project_id` - (Optional) ID of the Project containing the Audit Trail events.
+- `resource_type` - (Optional) Type of the scaleway resources associated with the listed events. Possible values are: `secm_secret`, `secm_secret_version`, `kube_cluster`, `kube_pool`, `kube_node`, `kube_acl`, `keym_key`, `iam_user`, `iam_application`, `iam_group`, `iam_policy`, `iam_api_key`, `iam_ssh_key`, `iam_rule`, `iam_saml`, `iam_saml_certificate`, `secret_manager_secret`, `secret_manager_version`, `key_manager_key`, `account_user`, `account_organization`, `account_project`, `instance_server`, `instance_placement_group`, `instance_security_group`, `instance_volume`, `instance_snapshot`, `instance_image`, `apple_silicon_server`, `baremetal_server`, `baremetal_setting`, `ipam_ip`, `sbs_volume`, `sbs_snapshot`, `load_balancer_lb`, `load_balancer_ip`, `load_balancer_frontend`, `load_balancer_backend`, `load_balancer_route`, `load_balancer_acl`, `load_balancer_certificate`, `sfs_filesystem`, or `vpc_private_network`.
+- `resource_id` - (Optional) ID of the Scaleway resource associated with the listed events.
+- `product_name` - (Optional) Name of the Scaleway product in a hyphenated format.
+- `service_name` - (Optional) Name of the service of the API call performed.
+- `method_name` - (Optional) Name of the method of the API call performed.
+- `principal_id` - (Optional) ID of the User or IAM application at the origin of the event.
+- `source_ip` - (Optional) IP address at the origin of the event.
+- `status` - (Optional) HTTP status code of the request.
+- `recorded_after` - (Optional) The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601).
+- `recorded_before` - (Optional) The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601).
+- `order_by` - (Optional) Defines the order in which events are returned. Possible values are `recorded_at_asc` and `recorded_at_desc`. Default value: `recorded_at_desc`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `events` - List of Audit Trail events matching the requested criteria.
+    - `id` - ID of the event. (UUID format)
+    - `recorded_at` - Timestamp of the event. (RFC 3339 format)
+    - `locality` - Locality of the resource attached to the event.
+    - `principal_id` - ID of the user or IAM application at the origin of the event.
+    - `organization_id` - ID of the Organization containing the Audit Trail events. (UUID format)
+    - `project_id` - Project of the resource attached to the event. (UUID format)
+    - `source_ip` - IP address at the origin of the event. (IP address)
+    - `user_agent` - User Agent at the origin of the event.
+    - `product_name` - Scaleway product associated with the listed events in a hyphenated format. Possible values are: `secret-manager`, `key-manager`, `iam`, `kubernetes`, `account`, `apple-silicon`, `instance`, `baremetal`, `load-balancer`, or `edge-services`.
+    - `service_name` - API name called to trigger the event. Possible values are: `scaleway.secret_manager.v1beta1.Api`, `scaleway.key_manager.v1alpha1.Api`, `scaleway.iam.v1alpha1.Api`, `scaleway.iam.v1alpha1.UnauthenticatedApi`, `scaleway.k8s.v1.Api`, `scaleway.account.v3.UserApi`, `scaleway.account.v3.OrganizationApi`, `scaleway.account.v2.GDPRApi`, `scaleway.apple_silicon.v1alpha1.Api`, `scaleway.instance.v1.Api`, `scaleway.baremetal.v1.Api`, or `scaleway.lb.v1.ZonedApi`.
+    - `method_name` - API method called to trigger the event.
+    - `resources` - List of resources attached to the event.
+        - `id` - ID of the resource attached to the event. (UUID format)
+        - `type` - Type of the Scaleway resource.
+        - `name` - Name of the Scaleway resource.
+    - `request_id` - Unique identifier of the request at the origin of the event. (UUID format)
+    - `request_body` - Request at the origin of the event.
+    - `status_code` - HTTP status code resulting of the API call.

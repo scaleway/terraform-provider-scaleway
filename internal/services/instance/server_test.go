@@ -23,6 +23,11 @@ import (
 
 const marketplaceImageType = "instance_sbs"
 
+var apiGeneratedVolumeNamePrefixesByImage = map[string]string{
+	"ubuntu_jammy": "Ubuntu 22.04 Jammy Jellyfish",
+	"ubuntu_focal": "Ubuntu 20.04 Focal Fossa",
+}
+
 func TestAccServer_Minimal1(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -46,7 +51,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
@@ -69,7 +74,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
@@ -149,7 +154,82 @@ func TestAccServer_Minimal2(t *testing.T) {
 	})
 }
 
-func TestAccServer_RootVolume1(t *testing.T) {
+func TestAccServer_RootVolumeFromImage(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	image := "ubuntu_focal"
+	serverID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "base" {
+						image = "%s"
+						type  = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+							size_in_gb = 10
+							name = "named-volume"
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
+					}`, image),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "base" {
+						image = "%s"
+						type  = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+							size_in_gb = 10
+							name = "renamed"
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
+					}`, image),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "base" {
+						image = "%s"
+						type  = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+							size_in_gb = 20
+							delete_on_termination = true
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
+					}`, image),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
+					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_RootVolumeFromID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -161,40 +241,53 @@ func TestAccServer_RootVolume1(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_instance_volume" "local" {
+						type = "l_ssd"
+						size_in_gb = 10
+					}
+
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						root_volume {
-							volume_type = "l_ssd"
-							size_in_gb = 10
-							delete_on_termination = true
+							volume_id = scaleway_instance_volume.local.id
 						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_id" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.local", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
 			},
 			{
 				Config: `
+					resource "scaleway_instance_volume" "local" {
+						type = "l_ssd"
+						size_in_gb = 10
+						name = "named-volume"
+					}
+
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
 						type  = "DEV1-S"
 						root_volume {
-							volume_type = "l_ssd"
-							size_in_gb = 20
-							delete_on_termination = true
+							volume_id = scaleway_instance_volume.local.id
 						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_id" ]
 					}`,
+			},
+			{
+				RefreshState: true,
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
-					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"), // New volume name should be readable from root_volume attribute after refreshing the state
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.name", "scaleway_instance_volume.local", "name"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.local", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
 			},
 		},
@@ -205,14 +298,16 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	image := "ubuntu_focal"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
+						image = "%s"
 						type  = "DEV1-S"
 						state = "stopped"
 						root_volume {
@@ -220,17 +315,17 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "true"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
+						image = "%s"
 						type  = "DEV1-S"
 						state = "stopped"
 						root_volume {
@@ -238,11 +333,11 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "false"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 				),
 			},
 		},
@@ -954,8 +1049,8 @@ func arePrivateNICsPresent(tt *acctest.TestTools, n string) resource.TestCheckFu
 }
 
 // serverHasNewVolume tests if volume name is generated by terraform
-// It is useful as volume should not be set in request when creating an instanceSDK from an image
-func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
+// It is useful as volume should not be set in request when creating an instance from an image
+func serverHasNewVolume(_ *acctest.TestTools, n string, image string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -967,8 +1062,13 @@ func serverHasNewVolume(_ *acctest.TestTools, n string) resource.TestCheckFunc {
 			return errors.New("instance root_volume has no name")
 		}
 
-		if strings.HasPrefix(rootVolumeName, "tf") {
-			return fmt.Errorf("root volume name is generated by provider, should be generated by api (%s)", rootVolumeName)
+		if !strings.HasPrefix(rootVolumeName, apiGeneratedVolumeNamePrefixesByImage[image]) {
+			errStr := fmt.Sprintf("unexpected root volume name %q, when it should have been generated by the Instance API, therefore be prefixed by %q", rootVolumeName, apiGeneratedVolumeNamePrefixesByImage[image])
+			if strings.HasPrefix(rootVolumeName, "tf-") {
+				errStr += " (actual name was generated by the provider)"
+			}
+
+			return errors.New(errStr)
 		}
 
 		return nil
@@ -2161,13 +2261,14 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	image := "ubuntu_jammy"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-
+				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
 						size_in_gb = 100
@@ -2176,25 +2277,24 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
-                      image = "ubuntu_jammy"
+                      image = "%s"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
 				),
 			},
 			{
-				Config: `
-
+				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
 						size_in_gb = 100
@@ -2208,26 +2308,26 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
-					  image = "ubuntu_jammy"
+					  image = "%s"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
 						name="filesystem-instance-terraform-test"
 						size_in_gb = 100
@@ -2241,7 +2341,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
- 					  image = "ubuntu_jammy"
+ 					  image = "%s"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
@@ -2249,20 +2349,20 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_block_volume" "volume" {
 						iops = 15000
 						size_in_gb = 15
@@ -2281,22 +2381,64 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource "scaleway_instance_server" "base" {
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
-					  image = "ubuntu_jammy"
+					  image = "%s"
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`,
+					}`, image),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_ScratchStorage(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						size_in_gb = 20
+						type = "scratch"
+						zone = "fr-par-2"
+					}
+			
+					resource "scaleway_instance_server" "main" {
+						name = "test-acc-server-scratch"
+						type = "H100-1-80G"
+						image = "ubuntu_jammy_gpu_os_12"
+						state = "stopped"
+						zone = "fr-par-2"
+					    tags  = [ "terraform-test", "scaleway_instance_server", "scratch" ]
+			
+						additional_volume_ids = [scaleway_instance_volume.main.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "H100-1-80G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
 				),
 			},
 		},

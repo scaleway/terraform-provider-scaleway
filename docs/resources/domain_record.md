@@ -225,7 +225,6 @@ The following arguments are supported:
         - `continents` - (Optional) List of continents (eg: `EU` for Europe, `NA` for North America, `AS` for Asia, etc.). [Check the list of all continent codes](https://api.scaleway.com/domain-private/v2beta1/continents).
         - `data` (Required) The data of the match result.
 
-
 - `http_service` - (Optional) The DNS service checks the provided URL on the configured IPs and resolves the request to one of the IPs, by excluding the ones not responding to the given string to check. [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#healthcheck-records).
     - `ips` - (Required) List of IPs to check.
     - `must_contain` - (Required) Text to search.
@@ -233,11 +232,9 @@ The following arguments are supported:
     - `user_agent` - (Optional) User-agent used when checking the URL.
     - `strategy` - (Required) Strategy to return an IP from the IPs list. Can be `random`, `hashed`, or `all`.
 
-
 - `view` - (Optional) The answer to a DNS request is based on the client’s (resolver) subnet. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#views-records).
     - `subnet` - (Required) The subnet of the view.
     - `data` - (Required) The data of the view record.
-
 
 - `weighted` - (Optional) You provide a list of IPs with their corresponding weights. These weights are used to proportionally direct requests to each IP. Depending on the weight of a record more or fewer requests are answered with their related IP compared to the others in the list. *(Can be more than 1)* [Check the documentation for more information](https://www.scaleway.com/en/docs/network/domains-and-dns/how-to/manage-dns-records/#weight-records).
     - `ip` - (Required) The weighted IP.

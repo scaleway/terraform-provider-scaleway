@@ -31,10 +31,8 @@ data "scaleway_instance_snapshot" "by_id" {
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
 
-
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the snapshot is associated with.
 
 ## Attributes Reference
 
 Exported attributes are the ones from `instance_snapshot` [resource](../resources/instance_snapshot.md)
-

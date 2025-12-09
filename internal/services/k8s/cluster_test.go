@@ -341,7 +341,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, previousK8SVersion),
+				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, fmt.Sprintf("%q", previousK8SVersion)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", previousK8SVersion),
@@ -351,7 +351,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, previousK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", previousK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", previousK8SVersionMinor),
@@ -361,7 +361,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -371,7 +371,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, latestK8SVersion),
+				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, fmt.Sprintf("%q", latestK8SVersion)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersion),
@@ -381,7 +381,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "tuesday", 3, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "tuesday", 3, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -391,7 +391,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -789,7 +789,7 @@ resource "scaleway_vpc_private_network" "auto_upgrade" {
 
 resource "scaleway_k8s_cluster" "auto_upgrade" {
 	cni = "calico"
-	version = "%s"
+	version = %s
 	name = "test-auto-upgrade"
 	auto_upgrade {
 	    enable = %t

@@ -117,8 +117,6 @@ In addition to all arguments above, the following attributes are exported:
 - `ds_record`: DNSSEC DS record configuration.
 - `task_id`: ID of the task that created the domain.
 
-
-
 ## Contact Blocks
 
 Each contact block supports the following attributes:
@@ -143,6 +141,3 @@ To import an existing domain registration, use:
 ```bash
 terraform import scaleway_domain_registration.test <project_id>/<task_id>
 ```
-
-
-

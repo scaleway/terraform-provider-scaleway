@@ -50,7 +50,6 @@ func waitClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluste
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     cluster.ID,
 		Region:        cluster.Region,
-		Status:        status,
 		Timeout:       scw.TimeDurationPtr(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))

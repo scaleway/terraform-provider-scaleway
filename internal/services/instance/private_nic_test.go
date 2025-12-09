@@ -218,7 +218,7 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 						"scaleway_instance_private_nic.pnic01", "ipam_ip_ids.0",
 						"scaleway_ipam_ip.ip01", "id"),
 					resource.TestCheckResourceAttrPair(
-						"scaleway_ipam_ip.ip01", "address",
+						"scaleway_ipam_ip.ip01", "address_cidr",
 						"data.scaleway_ipam_ip.by_id", "address_cidr"),
 				),
 			},
