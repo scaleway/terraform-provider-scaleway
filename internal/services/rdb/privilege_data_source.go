@@ -11,7 +11,7 @@ import (
 
 func DataSourcePrivilege() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivilege().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivilege().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
 

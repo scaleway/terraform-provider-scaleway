@@ -31,147 +31,151 @@ func ResourceSecret() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultSecretTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The secret name",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the secret",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] associated to secret",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the secret",
-			},
-			"version_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of versions for this Secret",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret's creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret's creation (RFC 3339 format)",
-			},
-			"path": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Location of the secret in the directory structure.",
-				Default:     "/",
-				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					return filepath.Clean(oldValue) == filepath.Clean(newValue)
-				},
-			},
-			"type": {
-				ForceNew: true,
-				Type:     schema.TypeString,
-				Description: func() string {
-					var t secret.SecretType
+		SchemaFunc:    secretSchema,
+	}
+}
 
-					secretTypes := t.Values()
-
-					return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
-				}(),
-				Optional:         true,
-				Default:          secret.SecretTypeOpaque,
-				ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
-			},
-			"protected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
-			},
-			"ephemeral_policy": {
-				Type:        schema.TypeList,
-				Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ttl": {
-							Optional:         true,
-							Type:             schema.TypeString,
-							DiffSuppressFunc: dsf.Duration,
-							ValidateDiagFunc: verify.IsDuration(),
-							Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
-						},
-						"expires_once_accessed": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "True if the secret version expires after a single user access.",
-						},
-						"action": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.ValidateEnum[secret.EphemeralPolicyAction](),
-							Description:      "Action to perform when the version of a secret expires.",
-						},
-					},
-				},
-			},
-			"versions": {
-				Type:        schema.TypeList,
-				Description: "List of the versions of the secret",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"revision": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The revision of secret version",
-						},
-						"secret_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The secret ID associated with this version",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the secret version",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Date and time of secret version's creation (RFC 3339 format)",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Description of the secret version",
-						},
-						"latest": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Returns true if the version is the latest.",
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+func secretSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The secret name",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the secret",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] associated to secret",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the secret",
+		},
+		"version_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of versions for this Secret",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret's creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret's creation (RFC 3339 format)",
+		},
+		"path": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Location of the secret in the directory structure.",
+			Default:     "/",
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				return filepath.Clean(oldValue) == filepath.Clean(newValue)
+			},
+		},
+		"type": {
+			ForceNew: true,
+			Type:     schema.TypeString,
+			Description: func() string {
+				var t secret.SecretType
+
+				secretTypes := t.Values()
+
+				return fmt.Sprintf("Type of the secret could be any value among: %s", secretTypes)
+			}(),
+			Optional:         true,
+			Default:          secret.SecretTypeOpaque,
+			ValidateDiagFunc: verify.ValidateEnum[secret.SecretType](),
+		},
+		"protected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "True if secret protection is enabled on a given secret. A protected secret cannot be deleted.",
+		},
+		"ephemeral_policy": {
+			Type:        schema.TypeList,
+			Description: "Ephemeral policy of the secret. Policy that defines whether/when a secret's versions expire. By default, the policy is applied to all the secret's versions.",
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ttl": {
+						Optional:         true,
+						Type:             schema.TypeString,
+						DiffSuppressFunc: dsf.Duration,
+						ValidateDiagFunc: verify.IsDuration(),
+						Description:      "Time frame, from one second and up to one year, during which the secret's versions are valid. Has to be specified in Go Duration format",
+					},
+					"expires_once_accessed": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "True if the secret version expires after a single user access.",
+					},
+					"action": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.ValidateEnum[secret.EphemeralPolicyAction](),
+						Description:      "Action to perform when the version of a secret expires.",
+					},
+				},
+			},
+		},
+		"versions": {
+			Type:        schema.TypeList,
+			Description: "List of the versions of the secret",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"revision": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The revision of secret version",
+					},
+					"secret_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The secret ID associated with this version",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the secret version",
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Date and time of secret version's creation (RFC 3339 format)",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Date and time of secret version's creation (RFC 3339 format)",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Description of the secret version",
+					},
+					"latest": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Returns true if the version is the latest.",
+					},
+				},
+			},
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

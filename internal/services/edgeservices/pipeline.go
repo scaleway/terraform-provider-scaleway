@@ -29,34 +29,38 @@ func ResourcePipeline() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultEdgeServicesTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The pipeline name",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The pipeline description",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline description",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline description",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The pipeline description",
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    pipelineSchema,
+	}
+}
+
+func pipelineSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The pipeline name",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The pipeline description",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The pipeline description",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The pipeline description",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The pipeline description",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

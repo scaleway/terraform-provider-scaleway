@@ -38,212 +38,216 @@ func ResourceFrontend() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
+		SchemaFunc: frontendSchema,
+	}
+}
+
+func frontendSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The load-balancer ID",
+		},
+		"backend_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The load-balancer backend ID",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the frontend",
+		},
+		"inbound_port": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntBetween(0, math.MaxUint16),
+			Description:  "TCP port to listen on the front side",
+		},
+		"timeout_client": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Description:      "Set the maximum inactivity time on the client side",
+		},
+		"certificate_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Certificate ID",
+			Deprecated:  "Please use certificate_ids",
+		},
+		"certificate_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The load-balancer ID",
 			},
-			"backend_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The load-balancer backend ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the frontend",
-			},
-			"inbound_port": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(0, math.MaxUint16),
-				Description:  "TCP port to listen on the front side",
-			},
-			"timeout_client": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Description:      "Set the maximum inactivity time on the client side",
-			},
-			"certificate_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Certificate ID",
-				Deprecated:  "Please use certificate_ids",
-			},
-			"certificate_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				},
-				Description:      "Collection of Certificate IDs related to the load balancer and domain",
-				DiffSuppressFunc: dsf.OrderDiff,
-			},
-			"acl": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "ACL rules",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The ACL name",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Description of the ACL",
-						},
-						"action": {
-							Type:        schema.TypeList,
-							Required:    true,
-							Description: "Action to undertake when an ACL filter matches",
-							MaxItems:    1,
-							MinItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:             schema.TypeString,
-										Required:         true,
-										ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionType](),
-										Description:      "The action type",
-									},
-									"redirect": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "Redirect parameters when using an ACL with `redirect` action",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"type": {
-													Type:             schema.TypeString,
-													Optional:         true,
-													ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionRedirectRedirectType](),
-													Description:      "The redirect type",
-												},
-												"target": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "An URL can be used in case of a location redirect ",
-												},
-												"code": {
-													Type:        schema.TypeInt,
-													Optional:    true,
-													Description: "The HTTP redirect code to use",
-												},
+			Description:      "Collection of Certificate IDs related to the load balancer and domain",
+			DiffSuppressFunc: dsf.OrderDiff,
+		},
+		"acl": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "ACL rules",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The ACL name",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Description of the ACL",
+					},
+					"action": {
+						Type:        schema.TypeList,
+						Required:    true,
+						Description: "Action to undertake when an ACL filter matches",
+						MaxItems:    1,
+						MinItems:    1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"type": {
+									Type:             schema.TypeString,
+									Required:         true,
+									ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionType](),
+									Description:      "The action type",
+								},
+								"redirect": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "Redirect parameters when using an ACL with `redirect` action",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"type": {
+												Type:             schema.TypeString,
+												Optional:         true,
+												ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionRedirectRedirectType](),
+												Description:      "The redirect type",
+											},
+											"target": {
+												Type:        schema.TypeString,
+												Optional:    true,
+												Description: "An URL can be used in case of a location redirect ",
+											},
+											"code": {
+												Type:        schema.TypeInt,
+												Optional:    true,
+												Description: "The HTTP redirect code to use",
 											},
 										},
 									},
 								},
 							},
 						},
-						"match": {
-							Type:        schema.TypeList,
-							Required:    true,
-							MaxItems:    1,
-							MinItems:    1,
-							Description: "The ACL match rule",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"ip_subnet": {
-										Type: schema.TypeList,
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-										Optional:         true,
-										Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
-										DiffSuppressFunc: diffSuppressFunc32SubnetMask,
+					},
+					"match": {
+						Type:        schema.TypeList,
+						Required:    true,
+						MaxItems:    1,
+						MinItems:    1,
+						Description: "The ACL match rule",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"ip_subnet": {
+									Type: schema.TypeList,
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
 									},
-									"http_filter": {
-										Type:             schema.TypeString,
-										Optional:         true,
-										Default:          lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
-										ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLHTTPFilter](),
-										Description:      "The HTTP filter to match",
+									Optional:         true,
+									Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+									DiffSuppressFunc: diffSuppressFunc32SubnetMask,
+								},
+								"http_filter": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									Default:          lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
+									ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLHTTPFilter](),
+									Description:      "The HTTP filter to match",
+								},
+								"http_filter_value": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									Description: "A list of possible values to match for the given HTTP filter",
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
 									},
-									"http_filter_value": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										Description: "A list of possible values to match for the given HTTP filter",
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
-									},
-									"http_filter_option": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "You can use this field with http_header_match acl type to set the header name to filter",
-									},
-									"invert": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: `If set to true, the condition will be of type "unless"`,
-									},
-									"ips_edge_services": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: `Defines whether Edge Services IPs should be matched`,
-									},
+								},
+								"http_filter_option": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "You can use this field with http_header_match acl type to set the header name to filter",
+								},
+								"invert": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: `If set to true, the condition will be of type "unless"`,
+								},
+								"ips_edge_services": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: `Defines whether Edge Services IPs should be matched`,
 								},
 							},
 						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IsDate and time of ACL's creation (RFC 3339 format)",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IsDate and time of ACL's update (RFC 3339 format)",
-						},
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IsDate and time of ACL's creation (RFC 3339 format)",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IsDate and time of ACL's update (RFC 3339 format)",
 					},
 				},
 			},
-			"external_acls": {
-				Type:          schema.TypeBool,
-				Description:   "This boolean determines if ACLs should be managed externally through the 'lb_acl' resource. If set to `true`, `acl` attribute cannot be set directly in the lb frontend",
-				Optional:      true,
-				Default:       false,
-				ConflictsWith: []string{"acl"},
-			},
-			"enable_http3": {
-				Type:        schema.TypeBool,
-				Description: "Activates HTTP/3 protocol",
-				Optional:    true,
-				Default:     false,
-			},
-			"connection_rate_limit": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
-			},
-			"enable_access_logs": {
-				Type:        schema.TypeBool,
-				Description: "Defines whether to enable access logs on the frontend",
-				Optional:    true,
-				Default:     false,
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the frontend",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the frontend",
-			},
+		},
+		"external_acls": {
+			Type:          schema.TypeBool,
+			Description:   "This boolean determines if ACLs should be managed externally through the 'lb_acl' resource. If set to `true`, `acl` attribute cannot be set directly in the lb frontend",
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"acl"},
+		},
+		"enable_http3": {
+			Type:        schema.TypeBool,
+			Description: "Activates HTTP/3 protocol",
+			Optional:    true,
+			Default:     false,
+		},
+		"connection_rate_limit": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "Rate limit for new connections established on this frontend. Use 0 value to disable, else value is connections per second",
+		},
+		"enable_access_logs": {
+			Type:        schema.TypeBool,
+			Description: "Defines whether to enable access logs on the frontend",
+			Optional:    true,
+			Default:     false,
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the frontend",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the frontend",
 		},
 	}
 }

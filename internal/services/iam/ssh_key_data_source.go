@@ -14,7 +14,7 @@ import (
 
 func DataSourceSSHKey() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSSKKey().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSSKKey().SchemaFunc())
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id")
 
 	dsSchema["name"].ConflictsWith = []string{"ssh_key_id"}

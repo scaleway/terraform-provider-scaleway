@@ -23,29 +23,33 @@ func ResourceNatsCredentials() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"account_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the nats account",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The nats credentials name",
-			},
-			"file": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The credentials file",
-				Sensitive:   true,
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    natsCredentialsSchema,
+	}
+}
+
+func natsCredentialsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"account_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "ID of the nats account",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "The nats credentials name",
+		},
+		"file": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The credentials file",
+			Sensitive:   true,
+		},
+		"region": regional.Schema(),
 	}
 }
 

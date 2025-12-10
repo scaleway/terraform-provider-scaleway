@@ -30,32 +30,36 @@ func ResourceNamespace() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultNamespaceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the container registry namespace",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the container registry namespace",
-			},
-			"is_public": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Define the default visibility policy",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint reachable by docker",
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:    namespaceSchema,
+	}
+}
+
+func namespaceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the container registry namespace",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the container registry namespace",
+		},
+		"is_public": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Define the default visibility policy",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint reachable by docker",
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

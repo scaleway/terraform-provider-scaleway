@@ -39,90 +39,94 @@ func ResourceObject() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Key of the object",
-			},
-			"file": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Path of the file to upload, defaults to an empty file",
-				ConflictsWith: []string{"content", "content_base64"},
-			},
-			"content": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Content of the file to upload",
-				ConflictsWith: []string{"file", "content_base64"},
-			},
-			"content_base64": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Content of the file to upload, should be base64 encoded",
-				ConflictsWith: []string{"file", "content"},
-			},
-			"hash": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "File hash to trigger upload",
-			},
-			"storage_class": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
-				Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
-			},
-			"metadata": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Map of object's metadata, only lower case keys are allowed",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				ValidateDiagFunc: validateMapKeyLowerCase(),
-			},
-			"content_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
-			},
-			"tags": {
-				Optional:    true,
-				Type:        schema.TypeMap,
-				Description: "Map of object's tags",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"visibility": {
-				Optional:    true,
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Visibility of the object, public-read or private",
-				ValidateFunc: validation.StringInSlice([]string{
-					string(s3Types.ObjectCannedACLPrivate),
-					string(s3Types.ObjectCannedACLPublicRead),
-				}, false),
-			},
-			"sse_customer_key": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Sensitive:    true,
-				Description:  "Customer's encryption keys to encrypt data (SSE-C)",
-				ValidateFunc: validation.StringLenBetween(32, 32),
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: objectSchema,
+	}
+}
+
+func objectSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Key of the object",
+		},
+		"file": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Path of the file to upload, defaults to an empty file",
+			ConflictsWith: []string{"content", "content_base64"},
+		},
+		"content": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Content of the file to upload",
+			ConflictsWith: []string{"file", "content_base64"},
+		},
+		"content_base64": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Content of the file to upload, should be base64 encoded",
+			ConflictsWith: []string{"file", "content"},
+		},
+		"hash": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "File hash to trigger upload",
+		},
+		"storage_class": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+			Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
+		},
+		"metadata": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "Map of object's metadata, only lower case keys are allowed",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			ValidateDiagFunc: validateMapKeyLowerCase(),
+		},
+		"content_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
+		},
+		"tags": {
+			Optional:    true,
+			Type:        schema.TypeMap,
+			Description: "Map of object's tags",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"visibility": {
+			Optional:    true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Visibility of the object, public-read or private",
+			ValidateFunc: validation.StringInSlice([]string{
+				string(s3Types.ObjectCannedACLPrivate),
+				string(s3Types.ObjectCannedACLPublicRead),
+			}, false),
+		},
+		"sse_customer_key": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			Description:  "Customer's encryption keys to encrypt data (SSE-C)",
+			ValidateFunc: validation.StringLenBetween(32, 32),
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

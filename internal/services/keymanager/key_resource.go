@@ -26,94 +26,98 @@ func ResourceKeyManagerKey() *schema.Resource {
 		CustomizeDiff: customdiff.All(
 			validateUsageAlgorithmCombination(),
 		),
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Name of the key.",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
-			"usage": {
-				Type:     schema.TypeString,
-				Required: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
-				}, false),
-				Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
-			},
-			"algorithm": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
-				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					var allKnownAlgos []string
+		SchemaFunc: keySchema,
+	}
+}
 
-					symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
-					for _, algo := range symAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
-
-					asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
-					for _, algo := range asymEncAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
-
-					asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
-					for _, algo := range asymSignAlgos {
-						allKnownAlgos = append(allKnownAlgos, string(algo))
-					}
-
-					return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
-				},
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the key.",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of the key's tags.",
-			},
-			"rotation_policy": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Key rotation policy.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"rotation_period":  {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
-						"next_rotation_at": {Type: schema.TypeString, Optional: true, Description: "Timestamp indicating the next scheduled rotation."},
-					},
-				},
-			},
-			"unprotected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the key is not protected against deletion.",
-			},
-			"origin": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"scaleway_kms", "external",
-				}, false),
-				Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
-			},
-			// Computed fields
-			"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
-			"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
-			"created_at":     {Type: schema.TypeString, Computed: true, Description: "Key creation date."},
-			"updated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last modification date."},
-			"rotation_count": {Type: schema.TypeInt, Computed: true, Description: "The rotation count tracks the number of times the key has been rotated."},
-			"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
-			"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
-			"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
+func keySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Name of the key.",
 		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
+		"usage": {
+			Type:     schema.TypeString,
+			Required: true,
+			ValidateFunc: validation.StringInSlice([]string{
+				"symmetric_encryption", "asymmetric_encryption", "asymmetric_signing",
+			}, false),
+			Description: "Key usage type. Possible values: symmetric_encryption, asymmetric_encryption, asymmetric_signing.",
+		},
+		"algorithm": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
+			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+				var allKnownAlgos []string
+
+				symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
+				for _, algo := range symAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
+				for _, algo := range asymEncAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+				for _, algo := range asymSignAlgos {
+					allKnownAlgos = append(allKnownAlgos, string(algo))
+				}
+
+				return verify.ValidateStringInSliceWithWarning(allKnownAlgos, "algorithm")(i, p)
+			},
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the key.",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Description: "List of the key's tags.",
+		},
+		"rotation_policy": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Key rotation policy.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"rotation_period":  {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
+					"next_rotation_at": {Type: schema.TypeString, Optional: true, Description: "Timestamp indicating the next scheduled rotation."},
+				},
+			},
+		},
+		"unprotected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the key is not protected against deletion.",
+		},
+		"origin": {
+			Type:     schema.TypeString,
+			Optional: true,
+			ValidateFunc: validation.StringInSlice([]string{
+				"scaleway_kms", "external",
+			}, false),
+			Description: "Origin of the key material. Possible values: scaleway_kms (Key Manager generates the key material), external (key material comes from an external source).",
+		},
+		// Computed fields
+		"id":             {Type: schema.TypeString, Computed: true, Description: "ID of the key."},
+		"state":          {Type: schema.TypeString, Computed: true, Description: "State of the key. See the Key.State enum for possible values."},
+		"created_at":     {Type: schema.TypeString, Computed: true, Description: "Key creation date."},
+		"updated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last modification date."},
+		"rotation_count": {Type: schema.TypeInt, Computed: true, Description: "The rotation count tracks the number of times the key has been rotated."},
+		"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
+		"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
+		"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
 	}
 }
 

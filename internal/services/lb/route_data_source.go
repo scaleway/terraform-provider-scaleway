@@ -11,7 +11,7 @@ import (
 
 func DataSourceRoute() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceRoute().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceRoute().SchemaFunc())
 
 	dsSchema["route_id"] = &schema.Schema{
 		Type:             schema.TypeString,

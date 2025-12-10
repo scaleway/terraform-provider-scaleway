@@ -37,165 +37,169 @@ func ResourceDeployment() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInferenceDeploymentTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The deployment name",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"node_type": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The node type to use for the deployment",
-			},
-			"model_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The model name to use for the deployment",
-			},
-			"model_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The model id used for the deployment",
-				ForceNew:         true,
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"accept_eula": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether or not the deployment is accepting eula",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
-				Description: "The tags associated with the deployment",
-			},
-			"min_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Description:  "The minimum size of the pool",
-				ValidateFunc: validation.IntAtLeast(1),
-				Default:      1,
-			},
-			"max_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Description:  "The maximum size of the pool",
-				ValidateFunc: validation.IntAtLeast(1),
-				Default:      1,
-			},
-			"quantization": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "The number of bits each model parameter should be quantized to",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The size of the pool",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the deployment",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the deployment",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the deployment",
-			},
-			"private_endpoint": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				MaxItems:     1,
-				AtLeastOneOf: []string{"public_endpoint"},
-				Description:  "List of endpoints",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "The id of the private endpoint",
-							Computed:    true,
-						},
-						"private_network_id": {
-							Type:        schema.TypeString,
-							Description: "The id of the private network",
-							Optional:    true,
-						},
-						"disable_auth": {
-							Type:        schema.TypeBool,
-							Description: "Disable the authentication on the endpoint.",
-							Optional:    true,
-							Default:     false,
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Description: "The URL of the endpoint.",
-							Computed:    true,
-						},
+		SchemaFunc:    deploymentSchema,
+	}
+}
+
+func deploymentSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The deployment name",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"node_type": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The node type to use for the deployment",
+		},
+		"model_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The model name to use for the deployment",
+		},
+		"model_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The model id used for the deployment",
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"accept_eula": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether or not the deployment is accepting eula",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Optional:    true,
+			Description: "The tags associated with the deployment",
+		},
+		"min_size": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The minimum size of the pool",
+			ValidateFunc: validation.IntAtLeast(1),
+			Default:      1,
+		},
+		"max_size": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The maximum size of the pool",
+			ValidateFunc: validation.IntAtLeast(1),
+			Default:      1,
+		},
+		"quantization": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The number of bits each model parameter should be quantized to",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The size of the pool",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the deployment",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the deployment",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the deployment",
+		},
+		"private_endpoint": {
+			Type:         schema.TypeList,
+			Optional:     true,
+			MaxItems:     1,
+			AtLeastOneOf: []string{"public_endpoint"},
+			Description:  "List of endpoints",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "The id of the private endpoint",
+						Computed:    true,
+					},
+					"private_network_id": {
+						Type:        schema.TypeString,
+						Description: "The id of the private network",
+						Optional:    true,
+					},
+					"disable_auth": {
+						Type:        schema.TypeBool,
+						Description: "Disable the authentication on the endpoint.",
+						Optional:    true,
+						Default:     false,
+					},
+					"url": {
+						Type:        schema.TypeString,
+						Description: "The URL of the endpoint.",
+						Computed:    true,
 					},
 				},
 			},
-			"public_endpoint": {
-				Type:         schema.TypeList,
-				Optional:     true,
-				AtLeastOneOf: []string{"private_endpoint"},
-				Description:  "Public endpoints",
-				MaxItems:     1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "The id of the public endpoint",
-							Computed:    true,
-						},
-						"is_enabled": {
-							Type:        schema.TypeBool,
-							Description: "Enable or disable public endpoint",
-							Optional:    true,
-						},
-						"disable_auth": {
-							Type:        schema.TypeBool,
-							Description: "Disable the authentication on the endpoint.",
-							Optional:    true,
-							Default:     false,
-						},
-						"url": {
-							Type:        schema.TypeString,
-							Description: "The URL of the endpoint.",
-							Computed:    true,
-						},
+		},
+		"public_endpoint": {
+			Type:         schema.TypeList,
+			Optional:     true,
+			AtLeastOneOf: []string{"private_endpoint"},
+			Description:  "Public endpoints",
+			MaxItems:     1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "The id of the public endpoint",
+						Computed:    true,
+					},
+					"is_enabled": {
+						Type:        schema.TypeBool,
+						Description: "Enable or disable public endpoint",
+						Optional:    true,
+					},
+					"disable_auth": {
+						Type:        schema.TypeBool,
+						Description: "Disable the authentication on the endpoint.",
+						Optional:    true,
+						Default:     false,
+					},
+					"url": {
+						Type:        schema.TypeString,
+						Description: "The URL of the endpoint.",
+						Computed:    true,
 					},
 				},
 			},
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the deployment",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
+		},
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the deployment",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
 					},
 				},
 			},

@@ -24,56 +24,60 @@ func ResourceRoute() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"vpc_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "VPC ID the Route belongs to",
-				DiffSuppressFunc: dsf.Locality,
+		SchemaFunc:    routeSchema,
+	}
+}
+
+func routeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"vpc_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "VPC ID the Route belongs to",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The route description",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the Route",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The route description",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the Route",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"destination": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The destination IP or IP range of the route",
-			},
-			"nexthop_resource_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the nexthop resource",
-				DiffSuppressFunc: diffSuppressFuncRouteResourceID,
-			},
-			"nexthop_private_network_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the nexthop private network",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"region": regional.Schema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the route",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the route",
-			},
+		},
+		"destination": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The destination IP or IP range of the route",
+		},
+		"nexthop_resource_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop resource",
+			DiffSuppressFunc: diffSuppressFuncRouteResourceID,
+		},
+		"nexthop_private_network_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop private network",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"region": regional.Schema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the route",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the route",
 		},
 	}
 }

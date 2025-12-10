@@ -36,133 +36,137 @@ func ResourceNetwork() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"gateway_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the public gateway where connect to",
-			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The ID of the private network where connect to",
-			},
-			"dhcp_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the public gateway DHCP config",
-				ConflictsWith:    []string{"static_address", "ipam_config"},
-				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
-					if v, ok := d.Get("ipam_config").([]any); ok && len(v) > 0 {
-						return true
-					}
-
-					return oldValue == newValue
-				},
-				Deprecated: "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
-			},
-			"enable_masquerade": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Enable masquerade on this network",
-			},
-			"enable_dhcp": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Enable DHCP config on this network",
-				Deprecated:  "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
-			},
-			"cleanup_dhcp": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Remove DHCP config on this network on destroy",
-				Deprecated:  "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
-			},
-			"static_address": {
-				Type:          schema.TypeString,
-				Description:   "The static IP address in CIDR on this network",
-				Optional:      true,
-				Computed:      true,
-				ValidateFunc:  validation.IsCIDR,
-				ConflictsWith: []string{"dhcp_id", "ipam_config"},
-				Deprecated:    "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
-			},
-			"ipam_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Computed:      true,
-				Description:   "Auto-configure the Gateway Network using IPAM (IP address management service)",
-				ConflictsWith: []string{"dhcp_id", "static_address"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"push_default_route": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Defines whether the default route is enabled on that Gateway Network",
-						},
-						"ipam_ip_id": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-						},
-					},
-				},
-			},
-			// Computed elements
-			"mac_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The mac address on this network",
-			},
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the resource.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource.",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address.",
-						},
-					},
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the gateway network",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the gateway network",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the Public Gateway's connection to the Private Network",
-			},
-			"zone": zonal.Schema(),
-		},
+		SchemaFunc:    networkSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
+	}
+}
+
+func networkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"gateway_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the public gateway where connect to",
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The ID of the private network where connect to",
+		},
+		"dhcp_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the public gateway DHCP config",
+			ConflictsWith:    []string{"static_address", "ipam_config"},
+			DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+				if v, ok := d.Get("ipam_config").([]any); ok && len(v) > 0 {
+					return true
+				}
+
+				return oldValue == newValue
+			},
+			Deprecated: "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+		},
+		"enable_masquerade": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Enable masquerade on this network",
+		},
+		"enable_dhcp": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Enable DHCP config on this network",
+			Deprecated:  "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+		},
+		"cleanup_dhcp": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Remove DHCP config on this network on destroy",
+			Deprecated:  "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+		},
+		"static_address": {
+			Type:          schema.TypeString,
+			Description:   "The static IP address in CIDR on this network",
+			Optional:      true,
+			Computed:      true,
+			ValidateFunc:  validation.IsCIDR,
+			ConflictsWith: []string{"dhcp_id", "ipam_config"},
+			Deprecated:    "Please use ipam_config. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+		},
+		"ipam_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Computed:      true,
+			Description:   "Auto-configure the Gateway Network using IPAM (IP address management service)",
+			ConflictsWith: []string{"dhcp_id", "static_address"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"push_default_route": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Defines whether the default route is enabled on that Gateway Network",
+					},
+					"ipam_ip_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						Description:      "Use this IPAM-booked IP ID as the Gateway's IP in this Private Network",
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+					},
+				},
+			},
+		},
+		// Computed elements
+		"mac_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The mac address on this network",
+		},
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the resource.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource.",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address.",
+					},
+				},
+			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the gateway network",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the gateway network",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the Public Gateway's connection to the Private Network",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

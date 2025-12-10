@@ -32,37 +32,41 @@ func ResourceCron() *schema.Resource {
 			Create:  schema.DefaultTimeout(defaultFunctionCronTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"function_id": {
-				Type:        schema.TypeString,
-				Description: "The ID of the function to create a cron for.",
-				Required:    true,
-			},
-			"schedule": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.ValidateCronExpression(),
-				Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
-			},
-			"args": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Functions arguments as json object to pass through during execution.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the cron job.",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Cron job status.",
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    cronSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+	}
+}
+
+func cronSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"function_id": {
+			Type:        schema.TypeString,
+			Description: "The ID of the function to create a cron for.",
+			Required:    true,
+		},
+		"schedule": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.ValidateCronExpression(),
+			Description:      "Cron format string, e.g. 0 * * * * or @hourly, as schedule time of its jobs to be created and executed.",
+		},
+		"args": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Functions arguments as json object to pass through during execution.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the cron job.",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Cron job status.",
+		},
+		"region": regional.Schema(),
 	}
 }
 

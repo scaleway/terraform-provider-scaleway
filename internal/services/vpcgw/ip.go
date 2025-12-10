@@ -24,40 +24,44 @@ func ResourceIP() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:        schema.TypeString,
-				Description: "the IP itself",
-				Computed:    true,
+		SchemaFunc:    ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:        schema.TypeString,
+			Description: "the IP itself",
+			Computed:    true,
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with public gateway IP",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with public gateway IP",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"project_id": account.ProjectIDSchema(),
-			"zone":       zonal.Schema(),
-			// Computed elements
-			"organization_id": account.OrganizationIDSchema(),
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "reverse domain name for the IP address",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the public gateway IP",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the public gateway IP",
-			},
+		},
+		"project_id": account.ProjectIDSchema(),
+		"zone":       zonal.Schema(),
+		// Computed elements
+		"organization_id": account.OrganizationIDSchema(),
+		"reverse": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "reverse domain name for the IP address",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the public gateway IP",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the public gateway IP",
 		},
 	}
 }

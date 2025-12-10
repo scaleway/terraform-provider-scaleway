@@ -30,33 +30,37 @@ func ResourceDatabase() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Required:    true,
-				Description: "The database name",
-			},
-			"max_cpu": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     15,
-				Description: "The maximum number of CPU units for your Serverless SQL Database",
-			},
-			"min_cpu": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     0,
-				Description: "The minimum number of CPU units for your Serverless SQL Database",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "endpoint of the database",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    databaseSchema,
+	}
+}
+
+func databaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			ForceNew:    true,
+			Required:    true,
+			Description: "The database name",
 		},
+		"max_cpu": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     15,
+			Description: "The maximum number of CPU units for your Serverless SQL Database",
+		},
+		"min_cpu": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     0,
+			Description: "The minimum number of CPU units for your Serverless SQL Database",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "endpoint of the database",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

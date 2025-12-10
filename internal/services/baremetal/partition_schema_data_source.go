@@ -37,43 +37,47 @@ const (
 func DataPartitionSchema() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataPartitionSchemaRead,
-		Schema: map[string]*schema.Schema{
-			"offer_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "ID of the server offer",
-			},
-			"os_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The base image of the server",
-				DiffSuppressFunc: dsf.Locality,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"swap": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "set swap partition",
-			},
-			"extra_partition": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "set extra ext_4 partition",
-			},
-			"ext_4_mountpoint": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Default:      defaultMountpoint,
-				ValidateFunc: validation.StringInSlice([]string{"/data", "/home"}, false),
-				Description:  "Mount point must be an absolute path",
-			},
-			"json_partition": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The partitioning schema in json format",
-			},
+		SchemaFunc:  partitionSchema,
+	}
+}
+
+func partitionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"offer_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "ID of the server offer",
+		},
+		"os_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The base image of the server",
+			DiffSuppressFunc: dsf.Locality,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"swap": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "set swap partition",
+		},
+		"extra_partition": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "set extra ext_4 partition",
+		},
+		"ext_4_mountpoint": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Default:      defaultMountpoint,
+			ValidateFunc: validation.StringInSlice([]string{"/data", "/home"}, false),
+			Description:  "Mount point must be an absolute path",
+		},
+		"json_partition": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The partitioning schema in json format",
 		},
 	}
 }

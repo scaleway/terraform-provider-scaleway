@@ -30,123 +30,127 @@ func ResourceDefinition() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The job name",
+		SchemaFunc:    definitionSchema,
+	}
+}
+
+func definitionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The job name",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Description: "The job description",
+			Optional:    true,
+		},
+		"cpu_limit": {
+			Type:        schema.TypeInt,
+			Description: "CPU limit of the job",
+			Required:    true,
+		},
+		"memory_limit": {
+			Type:        schema.TypeInt,
+			Description: "Memory limit of the job",
+			Required:    true,
+		},
+		"image_uri": {
+			Type:        schema.TypeString,
+			Description: "Image URI to use for the job",
+			Optional:    true,
+		},
+		"command": {
+			Type:        schema.TypeString,
+			Description: "Command to use for the job",
+			Optional:    true,
+		},
+		"timeout": {
+			Type:             schema.TypeString,
+			Description:      "Timeout for the job in seconds",
+			Optional:         true,
+			Computed:         true,
+			DiffSuppressFunc: dsf.Duration,
+		},
+		"env": {
+			Type:        schema.TypeMap,
+			Description: "Environment variables to pass to the job",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringLenBetween(0, 1000),
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Description: "The job description",
-				Optional:    true,
-			},
-			"cpu_limit": {
-				Type:        schema.TypeInt,
-				Description: "CPU limit of the job",
-				Required:    true,
-			},
-			"memory_limit": {
-				Type:        schema.TypeInt,
-				Description: "Memory limit of the job",
-				Required:    true,
-			},
-			"image_uri": {
-				Type:        schema.TypeString,
-				Description: "Image URI to use for the job",
-				Optional:    true,
-			},
-			"command": {
-				Type:        schema.TypeString,
-				Description: "Command to use for the job",
-				Optional:    true,
-			},
-			"timeout": {
-				Type:             schema.TypeString,
-				Description:      "Timeout for the job in seconds",
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: dsf.Duration,
-			},
-			"env": {
-				Type:        schema.TypeMap,
-				Description: "Environment variables to pass to the job",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringLenBetween(0, 1000),
-				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
-			},
-			"cron": {
-				Type:        schema.TypeList,
-				Description: "Cron expression",
-				Optional:    true,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"schedule": {
-							Type:         schema.TypeString,
-							Description:  "UNIX cron schedule to run job",
-							Required:     true,
-							RequiredWith: []string{"cron.0"},
-						},
-						"timezone": {
-							Type:         schema.TypeString,
-							Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
-							Required:     true,
-							RequiredWith: []string{"cron.0"},
-						},
+			ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+		},
+		"cron": {
+			Type:        schema.TypeList,
+			Description: "Cron expression",
+			Optional:    true,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"schedule": {
+						Type:         schema.TypeString,
+						Description:  "UNIX cron schedule to run job",
+						Required:     true,
+						RequiredWith: []string{"cron.0"},
+					},
+					"timezone": {
+						Type:         schema.TypeString,
+						Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
+						Required:     true,
+						RequiredWith: []string{"cron.0"},
 					},
 				},
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"secret_reference": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "A reference to a Secret Manager secret.",
-				Set: func(v any) int {
-					secret := v.(map[string]any)
-					if secret["environment"] != "" {
-						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
-					}
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"secret_reference": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "A reference to a Secret Manager secret.",
+			Set: func(v any) int {
+				secret := v.(map[string]any)
+				if secret["environment"] != "" {
+					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
+				}
 
-					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"secret_id": {
-							Type:                  schema.TypeString,
-							Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
-							Required:              true,
-							DiffSuppressOnRefresh: true,
-							DiffSuppressFunc:      dsf.Locality,
-						},
-						"secret_reference_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The secret reference UUID",
-						},
-						"secret_version": {
-							Type:        schema.TypeString,
-							Description: "The secret version.",
-							Default:     "latest",
-							Optional:    true,
-						},
-						"file": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "The absolute file path where the secret will be mounted.",
-							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
-						},
-						"environment": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "An environment variable containing the secret value.",
-							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
-						},
+				return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"secret_id": {
+						Type:                  schema.TypeString,
+						Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
+						Required:              true,
+						DiffSuppressOnRefresh: true,
+						DiffSuppressFunc:      dsf.Locality,
+					},
+					"secret_reference_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The secret reference UUID",
+					},
+					"secret_version": {
+						Type:        schema.TypeString,
+						Description: "The secret version.",
+						Default:     "latest",
+						Optional:    true,
+					},
+					"file": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "The absolute file path where the secret will be mounted.",
+						ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
+					},
+					"environment": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "An environment variable containing the secret value.",
+						ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
 					},
 				},
 			},
