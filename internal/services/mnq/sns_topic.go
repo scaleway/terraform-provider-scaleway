@@ -116,7 +116,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -161,7 +161,7 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -197,7 +197,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}

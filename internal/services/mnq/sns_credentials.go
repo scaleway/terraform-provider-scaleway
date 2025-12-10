@@ -42,25 +42,27 @@ func snsCredentialsSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Computed:    true,
 			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"can_publish": {
-						Type:        schema.TypeBool,
-						Computed:    true,
-						Optional:    true,
-						Description: "Allow publish messages to the service",
-					},
-					"can_receive": {
-						Type:        schema.TypeBool,
-						Computed:    true,
-						Optional:    true,
-						Description: "Allow receive messages from the service",
-					},
-					"can_manage": {
-						Type:        schema.TypeBool,
-						Computed:    true,
-						Optional:    true,
-						Description: "Allow manage the associated resource",
-					},
+				SchemaFunc: func() map[string]*schema.Schema {
+					return map[string]*schema.Schema{
+						"can_publish": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Optional:    true,
+							Description: "Allow publish messages to the service",
+						},
+						"can_receive": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Optional:    true,
+							Description: "Allow receive messages from the service",
+						},
+						"can_manage": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Optional:    true,
+							Description: "Allow manage the associated resource",
+						},
+					}
 				},
 			},
 		},

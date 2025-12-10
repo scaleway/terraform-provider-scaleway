@@ -18,7 +18,9 @@ func DataSourceSQS() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceMNQSQSRead,
-		Schema:      dsSchema,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return dsSchema
+		},
 	}
 }
 

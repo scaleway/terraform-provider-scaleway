@@ -119,7 +119,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -187,7 +187,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

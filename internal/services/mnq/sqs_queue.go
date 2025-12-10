@@ -126,18 +126,20 @@ func sqsQueueSchema() map[string]*schema.Schema {
 			MaxItems:    1,
 			Description: "Configuration for the dead-letter queue",
 			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"id": {
-						Type:        schema.TypeString,
-						Required:    true,
-						Description: "The ID or ARN of the dead-letter queue where messages are sent after the maximum receive count is exceeded.",
-					},
-					"max_receive_count": {
-						Type:         schema.TypeInt,
-						Required:     true,
-						ValidateFunc: validation.IntBetween(1, 1000),
-						Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
-					},
+				SchemaFunc: func() map[string]*schema.Schema {
+					return map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The ID or ARN of the dead-letter queue where messages are sent after the maximum receive count is exceeded.",
+						},
+						"max_receive_count": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ValidateFunc: validation.IntBetween(1, 1000),
+							Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
+						},
+					}
 				},
 			},
 		},
@@ -190,7 +192,7 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 	isFifo := d.Get("fifo_queue").(bool)
 	queueName := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -248,7 +250,7 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
 	}
 
-	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -289,7 +291,7 @@ func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

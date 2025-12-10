@@ -18,7 +18,9 @@ func DataSourceSNS() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceMNQSNSRead,
-		Schema:      dsSchema,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return dsSchema
+		},
 	}
 }
 
