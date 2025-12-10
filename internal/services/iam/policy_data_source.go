@@ -14,7 +14,7 @@ import (
 
 func DataSourcePolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePolicy().SchemaFunc())
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name")
 
 	dsSchema["name"].ConflictsWith = []string{"policy_id"}

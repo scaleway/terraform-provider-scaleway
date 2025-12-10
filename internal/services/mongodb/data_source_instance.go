@@ -15,7 +15,7 @@ import (
 )
 
 func DataSourceInstance() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceInstance().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceInstance().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 

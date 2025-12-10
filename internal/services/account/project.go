@@ -23,36 +23,40 @@ func ResourceProject() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the project",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the project",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Project (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Project (Format ISO 8601)",
-			},
-			"organization_id": {
-				Type:             schema.TypeString,
-				Description:      "The organization_id you want to attach the resource to",
-				Optional:         true,
-				ForceNew:         true,
-				Computed:         true,
-				ValidateDiagFunc: verify.IsUUID(),
-			},
+		SchemaFunc:    projectSchema,
+	}
+}
+
+func projectSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the project",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the project",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Project (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Project (Format ISO 8601)",
+		},
+		"organization_id": {
+			Type:             schema.TypeString,
+			Description:      "The organization_id you want to attach the resource to",
+			Optional:         true,
+			ForceNew:         true,
+			Computed:         true,
+			ValidateDiagFunc: verify.IsUUID(),
 		},
 	}
 }

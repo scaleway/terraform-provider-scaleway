@@ -30,60 +30,64 @@ func ResourceCockpitSource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Name of the datasource",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The type of the datasource",
-				ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
-			},
-			"retention_days": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 365),
-				Description:  "The number of days to retain data, must be between 1 and 365.",
-			},
-			// computed
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL of the datasource",
-			},
-			"origin": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The origin of the datasource",
-			},
-			"synchronized_with_grafana": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether the data source is synchronized with Grafana",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the cockpit datasource",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the cockpit datasource",
-			},
-			"push_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL endpoint used for pushing data to the cockpit data source.",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
+		SchemaFunc: sourceSchema,
+	}
+}
+
+func sourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Name of the datasource",
 		},
+		"type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The type of the datasource",
+			ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
+		},
+		"retention_days": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntBetween(1, 365),
+			Description:  "The number of days to retain data, must be between 1 and 365.",
+		},
+		// computed
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL of the datasource",
+		},
+		"origin": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The origin of the datasource",
+		},
+		"synchronized_with_grafana": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates whether the data source is synchronized with Grafana",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the cockpit datasource",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the cockpit datasource",
+		},
+		"push_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL endpoint used for pushing data to the cockpit data source.",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
 	}
 }
 

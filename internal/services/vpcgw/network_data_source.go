@@ -17,7 +17,7 @@ import (
 
 func DataSourceNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceNetwork().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	searchFields := []string{

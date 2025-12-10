@@ -15,7 +15,7 @@ import (
 )
 
 func DataSourceProject() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceProject().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceProject().SchemaFunc())
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "organization_id")
 
 	dsSchema["name"].ConflictsWith = []string{"project_id"}
@@ -88,7 +88,7 @@ func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func DataSourceProjects() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceProject().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceProject().SchemaFunc())
 	datasource.AddOptionalFieldsToSchema(dsSchema, "organization_id")
 
 	dsSchema["organization_id"] = &schema.Schema{

@@ -15,7 +15,7 @@ import (
 
 func DataSourceBackend() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceBackend().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceBackend().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "lb_id")

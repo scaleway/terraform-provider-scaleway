@@ -27,58 +27,62 @@ func ResourceLockConfiguration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateFunc:     validation.StringLenBetween(1, 63),
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"rule": {
-				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"default_retention": {
-							Type:        schema.TypeList,
-							Description: "Default retention.",
-							Required:    true,
-							MinItems:    1,
-							MaxItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"mode": {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringInSlice([]string{"GOVERNANCE", "COMPLIANCE"}, false),
-										Description:  "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.",
-									},
-									"days": {
-										Type:          schema.TypeInt,
-										Optional:      true,
-										Description:   "The number of days that you want to specify for the default retention period.",
-										ConflictsWith: []string{"rule.0.default_retention.0.years"},
-									},
-									"years": {
-										Type:          schema.TypeInt,
-										Optional:      true,
-										Description:   "The number of years that you want to specify for the default retention period.",
-										ConflictsWith: []string{"rule.0.default_retention.0.days"},
-									},
+		SchemaFunc: lockConfigurationSchema,
+	}
+}
+
+func lockConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringLenBetween(1, 63),
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"rule": {
+			Type:     schema.TypeList,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"default_retention": {
+						Type:        schema.TypeList,
+						Description: "Default retention.",
+						Required:    true,
+						MinItems:    1,
+						MaxItems:    1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"mode": {
+									Type:         schema.TypeString,
+									Required:     true,
+									ValidateFunc: validation.StringInSlice([]string{"GOVERNANCE", "COMPLIANCE"}, false),
+									Description:  "The default Object Lock retention mode you want to apply to new objects placed in the specified bucket.",
+								},
+								"days": {
+									Type:          schema.TypeInt,
+									Optional:      true,
+									Description:   "The number of days that you want to specify for the default retention period.",
+									ConflictsWith: []string{"rule.0.default_retention.0.years"},
+								},
+								"years": {
+									Type:          schema.TypeInt,
+									Optional:      true,
+									Description:   "The number of years that you want to specify for the default retention period.",
+									ConflictsWith: []string{"rule.0.default_retention.0.days"},
 								},
 							},
 						},
 					},
 				},
-				Description: "Specifies the Object Lock rule for the specified object.",
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+			Description: "Specifies the Object Lock rule for the specified object.",
 		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

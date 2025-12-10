@@ -36,53 +36,7 @@ func ResourceUser() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultMongodbInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the user is created",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "MongoDB user name",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "MongoDB user password",
-			},
-			"roles": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "List of roles assigned to the user",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"role": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Role name (read, read_write, db_admin, sync)",
-						},
-						"database_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Database name for the role",
-						},
-						"any_database": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Apply role to any database",
-						},
-					},
-				},
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    userSchema,
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("instance_id"),
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
@@ -106,6 +60,56 @@ func ResourceUser() *schema.Resource {
 				return nil
 			},
 		),
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the user is created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "MongoDB user name",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "MongoDB user password",
+		},
+		"roles": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "List of roles assigned to the user",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"role": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Role name (read, read_write, db_admin, sync)",
+					},
+					"database_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Database name for the role",
+					},
+					"any_database": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Apply role to any database",
+					},
+				},
+			},
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

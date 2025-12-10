@@ -14,19 +14,23 @@ import (
 func DataSourceCockpitGrafana() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceCockpitGrafanaRead,
-		Schema: map[string]*schema.Schema{
-			"project_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "The project ID associated with the Grafana instance",
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"grafana_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL to access the Grafana dashboard",
-			},
+		SchemaFunc:  grafanaSchema,
+	}
+}
+
+func grafanaSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "The project ID associated with the Grafana instance",
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"grafana_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL to access the Grafana dashboard",
 		},
 	}
 }

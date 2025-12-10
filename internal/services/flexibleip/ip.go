@@ -32,63 +32,67 @@ func ResourceIP() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFlexibleIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the flexible IP",
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Defines whether the flexible IP has an IPv6 address",
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The reverse DNS for this flexible IP",
-				Computed:    true,
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The baremetal server associated with this flexible IP",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the flexible IP",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address of the flexible IP",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the flexible IP",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Flexible IP (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
-			},
-		},
+		SchemaFunc:    ipSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the flexible IP",
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Defines whether the flexible IP has an IPv6 address",
+		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The reverse DNS for this flexible IP",
+			Computed:    true,
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The baremetal server associated with this flexible IP",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the flexible IP",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"ip_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address of the flexible IP",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the flexible IP",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Flexible IP (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
+		},
 	}
 }
 

@@ -30,29 +30,33 @@ func ResourceDomain() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultContainerDomainTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"hostname": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Domain's hostname",
-			},
-			"container_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "Container the domain will be bound to",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "URL used to query the container",
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    domainSchema,
 		CustomizeDiff: cdf.LocalityCheck("container_id"),
+	}
+}
+
+func domainSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"hostname": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Domain's hostname",
+		},
+		"container_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "Container the domain will be bound to",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "URL used to query the container",
+		},
+		"region": regional.Schema(),
 	}
 }
 

@@ -24,33 +24,37 @@ func ResourceUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"region": regional.Schema(),
-			"deployment_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the Datawarehouse deployment to which this user belongs.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the ClickHouse user.",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "Password for the ClickHouse user.",
-			},
-			"is_admin": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether the user has administrator privileges.",
-			},
+		SchemaFunc: userSchema,
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region": regional.Schema(),
+		"deployment_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "ID of the Datawarehouse deployment to which this user belongs.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the ClickHouse user.",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "Password for the ClickHouse user.",
+		},
+		"is_admin": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether the user has administrator privileges.",
 		},
 	}
 }

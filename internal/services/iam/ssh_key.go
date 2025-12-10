@@ -25,61 +25,65 @@ func ResourceSSKKey() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam SSH key",
-			},
-			"public_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The public SSH key",
-				// We don't consider trailing \n as diff
-				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
-					parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
-					if err != nil {
-						return false
-					}
+		SchemaFunc:    sshKeySchema,
+	}
+}
 
-					parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
-					if err != nil {
-						return false
-					}
+func sshKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam SSH key",
+		},
+		"public_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The public SSH key",
+			// We don't consider trailing \n as diff
+			DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+				parsedOldValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(oldValue))
+				if err != nil {
+					return false
+				}
 
-					marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
-					marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
+				parsedNewValue, _, _, _, err := ssh.ParseAuthorizedKey([]byte(newValue))
+				if err != nil {
+					return false
+				}
 
-					areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+				marshalledOldValue := ssh.MarshalAuthorizedKey(parsedOldValue)
+				marshalledNewValue := ssh.MarshalAuthorizedKey(parsedNewValue)
 
-					return areEqual
-				},
+				areEqual := bytes.Equal(marshalledOldValue, marshalledNewValue)
+
+				return areEqual
 			},
-			"fingerprint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The fingerprint of the iam SSH key",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam SSH Key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam SSH Key",
-			},
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"disabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "The SSH key status",
-			},
+		},
+		"fingerprint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The fingerprint of the iam SSH key",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam SSH Key",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam SSH Key",
+		},
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"disabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "The SSH key status",
 		},
 	}
 }

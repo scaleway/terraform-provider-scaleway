@@ -23,16 +23,20 @@ func ResourcePlan() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ValidateDiagFunc: verify.ValidateEnum[edgeservices.PlanName](),
-				Description:      "Name of the plan",
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    planSchema,
+	}
+}
+
+func planSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: verify.ValidateEnum[edgeservices.PlanName](),
+			Description:      "Name of the plan",
 		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

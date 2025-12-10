@@ -16,27 +16,31 @@ import (
 func DataSourceOption() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceOptionRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Exact label of the desired option",
-				ConflictsWith: []string{"option_id"},
-			},
-			"option_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the option",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"name"},
-			},
-			"manageable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Is false if the option could not be added or removed",
-			},
-			"zone": zonal.Schema(),
+		SchemaFunc:  optionSchema,
+	}
+}
+
+func optionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Exact label of the desired option",
+			ConflictsWith: []string{"option_id"},
 		},
+		"option_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the option",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"name"},
+		},
+		"manageable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Is false if the option could not be added or removed",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

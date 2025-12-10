@@ -20,139 +20,143 @@ import (
 func DataSourceServers() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceInstanceServersRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Servers with a name like it are listed.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Servers with these exact tags are listed.",
-			},
-			"servers": {
-				Type:        schema.TypeList,
-				Description: "Servers",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "UUID of the server.",
-							Type:        schema.TypeString,
-						},
-						"public_ips": {
-							Type:        schema.TypeList,
-							Description: "Public IPs associated with this server.",
-							Computed:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Description: "UUID of the public IP.",
-										Computed:    true,
-									},
-									"address": {
-										Type:        schema.TypeString,
-										Description: "Address of the server",
-										Computed:    true,
-									},
-								},
-							},
-						},
-						"private_ips": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Optional:    true,
-							Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The ID of the IPv4/v6 address resource",
-									},
-									"address": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The private IPv4/v6 address",
-									},
-								},
-							},
-						},
-						"state": {
-							Computed:    true,
-							Description: "State of the server",
-							Type:        schema.TypeString,
-						},
-						"name": {
-							Computed:    true,
-							Description: "Name of the server",
-							Type:        schema.TypeString,
-						},
-						"boot_type": {
-							Computed:    true,
-							Description: "Boot type",
-							Type:        schema.TypeString,
-						},
-						"bootscript_id": {
-							Computed:    true,
-							Type:        schema.TypeString,
-							Description: "UUID of the bootscript",
-							Deprecated:  "bootscript are not supported",
-						},
-						"type": {
-							Computed:    true,
-							Description: "Type of the server",
-							Type:        schema.TypeString,
-						},
-						"tags": {
-							Computed:    true,
-							Description: "List of tags assigned to the server.",
-							Type:        schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"security_group_id": {
-							Computed:    true,
-							Description: "Security group ID",
-							Type:        schema.TypeString,
-						},
-						"enable_dynamic_ip": {
-							Computed:    true,
-							Description: "Whether to enable dynamic IP addresses on this server",
-							Type:        schema.TypeBool,
-						},
-						"image": {
-							Computed:    true,
-							Description: "Image ID of the server",
-							Type:        schema.TypeString,
-						},
-						"placement_group_id": {
-							Computed:    true,
-							Description: "Placement Group ID",
-							Type:        schema.TypeString,
-						},
-						"placement_group_policy_respected": {
-							Computed:    true,
-							Description: "Whether the placement group policy respected or not",
-							Type:        schema.TypeBool,
-						},
-						"zone":            zonal.Schema(),
-						"organization_id": account.OrganizationIDSchema(),
-						"project_id":      account.ProjectIDSchema(),
-					},
-				},
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:  serversSchema,
+	}
+}
+
+func serversSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Servers with a name like it are listed.",
 		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Servers with these exact tags are listed.",
+		},
+		"servers": {
+			Type:        schema.TypeList,
+			Description: "Servers",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "UUID of the server.",
+						Type:        schema.TypeString,
+					},
+					"public_ips": {
+						Type:        schema.TypeList,
+						Description: "Public IPs associated with this server.",
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Description: "UUID of the public IP.",
+									Computed:    true,
+								},
+								"address": {
+									Type:        schema.TypeString,
+									Description: "Address of the server",
+									Computed:    true,
+								},
+							},
+						},
+					},
+					"private_ips": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Optional:    true,
+						Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The ID of the IPv4/v6 address resource",
+								},
+								"address": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The private IPv4/v6 address",
+								},
+							},
+						},
+					},
+					"state": {
+						Computed:    true,
+						Description: "State of the server",
+						Type:        schema.TypeString,
+					},
+					"name": {
+						Computed:    true,
+						Description: "Name of the server",
+						Type:        schema.TypeString,
+					},
+					"boot_type": {
+						Computed:    true,
+						Description: "Boot type",
+						Type:        schema.TypeString,
+					},
+					"bootscript_id": {
+						Computed:    true,
+						Type:        schema.TypeString,
+						Description: "UUID of the bootscript",
+						Deprecated:  "bootscript are not supported",
+					},
+					"type": {
+						Computed:    true,
+						Description: "Type of the server",
+						Type:        schema.TypeString,
+					},
+					"tags": {
+						Computed:    true,
+						Description: "List of tags assigned to the server.",
+						Type:        schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"security_group_id": {
+						Computed:    true,
+						Description: "Security group ID",
+						Type:        schema.TypeString,
+					},
+					"enable_dynamic_ip": {
+						Computed:    true,
+						Description: "Whether to enable dynamic IP addresses on this server",
+						Type:        schema.TypeBool,
+					},
+					"image": {
+						Computed:    true,
+						Description: "Image ID of the server",
+						Type:        schema.TypeString,
+					},
+					"placement_group_id": {
+						Computed:    true,
+						Description: "Placement Group ID",
+						Type:        schema.TypeString,
+					},
+					"placement_group_policy_respected": {
+						Computed:    true,
+						Description: "Whether the placement group policy respected or not",
+						Type:        schema.TypeBool,
+					},
+					"zone":            zonal.Schema(),
+					"organization_id": account.OrganizationIDSchema(),
+					"project_id":      account.ProjectIDSchema(),
+				},
+			},
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

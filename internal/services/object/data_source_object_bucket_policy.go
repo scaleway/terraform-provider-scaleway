@@ -17,7 +17,7 @@ import (
 
 func DataSourceBucketPolicy() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucketPolicy().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceBucketPolicy().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket")
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
