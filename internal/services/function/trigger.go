@@ -34,105 +34,109 @@ func ResourceTrigger() *schema.Resource {
 			Create:  schema.DefaultTimeout(DefaultFunctionTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"function_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The ID of the function to create a trigger for",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The trigger name",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The trigger description",
-			},
-			"sqs": {
-				Type:          schema.TypeList,
-				MaxItems:      1,
-				Description:   "Config for sqs based trigger using scaleway mnq",
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"nats"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"namespace_id": {
-							Optional:         true,
-							Type:             schema.TypeString,
-							Description:      "ID of the mnq namespace",
-							DiffSuppressFunc: dsf.Locality,
-							Deprecated:       "The 'namespace_id' field is deprecated and will be removed in the next major version. It is no longer necessary to specify it",
-						},
-						"queue": {
-							Required:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Name of the queue",
-						},
-						"project_id": {
-							Computed:    true,
-							Optional:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
-						},
-						"region": {
-							Computed:    true,
-							Optional:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Region where the mnq sqs exists, defaults to function's region",
-						},
-					},
-				},
-			},
-			"nats": {
-				Type:          schema.TypeList,
-				MaxItems:      1,
-				Description:   "Config for nats based trigger using scaleway mnq",
-				Optional:      true,
-				ForceNew:      true,
-				ConflictsWith: []string{"sqs"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"account_id": {
-							Optional:         true,
-							ForceNew:         true,
-							Type:             schema.TypeString,
-							Description:      "ID of the mnq nats account",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						"subject": {
-							Required:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Subject to listen to",
-						},
-						"project_id": {
-							Computed:    true,
-							Optional:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
-						},
-						"region": {
-							Computed:    true,
-							Optional:    true,
-							ForceNew:    true,
-							Type:        schema.TypeString,
-							Description: "Region where the mnq sqs exists, defaults to function's region",
-						},
-					},
-				},
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    triggerSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+	}
+}
+
+func triggerSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"function_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The ID of the function to create a trigger for",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The trigger name",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The trigger description",
+		},
+		"sqs": {
+			Type:          schema.TypeList,
+			MaxItems:      1,
+			Description:   "Config for sqs based trigger using scaleway mnq",
+			Optional:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"nats"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"namespace_id": {
+						Optional:         true,
+						Type:             schema.TypeString,
+						Description:      "ID of the mnq namespace",
+						DiffSuppressFunc: dsf.Locality,
+						Deprecated:       "The 'namespace_id' field is deprecated and will be removed in the next major version. It is no longer necessary to specify it",
+					},
+					"queue": {
+						Required:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Name of the queue",
+					},
+					"project_id": {
+						Computed:    true,
+						Optional:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
+					},
+					"region": {
+						Computed:    true,
+						Optional:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Region where the mnq sqs exists, defaults to function's region",
+					},
+				},
+			},
+		},
+		"nats": {
+			Type:          schema.TypeList,
+			MaxItems:      1,
+			Description:   "Config for nats based trigger using scaleway mnq",
+			Optional:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"sqs"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"account_id": {
+						Optional:         true,
+						ForceNew:         true,
+						Type:             schema.TypeString,
+						Description:      "ID of the mnq nats account",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"subject": {
+						Required:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Subject to listen to",
+					},
+					"project_id": {
+						Computed:    true,
+						Optional:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Project ID of the project where the mnq sqs exists, defaults to provider project_id",
+					},
+					"region": {
+						Computed:    true,
+						Optional:    true,
+						ForceNew:    true,
+						Type:        schema.TypeString,
+						Description: "Region where the mnq sqs exists, defaults to function's region",
+					},
+				},
+			},
+		},
+		"region": regional.Schema(),
 	}
 }
 

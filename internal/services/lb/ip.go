@@ -35,44 +35,48 @@ func ResourceIP() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The reverse domain name for this IP",
-			},
-			"zone": zonal.Schema(),
-			// Computed
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balancer public IP address",
-			},
-			"lb_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the load balancer attached to this IP, if any",
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "If true, creates a Flexible IP with an IPv6 address",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the flexible IP",
-			},
-			"region": regional.ComputedSchema(),
+		SchemaFunc: ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"reverse": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The reverse domain name for this IP",
 		},
+		"zone": zonal.Schema(),
+		// Computed
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"ip_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The load-balancer public IP address",
+		},
+		"lb_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the load balancer attached to this IP, if any",
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "If true, creates a Flexible IP with an IPv6 address",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the flexible IP",
+		},
+		"region": regional.ComputedSchema(),
 	}
 }
 

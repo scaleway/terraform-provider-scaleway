@@ -16,54 +16,58 @@ import (
 func DataSourceOfferSubscription() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceOfferSubscriptionRead,
-		Schema: map[string]*schema.Schema{
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"offer_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the offer",
-			},
-			"subscribed_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of the subscription",
-			},
-			"cancellation_available_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of the end of the offer-subscription commitment",
-			},
-			"sla": {
-				Type:        schema.TypeFloat,
-				Computed:    true,
-				Description: "Service Level Agreement percentage of the offer-subscription",
-			},
-			"max_domains": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Max number of domains that can be associated with the offer-subscription",
-			},
-			"max_dedicated_ips": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Max number of dedicated IPs that can be associated with the offer-subscription",
-			},
-			"max_webhooks_per_domain": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Max number of webhooks that can be associated with the offer-subscription",
-			},
-			"max_custom_blocklists_per_domain": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Max number of custom blocklists that can be associated with the offer-subscription",
-			},
-			"included_monthly_emails": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Number of emails included in the offer-subscription per month",
-			},
+		SchemaFunc:  offerSubscriptionSchema,
+	}
+}
+
+func offerSubscriptionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"offer_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the offer",
+		},
+		"subscribed_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of the subscription",
+		},
+		"cancellation_available_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of the end of the offer-subscription commitment",
+		},
+		"sla": {
+			Type:        schema.TypeFloat,
+			Computed:    true,
+			Description: "Service Level Agreement percentage of the offer-subscription",
+		},
+		"max_domains": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Max number of domains that can be associated with the offer-subscription",
+		},
+		"max_dedicated_ips": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Max number of dedicated IPs that can be associated with the offer-subscription",
+		},
+		"max_webhooks_per_domain": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Max number of webhooks that can be associated with the offer-subscription",
+		},
+		"max_custom_blocklists_per_domain": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Max number of custom blocklists that can be associated with the offer-subscription",
+		},
+		"included_monthly_emails": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of emails included in the offer-subscription per month",
 		},
 	}
 }

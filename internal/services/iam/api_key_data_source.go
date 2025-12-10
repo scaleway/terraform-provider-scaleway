@@ -9,7 +9,7 @@ import (
 )
 
 func DataSourceAPIKey() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceAPIKey().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceAPIKey().SchemaFunc())
 
 	dsSchema["access_key"].Required = true
 	dsSchema["access_key"].Computed = false

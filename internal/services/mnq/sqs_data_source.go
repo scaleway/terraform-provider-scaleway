@@ -12,13 +12,15 @@ import (
 
 func DataSourceSQS() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSQS().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSQS().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
 
 	return &schema.Resource{
 		ReadContext: DataSourceMNQSQSRead,
-		Schema:      dsSchema,
+		SchemaFunc: func() map[string]*schema.Schema {
+			return dsSchema
+		},
 	}
 }
 

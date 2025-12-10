@@ -30,50 +30,54 @@ func ResourcePrivateNetwork() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID to attach the private network to",
-			},
-			"private_network_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The private network ID to attach",
-			},
-			"ipam_ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
-			},
-			"zone": zonal.Schema(),
-			// Computed
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of private network connection",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the private network connection",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the private network connection",
-			},
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    privateNetworkSchema,
 		CustomizeDiff: cdf.LocalityCheck("lb_id", "private_network_id"),
+	}
+}
+
+func privateNetworkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The load-balancer ID to attach the private network to",
+		},
+		"private_network_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The private network ID to attach",
+		},
+		"ipam_ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "IPAM ID of a pre-reserved IP address to assign to the Load Balancer on this Private Network",
+		},
+		"zone": zonal.Schema(),
+		// Computed
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of private network connection",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the private network connection",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the private network connection",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

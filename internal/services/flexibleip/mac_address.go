@@ -32,53 +32,57 @@ func ResourceMACAddress() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFlexibleIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"flexible_ip_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the flexible IP for which to generate a virtual MAC",
+		SchemaFunc:    macAddressSchema,
+		CustomizeDiff: cdf.LocalityCheck("flexible_ip_id"),
+	}
+}
+
+func macAddressSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"flexible_ip_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the flexible IP for which to generate a virtual MAC",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The type of the virtual MAC",
+			ValidateDiagFunc: verify.ValidateEnum[flexibleip.MACAddressType](),
+		},
+		"flexible_ip_ids_to_duplicate": {
+			Type: schema.TypeSet,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The type of the virtual MAC",
-				ValidateDiagFunc: verify.ValidateEnum[flexibleip.MACAddressType](),
-			},
-			"flexible_ip_ids_to_duplicate": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-				Description: `The IDs of the flexible IPs on which to duplicate the virtual MAC
+			Optional: true,
+			Description: `The IDs of the flexible IPs on which to duplicate the virtual MAC
 
 **NOTE** : The flexible IPs need to be attached to the same server for the operation to work.`,
-			},
-			// computed
-			"address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Virtual MAC address",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Virtual MAC status",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the virtual MAC (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the virtual MAC (Format ISO 8601)",
-			},
-			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("flexible_ip_id"),
+		// computed
+		"address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Virtual MAC address",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Virtual MAC status",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the virtual MAC (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the virtual MAC (Format ISO 8601)",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

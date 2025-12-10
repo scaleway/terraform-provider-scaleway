@@ -36,35 +36,39 @@ func ResourceUser() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the user is created",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Database user name",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "Database user password",
-			},
-			"is_admin": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Grant admin permissions to database user",
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    userSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the user is created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Database user name",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "Database user password",
+		},
+		"is_admin": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Grant admin permissions to database user",
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

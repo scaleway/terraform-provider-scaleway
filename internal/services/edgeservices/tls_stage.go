@@ -23,80 +23,84 @@ func ResourceTLSStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The backend stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "route_stage_id", "waf_stage_id"},
-			},
-			"cache_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The cache stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "route_stage_id", "waf_stage_id"},
-			},
-			"waf_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The WAF stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "route_stage_id"},
-			},
-			"route_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The route stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "waf_stage_id"},
-			},
-			"managed_certificate": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint",
-			},
-			"secrets": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "The TLS secrets",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"secret_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The ID of the Secret",
-						},
-						"region": regional.Schema(),
+		SchemaFunc:    tlsStageSchema,
+	}
+}
+
+func tlsStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The backend stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "route_stage_id", "waf_stage_id"},
+		},
+		"cache_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The cache stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "route_stage_id", "waf_stage_id"},
+		},
+		"waf_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The WAF stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "route_stage_id"},
+		},
+		"route_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The route stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "waf_stage_id"},
+		},
+		"managed_certificate": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint",
+		},
+		"secrets": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "The TLS secrets",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"secret_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The ID of the Secret",
 					},
+					"region": regional.Schema(),
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the TLS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the TLS stage",
-			},
-			"certificate_expires_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "TThe expiration date of the certificate",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the TLS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the TLS stage",
+		},
+		"certificate_expires_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "TThe expiration date of the certificate",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

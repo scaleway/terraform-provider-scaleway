@@ -29,26 +29,30 @@ func ResourceDomainValidation() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultDomainValidationTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"domain_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The id of domain name used when sending emails.",
-			},
-			"region": regional.Schema(),
-			"timeout": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     300,
-				Description: "Maximum wait time in second before returning an error.",
-			},
-			"validated": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates if the domain is verified for email sending",
-			},
+		SchemaFunc:    domainValidationSchema,
+	}
+}
+
+func domainValidationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The id of domain name used when sending emails.",
+		},
+		"region": regional.Schema(),
+		"timeout": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     300,
+			Description: "Maximum wait time in second before returning an error.",
+		},
+		"validated": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates if the domain is verified for email sending",
 		},
 	}
 }

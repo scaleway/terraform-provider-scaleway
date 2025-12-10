@@ -31,22 +31,26 @@ func ResourceBucketPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"policy": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The text of the policy.",
-				DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: bucketPolicySchema,
+	}
+}
+
+func bucketPolicySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"policy": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The text of the policy.",
+			DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

@@ -38,128 +38,132 @@ func ResourceBucketACL() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"access_control_policy": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Computed:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"acl"},
-				Description:   "A configuration block that sets the ACL permissions for an object per grantee.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"grant": {
-							Type:        schema.TypeSet,
-							Description: "Grant",
-							Optional:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"grantee": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										MaxItems:    1,
-										Description: "Configuration block for the project being granted permissions.",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"display_name": {
-													Type:        schema.TypeString,
-													Description: "Display name of the grantee to grant access to.",
-													Computed:    true,
-												},
-												"uri": {
-													Type:        schema.TypeString,
-													Optional:    true,
-													Description: "The uri of the grantee if you are granting permissions to a predefined group.",
-													ValidateFunc: validation.StringInSlice([]string{
-														AuthenticatedUsersURI,
-														AllUsersURI,
-													}, false),
-												},
-												"id": {
-													Type:             schema.TypeString,
-													Optional:         true,
-													Description:      "The project ID owner of the grantee.",
-													ValidateDiagFunc: verify.IsUUID(),
-												},
-												"type": {
-													Type:         schema.TypeString,
-													Optional:     true,
-													Description:  "Type of grantee. Valid values: `CanonicalUser`, `Group`",
-													ValidateFunc: validation.StringInSlice([]string{string(s3Types.TypeCanonicalUser), string(s3Types.TypeGroup)}, false),
-												},
+		SchemaFunc: bucketAclSchema,
+	}
+}
+
+func bucketAclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"access_control_policy": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Computed:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"acl"},
+			Description:   "A configuration block that sets the ACL permissions for an object per grantee.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"grant": {
+						Type:        schema.TypeSet,
+						Description: "Grant",
+						Optional:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"grantee": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MaxItems:    1,
+									Description: "Configuration block for the project being granted permissions.",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"display_name": {
+												Type:        schema.TypeString,
+												Description: "Display name of the grantee to grant access to.",
+												Computed:    true,
+											},
+											"uri": {
+												Type:        schema.TypeString,
+												Optional:    true,
+												Description: "The uri of the grantee if you are granting permissions to a predefined group.",
+												ValidateFunc: validation.StringInSlice([]string{
+													AuthenticatedUsersURI,
+													AllUsersURI,
+												}, false),
+											},
+											"id": {
+												Type:             schema.TypeString,
+												Optional:         true,
+												Description:      "The project ID owner of the grantee.",
+												ValidateDiagFunc: verify.IsUUID(),
+											},
+											"type": {
+												Type:         schema.TypeString,
+												Optional:     true,
+												Description:  "Type of grantee. Valid values: `CanonicalUser`, `Group`",
+												ValidateFunc: validation.StringInSlice([]string{string(s3Types.TypeCanonicalUser), string(s3Types.TypeGroup)}, false),
 											},
 										},
 									},
-									"permission": {
-										Type:     schema.TypeString,
-										Required: true,
-										ValidateFunc: validation.StringInSlice([]string{
-											string(s3Types.PermissionFullControl),
-											string(s3Types.PermissionRead),
-											string(s3Types.PermissionWrite),
-											string(s3Types.PermissionReadAcp),
-											string(s3Types.PermissionWriteAcp),
-										}, false),
-										Description: "Logging permissions assigned to the grantee for the bucket.",
-									},
+								},
+								"permission": {
+									Type:     schema.TypeString,
+									Required: true,
+									ValidateFunc: validation.StringInSlice([]string{
+										string(s3Types.PermissionFullControl),
+										string(s3Types.PermissionRead),
+										string(s3Types.PermissionWrite),
+										string(s3Types.PermissionReadAcp),
+										string(s3Types.PermissionWriteAcp),
+									}, false),
+									Description: "Logging permissions assigned to the grantee for the bucket.",
 								},
 							},
 						},
-						"owner": {
-							Type:        schema.TypeList,
-							Required:    true,
-							MaxItems:    1,
-							Description: "Configuration block of the bucket project owner's display organization ID.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"display_name": {
-										Type:             schema.TypeString,
-										Computed:         true,
-										Optional:         true,
-										Description:      "The project ID of the grantee.",
-										ValidateDiagFunc: verify.IsUUID(),
-									},
-									"id": {
-										Type:             schema.TypeString,
-										Required:         true,
-										Description:      "The display ID of the project.",
-										ValidateDiagFunc: verify.IsUUID(),
-									},
+					},
+					"owner": {
+						Type:        schema.TypeList,
+						Required:    true,
+						MaxItems:    1,
+						Description: "Configuration block of the bucket project owner's display organization ID.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"display_name": {
+									Type:             schema.TypeString,
+									Computed:         true,
+									Optional:         true,
+									Description:      "The project ID of the grantee.",
+									ValidateDiagFunc: verify.IsUUID(),
+								},
+								"id": {
+									Type:             schema.TypeString,
+									Required:         true,
+									Description:      "The display ID of the project.",
+									ValidateDiagFunc: verify.IsUUID(),
 								},
 							},
 						},
 					},
 				},
 			},
-			"acl": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
-				ValidateFunc: validation.StringInSlice([]string{
-					string(s3Types.ObjectCannedACLPrivate),
-					string(s3Types.ObjectCannedACLPublicRead),
-					string(s3Types.ObjectCannedACLPublicReadWrite),
-					string(s3Types.ObjectCannedACLAuthenticatedRead),
-				}, false),
-			},
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateFunc:     validation.StringLenBetween(1, 63),
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"expected_bucket_owner": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The project ID as owner.",
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
 		},
+		"acl": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
+			ValidateFunc: validation.StringInSlice([]string{
+				string(s3Types.ObjectCannedACLPrivate),
+				string(s3Types.ObjectCannedACLPublicRead),
+				string(s3Types.ObjectCannedACLPublicReadWrite),
+				string(s3Types.ObjectCannedACLAuthenticatedRead),
+			}, false),
+		},
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringLenBetween(1, 63),
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"expected_bucket_owner": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The project ID as owner.",
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

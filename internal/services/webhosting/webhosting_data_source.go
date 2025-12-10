@@ -14,7 +14,7 @@ import (
 )
 
 func DataSourceWebhosting() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceWebhosting().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceWebhosting().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "domain")
 

@@ -42,224 +42,7 @@ func ResourceInstance() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the MongoDB cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "MongoDB version of the instance",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"node_number": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "Number of nodes in the instance",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "Type of node to use for the instance",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Name of the user created when the cluster is created",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Optional:    true,
-				Description: "Password of the user",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			// volume
-			"volume_type": {
-				Type:        schema.TypeString,
-				Default:     mongodb.VolumeTypeSbs5k,
-				Optional:    true,
-				Description: "Volume type of the instance",
-			},
-			"volume_size_in_gb": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				Description:  "Volume size (in GB)",
-				ValidateFunc: validation.IntDivisibleBy(5),
-			},
-			"snapshot_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Snapshot ID to restore the MongoDB instance from",
-				ConflictsWith: []string{
-					"user_name",
-					"password",
-					"version",
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Private network to expose your mongodb instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-							Description:      "The private network ID",
-						},
-						// Computed
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network ID",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"dns_records": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of DNS records for your endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-
-						"ips": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of IP addresses for your endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
-			// Computed
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Public network specs details",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "ID of the public network",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"dns_record": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The DNS record of your endpoint",
-						},
-					},
-				},
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
-			},
-			"snapshot_schedule_frequency_hours": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Snapshot schedule frequency in hours",
-			},
-			"snapshot_schedule_retention_days": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Snapshot schedule retention in days",
-			},
-			"is_snapshot_schedule_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Enable or disable automatic snapshot scheduling",
-			},
-			"settings": {
-				Type:        schema.TypeMap,
-				Description: "Map of settings to define for the instance.",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the MongoDB instance",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the MongoDB instance",
-			},
-			// Common
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"tls_certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "PEM-encoded TLS certificate for MongoDB",
-			},
-		},
+		SchemaFunc:    instanceSchema,
 		CustomizeDiff: customdiff.All(
 			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 				if d.HasChange("version") {
@@ -277,6 +60,227 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
+	}
+}
+
+func instanceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the MongoDB cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "MongoDB version of the instance",
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"node_number": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			Description:  "Number of nodes in the instance",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Type of node to use for the instance",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Name of the user created when the cluster is created",
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Optional:    true,
+			Description: "Password of the user",
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		// volume
+		"volume_type": {
+			Type:        schema.TypeString,
+			Default:     mongodb.VolumeTypeSbs5k,
+			Optional:    true,
+			Description: "Volume type of the instance",
+		},
+		"volume_size_in_gb": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			Description:  "Volume size (in GB)",
+			ValidateFunc: validation.IntDivisibleBy(5),
+		},
+		"snapshot_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Snapshot ID to restore the MongoDB instance from",
+			ConflictsWith: []string{
+				"user_name",
+				"password",
+				"version",
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Private network to expose your mongodb instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Description:      "The private network ID",
+					},
+					// Computed
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private network ID",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"dns_records": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of DNS records for your endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+
+					"ips": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of IP addresses for your endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		// Computed
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		"public_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Public network specs details",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "ID of the public network",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"dns_record": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The DNS record of your endpoint",
+					},
+				},
+			},
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
+		},
+		"snapshot_schedule_frequency_hours": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Snapshot schedule frequency in hours",
+		},
+		"snapshot_schedule_retention_days": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Snapshot schedule retention in days",
+		},
+		"is_snapshot_schedule_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Enable or disable automatic snapshot scheduling",
+		},
+		"settings": {
+			Type:        schema.TypeMap,
+			Description: "Map of settings to define for the instance.",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the MongoDB instance",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the MongoDB instance",
+		},
+		// Common
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"tls_certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "PEM-encoded TLS certificate for MongoDB",
+		},
 	}
 }
 

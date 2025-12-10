@@ -57,343 +57,7 @@ func ResourceServer() *schema.Resource {
 			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the server",
-			},
-			"image": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The UUID or the label of the base image used by the server",
-				DiffSuppressFunc: dsf.Locality,
-				ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"protected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the instance is protected against accidental deletion via the Scaleway API.",
-			},
-			"replace_on_type_change": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Delete and re-create server if type change",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the server",
-			},
-			"security_group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The security group the server is attached to",
-			},
-			"placement_group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "The placement group the server is attached to",
-			},
-			"placement_group_policy_respected": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True when the placement group policy is respected",
-			},
-			"root_volume": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Root volume attached to the server on creation",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "Name of the root volume",
-						},
-						"size_in_gb": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "Size of the root volume in gigabytes",
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							ForceNew:    true,
-							Description: "Volume type of the root volume",
-							ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
-								diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
-								if i.(string) == "b_ssd" {
-									diags = append(diags, diag.Diagnostic{
-										Severity:      diag.Error,
-										Summary:       "b_ssd volumes are not supported anymore",
-										Detail:        "Remove explicit b_ssd volume_type, migrate to sbs or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/",
-										AttributePath: path,
-									})
-								}
-
-								return diags
-							},
-						},
-						"delete_on_termination": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     true,
-							Description: "Force deletion of the root volume on instance termination",
-						},
-						"boot": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Default:     false,
-							Description: "Set the volume where the boot the server",
-						},
-						"volume_id": {
-							Type:         schema.TypeString,
-							Computed:     true,
-							Optional:     true,
-							Description:  "Volume ID of the root volume",
-							ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
-						},
-						"sbs_iops": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Optional:    true,
-							Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
-						},
-					},
-				},
-			},
-			"additional_volume_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-					DiffSuppressFunc: dsf.Locality,
-				},
-				Optional:    true,
-				Description: "The additional volumes attached to the server",
-			},
-			"filesystems": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Filesystems attach to the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"filesystem_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The filesystem ID attached to the server",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The state of the filesystem",
-						},
-					},
-				},
-			},
-			"ip_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the reserved IP for the server",
-				DiffSuppressFunc: dsf.Locality,
-				ConflictsWith:    []string{"ip_ids"},
-			},
-			"ip_ids": {
-				Type:          schema.TypeList,
-				Description:   "The IDs of the reserved IP for the server",
-				Optional:      true,
-				ConflictsWith: []string{"ip_id"},
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					Description:      "ID of the reserved IP for the server",
-					DiffSuppressFunc: dsf.Locality,
-				},
-			},
-			"enable_dynamic_ip": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable dynamic IP on the server",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     InstanceServerStateStarted,
-				Description: "The state of the server should be: started, stopped, standby",
-				ValidateFunc: validation.StringInSlice([]string{
-					InstanceServerStateStarted,
-					InstanceServerStateStopped,
-					InstanceServerStateStandby,
-				}, false),
-			},
-			"boot_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The boot type of the server",
-				Default:          instanceSDK.BootTypeLocal,
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
-			},
-			"bootscript_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "ID of the target bootscript (set boot_type to bootscript)",
-				ValidateDiagFunc: verify.IsUUID(),
-				Deprecated:       "bootscript is not supported anymore.",
-			},
-			"cloud_init": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "The cloud init script associated with this server",
-				ValidateFunc: validation.StringLenBetween(0, 127998),
-			},
-			"user_data": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Computed:    true,
-				Description: "The user data associated with the server",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
-					return k == "user_data.ssh-host-fingerprints"
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    8,
-				Description: "List of private network to connect with your instance",
-				Elem: &schema.Resource{
-					Timeouts: &schema.ResourceTimeout{
-						Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
-					},
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "The Private Network ID",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						// Computed
-						"mac_address": {
-							Type:        schema.TypeString,
-							Description: "MAC address of the NIC",
-							Computed:    true,
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private NIC state",
-						},
-						"pnic_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the NIC",
-						},
-						"zone": zonal.Schema(),
-					},
-				},
-			},
-			"public_ips": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "List of private IPv4 and IPv6 addresses attached to your instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the IP",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP Address",
-						},
-						"gateway": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Gateway's IP address",
-						},
-						"netmask": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "CIDR netmask",
-						},
-						"family": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP address family (inet or inet6)",
-						},
-						"dynamic": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Whether the IP is dynamic",
-						},
-						"provisioning_mode": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Provisioning mode of the IP address",
-						},
-					},
-				},
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"admin_password_encryption_ssh_key_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUIDOrEmpty(),
-				Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-		},
+		SchemaFunc:    serverSchema,
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck(
 				"placement_group_id",
@@ -404,6 +68,346 @@ func ResourceServer() *schema.Resource {
 			customDiffInstanceServerImage,
 			customDiffInstanceRootVolumeSize,
 		),
+	}
+}
+
+func serverSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the server",
+		},
+		"image": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The UUID or the label of the base image used by the server",
+			DiffSuppressFunc: dsf.Locality,
+			ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The instance type of the server", // TODO: link to scaleway pricing in the doc
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"protected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the instance is protected against accidental deletion via the Scaleway API.",
+		},
+		"replace_on_type_change": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Delete and re-create server if type change",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the server",
+		},
+		"security_group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The security group the server is attached to",
+		},
+		"placement_group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The placement group the server is attached to",
+		},
+		"placement_group_policy_respected": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "True when the placement group policy is respected",
+		},
+		"root_volume": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "Root volume attached to the server on creation",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Optional:    true,
+						Description: "Name of the root volume",
+					},
+					"size_in_gb": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "Size of the root volume in gigabytes",
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						ForceNew:    true,
+						Description: "Volume type of the root volume",
+						ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics {
+							diags := verify.ValidateEnum[instanceSDK.VolumeVolumeType]()(i, path)
+							if i.(string) == "b_ssd" {
+								diags = append(diags, diag.Diagnostic{
+									Severity:      diag.Error,
+									Summary:       "b_ssd volumes are not supported anymore",
+									Detail:        "Remove explicit b_ssd volume_type, migrate to sbs or downgrade terraform.\nLearn more about migration: https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/",
+									AttributePath: path,
+								})
+							}
+
+							return diags
+						},
+					},
+					"delete_on_termination": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     true,
+						Description: "Force deletion of the root volume on instance termination",
+					},
+					"boot": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Default:     false,
+						Description: "Set the volume where the boot the server",
+					},
+					"volume_id": {
+						Type:         schema.TypeString,
+						Computed:     true,
+						Optional:     true,
+						Description:  "Volume ID of the root volume",
+						ExactlyOneOf: []string{"image", "root_volume.0.volume_id"},
+					},
+					"sbs_iops": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Optional:    true,
+						Description: "SBS Volume IOPS, only with volume_type as sbs_volume",
+					},
+				},
+			},
+		},
+		"additional_volume_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: dsf.Locality,
+			},
+			Optional:    true,
+			Description: "The additional volumes attached to the server",
+		},
+		"filesystems": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Filesystems attach to the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"filesystem_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The filesystem ID attached to the server",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The state of the filesystem",
+					},
+				},
+			},
+		},
+		"ip_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the reserved IP for the server",
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith:    []string{"ip_ids"},
+		},
+		"ip_ids": {
+			Type:          schema.TypeList,
+			Description:   "The IDs of the reserved IP for the server",
+			Optional:      true,
+			ConflictsWith: []string{"ip_id"},
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				Description:      "ID of the reserved IP for the server",
+				DiffSuppressFunc: dsf.Locality,
+			},
+		},
+		"enable_dynamic_ip": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable dynamic IP on the server",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     InstanceServerStateStarted,
+			Description: "The state of the server should be: started, stopped, standby",
+			ValidateFunc: validation.StringInSlice([]string{
+				InstanceServerStateStarted,
+				InstanceServerStateStopped,
+				InstanceServerStateStandby,
+			}, false),
+		},
+		"boot_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The boot type of the server",
+			Default:          instanceSDK.BootTypeLocal,
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.BootType](),
+		},
+		"bootscript_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "ID of the target bootscript (set boot_type to bootscript)",
+			ValidateDiagFunc: verify.IsUUID(),
+			Deprecated:       "bootscript is not supported anymore.",
+		},
+		"cloud_init": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  "The cloud init script associated with this server",
+			ValidateFunc: validation.StringLenBetween(0, 127998),
+		},
+		"user_data": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Computed:    true,
+			Description: "The user data associated with the server",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			DiffSuppressFunc: func(k, _, _ string, _ *schema.ResourceData) bool {
+				return k == "user_data.ssh-host-fingerprints"
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    8,
+			Description: "List of private network to connect with your instance",
+			Elem: &schema.Resource{
+				Timeouts: &schema.ResourceTimeout{
+					Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
+				},
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "The Private Network ID",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					// Computed
+					"mac_address": {
+						Type:        schema.TypeString,
+						Description: "MAC address of the NIC",
+						Computed:    true,
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private NIC state",
+					},
+					"pnic_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the NIC",
+					},
+					"zone": zonal.Schema(),
+				},
+			},
+		},
+		"public_ips": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "List of private IPv4 and IPv6 addresses attached to your instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the IP",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP Address",
+					},
+					"gateway": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Gateway's IP address",
+					},
+					"netmask": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "CIDR netmask",
+					},
+					"family": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP address family (inet or inet6)",
+					},
+					"dynamic": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether the IP is dynamic",
+					},
+					"provisioning_mode": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Provisioning mode of the IP address",
+					},
+				},
+			},
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"admin_password_encryption_ssh_key_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUIDOrEmpty(),
+			Description:      "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

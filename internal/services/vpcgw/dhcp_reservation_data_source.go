@@ -16,7 +16,7 @@ import (
 
 func DataSourceDHCPReservation() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCPReservation().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCPReservation().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "mac_address", "gateway_network_id")

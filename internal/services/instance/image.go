@@ -36,150 +36,154 @@ func ResourceImage() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceImageTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the image",
-			},
-			"root_volume_id": {
+		SchemaFunc:    imageSchema,
+		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
+	}
+}
+
+func imageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the image",
+		},
+		"root_volume_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "UUID of the snapshot from which the image is to be created",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"architecture": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          instanceSDK.ArchX86_64.String(),
+			Description:      "Architecture of the image (default = x86_64)",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
+		},
+		"additional_volume_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "UUID of the snapshot from which the image is to be created",
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
-			"architecture": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          instanceSDK.ArchX86_64.String(),
-				Description:      "Architecture of the image (default = x86_64)",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
-			},
-			"additional_volume_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				},
-				Description: "The IDs of the additional volumes attached to the image",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the image",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"public": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the image will be public",
-			},
-			// Computed
-			"creation_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the image",
-			},
-			"modification_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last modification of the Redis cluster",
-			},
-			"from_server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the backed-up server from which the snapshot was taken",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the image [ available | creating | error ]",
-			},
-			"root_volume": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Specs of the additional volumes attached to the image",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the additional volume",
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the additional volume",
-							Computed:    true,
-						},
-						"size": {
-							Type:        schema.TypeInt,
-							Description: "Size of the additional volume",
-							Computed:    true,
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Description: "Type of the additional volume",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"additional_volumes": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Specs of the additional volumes attached to the image",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the additional volume",
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the additional volume",
-							Computed:    true,
-						},
-						"size": {
-							Type:        schema.TypeInt,
-							Description: "Size of the additional volume",
-							Computed:    true,
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Description: "Type of the additional volume",
-							Computed:    true,
-						},
-						"tags": {
-							Type:        schema.TypeList,
-							Description: "List of tags attached to the additional volume",
-							Computed:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"server": {
-							Type:        schema.TypeMap,
-							Description: "Server containing the volume (in case the image is a backup from a server)",
-							Computed:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
-			// Common
-			"zone":            zonal.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
+			Description: "The IDs of the additional volumes attached to the image",
 		},
-		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the image",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"public": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the image will be public",
+		},
+		// Computed
+		"creation_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the image",
+		},
+		"modification_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last modification of the Redis cluster",
+		},
+		"from_server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the backed-up server from which the snapshot was taken",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The state of the image [ available | creating | error ]",
+		},
+		"root_volume": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Specs of the additional volumes attached to the image",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the additional volume",
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the additional volume",
+						Computed:    true,
+					},
+					"size": {
+						Type:        schema.TypeInt,
+						Description: "Size of the additional volume",
+						Computed:    true,
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Description: "Type of the additional volume",
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"additional_volumes": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Specs of the additional volumes attached to the image",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the additional volume",
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the additional volume",
+						Computed:    true,
+					},
+					"size": {
+						Type:        schema.TypeInt,
+						Description: "Size of the additional volume",
+						Computed:    true,
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Description: "Type of the additional volume",
+						Computed:    true,
+					},
+					"tags": {
+						Type:        schema.TypeList,
+						Description: "List of tags attached to the additional volume",
+						Computed:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"server": {
+						Type:        schema.TypeMap,
+						Description: "Server containing the volume (in case the image is a backup from a server)",
+						Computed:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		// Common
+		"zone":            zonal.Schema(),
+		"project_id":      account.ProjectIDSchema(),
+		"organization_id": account.OrganizationIDSchema(),
 	}
 }
 

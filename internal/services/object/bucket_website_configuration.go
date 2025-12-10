@@ -27,59 +27,63 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateFunc:     validation.StringLenBetween(1, 63),
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"index_document": {
-				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"suffix": {
-							Type:        schema.TypeString,
-							Description: "Suffix that will be added to the index.",
-							Required:    true,
-						},
-					},
-				},
-				Description: "The name of the index document for the website.",
-			},
-			"error_document": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Description: "Key for the object to use as an error document.",
-							Required:    true,
-						},
-					},
-				},
-				Description: "The name of the error document for the website.",
-			},
-			"website_endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The domain of the website endpoint.",
-			},
-			"website_domain": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The website endpoint.",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: bucketWebsiteConfigurationSchema,
+	}
+}
+
+func bucketWebsiteConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringLenBetween(1, 63),
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"index_document": {
+			Type:     schema.TypeList,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"suffix": {
+						Type:        schema.TypeString,
+						Description: "Suffix that will be added to the index.",
+						Required:    true,
+					},
+				},
+			},
+			Description: "The name of the index document for the website.",
+		},
+		"error_document": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key for the object to use as an error document.",
+						Required:    true,
+					},
+				},
+			},
+			Description: "The name of the error document for the website.",
+		},
+		"website_endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The domain of the website endpoint.",
+		},
+		"website_domain": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The website endpoint.",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

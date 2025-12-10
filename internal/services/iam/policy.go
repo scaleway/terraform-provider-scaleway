@@ -24,106 +24,110 @@ func ResourcePolicy() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam policy",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam policy",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the policy",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the policy",
-			},
-			"editable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the policy is editable.",
-			},
-			"organization_id": account.OrganizationIDOptionalSchema(),
-			"user_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "User id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"group_id", "application_id", "no_principal"},
-			},
-			"group_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Group id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"user_id", "application_id", "no_principal"},
-			},
-			"application_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "Application id",
-				ValidateDiagFunc: verify.IsUUID(),
-				ExactlyOneOf:     []string{"user_id", "group_id", "no_principal"},
-			},
-			"no_principal": {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				Description:  "Deactivate policy to a principal",
-				ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
-			},
-			"rule": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "Rules of the policy to create",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"organization_id": {
+		SchemaFunc:    policySchema,
+	}
+}
+
+func policySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam policy",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam policy",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the policy",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the policy",
+		},
+		"editable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the policy is editable.",
+		},
+		"organization_id": account.OrganizationIDOptionalSchema(),
+		"user_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "User id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"group_id", "application_id", "no_principal"},
+		},
+		"group_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Group id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"user_id", "application_id", "no_principal"},
+		},
+		"application_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Application id",
+			ValidateDiagFunc: verify.IsUUID(),
+			ExactlyOneOf:     []string{"user_id", "group_id", "no_principal"},
+		},
+		"no_principal": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Description:  "Deactivate policy to a principal",
+			ExactlyOneOf: []string{"user_id", "group_id", "application_id"},
+		},
+		"rule": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Rules of the policy to create",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"organization_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Description:      "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
+						ValidateDiagFunc: verify.IsUUID(),
+					},
+					"project_ids": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
+						Elem: &schema.Schema{
 							Type:             schema.TypeString,
-							Optional:         true,
-							Description:      "ID of organization scoped to the rule. Only one of project_ids and organization_id may be set.",
 							ValidateDiagFunc: verify.IsUUID(),
 						},
-						"project_ids": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "List of project IDs scoped to the rule. Only one of project_ids and organization_id may be set.",
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsUUID(),
-							},
+					},
+					"permission_set_names": {
+						Type:        schema.TypeSet,
+						Required:    true,
+						Description: "Names of permission sets bound to the rule.",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"permission_set_names": {
-							Type:        schema.TypeSet,
-							Required:    true,
-							Description: "Names of permission sets bound to the rule.",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"condition": {
-							Type:        schema.TypeString,
-							Description: "Conditions of the policy",
-							Optional:    true,
-						},
+					},
+					"condition": {
+						Type:        schema.TypeString,
+						Description: "Conditions of the policy",
+						Optional:    true,
 					},
 				},
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the policy",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
+			Optional:    true,
+			Description: "The tags associated with the policy",
 		},
 	}
 }
