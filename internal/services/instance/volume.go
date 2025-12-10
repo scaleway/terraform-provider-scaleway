@@ -36,58 +36,62 @@ func ResourceVolume() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the volume",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The volume type",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
-			},
-			"size_in_gb": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "The size of the volume in gigabyte",
-				ConflictsWith: []string{"from_snapshot_id"},
-			},
-			"from_snapshot_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "Create a volume based on a image",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"size_in_gb"},
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this volume",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the volume",
-			},
-			"migrate_to_sbs": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, consider that this volume may have been migrated and no longer exists.",
-			},
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"zone":            zonal.Schema(),
-		},
+		SchemaFunc:    volumeSchema,
 		CustomizeDiff: cdf.LocalityCheck("from_snapshot_id"),
+	}
+}
+
+func volumeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the volume",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The volume type",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
+		},
+		"size_in_gb": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			Description:   "The size of the volume in gigabyte",
+			ConflictsWith: []string{"from_snapshot_id"},
+		},
+		"from_snapshot_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "Create a volume based on a image",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"size_in_gb"},
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The server associated with this volume",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the volume",
+		},
+		"migrate_to_sbs": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, consider that this volume may have been migrated and no longer exists.",
+		},
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"zone":            zonal.Schema(),
 	}
 }
 

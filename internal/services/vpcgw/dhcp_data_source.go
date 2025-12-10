@@ -11,7 +11,7 @@ import (
 
 func DataSourceDHCP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().SchemaFunc())
 
 	dsSchema["dhcp_id"] = &schema.Schema{
 		Type:             schema.TypeString,

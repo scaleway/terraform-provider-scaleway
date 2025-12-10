@@ -32,53 +32,57 @@ func ResourceDatabase() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDWithLocality(),
-				Description:      "Instance on which the database is created",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Database name",
-				Required:    true,
-				ForceNew:    true,
-				ValidateFunc: validation.All(
-					validation.StringLenBetween(1, 63),
-					validation.StringNotInSlice([]string{
-						"information_schema",
-						"mysql",
-						"performance_schema",
-						"postgres",
-						"rdb",
-						"rdb",
-						"sys",
-						"template0",
-						"template1",
-					}, false),
-					validation.StringMatch(regexp.MustCompile(`^[a-zA-Z\d_$-]*$`), "database name must contain only alphanumeric characters, underscores and dashes and it must start with a letter"),
-				),
-			},
-			"managed": {
-				Type:        schema.TypeBool,
-				Description: "Whether or not the database is managed",
-				Computed:    true,
-			},
-			"owner": {
-				Type:        schema.TypeString,
-				Description: "User that own the database",
-				Computed:    true,
-			},
-			"size": {
-				Type:        schema.TypeString,
-				Description: "Size of the database",
-				Computed:    true,
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    databaseSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func databaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDWithLocality(),
+			Description:      "Instance on which the database is created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Database name",
+			Required:    true,
+			ForceNew:    true,
+			ValidateFunc: validation.All(
+				validation.StringLenBetween(1, 63),
+				validation.StringNotInSlice([]string{
+					"information_schema",
+					"mysql",
+					"performance_schema",
+					"postgres",
+					"rdb",
+					"rdb",
+					"sys",
+					"template0",
+					"template1",
+				}, false),
+				validation.StringMatch(regexp.MustCompile(`^[a-zA-Z\d_$-]*$`), "database name must contain only alphanumeric characters, underscores and dashes and it must start with a letter"),
+			),
+		},
+		"managed": {
+			Type:        schema.TypeBool,
+			Description: "Whether or not the database is managed",
+			Computed:    true,
+		},
+		"owner": {
+			Type:        schema.TypeString,
+			Description: "User that own the database",
+			Computed:    true,
+		},
+		"size": {
+			Type:        schema.TypeString,
+			Description: "Size of the database",
+			Computed:    true,
+		},
+		"region": regional.Schema(),
 	}
 }
 

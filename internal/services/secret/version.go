@@ -29,50 +29,54 @@ func ResourceVersion() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultSecretTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"secret_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The secret ID associated with this version",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"data": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The data payload of your secret version.",
-				Sensitive:   true,
-				ForceNew:    true,
-				StateFunc: func(i any) string {
-					return Base64Encoded([]byte(i.(string)))
-				},
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the secret version",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the secret version",
-			},
-			"revision": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The revision of secret version",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret version's creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of secret version's creation (RFC 3339 format)",
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    versionSchema,
+	}
+}
+
+func versionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"secret_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The secret ID associated with this version",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"data": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The data payload of your secret version.",
+			Sensitive:   true,
+			ForceNew:    true,
+			StateFunc: func(i any) string {
+				return Base64Encoded([]byte(i.(string)))
+			},
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the secret version",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the secret version",
+		},
+		"revision": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The revision of secret version",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret version's creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of secret version's creation (RFC 3339 format)",
+		},
+		"region": regional.Schema(),
 	}
 }
 

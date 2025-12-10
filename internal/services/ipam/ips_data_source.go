@@ -18,137 +18,141 @@ import (
 func DataSourceIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceIPAMIPsRead,
-		Schema: map[string]*schema.Schema{
-			"private_network_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The private Network to filter for",
+		SchemaFunc:  ipsDataSourceSchema,
+	}
+}
+
+func ipsDataSourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"private_network_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The private Network to filter for",
+		},
+		"attached": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Defines whether to filter only for IPs which are attached to a resource",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the IP to filter for",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"attached": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Defines whether to filter only for IPs which are attached to a resource",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the IP to filter for",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"resource": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "The IP resource to filter for",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "ID of the resource to filter for",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Type of resource to filter for",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Name of the resource to filter for",
-						},
+		},
+		"resource": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "The IP resource to filter for",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the resource to filter for",
+					},
+					"type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Type of resource to filter for",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Name of the resource to filter for",
 					},
 				},
 			},
-			"mac_address": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The MAC address to filter for",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "IP Type (ipv4, ipv6) to filter for",
-			},
-			"zonal": {
-				Type:             schema.TypeString,
-				Description:      "The zone you want to filter upon",
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
-			},
-			"region":          regional.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
-			// Computed
-			"ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "IPs to filter for",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "ID of the IP to filter for",
-							Type:        schema.TypeString,
-						},
-						"address": {
-							Computed:    true,
-							Description: "Address of the IP to filter for",
-							Type:        schema.TypeString,
-						},
-						"resource": {
-							Type:        schema.TypeList,
-							Description: "Resource to filter for",
-							Computed:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:        schema.TypeString,
-										Description: "Type of resource to filter for",
-										Computed:    true,
-									},
-									"id": {
-										Type:        schema.TypeString,
-										Description: "ID of the resource to filter for",
-										Computed:    true,
-									},
-									"mac_address": {
-										Type:        schema.TypeString,
-										Description: "MAC address of the resource to filter for",
-										Computed:    true,
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Description: "Name of the resource to filter for",
-										Computed:    true,
-									},
+		},
+		"mac_address": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The MAC address to filter for",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "IP Type (ipv4, ipv6) to filter for",
+		},
+		"zonal": {
+			Type:             schema.TypeString,
+			Description:      "The zone you want to filter upon",
+			Optional:         true,
+			ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
+		},
+		"region":          regional.Schema(),
+		"project_id":      account.ProjectIDSchema(),
+		"organization_id": account.OrganizationIDSchema(),
+		// Computed
+		"ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "IPs to filter for",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "ID of the IP to filter for",
+						Type:        schema.TypeString,
+					},
+					"address": {
+						Computed:    true,
+						Description: "Address of the IP to filter for",
+						Type:        schema.TypeString,
+					},
+					"resource": {
+						Type:        schema.TypeList,
+						Description: "Resource to filter for",
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"type": {
+									Type:        schema.TypeString,
+									Description: "Type of resource to filter for",
+									Computed:    true,
+								},
+								"id": {
+									Type:        schema.TypeString,
+									Description: "ID of the resource to filter for",
+									Computed:    true,
+								},
+								"mac_address": {
+									Type:        schema.TypeString,
+									Description: "MAC address of the resource to filter for",
+									Computed:    true,
+								},
+								"name": {
+									Type:        schema.TypeString,
+									Description: "Name of the resource to filter for",
+									Computed:    true,
 								},
 							},
 						},
-						"tags": {
-							Type:        schema.TypeList,
-							Description: "Tags to filter for",
-							Computed:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"created_at": {
-							Computed:    true,
-							Description: "Date and time when the resource was created",
-							Type:        schema.TypeString,
-						},
-						"updated_at": {
-							Computed:    true,
-							Description: "Date and time when the resource was updated",
-							Type:        schema.TypeString,
-						},
-						"region":     regional.ComputedSchema(),
-						"zone":       zonal.ComputedSchema(),
-						"project_id": account.ProjectIDSchema(),
 					},
+					"tags": {
+						Type:        schema.TypeList,
+						Description: "Tags to filter for",
+						Computed:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"created_at": {
+						Computed:    true,
+						Description: "Date and time when the resource was created",
+						Type:        schema.TypeString,
+					},
+					"updated_at": {
+						Computed:    true,
+						Description: "Date and time when the resource was updated",
+						Type:        schema.TypeString,
+					},
+					"region":     regional.ComputedSchema(),
+					"zone":       zonal.ComputedSchema(),
+					"project_id": account.ProjectIDSchema(),
 				},
 			},
 		},

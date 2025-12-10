@@ -14,7 +14,7 @@ import (
 
 func DataSourceFunction() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceFunction().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceFunction().SchemaFunc())
 
 	dsSchema["function_id"] = &schema.Schema{
 		Type:        schema.TypeString,

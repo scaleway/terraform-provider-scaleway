@@ -15,27 +15,31 @@ import (
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceMarketplaceImageRead,
-		Schema: map[string]*schema.Schema{
-			"label": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Exact label of the desired image",
-			},
-			"instance_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "DEV1-S",
-				Description: "The instance commercial type of the desired image",
-			},
-			"image_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "instance_local", // Keep the old default as default to avoid a breaking change.
-				Description:      "The type of the desired image, instance_local or instance_sbs",
-				ValidateDiagFunc: verify.ValidateEnum[marketplace.LocalImageType](),
-			},
-			"zone": zonal.Schema(),
+		SchemaFunc:  imageSchema,
+	}
+}
+
+func imageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"label": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Exact label of the desired image",
 		},
+		"instance_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "DEV1-S",
+			Description: "The instance commercial type of the desired image",
+		},
+		"image_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "instance_local", // Keep the old default as default to avoid a breaking change.
+			Description:      "The type of the desired image, instance_local or instance_sbs",
+			ValidateDiagFunc: verify.ValidateEnum[marketplace.LocalImageType](),
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

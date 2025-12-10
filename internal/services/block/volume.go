@@ -33,53 +33,57 @@ func ResourceVolume() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The volume name",
-			},
-			"iops": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The maximum IO/s expected, must match available options",
-			},
-			"size_in_gb": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The volume size in GB",
-			},
-			"snapshot_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The snapshot to create the volume from",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"instance_volume_id": {
-				Type:          schema.TypeString,
-				Computed:      true,
-				Optional:      true,
-				Description:   "The instance volume to create the block volume from",
-				ForceNew:      true,
-				ConflictsWith: []string{"snapshot_id"},
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the volume",
-			},
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    volumeSchema,
 		CustomizeDiff: customdiff.All(
 			customDiffSnapshot("snapshot_id"),
 			customDiffCannotShrink("size_in_gb"),
 		),
+	}
+}
+
+func volumeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The volume name",
+		},
+		"iops": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "The maximum IO/s expected, must match available options",
+		},
+		"size_in_gb": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "The volume size in GB",
+		},
+		"snapshot_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The snapshot to create the volume from",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"instance_volume_id": {
+			Type:          schema.TypeString,
+			Computed:      true,
+			Optional:      true,
+			Description:   "The instance volume to create the block volume from",
+			ForceNew:      true,
+			ConflictsWith: []string{"snapshot_id"},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the volume",
+		},
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

@@ -24,27 +24,31 @@ func ResourceGroupMembership() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"application_id"},
-				ForceNew:     true,
-			},
-			"application_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"user_id"},
-				ForceNew:     true,
-			},
-			"group_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the group to add the user to",
-				ForceNew:    true,
-			},
+		SchemaFunc:    groupMemberShipSchema,
+	}
+}
+
+func groupMemberShipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"user_id": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The ID of the user",
+			ExactlyOneOf: []string{"application_id"},
+			ForceNew:     true,
+		},
+		"application_id": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The ID of the user",
+			ExactlyOneOf: []string{"user_id"},
+			ForceNew:     true,
+		},
+		"group_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the group to add the user to",
+			ForceNew:    true,
 		},
 	}
 }

@@ -48,222 +48,7 @@ func ResourceCluster() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the cluster",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The type of cluster",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "",
-				Description: "The description of the cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The version of the cluster",
-			},
-			"cni": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The CNI plugin of the cluster",
-				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					cniValues := k8s.CNI("").Values()
-
-					cniStringValues := make([]string, 0, len(cniValues))
-					for _, cniValue := range cniValues {
-						cniStringValues = append(cniStringValues, cniValue.String())
-					}
-
-					return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
-				},
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the cluster",
-			},
-			"autoscaler_config": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The autoscaler configuration for the cluster",
-				Elem:        autoscalerConfigSchema(),
-			},
-			"auto_upgrade": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The auto upgrade configuration for the cluster",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"enable": {
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "Enables the Kubernetes patch version auto upgrade",
-						},
-						"maintenance_window_start_hour": {
-							Type:         schema.TypeInt,
-							Required:     true,
-							Description:  "Start hour of the 2-hour maintenance window",
-							ValidateFunc: validation.IntBetween(0, 23),
-						},
-						"maintenance_window_day": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Description:      "Day of the maintenance window",
-							ValidateDiagFunc: verify.ValidateEnum[k8s.MaintenanceWindowDayOfTheWeek](),
-						},
-					},
-				},
-			},
-			"feature_gates": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The list of feature gates to enable on the cluster",
-			},
-			"admission_plugins": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The list of admission plugins to enable on the cluster",
-			},
-			"open_id_connect_config": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The OpenID Connect configuration of the cluster",
-				Elem:        openIDConnectConfigSchema(),
-			},
-			"apiserver_cert_sans": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "Additional Subject Alternative Names for the Kubernetes API server certificate",
-			},
-			"delete_additional_resources": {
-				Type:        schema.TypeBool,
-				Required:    true,
-				Description: "Delete additional resources like block volumes, load-balancers and the private network (if empty) on cluster deletion",
-			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the cluster's private network",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"pod_cidr": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The subnet used for the Pod CIDR.",
-				ValidateFunc: validation.IsCIDR,
-			},
-			"service_cidr": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The subnet used for the Service CIDR.",
-				ValidateFunc: validation.IsCIDR,
-			},
-			"service_dns_ip": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Computed:     true,
-				Description:  "The IP used for the DNS Service.",
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Kubernetes cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Kubernetes cluster",
-			},
-			"apiserver_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Kubernetes API server URL",
-			},
-			"wildcard_dns": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Wildcard DNS pointing to all the ready nodes",
-			},
-			"kubeconfig": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The kubeconfig configuration file of the Kubernetes cluster",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"config_file": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The whole kubeconfig file",
-						},
-						"host": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes master URL",
-						},
-						"cluster_ca_certificate": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes cluster CA certificate",
-						},
-						"token": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The kubernetes cluster admin token",
-						},
-					},
-				},
-			},
-			"upgrade_available": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "True if an upgrade is available",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the cluster",
-			},
-		},
+		SchemaFunc:    clusterSchema,
 		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
@@ -352,6 +137,225 @@ func ResourceCluster() *schema.Resource {
 				return nil
 			},
 		),
+	}
+}
+
+func clusterSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the cluster",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The type of cluster",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "",
+			Description: "The description of the cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The version of the cluster",
+		},
+		"cni": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The CNI plugin of the cluster",
+			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+				cniValues := k8s.CNI("").Values()
+
+				cniStringValues := make([]string, 0, len(cniValues))
+				for _, cniValue := range cniValues {
+					cniStringValues = append(cniStringValues, cniValue.String())
+				}
+
+				return verify.ValidateStringInSliceWithWarning(cniStringValues, "cni")(i, p)
+			},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the cluster",
+		},
+		"autoscaler_config": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The autoscaler configuration for the cluster",
+			Elem:        autoscalerConfigSchema(),
+		},
+		"auto_upgrade": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The auto upgrade configuration for the cluster",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enable": {
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Enables the Kubernetes patch version auto upgrade",
+					},
+					"maintenance_window_start_hour": {
+						Type:         schema.TypeInt,
+						Required:     true,
+						Description:  "Start hour of the 2-hour maintenance window",
+						ValidateFunc: validation.IntBetween(0, 23),
+					},
+					"maintenance_window_day": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Day of the maintenance window",
+						ValidateDiagFunc: verify.ValidateEnum[k8s.MaintenanceWindowDayOfTheWeek](),
+					},
+				},
+			},
+		},
+		"feature_gates": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The list of feature gates to enable on the cluster",
+		},
+		"admission_plugins": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The list of admission plugins to enable on the cluster",
+		},
+		"open_id_connect_config": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The OpenID Connect configuration of the cluster",
+			Elem:        openIDConnectConfigSchema(),
+		},
+		"apiserver_cert_sans": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Additional Subject Alternative Names for the Kubernetes API server certificate",
+		},
+		"delete_additional_resources": {
+			Type:        schema.TypeBool,
+			Required:    true,
+			Description: "Delete additional resources like block volumes, load-balancers and the private network (if empty) on cluster deletion",
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the cluster's private network",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"pod_cidr": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The subnet used for the Pod CIDR.",
+			ValidateFunc: validation.IsCIDR,
+		},
+		"service_cidr": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The subnet used for the Service CIDR.",
+			ValidateFunc: validation.IsCIDR,
+		},
+		"service_dns_ip": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ForceNew:     true,
+			Computed:     true,
+			Description:  "The IP used for the DNS Service.",
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Kubernetes cluster",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Kubernetes cluster",
+		},
+		"apiserver_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Kubernetes API server URL",
+		},
+		"wildcard_dns": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Wildcard DNS pointing to all the ready nodes",
+		},
+		"kubeconfig": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "The kubeconfig configuration file of the Kubernetes cluster",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"config_file": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The whole kubeconfig file",
+					},
+					"host": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes master URL",
+					},
+					"cluster_ca_certificate": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes cluster CA certificate",
+					},
+					"token": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The kubernetes cluster admin token",
+					},
+				},
+			},
+		},
+		"upgrade_available": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "True if an upgrade is available",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the cluster",
+		},
 	}
 }
 

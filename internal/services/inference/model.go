@@ -28,109 +28,113 @@ func ResourceModel() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultModelTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the model",
-			},
-			"url": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
-				Description: "The HTTPS URL to the model archive or repository. Typically, this is a Hugging Face repository URL (e.g., " +
-					"`https://huggingface.co/your-org/your-model`). The URL must be publicly accessible or require a valid secret for authentication.",
-			},
-			"secret": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				ForceNew:    true,
-				Description: "A token or credential used to authenticate when pulling the model from a private or gated source. For example, a Hugging Face access token with read permissions.",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
-				Description: "The tags associated with the deployment",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the model",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The description of the model",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the model",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the model",
-			},
-			"has_eula": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Defines whether the model has an end user license agreement",
-			},
-			"nodes_support": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Supported node types with quantization options and context lengths.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"node_type_name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Supported node type.",
-						},
-						"quantization": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Supported quantization options.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"quantization_bits": {
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Number of bits used for quantization.",
-									},
-									"allowed": {
-										Type:        schema.TypeBool,
-										Computed:    true,
-										Description: "Whether this quantization is allowed for the model.",
-									},
-									"max_context_size": {
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "Maximum inference context size for this quantization and node type.",
-									},
+		SchemaFunc:    modelSchema,
+	}
+}
+
+func modelSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the model",
+		},
+		"url": {
+			Type:     schema.TypeString,
+			Required: true,
+			ForceNew: true,
+			Description: "The HTTPS URL to the model archive or repository. Typically, this is a Hugging Face repository URL (e.g., " +
+				"`https://huggingface.co/your-org/your-model`). The URL must be publicly accessible or require a valid secret for authentication.",
+		},
+		"secret": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			ForceNew:    true,
+			Description: "A token or credential used to authenticate when pulling the model from a private or gated source. For example, a Hugging Face access token with read permissions.",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Computed:    true,
+			Description: "The tags associated with the deployment",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the model",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The description of the model",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the model",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the model",
+		},
+		"has_eula": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Defines whether the model has an end user license agreement",
+		},
+		"nodes_support": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Supported node types with quantization options and context lengths.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"node_type_name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Supported node type.",
+					},
+					"quantization": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "Supported quantization options.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"quantization_bits": {
+									Type:        schema.TypeInt,
+									Computed:    true,
+									Description: "Number of bits used for quantization.",
+								},
+								"allowed": {
+									Type:        schema.TypeBool,
+									Computed:    true,
+									Description: "Whether this quantization is allowed for the model.",
+								},
+								"max_context_size": {
+									Type:        schema.TypeInt,
+									Computed:    true,
+									Description: "Maximum inference context size for this quantization and node type.",
 								},
 							},
 						},
 					},
 				},
 			},
-			"parameter_size_bits": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size, in bits, of the model parameters",
-			},
-			"size_bytes": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Total size, in bytes, of the model files",
-			},
-			"region": regional.Schema(),
 		},
+		"parameter_size_bits": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size, in bits, of the model parameters",
+		},
+		"size_bytes": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Total size, in bytes, of the model files",
+		},
+		"region": regional.Schema(),
 	}
 }
 

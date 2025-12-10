@@ -2403,6 +2403,48 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 	})
 }
 
+func TestAccServer_ScratchStorage(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_volume" "main" {
+						size_in_gb = 20
+						type = "scratch"
+						zone = "fr-par-2"
+					}
+			
+					resource "scaleway_instance_server" "main" {
+						name = "test-acc-server-scratch"
+						type = "H100-1-80G"
+						image = "ubuntu_jammy_gpu_os_12"
+						state = "stopped"
+						zone = "fr-par-2"
+					    tags  = [ "terraform-test", "scaleway_instance_server", "scratch" ]
+			
+						additional_volume_ids = [scaleway_instance_volume.main.id]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "H100-1-80G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

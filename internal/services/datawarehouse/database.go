@@ -23,26 +23,30 @@ func ResourceDatabase() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"region": regional.Schema(),
-			"deployment_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "ID of the Datawarehouse deployment to which this database belongs.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the database.",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the database (in GB).",
-			},
+		SchemaFunc: databaseSchema,
+	}
+}
+
+func databaseSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region": regional.Schema(),
+		"deployment_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "ID of the Datawarehouse deployment to which this database belongs.",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the database.",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the database (in GB).",
 		},
 	}
 }

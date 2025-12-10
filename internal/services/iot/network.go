@@ -30,52 +30,56 @@ func ResourceNetwork() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"hub_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The ID of the hub on which this network will be created",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the network",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The type of the network",
-				ValidateDiagFunc: verify.ValidateEnum[iot.NetworkNetworkType](),
-			},
-			"topic_prefix": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "The prefix that will be prepended to all topics for this Network",
-			},
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the network",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint to use when interacting with the network",
-			},
-			"secret": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint key to keep secret",
-				Sensitive:   true,
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    networkSchema,
+	}
+}
+
+func networkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"hub_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The ID of the hub on which this network will be created",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the network",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The type of the network",
+			ValidateDiagFunc: verify.ValidateEnum[iot.NetworkNetworkType](),
+		},
+		"topic_prefix": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "The prefix that will be prepended to all topics for this Network",
+		},
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the network",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint to use when interacting with the network",
+		},
+		"secret": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint key to keep secret",
+			Sensitive:   true,
+		},
+		"region": regional.Schema(),
 	}
 }
 
