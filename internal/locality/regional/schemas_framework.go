@@ -1,9 +1,7 @@
 package regional
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -22,8 +20,5 @@ func SchemaAttribute() schema.StringAttribute {
 	return schema.StringAttribute{
 		Optional:    true,
 		Description: "The region you want to attach the resource to",
-		Validators: []validator.String{
-			stringvalidator.OneOf(AllRegions()...),
-		},
 	}
 }
