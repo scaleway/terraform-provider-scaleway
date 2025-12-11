@@ -164,8 +164,8 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 				"error creating instance snapshot",
 				err.Error())
 
-		return
-	}
+			return
+		}
 
 		if data.Wait.ValueBool() {
 			_, errWait := c.blockAndInstanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{

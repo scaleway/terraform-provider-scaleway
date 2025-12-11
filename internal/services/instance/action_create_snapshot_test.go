@@ -8,9 +8,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
+	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
@@ -36,7 +39,7 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
-			destroyUntrackedSnapshots(tt, "data.scaleway_instance_volume.main"),
+			destroyUntrackedInstanceSnapshots(tt, "data.scaleway_instance_volume.main"),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -74,7 +77,7 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 				RefreshState: true,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
-					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
 						Size: scw.SizePtr(20 * scw.GB),
 						Type: &localVolumeType,
 					}),
@@ -118,11 +121,118 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 				RefreshState: true,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
-					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
 						Name: scw.StringPtr("custom-name-for-snapshot"),
 						Size: scw.SizePtr(20 * scw.GB),
 						Tags: []string{"add", "tags", "to", "trigger", "update"},
 						Type: &localVolumeType,
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccAction_InstanceCreateSnapshot_SBS(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccAction_InstanceCreateSnapshot_SBS because action are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	sbsVolumeType := instanceSDK.VolumeVolumeTypeSbsVolume
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			destroyUntrackedBlockSnapshots(tt, "data.scaleway_block_volume.main"),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "main" {
+						name = "test-tf-action-instance-create-snapshot-sbs"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+
+						root_volume {
+							volume_type = "%s"
+							size_in_gb = 20
+						}
+
+						lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_create_snapshot.main]
+							}
+					  	}
+					}
+
+					data "scaleway_block_volume" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}
+
+					action "scaleway_instance_create_snapshot" "main" {
+						config {
+						  	volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+							wait = true
+						}
+					}`, sbsVolumeType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "data.scaleway_block_volume.main"),
+					checkBlockSnapshot(tt, "data.scaleway_block_volume.main", snapshotSpecsCheck{
+						Size: scw.SizePtr(20 * scw.GB),
+						Type: &sbsVolumeType,
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "main" {
+						name = "test-tf-action-instance-create-snapshot-sbs"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+						tags = [ "add", "tags", "to", "trigger", "update" ]
+			
+						root_volume {
+							volume_type = "%s"
+							size_in_gb = 20
+						}
+			
+						lifecycle {
+							action_trigger {
+						  		events  = [after_update]
+						  		actions = [action.scaleway_instance_create_snapshot.main]
+							}
+					  	}
+					}
+
+					data "scaleway_block_volume" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+					}
+
+					action "scaleway_instance_create_snapshot" "main" {
+						config {
+						  	volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+						  	tags = scaleway_instance_server.main.tags
+						  	name = "custom-name-for-snapshot"
+							wait = true
+						}
+					}`, sbsVolumeType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsVolumePresent(tt, "data.scaleway_block_volume.main"),
+					checkBlockSnapshot(tt, "data.scaleway_block_volume.main", snapshotSpecsCheck{
+						Name: scw.StringPtr("custom-name-for-snapshot"),
+						Size: scw.SizePtr(20 * scw.GB),
+						Tags: []string{"add", "tags", "to", "trigger", "update"},
 					}),
 				),
 			},
@@ -185,7 +295,7 @@ func TestAccAction_InstanceCreateSnapshot_Zone(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancechecks.IsServerDestroyed(tt),
-			destroyUntrackedSnapshots(tt, "data.scaleway_instance_volume.main"),
+			destroyUntrackedInstanceSnapshots(tt, "data.scaleway_instance_volume.main"),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -226,7 +336,7 @@ func TestAccAction_InstanceCreateSnapshot_Zone(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "zone", "fr-par-2"),
-					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
 						Size: scw.SizePtr(20 * scw.GB),
 						Type: &localVolumeType,
 					}),
@@ -236,7 +346,7 @@ func TestAccAction_InstanceCreateSnapshot_Zone(t *testing.T) {
 	})
 }
 
-func snapshotMatchesExpectedSpecs(snapshot instanceSDK.Snapshot, expected snapshotSpecsCheck) bool {
+func instanceSnapshotMatchesExpectedSpecs(snapshot instanceSDK.Snapshot, expected snapshotSpecsCheck) bool {
 	if expected.Name != nil && *expected.Name != snapshot.Name {
 		return false
 	}
@@ -260,7 +370,7 @@ func snapshotMatchesExpectedSpecs(snapshot instanceSDK.Snapshot, expected snapsh
 	return true
 }
 
-func checkSnapshot(tt *acctest.TestTools, n string, expectedSpecs snapshotSpecsCheck) resource.TestCheckFunc {
+func checkInstanceSnapshot(tt *acctest.TestTools, n string, expectedSpecs snapshotSpecsCheck) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -281,20 +391,20 @@ func checkSnapshot(tt *acctest.TestTools, n string, expectedSpecs snapshotSpecsC
 		}
 
 		if snapshots.TotalCount == 0 {
-			return fmt.Errorf("could not find any snapshot for volume %s", id)
+			return fmt.Errorf("could not find any instance snapshot for volume %s", id)
 		}
 
 		for _, snapshot := range snapshots.Snapshots {
-			if snapshotMatchesExpectedSpecs(*snapshot, expectedSpecs) {
+			if instanceSnapshotMatchesExpectedSpecs(*snapshot, expectedSpecs) {
 				return nil
 			}
 		}
 
-		return fmt.Errorf("could not find any snapshot that matches the specs %+v", expectedSpecs)
+		return fmt.Errorf("could not find any instance snapshot that matches the specs %+v", expectedSpecs)
 	}
 }
 
-func destroyUntrackedSnapshots(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func destroyUntrackedInstanceSnapshots(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
@@ -316,6 +426,94 @@ func destroyUntrackedSnapshots(tt *acctest.TestTools, n string) resource.TestChe
 
 		for _, snapshot := range snapshots.Snapshots {
 			err = api.DeleteSnapshot(&instanceSDK.DeleteSnapshotRequest{
+				Zone:       zone,
+				SnapshotID: snapshot.ID,
+			})
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+func blockSnapshotMatchesExpectedSpecs(snapshot blockSDK.Snapshot, expected snapshotSpecsCheck) bool {
+	if expected.Name != nil && *expected.Name != snapshot.Name {
+		return false
+	}
+
+	if expected.Size != nil && *expected.Size != snapshot.Size {
+		return false
+	}
+
+	if len(expected.Tags) > 0 && !reflect.DeepEqual(expected.Tags, snapshot.Tags) {
+		return false
+	}
+
+	if len(snapshot.Tags) > len(expected.Tags) {
+		return false
+	}
+
+	return true
+}
+
+func checkBlockSnapshot(tt *acctest.TestTools, n string, expectedSpecs snapshotSpecsCheck) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api, zone, id, err := block.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		snapshots, err := api.ListSnapshots(&blockSDK.ListSnapshotsRequest{
+			Zone:     zone,
+			VolumeID: &id,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+
+		if snapshots.TotalCount == 0 {
+			return fmt.Errorf("could not find any block snapshot for volume %s", id)
+		}
+
+		for _, snapshot := range snapshots.Snapshots {
+			if blockSnapshotMatchesExpectedSpecs(*snapshot, expectedSpecs) {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("could not find any block snapshot that matches the specs %+v", expectedSpecs)
+	}
+}
+
+func destroyUntrackedBlockSnapshots(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		rs, ok := state.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		api, zone, id, err := block.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		snapshots, err := api.ListSnapshots(&blockSDK.ListSnapshotsRequest{
+			Zone:     zone,
+			VolumeID: &id,
+		}, scw.WithAllPages())
+		if err != nil {
+			return err
+		}
+
+		for _, snapshot := range snapshots.Snapshots {
+			err = api.DeleteSnapshot(&blockSDK.DeleteSnapshotRequest{
 				Zone:       zone,
 				SnapshotID: snapshot.ID,
 			})

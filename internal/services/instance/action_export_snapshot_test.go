@@ -13,6 +13,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
@@ -20,9 +21,9 @@ import (
 
 const snapshotKey = "exported-snapshot.qcow2"
 
-func TestAccAction_InstanceExportSnapshot(t *testing.T) {
+func TestAccAction_InstanceExportSnapshot_Local(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
-		t.Skip("Skipping TestAccAction_InstanceExportSnapshot because action are not yet supported on OpenTofu")
+		t.Skip("Skipping TestAccAction_InstanceExportSnapshot_Local because action are not yet supported on OpenTofu")
 	}
 
 	tt := acctest.NewTestTools(t)
@@ -30,7 +31,7 @@ func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 
 	var bucketName string
 	for {
-		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snapshot")
+		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-local")
 		if len(bucketName) < 63 {
 			break
 		}
@@ -51,7 +52,7 @@ func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "to_snapshot" {
-						name = "test-tf-action-instance-export-snapshot"
+						name = "test-tf-action-instance-export-snap-local"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
 
@@ -91,7 +92,7 @@ func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "to_snapshot" {
-						name = "test-tf-action-instance-export-snapshot"
+						name = "test-tf-action-instance-export-snap-local"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
 			
@@ -124,6 +125,126 @@ func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 					action "scaleway_instance_export_snapshot" "main" {
 						config {
 						  	snapshot_id = scaleway_instance_snapshot.main.id
+							bucket = scaleway_object_bucket.main.name
+							key =  %[3]q
+						}
+					}`, size, bucketName, snapshotKey),
+				// The check on this step is the data source.
+				// If the snapshot does not exist, the data source will raise an error
+			},
+			{
+				Config: fmt.Sprintf(`			
+					resource "scaleway_object_bucket" "main" {
+					    name = "%s"
+					}`, bucketName),
+				Check: destroyUntrackedObjects(t.Context(), tt.Meta, bucketName, "fr-par"),
+			},
+		},
+	})
+}
+
+func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccAction_InstanceExportSnapshot_SBS because action are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var bucketName string
+	for {
+		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-sbs")
+		if len(bucketName) < 63 {
+			break
+		}
+	}
+
+	size := 10
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			blocktestfuncs.IsVolumeDestroyed(tt),
+			blocktestfuncs.IsSnapshotDestroyed(tt),
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "to_snapshot" {
+						name = "test-tf-action-instance-export-snap-sbs"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+
+						root_volume {
+							size_in_gb = %d
+						}
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
+
+						lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_export_snapshot.main]
+							}
+					  	}
+					}
+
+					resource "scaleway_object_bucket" "main" {
+					    name = "%s"
+					}
+
+					action "scaleway_instance_export_snapshot" "main" {
+						config {
+						  	snapshot_id = scaleway_block_snapshot.main.id
+							bucket = scaleway_object_bucket.main.name
+							key = %q
+						}
+					}`, size, bucketName, snapshotKey),
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "to_snapshot" {
+						name = "test-tf-action-instance-export-snap-sbs"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+			
+						root_volume {
+							size_in_gb = %d
+						}
+					}
+			
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_instance_server.to_snapshot.root_volume.0.volume_id
+			
+						lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_export_snapshot.main]
+							}
+					  	}
+					}
+			
+					resource "scaleway_object_bucket" "main" {
+					    name = "%s"
+					}
+			
+					data "scaleway_object" "qcow-object" {
+						bucket = scaleway_object_bucket.main.name
+						key = %[3]q
+					}
+			
+					action "scaleway_instance_export_snapshot" "main" {
+						config {
+						  	snapshot_id = scaleway_block_snapshot.main.id
 							bucket = scaleway_object_bucket.main.name
 							key =  %[3]q
 						}
