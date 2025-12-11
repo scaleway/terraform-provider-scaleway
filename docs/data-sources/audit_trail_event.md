@@ -5,16 +5,13 @@ page_title: "Scaleway: scaleway_audit_trail_event"
 
 # scaleway_audit_trail_event
 
-Use this data source to get a list of existing Audit Trail events.
+The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to get a list of existing Audit Trail events.
+
 For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
 
-## Example Usage
+
 
 ```hcl
-# Retrieve all audit trail events on the default organization
-data "scaleway_audit_trail_event" "find_all" {
-}
-
 # Retrieve audit trail events on a specific organization
 data "scaleway_audit_trail_event" "find_by_org" {
   organization_id = "11111111-1111-1111-1111-111111111111"
