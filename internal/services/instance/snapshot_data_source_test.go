@@ -21,7 +21,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancetestfuncs.IsVolumeDestroyed(tt),
-			isSnapshotDestroyed(tt),
+			instancetestfuncs.IsSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -56,8 +56,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 						name = scaleway_instance_snapshot.from_volume.name
 					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
-					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
+					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
+					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "id", "scaleway_instance_snapshot.from_volume", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "name", "scaleway_instance_snapshot.from_volume", "name"),
 
