@@ -105,11 +105,25 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		return
 	}
 
-	actionReq := &instance.CreateSnapshotRequest{
-		VolumeID: scw.StringPtr(locality.ExpandID(data.VolumeID.ValueString())),
+	zone, volumeID, _ := locality.ParseLocalizedID(data.VolumeID.ValueString())
+	if zone == "" {
+		if !data.Zone.IsNull() {
+			zone = data.Zone.ValueString()
+		} else {
+			resp.Diagnostics.AddError(
+				"missing zone in config",
+				fmt.Sprintf("zone could not be extracted from either the action configuration or the resource ID (%s)",
+					data.VolumeID.ValueString(),
+				),
+			)
+
+			return
+		}
 	}
-	if !data.Zone.IsNull() {
-		actionReq.Zone = scw.Zone(data.Zone.ValueString())
+
+	actionReq := &instance.CreateSnapshotRequest{
+		VolumeID: &volumeID,
+		Zone:     scw.Zone(zone),
 	}
 
 	if !data.Name.IsNull() {
@@ -127,7 +141,7 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		}
 	}
 
-	snapshot, err := c.instanceAPI.CreateSnapshot(actionReq)
+	snapshot, err := c.instanceAPI.CreateSnapshot(actionReq, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"error creating snapshot",
@@ -137,16 +151,10 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 	}
 
 	if data.Wait.ValueBool() {
-		waitReq := &instance.WaitForSnapshotRequest{
+		_, errWait := c.instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 			SnapshotID: snapshot.Snapshot.ID,
-			Zone:       scw.Zone(data.Zone.ValueString()),
-		}
-
-		if !data.Zone.IsNull() {
-			waitReq.Zone = scw.Zone(data.Zone.ValueString())
-		}
-
-		_, errWait := c.instanceAPI.WaitForSnapshot(waitReq)
+			Zone:       scw.Zone(zone),
+		}, scw.WithContext(ctx))
 		if errWait != nil {
 			resp.Diagnostics.AddError(
 				"error waiting for snapshot",
