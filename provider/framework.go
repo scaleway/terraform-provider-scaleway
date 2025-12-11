@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 )
@@ -139,6 +140,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	var res []func() action.Action
 
 	res = append(res, instance.NewServerAction)
+	res = append(res, cockpit.NewTriggerTestAlertAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
 
 	return res
