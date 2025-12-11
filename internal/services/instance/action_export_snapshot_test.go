@@ -18,6 +18,8 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
+const snapshotKey = "exported-snapshot.qcow2"
+
 func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccAction_InstanceExportSnapshot because action are not yet supported on OpenTofu")
@@ -26,14 +28,14 @@ func TestAccAction_InstanceExportSnapshot(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := ""
+	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snapshot")
 		if len(bucketName) < 63 {
 			break
 		}
 	}
-	snapshotKey := "exported-snapshot.qcow2"
+
 	size := 10
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -148,14 +150,14 @@ func TestAccAction_InstanceExportSnapshot_Wait(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := ""
+	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-wait")
 		if len(bucketName) < 63 {
 			break
 		}
 	}
-	snapshotKey := "exported-snapshot.qcow2"
+
 	size := 10
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -266,14 +268,14 @@ func TestAccAction_InstanceExportSnapshot_Zone(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := ""
+	var bucketName string
 	for {
 		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-zone")
 		if len(bucketName) < 63 {
 			break
 		}
 	}
-	snapshotKey := "exported-snapshot.qcow2"
+
 	size := 10
 
 	resource.ParallelTest(t, resource.TestCase{

@@ -136,20 +136,20 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"error in server action",
-			fmt.Sprintf("%s", err))
+			err.Error())
 
 		return
 	}
 
 	if data.Wait.ValueBool() {
-		_, errWait := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+		server, err := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
 			ServerID: serverID,
 			Zone:     scw.Zone(zone),
 		}, scw.WithContext(ctx))
-		if errWait != nil && data.Action.ValueString() != instance.ServerActionTerminate.String() {
+		if err != nil && data.Action.ValueString() != instance.ServerActionTerminate.String() {
 			resp.Diagnostics.AddError(
-				"error in wait server",
-				fmt.Sprintf("%s", err))
+				"error waiting for server"+serverID,
+				err.Error())
 		}
 
 		if data.Action.ValueString() == instance.ServerActionBackup.String() && server != nil {

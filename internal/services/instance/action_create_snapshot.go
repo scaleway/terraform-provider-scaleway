@@ -8,10 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 )
 
 var (
@@ -20,7 +22,7 @@ var (
 )
 
 type CreateSnapshot struct {
-	instanceAPI *instance.API
+	blockAndInstanceAPI *instancehelpers.BlockAndInstanceAPI
 }
 
 func (c *CreateSnapshot) Configure(_ context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -39,7 +41,7 @@ func (c *CreateSnapshot) Configure(_ context.Context, req action.ConfigureReques
 	}
 
 	client := m.ScwClient()
-	c.instanceAPI = instance.NewAPI(client)
+	c.blockAndInstanceAPI = instancehelpers.NewBlockAndInstanceAPI(client)
 }
 
 func (c *CreateSnapshot) Metadata(_ context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
@@ -80,7 +82,7 @@ func (c *CreateSnapshot) Schema(_ context.Context, _ action.SchemaRequest, resp 
 			},
 			"wait": schema.BoolAttribute{
 				Optional:    true,
-				Description: "Wait for snapshotting operation to be finished",
+				Description: "Wait for snapshotting operation to be completed",
 			},
 		},
 	}
@@ -95,9 +97,9 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		return
 	}
 
-	if c.instanceAPI == nil {
+	if c.blockAndInstanceAPI == nil {
 		resp.Diagnostics.AddError(
-			"Unconfigured instanceAPI",
+			"Unconfigured instanceAPI / blockAPI",
 			"The action was not properly configured. The Scaleway client is missing. "+
 				"This is usually a bug in the provider. Please report it to the maintainers.",
 		)
@@ -121,44 +123,113 @@ func (c *CreateSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		}
 	}
 
-	actionReq := &instance.CreateSnapshotRequest{
-		VolumeID: &volumeID,
+	volume, err := c.blockAndInstanceAPI.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+		VolumeID: volumeID,
 		Zone:     scw.Zone(zone),
-	}
-
-	if !data.Name.IsNull() {
-		actionReq.Name = data.Name.ValueString()
-	}
-
-	if len(data.Tags.Elements()) > 0 {
-		tags := make([]string, 0, len(data.Tags.Elements()))
-
-		diags := data.Tags.ElementsAs(ctx, &tags, false)
-		if diags.HasError() {
-			resp.Diagnostics.Append(diags...)
-		} else {
-			actionReq.Tags = &tags
-		}
-	}
-
-	snapshot, err := c.instanceAPI.CreateSnapshot(actionReq, scw.WithContext(ctx))
+	}, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error creating snapshot",
-			fmt.Sprintf("%s", err))
+			"could not find volume "+data.VolumeID.ValueString(),
+			err.Error(),
+		)
 
 		return
 	}
 
-	if data.Wait.ValueBool() {
-		_, errWait := c.instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
-			SnapshotID: snapshot.Snapshot.ID,
-			Zone:       scw.Zone(zone),
-		}, scw.WithContext(ctx))
-		if errWait != nil {
-			resp.Diagnostics.AddError(
-				"error waiting for snapshot",
-				fmt.Sprintf("%s", err))
+	switch volume.InstanceVolumeType {
+	case instance.VolumeVolumeTypeLSSD:
+		actionReq := &instance.CreateSnapshotRequest{
+			VolumeID: &volumeID,
+			Zone:     scw.Zone(zone),
 		}
+
+		if !data.Name.IsNull() {
+			actionReq.Name = data.Name.ValueString()
+		}
+
+		if len(data.Tags.Elements()) > 0 {
+			tags := make([]string, 0, len(data.Tags.Elements()))
+
+			diags := data.Tags.ElementsAs(ctx, &tags, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+			} else {
+				actionReq.Tags = &tags
+			}
+		}
+
+		snapshot, err := c.blockAndInstanceAPI.CreateSnapshot(actionReq, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error creating instance snapshot",
+				err.Error())
+
+		return
+	}
+
+		if data.Wait.ValueBool() {
+			_, errWait := c.blockAndInstanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+				SnapshotID: snapshot.Snapshot.ID,
+				Zone:       scw.Zone(zone),
+			}, scw.WithContext(ctx))
+			if errWait != nil {
+				resp.Diagnostics.AddError(
+					"error waiting for instance snapshot",
+					err.Error())
+			}
+		}
+	case instance.VolumeVolumeTypeSbsVolume:
+		api := c.blockAndInstanceAPI.BlockAPI
+
+		actionReq := &block.CreateSnapshotRequest{
+			VolumeID: volumeID,
+			Zone:     scw.Zone(zone),
+		}
+
+		if !data.Name.IsNull() {
+			actionReq.Name = data.Name.ValueString()
+		}
+
+		if len(data.Tags.Elements()) > 0 {
+			tags := make([]string, 0, len(data.Tags.Elements()))
+
+			diags := data.Tags.ElementsAs(ctx, &tags, false)
+			if diags.HasError() {
+				resp.Diagnostics.Append(diags...)
+			} else {
+				actionReq.Tags = tags
+			}
+		}
+
+		snapshot, err := api.CreateSnapshot(actionReq, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error creating block snapshot",
+				err.Error())
+
+			return
+		}
+
+		if data.Wait.ValueBool() {
+			_, errWait := api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				SnapshotID: snapshot.ID,
+				Zone:       scw.Zone(zone),
+			}, scw.WithContext(ctx))
+			if errWait != nil {
+				resp.Diagnostics.AddError(
+					"error waiting for block snapshot",
+					err.Error())
+			}
+		}
+	case instance.VolumeVolumeTypeScratch:
+		resp.Diagnostics.AddError(
+			"invalid volume type",
+			"cannot create snapshot from a volume of type scratch",
+		)
+	default:
+		resp.Diagnostics.AddError(
+			"invalid volume type",
+			fmt.Sprintf("unknown volume type %q", volume.InstanceVolumeType),
+		)
 	}
 }

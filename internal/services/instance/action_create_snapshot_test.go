@@ -42,7 +42,7 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-instance-create-snapshot"
+						name = "test-tf-action-instance-create-snapshot-local"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
 
@@ -83,7 +83,7 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-instance-create-snapshot"
+						name = "test-tf-action-instance-create-snapshot-local"
 						type = "DEV1-S"
 						image = "ubuntu_jammy"
 						tags = [ "add", "tags", "to", "trigger", "update" ]
@@ -142,13 +142,12 @@ func TestAccAction_InstanceCreateSnapshot_Scratch(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsVolumeDestroyed(tt),
-		),
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_instance_volume" "scratch" {
+						name = "test-tf-action-instance-create-snapshot-scratch"
 						type = "%s"
 						size_in_gb = 50
 
@@ -167,6 +166,71 @@ func TestAccAction_InstanceCreateSnapshot_Scratch(t *testing.T) {
 						}
 					}`, scratchVolumeType),
 				ExpectError: regexp.MustCompile("Error when invoking action"), // scratch storage cannot be snapshot
+			},
+		},
+	})
+}
+
+func TestAccAction_InstanceCreateSnapshot_Zone(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccAction_InstanceCreateSnapshot_Zone because action are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	localVolumeType := instanceSDK.VolumeVolumeTypeLSSD
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			instancechecks.IsServerDestroyed(tt),
+			destroyUntrackedSnapshots(tt, "data.scaleway_instance_volume.main"),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "main" {
+						name = "test-tf-action-instance-create-snapshot-zone"
+						type = "DEV1-S"
+						image = "ubuntu_jammy"
+						zone = "fr-par-2"
+
+						root_volume {
+							volume_type = "%s"
+							size_in_gb = 20
+						}
+
+						lifecycle {
+							action_trigger {
+						  		events  = [after_create]
+						  		actions = [action.scaleway_instance_create_snapshot.main]
+							}
+					  	}
+					}
+
+					data "scaleway_instance_volume" "main" {
+						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+						zone = "fr-par-2"
+					}
+
+					action "scaleway_instance_create_snapshot" "main" {
+						config {
+						  	volume_id = scaleway_instance_server.main.root_volume.0.volume_id
+							wait = true
+						}
+					}`, localVolumeType),
+			},
+			{
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "zone", "fr-par-2"),
+					checkSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
+						Size: scw.SizePtr(20 * scw.GB),
+						Type: &localVolumeType,
+					}),
+				),
 			},
 		},
 	})

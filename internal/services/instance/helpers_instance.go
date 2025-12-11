@@ -138,6 +138,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	if rawState == "" {
 		return instance.ServerStateRunning, nil
 	}
+
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,

@@ -7,10 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 )
 
 var (
@@ -19,7 +21,7 @@ var (
 )
 
 type ExportSnapshot struct {
-	instanceAPI *instance.API
+	blockAndInstanceAPI *instancehelpers.BlockAndInstanceAPI
 }
 
 func (e *ExportSnapshot) Configure(_ context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
@@ -38,7 +40,7 @@ func (e *ExportSnapshot) Configure(_ context.Context, req action.ConfigureReques
 	}
 
 	client := m.ScwClient()
-	e.instanceAPI = instance.NewAPI(client)
+	e.blockAndInstanceAPI = instancehelpers.NewBlockAndInstanceAPI(client)
 }
 
 func (e *ExportSnapshot) Metadata(_ context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
@@ -93,9 +95,9 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		return
 	}
 
-	if e.instanceAPI == nil {
+	if e.blockAndInstanceAPI == nil {
 		resp.Diagnostics.AddError(
-			"Unconfigured instanceAPI",
+			"Unconfigured instanceAPI / block API",
 			"The action was not properly configured. The Scaleway client is missing. "+
 				"This is usually a bug in the provider. Please report it to the maintainers.",
 		)
@@ -119,34 +121,88 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 		}
 	}
 
-	actionReq := &instance.ExportSnapshotRequest{
+	snapshot, err := e.blockAndInstanceAPI.GetUnknownSnapshot(&instancehelpers.GetUnknownSnapshotRequest{
 		SnapshotID: snapshotID,
 		Zone:       scw.Zone(zone),
-		Bucket:     data.Bucket.ValueString(),
-		Key:        data.Key.ValueString(),
-	}
-	if !data.Zone.IsNull() {
-		actionReq.Zone = scw.Zone(data.Zone.ValueString())
-	}
-
-	_, err := e.instanceAPI.ExportSnapshot(actionReq, scw.WithContext(ctx))
+	}, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"error exporting snapshot",
-			fmt.Sprintf("%s", err))
+			"could not find snapshot"+data.SnapshotID.ValueString(),
+			err.Error(),
+		)
 
 		return
 	}
 
-	if data.Wait.ValueBool() {
-		_, err = e.instanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+	switch snapshot.VolumeType {
+	case instance.VolumeVolumeTypeLSSD:
+		actionReq := &instance.ExportSnapshotRequest{
 			SnapshotID: snapshotID,
 			Zone:       scw.Zone(zone),
-		}, scw.WithContext(ctx))
+			Bucket:     data.Bucket.ValueString(),
+			Key:        data.Key.ValueString(),
+		}
+		if !data.Zone.IsNull() {
+			actionReq.Zone = scw.Zone(data.Zone.ValueString())
+		}
+
+		_, err = e.blockAndInstanceAPI.ExportSnapshot(actionReq, scw.WithContext(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"error waiting snapshot",
-				fmt.Sprintf("%s", err))
+				"error exporting instance snapshot",
+				err.Error())
+
+			return
 		}
+
+		if data.Wait.ValueBool() {
+			_, err = e.blockAndInstanceAPI.WaitForSnapshot(&instance.WaitForSnapshotRequest{
+				SnapshotID: snapshotID,
+				Zone:       scw.Zone(zone),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"error waiting for instance snapshot",
+					err.Error())
+			}
+		}
+	case instance.VolumeVolumeTypeSbsSnapshot:
+		api := e.blockAndInstanceAPI.BlockAPI
+
+		actionReq := &block.ExportSnapshotToObjectStorageRequest{
+			SnapshotID: snapshotID,
+			Zone:       scw.Zone(zone),
+			Bucket:     data.Bucket.ValueString(),
+			Key:        data.Key.ValueString(),
+		}
+		if !data.Zone.IsNull() {
+			actionReq.Zone = scw.Zone(data.Zone.ValueString())
+		}
+
+		_, err = api.ExportSnapshotToObjectStorage(actionReq, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"error exporting block snapshot",
+				err.Error())
+
+			return
+		}
+
+		if data.Wait.ValueBool() {
+			_, err = api.WaitForSnapshot(&block.WaitForSnapshotRequest{
+				SnapshotID: snapshotID,
+				Zone:       scw.Zone(zone),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				resp.Diagnostics.AddError(
+					"error waiting for block snapshot",
+					err.Error())
+			}
+		}
+	default:
+		resp.Diagnostics.AddError(
+			"invalid snapshot type",
+			fmt.Sprintf("unknown snapshot type %q", snapshot.VolumeType),
+		)
 	}
 }

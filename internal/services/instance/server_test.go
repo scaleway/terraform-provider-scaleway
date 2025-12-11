@@ -2412,7 +2412,7 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 						additional_volume_ids = [scaleway_instance_volume.main.id]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "H100-1-80G"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
