@@ -142,6 +142,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 	res = append(res, cockpit.NewTriggerTestAlertAction)
 	res = append(res, instance.NewCreateSnapshot)
+	res = append(res, instance.NewExportSnapshot)
 	res = append(res, instance.NewServerAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
 	res = append(res, keymanager.NewRotateKeyAction)
