@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_account_project"
 
 # Resource: scaleway_account_project
 
-The `scaleway_account_project` resource allows you to create and manage the Projects of a Scaleway Organization.
+The [`scaleway_account_project`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/account_project) resource allows you to create and manage the Projects of a Scaleway Organization.
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
