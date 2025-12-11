@@ -2,10 +2,13 @@ package keymanager
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
@@ -17,16 +20,16 @@ import (
 )
 
 var (
-	_ action.Action              = (*RotateKeyAction)(nil)
-	_ action.ActionWithConfigure = (*RotateKeyAction)(nil)
+	_ action.Action              = (*EncryptKeyAction)(nil)
+	_ action.ActionWithConfigure = (*EncryptKeyAction)(nil)
 )
 
-type RotateKeyAction struct {
+type EncryptKeyAction struct {
 	keyManagerAPI *key_manager.API
 	meta          *meta.Meta
 }
 
-func (a *RotateKeyAction) Configure(ctx context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
+func (a *EncryptKeyAction) Configure(ctx context.Context, req action.ConfigureRequest, resp *action.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -46,20 +49,27 @@ func (a *RotateKeyAction) Configure(ctx context.Context, req action.ConfigureReq
 	a.meta = m
 }
 
-func (a *RotateKeyAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_key_manager_key_rotate_action"
+func (a *EncryptKeyAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_key_manager_key_encrypt_action"
 }
 
-type RotateKeyActionModel struct {
-	Region types.String `tfsdk:"region"`
-	KeyID  types.String `tfsdk:"key_id"`
+type EncryptKeyActionModel struct {
+	Region         types.String        `tfsdk:"region"`
+	KeyID          types.String        `tfsdk:"key_id"`
+	Plaintext      types.String        `tfsdk:"plaintext"`
+	AssociatedData AssociatedDataModel `tfsdk:"associated_data"`
+	Ciphertext     types.String        `tfsdk:"ciphertext"`
 }
 
-func NewRotateKeyAction() action.Action {
-	return &RotateKeyAction{}
+type AssociatedDataModel struct {
+	Value types.String `tfsdk:"value"`
 }
 
-func (a *RotateKeyAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
+func NewEncryptKeyAction() action.Action {
+	return &EncryptKeyAction{}
+}
+
+func (a *EncryptKeyAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"region": schema.StringAttribute{
@@ -71,17 +81,32 @@ func (a *RotateKeyAction) Schema(ctx context.Context, req action.SchemaRequest, 
 			},
 			"key_id": schema.StringAttribute{
 				Required:    true,
-				Description: "ID of the key to rotate (UUID format)",
+				Description: "ID of the key to use for encryption. The key must have an usage set to `symmetric_encryption` or `asymmetric_encryption`. (UUID format)",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithLocality(),
 				},
+			},
+			"plaintext_wo": schema.StringAttribute{
+				Required:    true,
+				Description: "Plaintext data to encrypt. Data size must be between 1 and 65535 bytes.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 65535),
+				},
+				WriteOnly: true,
+			},
+			"associated_data": schema.ObjectAttribute{
+				AttributeTypes: map[string]attr.Type{
+					"value": types.StringType,
+				},
+				Optional:    true,
+				Description: "Additional authenticated data. Additional data which will not be encrypted, but authenticated and appended to the encrypted payload. Only supported by keys with a usage set to `symmetric_encryption`.",
 			},
 		},
 	}
 }
 
-func (a *RotateKeyAction) Invoke(ctx context.Context, req action.InvokeRequest, resp *action.InvokeResponse) {
-	var data RotateKeyActionModel
+func (a *EncryptKeyAction) Invoke(ctx context.Context, req action.InvokeRequest, resp *action.InvokeResponse) {
+	var data EncryptKeyActionModel
 	// Read action config data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 
@@ -119,7 +144,7 @@ func (a *RotateKeyAction) Invoke(ctx context.Context, req action.InvokeRequest, 
 			if !exists {
 				resp.Diagnostics.AddError(
 					"Missing region",
-					"The region attribute is required to rotate a key. Please provide it explicitly or configure a default region in the provider.",
+					"The region attribute is required to use a key for encryption. Please provide it explicitly or configure a default region in the provider.",
 				)
 
 				return
@@ -128,16 +153,22 @@ func (a *RotateKeyAction) Invoke(ctx context.Context, req action.InvokeRequest, 
 			region = defaultRegion
 		}
 	}
-
-	rotateReq := &key_manager.RotateKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	associatedData := []byte(data.AssociatedData.Value.ValueString())
+	encryptReq := &key_manager.EncryptRequest{
+		Region:         region,
+		KeyID:          keyID,
+		Plaintext:      []byte(data.Plaintext.ValueString()),
+		AssociatedData: &associatedData,
 	}
 
-	_, err = a.keyManagerAPI.RotateKey(rotateReq)
+	encryptResp, err := a.keyManagerAPI.Encrypt(encryptReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error executing Key Manager RotateKey action",
+			"Error executing Key Manager Encrypt action",
 			fmt.Sprintf("%s", err))
 	}
+
+	data.Ciphertext = types.StringValue(base64.StdEncoding.EncodeToString(encryptResp.Ciphertext))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

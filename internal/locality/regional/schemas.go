@@ -16,7 +16,7 @@ func ComputedSchema() *schema.Schema {
 	}
 }
 
-func allRegions() []string {
+func AllRegions() []string {
 	regions := make([]string, 0, len(scw.AllRegions))
 	for _, z := range scw.AllRegions {
 		regions = append(regions, z.String())
@@ -32,7 +32,7 @@ func Schema() *schema.Schema {
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
+		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllRegions(), "region"),
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
 }
