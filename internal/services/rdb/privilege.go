@@ -33,14 +33,14 @@ func ResourcePrivilege() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
-	},
-	SchemaVersion: 1,
-	StateUpgraders: []schema.StateUpgrader{
-		{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: PrivilegeV1SchemaUpgradeFunc},
-	},
-	SchemaFunc:    privilegeSchema,
-	CustomizeDiff: cdf.LocalityCheck("instance_id"),
-}
+		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: PrivilegeV1SchemaUpgradeFunc},
+		},
+		SchemaFunc:    privilegeSchema,
+		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
 }
 
 func privilegeSchema() map[string]*schema.Schema {
