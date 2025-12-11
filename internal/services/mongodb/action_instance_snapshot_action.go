@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -70,9 +68,6 @@ func (a *InstanceSnapshotAction) Schema(_ context.Context, _ action.SchemaReques
 			"instance_id": schema.StringAttribute{
 				Required:    true,
 				Description: "MongoDB instance ID to snapshot. Can be a plain UUID or a regional ID.",
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
 			},
 			"region": schema.StringAttribute{
 				Optional:    true,
@@ -160,7 +155,7 @@ func (a *InstanceSnapshotAction) Invoke(ctx context.Context, req action.InvokeRe
 
 	snapshotName := data.Name.ValueString()
 	if snapshotName == "" {
-		snapshotName = "tf-mongodb-snapshot"
+		snapshotName = "tf-mongodb-snapshot-action"
 	}
 
 	var expirationTime *time.Time
