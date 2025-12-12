@@ -711,7 +711,6 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 				return diag.FromErr(err)
 			}
 		}
-
 	}
 
 	req := &baremetal.UpdateServerRequest{

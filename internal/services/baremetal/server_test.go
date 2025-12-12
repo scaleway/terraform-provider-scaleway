@@ -988,7 +988,7 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "private_network"),
+					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "private_network.0"),
 				),
 			},
 		},
