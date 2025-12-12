@@ -382,12 +382,22 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.UserData = &cloudInitStr
 	}
 
-	partitioningSchema := baremetal.Schema{}
-
 	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
 		if diags := validateInstallConfig(ctx, d, m); len(diags) > 0 {
 			return diags
 		}
+
+		req.Install = &baremetal.CreateServerRequestInstall{
+			OsID:            zonal.ExpandID(d.Get("os")).ID,
+			Hostname:        d.Get("hostname").(string),
+			SSHKeyIDs:       types.ExpandStrings(d.Get("ssh_key_ids")),
+			User:            types.ExpandStringPtr(d.Get("user")),
+			Password:        types.ExpandStringPtr(d.Get("password")),
+			ServicePassword: types.ExpandStringPtr(d.Get("service_password")),
+			ServiceUser:     types.ExpandStringPtr(d.Get("service_user")),
+		}
+
+		partitioningSchema := baremetal.Schema{}
 
 		if file != "" {
 			todecode, _ := file.(string)
@@ -396,17 +406,8 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			if err != nil {
 				return diag.FromErr(err)
 			}
-		}
 
-		req.Install = &baremetal.CreateServerRequestInstall{
-			OsID:               zonal.ExpandID(d.Get("os")).ID,
-			Hostname:           d.Get("hostname").(string),
-			SSHKeyIDs:          types.ExpandStrings(d.Get("ssh_key_ids")),
-			User:               types.ExpandStringPtr(d.Get("user")),
-			Password:           types.ExpandStringPtr(d.Get("password")),
-			PartitioningSchema: &partitioningSchema,
-			ServicePassword:    types.ExpandStringPtr(d.Get("service_password")),
-			ServiceUser:        types.ExpandStringPtr(d.Get("service_user")),
+			req.Install.PartitioningSchema = &partitioningSchema
 		}
 	}
 
