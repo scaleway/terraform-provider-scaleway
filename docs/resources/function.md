@@ -101,6 +101,7 @@ output "function_endpoint" {
 ```
 
 Then you can access your private function using the API key:
+
 ```shell
 $ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
   "https://$(terraform output -raw function_endpoint)/"
