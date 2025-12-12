@@ -1,7 +1,6 @@
 package verify_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -13,7 +12,7 @@ import (
 func TestStringValidatorUUID(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testCases := map[string]struct {
 		errDesc string
@@ -93,7 +92,7 @@ func TestStringValidatorUUID(t *testing.T) {
 func TestStringValidatorUUIDOrUUIDWithLocality(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	testCases := map[string]struct {
 		errDesc string
@@ -216,7 +215,7 @@ func TestStringValidatorUUIDOrUUIDWithLocality(t *testing.T) {
 func TestStringValidatorRegionWithWarning(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
+	ctx := t.Context()
 
 	validRegions := []string{"fr-par", "nl-ams", "pl-waw"}
 
