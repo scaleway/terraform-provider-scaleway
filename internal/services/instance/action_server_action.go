@@ -12,7 +12,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -78,11 +80,11 @@ func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, res
 			"server_id": schema.StringAttribute{
 				Required:    true,
 				Description: "Server id to send the action to",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
 			},
-			"zone": schema.StringAttribute{
-				Optional:    true,
-				Description: "Zone of server to send the action to",
-			},
+			"zone": zonal.SchemaAttribute("Zone of server to send the action to"),
 			"wait": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Wait for server to finish action",
