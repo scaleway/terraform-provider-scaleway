@@ -125,3 +125,18 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 		},
 	})
 }
+
+func TestProviderSDKDescriptionsAreNotEmpty(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, d := range p.DataSourcesMap {
+		if d.Description == "" {
+			t.Errorf("Description for data source %s is empty", name)
+		}
+	}
+
+	for name, r := range p.ResourcesMap {
+		if r.Description == "" {
+			t.Errorf("Description for resource %s is empty", name)
+		}
+	}
+}
