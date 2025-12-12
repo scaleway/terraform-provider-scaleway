@@ -27,59 +27,63 @@ func ResourceZone() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"domain": {
-				Type:        schema.TypeString,
-				Description: "The domain where the DNS zone will be created.",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"subdomain": {
-				Type:        schema.TypeString,
-				Description: "The subdomain of the DNS zone to create.",
-				Required:    true,
-			},
-			"ns": {
-				Type:        schema.TypeList,
-				Description: "NameServer list for zone.",
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"ns_default": {
-				Type:        schema.TypeList,
-				Description: "NameServer default list for zone.",
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"ns_master": {
-				Type:        schema.TypeList,
-				Description: "NameServer master list for zone.",
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Description: "The domain zone status.",
-				Computed:    true,
-			},
-			"message": {
-				Type:        schema.TypeString,
-				Description: "Message",
-				Computed:    true,
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Description: "The date and time of the last update of the DNS zone.",
-				Computed:    true,
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    zoneSchema,
+	}
+}
+
+func zoneSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain": {
+			Type:        schema.TypeString,
+			Description: "The domain where the DNS zone will be created.",
+			Required:    true,
+			ForceNew:    true,
 		},
+		"subdomain": {
+			Type:        schema.TypeString,
+			Description: "The subdomain of the DNS zone to create.",
+			Required:    true,
+		},
+		"ns": {
+			Type:        schema.TypeList,
+			Description: "NameServer list for zone.",
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"ns_default": {
+			Type:        schema.TypeList,
+			Description: "NameServer default list for zone.",
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"ns_master": {
+			Type:        schema.TypeList,
+			Description: "NameServer master list for zone.",
+			Computed:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Description: "The domain zone status.",
+			Computed:    true,
+		},
+		"message": {
+			Type:        schema.TypeString,
+			Description: "Message",
+			Computed:    true,
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Description: "The date and time of the last update of the DNS zone.",
+			Computed:    true,
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

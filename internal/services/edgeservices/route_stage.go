@@ -23,63 +23,67 @@ func ResourceRouteStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"waf_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
-			},
-			"rule": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "List of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified backend stage. If no rules are matched, the request is forwarded to the WAF stage defined by `waf_stage_id`",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"backend_stage_id": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "ID of the backend stage that requests matching the rule should be forwarded to",
-						},
-						"rule_http_match": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Rule condition to be matched. Requests matching the condition defined here will be directly forwarded to the backend specified by the `backend_stage_id` field. Requests that do not match will be checked by the next rule's condition",
-							MaxItems:    1,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"method_filters": {
-										Type:     schema.TypeList,
-										Optional: true,
-										Computed: true,
-										Elem: &schema.Schema{
-											Type:             schema.TypeString,
-											ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchMethodFilter](),
-										},
-										Description: "HTTP methods to filter for. A request using any of these methods will be considered to match the rule. Possible values are `get`, `post`, `put`, `patch`, `delete`, `head`, `options`. All methods will match if none is provided",
+		SchemaFunc:    routeSchema,
+	}
+}
+
+func routeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"waf_stage_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
+		},
+		"rule": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "List of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified backend stage. If no rules are matched, the request is forwarded to the WAF stage defined by `waf_stage_id`",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"backend_stage_id": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "ID of the backend stage that requests matching the rule should be forwarded to",
+					},
+					"rule_http_match": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Rule condition to be matched. Requests matching the condition defined here will be directly forwarded to the backend specified by the `backend_stage_id` field. Requests that do not match will be checked by the next rule's condition",
+						MaxItems:    1,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"method_filters": {
+									Type:     schema.TypeList,
+									Optional: true,
+									Computed: true,
+									Elem: &schema.Schema{
+										Type:             schema.TypeString,
+										ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchMethodFilter](),
 									},
-									"path_filter": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										MaxItems:    1,
-										Description: "HTTP URL path to filter for. A request whose path matches the given filter will be considered to match the rule. All paths will match if none is provided",
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"path_filter_type": {
-													Type:             schema.TypeString,
-													Required:         true,
-													ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchPathFilterPathFilterType](),
-													Description:      "The type of filter to match for the HTTP URL path. For now, all path filters must be written in regex and use the `regex` type",
-												},
-												"value": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The value to be matched for the HTTP URL path",
-												},
+									Description: "HTTP methods to filter for. A request using any of these methods will be considered to match the rule. Possible values are `get`, `post`, `put`, `patch`, `delete`, `head`, `options`. All methods will match if none is provided",
+								},
+								"path_filter": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MaxItems:    1,
+									Description: "HTTP URL path to filter for. A request whose path matches the given filter will be considered to match the rule. All paths will match if none is provided",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"path_filter_type": {
+												Type:             schema.TypeString,
+												Required:         true,
+												ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchPathFilterPathFilterType](),
+												Description:      "The type of filter to match for the HTTP URL path. For now, all path filters must be written in regex and use the `regex` type",
+											},
+											"value": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "The value to be matched for the HTTP URL path",
 											},
 										},
 									},
@@ -89,18 +93,18 @@ func ResourceRouteStage() *schema.Resource {
 					},
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the route stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the route stage",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the route stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the route stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

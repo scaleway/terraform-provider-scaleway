@@ -31,101 +31,105 @@ func ResourceCertificate() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the load-balancer certificate",
-				Optional:    true,
-				Computed:    true,
-			},
-			"letsencrypt": {
-				ConflictsWith: []string{"custom_certificate"},
-				MaxItems:      1,
-				Description:   "The Let's Encrypt type certificate configuration",
-				Type:          schema.TypeList,
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"common_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The main domain name of the certificate",
-						},
-						"subject_alternative_name": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The alternative domain names of the certificate",
-						},
-					},
-				},
-			},
-			"custom_certificate": {
-				ConflictsWith: []string{"letsencrypt"},
-				MaxItems:      1,
-				Type:          schema.TypeList,
-				Description:   "The custom type certificate type configuration",
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"certificate_chain": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Sensitive:   true,
-							Description: "The full PEM-formatted certificate chain",
-						},
-					},
-				},
-			},
+		SchemaFunc: certificateSchema,
+	}
+}
 
-			// Readonly attributes
-			"common_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The main domain name of the certificate",
-			},
-			"subject_alternative_name": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The alternative domain names of the certificate",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "The domain name",
+func certificateSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The load-balancer ID",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "The name of the load-balancer certificate",
+			Optional:    true,
+			Computed:    true,
+		},
+		"letsencrypt": {
+			ConflictsWith: []string{"custom_certificate"},
+			MaxItems:      1,
+			Description:   "The Let's Encrypt type certificate configuration",
+			Type:          schema.TypeList,
+			Optional:      true,
+			ForceNew:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"common_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The main domain name of the certificate",
+					},
+					"subject_alternative_name": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional:    true,
+						ForceNew:    true,
+						Description: "The alternative domain names of the certificate",
+					},
 				},
 			},
-			"fingerprint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier (SHA-1) of the certificate",
+		},
+		"custom_certificate": {
+			ConflictsWith: []string{"letsencrypt"},
+			MaxItems:      1,
+			Type:          schema.TypeList,
+			Description:   "The custom type certificate type configuration",
+			Optional:      true,
+			ForceNew:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"certificate_chain": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Sensitive:   true,
+						Description: "The full PEM-formatted certificate chain",
+					},
+				},
 			},
-			"not_valid_before": {
+		},
+
+		// Readonly attributes
+		"common_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The main domain name of the certificate",
+		},
+		"subject_alternative_name": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The alternative domain names of the certificate",
+			Elem: &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid before validity bound timestamp",
+				Description: "The domain name",
 			},
-			"not_valid_after": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid after validity bound timestamp",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of certificate",
-			},
+		},
+		"fingerprint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The identifier (SHA-1) of the certificate",
+		},
+		"not_valid_before": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The not valid before validity bound timestamp",
+		},
+		"not_valid_after": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The not valid after validity bound timestamp",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of certificate",
 		},
 	}
 }

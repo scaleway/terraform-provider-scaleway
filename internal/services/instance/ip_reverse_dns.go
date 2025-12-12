@@ -30,20 +30,24 @@ func ResourceIPReverseDNS() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultInstanceIPReverseDNSTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"ip_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IP ID or IP address",
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The reverse DNS for this IP",
-			},
-			"zone": zonal.Schema(),
-		},
+		SchemaFunc:    ipReverseDNSSchema,
 		CustomizeDiff: cdf.LocalityCheck("ip_id"),
+	}
+}
+
+func ipReverseDNSSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"ip_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The IP ID or IP address",
+		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The reverse DNS for this IP",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

@@ -33,56 +33,60 @@ func ResourceDatabaseBackup() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the user is created",
-			},
-			"database_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the database of this backup.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the backup.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Description: "Size of the backup (in bytes).",
-				Computed:    true,
-			},
-			"instance_name": {
-				Type:        schema.TypeString,
-				Description: "Name of the instance of the backup.",
-				Computed:    true,
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Description: "Creation date (Format ISO 8601).",
-				Computed:    true,
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Description: "Updated date (Format ISO 8601).",
-				Computed:    true,
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    databaseBackupSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func databaseBackupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the user is created",
+		},
+		"database_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the database of this backup.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Name of the backup.",
+			Optional:    true,
+			Computed:    true,
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Description: "Size of the backup (in bytes).",
+			Computed:    true,
+		},
+		"instance_name": {
+			Type:        schema.TypeString,
+			Description: "Name of the instance of the backup.",
+			Computed:    true,
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Description: "Creation date (Format ISO 8601).",
+			Computed:    true,
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Description: "Updated date (Format ISO 8601).",
+			Computed:    true,
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

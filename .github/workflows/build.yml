@@ -1,0 +1,35 @@
+name: Build
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Verify go.mod is tidy
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+      - name: Build the provider
+        run: go build ./

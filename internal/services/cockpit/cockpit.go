@@ -19,78 +19,82 @@ func ResourceCockpit() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"project_id": account.ProjectIDSchema(),
-			"plan": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "free",
-				Description: "[DEPRECATED] The plan field is deprecated. Any modification or selection will have no effect.",
-				Deprecated:  "The 'plan' attribute is deprecated and no longer has any effect. Future updates will remove this attribute entirely.",
-			},
-			"plan_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "[DEPRECATED] The plan ID of the cockpit. This field is no longer relevant.",
-				Deprecated:  "The 'plan_id' attribute is deprecated and will be removed in a future release.",
-			},
-			"endpoints": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "[DEPRECATED] Endpoints list. Please use 'scaleway_cockpit_source' instead.",
-				Deprecated:  "Use 'scaleway_cockpit_source' instead of 'endpoints'. This field will be removed in future releases.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"metrics_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The metrics URL.",
-						},
-						"logs_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The logs URL.",
-						},
-						"alertmanager_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The alertmanager URL.",
-						},
-						"grafana_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The grafana URL.",
-						},
-						"traces_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The traces URL.",
-						},
+		SchemaFunc:         cockpitSchema,
+		DeprecationMessage: "The scaleway_cockpit resource is deprecated and will be removed after January 1st, 2025. Use the new specialized resources instead: scaleway_cockpit_source and scaleway_cockpit_alert_manager. For Grafana access, use the scaleway_cockpit_grafana data source with IAM authentication (the scaleway_cockpit_grafana_user resource is also deprecated).",
+	}
+}
+
+func cockpitSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": account.ProjectIDSchema(),
+		"plan": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "free",
+			Description: "[DEPRECATED] The plan field is deprecated. Any modification or selection will have no effect.",
+			Deprecated:  "The 'plan' attribute is deprecated and no longer has any effect. Future updates will remove this attribute entirely.",
+		},
+		"plan_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "[DEPRECATED] The plan ID of the cockpit. This field is no longer relevant.",
+			Deprecated:  "The 'plan_id' attribute is deprecated and will be removed in a future release.",
+		},
+		"endpoints": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "[DEPRECATED] Endpoints list. Please use 'scaleway_cockpit_source' instead.",
+			Deprecated:  "Use 'scaleway_cockpit_source' instead of 'endpoints'. This field will be removed in future releases.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"metrics_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The metrics URL.",
 					},
-				},
-			},
-			"push_url": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "[DEPRECATED] Push_url",
-				Deprecated:  "Please use `scaleway_cockpit_source` instead",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"push_metrics_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Push URL for metrics (Grafana Mimir)",
-						},
-						"push_logs_url": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Push URL for logs (Grafana Loki)",
-						},
+					"logs_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The logs URL.",
+					},
+					"alertmanager_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The alertmanager URL.",
+					},
+					"grafana_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The grafana URL.",
+					},
+					"traces_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The traces URL.",
 					},
 				},
 			},
 		},
-		DeprecationMessage: "The scaleway_cockpit resource is deprecated and will be removed after January 1st, 2025. Use the new specialized resources instead: scaleway_cockpit_source and scaleway_cockpit_alert_manager. For Grafana access, use the scaleway_cockpit_grafana data source with IAM authentication (the scaleway_cockpit_grafana_user resource is also deprecated).",
+		"push_url": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "[DEPRECATED] Push_url",
+			Deprecated:  "Please use `scaleway_cockpit_source` instead",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"push_metrics_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Push URL for metrics (Grafana Mimir)",
+					},
+					"push_logs_url": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Push URL for logs (Grafana Loki)",
+					},
+				},
+			},
+		},
 	}
 }
 

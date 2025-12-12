@@ -42,345 +42,349 @@ func ResourceInstance() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the database instance",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The type of database instance you want to create",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"engine": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
-				DiffSuppressFunc: dsf.IgnoreCase,
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"snapshot_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
-				ConflictsWith: []string{
-					"engine",
-				},
-			},
-			"is_ha_cluster": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable high availability for the database instance",
-			},
-			"disable_backup": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Disable automated backup for the database instance",
-			},
-			"backup_schedule_frequency": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Backup schedule frequency in hours",
-			},
-			"backup_schedule_retention": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Backup schedule retention in days",
-			},
-			"backup_same_region": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Boolean to store logical backups in the same region as the database instance",
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Computed:    true,
-				Description: "Identifier for the first user of the database instance",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Optional:    true,
-				Description: "Password for the first user of the database instance",
-			},
-			"settings": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Map of engine settings to be set on a running instance.",
-				Computed:    true,
-				Optional:    true,
-			},
-			"init_settings": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Map of engine settings to be set at database initialisation.",
-				ForceNew:    true,
-				Optional:    true,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
-			},
-			"volume_type": {
-				Type:             schema.TypeString,
-				Default:          rdb.VolumeTypeLssd,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
-				Description:      "Type of volume where data are stored",
-			},
-			"volume_size_in_gb": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				Description:  "Volume size (in GB) when volume_type is not lssd",
-				ValidateFunc: validation.IntDivisibleBy(5),
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "List of private network to expose your database instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-							Description:      "The private network ID",
-						},
-						// Computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The endpoint ID",
-						},
-						"ip_net": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsCIDR,
-							Description:  "The IP with the given mask within the private subnet",
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP of your Instance within the private service",
-						},
-						"port": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsPortNumber,
-							Description:  "The port of your private service",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of your private service",
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The hostname of your endpoint",
-						},
-						"enable_ipam": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Whether or not the private network endpoint should be configured with IPAM",
-						},
-						"zone": zonal.Schema(),
-					},
-				},
-			},
-			// Computed
-			"endpoint_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Endpoint IP of the database instance",
-				Deprecated:  "Please use the private_network or the load_balancer attribute",
-			},
-			"endpoint_port": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Endpoint port of the database instance",
-				Deprecated:  "Please use the private_network or the load_balancer attribute",
-			},
-			"read_replicas": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Read replicas of the database instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP of the replica",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Port of the replica",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the replica",
-						},
-					},
-				},
-			},
-			"certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Certificate of the database instance",
-			},
-			"load_balancer": {
-				Type:             schema.TypeList,
-				Optional:         true,
-				Computed:         true,
-				MaxItems:         1,
-				Description:      "Load balancer of the database instance",
-				DiffSuppressFunc: LoadBalancerDiffSuppressFunc,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The endpoint ID",
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP of your load balancer service",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The port of your load balancer service",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of your load balancer service",
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The hostname of your endpoint",
-						},
-					},
-				},
-			},
-			"logs_policy": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Logs policy configuration",
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Computed
-						"max_age_retention": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The max age (in days) of remote logs to keep on the Database Instance",
-						},
-						"total_disk_retention": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The max disk size of remote logs to keep on the Database Instance.",
-						},
-					},
-				},
-			},
-			"encryption_at_rest": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Enable or disable encryption at rest for the database instance",
-			},
-			"upgradable_versions": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of available engine versions for upgrade",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Version ID for upgrade requests",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Engine name",
-						},
-						"version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Version string",
-						},
-						"minor_version": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Minor version string",
-						},
-					},
-				},
-			},
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			// Common
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-		},
+		SchemaFunc:    instanceSchema,
 		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+	}
+}
+
+func instanceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the database instance",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The type of database instance you want to create",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"engine": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
+			DiffSuppressFunc: dsf.IgnoreCase,
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"snapshot_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+			ConflictsWith: []string{
+				"engine",
+			},
+		},
+		"is_ha_cluster": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable high availability for the database instance",
+		},
+		"disable_backup": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Disable automated backup for the database instance",
+		},
+		"backup_schedule_frequency": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Backup schedule frequency in hours",
+		},
+		"backup_schedule_retention": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Backup schedule retention in days",
+		},
+		"backup_same_region": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Boolean to store logical backups in the same region as the database instance",
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			ForceNew:    true,
+			Optional:    true,
+			Computed:    true,
+			Description: "Identifier for the first user of the database instance",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Optional:    true,
+			Description: "Password for the first user of the database instance",
+		},
+		"settings": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "Map of engine settings to be set on a running instance.",
+			Computed:    true,
+			Optional:    true,
+		},
+		"init_settings": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "Map of engine settings to be set at database initialisation.",
+			ForceNew:    true,
+			Optional:    true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
+		},
+		"volume_type": {
+			Type:             schema.TypeString,
+			Default:          rdb.VolumeTypeLssd,
+			Optional:         true,
+			ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
+			Description:      "Type of volume where data are stored",
+		},
+		"volume_size_in_gb": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			Description:  "Volume size (in GB) when volume_type is not lssd",
+			ValidateFunc: validation.IntDivisibleBy(5),
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "List of private network to expose your database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Description:      "The private network ID",
+					},
+					// Computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The endpoint ID",
+					},
+					"ip_net": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.IsCIDR,
+						Description:  "The IP with the given mask within the private subnet",
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP of your Instance within the private service",
+					},
+					"port": {
+						Type:         schema.TypeInt,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.IsPortNumber,
+						Description:  "The port of your private service",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of your private service",
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The hostname of your endpoint",
+					},
+					"enable_ipam": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether or not the private network endpoint should be configured with IPAM",
+					},
+					"zone": zonal.Schema(),
+				},
+			},
+		},
+		// Computed
+		"endpoint_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Endpoint IP of the database instance",
+			Deprecated:  "Please use the private_network or the load_balancer attribute",
+		},
+		"endpoint_port": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Endpoint port of the database instance",
+			Deprecated:  "Please use the private_network or the load_balancer attribute",
+		},
+		"read_replicas": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Read replicas of the database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP of the replica",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Port of the replica",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the replica",
+					},
+				},
+			},
+		},
+		"certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Certificate of the database instance",
+		},
+		"load_balancer": {
+			Type:             schema.TypeList,
+			Optional:         true,
+			Computed:         true,
+			MaxItems:         1,
+			Description:      "Load balancer of the database instance",
+			DiffSuppressFunc: LoadBalancerDiffSuppressFunc,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The endpoint ID",
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP of your load balancer service",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The port of your load balancer service",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of your load balancer service",
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The hostname of your endpoint",
+					},
+				},
+			},
+		},
+		"logs_policy": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Logs policy configuration",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Computed
+					"max_age_retention": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "The max age (in days) of remote logs to keep on the Database Instance",
+					},
+					"total_disk_retention": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "The max disk size of remote logs to keep on the Database Instance.",
+					},
+				},
+			},
+		},
+		"encryption_at_rest": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Enable or disable encryption at rest for the database instance",
+		},
+		"upgradable_versions": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of available engine versions for upgrade",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Version ID for upgrade requests",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Engine name",
+					},
+					"version": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Version string",
+					},
+					"minor_version": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Minor version string",
+					},
+				},
+			},
+		},
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		// Common
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

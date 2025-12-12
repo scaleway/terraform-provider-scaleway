@@ -14,7 +14,7 @@ import (
 
 func DataSourcePATRule() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePATRule().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePATRule().SchemaFunc())
 
 	dsSchema["pat_rule_id"] = &schema.Schema{
 		Type:             schema.TypeString,

@@ -24,36 +24,40 @@ func ResourceCockpitAlertManager() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"project_id": account.ProjectIDSchema(),
-			"enable_managed_alerts": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Enable or disable the alert manager",
-			},
+		SchemaFunc: alertManagerSchema,
+	}
+}
 
-			"contact_points": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "A list of contact points",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"email": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							ValidateDiagFunc: verify.IsEmail(),
-							Description:      "Email addresses for the alert receivers",
-						},
+func alertManagerSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"project_id": account.ProjectIDSchema(),
+		"enable_managed_alerts": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Enable or disable the alert manager",
+		},
+
+		"contact_points": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "A list of contact points",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"email": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: verify.IsEmail(),
+						Description:      "Email addresses for the alert receivers",
 					},
 				},
 			},
-			"region": regional.Schema(),
-			"alert_manager_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Alert manager URL",
-			},
+		},
+		"region": regional.Schema(),
+		"alert_manager_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Alert manager URL",
 		},
 	}
 }

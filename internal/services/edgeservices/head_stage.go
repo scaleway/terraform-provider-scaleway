@@ -20,19 +20,23 @@ func ResourceHeadStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the pipeline ID",
-			},
-			"head_stage_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The ID of the head stage of the pipeline",
-			},
+		SchemaFunc:    headStageSchema,
+	}
+}
+
+func headStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The ID of the pipeline ID",
+		},
+		"head_stage_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The ID of the head stage of the pipeline",
 		},
 	}
 }

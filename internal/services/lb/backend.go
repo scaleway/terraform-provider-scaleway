@@ -39,286 +39,290 @@ func ResourceBackend() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the backend",
-			},
-			"forward_protocol": {
-				Type:             schema.TypeString,
-				ValidateDiagFunc: verify.ValidateEnum[lbSDK.Protocol](),
-				Required:         true,
-				Description:      "Backend protocol",
-			},
-			"forward_port": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "User sessions will be forwarded to this port of backend servers",
-			},
-			"forward_port_algorithm": {
-				Type:             schema.TypeString,
-				ValidateDiagFunc: verify.ValidateEnum[lbSDK.ForwardPortAlgorithm](),
-				Default:          lbSDK.ForwardPortAlgorithmRoundrobin.String(),
-				Optional:         true,
-				Description:      "Load balancing algorithm",
-			},
-			"sticky_sessions": {
-				Type:             schema.TypeString,
-				ValidateDiagFunc: verify.ValidateEnum[lbSDK.StickySessionsType](),
-				Default:          lbSDK.StickySessionsTypeNone.String(),
-				Optional:         true,
-				Description:      "The type of sticky sessions",
-			},
-			"sticky_sessions_cookie_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Cookie name for sticky sessions",
-			},
-			"server_ips": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.IsIPAddress,
-				},
-				Optional:    true,
-				Description: "Backend server IP addresses list (IPv4 or IPv6)",
-			},
-			"send_proxy_v2": {
-				Type:        schema.TypeBool,
-				Description: "Enables PROXY protocol version 2",
-				Optional:    true,
-				Computed:    true,
-				Deprecated:  "Please use proxy_protocol instead",
-			},
-			"proxy_protocol": {
-				Type:        schema.TypeString,
-				Description: "Type of PROXY protocol to enable",
-				Optional:    true,
-				Default:     flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
-				ValidateFunc: validation.StringInSlice([]string{
-					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
-					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV1).(string),
-					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2).(string),
-					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2Ssl).(string),
-					flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2SslCn).(string),
-				}, false),
-			},
-			// Timeouts
-			"timeout_server": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "5m",
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Description:      "Maximum server connection inactivity time",
-			},
-			"timeout_connect": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "5s",
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Description:      "Maximum initial server connection establishment time",
-			},
-			"timeout_tunnel": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "15m",
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Description:      "Maximum tunnel inactivity time",
-			},
+		SchemaFunc: backendSchema,
+	}
+}
 
-			// Health Check
-			"health_check_timeout": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Default:          "30s",
-				Description:      "Timeout before we consider a HC request failed",
+func backendSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The load-balancer ID",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the backend",
+		},
+		"forward_protocol": {
+			Type:             schema.TypeString,
+			ValidateDiagFunc: verify.ValidateEnum[lbSDK.Protocol](),
+			Required:         true,
+			Description:      "Backend protocol",
+		},
+		"forward_port": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "User sessions will be forwarded to this port of backend servers",
+		},
+		"forward_port_algorithm": {
+			Type:             schema.TypeString,
+			ValidateDiagFunc: verify.ValidateEnum[lbSDK.ForwardPortAlgorithm](),
+			Default:          lbSDK.ForwardPortAlgorithmRoundrobin.String(),
+			Optional:         true,
+			Description:      "Load balancing algorithm",
+		},
+		"sticky_sessions": {
+			Type:             schema.TypeString,
+			ValidateDiagFunc: verify.ValidateEnum[lbSDK.StickySessionsType](),
+			Default:          lbSDK.StickySessionsTypeNone.String(),
+			Optional:         true,
+			Description:      "The type of sticky sessions",
+		},
+		"sticky_sessions_cookie_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Cookie name for sticky sessions",
+		},
+		"server_ips": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.IsIPAddress,
 			},
-			"health_check_delay": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: dsf.Duration,
-				ValidateDiagFunc: verify.IsDuration(),
-				Default:          "60s",
-				Description:      "Interval between two HC requests",
+			Optional:    true,
+			Description: "Backend server IP addresses list (IPv4 or IPv6)",
+		},
+		"send_proxy_v2": {
+			Type:        schema.TypeBool,
+			Description: "Enables PROXY protocol version 2",
+			Optional:    true,
+			Computed:    true,
+			Deprecated:  "Please use proxy_protocol instead",
+		},
+		"proxy_protocol": {
+			Type:        schema.TypeString,
+			Description: "Type of PROXY protocol to enable",
+			Optional:    true,
+			Default:     flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
+			ValidateFunc: validation.StringInSlice([]string{
+				flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolNone).(string),
+				flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV1).(string),
+				flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2).(string),
+				flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2Ssl).(string),
+				flattenLbProxyProtocol(lbSDK.ProxyProtocolProxyProtocolV2SslCn).(string),
+			}, false),
+		},
+		// Timeouts
+		"timeout_server": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "5m",
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Description:      "Maximum server connection inactivity time",
+		},
+		"timeout_connect": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "5s",
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Description:      "Maximum initial server connection establishment time",
+		},
+		"timeout_tunnel": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "15m",
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Description:      "Maximum tunnel inactivity time",
+		},
+
+		// Health Check
+		"health_check_timeout": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Default:          "30s",
+			Description:      "Timeout before we consider a HC request failed",
+		},
+		"health_check_delay": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			DiffSuppressFunc: dsf.Duration,
+			ValidateDiagFunc: verify.IsDuration(),
+			Default:          "60s",
+			Description:      "Interval between two HC requests",
+		},
+		"health_check_port": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Port the HC requests will be send to. Default to `forward_port`",
+		},
+		"health_check_max_retries": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     2,
+			Description: "Number of allowed failed HC requests before the backend server is marked down",
+		},
+		"health_check_tcp": {
+			Type:          schema.TypeList,
+			Description:   "TCP Health check",
+			MaxItems:      1,
+			ConflictsWith: []string{"health_check_http", "health_check_https"},
+			Optional:      true,
+			Computed:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{},
 			},
-			"health_check_port": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Port the HC requests will be send to. Default to `forward_port`",
-			},
-			"health_check_max_retries": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     2,
-				Description: "Number of allowed failed HC requests before the backend server is marked down",
-			},
-			"health_check_tcp": {
-				Type:          schema.TypeList,
-				Description:   "TCP Health check",
-				MaxItems:      1,
-				ConflictsWith: []string{"health_check_http", "health_check_https"},
-				Optional:      true,
-				Computed:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{},
-				},
-			},
-			"health_check_http": {
-				Type:          schema.TypeList,
-				Description:   "HTTP Health check",
-				MaxItems:      1,
-				ConflictsWith: []string{"health_check_tcp", "health_check_https"},
-				Optional:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"uri": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The HTTP endpoint URL to call for HC requests",
-						},
-						"method": {
-							Type:        schema.TypeString,
-							Default:     "GET",
-							Optional:    true,
-							Description: "The HTTP method to use for HC requests",
-						},
-						"code": {
-							Type:        schema.TypeInt,
-							Default:     200,
-							Optional:    true,
-							Description: "The expected HTTP status code",
-						},
-						"host_header": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The HTTP host header to use for HC requests",
-						},
+		},
+		"health_check_http": {
+			Type:          schema.TypeList,
+			Description:   "HTTP Health check",
+			MaxItems:      1,
+			ConflictsWith: []string{"health_check_tcp", "health_check_https"},
+			Optional:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"uri": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The HTTP endpoint URL to call for HC requests",
+					},
+					"method": {
+						Type:        schema.TypeString,
+						Default:     "GET",
+						Optional:    true,
+						Description: "The HTTP method to use for HC requests",
+					},
+					"code": {
+						Type:        schema.TypeInt,
+						Default:     200,
+						Optional:    true,
+						Description: "The expected HTTP status code",
+					},
+					"host_header": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The HTTP host header to use for HC requests",
 					},
 				},
 			},
-			"health_check_https": {
-				Type:          schema.TypeList,
-				Description:   "HTTPS Health check",
-				MaxItems:      1,
-				ConflictsWith: []string{"health_check_tcp", "health_check_http"},
-				Optional:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"uri": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The HTTPS endpoint URL to call for HC requests",
-						},
-						"method": {
-							Type:        schema.TypeString,
-							Default:     "GET",
-							Optional:    true,
-							Description: "The HTTP method to use for HC requests",
-						},
-						"code": {
-							Type:        schema.TypeInt,
-							Default:     200,
-							Optional:    true,
-							Description: "The expected HTTP status code",
-						},
-						"host_header": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The HTTP host header to use for HC requests",
-						},
-						"sni": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The SNI to use for HC requests over SSL",
-						},
+		},
+		"health_check_https": {
+			Type:          schema.TypeList,
+			Description:   "HTTPS Health check",
+			MaxItems:      1,
+			ConflictsWith: []string{"health_check_tcp", "health_check_http"},
+			Optional:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"uri": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "The HTTPS endpoint URL to call for HC requests",
+					},
+					"method": {
+						Type:        schema.TypeString,
+						Default:     "GET",
+						Optional:    true,
+						Description: "The HTTP method to use for HC requests",
+					},
+					"code": {
+						Type:        schema.TypeInt,
+						Default:     200,
+						Optional:    true,
+						Description: "The expected HTTP status code",
+					},
+					"host_header": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The HTTP host header to use for HC requests",
+					},
+					"sni": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The SNI to use for HC requests over SSL",
 					},
 				},
 			},
-			"health_check_transient_delay": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "0.5s",
-				ValidateDiagFunc: verify.IsDuration(),
-				DiffSuppressFunc: dsf.Duration,
-				Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
-			},
-			"health_check_send_proxy": {
-				Type:        schema.TypeBool,
-				Description: "Defines whether proxy protocol should be activated for the health check",
-				Optional:    true,
-				Default:     false,
-			},
-			"on_marked_down_action": {
-				Type: schema.TypeString,
-				ValidateFunc: validation.StringInSlice([]string{
-					"none",
-					lbSDK.OnMarkedDownActionShutdownSessions.String(),
-				}, false),
-				Default:     "none",
-				Optional:    true,
-				Description: "Modify what occurs when a backend server is marked down",
-			},
-			"failover_host": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Description: `Scaleway S3 bucket website to be served in case all backend servers are down
+		},
+		"health_check_transient_delay": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "0.5s",
+			ValidateDiagFunc: verify.IsDuration(),
+			DiffSuppressFunc: dsf.Duration,
+			Description:      "Time to wait between two consecutive health checks when a backend server is in a transient state (going UP or DOWN)",
+		},
+		"health_check_send_proxy": {
+			Type:        schema.TypeBool,
+			Description: "Defines whether proxy protocol should be activated for the health check",
+			Optional:    true,
+			Default:     false,
+		},
+		"on_marked_down_action": {
+			Type: schema.TypeString,
+			ValidateFunc: validation.StringInSlice([]string{
+				"none",
+				lbSDK.OnMarkedDownActionShutdownSessions.String(),
+			}, false),
+			Default:     "none",
+			Optional:    true,
+			Description: "Modify what occurs when a backend server is marked down",
+		},
+		"failover_host": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Description: `Scaleway S3 bucket website to be served in case all backend servers are down
 
 **NOTE** : Only the host part of the Scaleway S3 bucket website is expected.
 E.g. 'failover-website.s3-website.fr-par.scw.cloud' if your bucket website URL is 'https://failover-website.s3-website.fr-par.scw.cloud/'.`,
-			},
-			"ssl_bridging": {
-				Type:        schema.TypeBool,
-				Description: "Enables SSL between load balancer and backend servers",
-				Optional:    true,
-				Default:     false,
-			},
-			"ignore_ssl_server_verify": {
-				Type:        schema.TypeBool,
-				Description: "Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection",
-				Optional:    true,
-				Default:     false,
-			},
-			"max_connections": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
-				Description:  "Maximum number of connections allowed per backend server",
-			},
-			"timeout_queue": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "0s",
-				ValidateDiagFunc: verify.IsDuration(),
-				DiffSuppressFunc: dsf.Duration,
-				Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
-			},
-			"redispatch_attempt_count": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
-				Description:  "Whether to use another backend server on each attempt",
-			},
-			"max_retries": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      3,
-				ValidateFunc: validation.IntBetween(0, math.MaxInt32),
-				Description:  "Number of retries when a backend server connection failed",
-			},
+		},
+		"ssl_bridging": {
+			Type:        schema.TypeBool,
+			Description: "Enables SSL between load balancer and backend servers",
+			Optional:    true,
+			Default:     false,
+		},
+		"ignore_ssl_server_verify": {
+			Type:        schema.TypeBool,
+			Description: "Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection",
+			Optional:    true,
+			Default:     false,
+		},
+		"max_connections": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+			Description:  "Maximum number of connections allowed per backend server",
+		},
+		"timeout_queue": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "0s",
+			ValidateDiagFunc: verify.IsDuration(),
+			DiffSuppressFunc: dsf.Duration,
+			Description:      "Maximum time (in seconds) for a request to be left pending in queue when `max_connections` is reached",
+		},
+		"redispatch_attempt_count": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+			Description:  "Whether to use another backend server on each attempt",
+		},
+		"max_retries": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      3,
+			ValidateFunc: validation.IntBetween(0, math.MaxInt32),
+			Description:  "Number of retries when a backend server connection failed",
 		},
 	}
 }

@@ -37,34 +37,38 @@ func ResourcePrivilege() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: PrivilegeV1SchemaUpgradeFunc},
 		},
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the database is created",
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Description: "User name",
-				Required:    true,
-			},
-			"database_name": {
-				Type:        schema.TypeString,
-				Description: "Database name",
-				Required:    true,
-			},
-			"permission": {
-				Type:             schema.TypeString,
-				Description:      "Privilege",
-				ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
-				Required:         true,
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    privilegeSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func privilegeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the database is created",
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Description: "User name",
+			Required:    true,
+		},
+		"database_name": {
+			Type:        schema.TypeString,
+			Description: "Database name",
+			Required:    true,
+		},
+		"permission": {
+			Type:             schema.TypeString,
+			Description:      "Privilege",
+			ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
+			Required:         true,
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

@@ -43,106 +43,110 @@ func ResourceDeployment() *schema.Resource {
 				return nil
 			},
 		),
-		Schema: map[string]*schema.Schema{
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the Datawarehouse deployment",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
-				Description: "List of tags to apply",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ClickHouse version to use",
-			},
-			"replica_count": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Number of replicas",
-			},
-			"cpu_min": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Minimum CPU count",
-			},
-			"cpu_max": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Maximum CPU count",
-			},
-			"ram_per_cpu": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "RAM per CPU (GB)",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Optional:    true,
-				Description: "Password for the first user of the deployment",
-			},
-			"public_network": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Public endpoint configuration. A public endpoint is created by default.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the public endpoint",
-						},
-						"dns_record": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "DNS record for the public endpoint",
-						},
-						"services": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of services exposed on the public endpoint",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"protocol": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Service protocol (e.g. \"tcp\", \"https\", \"mysql\")",
-									},
-									"port": {
-										Type:        schema.TypeInt,
-										Computed:    true,
-										Description: "TCP port number",
-									},
+		SchemaFunc: deploymentSchema,
+	}
+}
+
+func deploymentSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the Datawarehouse deployment",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Optional:    true,
+			Description: "List of tags to apply",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "ClickHouse version to use",
+		},
+		"replica_count": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "Number of replicas",
+		},
+		"cpu_min": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "Minimum CPU count",
+		},
+		"cpu_max": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "Maximum CPU count",
+		},
+		"ram_per_cpu": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "RAM per CPU (GB)",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Optional:    true,
+			Description: "Password for the first user of the deployment",
+		},
+		"public_network": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Public endpoint configuration. A public endpoint is created by default.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the public endpoint",
+					},
+					"dns_record": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "DNS record for the public endpoint",
+					},
+					"services": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of services exposed on the public endpoint",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"protocol": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Service protocol (e.g. \"tcp\", \"https\", \"mysql\")",
+								},
+								"port": {
+									Type:        schema.TypeInt,
+									Computed:    true,
+									Description: "TCP port number",
 								},
 							},
 						},
 					},
 				},
 			},
-			// Computed
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the deployment",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of deployment creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of deployment last update (RFC 3339 format)",
-			},
+		},
+		// Computed
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the deployment",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of deployment creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of deployment last update (RFC 3339 format)",
 		},
 	}
 }

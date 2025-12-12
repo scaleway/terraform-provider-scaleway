@@ -30,19 +30,23 @@ func ResourceIPReverseDNS() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultIPReverseDNSTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"gateway_ip_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IP ID",
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The reverse DNS for this IP",
-			},
-			"zone": zonal.Schema(),
+		SchemaFunc:    ipReverseDNSSchema,
+	}
+}
+
+func ipReverseDNSSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"gateway_ip_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The IP ID",
 		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The reverse DNS for this IP",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

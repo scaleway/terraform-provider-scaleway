@@ -34,111 +34,115 @@ func ResourcePublicGateway() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "name of the gateway",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "gateway type",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"upstream_dns_servers": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "override the gateway's default recursive DNS servers, if DNS features are enabled",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"ip_id": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "attach an existing IP to the gateway",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with public gateway",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"bastion_enabled": {
-				Type:        schema.TypeBool,
-				Description: "Enable SSH bastion on the gateway",
-				Optional:    true,
-			},
-			"bastion_port": {
-				Type:        schema.TypeInt,
-				Description: "Port of the SSH bastion",
-				Optional:    true,
-				Computed:    true,
-				ValidateFunc: func(val any, key string) ([]string, []error) {
-					v := val.(int)
-					if (v >= 1024 && v <= 59999) || v == 61000 {
-						return nil, nil
-					}
+		SchemaFunc:    publicGatewaySchema,
+	}
+}
 
-					return nil, []error{fmt.Errorf("expected bastion_port to be in the range (1024 - 59999) or default 61000, got %d", v)}
-				},
+func publicGatewaySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "name of the gateway",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "gateway type",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"upstream_dns_servers": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "override the gateway's default recursive DNS servers, if DNS features are enabled",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"enable_smtp": {
-				Type:        schema.TypeBool,
-				Description: "Enable SMTP on the gateway",
-				Optional:    true,
-				Computed:    true,
+		},
+		"ip_id": {
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "attach an existing IP to the gateway",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with public gateway",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"refresh_ssh_keys": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Trigger a refresh of the SSH keys for a given Public Gateway by changing this field's value",
+		},
+		"bastion_enabled": {
+			Type:        schema.TypeBool,
+			Description: "Enable SSH bastion on the gateway",
+			Optional:    true,
+		},
+		"bastion_port": {
+			Type:        schema.TypeInt,
+			Description: "Port of the SSH bastion",
+			Optional:    true,
+			Computed:    true,
+			ValidateFunc: func(val any, key string) ([]string, []error) {
+				v := val.(int)
+				if (v >= 1024 && v <= 59999) || v == 61000 {
+					return nil, nil
+				}
+
+				return nil, []error{fmt.Errorf("expected bastion_port to be in the range (1024 - 59999) or default 61000, got %d", v)}
 			},
-			"allowed_ip_ranges": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Computed:    true,
-				Description: "Set a definitive list of IP ranges (in CIDR notation) allowed to connect to the SSH bastion",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+		},
+		"enable_smtp": {
+			Type:        schema.TypeBool,
+			Description: "Enable SMTP on the gateway",
+			Optional:    true,
+			Computed:    true,
+		},
+		"refresh_ssh_keys": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Trigger a refresh of the SSH keys for a given Public Gateway by changing this field's value",
+		},
+		"allowed_ip_ranges": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Computed:    true,
+			Description: "Set a definitive list of IP ranges (in CIDR notation) allowed to connect to the SSH bastion",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"project_id": account.ProjectIDSchema(),
-			"zone":       zonal.Schema(),
-			// Computed elements
-			"organization_id": account.OrganizationIDSchema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the public gateway",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the public gateway",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the public gateway",
-			},
-			"bandwidth": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The bandwidth available of the gateway",
-			},
-			"move_to_ipam": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Put a Public Gateway in IPAM mode, so that it can be used with the Public Gateways API v2",
-			},
+		},
+		"project_id": account.ProjectIDSchema(),
+		"zone":       zonal.Schema(),
+		// Computed elements
+		"organization_id": account.OrganizationIDSchema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the public gateway",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the public gateway",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the public gateway",
+		},
+		"bandwidth": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The bandwidth available of the gateway",
+		},
+		"move_to_ipam": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Put a Public Gateway in IPAM mode, so that it can be used with the Public Gateways API v2",
 		},
 	}
 }

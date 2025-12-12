@@ -18,51 +18,54 @@ import (
 func DataSourceImageTag() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceImageTagRead,
+		SchemaFunc:  tagSchema,
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"tag_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the registry image tag",
-				Optional:         true,
-				ConflictsWith:    []string{"name"},
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"image_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the registry image",
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The name of the registry image tag",
-				ConflictsWith: []string{"tag_id"},
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the registry image tag",
-			},
-			"digest": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Hash of the tag content. Several tags of a same image may have the same digest",
-			},
-			"created_at": {
-				Computed:    true,
-				Type:        schema.TypeString,
-				Description: "Date and time of creation",
-			},
-			"updated_at": {
-				Computed:    true,
-				Type:        schema.TypeString,
-				Description: "Date and time of last update",
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+func tagSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"tag_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the registry image tag",
+			Optional:         true,
+			ConflictsWith:    []string{"name"},
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		},
+		"image_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the registry image",
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The name of the registry image tag",
+			ConflictsWith: []string{"tag_id"},
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the registry image tag",
+		},
+		"digest": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Hash of the tag content. Several tags of a same image may have the same digest",
+		},
+		"created_at": {
+			Computed:    true,
+			Type:        schema.TypeString,
+			Description: "Date and time of creation",
+		},
+		"updated_at": {
+			Computed:    true,
+			Type:        schema.TypeString,
+			Description: "Date and time of last update",
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

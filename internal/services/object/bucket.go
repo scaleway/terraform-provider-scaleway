@@ -31,193 +31,7 @@ func ResourceBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the bucket",
-			},
-			"object_lock_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Enable object lock",
-			},
-			"acl": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "private",
-				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
-				ValidateFunc: validation.StringInSlice([]string{
-					string(s3Types.BucketCannedACLPrivate),
-					string(s3Types.BucketCannedACLPublicRead),
-					string(s3Types.BucketCannedACLPublicReadWrite),
-					string(s3Types.BucketCannedACLAuthenticatedRead),
-				}, false),
-				Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
-			},
-			"tags": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with this bucket",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Description: "Endpoint of the bucket",
-				Computed:    true,
-			},
-			"api_endpoint": {
-				Type:        schema.TypeString,
-				Description: "API URL of the bucket",
-				Computed:    true,
-			},
-			"cors_rule": {
-				Type:        schema.TypeList,
-				Description: "List of CORS rules",
-				Optional:    true,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"allowed_headers": {
-							Type:        schema.TypeList,
-							Description: "Allowed headers in the CORS rule",
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"allowed_methods": {
-							Type:        schema.TypeList,
-							Description: "Allowed HTTP methods allowed in the CORS rule",
-							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"allowed_origins": {
-							Type:        schema.TypeList,
-							Description: "Allowed origins allowed in the CORS rule",
-							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"expose_headers": {
-							Type:        schema.TypeList,
-							Description: "Exposed headers in the CORS rule",
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"max_age_seconds": {
-							Type:        schema.TypeInt,
-							Description: "Max age of the CORS rule",
-							Optional:    true,
-						},
-					},
-				},
-			},
-			"force_destroy": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Delete objects in bucket",
-			},
-			"lifecycle_rule": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Lifecycle configuration is a set of rules that define actions that Scaleway Object Storage applies to a group of objects",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.StringLenBetween(0, 255),
-							Description:  "Unique identifier for the rule",
-						},
-						"prefix": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The prefix identifying one or more objects to which the rule applies",
-						},
-						"tags": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							Description: "The tags associated with the bucket lifecycle",
-						},
-						"enabled": {
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "Specifies if the configuration rule is Enabled or Disabled",
-						},
-						"abort_incomplete_multipart_upload_days": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed",
-						},
-						"expiration": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							MaxItems:    1,
-							Description: "Specifies a period in the object's expire",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"days": {
-										Type:         schema.TypeInt,
-										Required:     true,
-										ValidateFunc: validation.IntAtLeast(0),
-										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									},
-								},
-							},
-						},
-						"transition": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Set:         transitionHash,
-							Description: "Define when objects transition to another storage class",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"days": {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										ValidateFunc: validation.IntAtLeast(0),
-										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									},
-									"storage_class": {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
-										Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"versioning": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Allow multiple versions of an object in the same bucket",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"enabled": {
-							Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
-		},
+		SchemaFunc: bucketSchema,
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			if diff.Get("object_lock_enabled").(bool) {
 				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
@@ -226,6 +40,196 @@ func ResourceBucket() *schema.Resource {
 			}
 
 			return nil
+		},
+	}
+}
+
+func bucketSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the bucket",
+		},
+		"object_lock_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Enable object lock",
+		},
+		"acl": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "private",
+			Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
+			ValidateFunc: validation.StringInSlice([]string{
+				string(s3Types.BucketCannedACLPrivate),
+				string(s3Types.BucketCannedACLPublicRead),
+				string(s3Types.BucketCannedACLPublicReadWrite),
+				string(s3Types.BucketCannedACLAuthenticatedRead),
+			}, false),
+			Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
+		},
+		"tags": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with this bucket",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Description: "Endpoint of the bucket",
+			Computed:    true,
+		},
+		"api_endpoint": {
+			Type:        schema.TypeString,
+			Description: "API URL of the bucket",
+			Computed:    true,
+		},
+		"cors_rule": {
+			Type:        schema.TypeList,
+			Description: "List of CORS rules",
+			Optional:    true,
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"allowed_headers": {
+						Type:        schema.TypeList,
+						Description: "Allowed headers in the CORS rule",
+						Optional:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"allowed_methods": {
+						Type:        schema.TypeList,
+						Description: "Allowed HTTP methods allowed in the CORS rule",
+						Required:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"allowed_origins": {
+						Type:        schema.TypeList,
+						Description: "Allowed origins allowed in the CORS rule",
+						Required:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"expose_headers": {
+						Type:        schema.TypeList,
+						Description: "Exposed headers in the CORS rule",
+						Optional:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"max_age_seconds": {
+						Type:        schema.TypeInt,
+						Description: "Max age of the CORS rule",
+						Optional:    true,
+					},
+				},
+			},
+		},
+		"force_destroy": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Delete objects in bucket",
+		},
+		"lifecycle_rule": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Lifecycle configuration is a set of rules that define actions that Scaleway Object Storage applies to a group of objects",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.StringLenBetween(0, 255),
+						Description:  "Unique identifier for the rule",
+					},
+					"prefix": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The prefix identifying one or more objects to which the rule applies",
+					},
+					"tags": {
+						Type: schema.TypeMap,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional:    true,
+						Description: "The tags associated with the bucket lifecycle",
+					},
+					"enabled": {
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Specifies if the configuration rule is Enabled or Disabled",
+					},
+					"abort_incomplete_multipart_upload_days": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed",
+					},
+					"expiration": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Specifies a period in the object's expire",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"days": {
+									Type:         schema.TypeInt,
+									Required:     true,
+									ValidateFunc: validation.IntAtLeast(0),
+									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+								},
+							},
+						},
+					},
+					"transition": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Set:         transitionHash,
+						Description: "Define when objects transition to another storage class",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"days": {
+									Type:         schema.TypeInt,
+									Optional:     true,
+									ValidateFunc: validation.IntAtLeast(0),
+									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+								},
+								"storage_class": {
+									Type:         schema.TypeString,
+									Required:     true,
+									ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+									Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"versioning": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Allow multiple versions of an object in the same bucket",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enabled": {
+						Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
 		},
 	}
 }

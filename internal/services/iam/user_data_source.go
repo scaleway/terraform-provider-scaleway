@@ -16,35 +16,39 @@ import (
 func DataSourceUser() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceIamUserRead,
-		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the IAM user",
-				ValidateDiagFunc: verify.IsUUID(),
-				ConflictsWith:    []string{"email"},
+		SchemaFunc:  dataSourceUserSchema,
+	}
+}
+
+func dataSourceUserSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"user_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the IAM user",
+			ValidateDiagFunc: verify.IsUUID(),
+			ConflictsWith:    []string{"email"},
+		},
+		"email": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The email address of the IAM user",
+			ValidateDiagFunc: verify.IsEmail(),
+			ConflictsWith:    []string{"user_id"},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"email": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The email address of the IAM user",
-				ValidateDiagFunc: verify.IsEmail(),
-				ConflictsWith:    []string{"user_id"},
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the user",
-			},
-			"organization_id": {
-				Type:          schema.TypeString,
-				Description:   "The organization_id you want to attach the resource to",
-				Optional:      true,
-				ConflictsWith: []string{"user_id"},
-			},
+			Optional:    true,
+			Description: "The tags associated with the user",
+		},
+		"organization_id": {
+			Type:          schema.TypeString,
+			Description:   "The organization_id you want to attach the resource to",
+			Optional:      true,
+			ConflictsWith: []string{"user_id"},
 		},
 	}
 }

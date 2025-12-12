@@ -21,195 +21,199 @@ import (
 func DataSourceEvent() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceEventsRead,
-		Schema: map[string]*schema.Schema{
-			"organization_id": {
-				Type:             schema.TypeString,
-				Description:      "ID of the organization containing the Audit Trail events.",
-				Optional:         true,
-				Computed:         true,
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"region": regional.Schema(),
-			"project_id": {
-				Type:             schema.TypeString,
-				Description:      "ID of the project containing the Audit Trail events.",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"resource_type": {
-				Type:        schema.TypeString,
-				Description: "Type of the scaleway resources associated with the listed events",
-				Optional:    true,
-				ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-					resourceTypeValues := audittrailSDK.ResourceType("").Values()
+		SchemaFunc:  eventSchema,
+	}
+}
 
-					resourceTypeStringValues := make([]string, 0, len(resourceTypeValues))
-					for _, resourceTypeValue := range resourceTypeValues {
-						resourceTypeStringValues = append(resourceTypeStringValues, resourceTypeValue.String())
-					}
+func eventSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"organization_id": {
+			Type:             schema.TypeString,
+			Description:      "ID of the organization containing the Audit Trail events.",
+			Optional:         true,
+			Computed:         true,
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"region": regional.Schema(),
+		"project_id": {
+			Type:             schema.TypeString,
+			Description:      "ID of the project containing the Audit Trail events.",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"resource_type": {
+			Type:        schema.TypeString,
+			Description: "Type of the scaleway resources associated with the listed events",
+			Optional:    true,
+			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
+				resourceTypeValues := audittrailSDK.ResourceType("").Values()
 
-					return verify.ValidateStringInSliceWithWarning(resourceTypeStringValues, "resourceType")(i, p)
-				},
+				resourceTypeStringValues := make([]string, 0, len(resourceTypeValues))
+				for _, resourceTypeValue := range resourceTypeValues {
+					resourceTypeStringValues = append(resourceTypeStringValues, resourceTypeValue.String())
+				}
+
+				return verify.ValidateStringInSliceWithWarning(resourceTypeStringValues, "resourceType")(i, p)
 			},
-			"resource_id": {
-				Type:             schema.TypeString,
-				Description:      "ID of the Scaleway resource associated with the listed events",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"product_name": {
-				Type:        schema.TypeString,
-				Description: "Scaleway product associated with the listed events in a hyphenated format",
-				Optional:    true,
-			},
-			"service_name": {
-				Type:        schema.TypeString,
-				Description: "Name of the service of the API call performed",
-				Optional:    true,
-			},
-			"method_name": {
-				Type:        schema.TypeString,
-				Description: "Name of the method of the API call performed",
-				Optional:    true,
-			},
-			"principal_id": {
-				Type:             schema.TypeString,
-				Description:      "ID of the User or IAM application at the origin of the event",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"source_ip": {
-				Type:         schema.TypeString,
-				Description:  "IP address at the origin of the event",
-				Optional:     true,
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"status": {
-				Type:        schema.TypeInt,
-				Description: "HTTP status code of the request",
-				Optional:    true,
-			},
-			"recorded_after": {
-				Type:             schema.TypeString,
-				Description:      "The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601)",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"recorded_before": {
-				Type:             schema.TypeString,
-				Description:      "The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601)",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"order_by": {
-				Type:        schema.TypeString,
-				Description: "Defines the order in which events are returned. Default value: recorded_at_desc",
-				Optional:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					string(audittrailSDK.ListEventsRequestOrderByRecordedAtAsc),
-					string(audittrailSDK.ListEventsRequestOrderByRecordedAtDesc),
-				}, true),
-			},
-			"events": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of Audit Trail events",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "ID of the event",
-							Computed:    true,
-						},
-						"recorded_at": {
-							Type:        schema.TypeString,
-							Description: "Timestamp of the event",
-							Computed:    true,
-						},
-						"locality": {
-							Type:        schema.TypeString,
-							Description: "Locality of the resource attached to the event",
-							Computed:    true,
-						},
-						"principal_id": {
-							Type:        schema.TypeString,
-							Description: "ID of the user or IAM application at the origin of the event",
-							Computed:    true,
-						},
-						"organization_id": {
-							Type:        schema.TypeString,
-							Description: "Organization of the resource attached to the event",
-							Computed:    true,
-						},
-						"project_id": {
-							Type:        schema.TypeString,
-							Description: "Project of the resource attached to the event",
-							Computed:    true,
-						},
-						"source_ip": {
-							Type:        schema.TypeString,
-							Description: "IP address at the origin of the event",
-							Computed:    true,
-						},
-						"user_agent": {
-							Type:        schema.TypeString,
-							Description: "User Agent at the origin of the event",
-							Computed:    true,
-						},
-						"product_name": {
-							Type:        schema.TypeString,
-							Description: "Product name of the resource attached to the event",
-							Computed:    true,
-						},
-						"service_name": {
-							Type:        schema.TypeString,
-							Description: "API name called to trigger the event",
-							Computed:    true,
-						},
-						"method_name": {
-							Type:        schema.TypeString,
-							Description: "API method called to trigger the event",
-							Computed:    true,
-						},
-						"resources": {
-							Type:        schema.TypeList,
-							Description: "List of resources attached to the event",
-							Computed:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "ID of the resource attached to the event",
-									},
-									"type": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Type of the Scaleway resource",
-									},
-									"name": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "Name of the Scaleway resource",
-									},
+		},
+		"resource_id": {
+			Type:             schema.TypeString,
+			Description:      "ID of the Scaleway resource associated with the listed events",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"product_name": {
+			Type:        schema.TypeString,
+			Description: "Scaleway product associated with the listed events in a hyphenated format",
+			Optional:    true,
+		},
+		"service_name": {
+			Type:        schema.TypeString,
+			Description: "Name of the service of the API call performed",
+			Optional:    true,
+		},
+		"method_name": {
+			Type:        schema.TypeString,
+			Description: "Name of the method of the API call performed",
+			Optional:    true,
+		},
+		"principal_id": {
+			Type:             schema.TypeString,
+			Description:      "ID of the User or IAM application at the origin of the event",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"source_ip": {
+			Type:         schema.TypeString,
+			Description:  "IP address at the origin of the event",
+			Optional:     true,
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"status": {
+			Type:        schema.TypeInt,
+			Description: "HTTP status code of the request",
+			Optional:    true,
+		},
+		"recorded_after": {
+			Type:             schema.TypeString,
+			Description:      "The `recorded_after` parameter defines the earliest timestamp from which Audit Trail events are retrieved. Returns `one hour ago` by default (Format ISO 8601)",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"recorded_before": {
+			Type:             schema.TypeString,
+			Description:      "The `recorded_before` parameter defines the latest timestamp up to which Audit Trail events are retrieved. Must be later than recorded_after. Returns `now` by default (Format ISO 8601)",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"order_by": {
+			Type:        schema.TypeString,
+			Description: "Defines the order in which events are returned. Default value: recorded_at_desc",
+			Optional:    true,
+			ValidateFunc: validation.StringInSlice([]string{
+				string(audittrailSDK.ListEventsRequestOrderByRecordedAtAsc),
+				string(audittrailSDK.ListEventsRequestOrderByRecordedAtDesc),
+			}, true),
+		},
+		"events": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of Audit Trail events",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "ID of the event",
+						Computed:    true,
+					},
+					"recorded_at": {
+						Type:        schema.TypeString,
+						Description: "Timestamp of the event",
+						Computed:    true,
+					},
+					"locality": {
+						Type:        schema.TypeString,
+						Description: "Locality of the resource attached to the event",
+						Computed:    true,
+					},
+					"principal_id": {
+						Type:        schema.TypeString,
+						Description: "ID of the user or IAM application at the origin of the event",
+						Computed:    true,
+					},
+					"organization_id": {
+						Type:        schema.TypeString,
+						Description: "Organization of the resource attached to the event",
+						Computed:    true,
+					},
+					"project_id": {
+						Type:        schema.TypeString,
+						Description: "Project of the resource attached to the event",
+						Computed:    true,
+					},
+					"source_ip": {
+						Type:        schema.TypeString,
+						Description: "IP address at the origin of the event",
+						Computed:    true,
+					},
+					"user_agent": {
+						Type:        schema.TypeString,
+						Description: "User Agent at the origin of the event",
+						Computed:    true,
+					},
+					"product_name": {
+						Type:        schema.TypeString,
+						Description: "Product name of the resource attached to the event",
+						Computed:    true,
+					},
+					"service_name": {
+						Type:        schema.TypeString,
+						Description: "API name called to trigger the event",
+						Computed:    true,
+					},
+					"method_name": {
+						Type:        schema.TypeString,
+						Description: "API method called to trigger the event",
+						Computed:    true,
+					},
+					"resources": {
+						Type:        schema.TypeList,
+						Description: "List of resources attached to the event",
+						Computed:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "ID of the resource attached to the event",
+								},
+								"type": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Type of the Scaleway resource",
+								},
+								"name": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Name of the Scaleway resource",
 								},
 							},
 						},
-						"request_id": {
-							Type:        schema.TypeString,
-							Description: "Unique identifier of the request at the origin of the event",
-							Computed:    true,
-						},
-						"request_body": {
-							Type:        schema.TypeString,
-							Description: "Request at the origin of the event",
-							Computed:    true,
-						},
-						"status_code": {
-							Type:        schema.TypeInt,
-							Description: "HTTP status code resulting of the API call",
-							Computed:    true,
-						},
+					},
+					"request_id": {
+						Type:        schema.TypeString,
+						Description: "Unique identifier of the request at the origin of the event",
+						Computed:    true,
+					},
+					"request_body": {
+						Type:        schema.TypeString,
+						Description: "Request at the origin of the event",
+						Computed:    true,
+					},
+					"status_code": {
+						Type:        schema.TypeInt,
+						Description: "HTTP status code resulting of the API call",
+						Computed:    true,
 					},
 				},
 			},

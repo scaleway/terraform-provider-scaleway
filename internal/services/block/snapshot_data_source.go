@@ -13,7 +13,7 @@ import (
 
 func DataSourceSnapshot() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceSnapshot().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceSnapshot().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone", "volume_id", "project_id")
 

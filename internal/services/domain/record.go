@@ -48,205 +48,209 @@ func ResourceRecord() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"dns_zone": {
-				Type:        schema.TypeString,
-				Description: "The zone you want to add the record in",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"root_zone": {
-				Type:        schema.TypeBool,
-				Description: "Does the DNS zone is the root zone or not",
-				Computed:    true,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the record",
-				ForceNew:    true,
-				Optional:    true,
-				StateFunc: func(val any) string {
-					value := val.(string)
-					if value == "@" || value == "" {
-						return ""
-					}
+		SchemaFunc:    recordSchema,
+	}
+}
 
-					return value
-				},
-				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-					dnsZone := d.Get("dns_zone").(string)
+func recordSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"dns_zone": {
+			Type:        schema.TypeString,
+			Description: "The zone you want to add the record in",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"root_zone": {
+			Type:        schema.TypeBool,
+			Description: "Does the DNS zone is the root zone or not",
+			Computed:    true,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "The name of the record",
+			ForceNew:    true,
+			Optional:    true,
+			StateFunc: func(val any) string {
+				value := val.(string)
+				if value == "@" || value == "" {
+					return ""
+				}
 
-					normalizedOld := normalizeRecordName(oldValue, dnsZone)
-					normalizedNew := normalizeRecordName(newValue, dnsZone)
+				return value
+			},
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				dnsZone := d.Get("dns_zone").(string)
 
-					return normalizedOld == normalizedNew
-				},
+				normalizedOld := normalizeRecordName(oldValue, dnsZone)
+				normalizedNew := normalizeRecordName(newValue, dnsZone)
+
+				return normalizedOld == normalizedNew
 			},
-			"type": {
-				Type:             schema.TypeString,
-				Description:      "The type of the record",
-				ValidateDiagFunc: verify.ValidateEnum[domain.RecordType](),
-				ForceNew:         true,
-				Required:         true,
-			},
-			"data": {
-				Type:        schema.TypeString,
-				Description: "The data of the record",
-				Required:    true,
-			},
-			"ttl": {
-				Type:         schema.TypeInt,
-				Description:  "The ttl of the record",
-				Optional:     true,
-				Default:      3600,
-				ValidateFunc: validation.IntBetween(60, 2592000),
-			},
-			"priority": {
-				Type:         schema.TypeInt,
-				Description:  "The priority of the record",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.IntAtLeast(0),
-			},
-			"geo_ip": {
-				Type:          schema.TypeList,
-				Description:   "Return record based on client localisation",
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"view", "http_service", "weighted"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"matches": {
-							Type:        schema.TypeList,
-							Description: "The list of matches",
-							MinItems:    1,
-							Required:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"countries": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										MinItems:    1,
-										Description: "List of countries (eg: FR for France, US for the United States, GB for Great Britain...). List of all countries code: https://api.scaleway.com/domain-private/v2beta1/countries",
-										Elem: &schema.Schema{
-											Type:         schema.TypeString,
-											ValidateFunc: validation.StringLenBetween(2, 2),
-										},
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Description:      "The type of the record",
+			ValidateDiagFunc: verify.ValidateEnum[domain.RecordType](),
+			ForceNew:         true,
+			Required:         true,
+		},
+		"data": {
+			Type:        schema.TypeString,
+			Description: "The data of the record",
+			Required:    true,
+		},
+		"ttl": {
+			Type:         schema.TypeInt,
+			Description:  "The ttl of the record",
+			Optional:     true,
+			Default:      3600,
+			ValidateFunc: validation.IntBetween(60, 2592000),
+		},
+		"priority": {
+			Type:         schema.TypeInt,
+			Description:  "The priority of the record",
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"geo_ip": {
+			Type:          schema.TypeList,
+			Description:   "Return record based on client localisation",
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"view", "http_service", "weighted"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"matches": {
+						Type:        schema.TypeList,
+						Description: "The list of matches",
+						MinItems:    1,
+						Required:    true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"countries": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MinItems:    1,
+									Description: "List of countries (eg: FR for France, US for the United States, GB for Great Britain...). List of all countries code: https://api.scaleway.com/domain-private/v2beta1/countries",
+									Elem: &schema.Schema{
+										Type:         schema.TypeString,
+										ValidateFunc: validation.StringLenBetween(2, 2),
 									},
-									"continents": {
-										Type:        schema.TypeList,
-										Optional:    true,
-										MinItems:    1,
-										Description: "List of continents (eg: EU for Europe, NA for North America, AS for Asia...). List of all continents code: https://api.scaleway.com/domain-private/v2beta1/continents",
-										Elem: &schema.Schema{
-											Type:         schema.TypeString,
-											ValidateFunc: validation.StringLenBetween(2, 2),
-										},
+								},
+								"continents": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MinItems:    1,
+									Description: "List of continents (eg: EU for Europe, NA for North America, AS for Asia...). List of all continents code: https://api.scaleway.com/domain-private/v2beta1/continents",
+									Elem: &schema.Schema{
+										Type:         schema.TypeString,
+										ValidateFunc: validation.StringLenBetween(2, 2),
 									},
-									"data": {
-										Type:        schema.TypeString,
-										Description: "The data of the match result",
-										Required:    true,
-									},
+								},
+								"data": {
+									Type:        schema.TypeString,
+									Description: "The data of the match result",
+									Required:    true,
 								},
 							},
 						},
 					},
 				},
 			},
-			"http_service": {
-				Type:          schema.TypeList,
-				Description:   "Return record based on client localisation",
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"geo_ip", "view", "weighted"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ips": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validation.IsIPAddress,
-							},
-							Required:    true,
-							MinItems:    1,
-							Description: "IPs to check",
-						},
-						"must_contain": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Text to search",
-						},
-						"url": {
+		},
+		"http_service": {
+			Type:          schema.TypeList,
+			Description:   "Return record based on client localisation",
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"geo_ip", "view", "weighted"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ips": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
 							Type:         schema.TypeString,
-							ValidateFunc: validation.IsURLWithHTTPorHTTPS,
-							Required:     true,
-							Description:  "URL to match the must_contain text to validate an IP",
-						},
-						"user_agent": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "User-agent used when checking the URL",
-						},
-						"strategy": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Description:      "Strategy to return an IP from the IPs list",
-							ValidateDiagFunc: verify.ValidateEnum[domain.RecordHTTPServiceConfigStrategy](),
-						},
-					},
-				},
-			},
-			"view": {
-				Type:          schema.TypeList,
-				Description:   "Return record based on client subnet",
-				Optional:      true,
-				ConflictsWith: []string{"geo_ip", "http_service", "weighted"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"subnet": {
-							Type:         schema.TypeString,
-							Description:  "The subnet of the view",
-							Required:     true,
-							ValidateFunc: validation.IsCIDR,
-						},
-						"data": {
-							Type:        schema.TypeString,
-							Description: "The data of the view record",
-							Required:    true,
-						},
-					},
-				},
-			},
-			"weighted": {
-				Type:          schema.TypeList,
-				Description:   "Return record based on weight",
-				Optional:      true,
-				ConflictsWith: []string{"geo_ip", "http_service", "view"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:         schema.TypeString,
-							Description:  "The weighted IP",
-							Required:     true,
 							ValidateFunc: validation.IsIPAddress,
 						},
-						"weight": {
-							Type:         schema.TypeInt,
-							Description:  "The weight of the IP",
-							Required:     true,
-							ValidateFunc: validation.IntAtLeast(0),
-						},
+						Required:    true,
+						MinItems:    1,
+						Description: "IPs to check",
+					},
+					"must_contain": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Text to search",
+					},
+					"url": {
+						Type:         schema.TypeString,
+						ValidateFunc: validation.IsURLWithHTTPorHTTPS,
+						Required:     true,
+						Description:  "URL to match the must_contain text to validate an IP",
+					},
+					"user_agent": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "User-agent used when checking the URL",
+					},
+					"strategy": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Strategy to return an IP from the IPs list",
+						ValidateDiagFunc: verify.ValidateEnum[domain.RecordHTTPServiceConfigStrategy](),
 					},
 				},
 			},
-			"fqdn": {
-				Type:        schema.TypeString,
-				Description: "The FQDN of the record",
-				Computed:    true,
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"view": {
+			Type:          schema.TypeList,
+			Description:   "Return record based on client subnet",
+			Optional:      true,
+			ConflictsWith: []string{"geo_ip", "http_service", "weighted"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"subnet": {
+						Type:         schema.TypeString,
+						Description:  "The subnet of the view",
+						Required:     true,
+						ValidateFunc: validation.IsCIDR,
+					},
+					"data": {
+						Type:        schema.TypeString,
+						Description: "The data of the view record",
+						Required:    true,
+					},
+				},
+			},
+		},
+		"weighted": {
+			Type:          schema.TypeList,
+			Description:   "Return record based on weight",
+			Optional:      true,
+			ConflictsWith: []string{"geo_ip", "http_service", "view"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:         schema.TypeString,
+						Description:  "The weighted IP",
+						Required:     true,
+						ValidateFunc: validation.IsIPAddress,
+					},
+					"weight": {
+						Type:         schema.TypeInt,
+						Description:  "The weight of the IP",
+						Required:     true,
+						ValidateFunc: validation.IntAtLeast(0),
+					},
+				},
+			},
+		},
+		"fqdn": {
+			Type:        schema.TypeString,
+			Description: "The FQDN of the record",
+			Computed:    true,
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

@@ -11,7 +11,7 @@ import (
 
 func DataSourceIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().SchemaFunc())
 
 	dsSchema["ip_id"] = &schema.Schema{
 		Type:             schema.TypeString,

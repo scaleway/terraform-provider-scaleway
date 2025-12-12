@@ -23,91 +23,95 @@ func ResourceBackendStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"s3_backend_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"lb_backend_config"},
-				MaxItems:      1,
-				Description:   "The Scaleway Object Storage origin bucket (S3) linked to the backend stage",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The name of the Bucket",
-						},
-						"bucket_region": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The region of the Bucket",
-						},
-						"is_website": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Defines whether the bucket website feature is enabled.",
-						},
+		SchemaFunc:    backendStageSchema,
+	}
+}
+
+func backendStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"s3_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			ConflictsWith: []string{"lb_backend_config"},
+			MaxItems:      1,
+			Description:   "The Scaleway Object Storage origin bucket (S3) linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The name of the Bucket",
+					},
+					"bucket_region": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The region of the Bucket",
+					},
+					"is_website": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Defines whether the bucket website feature is enabled.",
 					},
 				},
 			},
-			"lb_backend_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"s3_backend_config"},
-				Description:   "The Scaleway Load Balancer origin linked to the backend stage",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"lb_config": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							MaxItems:    1,
-							Description: "The Load Balancer configuration",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "ID of the Load Balancer",
-									},
-									"frontend_id": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "ID of the frontend linked to the Load Balancer",
-									},
-									"is_ssl": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Defines whether the Load Balancer's frontend handles SSL connections",
-									},
-									"domain_name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
-									},
-									"zone": zonal.Schema(),
+		},
+		"lb_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			ConflictsWith: []string{"s3_backend_config"},
+			Description:   "The Scaleway Load Balancer origin linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"lb_config": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "The Load Balancer configuration",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "ID of the Load Balancer",
 								},
+								"frontend_id": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "ID of the frontend linked to the Load Balancer",
+								},
+								"is_ssl": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Defines whether the Load Balancer's frontend handles SSL connections",
+								},
+								"domain_name": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
+								},
+								"zone": zonal.Schema(),
 							},
 						},
 					},
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the backend stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the backend stage",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the backend stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the backend stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

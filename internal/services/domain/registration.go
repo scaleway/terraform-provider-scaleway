@@ -32,145 +32,149 @@ func ResourceRegistration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"domain_names": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "List of domain names to be managed.",
+		SchemaFunc:    registrationSchema,
+	}
+}
+
+func registrationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_names": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Description: "List of domain names to be managed.",
+		},
+		"duration_in_years": {
+			Type:        schema.TypeInt,
+			Description: "Duration of the registration period in years.",
+			Optional:    true,
+			Default:     1,
+		},
+		"owner_contact_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+			ExactlyOneOf: []string{
+				"owner_contact_id",
+				"owner_contact",
 			},
-			"duration_in_years": {
-				Type:        schema.TypeInt,
-				Description: "Duration of the registration period in years.",
-				Optional:    true,
-				Default:     1,
+			ValidateFunc: validation.IsUUID,
+			Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+		},
+		"owner_contact": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			MaxItems: 1,
+			ExactlyOneOf: []string{
+				"owner_contact_id",
+				"owner_contact",
 			},
-			"owner_contact_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ExactlyOneOf: []string{
-					"owner_contact_id",
-					"owner_contact",
-				},
-				ValidateFunc: validation.IsUUID,
-				Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"owner_contact": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				MaxItems: 1,
-				ExactlyOneOf: []string{
-					"owner_contact_id",
-					"owner_contact",
-				},
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Description: "Details of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+		},
+		"administrative_contact": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"administrative_contact": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the administrative contact.",
+			Description: "Details of the administrative contact.",
+		},
+		"technical_contact": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: contactSchema(),
 			},
-			"technical_contact": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: contactSchema(),
-				},
-				Description: "Details of the technical contact.",
-			},
-			"auto_renew": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable auto-renewal of the domain.",
-			},
-			"dnssec": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable dnssec for the domain.",
-			},
-			"ds_record": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key_id": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The identifier for the dnssec key.",
-						},
-						"algorithm": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The algorithm used for dnssec (e.g., rsasha256, ecdsap256sha256).",
-						},
-						"digest": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The digest type for the DS record (e.g., sha_1, sha_256, gost_r_34_11_94, sha_384).",
-									},
-									"digest": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The digest value.",
-									},
-									"public_key": {
-										Type:     schema.TypeList,
-										Computed: true,
-										Elem: &schema.Resource{
-											Schema: map[string]*schema.Schema{
-												"key": {
-													Type:        schema.TypeString,
-													Required:    true,
-													Description: "The public key value.",
-												},
+			Description: "Details of the technical contact.",
+		},
+		"auto_renew": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable auto-renewal of the domain.",
+		},
+		"dnssec": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable dnssec for the domain.",
+		},
+		"ds_record": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key_id": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The identifier for the dnssec key.",
+					},
+					"algorithm": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The algorithm used for dnssec (e.g., rsasha256, ecdsap256sha256).",
+					},
+					"digest": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"type": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The digest type for the DS record (e.g., sha_1, sha_256, gost_r_34_11_94, sha_384).",
+								},
+								"digest": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The digest value.",
+								},
+								"public_key": {
+									Type:     schema.TypeList,
+									Computed: true,
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"key": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "The public key value.",
 											},
 										},
-										Description: "The public key associated with the digest.",
 									},
+									Description: "The public key associated with the digest.",
 								},
 							},
-							Description: "Details about the digest.",
 						},
-						"public_key": {
-							Type:     schema.TypeList,
-							Computed: true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:        schema.TypeString,
-										Required:    true,
-										Description: "The public key value.",
-									},
+						Description: "Details about the digest.",
+					},
+					"public_key": {
+						Type:     schema.TypeList,
+						Computed: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "The public key value.",
 								},
 							},
-							Description: "Public key associated with the dnssec record.",
 						},
+						Description: "Public key associated with the dnssec record.",
 					},
 				},
-				Description: "dnssec DS record configuration.",
 			},
-			"project_id": account.ProjectIDSchema(),
+			Description: "dnssec DS record configuration.",
+		},
+		"project_id": account.ProjectIDSchema(),
 
-			"task_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the task that created the domain.",
-			},
+		"task_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the task that created the domain.",
 		},
 	}
 }

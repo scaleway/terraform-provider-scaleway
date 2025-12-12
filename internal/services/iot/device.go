@@ -32,152 +32,156 @@ func ResourceDevice() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"hub_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The ID of the hub on which this device will be created",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the device",
-				ForceNew:    true,
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the device",
-			},
-			"allow_insecure": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Allow plain and server-authenticated SSL connections in addition to mutually-authenticated ones",
-			},
-			"allow_multiple_connections": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Allow multiple connections",
-			},
-			"message_filters": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Description: "Rules to authorize or deny the device to publish/subscribe to specific topics",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"publish": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Rule to restrict topics the device can publish to",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"policy": {
-										Type:             schema.TypeString,
-										Optional:         true,
-										Description:      "Publish message filter policy",
-										Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
-										RequiredWith:     []string{"message_filters.0.publish.0.topics"},
-										ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
-									},
-									"topics": {
-										Type:         schema.TypeList,
-										Optional:     true,
-										Description:  "List of topics in the set",
-										RequiredWith: []string{"message_filters.0.publish.0.policy"},
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+		SchemaFunc:    deviceSchema,
+		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+	}
+}
+
+func deviceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"hub_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The ID of the hub on which this device will be created",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the device",
+			ForceNew:    true,
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the device",
+		},
+		"allow_insecure": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Allow plain and server-authenticated SSL connections in addition to mutually-authenticated ones",
+		},
+		"allow_multiple_connections": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Allow multiple connections",
+		},
+		"message_filters": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Description: "Rules to authorize or deny the device to publish/subscribe to specific topics",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"publish": {
+						Type:        schema.TypeList,
+						MaxItems:    1,
+						Optional:    true,
+						Description: "Rule to restrict topics the device can publish to",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"policy": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "Publish message filter policy",
+									Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
+									RequiredWith:     []string{"message_filters.0.publish.0.topics"},
+									ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
+								},
+								"topics": {
+									Type:         schema.TypeList,
+									Optional:     true,
+									Description:  "List of topics in the set",
+									RequiredWith: []string{"message_filters.0.publish.0.policy"},
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
 									},
 								},
 							},
 						},
-						"subscribe": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Rule to restrict topics the device can subscribe to",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"policy": {
-										Type:             schema.TypeString,
-										Optional:         true,
-										Description:      "Subscribe message filter policy",
-										Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
-										RequiredWith:     []string{"message_filters.0.subscribe.0.topics"},
-										ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
-									},
-									"topics": {
-										Type:         schema.TypeList,
-										Optional:     true,
-										Description:  "List of topics in the set",
-										RequiredWith: []string{"message_filters.0.subscribe.0.policy"},
-										Elem: &schema.Schema{
-											Type: schema.TypeString,
-										},
+					},
+					"subscribe": {
+						Type:        schema.TypeList,
+						MaxItems:    1,
+						Optional:    true,
+						Description: "Rule to restrict topics the device can subscribe to",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"policy": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "Subscribe message filter policy",
+									Default:          iot.DeviceMessageFiltersRulePolicyReject.String(),
+									RequiredWith:     []string{"message_filters.0.subscribe.0.topics"},
+									ValidateDiagFunc: verify.ValidateEnum[iot.DeviceMessageFiltersRulePolicy](),
+								},
+								"topics": {
+									Type:         schema.TypeList,
+									Optional:     true,
+									Description:  "List of topics in the set",
+									RequiredWith: []string{"message_filters.0.subscribe.0.policy"},
+									Elem: &schema.Schema{
+										Type: schema.TypeString,
 									},
 								},
 							},
 						},
 					},
 				},
-			},
-			// Provided or computed elements
-			"certificate": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "Certificate section of the device",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"crt": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "X509 PEM encoded certificate of the device",
-						},
-						"key": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Sensitive:   true,
-							Description: "X509 PEM encoded key of the device",
-						},
-					},
-				},
-			},
-			// Computed elements
-			"region": regional.Schema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the device",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the device",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the device",
-			},
-			"last_activity_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of last MQTT activity of the device",
-			},
-			"is_connected": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "The MQTT connection status of the device",
 			},
 		},
-		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+		// Provided or computed elements
+		"certificate": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "Certificate section of the device",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"crt": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Sensitive:   true,
+						Description: "X509 PEM encoded certificate of the device",
+					},
+					"key": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Sensitive:   true,
+						Description: "X509 PEM encoded key of the device",
+					},
+				},
+			},
+		},
+		// Computed elements
+		"region": regional.Schema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the device",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the device",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the device",
+		},
+		"last_activity_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of last MQTT activity of the device",
+		},
+		"is_connected": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "The MQTT connection status of the device",
+		},
 	}
 }
 

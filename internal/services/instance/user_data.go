@@ -33,26 +33,30 @@ func ResourceUserData() *schema.Resource {
 			Default: schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"server_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The ID of the server",
-				ValidateDiagFunc: verify.IsUUIDWithLocality(),
-			},
-			"key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The key of the user data to set.",
-			},
-			"value": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The value of the user data to set.",
-			},
-			"zone": zonal.Schema(),
-		},
+		SchemaFunc:    userDataSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
+	}
+}
+
+func userDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"server_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The ID of the server",
+			ValidateDiagFunc: verify.IsUUIDWithLocality(),
+		},
+		"key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The key of the user data to set.",
+		},
+		"value": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The value of the user data to set.",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

@@ -15,7 +15,7 @@ import (
 )
 
 func DataSourceVPC() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceVPC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceVPC().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "is_default", "region")
 

@@ -14,7 +14,7 @@ import (
 )
 
 func DataSourceCockpitSource() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpitSource().SchemaFunc())
 
 	dsSchema["id"] = &schema.Schema{
 		Type:        schema.TypeString,

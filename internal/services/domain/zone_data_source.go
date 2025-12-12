@@ -10,7 +10,7 @@ import (
 
 func DataSourceZone() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceZone().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceZone().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "domain", "subdomain", "project_id")
 

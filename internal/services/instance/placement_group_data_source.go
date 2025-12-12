@@ -13,7 +13,7 @@ import (
 
 func DataSourcePlacementGroup() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePlacementGroup().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePlacementGroup().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "zone")
 

@@ -18,7 +18,7 @@ import (
 
 func DataSourcePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNIC().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNIC().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "private_network_id", "zone", "tags")
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "server_id")

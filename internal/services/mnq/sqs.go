@@ -20,15 +20,19 @@ func ResourceSQS() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Endpoint of the SQS service",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    sqsSchema,
+	}
+}
+
+func sqsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Endpoint of the SQS service",
 		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

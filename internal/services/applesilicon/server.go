@@ -35,160 +35,164 @@ func ResourceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the server",
-				Computed:    true,
-				Optional:    true,
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Description: "Type of the server",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"enable_vpc": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether or not to enable VPC access",
-			},
-			"commitment": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "duration_24h",
-				Description:      "The commitment period of the server",
-				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
-			},
-			"public_bandwidth": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The public bandwidth of the server in bits per second",
-			},
-			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "The private networks to attach to the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Description:      "The private network ID",
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i any) string {
-								return locality.ExpandID(i.(string))
-							},
-						},
-						"ipam_ip_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							},
-							Description: "List of IPAM IP IDs to attach to the server",
-						},
-						// computed
-						"vlan": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The VLAN ID associated to the private network",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network status",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the private network",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the private network",
-						},
-					},
-				},
-			},
-			// Computed
-			"ip": {
-				Type:        schema.TypeString,
-				Description: "IPv4 address of the server",
-				Computed:    true,
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"vnc_url": {
-				Type:        schema.TypeString,
-				Description: "VNC url use to connect remotely to the desktop GUI",
-				Computed:    true,
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the server",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the server",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the server",
-			},
-			"deletable_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The minimal date and time on which you can delete this server due to Apple licence",
-			},
-			"vpc_status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The VPC status of the server",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The password of the server",
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The username of the server",
-			},
+		SchemaFunc:    serverSchema,
+	}
+}
 
-			// Common
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+func serverSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Name of the server",
+			Computed:    true,
+			Optional:    true,
 		},
+		"type": {
+			Type:        schema.TypeString,
+			Description: "Type of the server",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"enable_vpc": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether or not to enable VPC access",
+		},
+		"commitment": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "duration_24h",
+			Description:      "The commitment period of the server",
+			ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
+		},
+		"public_bandwidth": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "The public bandwidth of the server in bits per second",
+		},
+		"private_network": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "The private networks to attach to the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Description:      "The private network ID",
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						StateFunc: func(i any) string {
+							return locality.ExpandID(i.(string))
+						},
+					},
+					"ipam_ip_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						},
+						Description: "List of IPAM IP IDs to attach to the server",
+					},
+					// computed
+					"vlan": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The VLAN ID associated to the private network",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private network status",
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the creation of the private network",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the last update of the private network",
+					},
+				},
+			},
+		},
+		// Computed
+		"ip": {
+			Type:        schema.TypeString,
+			Description: "IPv4 address of the server",
+			Computed:    true,
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"vnc_url": {
+			Type:        schema.TypeString,
+			Description: "VNC url use to connect remotely to the desktop GUI",
+			Computed:    true,
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The state of the server",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the server",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the server",
+		},
+		"deletable_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The minimal date and time on which you can delete this server due to Apple licence",
+		},
+		"vpc_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The VPC status of the server",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "The password of the server",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The username of the server",
+		},
+
+		// Common
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

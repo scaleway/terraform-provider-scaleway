@@ -34,57 +34,61 @@ func ResourceACL() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"cluster_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "Cluster on which the ACL should be applied",
-			},
-			"no_ip_allowed": {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				Default:      false,
-				Description:  "If true, no IP will be allowed and the cluster will be fully isolated",
-				ExactlyOneOf: []string{"acl_rules"},
-			},
-			"acl_rules": {
-				Type:         schema.TypeSet,
-				Optional:     true,
-				Description:  "The list of network rules that manage inbound traffic",
-				ExactlyOneOf: []string{"no_ip_allowed"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "The IP subnet to be allowed",
-							ValidateFunc: validation.IsCIDR,
-						},
-						"scaleway_ranges": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Allow access to cluster from all Scaleway ranges",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The description of the ACL rule",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the ACL rule",
-						},
+		SchemaFunc:    aclSchema,
+		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+	}
+}
+
+func aclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"cluster_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "Cluster on which the ACL should be applied",
+		},
+		"no_ip_allowed": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			Description:  "If true, no IP will be allowed and the cluster will be fully isolated",
+			ExactlyOneOf: []string{"acl_rules"},
+		},
+		"acl_rules": {
+			Type:         schema.TypeSet,
+			Optional:     true,
+			Description:  "The list of network rules that manage inbound traffic",
+			ExactlyOneOf: []string{"no_ip_allowed"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "The IP subnet to be allowed",
+						ValidateFunc: validation.IsCIDR,
+					},
+					"scaleway_ranges": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Allow access to cluster from all Scaleway ranges",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The description of the ACL rule",
+					},
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the ACL rule",
 					},
 				},
 			},
-			// Common
-			"region": regional.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

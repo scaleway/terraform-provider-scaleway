@@ -30,57 +30,61 @@ func ResourceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the snapshot",
-			},
-			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the instance from which the snapshot was created",
-			},
-			"instance_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the instance from which the snapshot was created",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the snapshot in bytes",
-			},
-			"node_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of node associated with the snapshot",
-			},
-			"volume_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of volume used for the snapshot (e.g., SSD, HDD)",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time when the snapshot was created",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the snapshot",
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
-				Required:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: customdiff.All(),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the snapshot",
+		},
+		"instance_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the instance from which the snapshot was created",
+		},
+		"instance_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the instance from which the snapshot was created",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the snapshot in bytes",
+		},
+		"node_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of node associated with the snapshot",
+		},
+		"volume_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of volume used for the snapshot (e.g., SSD, HDD)",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time when the snapshot was created",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the snapshot",
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
+			Required:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"region": regional.Schema(),
 	}
 }
 

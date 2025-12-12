@@ -15,7 +15,7 @@ import (
 
 func DataSourceCertificate() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCertificate().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCertificate().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "lb_id")

@@ -27,47 +27,51 @@ func ResourceIP() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address",
-			},
-			"prefix": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP prefix",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The type of instance IP",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.IPType](),
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The reverse DNS for this IP",
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this IP",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the ip",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:    ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address",
 		},
+		"prefix": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP prefix",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The type of instance IP",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.IPType](),
+		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The reverse DNS for this IP",
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The server associated with this IP",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the ip",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

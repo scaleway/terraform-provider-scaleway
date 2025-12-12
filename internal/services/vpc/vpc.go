@@ -24,53 +24,7 @@ func ResourceVPC() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the VPC",
-				Computed:    true,
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the VPC",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"enable_routing": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Enable routing between Private Networks in the VPC",
-			},
-			"enable_custom_routes_propagation": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Defines whether the VPC advertises custom routes between its Private Networks",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
-			// Computed elements
-			"organization_id": account.OrganizationIDSchema(),
-			"is_default": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Defines whether the VPC is the default one for its Project",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the private network",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the private network",
-			},
-		},
+		SchemaFunc:    vpcSchema,
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			before, after := diff.GetChange("enable_routing")
 			if before != nil && before.(bool) && after != nil && !after.(bool) {
@@ -78,6 +32,56 @@ func ResourceVPC() *schema.Resource {
 			}
 
 			return nil
+		},
+	}
+}
+
+func vpcSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The name of the VPC",
+			Computed:    true,
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the VPC",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"enable_routing": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Enable routing between Private Networks in the VPC",
+		},
+		"enable_custom_routes_propagation": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Defines whether the VPC advertises custom routes between its Private Networks",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
+		// Computed elements
+		"organization_id": account.OrganizationIDSchema(),
+		"is_default": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Defines whether the VPC is the default one for its Project",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the private network",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the private network",
 		},
 	}
 }

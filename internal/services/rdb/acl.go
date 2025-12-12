@@ -38,39 +38,43 @@ func ResourceACL() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the ACL is applied",
-			},
-			"acl_rules": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "List of ACL rules to apply",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:         schema.TypeString,
-							ValidateFunc: validation.IsCIDR,
-							Required:     true,
-							Description:  "Target IP of the rules",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Description of the rule",
-						},
+		SchemaFunc:    aclSchema,
+		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func aclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the ACL is applied",
+		},
+		"acl_rules": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "List of ACL rules to apply",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:         schema.TypeString,
+						ValidateFunc: validation.IsCIDR,
+						Required:     true,
+						Description:  "Target IP of the rules",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Description of the rule",
 					},
 				},
 			},
-			// Common
-			"region": regional.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		// Common
+		"region": regional.Schema(),
 	}
 }
 

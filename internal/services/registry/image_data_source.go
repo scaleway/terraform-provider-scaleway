@@ -18,56 +18,59 @@ import (
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRegistryImageRead,
+		SchemaFunc:  imageSchema,
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The name of the registry image",
-				ConflictsWith: []string{"image_id"},
-			},
-			"image_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the registry image",
-				ConflictsWith:    []string{"name"},
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"namespace_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				Description:      "The namespace ID of the registry image",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The size of the registry image",
-			},
-			"visibility": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The visibility policy of the registry image",
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The tags associated with the registry image",
-			},
-			"updated_at": {
-				Computed:    true,
-				Description: "Timestamp when the image was last updated.",
-				Type:        schema.TypeString,
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+func imageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The name of the registry image",
+			ConflictsWith: []string{"image_id"},
 		},
+		"image_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the registry image",
+			ConflictsWith:    []string{"name"},
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"namespace_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "The namespace ID of the registry image",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The size of the registry image",
+		},
+		"visibility": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The visibility policy of the registry image",
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "The tags associated with the registry image",
+		},
+		"updated_at": {
+			Computed:    true,
+			Description: "Timestamp when the image was last updated.",
+			Type:        schema.TypeString,
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
+	"go.yaml.in/yaml/v4"
 	cassetteV3 "gopkg.in/dnaeon/go-vcr.v3/cassette"
 	cassetteV4 "gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 )
@@ -209,6 +210,7 @@ func CompressCassetteV4(path string) (CompressReport, error) {
 	}
 
 	outputCassette := cassetteV4.New(path)
+	outputCassette.MarshalFunc = yaml.Marshal
 	transitioning := false
 
 	report := CompressReport{

@@ -23,21 +23,25 @@ func ResourceNatsAccount() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The nats account name",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint for interact with Nats",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    natsAccountSchema,
+	}
+}
+
+func natsAccountSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The nats account name",
 		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint for interact with Nats",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

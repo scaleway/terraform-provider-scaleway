@@ -30,25 +30,29 @@ func ResourceIPReverseDNS() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultIPReverseDNSTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"ipam_ip_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The IPAM IP ID",
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The reverse domain name",
-			},
-			"address": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "The IP corresponding to the hostname",
-				ValidateFunc: validation.IsIPAddress,
-			},
-			"region": regional.Schema(),
+		SchemaFunc:    ipReverseDNSSchema,
+	}
+}
+
+func ipReverseDNSSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"ipam_ip_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The IPAM IP ID",
 		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The reverse domain name",
+		},
+		"address": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "The IP corresponding to the hostname",
+			ValidateFunc: validation.IsIPAddress,
+		},
+		"region": regional.Schema(),
 	}
 }
 

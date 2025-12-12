@@ -42,221 +42,225 @@ func ResourceCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the redis cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Redis version of the cluster",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "Type of node to use for the cluster",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the user created when the cluster is created",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Required:    true,
-				Description: "Password of the user",
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
-			},
-			"cluster_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Number of nodes for the cluster.",
-			},
-			"tls_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not TLS is enabled.",
-				ForceNew:    true,
-			},
-			"acl": {
-				Type:          schema.TypeSet,
-				Description:   "List of acl rules.",
-				Optional:      true,
-				ConflictsWith: []string{"private_network"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "ID of the rule (UUID format).",
-							Computed:    true,
-						},
-						"ip": {
-							Type:         schema.TypeString,
-							Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
-							Required:     true,
-							ValidateFunc: validation.IsCIDR,
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Description: "Description of the rule.",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"settings": {
-				Type:        schema.TypeMap,
-				Description: "Map of settings to define for the cluster.",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"private_network": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Description:   "Private network specs details",
-				ConflictsWith: []string{"acl"},
-				Set:           privateNetworkSetHash,
-				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
-					// Check if the key is for the 'id' attribute
-					if strings.HasSuffix(k, "id") {
-						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
-					}
-					// For all other attributes, don't suppress the diff
-					return false
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "UUID of the private network to be connected to the cluster",
-						},
-						"service_ips": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validation.IsCIDR,
-							},
-							Description: "List of IPv4 addresses of the private network with a CIDR notation",
-						},
-						// computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID of the endpoint to be connected to the cluster",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"ips": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Computed:    true,
-							Description: "List of IPv4 addresses of the endpoint",
-						},
-						"zone": zonal.ComputedSchema(),
-					},
-				},
-			},
-			// Computed
-			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Public network specs details",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "UUID of the public network to be connected to the cluster",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"ips": {
-							Type:        schema.TypeList,
-							Description: "List of IPv4 addresses of the endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			"certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Redis cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Redis cluster",
-			},
-			// Common
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    clusterSchema,
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
 		),
+	}
+}
+
+func clusterSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the redis cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Redis version of the cluster",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Type of node to use for the cluster",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the user created when the cluster is created",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Required:    true,
+			Description: "Password of the user",
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
+		},
+		"cluster_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Number of nodes for the cluster.",
+		},
+		"tls_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not TLS is enabled.",
+			ForceNew:    true,
+		},
+		"acl": {
+			Type:          schema.TypeSet,
+			Description:   "List of acl rules.",
+			Optional:      true,
+			ConflictsWith: []string{"private_network"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "ID of the rule (UUID format).",
+						Computed:    true,
+					},
+					"ip": {
+						Type:         schema.TypeString,
+						Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
+						Required:     true,
+						ValidateFunc: validation.IsCIDR,
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Description: "Description of the rule.",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"settings": {
+			Type:        schema.TypeMap,
+			Description: "Map of settings to define for the cluster.",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"private_network": {
+			Type:          schema.TypeSet,
+			Optional:      true,
+			Description:   "Private network specs details",
+			ConflictsWith: []string{"acl"},
+			Set:           privateNetworkSetHash,
+			DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
+				// Check if the key is for the 'id' attribute
+				if strings.HasSuffix(k, "id") {
+					return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+				}
+				// For all other attributes, don't suppress the diff
+				return false
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "UUID of the private network to be connected to the cluster",
+					},
+					"service_ips": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type:         schema.TypeString,
+							ValidateFunc: validation.IsCIDR,
+						},
+						Description: "List of IPv4 addresses of the private network with a CIDR notation",
+					},
+					// computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "UUID of the endpoint to be connected to the cluster",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"ips": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Computed:    true,
+						Description: "List of IPv4 addresses of the endpoint",
+					},
+					"zone": zonal.ComputedSchema(),
+				},
+			},
+		},
+		// Computed
+		"public_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Public network specs details",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Optional:    true,
+						Description: "UUID of the public network to be connected to the cluster",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"ips": {
+						Type:        schema.TypeList,
+						Description: "List of IPv4 addresses of the endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional: true,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		"certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Redis cluster",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Redis cluster",
+		},
+		// Common
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

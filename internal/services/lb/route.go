@@ -29,54 +29,58 @@ func ResourceRoute() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"frontend_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The frontend ID origin of redirection",
-			},
-			"backend_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The backend ID destination of redirection",
-			},
-			"match_sni": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
-				ConflictsWith: []string{"match_host_header", "match_path_begin"},
-			},
-			"match_host_header": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Specifies the host of the server to which the request is being sent",
-				ConflictsWith: []string{"match_sni", "match_path_begin"},
-			},
-			"match_path_begin": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Value to match in the URL beginning path from an incoming request",
-				ConflictsWith: []string{"match_sni", "match_host_header"},
-			},
-			"match_subdomains": {
-				Type:        schema.TypeBool,
-				Description: "If true, all subdomains will match",
-				Optional:    true,
-				Default:     false,
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date at which the route was created (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date at which the route was last updated (RFC 3339 format)",
-			},
+		SchemaFunc: routeSchema,
+	}
+}
+
+func routeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"frontend_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The frontend ID origin of redirection",
+		},
+		"backend_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The backend ID destination of redirection",
+		},
+		"match_sni": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Server Name Indication TLS extension field from an incoming connection made via an SSL/TLS transport layer",
+			ConflictsWith: []string{"match_host_header", "match_path_begin"},
+		},
+		"match_host_header": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Specifies the host of the server to which the request is being sent",
+			ConflictsWith: []string{"match_sni", "match_path_begin"},
+		},
+		"match_path_begin": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Value to match in the URL beginning path from an incoming request",
+			ConflictsWith: []string{"match_sni", "match_host_header"},
+		},
+		"match_subdomains": {
+			Type:        schema.TypeBool,
+			Description: "If true, all subdomains will match",
+			Optional:    true,
+			Default:     false,
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date at which the route was created (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date at which the route was last updated (RFC 3339 format)",
 		},
 	}
 }

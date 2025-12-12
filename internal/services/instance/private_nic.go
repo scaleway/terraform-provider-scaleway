@@ -36,74 +36,78 @@ func ResourcePrivateNIC() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"server_id": {
-				Type:        schema.TypeString,
-				Description: "The server ID",
-				Required:    true,
-				ForceNew:    true,
+		SchemaFunc:    privateNicSchema,
+		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+	}
+}
+
+func privateNicSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"server_id": {
+			Type:        schema.TypeString,
+			Description: "The server ID",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			Description:      "The private network ID",
+			Required:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"mac_address": {
+			Type:        schema.TypeString,
+			Description: "MAC address of the NIC",
+			Computed:    true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Description:      "The private network ID",
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: dsf.Locality,
+			Optional:    true,
+			Description: "The tags associated with the private-nic",
+		},
+		"ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"mac_address": {
-				Type:        schema.TypeString,
-				Description: "MAC address of the NIC",
-				Computed:    true,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the private-nic",
-			},
-			"ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "IPAM ip list, should be for internal use only",
-				ForceNew:    true,
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
+			Optional:    true,
+			Description: "IPAM ip list, should be for internal use only",
+			ForceNew:    true,
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
 					},
 				},
 			},
-			"ipam_ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				ForceNew:    true,
-				Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
-			},
-			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+		"ipam_ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			ForceNew:    true,
+			Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

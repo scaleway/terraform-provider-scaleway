@@ -32,71 +32,75 @@ func ResourceNamespace() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFunctionNamespaceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "The name of the function namespace",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the function namespace",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the function namespace",
-			},
-			"environment_variables": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "The environment variables of the function namespace",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringLenBetween(0, 1000),
-				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
-			},
-			"secret_environment_variables": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The environment variables of the function namespace",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringLenBetween(0, 1000),
-				},
-				ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
-				DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
-				DiffSuppressOnRefresh: true,
-			},
-			"registry_endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint reachable by docker",
-			},
-			"registry_namespace_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the registry namespace",
-			},
-			"activate_vpc_integration": {
-				Type:        schema.TypeBool,
-				Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
-				Optional:    true,
-				Default:     true,
-				Description: "Activate VPC integration for the namespace",
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:    namespaceSchema,
+	}
+}
+
+func namespaceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			ForceNew:    true,
+			Optional:    true,
+			Description: "The name of the function namespace",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the function namespace",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the function namespace",
+		},
+		"environment_variables": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "The environment variables of the function namespace",
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringLenBetween(0, 1000),
+			},
+			ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+		},
+		"secret_environment_variables": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Sensitive:   true,
+			Description: "The environment variables of the function namespace",
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringLenBetween(0, 1000),
+			},
+			ValidateDiagFunc:      validation.MapKeyLenBetween(0, 100),
+			DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
+			DiffSuppressOnRefresh: true,
+		},
+		"registry_endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint reachable by docker",
+		},
+		"registry_namespace_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the registry namespace",
+		},
+		"activate_vpc_integration": {
+			Type:        schema.TypeBool,
+			Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
+			Optional:    true,
+			Default:     true,
+			Description: "Activate VPC integration for the namespace",
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

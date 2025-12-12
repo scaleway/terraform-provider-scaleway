@@ -24,50 +24,54 @@ func ResourceWebhook() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"domain_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The domain id",
-			},
-			"name": {
-				Type:         schema.TypeString,
-				Description:  "The name of the webhook",
-				Optional:     true,
-				Computed:     true,
-				ValidateFunc: validation.StringLenBetween(3, 127),
-			},
-			"event_types": {
-				Type:     schema.TypeList,
-				Required: true,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringNotInSlice([]string{"unknown_type"}, false),
-				},
-				Description: "List of event types",
-				MinItems:    1,
-			},
-			"sns_arn": {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "SNS ARN",
-				ValidateFunc: validation.StringLenBetween(3, 127),
-			},
-			"organization_id": account.OrganizationIDSchema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Creation timestamp",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Last update timestamp",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    webhookSchema,
+	}
+}
+
+func webhookSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The domain id",
 		},
+		"name": {
+			Type:         schema.TypeString,
+			Description:  "The name of the webhook",
+			Optional:     true,
+			Computed:     true,
+			ValidateFunc: validation.StringLenBetween(3, 127),
+		},
+		"event_types": {
+			Type:     schema.TypeList,
+			Required: true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringNotInSlice([]string{"unknown_type"}, false),
+			},
+			Description: "List of event types",
+			MinItems:    1,
+		},
+		"sns_arn": {
+			Type:         schema.TypeString,
+			Required:     true,
+			Description:  "SNS ARN",
+			ValidateFunc: validation.StringLenBetween(3, 127),
+		},
+		"organization_id": account.OrganizationIDSchema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Creation timestamp",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Last update timestamp",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

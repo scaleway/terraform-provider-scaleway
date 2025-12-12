@@ -32,41 +32,45 @@ func ResourceToken() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: cockpitTokenUpgradeV1SchemaType(), Upgrade: cockpitTokenV1UpgradeFunc},
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the token",
-			},
-			"scopes": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				MaxItems:    1,
-				Description: "Endpoints",
-				Elem:        resourceCockpitTokenScopes(),
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The secret key of the token",
-				Sensitive:   true,
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
+		SchemaFunc: tokenSchema,
+	}
+}
+
+func tokenSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the token",
 		},
+		"scopes": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: "Endpoints",
+			Elem:        resourceCockpitTokenScopes(),
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The secret key of the token",
+			Sensitive:   true,
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Cockpit Token (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Cockpit Token (Format ISO 8601)",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
 	}
 }
 

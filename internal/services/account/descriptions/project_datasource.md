@@ -1,0 +1,3 @@
+The [`scaleway_account_project`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/account_project) data source is used to retrieve information about a Scaleway project.
+
+Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.

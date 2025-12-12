@@ -27,44 +27,48 @@ func ResourcePlacementGroup() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstancePlacementGroupTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the placement group",
-			},
-			"policy_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          instanceSDK.PlacementGroupPolicyTypeMaxAvailability.String(),
-				Description:      "The operating mode is selected by a policy_type",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyType](),
-			},
-			"policy_mode": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          instanceSDK.PlacementGroupPolicyModeOptional,
-				Description:      "One of the two policy_mode may be selected: enforced or optional.",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyMode](),
-			},
-			"policy_respected": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Is true when the policy is respected.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the placement group",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:    placementGroupSchema,
+	}
+}
+
+func placementGroupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the placement group",
 		},
+		"policy_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          instanceSDK.PlacementGroupPolicyTypeMaxAvailability.String(),
+			Description:      "The operating mode is selected by a policy_type",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyType](),
+		},
+		"policy_mode": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          instanceSDK.PlacementGroupPolicyModeOptional,
+			Description:      "One of the two policy_mode may be selected: enforced or optional.",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.PlacementGroupPolicyMode](),
+		},
+		"policy_respected": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Is true when the policy is respected.",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the placement group",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

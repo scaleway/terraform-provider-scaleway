@@ -22,108 +22,112 @@ func ResourceUser() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"organization_id": account.OrganizationIDOptionalSchema(),
-			// User input data
-			"email": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The email of the user",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
-				Description: "The tags associated with the user",
-			},
-			"send_password_email": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not to send an email containing the member's password",
-			},
-			"send_welcome_email": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not to send a welcome email that includes onboarding information",
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Description: "The member's username",
-				Required:    true,
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The member's password for first access",
-			},
-			"first_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's first name",
-			},
-			"last_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's last name",
-			},
-			"phone_number": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The member's phone number",
-			},
-			"locale": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The member's locale",
-			},
-			// Computed data
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam user",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam user",
-			},
-			"deletable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the iam user is editable",
-			},
-			"last_login_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of last login of the iam user",
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the iam user",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of user invitation",
-			},
-			"mfa": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the MFA is enabled",
-			},
-			"account_root_user_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the account root user associated with the iam user",
-			},
-			"locked": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Defines whether the user is locked",
-			},
+		SchemaFunc:    userSchema,
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"organization_id": account.OrganizationIDOptionalSchema(),
+		// User input data
+		"email": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The email of the user",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+			Optional:    true,
+			Description: "The tags associated with the user",
+		},
+		"send_password_email": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not to send an email containing the member's password",
+		},
+		"send_welcome_email": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not to send a welcome email that includes onboarding information",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Description: "The member's username",
+			Required:    true,
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			Description: "The member's password for first access",
+		},
+		"first_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's first name",
+		},
+		"last_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's last name",
+		},
+		"phone_number": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The member's phone number",
+		},
+		"locale": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The member's locale",
+		},
+		// Computed data
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam user",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam user",
+		},
+		"deletable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the iam user is editable",
+		},
+		"last_login_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of last login of the iam user",
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the iam user",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of user invitation",
+		},
+		"mfa": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the MFA is enabled",
+		},
+		"account_root_user_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the account root user associated with the iam user",
+		},
+		"locked": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Defines whether the user is locked",
 		},
 	}
 }

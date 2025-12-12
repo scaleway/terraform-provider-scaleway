@@ -15,7 +15,7 @@ import (
 
 func DataSourcePool() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePool().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePool().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")

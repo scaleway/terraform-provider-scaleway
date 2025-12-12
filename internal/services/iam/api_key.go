@@ -24,68 +24,72 @@ func ResourceAPIKey() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam api key",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the iam api key",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the iam api key",
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
-				ValidateDiagFunc: verify.IsDate(),
-				DiffSuppressFunc: dsf.TimeRFC3339,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The access key of the iam api key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The secret Key of the iam api key",
-				Sensitive:   true,
-			},
-			"application_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "ID of the application attached to the api key",
-				ConflictsWith:    []string{"user_id"},
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"user_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "ID of the user attached to the api key",
-				ConflictsWith:    []string{"application_id"},
-				ValidateDiagFunc: verify.IsUUID(),
-			},
-			"editable": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether or not the iam api key is editable",
-			},
-			"creation_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IPv4 Address of the device which created the API key",
-			},
-			"default_project_id": account.ProjectIDSchema(),
+		SchemaFunc:    apiKeySchema,
+	}
+}
+
+func apiKeySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam api key",
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the iam api key",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the iam api key",
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The date and time of the expiration of the iam api key. Cannot be changed afterwards",
+			ValidateDiagFunc: verify.IsDate(),
+			DiffSuppressFunc: dsf.TimeRFC3339,
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The access key of the iam api key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The secret Key of the iam api key",
+			Sensitive:   true,
+		},
+		"application_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the application attached to the api key",
+			ConflictsWith:    []string{"user_id"},
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"user_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "ID of the user attached to the api key",
+			ConflictsWith:    []string{"application_id"},
+			ValidateDiagFunc: verify.IsUUID(),
+		},
+		"editable": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether or not the iam api key is editable",
+		},
+		"creation_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IPv4 Address of the device which created the API key",
+		},
+		"default_project_id": account.ProjectIDSchema(),
 	}
 }
 

@@ -43,273 +43,276 @@ func ResourceServer() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultServerTimeout),
 			Delete:  schema.DefaultTimeout(defaultServerTimeout),
 		},
-
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the server",
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Hostname of the server",
-			},
-			"offer": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "ID or name of the server offer",
-				ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
-				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
-					// remove the locality from the IDs when checking diff
-					if locality.ExpandID(newValue) == locality.ExpandID(oldValue) {
-						return true
-					}
-					// if the offer was provided by name
-					offerName, ok := d.GetOk("offer_name")
-
-					return ok && newValue == offerName
-				},
-			},
-			"offer_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the server offer",
-			},
-			"offer_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the server offer",
-			},
-			"os": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The base image of the server",
-				DiffSuppressFunc: dsf.Locality,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			},
-			"os_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The base image name of the server",
-			},
-			"ssh_key_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUID(),
-				},
-				Optional: true,
-				Description: `Array of SSH key IDs allowed to SSH to the server
-
-**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
-If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true.`,
-			},
-			"user": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "User used for the installation.",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "Password used for the installation.",
-			},
-			"service_user": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "User used for the service to install.",
-			},
-			"service_password": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Sensitive:   true,
-				Description: "Password used for the service to install.",
-			},
-			"reinstall_on_config_changes": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If True, this boolean allows to reinstall the server on SSH key IDs, user or password changes",
-			},
-			"install_config_afterward": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If True, this boolean allows to create a server without the install config if you want to provide it later",
-			},
-			"description": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringLenBetween(0, 255),
-				Description:  "Some description to associate to the server, max 255 characters",
-			},
-			"protected": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the baremetal server is protected against accidental deletion via the Scaleway API.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Computed:    true,
-				Description: "Array of tags to associate with the server",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "IP addresses attached to the server.",
-				Elem:        ResourceServerIP(),
-			},
-			"ipv4": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "IPv4 addresses attached to the server",
-				Elem:        ResourceServerIP(),
-			},
-			"ipv6": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "IPv6 addresses attached to the server",
-				Elem:        ResourceServerIP(),
-			},
-			"domain": {
-				Type:        schema.TypeString,
-				Description: "Domain associated with the server",
-				Computed:    true,
-			},
-			"options": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "The options to enable on server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "IDs of the options",
-							Required:    true,
-						},
-						"expires_at": {
-							Type:             schema.TypeString,
-							Description:      "Auto expire the option after this date",
-							Optional:         true,
-							Computed:         true,
-							ValidateDiagFunc: verify.IsDate(),
-							DiffSuppressFunc: dsf.TimeRFC3339,
-						},
-						// computed
-						"name": {
-							Type:        schema.TypeString,
-							Description: "name of the option",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Set:         privateNetworkSetHash,
-				Description: "The private networks to attach to the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Description:      "The ID of the private network to associate with the server",
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i any) string {
-								return locality.ExpandID(i.(string))
-							},
-						},
-						"mapping_id": {
-							Type:        schema.TypeString,
-							Description: "The ID of the Server-to-Private Network mapping",
-							Computed:    true,
-						},
-						"ipam_ip_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							},
-							Description: "List of IPAM IP IDs to attach to the server",
-						},
-						// computed
-						"vlan": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The VLAN ID associated to the private network",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network status",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the private network",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the private network",
-						},
-					},
-				},
-			},
-			"partitioning": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The partitioning schema in json format",
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"cloud_init": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "Configuration data to pass to cloud-init such as a YAML cloud config data or a user-data script",
-				ValidateFunc: validation.StringLenBetween(0, 127998),
-			},
-		},
+		SchemaFunc: serverSchema,
 		CustomizeDiff: customdiff.Sequence(
 			customDiffOffer(),
 			cdf.LocalityCheck("private_network.#.id"),
 			customDiffPrivateNetworkOption(),
 		),
+	}
+}
+
+func serverSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the server",
+		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Hostname of the server",
+		},
+		"offer": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "ID or name of the server offer",
+			ValidateDiagFunc: verify.IsUUIDOrNameOffer(),
+			DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
+				// remove the locality from the IDs when checking diff
+				if locality.ExpandID(newValue) == locality.ExpandID(oldValue) {
+					return true
+				}
+				// if the offer was provided by name
+				offerName, ok := d.GetOk("offer_name")
+
+				return ok && newValue == offerName
+			},
+		},
+		"offer_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the server offer",
+		},
+		"offer_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the server offer",
+		},
+		"os": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The base image of the server",
+			DiffSuppressFunc: dsf.Locality,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"os_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The base image name of the server",
+		},
+		"ssh_key_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUID(),
+			},
+			Optional: true,
+			Description: `Array of SSH key IDs allowed to SSH to the server
+
+**NOTE** : If you are attempting to update your SSH key IDs, it will induce the reinstall of your server. 
+If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument to true.`,
+		},
+		"user": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "User used for the installation.",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			Description: "Password used for the installation.",
+		},
+		"service_user": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "User used for the service to install.",
+		},
+		"service_password": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Sensitive:   true,
+			Description: "Password used for the service to install.",
+		},
+		"reinstall_on_config_changes": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If True, this boolean allows to reinstall the server on SSH key IDs, user or password changes",
+		},
+		"install_config_afterward": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If True, this boolean allows to create a server without the install config if you want to provide it later",
+		},
+		"description": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringLenBetween(0, 255),
+			Description:  "Some description to associate to the server, max 255 characters",
+		},
+		"protected": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the baremetal server is protected against accidental deletion via the Scaleway API.",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Computed:    true,
+			Description: "Array of tags to associate with the server",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "IP addresses attached to the server.",
+			Elem:        ResourceServerIP(),
+		},
+		"ipv4": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "IPv4 addresses attached to the server",
+			Elem:        ResourceServerIP(),
+		},
+		"ipv6": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "IPv6 addresses attached to the server",
+			Elem:        ResourceServerIP(),
+		},
+		"domain": {
+			Type:        schema.TypeString,
+			Description: "Domain associated with the server",
+			Computed:    true,
+		},
+		"options": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "The options to enable on server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "IDs of the options",
+						Required:    true,
+					},
+					"expires_at": {
+						Type:             schema.TypeString,
+						Description:      "Auto expire the option after this date",
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: verify.IsDate(),
+						DiffSuppressFunc: dsf.TimeRFC3339,
+					},
+					// computed
+					"name": {
+						Type:        schema.TypeString,
+						Description: "name of the option",
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Set:         privateNetworkSetHash,
+			Description: "The private networks to attach to the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Description:      "The ID of the private network to associate with the server",
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						StateFunc: func(i any) string {
+							return locality.ExpandID(i.(string))
+						},
+					},
+					"mapping_id": {
+						Type:        schema.TypeString,
+						Description: "The ID of the Server-to-Private Network mapping",
+						Computed:    true,
+					},
+					"ipam_ip_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						},
+						Description: "List of IPAM IP IDs to attach to the server",
+					},
+					// computed
+					"vlan": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The VLAN ID associated to the private network",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private network status",
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the creation of the private network",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the last update of the private network",
+					},
+				},
+			},
+		},
+		"partitioning": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The partitioning schema in json format",
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"cloud_init": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Computed:     true,
+			Description:  "Configuration data to pass to cloud-init such as a YAML cloud config data or a user-data script",
+			ValidateFunc: validation.StringLenBetween(0, 127998),
+		},
 	}
 }
 

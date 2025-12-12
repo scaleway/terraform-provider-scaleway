@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_account_projects"
 
 # scaleway_account_projects
 
-The `scaleway_account_projects` data source is used to list all Scaleway projects in an Organization.
+The [`scaleway_account_projects`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/account_projects) data source is used to list all Scaleway projects in an Organization.
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 

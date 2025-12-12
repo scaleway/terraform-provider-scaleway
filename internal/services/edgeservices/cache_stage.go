@@ -22,88 +22,92 @@ func ResourceCacheStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The backend stage ID the cache stage will be linked to",
-				ConflictsWith: []string{"waf_stage_id", "route_stage_id"},
-			},
-			"waf_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The WAF stage ID the cache stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "route_stage_id"},
-			},
-			"route_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The route stage ID the cache stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "waf_stage_id"},
-			},
-			"fallback_ttl": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     3600,
-				Description: "The Time To Live (TTL) in seconds. Defines how long content is cached",
-			},
-			"purge_requests": {
-				Type:        schema.TypeSet,
-				Description: "Set of purge requests",
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"pipeline_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The pipeline ID in which the purge request will be created",
+		SchemaFunc:    cacheStageSchema,
+	}
+}
+
+func cacheStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The backend stage ID the cache stage will be linked to",
+			ConflictsWith: []string{"waf_stage_id", "route_stage_id"},
+		},
+		"waf_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The WAF stage ID the cache stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "route_stage_id"},
+		},
+		"route_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The route stage ID the cache stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "waf_stage_id"},
+		},
+		"fallback_ttl": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     3600,
+			Description: "The Time To Live (TTL) in seconds. Defines how long content is cached",
+		},
+		"purge_requests": {
+			Type:        schema.TypeSet,
+			Description: "Set of purge requests",
+			Optional:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pipeline_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The pipeline ID in which the purge request will be created",
+					},
+					"assets": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "The list of asserts to purge",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"assets": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "The list of asserts to purge",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"all": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Defines whether to purge all content",
-						},
+					},
+					"all": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Defines whether to purge all content",
 					},
 				},
 			},
-			"refresh_cache": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Trigger a refresh of the cache by changing this field's value",
-			},
-			"include_cookies": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Defines whether responses to requests with cookies must be stored in the cache",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the cache stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the cache stage",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"refresh_cache": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Trigger a refresh of the cache by changing this field's value",
+		},
+		"include_cookies": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Defines whether responses to requests with cookies must be stored in the cache",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the cache stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the cache stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

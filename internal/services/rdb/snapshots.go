@@ -29,58 +29,62 @@ func ResourceSnapshot() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "UUID of the Database Instance on which the snapshot is applied.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the snapshot.",
-			},
-			"expires_at": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"node_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the database instance for which the snapshot was created.",
-			},
-			"volume_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of volume where data are stored",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the snapshot.",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the snapshot in bytes.",
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "UUID of the Database Instance on which the snapshot is applied.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the snapshot.",
+		},
+		"expires_at": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"node_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the database instance for which the snapshot was created.",
+		},
+		"volume_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of volume where data are stored",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the snapshot.",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the snapshot in bytes.",
+		},
+		"region": regional.Schema(),
 	}
 }
 

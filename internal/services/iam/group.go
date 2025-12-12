@@ -23,62 +23,66 @@ func ResourceGroup() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the iam group",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the iam group",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the group",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the group",
-			},
-			"user_ids": {
-				Type:        schema.TypeSet,
-				Description: "List of IDs of the users attached to the group",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUID(),
-				},
-			},
-			"application_ids": {
-				Type:        schema.TypeSet,
-				Description: "List of IDs of the applications attached to the group",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUID(),
-				},
-			},
-			"external_membership": {
-				Type:        schema.TypeBool,
-				Description: "Handle user and application memberships externally",
-				Optional:    true,
-				Default:     false,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the application",
-			},
-			"organization_id": account.OrganizationIDOptionalSchema(),
+		SchemaFunc:    groupSchema,
+	}
+}
+
+func groupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the iam group",
 		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the iam group",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the group",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the group",
+		},
+		"user_ids": {
+			Type:        schema.TypeSet,
+			Description: "List of IDs of the users attached to the group",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUID(),
+			},
+		},
+		"application_ids": {
+			Type:        schema.TypeSet,
+			Description: "List of IDs of the applications attached to the group",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUID(),
+			},
+		},
+		"external_membership": {
+			Type:        schema.TypeBool,
+			Description: "Handle user and application memberships externally",
+			Optional:    true,
+			Default:     false,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the application",
+		},
+		"organization_id": account.OrganizationIDOptionalSchema(),
 	}
 }
 

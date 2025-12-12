@@ -21,104 +21,108 @@ import (
 func DataSourceIP() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceIPAMIPRead,
-		Schema: map[string]*schema.Schema{
-			// Input
-			"ipam_ip_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Description:      "The ID of the IPAM IP",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
-			},
-			"private_network_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The private Network to filter for",
-				ConflictsWith: []string{"ipam_ip_id"},
-			},
-			"resource": {
-				Type:          schema.TypeList,
-				Description:   "The resource to filter for",
-				Optional:      true,
-				MaxItems:      1,
-				ConflictsWith: []string{"ipam_ip_id"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "ID of the resource to filter for",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Type of resource to filter for",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Name of the resource to filter for",
-						},
+		SchemaFunc:  dataSourceIPSchema,
+	}
+}
+
+func dataSourceIPSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		// Input
+		"ipam_ip_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the IPAM IP",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"private_network_id", "resource", "mac_address", "type", "tags", "attached"},
+		},
+		"private_network_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The private Network to filter for",
+			ConflictsWith: []string{"ipam_ip_id"},
+		},
+		"resource": {
+			Type:          schema.TypeList,
+			Description:   "The resource to filter for",
+			Optional:      true,
+			MaxItems:      1,
+			ConflictsWith: []string{"ipam_ip_id"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the resource to filter for",
+					},
+					"type": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Type of resource to filter for",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "Name of the resource to filter for",
 					},
 				},
 			},
-			"mac_address": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "The MAC address to filter for",
-				ConflictsWith: []string{"ipam_ip_id"},
+		},
+		"mac_address": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The MAC address to filter for",
+			ConflictsWith: []string{"ipam_ip_id"},
+		},
+		"type": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "IP Type (ipv4, ipv6)",
+			ConflictsWith: []string{"ipam_ip_id"},
+			ValidateDiagFunc: func(i any, _ cty.Path) diag.Diagnostics {
+				switch i.(string) {
+				case "ipv4":
+					return nil
+				case "ipv6":
+					return nil
+				default:
+					return diag.Diagnostics{{
+						Severity:      diag.Error,
+						Summary:       "Invalid IP Type",
+						Detail:        "Expected ipv4 or ipv6",
+						AttributePath: cty.GetAttrPath("type"),
+					}}
+				}
 			},
-			"type": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "IP Type (ipv4, ipv6)",
-				ConflictsWith: []string{"ipam_ip_id"},
-				ValidateDiagFunc: func(i any, _ cty.Path) diag.Diagnostics {
-					switch i.(string) {
-					case "ipv4":
-						return nil
-					case "ipv6":
-						return nil
-					default:
-						return diag.Diagnostics{{
-							Severity:      diag.Error,
-							Summary:       "Invalid IP Type",
-							Detail:        "Expected ipv4 or ipv6",
-							AttributePath: cty.GetAttrPath("type"),
-						}}
-					}
-				},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:      true,
-				Description:   "The tags associated with the IP",
-				ConflictsWith: []string{"ipam_ip_id"},
-			},
-			"attached": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Description:   "Defines whether to filter only for IPs which are attached to a resource",
-				ConflictsWith: []string{"ipam_ip_id"},
-			},
-			"zonal":           zonal.Schema(),
-			"region":          regional.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
-			// Computed
-			"address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address",
-			},
-			"address_cidr": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address with a CIDR notation",
-			},
+			Optional:      true,
+			Description:   "The tags associated with the IP",
+			ConflictsWith: []string{"ipam_ip_id"},
+		},
+		"attached": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Description:   "Defines whether to filter only for IPs which are attached to a resource",
+			ConflictsWith: []string{"ipam_ip_id"},
+		},
+		"zonal":           zonal.Schema(),
+		"region":          regional.Schema(),
+		"project_id":      account.ProjectIDSchema(),
+		"organization_id": account.OrganizationIDSchema(),
+		// Computed
+		"address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address",
+		},
+		"address_cidr": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address with a CIDR notation",
 		},
 	}
 }

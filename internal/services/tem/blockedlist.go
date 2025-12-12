@@ -22,36 +22,40 @@ func ResourceBlockedList() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"domain_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the domain affected by the blocklist.",
-			},
-			"email": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Email address to block.",
-			},
-			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Type of the blocked list. (mailbox_full or mailbox_not_found)",
-				ValidateFunc: validation.StringInSlice([]string{"mailbox_full", "mailbox_not_found"}, false),
-			},
-			"reason": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "manual_block",
-				ForceNew:    true,
-				Description: "Reason for blocking the emails.",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: blockedListSchema,
+	}
+}
+
+func blockedListSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The ID of the domain affected by the blocklist.",
 		},
+		"email": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Email address to block.",
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "Type of the blocked list. (mailbox_full or mailbox_not_found)",
+			ValidateFunc: validation.StringInSlice([]string{"mailbox_full", "mailbox_not_found"}, false),
+		},
+		"reason": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "manual_block",
+			ForceNew:    true,
+			Description: "Reason for blocking the emails.",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

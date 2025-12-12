@@ -19,7 +19,7 @@ import (
 
 func DataSourceVersion() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceVersion().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceVersion().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "revision")

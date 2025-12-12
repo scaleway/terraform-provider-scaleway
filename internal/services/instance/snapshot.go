@@ -36,80 +36,84 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the snapshot",
+		SchemaFunc:    snapshotSchema,
+		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the snapshot",
+		},
+		"volume_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the volume to take a snapshot from",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"import"},
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "The snapshot's volume type",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SnapshotVolumeType](),
+		},
+		"size_in_gb": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The size of the snapshot in gigabyte",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"volume_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "ID of the volume to take a snapshot from",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"import"},
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Description:      "The snapshot's volume type",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SnapshotVolumeType](),
-			},
-			"size_in_gb": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The size of the snapshot in gigabyte",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the snapshot",
-			},
-			"import": {
-				Type:     schema.TypeList,
-				ForceNew: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							Description:      "Bucket containing qcow",
-							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i any) string {
-								return regional.ExpandID(i.(string)).ID
-							},
-						},
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Key of the qcow file in the specified bucket",
+			Optional:    true,
+			Description: "The tags associated with the snapshot",
+		},
+		"import": {
+			Type:     schema.TypeList,
+			ForceNew: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						Description:      "Bucket containing qcow",
+						DiffSuppressFunc: dsf.Locality,
+						StateFunc: func(i any) string {
+							return regional.ExpandID(i.(string)).ID
 						},
 					},
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "Key of the qcow file in the specified bucket",
+					},
 				},
-				Optional:      true,
-				Description:   "Import snapshot from a qcow",
-				ConflictsWith: []string{"volume_id"},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the snapshot",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+			Optional:      true,
+			Description:   "Import snapshot from a qcow",
+			ConflictsWith: []string{"volume_id"},
 		},
-		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the snapshot",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

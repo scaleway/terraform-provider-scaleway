@@ -20,15 +20,19 @@ func ResourceSNS() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Endpoint of the SNS service",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    snsSchema,
+	}
+}
+
+func snsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Endpoint of the SNS service",
 		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

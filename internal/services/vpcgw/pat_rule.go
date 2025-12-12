@@ -34,56 +34,60 @@ func ResourcePATRule() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultTimeout),
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"gateway_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the gateway this PAT rule is applied to",
-			},
-			"private_ip": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ValidateFunc: validation.IsIPAddress,
-				Description:  "The private IP used in the PAT rule",
-			},
-			"public_port": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(0, 65535),
-				Description:  "The public port used in the PAT rule",
-			},
-			"private_port": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ValidateFunc: validation.IntBetween(
-					0,
-					math.MaxUint16,
-				),
-				Description: "The private port used in the PAT rule",
-			},
-			"protocol": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnumIgnoreCase[vpcgw.PatRuleProtocol](),
-				Default:          "both",
-				Description:      "The protocol used in the PAT rule",
-			},
-			"zone": zonal.Schema(),
-			// Computed elements
-			"organization_id": account.OrganizationIDSchema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the PAT rule",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the PAT rule",
-			},
-		},
+		SchemaFunc:    patRuleSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id"),
+	}
+}
+
+func patRuleSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"gateway_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the gateway this PAT rule is applied to",
+		},
+		"private_ip": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ValidateFunc: validation.IsIPAddress,
+			Description:  "The private IP used in the PAT rule",
+		},
+		"public_port": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntBetween(0, 65535),
+			Description:  "The public port used in the PAT rule",
+		},
+		"private_port": {
+			Type:     schema.TypeInt,
+			Required: true,
+			ValidateFunc: validation.IntBetween(
+				0,
+				math.MaxUint16,
+			),
+			Description: "The private port used in the PAT rule",
+		},
+		"protocol": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.ValidateEnumIgnoreCase[vpcgw.PatRuleProtocol](),
+			Default:          "both",
+			Description:      "The protocol used in the PAT rule",
+		},
+		"zone": zonal.Schema(),
+		// Computed elements
+		"organization_id": account.OrganizationIDSchema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the PAT rule",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the PAT rule",
+		},
 	}
 }
 

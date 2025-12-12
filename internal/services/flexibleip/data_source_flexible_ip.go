@@ -14,7 +14,7 @@ import (
 
 func DataSourceFlexibleIP() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceIP().SchemaFunc())
 
 	dsSchema["ip_address"] = &schema.Schema{
 		Type:          schema.TypeString,

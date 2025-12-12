@@ -14,7 +14,7 @@ import (
 )
 
 func DataSourceModel() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceModel().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceModel().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "url", "name")
 	dsSchema["name"].ConflictsWith = []string{"model_id"}

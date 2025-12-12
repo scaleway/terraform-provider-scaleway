@@ -70,20 +70,16 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_account_project" "project" {
-						name = "tf-tests-secret-ds-path"
-					}
-
 					resource "scaleway_secret" "main" {
 					  name = "test-secret-ds-path"
 					  path = "/test-secret-ds-path-path"
-					  project_id = scaleway_account_project.project.id
 					}
 					
 					data "scaleway_secret" "by_name" {
 					  name = scaleway_secret.main.name
 					  path = "/test-secret-ds-path-path"
-					  project_id = scaleway_account_project.project.id
+					  project_id = scaleway_secret.main.project_id
+					  depends_on = [scaleway_secret.main]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

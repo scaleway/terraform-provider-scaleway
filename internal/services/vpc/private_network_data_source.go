@@ -15,7 +15,7 @@ import (
 
 func DataSourcePrivateNetwork() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNetwork().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNetwork().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "project_id", "region")

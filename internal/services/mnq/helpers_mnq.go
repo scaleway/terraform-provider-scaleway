@@ -186,7 +186,7 @@ func setResourceValue(values map[string]any, resourcePath string, value any, res
 			values[parts[0]] = []any{make(map[string]any)}
 		}
 
-		setResourceValue(values[parts[0]].([]any)[0].(map[string]any), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+		setResourceValue(values[parts[0]].([]any)[0].(map[string]any), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).SchemaFunc())
 
 		return
 	}
@@ -202,7 +202,7 @@ func resolveSchemaPath(resourcePath string, resourceSchemas map[string]*schema.S
 
 	parts := strings.Split(resourcePath, ".")
 	if len(parts) > 1 {
-		return resolveSchemaPath(strings.Join(parts[2:], "."), resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+		return resolveSchemaPath(strings.Join(parts[2:], "."), resourceSchemas[parts[0]].Elem.(*schema.Resource).SchemaFunc())
 	}
 
 	return nil

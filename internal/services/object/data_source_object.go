@@ -14,7 +14,7 @@ import (
 )
 
 func DataSourceObject() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceObject().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceObject().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket", "key")
 

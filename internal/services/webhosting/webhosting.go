@@ -30,191 +30,7 @@ func ResourceWebhosting() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultHostingTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"offer_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The ID of the selected offer for the hosting",
-			},
-			"email": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ValidateDiagFunc: verify.IsEmail(),
-				Description:      "Contact email of the client for the hosting",
-			},
-			"domain": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The domain name of the hosting",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Computed:    true,
-				Description: "The tags of the hosting",
-			},
-			"option_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "IDs of the selected options for the hosting",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of hosting's creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date and time of hosting's last update (RFC 3339 format)",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The hosting status",
-			},
-			"platform_hostname": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Hostname of the host platform",
-			},
-			"platform_number": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Number of the host platform",
-			},
-			"offer_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the active offer",
-			},
-			"options": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Active options of the hosting",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the active option",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the option",
-						},
-					},
-				},
-			},
-			"dns_status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "DNS status of the hosting",
-			},
-			"cpanel_urls": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "URL to connect to cPanel Dashboard and to Webmail interface",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"dashboard": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL to connect to dashboard interface",
-						},
-						"webmail": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "URL to connect to Webmail interface",
-						},
-					},
-				},
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Main hosting cPanel username",
-			},
-			"records": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of DNS records associated with the webhosting.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the DNS record",
-						},
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of the DNS record",
-						},
-						"ttl": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Time to live in seconds of the record",
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Value of the DNS record",
-						},
-						"priority": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Priority of DNS records associated with the webhosting.",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Status of the hosting record",
-						},
-					},
-				},
-			},
-			"name_servers": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "List of nameservers associated with the webhosting.",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"hostname": {
-							Description: "Hostname of the server",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"status": {
-							Description: "Status of the nameserver",
-							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"is_default": {
-							Description: "Whether or not the webhosting is the default one",
-							Type:        schema.TypeBool,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"organization_id": func() *schema.Schema {
-				s := account.OrganizationIDSchema()
-				s.Deprecated = "The organization_id field is deprecated and will be removed in the next major version."
-
-				return s
-			}(),
-		},
+		SchemaFunc:    webhostingSchema,
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			if diff.HasChange("tags") {
 				oldTagsInterface, newTagsInterface := diff.GetChange("tags")
@@ -230,6 +46,194 @@ func ResourceWebhosting() *schema.Resource {
 
 			return nil
 		},
+	}
+}
+
+func webhostingSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"offer_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The ID of the selected offer for the hosting",
+		},
+		"email": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ValidateDiagFunc: verify.IsEmail(),
+			Description:      "Contact email of the client for the hosting",
+		},
+		"domain": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The domain name of the hosting",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Computed:    true,
+			Description: "The tags of the hosting",
+		},
+		"option_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "IDs of the selected options for the hosting",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of hosting's creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date and time of hosting's last update (RFC 3339 format)",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The hosting status",
+		},
+		"platform_hostname": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Hostname of the host platform",
+		},
+		"platform_number": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Number of the host platform",
+		},
+		"offer_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the active offer",
+		},
+		"options": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Active options of the hosting",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the active option",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the option",
+					},
+				},
+			},
+		},
+		"dns_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "DNS status of the hosting",
+		},
+		"cpanel_urls": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "URL to connect to cPanel Dashboard and to Webmail interface",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"dashboard": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "URL to connect to dashboard interface",
+					},
+					"webmail": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "URL to connect to Webmail interface",
+					},
+				},
+			},
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Main hosting cPanel username",
+		},
+		"records": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of DNS records associated with the webhosting.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the DNS record",
+					},
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Type of the DNS record",
+					},
+					"ttl": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Time to live in seconds of the record",
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Value of the DNS record",
+					},
+					"priority": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Priority of DNS records associated with the webhosting.",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the hosting record",
+					},
+				},
+			},
+		},
+		"name_servers": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of nameservers associated with the webhosting.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"hostname": {
+						Description: "Hostname of the server",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"status": {
+						Description: "Status of the nameserver",
+						Type:        schema.TypeString,
+						Computed:    true,
+					},
+					"is_default": {
+						Description: "Whether or not the webhosting is the default one",
+						Type:        schema.TypeBool,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"organization_id": func() *schema.Schema {
+			s := account.OrganizationIDSchema()
+			s.Deprecated = "The organization_id field is deprecated and will be removed in the next major version."
+
+			return s
+		}(),
 	}
 }
 
