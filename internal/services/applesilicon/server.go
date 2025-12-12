@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/server.md
+var serverDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverDescription,
 		CreateContext: ResourceAppleSiliconServerCreate,
 		ReadContext:   ResourceAppleSiliconServerRead,
 		UpdateContext: ResourceAppleSiliconServerUpdate,
