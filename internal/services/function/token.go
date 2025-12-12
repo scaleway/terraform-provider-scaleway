@@ -20,9 +20,10 @@ import (
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceFunctionTokenCreate,
-		ReadContext:   ResourceFunctionTokenRead,
-		DeleteContext: ResourceFunctionTokenDelete,
+		CreateContext:      ResourceFunctionTokenCreate,
+		ReadContext:        ResourceFunctionTokenRead,
+		DeleteContext:      ResourceFunctionTokenDelete,
+		DeprecationMessage: "The \"scaleway_function_token\" resource is deprecated in favor of IAM authentication",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
