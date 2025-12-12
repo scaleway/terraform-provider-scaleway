@@ -183,11 +183,12 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_job_definition" "main" {
-						name         = "test-jobs-action-start"
-						cpu_limit    = 120
-						memory_limit = 256
-						image_uri    = "docker.io/alpine:latest"
-						command      = "echo 'Hello World'"
+						name                   = "test-jobs-action-start"
+						cpu_limit              = 120
+						memory_limit           = 256
+						local_storage_capacity = 5120
+						image_uri              = "docker.io/alpine:latest"
+						command                = "echo 'Hello World'"
 
 						lifecycle {
 							action_trigger {
