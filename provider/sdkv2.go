@@ -368,6 +368,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 
 		p.ConfigureContextFunc = func(ctx context.Context, data *schema.ResourceData) (any, diag.Diagnostics) {
 			terraformVersion := p.TerraformVersion
+			schema.DescriptionKind = schema.StringMarkdown
 
 			// If we provide meta in config use it. This is useful for tests
 			if config != nil && config.Meta != nil {
