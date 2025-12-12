@@ -40,6 +40,8 @@ func availabilityZoneSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Availability Zones (AZ)",
 		},
+		EnableLegacyTypeSystemApplyErrors: true,
+		EnableLegacyTypeSystemPlanErrors:  true,
 	}
 }
 
