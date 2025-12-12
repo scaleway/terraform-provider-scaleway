@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "Audit Trail"
 page_title: "Scaleway: scaleway_audit_trail_event"
@@ -5,54 +6,16 @@ page_title: "Scaleway: scaleway_audit_trail_event"
 
 # scaleway_audit_trail_event
 
-Use this data source to get a list of existing Audit Trail events.
-For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
+{{ .Description }}
 
+{{ if .HasExamples }}
 ## Example Usage
 
-```hcl
-# Retrieve all audit trail events on the default organization
-data "scaleway_audit_trail_event" "find_all" {
-}
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-# Retrieve audit trail events on a specific organization
-data "scaleway_audit_trail_event" "find_by_org" {
-  organization_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events on a specific project
-data "scaleway_audit_trail_event" "find_by_project" {
-  project_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events for a specific type of resource
-data "scaleway_audit_trail_event" "find_by_resource_type" {
-  resource_type = "instance_server"
-}
-
-# Retrieve audit trail for a specific resource
-data "scaleway_audit_trail_event" "find_by_resource_id" {
-  resource_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail for a specific Scaleway product
-data "scaleway_audit_trail_event" "find_by_product_name" {
-  product_name = "secret-manager"
-}
-
-# Retrieve audit trail events with various filtering
-data "scaleway_audit_trail_event" "find_with_filters" {
-  region = "fr-par"
-  service_name = "instance"
-  method_name = "CreateServer"
-  principal_id = "11111111-1111-1111-1111-111111111111"
-  source_ip = "192.0.2.1"
-  status = 200
-  recorded_after = "2025-10-01T00:00:00Z"
-  recorded_before = "2025-12-31T23:59:59Z"
-  order_by = "recorded_at_desc"
-}
-```
+{{ end }}
+{{ end -}}
 
 ## Argument Reference
 

@@ -11,8 +11,8 @@ resource "scaleway_instance_ip" "ip" {
 }
 
 resource "scaleway_instance_server" "server" {
-  count = var.server_count
-  type = "PLAY2-MICRO"
-  image = "ubuntu_jammy"
+  count  = var.server_count
+  type   = "PLAY2-MICRO"
+  image  = "ubuntu_jammy"
   ip_ids = [scaleway_instance_ip.ip[count.index].id]
 }

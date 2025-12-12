@@ -2,6 +2,7 @@ package audittrail
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -18,8 +19,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/event.md
+var eventDescription string
+
 func DataSourceEvent() *schema.Resource {
 	return &schema.Resource{
+		Description: eventDescription,
 		ReadContext: DataSourceEventsRead,
 		SchemaFunc:  eventSchema,
 	}
