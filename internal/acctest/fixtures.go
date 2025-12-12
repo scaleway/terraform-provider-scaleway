@@ -70,9 +70,9 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, *iam.Po
 		return nil
 	}
 
-	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
-	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
-	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+	projectName := sdkacctest.RandomWithPrefix("tf-test-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
 
@@ -175,9 +175,9 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 		return nil
 	}
 
-	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
-	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
-	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+	projectName := sdkacctest.RandomWithPrefix("tf-test-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
 
