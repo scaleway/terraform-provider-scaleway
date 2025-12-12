@@ -6,12 +6,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -60,13 +62,13 @@ func NewRotateKeyAction() action.Action {
 func (a *RotateKeyAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"region": schema.StringAttribute{
-				Optional:    true,
-				Description: "Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration.",
-			},
+			"region": regional.SchemaAttribute("Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration."),
 			"key_id": schema.StringAttribute{
 				Required:    true,
 				Description: "ID of the key to rotate (UUID format)",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithLocality(),
+				},
 			},
 		},
 	}
