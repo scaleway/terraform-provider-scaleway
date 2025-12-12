@@ -705,9 +705,11 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForServerPrivateNetwork(ctx, privateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
+		if baremetalPrivateNetwork.ServerPrivateNetworks != nil {
+			_, err = waitForServerPrivateNetwork(ctx, privateNetworkAPI, zone, baremetalPrivateNetwork.ServerPrivateNetworks[0].ServerID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
