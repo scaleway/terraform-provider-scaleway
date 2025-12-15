@@ -18,6 +18,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 		secretDataDescription = "secret description"
 		secretVersionData     = "my_super_secret"
 		secretVersionDataV2   = "my_super_secret_v2"
+		secretVersionDataV3   = "my_super_secret_v3"
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -106,6 +107,46 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v2", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_latest", "secret_id", "scaleway_secret.main", "id"),
 					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_latest", "data", secret.Base64Encoded([]byte(secretVersionDataV2))),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "scaleway_secret" "main" {
+				  name        = "%[1]s"
+				  description = "%[2]s"
+				  tags        = ["devtools", "provider", "terraform"]
+				}
+
+				resource "scaleway_secret_version" "v1" {
+				  description = "version1"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[3]s"
+				}
+
+				resource "scaleway_secret_version" "v2" {
+				  description = "version2"
+				  secret_id   = scaleway_secret.main.id
+				  data        = "%[4]s"
+				}
+
+				resource "scaleway_secret_version" "v3" {
+				  description = "version3"
+				  secret_id   = scaleway_secret.main.id
+				  data_wo     = "%[5]s"
+				  revision 	  = 3
+				  depends_on = [scaleway_secret.main]
+				}
+
+				data "scaleway_secret_version" "data_v3" {
+				  secret_id = scaleway_secret.main.id
+				  revision  = scaleway_secret_version.v3.revision
+				  depends_on = [scaleway_secret_version.v3]
+				}
+				`, secretName, secretDataDescription, secretVersionData, secretVersionDataV2, secretVersionDataV3),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v3"),
+					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v3", "secret_id", "scaleway_secret.main", "id"),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data_v3", "data", secret.Base64Encoded([]byte(secretVersionDataV3))),
 				),
 			},
 		},

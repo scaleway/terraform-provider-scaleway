@@ -43,13 +43,25 @@ func versionSchema() map[string]*schema.Schema {
 		},
 		"data": {
 			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The data payload of your secret version.",
+			Optional:    true,
+			Description: "The data payload of your secret version. This is required if `data_wo` is not set.",
 			Sensitive:   true,
 			ForceNew:    true,
 			StateFunc: func(i any) string {
 				return Base64Encoded([]byte(i.(string)))
 			},
+			ExactlyOneOf: []string{"data", "data_wo"},
+		},
+		"data_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The data payload of your secret version. This is required if `data` is not set. `data_wo` will not be set in the Terraform state. Manually increment the revision when using `data_wo` to create a new version of the secret.",
+			Sensitive:   true,
+			WriteOnly:   true,
+			StateFunc: func(i any) string {
+				return Base64Encoded([]byte(i.(string)))
+			},
+			ExactlyOneOf: []string{"data", "data_wo"},
 		},
 		"description": {
 			Type:        schema.TypeString,
@@ -63,8 +75,10 @@ func versionSchema() map[string]*schema.Schema {
 		},
 		"revision": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
-			Description: "The revision of secret version",
+			ForceNew:    true,
+			Description: "The revision of secret version. Manually increment this value when using `data_wo` to create a new version of the secret.",
 		},
 		"created_at": {
 			Type:        schema.TypeString,
@@ -87,7 +101,17 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	secretID := locality.ExpandID(d.Get("secret_id").(string))
-	payloadSecretRaw := []byte(d.Get("data").(string))
+
+	var payloadSecretRaw []byte
+	isDataWO := false
+
+	if data, exists := d.GetOk("data"); exists {
+		payloadSecretRaw = []byte(data.(string))
+	} else {
+		isDataWO = true
+		payloadSecretRaw = []byte(d.Get("data_wo").(string))
+	}
+
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
 		SecretID:    secretID,
@@ -100,7 +124,13 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", Base64Encoded(payloadSecretRaw))
+	// Note: We intentionally don't set data_wo in the state because it's write-only and should
+	// not be stored.
+	// The actual secret value is only used for API calls and never persisted in the state.
+	// It can be retrieved with the datasource.
+	if !isDataWO {
+		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
+	}
 
 	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 

@@ -37,9 +37,11 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](/#data-information).
+- `data` - (Optional) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. Find out more on the [data section](/#data-information).
+- `data_wo` - (Optional) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`).  Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. Manually increment the revision when using `data_wo` to create a new version of the secret. Find out more on the [data section](/#data-information).
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
+- `revision` - (Optional) The revision number of the secret version. Manually increment this value when using `data_wo` to create a new version of the secret.
 
 ### Data
 
@@ -55,7 +57,6 @@ Keep in mind that this is a sensitive attribute. For more information, see [Sens
 
 In addition to all arguments above, the following attributes are exported:
 
-- `revision` - The revision number of the secret version.
 - `status` - The status of the secret version.
 - `created_at` - The date and time of the secret version's creation (in RFC 3339 format).
 - `updated_at` - The date and time of the secret version's last update (in RFC 3339 format).
