@@ -861,34 +861,34 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					data "scaleway_baremetal_os" "my_os" {
 						zone = "%s"
 						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+						version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+			
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
 						name = "%s"
 					}
-
+			
 					data "scaleway_baremetal_option" "private_network" {
 						zone = "%s"
 						name = "Private Network"
 					}
-
+			
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "baremetal_private_network"
-					} 
-
+					}
+			
 					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
-					
+			
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
 						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-					
+			
 						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
@@ -945,6 +945,50 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "%s"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name = "%s"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "%s"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_iam_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "%s"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+					}
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "private_network.0"),
 				),
 			},
 		},
