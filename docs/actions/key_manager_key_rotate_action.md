@@ -10,7 +10,7 @@ page_title: "Scaleway: scaleway_key_manager_key_rotate_action"
 
 ### Required
 
-- `key_id` (String) ID of the key to rotate (UUID format)
+- `key_id` (String) ID of the key to rotate. Can be a plain UUID or a regional ID.
 
 ### Optional
 
