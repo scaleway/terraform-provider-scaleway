@@ -1,0 +1,1 @@
+Creates and manages Compute Instance Placement Groups. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/instance/#path-placement-groups-list-placement-groups).

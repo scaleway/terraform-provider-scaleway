@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/private_nic.md
+var privateNicDescription string
+
 func ResourcePrivateNIC() *schema.Resource {
 	return &schema.Resource{
+		Description:   privateNicDescription,
 		CreateContext: ResourceInstancePrivateNICCreate,
 		ReadContext:   ResourceInstancePrivateNICRead,
 		UpdateContext: ResourceInstancePrivateNICUpdate,

@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/volume.md
+var volumeDescription string
+
 func ResourceVolume() *schema.Resource {
 	return &schema.Resource{
+		Description:   volumeDescription,
 		CreateContext: ResourceInstanceVolumeCreate,
 		ReadContext:   ResourceInstanceVolumeRead,
 		UpdateContext: ResourceInstanceVolumeUpdate,

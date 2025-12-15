@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,6 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/ip_datasource.md
+var ipDataSourceDescription string
 
 func DataSourceIP() *schema.Resource {
 	// Generate datasource schema from resource
@@ -38,8 +42,8 @@ func DataSourceIP() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceInstanceIPRead,
-
-		Schema: dsSchema,
+		Description: ipDataSourceDescription,
+		Schema:      dsSchema,
 	}
 }
 

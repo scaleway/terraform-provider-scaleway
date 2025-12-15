@@ -3,6 +3,7 @@ package instance
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -40,8 +41,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/server.md
+var serverDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverDescription,
 		CreateContext: ResourceInstanceServerCreate,
 		ReadContext:   ResourceInstanceServerRead,
 		UpdateContext: ResourceInstanceServerUpdate,
