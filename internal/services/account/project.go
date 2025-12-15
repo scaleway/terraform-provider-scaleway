@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -13,8 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/project.md
+var projectDescription string
+
 func ResourceProject() *schema.Resource {
 	return &schema.Resource{
+		Description:   projectDescription,
 		CreateContext: resourceAccountProjectCreate,
 		ReadContext:   resourceAccountProjectRead,
 		UpdateContext: resourceAccountProjectUpdate,
