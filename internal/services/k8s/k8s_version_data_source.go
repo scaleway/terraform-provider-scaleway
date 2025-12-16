@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,10 +14,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
+//go:embed descriptions/version_datasource.md
+var versionDataSourceDescription string
+
 func DataSourceVersion() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceK8SVersionRead,
 		SchemaFunc:  versionSchema,
+		Description: versionDataSourceDescription,
 	}
 }
 

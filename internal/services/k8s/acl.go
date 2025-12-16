@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/acl.md
+var aclDescription string
+
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   aclDescription,
 		CreateContext: ResourceACLCreate,
 		ReadContext:   ResourceACLRead,
 		UpdateContext: ResourceACLUpdate,
