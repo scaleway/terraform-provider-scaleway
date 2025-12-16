@@ -147,10 +147,9 @@ func definitionSchema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
 					},
 					"environment": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						Description:  "An environment variable containing the secret value.",
-						ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "An environment variable containing the secret value.",
 					},
 				},
 			},
