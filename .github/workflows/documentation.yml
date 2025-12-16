@@ -61,7 +61,5 @@ jobs:
           go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
-      - run: go tool tfplugindocs validate
-      - run: rm -fr ./docs
-      - run: go tool tfplugindocs generate
+      - run: make docs
       - run: git diff --exit-code docs
