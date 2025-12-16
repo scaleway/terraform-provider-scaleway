@@ -65,3 +65,12 @@ jobs:
       - run: rm -fr ./docs
       - run: go tool tfplugindocs generate
       - run: git diff --exit-code docs
+
+  terraform_fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Run terraform fmt on examples folder
+        run: terraform fmt -recursive -check -diff examples
