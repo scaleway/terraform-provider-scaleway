@@ -7,23 +7,14 @@ page_title: "Scaleway: scaleway_k8s_version"
 
 {{ .Description }}
 
+{{ if .HasExamples }}
 ## Example Usage
 
-### Use the latest version
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+{{ end }}
 
-```hcl
-data "scaleway_k8s_version" "latest" {
-  name = "latest"
-}
-```
-
-### Use a specific version
-
-```hcl
-data "scaleway_k8s_version" "by_name" {
-  name = "1.26.0"
-}
-```
+{{ end -}}
 
 ## Argument Reference
 

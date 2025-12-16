@@ -10,23 +10,21 @@ For more information, see the [API documentation](https://developers.scaleway.co
 
 You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw k8s version list` to list all available versions.
 
+
+
 ## Example Usage
 
-### Use the latest version
-
-```hcl
+```terraform
 data "scaleway_k8s_version" "latest" {
   name = "latest"
 }
 ```
-
-### Use a specific version
-
-```hcl
+```terraform
 data "scaleway_k8s_version" "by_name" {
   name = "1.26.0"
 }
 ```
+
 
 ## Argument Reference
 

@@ -11,9 +11,9 @@ For more information, please refer to the [API documentation](https://www.scalew
 ~> **Important:** When creating a Cluster, it comes with a default ACL rule allowing all ranges `0.0.0.0/0`.
 Defining custom ACLs with Terraform will overwrite this rule, but it will be recreated automatically when deleting the ACL resource.
 
-## Example Usage
 
-### Basic
+
+## Example Usage
 
 ```terraform
 resource "scaleway_vpc_private_network" "acl_basic" {}
@@ -39,8 +39,6 @@ resource "scaleway_k8s_acl" "acl_basic" {
 }
 ```
 
-### Full-isolation
-
 ```terraform
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
@@ -57,6 +55,9 @@ resource "scaleway_k8s_acl" "acl_basic" {
   no_ip_allowed = true
 }
 ```
+
+
+
 
 ## Argument Reference
 

@@ -7,20 +7,18 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 Creates and manages Scaleway Kubernetes cluster pools. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
 
+
+
 ## Example Usage
 
-### Basic
-
 ```terraform
-resource "scaleway_k8s_cluster" "jack" {
-  name    = "jack"
+resource "scaleway_k8s_cluster" "main" {
   version = "1.32.3"
   cni     = "cilium"
 }
 
-resource "scaleway_k8s_pool" "bill" {
-  cluster_id         = scaleway_k8s_cluster.jack.id
-  name               = "bill"
+resource "scaleway_k8s_pool" "main" {
+  cluster_id         = scaleway_k8s_cluster.main.id
   node_type          = "DEV1-M"
   size               = 3
   min_size           = 0
@@ -31,6 +29,9 @@ resource "scaleway_k8s_pool" "bill" {
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
 }
 ```
+
+
+
 
 ## Argument Reference
 
