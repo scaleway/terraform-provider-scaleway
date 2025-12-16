@@ -14,11 +14,11 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	const (
-		secretName            = "dataSourceSecretVersionBasic"
-		secretDataDescription = "secret description"
-		secretVersionData     = "my_super_secret"
-		secretVersionDataV2   = "my_super_secret_v2"
-		secretVersionDataV3   = "my_super_secret_v3"
+		secretName          = "dataSourceSecretVersionBasic"
+		secretDescription   = "secret description"
+		secretVersionData   = "my_super_secret_v1"
+		secretVersionDataV2 = "my_super_secret_v2"
+		secretVersionDataV3 = "my_super_secret_v3"
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -37,8 +37,9 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[3]s"
+				  depends_on = [scaleway_secret.main]
 				}
-				`, secretName, secretDataDescription, secretVersionData),
+				`, secretName, secretDescription, secretVersionData),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -52,14 +53,16 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[3]s"
+				  depends_on = [scaleway_secret.main]
 				}
 
 				resource "scaleway_secret_version" "v2" {
 				  description = "version2"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[4]s"
+				  depends_on = [scaleway_secret_version.v1]
 				}
-				`, secretName, secretDataDescription, secretVersionData, secretVersionDataV2),
+				`, secretName, secretDescription, secretVersionData, secretVersionDataV2),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -73,12 +76,14 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[3]s"
+				  depends_on = [scaleway_secret.main]
 				}
 
 				resource "scaleway_secret_version" "v2" {
 				  description = "version2"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[4]s"
+				  depends_on = [scaleway_secret_version.v1]
 				}
 
 				data "scaleway_secret_version" "data_v1" {
@@ -95,7 +100,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "latest"
 				}
-				`, secretName, secretDataDescription, secretVersionData, secretVersionDataV2),
+				`, secretName, secretDescription, secretVersionData, secretVersionDataV2),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v1"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v1", "secret_id", "scaleway_secret.main", "id"),
@@ -121,20 +126,21 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  description = "version1"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[3]s"
+				  depends_on = [scaleway_secret.main]
 				}
 
 				resource "scaleway_secret_version" "v2" {
 				  description = "version2"
 				  secret_id   = scaleway_secret.main.id
 				  data        = "%[4]s"
+				  depends_on = [scaleway_secret_version.v1]
 				}
 
 				resource "scaleway_secret_version" "v3" {
 				  description = "version3"
 				  secret_id   = scaleway_secret.main.id
 				  data_wo     = "%[5]s"
-				  revision 	  = 3
-				  depends_on = [scaleway_secret.main]
+				  depends_on = [scaleway_secret_version.v2]
 				}
 
 				data "scaleway_secret_version" "data_v3" {
@@ -142,7 +148,7 @@ func TestAccDataSourceSecretVersion_Basic(t *testing.T) {
 				  revision  = scaleway_secret_version.v3.revision
 				  depends_on = [scaleway_secret_version.v3]
 				}
-				`, secretName, secretDataDescription, secretVersionData, secretVersionDataV2, secretVersionDataV3),
+				`, secretName, secretDescription, secretVersionData, secretVersionDataV2, secretVersionDataV3),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretVersionExists(tt, "scaleway_secret_version.v3"),
 					resource.TestCheckResourceAttrPair("data.scaleway_secret_version.data_v3", "secret_id", "scaleway_secret.main", "id"),
@@ -157,8 +163,11 @@ func TestAccDataSourceSecretVersion_ByNameSecret(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	secretName := "dsSecretVersionByNameSecret"
-	secretVersionData := "my_super_secret"
+	const (
+		secretVersionData = "my_super_secret_v1"
+		secretName        = "dsSecretVersionByNameSecret"
+	)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),

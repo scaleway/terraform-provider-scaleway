@@ -55,7 +55,7 @@ func versionSchema() map[string]*schema.Schema {
 		"data_wo": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The data payload of your secret version. This is required if `data` is not set. `data_wo` will not be set in the Terraform state. Manually increment the revision when using `data_wo` to create a new version of the secret.",
+			Description: "The data payload of your secret version. This is required if `data` is not set. `data_wo` will not be set in the Terraform state.",
 			Sensitive:   true,
 			WriteOnly:   true,
 			StateFunc: func(i any) string {
@@ -75,10 +75,8 @@ func versionSchema() map[string]*schema.Schema {
 		},
 		"revision": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Computed:    true,
-			ForceNew:    true,
-			Description: "The revision of secret version. Manually increment this value when using `data_wo` to create a new version of the secret.",
+			Description: "The revision of secret version.",
 		},
 		"created_at": {
 			Type:        schema.TypeString,
@@ -103,6 +101,7 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	secretID := locality.ExpandID(d.Get("secret_id").(string))
 
 	var payloadSecretRaw []byte
+
 	isDataWO := false
 
 	if data, exists := d.GetOk("data"); exists {
