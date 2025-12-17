@@ -64,7 +64,10 @@ tfproviderdocs:
 tfproviderlintx:
 	go tool tfproviderlintx -XR001=false -XS002=false ./...
 
-docs:
+format_examples:
+	terraform fmt -recursive examples
+
+docs: format_examples
 	go tool tfplugindocs validate
 	rm -fr ./docs
 	go tool tfplugindocs generate
