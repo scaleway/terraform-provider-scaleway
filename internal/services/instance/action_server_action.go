@@ -12,7 +12,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -78,11 +80,11 @@ func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, res
 			"server_id": schema.StringAttribute{
 				Required:    true,
 				Description: "Server id to send the action to",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
 			},
-			"zone": schema.StringAttribute{
-				Optional:    true,
-				Description: "Zone of server to send the action to",
-			},
+			"zone": zonal.SchemaAttribute("Zone of server to send the action to"),
 			"wait": schema.BoolAttribute{
 				Optional:    true,
 				Description: "Wait for server to finish action",
@@ -110,36 +112,60 @@ func (a *ServerAction) Invoke(ctx context.Context, req action.InvokeRequest, res
 		return
 	}
 
-	actionReq := &instance.ServerActionRequest{
-		ServerID: locality.ExpandID(data.ServerID.ValueString()),
-		Action:   instance.ServerAction(data.Action.ValueString()),
-	}
-	if !data.Zone.IsNull() {
-		actionReq.Zone = scw.Zone(data.Zone.ValueString())
+	zone, serverID, _ := locality.ParseLocalizedID(data.ServerID.ValueString())
+	if zone == "" {
+		if !data.Zone.IsNull() {
+			zone = data.Zone.ValueString()
+		} else {
+			resp.Diagnostics.AddError(
+				"missing zone in config",
+				fmt.Sprintf("zone could not be extracted from either the action configuration or the resource ID (%s)",
+					data.ServerID.ValueString(),
+				),
+			)
+
+			return
+		}
 	}
 
-	_, err := a.instanceAPI.ServerAction(actionReq)
+	actionReq := &instance.ServerActionRequest{
+		ServerID: serverID,
+		Zone:     scw.Zone(zone),
+		Action:   instance.ServerAction(data.Action.ValueString()),
+	}
+
+	_, err := a.instanceAPI.ServerAction(actionReq, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"error in server action",
-			fmt.Sprintf("%s", err))
+			err.Error())
+
+		return
 	}
 
 	if data.Wait.ValueBool() {
-		waitReq := &instance.WaitForServerRequest{
-			ServerID: locality.ExpandID(data.ServerID.ValueString()),
-			Zone:     scw.Zone(data.Zone.ValueString()),
-		}
-
-		if !data.Zone.IsNull() {
-			waitReq.Zone = scw.Zone(data.Zone.ValueString())
-		}
-
-		_, errWait := a.instanceAPI.WaitForServer(waitReq)
-		if errWait != nil {
+		server, err := a.instanceAPI.WaitForServer(&instance.WaitForServerRequest{
+			ServerID: serverID,
+			Zone:     scw.Zone(zone),
+		}, scw.WithContext(ctx))
+		if err != nil && data.Action.ValueString() != instance.ServerActionTerminate.String() {
 			resp.Diagnostics.AddError(
-				"error in wait server",
-				fmt.Sprintf("%s", err))
+				"error waiting for server"+serverID,
+				err.Error())
+		}
+
+		if data.Action.ValueString() == instance.ServerActionBackup.String() && server != nil {
+			for _, volume := range server.Volumes {
+				_, err := a.instanceAPI.WaitForVolume(&instance.WaitForVolumeRequest{
+					VolumeID: volume.ID,
+					Zone:     scw.Zone(zone),
+				}, scw.WithContext(ctx))
+				if err != nil {
+					resp.Diagnostics.AddError(
+						"error waiting for volume "+volume.ID,
+						err.Error())
+				}
+			}
 		}
 	}
 }
