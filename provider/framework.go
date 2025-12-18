@@ -127,7 +127,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.ActionData = m
 }
 
-func (p *ScalewayProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{}
 }
 
@@ -142,8 +142,10 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	var res []func() action.Action
 
-	res = append(res, instance.NewServerAction)
 	res = append(res, cockpit.NewTriggerTestAlertAction)
+	res = append(res, instance.NewCreateSnapshot)
+	res = append(res, instance.NewExportSnapshot)
+	res = append(res, instance.NewServerAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
 	res = append(res, keymanager.NewRotateKeyAction)
 	res = append(res, mongodb.NewInstanceSnapshotAction)
