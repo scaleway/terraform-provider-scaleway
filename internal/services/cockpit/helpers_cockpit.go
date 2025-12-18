@@ -55,6 +55,19 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	return api, region, id, nil
 }
 
+// NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
+// The ID format is "region/projectID/1" (used by alert_manager resource).
+func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.Region, string, error) {
+	api := cockpit.NewRegionalAPI(meta.ExtractScwClient(m))
+
+	parts := strings.Split(id, "/")
+	if len(parts) != 3 {
+		return nil, "", "", fmt.Errorf("invalid alert manager ID format: %s, expected region/projectID/1", id)
+	}
+
+	return api, scw.Region(parts[0]), parts[1], nil
+}
+
 // NewAPIGrafanaUserID returns a new cockpit API with the Grafana user ID and the project ID.
 func NewAPIGrafanaUserID(m any, id string) (*cockpit.GlobalAPI, string, uint32, error) {
 	projectID, resourceIDString, err := parseCockpitID(id)
