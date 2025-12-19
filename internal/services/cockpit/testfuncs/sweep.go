@@ -51,7 +51,7 @@ func testSweepCockpitToken(_ string) error {
 			}, scw.WithAllPages())
 			if err != nil {
 				if httperrors.Is404(err) {
-					return nil
+					continue
 				}
 
 				return fmt.Errorf("failed to list tokens: %w", err)
@@ -93,7 +93,7 @@ func testSweepCockpitGrafanaUser(_ string) error {
 			}, scw.WithAllPages())
 			if err != nil {
 				if httperrors.Is404(err) {
-					return nil
+					continue
 				}
 
 				return fmt.Errorf("failed to list grafana users: %w", err)
@@ -117,34 +117,9 @@ func testSweepCockpitGrafanaUser(_ string) error {
 }
 
 func testSweepCockpit(_ string) error {
-	return acctest.Sweep(func(scwClient *scw.Client) error {
-		accountAPI := accountSDK.NewProjectAPI(scwClient)
-
-		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
-		if err != nil {
-			return fmt.Errorf("failed to list projects: %w", err)
-		}
-
-		for _, project := range listProjects.Projects {
-			if !strings.HasPrefix(project.Name, "tf_tests") {
-				continue
-			}
-
-			if err != nil {
-				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to deactivate cockpit: %w", err)
-				}
-			}
-
-			if err != nil {
-				if !httperrors.Is404(err) {
-					return fmt.Errorf("failed to deactivate cockpit: %w", err)
-				}
-			}
-		}
-
-		return nil
-	})
+	// Cockpit resource doesn't require explicit deactivation.
+	// Sources, tokens, and other resources are cleaned up by their respective sweepers.
+	return nil
 }
 
 func testSweepCockpitSource(_ string) error {
@@ -162,21 +137,61 @@ func testSweepCockpitSource(_ string) error {
 				continue
 			}
 
+			// Collect all sources by trying without filter and with all possible origins
+			// Some sources may only appear when filtering by origin
+			allDataSources := make(map[string]*cockpit.DataSource)
+
+			// List of possible origins to try
+			origins := []cockpit.DataSourceOrigin{
+				cockpit.DataSourceOriginUnknownOrigin,
+				cockpit.DataSourceOriginCustom,
+				cockpit.DataSourceOriginScaleway,
+				cockpit.DataSourceOriginExternal,
+			}
+
+			// First, try without any origin filter
 			listDatasources, err := cockpitAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
 				ProjectID: project.ID,
 				Region:    region,
 			}, scw.WithAllPages())
 			if err != nil {
-				if httperrors.Is404(err) {
-					return nil
+				if !httperrors.Is404(err) {
+					return fmt.Errorf("failed to list sources: %w", err)
 				}
-
-				return fmt.Errorf("failed to list sources: %w", err)
+			} else {
+				// Collect all sources from the unfiltered list
+				for _, datasource := range listDatasources.DataSources {
+					allDataSources[datasource.ID] = datasource
+				}
 			}
 
-			for _, datsource := range listDatasources.DataSources {
+			// Always try with each origin to ensure we catch all sources
+			// Some sources may only appear when filtering by specific origin
+			for _, origin := range origins {
+				listDatasources, err := cockpitAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
+					ProjectID: project.ID,
+					Region:    region,
+					Origin:    origin,
+				}, scw.WithAllPages())
+				if err != nil {
+					if httperrors.Is404(err) {
+						continue
+					}
+
+					// Don't return error here, just continue with next origin
+					continue
+				}
+
+				// Collect all unique sources
+				for _, datasource := range listDatasources.DataSources {
+					allDataSources[datasource.ID] = datasource
+				}
+			}
+
+			// Delete all collected sources
+			for _, datasource := range allDataSources {
 				err = cockpitAPI.DeleteDataSource(&cockpit.RegionalAPIDeleteDataSourceRequest{
-					DataSourceID: datsource.ID,
+					DataSourceID: datasource.ID,
 					Region:       region,
 				})
 				if err != nil {
