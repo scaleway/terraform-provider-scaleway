@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -21,8 +22,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/snapshot.md
+var snapshotDescription string
+
 func ResourceSnapshot() *schema.Resource {
 	return &schema.Resource{
+		Description:   snapshotDescription,
 		CreateContext: ResourceInstanceSnapshotCreate,
 		ReadContext:   ResourceInstanceSnapshotRead,
 		UpdateContext: ResourceInstanceSnapshotUpdate,

@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/placement_group.md
+var placementDescription string
+
 func ResourcePlacementGroup() *schema.Resource {
 	return &schema.Resource{
+		Description:   placementDescription,
 		CreateContext: ResourceInstancePlacementGroupCreate,
 		ReadContext:   ResourceInstancePlacementGroupRead,
 		UpdateContext: ResourceInstancePlacementGroupUpdate,

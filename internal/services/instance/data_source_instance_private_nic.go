@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 
@@ -15,6 +16,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/private_nic_datasource.md
+var privateNicDataSourceDescription string
 
 func DataSourcePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
@@ -36,6 +40,7 @@ func DataSourcePrivateNIC() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceInstancePrivateNICRead,
 		Schema:      dsSchema,
+		Description: privateNicDataSourceDescription,
 	}
 }
 

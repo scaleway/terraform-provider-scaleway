@@ -2,14 +2,19 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
+//go:embed descriptions/security_group_rules.md
+var securityGroupRulesDescription string
+
 func ResourceSecurityGroupRules() *schema.Resource {
 	return &schema.Resource{
+		Description:   securityGroupRulesDescription,
 		CreateContext: ResourceInstanceSecurityGroupRulesCreate,
 		ReadContext:   ResourceInstanceSecurityGroupRulesRead,
 		UpdateContext: ResourceInstanceSecurityGroupRulesUpdate,
