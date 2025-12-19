@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -63,9 +64,19 @@ func privilegeSchema() map[string]*schema.Schema {
 		},
 		"permission": {
 			Type:             schema.TypeString,
-			Description:      "Privilege",
+			Description:      "Desired permission (readonly, readwrite, all, custom, none)",
 			ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
 			Required:         true,
+		},
+		"effective_permission": {
+			Type:        schema.TypeString,
+			Description: "Actual permission currently set in Scaleway. May differ from 'permission' after database schema changes",
+			Computed:    true,
+		},
+		"permission_status": {
+			Type:        schema.TypeString,
+			Description: "Permission synchronization status: 'synced' if effective matches desired, 'drifted' if they differ",
+			Computed:    true,
 		},
 		// Common
 		"region": regional.Schema(),
@@ -123,6 +134,10 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	d.SetId(ResourceRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
+
+	configuredPermission := d.Get("permission").(string)
+	_ = d.Set("effective_permission", configuredPermission)
+	_ = d.Set("permission_status", "synced")
 
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
@@ -188,13 +203,47 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	privilege := res.Privileges[0]
+	effectivePermission := string(privilege.Permission)
+	configuredPermission := d.Get("permission").(string)
+
 	_ = d.Set("database_name", privilege.DatabaseName)
 	_ = d.Set("user_name", privilege.UserName)
-	_ = d.Set("permission", privilege.Permission)
 	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("region", region)
+	_ = d.Set("permission", privilege.Permission)
+	_ = d.Set("effective_permission", effectivePermission)
 
-	return nil
+	var diags diag.Diagnostics
+
+	if effectivePermission != configuredPermission {
+		_ = d.Set("permission_status", "drifted")
+
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Database privilege drift detected",
+			Detail: fmt.Sprintf(
+				"The privilege for user '%s' on database '%s' has drifted:\n"+
+					"  • Configured permission: '%s'\n"+
+					"  • Effective permission:  '%s'\n\n"+
+					"This usually happens after database schema changes (new tables, views, or sequences created).\n"+
+					"The configured permission was applied to objects existing at the time, but new objects created "+
+					"afterward don't automatically inherit these permissions.\n\n"+
+					"To fix this:\n"+
+					"  1. Run 'terraform apply' to reapply the configured permission to all objects\n"+
+					"  2. Or use PostgreSQL default privileges to automatically grant permissions to future objects\n"+
+					"  3. Or set 'permission = \"%s\"' if you want to keep the current state\n\n"+
+					"See: https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/manage-users/",
+				userName, databaseName,
+				configuredPermission, effectivePermission,
+				effectivePermission,
+			),
+			AttributePath: cty.GetAttrPath("permission"),
+		})
+	} else {
+		_ = d.Set("permission_status", "synced")
+	}
+
+	return diags
 }
 
 func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
