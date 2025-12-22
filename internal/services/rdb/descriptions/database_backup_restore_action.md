@@ -1,1 +1,1 @@
-This action restores a backup to a instance.
+This action restores a backup to an instance.
