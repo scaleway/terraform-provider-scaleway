@@ -176,7 +176,7 @@ func (r *EncryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 	encryptResp, err := r.keyManagerAPI.Encrypt(encryptReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error executing Key Manager Encrypt action",
+			"Error executing Key Manager Encrypt",
 			fmt.Sprintf("%s", err),
 		)
 
