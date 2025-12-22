@@ -64,12 +64,12 @@ func NewStartJobDefinitionAction() action.Action {
 }
 
 //go:embed descriptions/start_job_action.md
-var startJobDescription string
+var startJobActionDescription string
 
 func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: startJobDescription,
-		Description:         startJobDescription,
+		MarkdownDescription: startJobActionDescription,
+		Description:         startJobActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"job_definition_id": schema.StringAttribute{
 				Required:    true,

@@ -21,9 +21,6 @@ var (
 	_ action.ActionWithConfigure = (*TriggerTestAlertAction)(nil)
 )
 
-//go:embed descriptions/triggerTest_action.md
-var triggerTestDescription string
-
 type TriggerTestAlertAction struct {
 	regionalAPI *cockpit.RegionalAPI
 	meta        *meta.Meta
@@ -62,10 +59,13 @@ func NewTriggerTestAlertAction() action.Action {
 	return &TriggerTestAlertAction{}
 }
 
+//go:embed descriptions/triggerTest_action.md
+var triggerTestAlertActionDescription string
+
 func (a *TriggerTestAlertAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: triggerTestDescription,
-		Description:         triggerTestDescription,
+		MarkdownDescription: triggerTestAlertActionDescription,
+		Description:         triggerTestAlertActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Required:    true,

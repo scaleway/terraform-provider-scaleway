@@ -61,12 +61,12 @@ func NewReadReplicaPromoteAction() action.Action {
 }
 
 //go:embed descriptions/read_replica_promote_action.md
-var readReplicaPromoteDescription string
+var readReplicaPromoteActionDescription string
 
 func (a *ReadReplicaPromoteAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description:         readReplicaPromoteDescription,
-		MarkdownDescription: readReplicaPromoteDescription,
+		Description:         readReplicaPromoteActionDescription,
+		MarkdownDescription: readReplicaPromoteActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"read_replica_id": schema.StringAttribute{
 				Required:    true,

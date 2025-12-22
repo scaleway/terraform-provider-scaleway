@@ -19,15 +19,11 @@ func extractDescriptions(ctx context.Context, a actionFramework.Action) (string,
 	return resp.Schema.Description, resp.Schema.MarkdownDescription
 }
 
-func TestProviderActionDescriptionAreNotEmpty(t *testing.T) {
+func TestProviderActionDescriptionsAreNotEmpty(t *testing.T) {
 	p := provider.NewFrameworkProvider(nil)().(providerFramework.ProviderWithActions)
 	for _, action := range p.Actions(t.Context()) {
-		// name := extractName(t.Context(), action())
 		description, markdownDescription := extractDescriptions(t.Context(), action())
-
-		methodName := "Schema"
-		actionType := reflect.TypeOf(action())
-		method, found := actionType.MethodByName(methodName)
+		actionType, method, found := extractSchemaMethod(action())
 
 		if found {
 			funcPtr := method.Func.Pointer()
@@ -39,4 +35,12 @@ func TestProviderActionDescriptionAreNotEmpty(t *testing.T) {
 			t.Errorf("No Schema function found of the action %s", actionType)
 		}
 	}
+}
+
+func extractSchemaMethod(action actionFramework.Action) (reflect.Type, reflect.Method, bool) {
+	methodName := "Schema"
+	actionType := reflect.TypeOf(action)
+	method, found := actionType.MethodByName(methodName)
+
+	return actionType, method, found
 }

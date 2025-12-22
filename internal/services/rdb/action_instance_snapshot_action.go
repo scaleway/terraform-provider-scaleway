@@ -64,12 +64,12 @@ func NewInstanceSnapshotAction() action.Action {
 }
 
 //go:embed descriptions/instance_snapshot_action.md
-var snapshotActionDescription string
+var instanceSnapshotActionDescription string
 
 func (a *InstanceSnapshotAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: snapshotActionDescription,
-		Description:         snapshotActionDescription,
+		MarkdownDescription: instanceSnapshotActionDescription,
+		Description:         instanceSnapshotActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"instance_id": schema.StringAttribute{
 				Required:    true,

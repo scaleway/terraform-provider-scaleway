@@ -61,12 +61,12 @@ func NewExportSnapshot() action.Action {
 }
 
 //go:embed descriptions/export_snapshot_action.md
-var exportSnapshotDescription string
+var exportSnapshotActionDescription string
 
 func (e *ExportSnapshot) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: exportSnapshotDescription,
-		Description:         exportSnapshotDescription,
+		MarkdownDescription: exportSnapshotActionDescription,
+		Description:         exportSnapshotActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"snapshot_id": schema.StringAttribute{
 				Required:    true,
