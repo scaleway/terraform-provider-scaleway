@@ -1,3 +1,4 @@
+#Full isolation example
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {

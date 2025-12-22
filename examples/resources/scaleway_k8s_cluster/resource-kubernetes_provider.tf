@@ -33,4 +33,3 @@ provider "kubernetes" {
     null_resource.kubeconfig.triggers.cluster_ca_certificate
   )
 }
-

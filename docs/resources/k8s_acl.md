@@ -16,6 +16,7 @@ Defining custom ACLs with Terraform will overwrite this rule, but it will be rec
 ## Example Usage
 
 ```terraform
+# Basic ACL usage
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {
@@ -40,6 +41,7 @@ resource "scaleway_k8s_acl" "acl_basic" {
 ```
 
 ```terraform
+#Full isolation example
 resource "scaleway_vpc_private_network" "acl_basic" {}
 
 resource "scaleway_k8s_cluster" "acl_basic" {

@@ -8,6 +8,24 @@ page_title: "Scaleway: scaleway_k8s_pool"
 Gets information about a Kubernetes Cluster's Pool.
 
 
+
+## Example Usage
+
+```terraform
+# Get info by pool id
+data "scaleway_k8s_pool" "my_key" {
+  pool_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+```terraform
+# Get info by pool name (need cluster_id)
+data "scaleway_k8s_pool" "my_key" {
+  name       = "my-pool-name"
+  cluster_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+
 ## Argument Reference
 
 - `name` - The pool name. Only one of `name` and `pool_id` should be specified. `cluster_id` should be specified with `name`.

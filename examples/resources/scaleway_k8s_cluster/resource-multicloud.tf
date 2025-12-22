@@ -15,4 +15,3 @@ resource "scaleway_k8s_pool" "pool" {
   size       = 0
   min_size   = 0
 }
-
