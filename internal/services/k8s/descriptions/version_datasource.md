@@ -1,4 +1,3 @@
-Gets information about a Kubernetes version.
-For more information, see the [API documentation](https://developers.scaleway.com/en/products/k8s/api).
+The [`scaleway_k8s_version`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/k8s_version) data source is used to retrieve information about a Kubernetes version.
 
-You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw k8s version list` to list all available versions.
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.

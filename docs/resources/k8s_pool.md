@@ -5,7 +5,9 @@ page_title: "Scaleway: scaleway_k8s_pool"
 
 # Resource: scaleway_k8s_pool
 
-Creates and manages Scaleway Kubernetes cluster pools. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+The [`scaleway_k8s_pool`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/k8s_pool) resource allows you to create and manage Scaleway Kubernetes cluster pools.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
 
 
 
