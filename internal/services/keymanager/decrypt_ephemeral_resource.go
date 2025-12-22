@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -64,8 +65,13 @@ type DecryptEphemeralResourceModel struct {
 	Ciphertext types.String `tfsdk:"ciphertext"`
 }
 
+//go:embed descriptions/decrypt_ephemeral_resource.md
+var decryptEphemeralResourceDescription string
+
 func (r *DecryptEphemeralResource) Schema(ctx context.Context, req ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description:         decryptEphemeralResourceDescription,
+		MarkdownDescription: decryptEphemeralResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"region": regional.SchemaAttribute("Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration."),
 			"key_id": schema.StringAttribute{
