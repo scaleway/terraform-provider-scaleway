@@ -12,13 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func extractName(ctx context.Context, a actionFramework.Action) string {
-	metadataResponse := &actionFramework.MetadataResponse{}
-	a.Metadata(ctx, actionFramework.MetadataRequest{}, metadataResponse)
-
-	return metadataResponse.TypeName
-}
-
 func extractDescriptions(ctx context.Context, a actionFramework.Action) (string, string) {
 	resp := &actionFramework.SchemaResponse{}
 	a.Schema(ctx, actionFramework.SchemaRequest{}, resp)
@@ -35,6 +28,7 @@ func TestProviderActionDescriptionAreNotEmpty(t *testing.T) {
 		methodName := "Schema"
 		actionType := reflect.TypeOf(action())
 		method, found := actionType.MethodByName(methodName)
+
 		if found {
 			funcPtr := method.Func.Pointer()
 			fn := runtime.FuncForPC(funcPtr)
@@ -44,6 +38,5 @@ func TestProviderActionDescriptionAreNotEmpty(t *testing.T) {
 		} else {
 			t.Errorf("No Schema function found of the action %s", actionType)
 		}
-
 	}
 }
