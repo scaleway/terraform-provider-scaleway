@@ -154,6 +154,8 @@ resource "helm_release" "nginx_ingress" {
 ```
 
 ```terraform
+# Example with the kubernetes provider 
+
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -192,6 +194,7 @@ provider "kubernetes" {
 ```
 
 ```terraform
+# Multicloud Kubernetes Cluster Example
 # For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
 
 resource "scaleway_k8s_cluster" "cluster" {

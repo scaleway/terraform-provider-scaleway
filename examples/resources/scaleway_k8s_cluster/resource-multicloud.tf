@@ -1,3 +1,4 @@
+# Multicloud Kubernetes Cluster Example
 # For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
 
 resource "scaleway_k8s_cluster" "cluster" {
