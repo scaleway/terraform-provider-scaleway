@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -60,6 +61,9 @@ func NewServerAction() action.Action {
 	return &ServerAction{}
 }
 
+//go:embed descriptions/server_action_action.md
+var serverActionDescription string
+
 func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	actionsValues := instance.ServerAction("").Values()
 
@@ -69,6 +73,8 @@ func (a *ServerAction) Schema(ctx context.Context, req action.SchemaRequest, res
 	}
 
 	resp.Schema = schema.Schema{
+		Description:         serverActionDescription,
+		MarkdownDescription: serverActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"action": schema.StringAttribute{
 				Required:    true,

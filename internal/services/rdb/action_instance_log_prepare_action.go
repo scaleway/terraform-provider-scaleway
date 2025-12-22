@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -62,8 +63,13 @@ func NewInstanceLogPrepareAction() action.Action {
 	return &InstanceLogPrepareAction{}
 }
 
+//go:embed descriptions/instance_log_prepare_action.md
+var instanceLogPrepareDescription string
+
 func (a *InstanceLogPrepareAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: instanceLogPrepareDescription,
+		Description:         instanceLogPrepareDescription,
 		Attributes: map[string]schema.Attribute{
 			"instance_id": schema.StringAttribute{
 				Required:    true,

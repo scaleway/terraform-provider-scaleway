@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -59,8 +60,13 @@ func NewReadReplicaPromoteAction() action.Action {
 	return &ReadReplicaPromoteAction{}
 }
 
+//go:embed descriptions/read_replica_promote_action.md
+var readReplicaPromoteActionDescription string
+
 func (a *ReadReplicaPromoteAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description:         readReplicaPromoteActionDescription,
+		MarkdownDescription: readReplicaPromoteActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"read_replica_id": schema.StringAttribute{
 				Required:    true,
