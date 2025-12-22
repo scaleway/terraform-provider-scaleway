@@ -8,6 +8,10 @@ import (
 )
 
 func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccEncryptEphemeralResource_Basic because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -37,7 +41,8 @@ func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
 				resource "scaleway_secret_version" "v1" {
 					description = "version1"
 					secret_id   = scaleway_secret.main.id
-					data_wo        = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
+					data_wo     = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
+					depends_on	= [ephemeral.scaleway_key_manager_encrypt.test_encrypt]
 				}
 
 				data "scaleway_secret_version" "data_v1" {
