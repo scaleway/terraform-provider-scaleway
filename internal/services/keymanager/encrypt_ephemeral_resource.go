@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -69,8 +70,13 @@ type AssociatedDataModel struct {
 	Value types.String `tfsdk:"value"`
 }
 
+//go:embed descriptions/encrypt_ephemeral_resource.md
+var encryptEphemeralResourceDescription string
+
 func (r *EncryptEphemeralResource) Schema(ctx context.Context, req ephemeral.SchemaRequest, resp *ephemeral.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description:         encryptEphemeralResourceDescription,
+		MarkdownDescription: encryptEphemeralResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"region": regional.SchemaAttribute("Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration."),
 			"key_id": schema.StringAttribute{
@@ -128,12 +134,10 @@ func (r *EncryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 	if !data.Region.IsNull() && data.Region.ValueString() != "" {
 		region = scw.Region(data.Region.ValueString())
 	} else {
-		// Try to derive region from the key_id if it is a regional ID
 		if derivedRegion, id, parseErr := regional.ParseID(keyID); parseErr == nil {
 			region = derivedRegion
 			keyID = id
 		} else {
-			// Use default region from provider configuration
 			defaultRegion, exists := r.meta.ScwClient().GetDefaultRegion()
 			if !exists {
 				resp.Diagnostics.AddError(
