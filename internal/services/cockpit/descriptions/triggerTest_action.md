@@ -1,1 +1,1 @@
-[`scaleway_trigger_test_action`] is helpful to ensure that your alert are properly triggered.
+[`scaleway_trigger_test_action`] is helpful to ensure that your alerts are properly triggered.
