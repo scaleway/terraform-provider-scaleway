@@ -17,6 +17,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 )
 
 var (
@@ -125,7 +127,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.ActionData = m
 }
 
-func (p *ScalewayProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{}
 }
 
@@ -140,10 +142,21 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	var res []func() action.Action
 
-	res = append(res, instance.NewServerAction)
 	res = append(res, cockpit.NewTriggerTestAlertAction)
+	res = append(res, instance.NewCreateSnapshot)
+	res = append(res, instance.NewExportSnapshot)
+	res = append(res, instance.NewServerAction)
 	res = append(res, jobs.NewStartJobDefinitionAction)
 	res = append(res, keymanager.NewRotateKeyAction)
+	res = append(res, mongodb.NewInstanceSnapshotAction)
+	res = append(res, rdb.NewInstanceSnapshotAction)
+	res = append(res, rdb.NewReadReplicaResetAction)
+	res = append(res, rdb.NewReadReplicaPromoteAction)
+	res = append(res, rdb.NewDatabaseBackupRestoreAction)
+	res = append(res, rdb.NewInstanceLogsPurgeAction)
+	res = append(res, rdb.NewInstanceLogPrepareAction)
+	res = append(res, rdb.NewInstanceCertificateRenewAction)
+	res = append(res, rdb.NewDatabaseBackupExportAction)
 
 	return res
 }

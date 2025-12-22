@@ -11,23 +11,48 @@ Refer to Cockpit's [product documentation](https://www.scaleway.com/en/docs/obse
 
 ## Example Usage
 
-### Enable the alert manager and configure managed alerts
+### Enable preconfigured alerts (Recommended)
 
-The following commands allow you to:
-
-- enable the alert manager in a Project named `tf_test_project`
-- enable [managed alerts](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#managed-alerts)
-- set up [contact points](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#contact-points) to receive alert notifications
+Use preconfigured alerts to monitor your Scaleway resources with ready-to-use alert rules:
 
 ```terraform
+resource "scaleway_account_project" "project" {
+  name = "my-observability-project"
+}
 
+resource "scaleway_cockpit" "main" {
+  project_id = scaleway_account_project.project.id
+}
+
+data "scaleway_cockpit_preconfigured_alert" "all" {
+  project_id = scaleway_cockpit.main.project_id
+}
+
+resource "scaleway_cockpit_alert_manager" "main" {
+  project_id = scaleway_cockpit.main.project_id
+
+  # Enable specific preconfigured alerts
+  preconfigured_alert_ids = [
+    for alert in data.scaleway_cockpit_preconfigured_alert.all.alerts :
+    alert.preconfigured_rule_id
+    if alert.product_name == "instance"
+  ]
+
+  contact_points {
+    email = "alerts@example.com"
+  }
+}
+```
+
+### Enable the alert manager with contact points
+
+```terraform
 resource "scaleway_account_project" "project" {
   name = "tf_test_project"
 }
 
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
-  project_id            = scaleway_account_project.project.id
-  enable_managed_alerts = true
+  project_id = scaleway_account_project.project.id
 
   contact_points {
     email = "alert1@example.com"
@@ -39,12 +64,32 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 }
 ```
 
+### Legacy: Enable managed alerts (Deprecated)
+
+~> **Deprecated:** The `enable_managed_alerts` field is deprecated. Use `preconfigured_alert_ids` instead.
+
+```terraform
+resource "scaleway_account_project" "project" {
+  name = "tf_test_project"
+}
+
+resource "scaleway_cockpit_alert_manager" "alert_manager" {
+  project_id            = scaleway_account_project.project.id
+  enable_managed_alerts = true
+
+  contact_points {
+    email = "alert@example.com"
+  }
+}
+```
+
 ## Argument Reference
 
 This section lists the arguments that are supported:
 
-- `enable_managed_alerts` - (Optional, Boolean) Specifies whether the alert manager should be enabled. Defaults to true.
-- `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alerts. Each map should contain a single key email.
+- `preconfigured_alert_ids` - (Optional, Set of String) A set of preconfigured alert rule IDs to enable explicitly. Use the [`scaleway_cockpit_preconfigured_alert`](../data-sources/cockpit_preconfigured_alert.md) data source to list available alerts.
+- `enable_managed_alerts` - **Deprecated** (Optional, Boolean) Use `preconfigured_alert_ids` instead. This field will be removed in a future version. When set to `true`, it enables *all* preconfigured alerts for the project. You cannot filter or disable individual alerts with this legacy flag.
+- `contact_points` - (Optional, List of Map) A list of contact points with email addresses that will receive alerts. Each map should contain a single key `email`.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the [alert manager](https://www.scaleway.com/en/docs/observability/cockpit/concepts/#alert-manager) should be enabled.
 

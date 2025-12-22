@@ -255,7 +255,7 @@ func serverSchema() map[string]*schema.Schema {
 		"state": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Default:     InstanceServerStateStarted,
+			Computed:    true,
 			Description: "The state of the server should be: started, stopped, standby",
 			ValidateFunc: validation.StringInSlice([]string{
 				InstanceServerStateStarted,
