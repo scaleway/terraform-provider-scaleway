@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -61,8 +62,13 @@ func NewDatabaseBackupRestoreAction() action.Action {
 	return &DatabaseBackupRestoreAction{}
 }
 
+//go:embed descriptions/database_backup_restore_action.md
+var databaseBackupRestoreDescription string
+
 func (a *DatabaseBackupRestoreAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: databaseBackupRestoreDescription,
+		Description:         databaseBackupRestoreDescription,
 		Attributes: map[string]schema.Attribute{
 			"backup_id": schema.StringAttribute{
 				Required:    true,

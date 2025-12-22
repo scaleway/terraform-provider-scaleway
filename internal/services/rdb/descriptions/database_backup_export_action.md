@@ -1,0 +1,3 @@
+The [`scaleway_rdb_database_backup_export_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_database_backup_export_action) action is helpful to perform a database backup export action.
+
+Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.

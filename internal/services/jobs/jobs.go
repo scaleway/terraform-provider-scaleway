@@ -84,6 +84,11 @@ func definitionSchema() map[string]*schema.Schema {
 			},
 			ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
 		},
+		"local_storage_capacity": {
+			Type:        schema.TypeInt,
+			Description: "Local storage capacity of the job in MiB",
+			Optional:    true,
+		},
 		"cron": {
 			Type:        schema.TypeList,
 			Description: "Cron expression",
@@ -190,6 +195,10 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		req.JobTimeout = scw.NewDurationFromTimeDuration(duration)
 	}
 
+	if localStorageCapacity, ok := d.GetOk("local_storage_capacity"); ok {
+		req.LocalStorageCapacity = types.ExpandUint32Ptr(localStorageCapacity)
+	}
+
 	definition, err := api.CreateJobDefinition(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -237,6 +246,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", definition.Name)
 	_ = d.Set("cpu_limit", int(definition.CPULimit))
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
+	_ = d.Set("local_storage_capacity", int(definition.LocalStorageCapacity))
 	_ = d.Set("image_uri", definition.ImageURI)
 	_ = d.Set("command", definition.Command)
 	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
@@ -271,6 +281,10 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("memory_limit") {
 		req.MemoryLimit = types.ExpandUint32Ptr(d.Get("memory_limit"))
+	}
+
+	if d.HasChange("local_storage_capacity") {
+		req.LocalStorageCapacity = types.ExpandUint32Ptr(d.Get("local_storage_capacity"))
 	}
 
 	if d.HasChange("image_uri") {
