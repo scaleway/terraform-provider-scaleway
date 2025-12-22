@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -59,8 +60,13 @@ func NewExportSnapshot() action.Action {
 	return &ExportSnapshot{}
 }
 
+//go:embed descriptions/export_snapshot_action.md
+var exportSnapshotActionDescription string
+
 func (e *ExportSnapshot) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: exportSnapshotActionDescription,
+		Description:         exportSnapshotActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"snapshot_id": schema.StringAttribute{
 				Required:    true,

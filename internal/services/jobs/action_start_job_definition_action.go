@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -62,8 +63,13 @@ func NewStartJobDefinitionAction() action.Action {
 	return &StartJobDefinitionAction{}
 }
 
+//go:embed descriptions/start_job_action.md
+var startJobActionDescription string
+
 func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: startJobActionDescription,
+		Description:         startJobActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"job_definition_id": schema.StringAttribute{
 				Required:    true,

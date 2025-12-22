@@ -2,6 +2,7 @@ package keymanager
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -59,8 +60,13 @@ func NewRotateKeyAction() action.Action {
 	return &RotateKeyAction{}
 }
 
+//go:embed descriptions/rotate_key_action.md
+var rotateKeyActionDescription string
+
 func (a *RotateKeyAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: rotateKeyActionDescription,
+		Description:         rotateKeyActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"region": regional.SchemaAttribute("Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration."),
 			"key_id": schema.StringAttribute{

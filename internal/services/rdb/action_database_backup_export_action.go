@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -59,8 +60,13 @@ func NewDatabaseBackupExportAction() action.Action {
 	return &DatabaseBackupExportAction{}
 }
 
+//go:embed descriptions/database_backup_export_action.md
+var databaseBackupExportDescription string
+
 func (a *DatabaseBackupExportAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: databaseBackupExportDescription,
+		Description:         databaseBackupExportDescription,
 		Attributes: map[string]schema.Attribute{
 			"backup_id": schema.StringAttribute{
 				Required:    true,
