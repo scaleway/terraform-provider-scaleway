@@ -1,0 +1,1 @@
+This action is helpful to create a snapshot of an instance

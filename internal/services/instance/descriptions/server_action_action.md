@@ -1,0 +1,1 @@
+This action is helpful to trigger a server action on your instance.

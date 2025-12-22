@@ -1,0 +1,1 @@
+This action is helpful to purge action logs of your instance

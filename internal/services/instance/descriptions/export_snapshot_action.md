@@ -1,0 +1,1 @@
+This action is helpful to export snapshot coming from instance to an object storage

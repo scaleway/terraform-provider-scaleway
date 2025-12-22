@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -19,6 +20,9 @@ var (
 	_ action.Action              = (*TriggerTestAlertAction)(nil)
 	_ action.ActionWithConfigure = (*TriggerTestAlertAction)(nil)
 )
+
+//go:embed descriptions/triggerTest_action.md
+var triggerTestDescription string
 
 type TriggerTestAlertAction struct {
 	regionalAPI *cockpit.RegionalAPI
@@ -60,6 +64,8 @@ func NewTriggerTestAlertAction() action.Action {
 
 func (a *TriggerTestAlertAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: triggerTestDescription,
+		Description:         triggerTestDescription,
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Required:    true,

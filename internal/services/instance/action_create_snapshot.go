@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -60,8 +61,13 @@ func NewCreateSnapshot() action.Action {
 	return &CreateSnapshot{}
 }
 
+//go:embed descriptions/create_snapshot_action.md
+var createSnapshotDescription string
+
 func (c *CreateSnapshot) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: createSnapshotDescription,
+		Description:         createSnapshotDescription,
 		Attributes: map[string]schema.Attribute{
 			"volume_id": schema.StringAttribute{
 				Required:    true,

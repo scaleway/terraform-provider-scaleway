@@ -1,0 +1,1 @@
+This action is helpful to prepare the logs of an instance to export them later on

@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -58,8 +59,13 @@ func NewInstanceLogsPurgeAction() action.Action {
 	return &InstanceLogsPurgeAction{}
 }
 
+//go:embed descriptions/instance_log_purge_action.md
+var instanceLogPurgeDescription string
+
 func (a *InstanceLogsPurgeAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: instanceLogPurgeDescription,
+		Description:         instanceLogPurgeDescription,
 		Attributes: map[string]schema.Attribute{
 			"instance_id": schema.StringAttribute{
 				Required:    true,

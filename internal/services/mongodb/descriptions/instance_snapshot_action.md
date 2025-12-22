@@ -1,0 +1,1 @@
+This action is helpful to trigger a snapshot of your MongoDB instance.

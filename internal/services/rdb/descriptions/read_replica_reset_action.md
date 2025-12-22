@@ -1,0 +1,1 @@
+This action is helpful to reset a read replica

@@ -1,0 +1,1 @@
+This action is helpful to perform a snapshot of your RDB instance.
