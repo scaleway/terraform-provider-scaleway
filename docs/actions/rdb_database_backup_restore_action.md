@@ -3,12 +3,15 @@
 page_title: "scaleway_rdb_database_backup_restore_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  This action restores a backup to an instance.
+  The scaleway_rdb_database_backup_restore_action https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_database_backup_restore_action action restores a backup to an instance.
+  Refer to the RDB documentation https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/ and API documentation https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/ for more information.
 ---
 
 # scaleway_rdb_database_backup_restore_action (Action)
 
-This action restores a backup to an instance.
+The [`scaleway_rdb_database_backup_restore_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_database_backup_restore_action) action restores a backup to an instance.
+
+Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
 
 
 

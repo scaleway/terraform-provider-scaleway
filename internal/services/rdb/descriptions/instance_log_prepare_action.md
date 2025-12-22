@@ -1,1 +1,3 @@
-This action is helpful to prepare the logs of an instance to export them later on
+The [`scaleway_rdb_instance_log_prepare_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_log_prepare_action) action is helpful to prepare the logs of an instance to export them later on.
+
+Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.

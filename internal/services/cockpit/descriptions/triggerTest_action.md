@@ -1,1 +1,3 @@
-[`scaleway_trigger_test_action`] is helpful to ensure that your alerts are properly triggered.
+The [`scaleway_cockpit_trigger_test_alert_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/cockpit_trigger_test_alert_action) action is helpful to ensure that your alerts are properly triggered.
+
+Refer to the Cockpit [documentation](https://www.scaleway.com/en/docs/managed-services/cockpit/) and [API documentation](https://www.scaleway.com/en/developers/api/cockpit/regional-api/) for more information.

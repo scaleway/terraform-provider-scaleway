@@ -3,12 +3,15 @@
 page_title: "scaleway_key_manager_key_rotate_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  This action is helpful to trigger a rotate key action on your key
+  The scaleway_key_manager_key_rotate_action https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/key_manager_key_rotate_action action is helpful to trigger a rotate key action on your key.
+  Refer to the Key Manager documentation https://www.scaleway.com/en/docs/key-manager/ and API documentation https://www.scaleway.com/en/developers/api/key-manager/ for more information.
 ---
 
 # scaleway_key_manager_key_rotate_action (Action)
 
-This action is helpful to trigger a rotate key action on your key
+The [`scaleway_key_manager_key_rotate_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/key_manager_key_rotate_action) action is helpful to trigger a rotate key action on your key.
+
+Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/key-manager/) for more information.
 
 
 

@@ -3,12 +3,15 @@
 page_title: "scaleway_rdb_read_replica_promote_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  This action triggers a read replica to be promoted to become an instance
+  The scaleway_rdb_read_replica_promote_action https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_read_replica_promote_action action triggers a read replica to be promoted to become an instance.
+  Refer to the RDB documentation https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/ and API documentation https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/ for more information.
 ---
 
 # scaleway_rdb_read_replica_promote_action (Action)
 
-This action triggers a read replica to be promoted to become an instance
+The [`scaleway_rdb_read_replica_promote_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_read_replica_promote_action) action triggers a read replica to be promoted to become an instance.
+
+Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
 
 
 

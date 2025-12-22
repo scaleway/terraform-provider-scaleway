@@ -3,12 +3,15 @@
 page_title: "scaleway_mongodb_instance_snapshot_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  This action is helpful to trigger a snapshot of your MongoDB instance.
+  The scaleway_mongodb_instance_snapshot_action https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/mongodb_instance_snapshot_action action is helpful to trigger a snapshot of your MongoDB instance.
+  Refer to the MongoDB documentation https://www.scaleway.com/en/docs/managed-databases/mongodb/ and API documentation https://www.scaleway.com/en/developers/api/managed-mongodb-databases/ for more information.
 ---
 
 # scaleway_mongodb_instance_snapshot_action (Action)
 
-This action is helpful to trigger a snapshot of your MongoDB instance.
+The [`scaleway_mongodb_instance_snapshot_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/mongodb_instance_snapshot_action) action is helpful to trigger a snapshot of your MongoDB instance.
+
+Refer to the MongoDB [documentation](https://www.scaleway.com/en/docs/managed-databases/mongodb/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-mongodb-databases/) for more information.
 
 
 

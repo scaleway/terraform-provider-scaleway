@@ -1,1 +1,3 @@
-This action is helpful to export snapshot coming from instance to an object storage
+The [`scaleway_instance_export_snapshot`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/instance_export_snapshot) action is helpful to export snapshot coming from instance to an object storage.
+
+Refer to the Instances [documentation](https://www.scaleway.com/en/docs/compute/instances/) and [API documentation](https://www.scaleway.com/en/developers/api/instance/) for more information.
