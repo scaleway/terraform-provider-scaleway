@@ -3,12 +3,12 @@
 page_title: "scaleway_rdb_database_backup_restore_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  This action restores a backup to a instance.
+  This action restores a backup to an instance.
 ---
 
 # scaleway_rdb_database_backup_restore_action (Action)
 
-This action restores a backup to a instance.
+This action restores a backup to an instance.
 
 
 

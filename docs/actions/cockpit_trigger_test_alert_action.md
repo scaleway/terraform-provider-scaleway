@@ -3,12 +3,12 @@
 page_title: "scaleway_cockpit_trigger_test_alert_action Action - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  [scaleway_trigger_test_action] is helpful to ensure that your alert are properly triggered.
+  [scaleway_trigger_test_action] is helpful to ensure that your alerts are properly triggered.
 ---
 
 # scaleway_cockpit_trigger_test_alert_action (Action)
 
-[`scaleway_trigger_test_action`] is helpful to ensure that your alert are properly triggered.
+[`scaleway_trigger_test_action`] is helpful to ensure that your alerts are properly triggered.
 
 
 
