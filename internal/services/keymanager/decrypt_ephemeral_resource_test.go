@@ -11,6 +11,9 @@ import (
 )
 
 func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccDecryptEphemeralResource_Basic because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -66,6 +69,9 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 }
 
 func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccDecryptEphemeralResource_WithAssociatedData because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -143,6 +149,9 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 }
 
 func TestAccDecryptEphemeralResource_ErrorWrongAssociatedData(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccDecryptEphemeralResource_ErrorWrongAssociatedData because testing Ephemeral Resources is not yet supported on OpenTofu")
+	}
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
