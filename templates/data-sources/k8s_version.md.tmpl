@@ -5,28 +5,17 @@ page_title: "Scaleway: scaleway_k8s_version"
 
 # scaleway_k8s_version
 
-Gets information about a Kubernetes version.
-For more information, see the [API documentation](https://developers.scaleway.com/en/products/k8s/api).
+{{ .Description }}
 
-You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw k8s version list` to list all available versions.
-
+{{ if .HasExamples }}
 ## Example Usage
 
-### Use the latest version
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-```hcl
-data "scaleway_k8s_version" "latest" {
-  name = "latest"
-}
-```
+{{ end }}
 
-### Use a specific version
-
-```hcl
-data "scaleway_k8s_version" "by_name" {
-  name = "1.26.0"
-}
-```
+{{ end -}}
 
 ## Argument Reference
 

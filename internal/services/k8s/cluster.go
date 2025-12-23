@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"net"
@@ -31,8 +32,12 @@ var NetworkingDefaultValues = map[string]string{
 	"service_dns_ip": "10.32.0.10",
 }
 
+//go:embed descriptions/cluster.md
+var clusterDescription string
+
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
+		Description:   clusterDescription,
 		CreateContext: ResourceK8SClusterCreate,
 		ReadContext:   ResourceK8SClusterRead,
 		UpdateContext: ResourceK8SClusterUpdate,

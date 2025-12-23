@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/pool.md
+var poolDescription string
+
 func ResourcePool() *schema.Resource {
 	return &schema.Resource{
+		Description:   poolDescription,
 		CreateContext: ResourceK8SPoolCreate,
 		ReadContext:   ResourceK8SPoolRead,
 		UpdateContext: ResourceK8SPoolUpdate,
