@@ -60,10 +60,10 @@ func (r *DecryptEphemeralResource) Metadata(ctx context.Context, req ephemeral.M
 type DecryptEphemeralResourceModel struct {
 	Region         types.String `tfsdk:"region"`
 	KeyID          types.String `tfsdk:"key_id"`
-	Plaintext      types.String `tfsdk:"plaintext"`
+	Ciphertext     types.String `tfsdk:"ciphertext"`
 	AssociatedData types.Object `tfsdk:"associated_data"`
 	// Output
-	Ciphertext types.String `tfsdk:"ciphertext"`
+	Plaintext types.String `tfsdk:"plaintext"`
 }
 
 //go:embed descriptions/decrypt_ephemeral_resource.md
