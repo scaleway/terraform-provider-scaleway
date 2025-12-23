@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -34,6 +35,7 @@ func ResourceIP() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 

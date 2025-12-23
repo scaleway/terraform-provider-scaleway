@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -32,6 +33,7 @@ func ResourceRoute() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 

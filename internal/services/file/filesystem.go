@@ -10,6 +10,7 @@ import (
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -32,6 +33,7 @@ func ResourceFileSystem() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    fileSystemSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 

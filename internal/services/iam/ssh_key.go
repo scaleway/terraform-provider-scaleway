@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"golang.org/x/crypto/ssh"
@@ -26,6 +27,13 @@ func ResourceSSKKey() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    sshKeySchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"id": {
+				Type:              schema.TypeString,
+				Description:       "The identifier of the key (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

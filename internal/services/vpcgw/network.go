@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -38,6 +39,7 @@ func ResourceNetwork() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 

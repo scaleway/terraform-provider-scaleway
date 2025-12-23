@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -38,6 +39,7 @@ func ResourceReadReplica() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    readReplicaSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id", "private_network.#.private_network_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 

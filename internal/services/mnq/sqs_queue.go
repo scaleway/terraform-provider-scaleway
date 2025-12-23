@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -42,6 +43,15 @@ func ResourceSQSQueue() *schema.Resource {
 				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
 			},
 		},
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region":     identity.DefaultRegionAttribute(),
+			"project_id": identity.DefaultProjectIDAttribute(),
+			"queue": {
+				Type:              schema.TypeString,
+				Description:       "The name of the SQS queue.",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

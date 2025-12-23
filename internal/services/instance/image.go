@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -36,6 +37,7 @@ func ResourceImage() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceImageTimeout),
 		},
 		SchemaVersion: 0,
+		Identity:      identity.DefaultZonal(),
 		SchemaFunc:    imageSchema,
 		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}

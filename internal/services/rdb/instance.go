@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -44,6 +45,7 @@ func ResourceInstance() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    instanceSchema,
 		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
