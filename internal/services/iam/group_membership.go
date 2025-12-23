@@ -11,6 +11,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -25,6 +26,21 @@ func ResourceGroupMembership() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    groupMemberShipSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"group_id": {
+				Type:              schema.TypeString,
+				Description:       "Identifier for the group (UUID format)",
+				RequiredForImport: true,
+			},
+			"user_id": {
+				Type:        schema.TypeString,
+				Description: "Identifier for the user (UUID format)",
+			},
+			"application_id": {
+				Type:        schema.TypeString,
+				Description: "Identifier for the application (UUID format)",
+			},
+		}),
 	}
 }
 

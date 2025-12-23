@@ -50,7 +50,7 @@ func ResourceUser() *schema.Resource {
 				Type:              schema.TypeString,
 				Description:       "The name of the user",
 				RequiredForImport: true,
-			}
+			},
 		}),
 	}
 }

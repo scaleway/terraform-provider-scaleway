@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,6 +27,14 @@ func ResourceSNSTopic() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    snsTopicSchema,
 		CustomizeDiff: resourceMNQSSNSTopicCustomizeDiff,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region":     identity.DefaultRegionAttribute(),
+			"project_id": identity.DefaultProjectIDAttribute(),
+			"topic": {
+				RequiredForImport: true,
+				Description:       "Name of the topic",
+			},
+		}),
 	}
 }
 

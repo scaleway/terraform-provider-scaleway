@@ -21,6 +21,14 @@ func DefaultRegionAttribute() *schema.Schema {
 	}
 }
 
+func DefaultZoneAttribute() *schema.Schema {
+	return &schema.Schema{
+		Type:              schema.TypeString,
+		Description:       "The zone of the resource",
+		RequiredForImport: true,
+	}
+}
+
 func DefaultZonal() *schema.ResourceIdentity {
 	return WrapSchemaMap(map[string]*schema.Schema{
 		"id": {

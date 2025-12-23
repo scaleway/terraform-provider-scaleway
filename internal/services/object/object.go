@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -40,6 +41,19 @@ func ResourceObject() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: objectSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region": identity.DefaultRegionAttribute(),
+			"bucket": {
+				Type:              schema.TypeString,
+				Description:       "Name of the bucket where the object is",
+				RequiredForImport: true,
+			},
+			"key": {
+				Type:              schema.TypeString,
+				Description:       "Key of the object",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -30,6 +31,18 @@ func ResourceVersion() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    versionSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region": identity.DefaultRegionAttribute(),
+			"secret_id": {
+				RequiredForImport: true,
+				Description:       "The ID of the secret (UUID format)",
+			},
+			"version": {
+				RequiredForImport: true,
+				Description:       "The version of the secret",
+				Type:              schema.TypeInt,
+			},
+		}),
 	}
 }
 

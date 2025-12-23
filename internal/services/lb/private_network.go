@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -32,6 +33,17 @@ func ResourcePrivateNetwork() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    privateNetworkSchema,
 		CustomizeDiff: cdf.LocalityCheck("lb_id", "private_network_id"),
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"zone": identity.DefaultZoneAttribute(),
+			"lb_id": {
+				RequiredForImport: true,
+				Description:       "The ID of the load balancer (UUID format)",
+			},
+			"private_network_id": {
+				RequiredForImport: true,
+				Description:       "The ID of the private network (UUID format)",
+			},
+		}),
 	}
 }
 
