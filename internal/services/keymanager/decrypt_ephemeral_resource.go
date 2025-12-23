@@ -44,6 +44,7 @@ func (r *DecryptEphemeralResource) Configure(ctx context.Context, req ephemeral.
 			"Unexpected Ephemeral Resource Configure Type",
 			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
+
 		return
 	}
 
@@ -116,6 +117,7 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 			"The ephemeral resource was not properly configured. The Scaleway client is missing. "+
 				"This is usually a bug in the provider. Please report it to the maintainers.",
 		)
+
 		return
 	}
 
@@ -123,6 +125,7 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 	ciphertext := data.Ciphertext.ValueString()
 
 	var region scw.Region
+
 	var err error
 
 	if !data.Region.IsNull() && data.Region.ValueString() != "" {
@@ -140,8 +143,10 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 					"Missing region",
 					"The region attribute is required to decrypt with a key. Please provide it explicitly or configure a default region in the provider.",
 				)
+
 				return
 			}
+
 			region = defaultRegion
 		}
 	}
@@ -150,11 +155,13 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 
 	if !data.AssociatedData.IsNull() && !data.AssociatedData.IsUnknown() {
 		var assocDataModel AssociatedDataModel
+
 		diags := data.AssociatedData.As(ctx, &assocDataModel, basetypes.ObjectAsOptions{
 			UnhandledNullAsEmpty:    true,
 			UnhandledUnknownAsEmpty: true,
 		})
 		resp.Diagnostics.Append(diags...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -172,9 +179,10 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 	decryptResp, err := r.keyManagerAPI.Decrypt(decryptReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error executing Key Manager decrypt action",
+			"Error executing Key Manager Decrypt",
 			fmt.Sprintf("%s", err),
 		)
+
 		return
 	}
 

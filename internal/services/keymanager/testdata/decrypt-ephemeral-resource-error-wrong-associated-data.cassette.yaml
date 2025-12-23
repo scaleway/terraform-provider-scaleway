@@ -1,0 +1,170 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 186
+        host: api.scaleway.com
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-test-decrypt-key","usage":{"symmetric_encryption":"aes_256_gcm"},"tags":null,"unprotected":true,"origin":"unknown_origin"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 511
+        body: '{"id":"6afc7598-9b93-4d2b-8580-4e2e88b6c46e", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-decrypt-key", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2025-12-23T10:05:20.546795Z", "updated_at":"2025-12-23T10:05:20.553560Z", "protected":false, "locked":false, "description":null, "tags":[], "rotated_at":"2025-12-23T10:05:20.553560Z", "rotation_policy":null, "origin":"scaleway_kms", "deletion_requested_at":null, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "511"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 23 Dec 2025 10:05:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - ecef4f18-63f2-466e-843f-71e3a7d79fcb
+        status: 200 OK
+        code: 200
+        duration: 430.050445ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/6afc7598-9b93-4d2b-8580-4e2e88b6c46e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 511
+        body: '{"id":"6afc7598-9b93-4d2b-8580-4e2e88b6c46e", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-decrypt-key", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2025-12-23T10:05:20.546795Z", "updated_at":"2025-12-23T10:05:20.553560Z", "protected":false, "locked":false, "description":null, "tags":[], "rotated_at":"2025-12-23T10:05:20.553560Z", "rotation_policy":null, "origin":"scaleway_kms", "deletion_requested_at":null, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "511"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 23 Dec 2025 10:05:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 17496d0d-722b-4de9-8a0d-f5f5ba2ee8c6
+        status: 200 OK
+        code: 200
+        duration: 44.234152ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 85
+        host: api.scaleway.com
+        body: '{"plaintext":"dGhpcyBpcyBzZWNyZXQ=","associated_data":"c29tZSBhc3NvY2lhdGVkIGRhdGE="}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/6afc7598-9b93-4d2b-8580-4e2e88b6c46e/encrypt
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 130
+        body: '{"key_id":"6afc7598-9b93-4d2b-8580-4e2e88b6c46e", "ciphertext":"AQAAAAFjVn5mEsYsQiO6ZVGNa2DXg6SsikWrVCA77fPBQghl4JFyOX600frqe3U="}'
+        headers:
+            Content-Length:
+                - "130"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 23 Dec 2025 10:05:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 3782c9f5-8cce-4e0b-ae09-22b4809c2a42
+        status: 200 OK
+        code: 200
+        duration: 90.473601ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 110
+        host: api.scaleway.com
+        body: '{"ciphertext":"AQAAAAFjVn5mEsYsQiO6ZVGNa2DXg6SsikWrVCA77fPBQghl4JFyOX600frqe3U=","associated_data":"cXdlcnR5"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/6afc7598-9b93-4d2b-8580-4e2e88b6c46e/decrypt
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 180
+        body: '{"details":[{"argument_name":"ciphertext","help_message":"cipher: message authentication failed","reason":"constraint"}],"message":"invalid argument(s)","type":"invalid_arguments"}'
+        headers:
+            Content-Length:
+                - "180"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 23 Dec 2025 10:05:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - c1955910-dbe2-4d29-944d-0ba03d863740
+        status: 400 Bad Request
+        code: 400
+        duration: 106.276079ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/6afc7598-9b93-4d2b-8580-4e2e88b6c46e
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 23 Dec 2025 10:05:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - e8be2bc3-46c8-4813-b609-0c9b7e2e6b03
+        status: 204 No Content
+        code: 204
+        duration: 245.407885ms

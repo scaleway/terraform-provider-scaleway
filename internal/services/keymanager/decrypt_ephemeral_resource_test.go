@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 )
 
 func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
@@ -57,7 +58,7 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 				}
 				`, plainTextData),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1", "data", plainTextData),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.v1", "data", secret.Base64Encoded([]byte(plainTextData))),
 				),
 			},
 		},
@@ -88,14 +89,18 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 				  key_id     = scaleway_key_manager_key.test_key.id
 				  plaintext  = "%[1]s"
 				  region     = "fr-par"
-				  associated_data = "%[2]s"
+				  associated_data = {
+					value = "%[2]s"
+				  }
 				}
 
 				ephemeral "scaleway_key_manager_decrypt" "test_decrypt" {
 				  key_id     = scaleway_key_manager_key.test_key.id
 				  ciphertext = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
 				  region     = "fr-par"
-				  associated_data = "%[2]s"
+				  associated_data = {
+					value = "%[2]s"
+				  }
 				}
 
 				resource "scaleway_secret" "main" {
@@ -105,30 +110,32 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 				resource "scaleway_secret_version" "data" {
 					description = "test decrypted data"
 					secret_id   = scaleway_secret.main.id
-					data_wo     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
+					data_wo     = ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
 				}
 
 				resource "scaleway_secret_version" "associated_data" {
-					description = "test decrypted associated data"
-					secret_id   = scaleway_secret.main.id
-					data_wo     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.associated_data
+					description 	= "test decrypted associated data"
+					secret_id   	= scaleway_secret.main.id
+					data_wo     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.associated_data.value
+					data_wo_version = 2
+					depends_on		= [scaleway_secret_version.data]
 				}
 
-				data "scaleway_secret_version" "data_v1" {
+				data "scaleway_secret_version" "data" {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "1"
 				  depends_on = [scaleway_secret_version.data]
 				}
 
-				data "scaleway_secret_version" "data_v2" {
+				data "scaleway_secret_version" "associated_data" {
 				  secret_id = scaleway_secret.main.id
 				  revision  = "2"
 				  depends_on = [scaleway_secret_version.associated_data]
 				}
 				`, plainTextData, associatedData),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.data", "data", plainTextData),
-					resource.TestCheckResourceAttr("data.scaleway_secret_version.associated_data", "data", associatedData),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.data", "data", secret.Base64Encoded([]byte(plainTextData))),
+					resource.TestCheckResourceAttr("data.scaleway_secret_version.associated_data", "data", secret.Base64Encoded([]byte(associatedData))),
 				),
 			},
 		},
@@ -139,7 +146,7 @@ func TestAccDecryptEphemeralResource_ErrorWrongAssociatedData(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	plainTextData := "this is some secret data"
+	plainTextData := "this is secret"
 	associatedData := "some associated data"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -159,33 +166,21 @@ func TestAccDecryptEphemeralResource_ErrorWrongAssociatedData(t *testing.T) {
 				  key_id     = scaleway_key_manager_key.test_key.id
 				  plaintext  = "%s"
 				  region     = "fr-par"
-				  associated_data = "%s"
+				  associated_data = {
+					value = "%s"
+				  }
 				}
 
 				ephemeral "scaleway_key_manager_decrypt" "test_decrypt" {
 				  key_id     = scaleway_key_manager_key.test_key.id
 				  ciphertext = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
 				  region     = "fr-par"
-				  associated_data = "qwerty"
-				}
-
-				resource "scaleway_secret" "main" {
-					name        = "test-decrypt-secret"
-				}
-
-				resource "scaleway_secret_version" "data" {
-					description = "test decrypted data"
-					secret_id   = scaleway_secret.main.id
-					data     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.plaintext
-				}
-
-				resource "scaleway_secret_version" "associated_data" {
-					description = "test decrypted associated data"
-					secret_id   = scaleway_secret.main.id
-					data     	= ephemeral.scaleway_key_manager_decrypt.test_decrypt.associated_data
+				  associated_data = {
+				  	value = "qwerty"
+				  }
 				}
 				`, plainTextData, associatedData),
-				ExpectError: regexp.MustCompile("error"), // TODO: FIX ME
+				ExpectError: regexp.MustCompile("cipher: message authentication failed"),
 			},
 		},
 	})
