@@ -2,9 +2,9 @@ package jobs
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -62,20 +63,22 @@ func NewStartJobDefinitionAction() action.Action {
 	return &StartJobDefinitionAction{}
 }
 
+//go:embed descriptions/start_job_action.md
+var startJobActionDescription string
+
 func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: startJobActionDescription,
+		Description:         startJobActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"job_definition_id": schema.StringAttribute{
 				Required:    true,
 				Description: "ID of the job definition to start. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
+					verify.IsStringUUIDOrUUIDWithLocality(),
 				},
 			},
-			"region": schema.StringAttribute{
-				Optional:    true,
-				Description: "Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration.",
-			},
+			"region": regional.SchemaAttribute("Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration."),
 			"command": schema.StringAttribute{
 				Optional:    true,
 				Description: "Contextual startup command for this specific job run.",
