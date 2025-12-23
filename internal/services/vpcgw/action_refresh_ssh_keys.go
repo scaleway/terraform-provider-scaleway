@@ -2,6 +2,7 @@ package vpcgw
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -45,7 +46,7 @@ func (a *RefreshSSHKeysAction) Configure(ctx context.Context, req action.Configu
 }
 
 func (a *RefreshSSHKeysAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_vpcgw_refresh_ssh_keys_action"
+	resp.TypeName = req.ProviderTypeName + "_vpc_public_gateway_refresh_ssh_keys_action"
 }
 
 type RefreshSSHKeysActionModel struct {
@@ -58,8 +59,13 @@ func NewRefreshSSHKeysAction() action.Action {
 	return &RefreshSSHKeysAction{}
 }
 
+//go:embed descriptions/refresh_ssh_keys_action.md
+var refreshSSHKeysActionDescription string
+
 func (a *RefreshSSHKeysAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: refreshSSHKeysActionDescription,
+		Description:         refreshSSHKeysActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"gateway_id": schema.StringAttribute{
 				Required:    true,
