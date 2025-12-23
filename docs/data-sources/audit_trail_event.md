@@ -5,9 +5,9 @@ page_title: "Scaleway: scaleway_audit_trail_event"
 
 # scaleway_audit_trail_event
 
-The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to get a list of existing Audit Trail events.
+The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to retrieve information about existing Audit Trail events.
 
-For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
+Refer to the Audit Trail [documentation](https://www.scaleway.com/en/docs/audit-trail/) and [API documentation](https://www.scaleway.com/en/developers/api/audit-trail/) for more information.
 
 
 ## Example Usage
@@ -15,7 +15,7 @@ For more information refer to the [Audit Trail API documentation](https://www.sc
 ```terraform
 # Retrieve audit trail for a specific resource
 data "scaleway_audit_trail_event" "find_by_resource_id" {
-resource_id = "11111111-1111-1111-1111-111111111111"
+  resource_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
 
