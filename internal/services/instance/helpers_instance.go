@@ -135,6 +135,10 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 
 // serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
+	if rawState == "" {
+		return instance.ServerStateRunning, nil
+	}
+
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,

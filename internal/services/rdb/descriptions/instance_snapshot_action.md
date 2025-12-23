@@ -1,0 +1,3 @@
+The [`scaleway_rdb_instance_snapshot_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_snapshot_action) action is helpful to perform a snapshot of your RDB instance.
+
+Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.

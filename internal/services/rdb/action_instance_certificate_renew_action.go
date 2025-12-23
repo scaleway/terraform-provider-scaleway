@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -59,8 +60,13 @@ func NewInstanceCertificateRenewAction() action.Action {
 	return &InstanceCertificateRenewAction{}
 }
 
+//go:embed descriptions/instance_certificate_renew_action.md
+var instanceCertificateRenewDescription string
+
 func (a *InstanceCertificateRenewAction) Schema(_ context.Context, _ action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: instanceCertificateRenewDescription,
+		Description:         instanceCertificateRenewDescription,
 		Attributes: map[string]schema.Attribute{
 			"instance_id": schema.StringAttribute{
 				Required:    true,

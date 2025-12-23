@@ -22,9 +22,11 @@ func TestAccSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	secretName := "secretNameBasic"
-	updatedName := "secretNameBasicUpdated"
-	secretDescription := "secret description"
+	const (
+		secretDescription = "secret description"
+		secretName        = "secretNameBasic"
+		updatedName       = "secretNameBasicUpdated"
+	)
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckSecretDestroy(tt),
