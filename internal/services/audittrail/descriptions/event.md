@@ -1,0 +1,3 @@
+The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to retrieve information about existing Audit Trail events.
+
+Refer to the Audit Trail [documentation](https://www.scaleway.com/en/docs/audit-trail/) and [API documentation](https://www.scaleway.com/en/developers/api/audit-trail/) for more information.
