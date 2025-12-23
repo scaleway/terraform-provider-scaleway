@@ -14,7 +14,7 @@ Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-ma
 
 ### Required
 
-- `key_id` (String) ID of the key to rotate (UUID format)
+- `key_id` (String) ID of the key to rotate. Can be a plain UUID or a regional ID.
 
 ### Optional
 
