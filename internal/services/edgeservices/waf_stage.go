@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,13 @@ func ResourceWAFStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    wafStageSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"waf_stage_id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the WAF Stage (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

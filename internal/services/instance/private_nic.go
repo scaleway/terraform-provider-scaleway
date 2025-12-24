@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -38,6 +39,19 @@ func ResourcePrivateNIC() *schema.Resource {
 		},
 		SchemaFunc:    privateNicSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"zone": identity.DefaultZoneAttribute(),
+			"server_id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the server to which the private nic is attached to (UUID format)",
+				RequiredForImport: true,
+			},
+			"private_nic": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the private nic (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

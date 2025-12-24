@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 )
 
 func ResourceHeadStage() *schema.Resource {
@@ -21,6 +22,13 @@ func ResourceHeadStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    headStageSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"head_stage_id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the head stage to create (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

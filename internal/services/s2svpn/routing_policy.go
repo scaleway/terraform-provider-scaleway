@@ -10,6 +10,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -21,6 +22,7 @@ func ResourceRoutingPolicy() *schema.Resource {
 		ReadContext:   ResourceRoutingPolicyRead,
 		UpdateContext: ResourceRoutingPolicyUpdate,
 		DeleteContext: ResourceRoutingPolicyDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},

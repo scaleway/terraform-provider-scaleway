@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,13 @@ func ResourceTLSStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    tlsStageSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"tls_stage_id": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "The ID of the TLS stage (UUID format)",
+			},
+		}),
 	}
 }
 

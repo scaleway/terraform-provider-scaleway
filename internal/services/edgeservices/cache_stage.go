@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,13 @@ func ResourceCacheStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    cacheStageSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"cache_stage_id": {
+				Type:              schema.TypeString,
+				Description:       "Cache stage ID",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

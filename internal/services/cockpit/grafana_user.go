@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -30,6 +31,18 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"project_id": {
+				Type:              schema.TypeString,
+				Description:       "The project id of the Grafana project.",
+				RequiredForImport: true,
+			},
+			"user_id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the Grafana user.",
+				RequiredForImport: true,
+			},
+		}),
 		Schema: map[string]*schema.Schema{
 			"login": {
 				Type:         schema.TypeString,

@@ -2,6 +2,8 @@ package identity
 
 import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+// DefaultRegional should be used as the default identity schema for regional resources.
+// For instance if you want an id with the form fr-par/11111111-1111-1111-1111-111111111111
 func DefaultRegional() *schema.ResourceIdentity {
 	return WrapSchemaMap(map[string]*schema.Schema{
 		"id": {
@@ -29,6 +31,8 @@ func DefaultZoneAttribute() *schema.Schema {
 	}
 }
 
+// DefaultZonal should be used as the default identity schema for zoned resources.
+// For instance if you want an id with the form fr-par-1/11111111-1111-1111-1111-111111111111
 func DefaultZonal() *schema.ResourceIdentity {
 	return WrapSchemaMap(map[string]*schema.Schema{
 		"id": {

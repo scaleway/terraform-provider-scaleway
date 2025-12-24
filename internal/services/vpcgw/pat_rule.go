@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -36,6 +37,7 @@ func ResourcePATRule() *schema.Resource {
 		},
 		SchemaFunc:    patRuleSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -28,6 +29,7 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 		},
 
 		SchemaFunc: bucketWebsiteConfigurationSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 )
 
 func ResourceSecurityGroupRules() *schema.Resource {
@@ -21,6 +22,7 @@ func ResourceSecurityGroupRules() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupRuleTimeout),
 		},
 		SchemaFunc: securityGroupRulesSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 

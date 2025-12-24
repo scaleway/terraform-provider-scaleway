@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
@@ -24,6 +25,19 @@ func ResourceDatabase() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: databaseSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region": identity.DefaultRegionAttribute(),
+			"deployment_id": {
+				Type:              schema.TypeString,
+				Description:       "The deployment ID (UUID format)",
+				RequiredForImport: true,
+			},
+			"database": {
+				Type:              schema.TypeString,
+				Description:       "The name of the database",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
