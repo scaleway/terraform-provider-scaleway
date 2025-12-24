@@ -17,20 +17,20 @@ func TestAccDataSourceOffer_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_webhosting_offer" "by_name" {
-						name = "professional"
+						name = "essential"
 					}
 
 					data "scaleway_webhosting_offer" "by_id" {
-						offer_id = "de2426b4-a9e9-11ec-b909-0242ac120002"
+						offer_id = "b88b9cf9-7f35-4d36-aa4c-0de8cf301f87"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_webhosting_offer.by_id", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_id", "name", "professional"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_id", "name", "essential"),
 					resource.TestCheckResourceAttrSet("data.scaleway_webhosting_offer.by_name", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "name", "professional"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "offer.0.name", "professional"),
-					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "offer.0.price", "€ 18.99"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "name", "essential"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "offer.0.name", "essential"),
+					resource.TestCheckResourceAttr("data.scaleway_webhosting_offer.by_name", "offer.0.price", "€ 9.99"),
 				),
 			},
 		},

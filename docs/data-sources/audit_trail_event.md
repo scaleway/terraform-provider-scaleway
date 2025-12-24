@@ -5,54 +5,68 @@ page_title: "Scaleway: scaleway_audit_trail_event"
 
 # scaleway_audit_trail_event
 
-Use this data source to get a list of existing Audit Trail events.
-For more information refer to the [Audit Trail API documentation](https://www.scaleway.com/en/developers/api/audit-trail/).
+The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/audit_trail_event) data source is used to retrieve information about existing Audit Trail events.
+
+Refer to the Audit Trail [documentation](https://www.scaleway.com/en/docs/audit-trail/) and [API documentation](https://www.scaleway.com/en/developers/api/audit-trail/) for more information.
+
 
 ## Example Usage
 
-```hcl
-# Retrieve all audit trail events on the default organization
-data "scaleway_audit_trail_event" "find_all" {
-}
-
-# Retrieve audit trail events on a specific organization
-data "scaleway_audit_trail_event" "find_by_org" {
-  organization_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events on a specific project
-data "scaleway_audit_trail_event" "find_by_project" {
-  project_id = "11111111-1111-1111-1111-111111111111"
-}
-
-# Retrieve audit trail events for a specific type of resource
-data "scaleway_audit_trail_event" "find_by_resource_type" {
-  resource_type = "instance_server"
-}
-
+```terraform
 # Retrieve audit trail for a specific resource
 data "scaleway_audit_trail_event" "find_by_resource_id" {
   resource_id = "11111111-1111-1111-1111-111111111111"
 }
+```
 
+```terraform
+# Retrieve all audit trail events on the default organization
+data "scaleway_audit_trail_event" "find_all" {}
+```
+
+```terraform
 # Retrieve audit trail for a specific Scaleway product
 data "scaleway_audit_trail_event" "find_by_product_name" {
   product_name = "secret-manager"
 }
+```
 
+```terraform
 # Retrieve audit trail events with various filtering
 data "scaleway_audit_trail_event" "find_with_filters" {
-  region = "fr-par"
-  service_name = "instance"
-  method_name = "CreateServer"
-  principal_id = "11111111-1111-1111-1111-111111111111"
-  source_ip = "192.0.2.1"
-  status = 200
-  recorded_after = "2025-10-01T00:00:00Z"
+  region          = "fr-par"
+  service_name    = "instance"
+  method_name     = "CreateServer"
+  principal_id    = "11111111-1111-1111-1111-111111111111"
+  source_ip       = "192.0.2.1"
+  status          = 200
+  recorded_after  = "2025-10-01T00:00:00Z"
   recorded_before = "2025-12-31T23:59:59Z"
-  order_by = "recorded_at_desc"
+  order_by        = "recorded_at_desc"
 }
 ```
+
+```terraform
+# Retrieve audit trail events on a specific organization
+data "scaleway_audit_trail_event" "find_by_org" {
+  organization_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+```terraform
+# Retrieve audit trail events on a specific project
+data "scaleway_audit_trail_event" "find_by_project" {
+  project_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+```terraform
+# Retrieve audit trail events for a specific type of resource
+data "scaleway_audit_trail_event" "find_by_resource_type" {
+  resource_type = "instance_server"
+}
+```
+
 
 ## Argument Reference
 
