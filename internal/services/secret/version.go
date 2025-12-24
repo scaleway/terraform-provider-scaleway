@@ -34,6 +34,7 @@ func ResourceVersion() *schema.Resource {
 		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
 			"region": identity.DefaultRegionAttribute(),
 			"secret_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The ID of the secret (UUID format)",
 			},

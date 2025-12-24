@@ -29,10 +29,12 @@ func ResourceUser() *schema.Resource {
 		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
 			"region": identity.DefaultRegionAttribute(),
 			"deployment_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The id of the deployment (UUID format)",
 			},
 			"user": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The name of the user",
 			},

@@ -31,6 +31,7 @@ func ResourceSNSTopic() *schema.Resource {
 			"region":     identity.DefaultRegionAttribute(),
 			"project_id": identity.DefaultProjectIDAttribute(),
 			"topic": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "Name of the topic",
 			},

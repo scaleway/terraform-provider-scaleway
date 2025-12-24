@@ -27,6 +27,7 @@ func ResourceBackendStage() *schema.Resource {
 		SchemaFunc:    backendStageSchema,
 		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
 			"backend_stage_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The ID of the backend stage (UUID format)",
 			},

@@ -33,6 +33,7 @@ func ResourcePipeline() *schema.Resource {
 		SchemaFunc:    pipelineSchema,
 		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
 			"pipeline_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The ID of the pipeline (UUID format)",
 			},

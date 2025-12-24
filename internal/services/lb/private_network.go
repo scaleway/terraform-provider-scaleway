@@ -36,10 +36,12 @@ func ResourcePrivateNetwork() *schema.Resource {
 		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
 			"zone": identity.DefaultZoneAttribute(),
 			"lb_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The ID of the load balancer (UUID format)",
 			},
 			"private_network_id": {
+				Type:              schema.TypeString,
 				RequiredForImport: true,
 				Description:       "The ID of the private network (UUID format)",
 			},
