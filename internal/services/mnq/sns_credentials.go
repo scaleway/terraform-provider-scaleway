@@ -25,7 +25,7 @@ func ResourceSNSCredentials() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    snsCredentialsSchema,
-		Identity: identity.DefaultRegional(),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
