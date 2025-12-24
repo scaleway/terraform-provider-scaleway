@@ -207,7 +207,10 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

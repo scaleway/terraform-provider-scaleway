@@ -120,7 +120,10 @@ func resourceObjectLockConfigurationCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) lock configuration: %w", bucket, err))
 	}
 
-	d.SetId(regional.NewIDString(region, bucket))
+	err = identity.SetRegionalIdentity(d, region, bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceObjectLockConfigurationRead(ctx, d, m)
 }

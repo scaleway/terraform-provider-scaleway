@@ -87,7 +87,10 @@ func ResourceFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	err = identity.SetRegionalIdentity(d, region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

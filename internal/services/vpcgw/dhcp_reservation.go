@@ -118,7 +118,10 @@ func ResourceVPCPublicGatewayDHCPCReservationCreate(ctx context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

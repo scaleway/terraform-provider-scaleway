@@ -169,7 +169,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(key.Region, key.ID))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }

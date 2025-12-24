@@ -1004,7 +1004,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			err = identity.SetRegionalIdentity(d, region, ID)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {

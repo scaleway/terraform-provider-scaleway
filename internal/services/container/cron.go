@@ -107,7 +107,10 @@ func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	tflog.Info(ctx, "[INFO] cron job ready")
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceContainerCronRead(ctx, d, m)
 }

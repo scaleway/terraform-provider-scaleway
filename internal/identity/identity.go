@@ -1,6 +1,11 @@
 package identity
 
-import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+)
 
 // DefaultRegional should be used as the default identity schema for regional resources.
 // For instance if you want an id with the form fr-par/11111111-1111-1111-1111-111111111111
@@ -68,4 +73,46 @@ func DefaultProjectID() *schema.ResourceIdentity {
 	return WrapSchemaMap(map[string]*schema.Schema{
 		"project_id": DefaultProjectIDAttribute(),
 	})
+}
+
+func SetZonalIdentity(d *schema.ResourceData, zone scw.Zone, id string) error {
+	identity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("zone", zone.String())
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("id", id)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(zonal.NewIDString(zone, id))
+
+	return nil
+}
+
+func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) error {
+	identity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("region", region.String())
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("id", id)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(regional.NewIDString(region, id))
+
+	return nil
 }

@@ -248,7 +248,10 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, deployment.ID))
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForDeployment(ctx, api, region, deployment.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

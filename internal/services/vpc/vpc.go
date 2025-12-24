@@ -115,7 +115,10 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCRead(ctx, d, m)
 }

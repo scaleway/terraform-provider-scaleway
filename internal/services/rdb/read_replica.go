@@ -200,7 +200,10 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(regional.NewIDString(region, rr.ID))
+	err = identity.SetRegionalIdentity(d, rr.Region, rr.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, rr.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {

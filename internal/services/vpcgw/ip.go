@@ -85,7 +85,10 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {

@@ -277,7 +277,10 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Connection.ID))
+	err = identity.SetRegionalIdentity(d, res.Connection.Region, res.Connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceConnectionRead(ctx, d, m)
 }

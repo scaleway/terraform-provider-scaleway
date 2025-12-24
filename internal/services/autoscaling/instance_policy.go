@@ -144,7 +144,10 @@ func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, policy.ID))
+	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstancePolicyRead(ctx, d, m)
 }

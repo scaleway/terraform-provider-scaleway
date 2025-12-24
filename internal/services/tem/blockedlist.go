@@ -87,7 +87,10 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", region, resp.Blocklists[0].ID))
+	err = identity.SetRegionalIdentity(d, region, resp.Blocklists[0].ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBlockedListRead(ctx, d, m)
 }

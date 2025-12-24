@@ -92,7 +92,10 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.PlacementGroup.ID))
+	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstancePlacementGroupRead(ctx, d, m)
 }

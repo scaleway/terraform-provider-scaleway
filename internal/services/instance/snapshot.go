@@ -161,7 +161,10 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Snapshot.ID))
+	err = identity.SetZonalIdentity(d, res.Snapshot.Zone, res.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = instanceAPI.WaitForSnapshot(&instanceSDK.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,

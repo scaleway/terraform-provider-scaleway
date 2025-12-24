@@ -274,7 +274,10 @@ func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, hostingResponse.ID))
+	err = identity.SetRegionalIdentity(d, region, hostingResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForHosting(ctx, api, region, hostingResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

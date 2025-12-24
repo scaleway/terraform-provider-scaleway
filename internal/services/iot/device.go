@@ -253,7 +253,10 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Device.ID))
+	err = identity.SetRegionalIdentity(d, region, res.Device.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {

@@ -223,7 +223,10 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Image.ID))
+	err = identity.SetZonalIdentity(d, res.Image.Zone, res.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,

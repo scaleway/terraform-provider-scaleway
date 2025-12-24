@@ -370,7 +370,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))

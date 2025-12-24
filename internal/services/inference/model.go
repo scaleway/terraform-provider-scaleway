@@ -166,7 +166,10 @@ func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, model.ID))
+	err = identity.SetRegionalIdentity(d, model.Region, model.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	model, err = waitForModel(ctx, api, region, model.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

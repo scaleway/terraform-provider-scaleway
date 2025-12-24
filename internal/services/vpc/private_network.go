@@ -234,7 +234,10 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, pn.Region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }

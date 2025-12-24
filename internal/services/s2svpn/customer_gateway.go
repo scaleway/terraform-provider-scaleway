@@ -107,7 +107,10 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCustomerGatewayRead(ctx, d, m)
 }

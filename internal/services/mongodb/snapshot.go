@@ -110,7 +110,10 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if snapshot != nil {
-		d.SetId(regional.NewIDString(region, snapshot.ID))
+		err = identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
 		_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {

@@ -418,7 +418,10 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(server.Zone, server.ID).String())
+	err = identity.SetZonalIdentity(d, server.Zone, server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("install_config_afterward").(bool) {
 		_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))

@@ -111,7 +111,10 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, cron.ID))
+	err = identity.SetRegionalIdentity(d, region, cron.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceFunctionCronRead(ctx, d, m)
 }

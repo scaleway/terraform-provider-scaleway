@@ -137,7 +137,10 @@ func ResourceInstanceSecurityGroupCreate(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.SecurityGroup.ID))
+	err = identity.SetZonalIdentity(d, res.SecurityGroup.Zone, res.SecurityGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("external_rules").(bool) {
 		return ResourceInstanceSecurityGroupRead(ctx, d, m)

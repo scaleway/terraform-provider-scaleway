@@ -129,7 +129,10 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,

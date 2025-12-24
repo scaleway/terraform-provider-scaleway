@@ -212,7 +212,10 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, definition.ID))
+	err = identity.SetRegionalIdentity(d, definition.Region, definition.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }

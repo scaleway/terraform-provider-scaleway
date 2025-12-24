@@ -155,7 +155,10 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, snapshot.ID))
+	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

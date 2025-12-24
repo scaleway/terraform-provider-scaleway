@@ -223,7 +223,10 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, secretResponse.ID))
+	err = identity.SetRegionalIdentity(d, secretResponse.Region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceSecretRead(ctx, d, m)
 }

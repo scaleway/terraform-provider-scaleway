@@ -165,7 +165,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+	err = identity.SetRegionalIdentity(d, region, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }

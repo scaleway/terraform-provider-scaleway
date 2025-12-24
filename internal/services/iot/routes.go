@@ -246,7 +246,10 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

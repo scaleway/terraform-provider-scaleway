@@ -141,7 +141,10 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, ns.ID))
+	err = identity.SetRegionalIdentity(d, ns.Region, ns.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

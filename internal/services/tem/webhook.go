@@ -97,7 +97,10 @@ func ResourceWebhookCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, webhook.ID))
+	err = identity.SetRegionalIdentity(d, region, webhook.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceWebhookRead(ctx, d, m)
 }

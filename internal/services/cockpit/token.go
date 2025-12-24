@@ -184,7 +184,11 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	_ = d.Set("secret_key", res.SecretKey)
-	d.SetId(regional.NewIDString(region, res.ID))
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitTokenRead(ctx, d, m)
 }

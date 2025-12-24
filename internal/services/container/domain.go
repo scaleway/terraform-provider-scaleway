@@ -92,7 +92,10 @@ func ResourceContainerDomainCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	err = identity.SetRegionalIdentity(d, region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceContainerDomainRead(ctx, d, m)
 }

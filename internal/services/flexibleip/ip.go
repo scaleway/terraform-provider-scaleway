@@ -117,7 +117,10 @@ func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, flexibleIP.ID))
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

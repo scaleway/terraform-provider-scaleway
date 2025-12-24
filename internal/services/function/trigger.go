@@ -180,7 +180,10 @@ func ResourceFunctionTriggerCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, trigger.ID))
+	err = identity.SetRegionalIdentity(d, region, trigger.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

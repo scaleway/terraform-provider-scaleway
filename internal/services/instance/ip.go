@@ -114,7 +114,10 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceIPRead(ctx, d, m)
 }

@@ -518,7 +518,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(zone, res.Server.ID).String())
+	err = identity.SetZonalIdentity(d, res.Server.Zone, res.Server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

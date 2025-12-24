@@ -125,7 +125,10 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, patRule.ID))
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

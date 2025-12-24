@@ -190,7 +190,10 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, res.ID))
+	err = identity.SetZonalIdentity(d, frontZone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbACLRead(ctx, d, m)
 }

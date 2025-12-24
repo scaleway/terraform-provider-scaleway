@@ -573,7 +573,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.

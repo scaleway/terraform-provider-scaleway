@@ -107,7 +107,10 @@ func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, credentials.ID))
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("access_key", credentials.AccessKey)
 	_ = d.Set("secret_key", credentials.SecretKey)

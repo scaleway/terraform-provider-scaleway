@@ -272,7 +272,10 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, lb.ID))
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))

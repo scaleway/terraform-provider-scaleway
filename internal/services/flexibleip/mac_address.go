@@ -111,7 +111,10 @@ func ResourceFlexibleIPMACCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if res.MacAddress != nil {
-		d.SetId(zonal.NewIDString(zone, res.MacAddress.ID))
+		err = identity.SetZonalIdentity(d, res.Zone, res.MacAddress.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	fip, err := waitFlexibleIP(ctx, fipAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))

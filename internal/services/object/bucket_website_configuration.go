@@ -133,7 +133,10 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 		return diag.FromErr(fmt.Errorf("error creating object bucket (%s) website configuration: %w", bucket, err))
 	}
 
-	d.SetId(regional.NewIDString(region, bucket))
+	err = identity.SetRegionalIdentity(d, region, bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceBucketWebsiteConfigurationRead(ctx, d, m)
 }

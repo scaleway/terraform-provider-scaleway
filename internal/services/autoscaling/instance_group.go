@@ -155,7 +155,7 @@ func ResourceInstanceGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, group.ID))
+	identity.SetZonalIdentity(d, zone, group.ID)
 
 	return ResourceInstanceGroupRead(ctx, d, m)
 }

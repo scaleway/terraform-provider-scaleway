@@ -113,7 +113,10 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+	err = identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, dbBackup.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -150,7 +153,10 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
 	_ = d.Set("region", dbBackup.Region)
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+	err = identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

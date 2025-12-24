@@ -387,7 +387,10 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

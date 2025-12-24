@@ -174,7 +174,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, certificate.ID))
+	err = identity.SetZonalIdentity(d, zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

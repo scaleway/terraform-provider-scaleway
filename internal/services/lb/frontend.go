@@ -318,7 +318,10 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, frontend.ID))
+	err = identity.SetZonalIdentity(d, zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("external_acls").(bool) {
 		return resourceLbFrontendRead(ctx, d, m)

@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
@@ -243,9 +244,12 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(fmt.Errorf("no offer found with the name or id: %s%s in region %s", d.Get("name"), d.Get("offer_id"), region))
 	}
 
-	regionalID := datasource.NewRegionalID(filteredOffer.ID, region)
-	d.SetId(regionalID)
-	_ = d.Set("offer_id", regionalID)
+	err = identity.SetRegionalIdentity(d, filteredOffer.Region, filteredOffer.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("offer_id", datasource.NewRegionalID(filteredOffer.ID, filteredOffer.Region))
 	_ = d.Set("name", filteredOffer.Name)
 	_ = d.Set("region", region)
 	_ = d.Set("billing_operation_path", filteredOffer.BillingOperationPath)

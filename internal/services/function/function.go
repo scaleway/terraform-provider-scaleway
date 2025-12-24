@@ -276,7 +276,10 @@ func ResourceFunctionCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		})
 	}
 
-	d.SetId(regional.NewIDString(region, f.ID))
+	err = identity.SetRegionalIdentity(d, f.Region, f.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForFunction(ctx, api, region, f.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

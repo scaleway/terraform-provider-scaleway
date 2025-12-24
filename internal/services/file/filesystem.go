@@ -110,7 +110,10 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, file.ID))
+	err = identity.SetRegionalIdentity(d, file.Region, file.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForFileSystem(ctx, api, region, file.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

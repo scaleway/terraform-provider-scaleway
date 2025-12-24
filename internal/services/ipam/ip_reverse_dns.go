@@ -72,7 +72,10 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{

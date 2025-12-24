@@ -66,7 +66,10 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))

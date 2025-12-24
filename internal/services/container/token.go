@@ -92,7 +92,10 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, token.ID))
+	err = identity.SetRegionalIdentity(d, region, token.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("token", token.Token)
 

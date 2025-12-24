@@ -124,7 +124,10 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, route.ID))
+	err = identity.SetZonalIdentity(d, frontZone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbRouteRead(ctx, d, m)
 }

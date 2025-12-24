@@ -72,7 +72,10 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("file", credentials.Credentials.Content)
 
-	d.SetId(regional.NewIDString(region, credentials.ID))
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQNatsCredentialsRead(ctx, d, m)
 }

@@ -225,7 +225,10 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, template.ID))
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceTemplateRead(ctx, d, m)
 }

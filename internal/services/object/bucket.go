@@ -266,7 +266,10 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, bucketName))
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 

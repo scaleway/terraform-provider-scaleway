@@ -109,7 +109,10 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %w", err))
 	}
 
-	d.SetId(regional.NewIDString(region, bucket))
+	err = identity.SetRegionalIdentity(d, region, bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceObjectBucketPolicyRead(ctx, d, m)
 }

@@ -52,7 +52,10 @@ func ResourceMNQSQSCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, sqs.ProjectID))
+	err = identity.SetRegionalIdentity(d, sqs.Region, sqs.ProjectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSQSRead(ctx, d, m)
 }

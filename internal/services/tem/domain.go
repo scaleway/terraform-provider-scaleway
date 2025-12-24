@@ -227,7 +227,10 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	err = identity.SetRegionalIdentity(d, domain.Region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceDomainRead(ctx, d, m)
 }

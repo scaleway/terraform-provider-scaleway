@@ -140,7 +140,10 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, volume.ID))
+	err = identity.SetZonalIdentity(d, volume.Zone, volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForBlockVolume(ctx, api.BlockAPI, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

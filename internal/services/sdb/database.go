@@ -84,7 +84,10 @@ func ResourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, database.ID))
+	err = identity.SetRegionalIdentity(d, region, database.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForDatabase(ctx, api, region, database.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
