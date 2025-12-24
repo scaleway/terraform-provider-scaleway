@@ -33,12 +33,14 @@ func ResourceGroupMembership() *schema.Resource {
 				RequiredForImport: true,
 			},
 			"user_id": {
-				Type:        schema.TypeString,
-				Description: "Identifier for the user (UUID format)",
+				Type:              schema.TypeString,
+				Description:       "Identifier for the user (UUID format)",
+				OptionalForImport: true,
 			},
 			"application_id": {
-				Type:        schema.TypeString,
-				Description: "Identifier for the application (UUID format)",
+				Type:              schema.TypeString,
+				Description:       "Identifier for the application (UUID format)",
+				OptionalForImport: true,
 			},
 		}),
 	}
