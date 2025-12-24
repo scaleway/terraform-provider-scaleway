@@ -1,0 +1,5 @@
+The [`scaleway_key_manager_generate_data_key`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resource/key_manager_generate_data_key) ephemeral resource creates a new data encryption key for cryptographic operations outside of Key Manager. The data encryption key is encrypted and must be decrypted using the key you have created in Key Manager.
+
+The data encryption key is returned in plaintext and ciphertext but it should only be stored in its encrypted form (ciphertext). Key Manager does not store your data encryption key. To retrieve your key's plaintext, use the Decrypt method with your key's ID and ciphertext.
+
+Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/key-manager/) for more information.
