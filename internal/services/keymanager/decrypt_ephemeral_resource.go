@@ -77,7 +77,7 @@ func (r *DecryptEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			"region": regional.SchemaAttribute("Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration."),
 			"key_id": schema.StringAttribute{
 				Required:    true,
-				Description: "ID of the key to use for decryption. Can be a plain UUID or a regional ID.",
+				Description: "ID of the key to decrypt with. The key must have a usage set to `symmetric_encryption` or `asymmetric_encryption`. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithLocality(),
 				},
