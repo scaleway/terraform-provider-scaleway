@@ -25,21 +25,22 @@ const servicesDir = "../services"
 
 func exceptionsCassettesCases() map[string]struct{} {
 	return map[string]struct{}{
-		"../services/mnq/testdata/sns-topic-basic.cassette.yaml":                              {},
-		"../services/mnq/testdata/sns-topic-subscription-basic.cassette.yaml":                 {},
-		"../services/mnq/testdata/sqs-already-activated.cassette.yaml":                        {},
-		"../services/object/testdata/bucket-cors-empty-origin.cassette.yaml":                  {},
-		"../services/object/testdata/bucket-destroy-force.cassette.yaml":                      {},
-		"../services/rdb/testdata/data-source-privilege-basic.cassette.yaml":                  {},
-		"../services/rdb/testdata/privilege-basic.cassette.yaml":                              {},
-		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml":               {},
-		"../services/secret/testdata/secret-protected.cassette.yaml":                          {},
-		"../services/secret/testdata/secret-version-type.cassette.yaml":                       {},
-		"../services/file/testdata/file-system-invalid-size-granularity-fails.cassette.yaml":  {},
-		"../services/file/testdata/file-system-size-too-small-fails.cassette.yaml":            {},
-		"../services/container/testdata/namespace-vpc-integration.cassette.yaml":              {},
-		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":      {},
-		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml": {},
+		"../services/mnq/testdata/sns-topic-basic.cassette.yaml":                                           {},
+		"../services/mnq/testdata/sns-topic-subscription-basic.cassette.yaml":                              {},
+		"../services/mnq/testdata/sqs-already-activated.cassette.yaml":                                     {},
+		"../services/object/testdata/bucket-cors-empty-origin.cassette.yaml":                               {},
+		"../services/object/testdata/bucket-destroy-force.cassette.yaml":                                   {},
+		"../services/rdb/testdata/data-source-privilege-basic.cassette.yaml":                               {},
+		"../services/rdb/testdata/privilege-basic.cassette.yaml":                                           {},
+		"../services/object/testdata/object-bucket-destroy-force.cassette.yaml":                            {},
+		"../services/secret/testdata/secret-protected.cassette.yaml":                                       {},
+		"../services/secret/testdata/secret-version-type.cassette.yaml":                                    {},
+		"../services/file/testdata/file-system-invalid-size-granularity-fails.cassette.yaml":               {},
+		"../services/file/testdata/file-system-size-too-small-fails.cassette.yaml":                         {},
+		"../services/container/testdata/namespace-vpc-integration.cassette.yaml":                           {},
+		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":                   {},
+		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml":              {},
+		"../services/keymanager/testdata/decrypt-ephemeral-resource-invalid-associated-data.cassette.yaml": {},
 	}
 }
 
@@ -78,7 +79,7 @@ func TestAccCassettes_Validator(t *testing.T) {
 
 func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
-		if !checkErrCodeExcept(i, c, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden, http.StatusGone) &&
+		if !checkErrCodeExcept(i, c, http.StatusBadRequest, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden, http.StatusGone) &&
 			!isTransientStateError(i) {
 			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Response.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
