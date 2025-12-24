@@ -87,7 +87,10 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(app.ID)
+	err = identity.SetFlatIdentity(d, app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamApplicationRead(ctx, d, m)
 }

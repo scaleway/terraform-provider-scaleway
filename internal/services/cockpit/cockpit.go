@@ -109,7 +109,10 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		}
 	}
 
-	d.SetId(projectID)
+	err := identity.SetFlatIdentity(d, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitRead(ctx, d, m)
 }
@@ -154,7 +157,10 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	_ = d.Set("project_id", projectID)
-	d.SetId(projectID)
+	err = identity.SetFlatIdentity(d, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
 		ProjectID: projectID,

@@ -63,7 +63,10 @@ func ResourceHeadStageCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if dnsStage.HeadStage.DNSStageID != nil {
-		d.SetId(*dnsStage.HeadStage.DNSStageID)
+		err = identity.SetFlatIdentity(d, *dnsStage.HeadStage.DNSStageID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return ResourceHeadStageRead(ctx, d, m)

@@ -85,7 +85,10 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetFlatIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceAccountProjectRead(ctx, d, m)
 }

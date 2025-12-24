@@ -158,7 +158,10 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pol.ID)
+	err = identity.SetFlatIdentity(d, pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamPolicyRead(ctx, d, m)
 }

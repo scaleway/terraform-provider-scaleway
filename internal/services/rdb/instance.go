@@ -450,7 +450,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		err = identity.SetRegionalIdentity(d, region, res.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		id = res.ID
 	} else {
 		createReq := &rdb.CreateInstanceRequest{
@@ -503,7 +506,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		err = identity.SetRegionalIdentity(d, region, res.ID)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 		id = res.ID
 	}
 

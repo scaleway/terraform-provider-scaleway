@@ -108,7 +108,10 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(group.ID)
+	err = identity.SetFlatIdentity(d, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())

@@ -131,7 +131,10 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tlsStage.ID)
+	err = identity.SetFlatIdentity(d, tlsStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceTLSStageRead(ctx, d, m)
 }

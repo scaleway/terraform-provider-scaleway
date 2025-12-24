@@ -109,7 +109,10 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	d.SetId(instanceID)
+	err = identity.SetRegionalIdentity(d, region, locality.ExpandID(instanceID))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbACLRead(ctx, d, m)
 }

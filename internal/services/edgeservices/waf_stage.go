@@ -85,7 +85,10 @@ func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(wafStage.ID)
+	err = identity.SetFlatIdentity(d, wafStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceWAFStageRead(ctx, d, m)
 }

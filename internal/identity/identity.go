@@ -45,11 +45,7 @@ func DefaultZonal() *schema.ResourceIdentity {
 			Description:       "The id of the resource (UUID format)",
 			RequiredForImport: true,
 		},
-		"zone": {
-			Type:              schema.TypeString,
-			Description:       "The zone of the resource",
-			RequiredForImport: true,
-		},
+		"zone": DefaultZoneAttribute(),
 	})
 }
 
@@ -113,6 +109,22 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 	}
 
 	d.SetId(regional.NewIDString(region, id))
+
+	return nil
+}
+
+func SetFlatIdentity(d *schema.ResourceData, id string) error {
+	identity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("id", id)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(id)
 
 	return nil
 }

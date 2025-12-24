@@ -137,7 +137,10 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, regional.ExpandID(d.Get("vpc_id").(string)).ID))
+	err = identity.SetRegionalIdentity(d, region, regional.ExpandID(d.Get("vpc_id").(string)).ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCACLRead(ctx, d, m)
 }

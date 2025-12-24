@@ -71,7 +71,10 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(d.Get("domain_id").(string))
+	err = identity.SetFlatIdentity(d, d.Get("domain_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	domain, err := api.GetDomain(&tem.GetDomainRequest{
 		Region:   region,

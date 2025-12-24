@@ -118,7 +118,10 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetFlatIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamSSHKeyRead(ctx, d, m)
 }

@@ -329,7 +329,11 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	recordID := fmt.Sprintf("%s/%s", dnsZone, currentRecord.ID)
 
-	d.SetId(recordID)
+	err = identity.SetFlatIdentity(d, recordID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
 
 	return resourceDomainRecordRead(ctx, d, m)
@@ -431,7 +435,10 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	projectID = dnsZones.DNSZones[0].ProjectID
 
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
-	d.SetId(record.ID)
+	err = identity.SetFlatIdentity(d, record.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())

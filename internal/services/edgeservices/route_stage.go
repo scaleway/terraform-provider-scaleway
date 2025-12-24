@@ -135,7 +135,10 @@ func ResourceRouteStageCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(routeStage.ID)
+	err = identity.SetFlatIdentity(d, routeStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRouteStageRead(ctx, d, m)
 }

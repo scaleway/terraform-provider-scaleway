@@ -52,7 +52,10 @@ func securityGroupRulesSchema() map[string]*schema.Schema {
 }
 
 func ResourceInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	d.SetId(d.Get("security_group_id").(string))
+	err := identity.SetFlatIdentity(d, d.Get("security_group_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// We call update instead of read as it will take care of creating rules.
 	return ResourceInstanceSecurityGroupRulesUpdate(ctx, d, m)

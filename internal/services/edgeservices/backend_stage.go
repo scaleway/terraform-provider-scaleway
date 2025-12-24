@@ -146,7 +146,10 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(backendStage.ID)
+	err = identity.SetFlatIdentity(d, backendStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBackendStageRead(ctx, d, m)
 }

@@ -84,7 +84,10 @@ func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pipeline.ID)
+	err = identity.SetFlatIdentity(d, pipeline.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourcePipelineRead(ctx, d, m)
 }
