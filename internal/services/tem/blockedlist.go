@@ -10,6 +10,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -23,6 +24,7 @@ func ResourceBlockedList() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: blockedListSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -85,7 +87,10 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", region, resp.Blocklists[0].ID))
+	err = identity.SetRegionalIdentity(d, region, resp.Blocklists[0].ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBlockedListRead(ctx, d, m)
 }
@@ -121,6 +126,11 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 	_ = d.Set("reason", blocklists.Blocklists[0].Reason)
 	_ = d.Set("domain_id", fmt.Sprintf("%s/%s", region, blocklists.Blocklists[0].DomainID))
 	_ = d.Set("type", blocklists.Blocklists[0].Type)
+
+	err = identity.SetRegionalIdentity(d, region, blocklists.Blocklists[0].ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

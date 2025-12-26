@@ -9,6 +9,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -24,6 +25,14 @@ func ResourcePlan() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    planSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"project_id": identity.DefaultProjectIDAttribute(),
+			"name": {
+				Type:              schema.TypeString,
+				Description:       "The name of the plan.",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

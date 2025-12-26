@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -39,6 +40,19 @@ func ResourceBucketACL() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: bucketAclSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region": identity.DefaultRegionAttribute(),
+			"bucket": {
+				Type:              schema.TypeString,
+				Description:       "The name of the bucket that contains the ACL policy.",
+				RequiredForImport: true,
+			},
+			"acl": {
+				Type:              schema.TypeString,
+				Description:       "The ACL policy that can be applied to this bucket.",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

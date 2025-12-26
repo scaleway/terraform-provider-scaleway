@@ -8,6 +8,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +24,7 @@ func ResourceConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -275,7 +277,10 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Connection.ID))
+	err = identity.SetRegionalIdentity(d, res.Connection.Region, res.Connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceConnectionRead(ctx, d, m)
 }
@@ -334,6 +339,11 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	_ = d.Set("bgp_session_ipv6", bgpSessionIPv6)
+
+	err = identity.SetRegionalIdentity(d, connection.Region, connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

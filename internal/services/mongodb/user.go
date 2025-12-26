@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -60,6 +61,19 @@ func ResourceUser() *schema.Resource {
 				return nil
 			},
 		),
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"region": identity.DefaultRegionAttribute(),
+			"instance_id": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "The ID of the instance (UUID format)",
+			},
+			"name": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "The name of the user",
+			},
+		}),
 	}
 }
 

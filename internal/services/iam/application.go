@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,13 @@ func ResourceApplication() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    applicationSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"id": {
+				Type:              schema.TypeString,
+				Description:       "ID of the application (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -79,7 +87,10 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(app.ID)
+	err = identity.SetFlatIdentity(d, "id", app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamApplicationRead(ctx, d, m)
 }
@@ -107,6 +118,11 @@ func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
 	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
+
+	err = identity.SetFlatIdentity(d, "id", app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

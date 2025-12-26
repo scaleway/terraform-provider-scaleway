@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -32,6 +33,7 @@ func ResourceSecret() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    secretSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -221,7 +223,10 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, secretResponse.ID))
+	err = identity.SetRegionalIdentity(d, secretResponse.Region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceSecretRead(ctx, d, m)
 }
@@ -291,6 +296,11 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("versions", versionsList)
+
+	err = identity.SetRegionalIdentity(d, secretResponse.Region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

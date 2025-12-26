@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -35,6 +36,7 @@ func ResourceDatabaseBackup() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    databaseBackupSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -111,7 +113,10 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+	err = identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, dbBackup.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -148,7 +153,10 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
 	_ = d.Set("region", dbBackup.Region)
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+	err = identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

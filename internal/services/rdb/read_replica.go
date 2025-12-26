@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -38,6 +39,7 @@ func ResourceReadReplica() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    readReplicaSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id", "private_network.#.private_network_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -198,7 +200,10 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(regional.NewIDString(region, rr.ID))
+	err = identity.SetRegionalIdentity(d, rr.Region, rr.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, rr.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -233,6 +238,11 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("same_zone", rr.SameZone)
 	_ = d.Set("region", regionStr)
 	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
+
+	err = identity.SetRegionalIdentity(d, rr.Region, rr.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

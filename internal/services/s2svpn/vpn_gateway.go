@@ -9,6 +9,7 @@ import (
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -31,6 +32,7 @@ func ResourceVPNGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -153,7 +155,10 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPNGatewayRead(ctx, d, m)
 }
@@ -190,6 +195,11 @@ func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(region, gateway.IpamPrivateIPv6ID))
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(region, gateway.PublicConfig))
+
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

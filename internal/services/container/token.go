@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -28,6 +29,7 @@ func ResourceToken() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    tokenSchema,
 		CustomizeDiff: cdf.LocalityCheck("container_id", "namespace_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -90,7 +92,10 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, token.ID))
+	err = identity.SetRegionalIdentity(d, region, token.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("token", token.Token)
 
@@ -121,6 +126,11 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("namespace_id", types.FlattenStringPtr(token.NamespaceID))
 	_ = d.Set("description", types.FlattenStringPtr(token.Description))
 	_ = d.Set("expires_at", types.FlattenTime(token.ExpiresAt))
+
+	err = identity.SetRegionalIdentity(d, region, token.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

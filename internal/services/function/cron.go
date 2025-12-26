@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -34,6 +35,7 @@ func ResourceCron() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    cronSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -109,7 +111,10 @@ func ResourceFunctionCronCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, cron.ID))
+	err = identity.SetRegionalIdentity(d, region, cron.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceFunctionCronRead(ctx, d, m)
 }
@@ -143,6 +148,11 @@ func ResourceFunctionCronRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("args", args)
 	_ = d.Set("status", cron.Status)
 	_ = d.Set("region", region.String())
+
+	err = identity.SetRegionalIdentity(d, region, cron.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

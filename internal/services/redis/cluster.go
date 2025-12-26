@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -47,6 +48,7 @@ func ResourceCluster() *schema.Resource {
 			cdf.LocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
 		),
+		Identity: identity.DefaultZonal(),
 	}
 }
 
@@ -339,7 +341,10 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -476,6 +481,11 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		_ = d.Set("certificate", string(certificateContent))
 	} else {
 		_ = d.Set("certificate", "")
+	}
+
+	err = identity.SetZonalIdentity(d, cluster.Zone, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags

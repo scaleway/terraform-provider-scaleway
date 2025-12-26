@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -27,6 +28,7 @@ func ResourceCockpitAlertManager() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: alertManagerSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -163,7 +165,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+	err = identity.SetRegionalIdentity(d, region, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitAlertManagerRead(ctx, d, meta)
 }
@@ -253,6 +258,11 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	_ = d.Set("contact_points", contactPointsList)
+
+	err = identity.SetRegionalIdentity(d, region, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

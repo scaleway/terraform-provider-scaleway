@@ -11,6 +11,7 @@ import (
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceHub() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    hubSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -158,7 +160,10 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -262,6 +267,11 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("mqtt_ca", mqttCa)
+
+	err = identity.SetRegionalIdentity(d, response.Region, response.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

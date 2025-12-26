@@ -8,6 +8,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -28,6 +29,7 @@ func ResourceIP() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -112,7 +114,10 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceIPRead(ctx, d, m)
 }
@@ -190,6 +195,11 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("server_id", zonal.NewIDString(res.IP.Zone, res.IP.Server.ID))
 	} else {
 		_ = d.Set("server_id", "")
+	}
+
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

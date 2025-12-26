@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -38,6 +39,7 @@ func ResourceNetwork() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id", "private_network_id", "dhcp_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -205,7 +207,10 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {

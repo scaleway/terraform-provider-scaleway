@@ -8,6 +8,7 @@ import (
 	sdbSDK "github.com/scaleway/scaleway-sdk-go/api/serverless_sqldb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceDatabase() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    databaseSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -82,7 +84,10 @@ func ResourceDatabaseCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, database.ID))
+	err = identity.SetRegionalIdentity(d, region, database.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForDatabase(ctx, api, region, database.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -115,6 +120,11 @@ func ResourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("endpoint", database.Endpoint)
 	_ = d.Set("region", database.Region)
 	_ = d.Set("project_id", database.ProjectID)
+
+	err = identity.SetRegionalIdentity(d, region, database.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -56,6 +57,7 @@ func ResourceLb() *schema.Resource {
 			customizeDiffAssignFlexibleIPv6,
 		),
 		SchemaFunc: lbSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 
@@ -270,7 +272,10 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, lb.ID))
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
@@ -400,6 +405,11 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	}
 
 	_ = d.Set("private_ips", allPrivateIPs)
+
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

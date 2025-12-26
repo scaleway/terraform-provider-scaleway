@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,6 +32,7 @@ func ResourceDomain() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    domainSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -85,7 +87,10 @@ func ResourceFunctionDomainCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	err = identity.SetRegionalIdentity(d, region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -116,6 +121,11 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("function_id", regional.NewIDString(region, domain.FunctionID))
 	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
+
+	err = identity.SetRegionalIdentity(d, region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -29,6 +30,7 @@ func ResourceInstanceTemplate() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    instanceTemplateSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -223,7 +225,10 @@ func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, template.ID))
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceTemplateRead(ctx, d, m)
 }
@@ -280,6 +285,11 @@ func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m
 
 	if template.CloudInit != nil {
 		_ = d.Set("cloud_init", string(*template.CloudInit))
+	}
+
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

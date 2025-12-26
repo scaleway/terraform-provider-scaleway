@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -32,6 +33,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
 		},
 		SchemaFunc: privateNetworkSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -232,7 +234,10 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, pn.Region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
@@ -270,13 +275,18 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", pn.Region)
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
 
 	ipv4Subnet, ipv6Subnets := FlattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
 	_ = d.Set("ipv6_subnets", ipv6Subnets)
+
+	err = identity.SetRegionalIdentity(d, pn.Region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

@@ -13,6 +13,7 @@ import (
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -41,6 +42,7 @@ func ResourceServer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    serverSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -225,7 +227,10 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -273,6 +278,11 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

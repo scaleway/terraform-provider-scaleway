@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceNatsCredentials() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    natsCredentialsSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -70,7 +72,10 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("file", credentials.Credentials.Content)
 
-	d.SetId(regional.NewIDString(region, credentials.ID))
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQNatsCredentialsRead(ctx, d, m)
 }
@@ -98,6 +103,11 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("account_id", credentials.NatsAccountID)
 	_ = d.Set("name", credentials.Name)
 	_ = d.Set("region", region)
+
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

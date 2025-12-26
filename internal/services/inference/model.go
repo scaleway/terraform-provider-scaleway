@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -29,6 +30,7 @@ func ResourceModel() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    modelSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -164,7 +166,10 @@ func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, model.ID))
+	err = identity.SetRegionalIdentity(d, model.Region, model.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	model, err = waitForModel(ctx, api, region, model.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -207,6 +212,11 @@ func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("updated_at", types.FlattenTime(model.UpdatedAt))
 	_ = d.Set("has_eula", model.HasEula)
 	_ = d.Set("nodes_support", flattenNodeSupport(model.NodesSupport))
+
+	err = identity.SetRegionalIdentity(d, model.Region, model.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

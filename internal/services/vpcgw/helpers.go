@@ -13,6 +13,7 @@ import (
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -223,6 +224,11 @@ func readVPCGWResourceDataV2(d *schema.ResourceData, gw *v2.Gateway) diag.Diagno
 		_ = d.Set("updated_at", gw.UpdatedAt.Format(time.RFC3339))
 	}
 
+	err = identity.SetZonalIdentity(d, gw.Zone, gw.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -301,6 +307,11 @@ func readVPCGWNetworkResourceDataV2(d *schema.ResourceData, gatewayNetwork *v2.G
 	}
 
 	_ = d.Set("ipam_config", ipamConfig)
+
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

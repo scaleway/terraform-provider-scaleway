@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -36,6 +37,7 @@ func ResourceTrigger() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    triggerSchema,
 		CustomizeDiff: cdf.LocalityCheck("container_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -178,7 +180,10 @@ func ResourceContainerTriggerCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, trigger.ID))
+	err = identity.SetRegionalIdentity(d, region, trigger.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForContainerTrigger(ctx, api, region, trigger.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -221,6 +226,11 @@ func ResourceContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m
 			Summary:  "Trigger in error state",
 			Detail:   errMsg,
 		})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, trigger.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags

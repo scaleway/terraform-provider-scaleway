@@ -10,6 +10,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -32,6 +33,7 @@ func ResourceCertificate() *schema.Resource {
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
 		SchemaFunc: certificateSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 
@@ -172,7 +174,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, certificate.ID))
+	err = identity.SetZonalIdentity(d, zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -230,6 +235,11 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m an
 			Summary:  fmt.Sprintf("certificate %s with error state", certificate.ID),
 			Detail:   errDetails,
 		})
+	}
+
+	err = identity.SetZonalIdentity(d, zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags

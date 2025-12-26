@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -49,6 +50,7 @@ func ResourceServer() *schema.Resource {
 			cdf.LocalityCheck("private_network.#.id"),
 			customDiffPrivateNetworkOption(),
 		),
+		Identity: identity.DefaultZonal(),
 	}
 }
 
@@ -416,7 +418,10 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(server.Zone, server.ID).String())
+	err = identity.SetZonalIdentity(d, server.Zone, server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("install_config_afterward").(bool) {
 		_, err = waitForServer(ctx, api, zone, server.ID, d.Timeout(schema.TimeoutCreate))
@@ -604,6 +609,11 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("private_ips", allPrivateIPs)
+
+	err = identity.SetZonalIdentity(d, server.Zone, server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

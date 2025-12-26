@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -25,6 +26,13 @@ func ResourceAPIKey() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    apiKeySchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"access_key": {
+				Type:              schema.TypeString,
+				Description:       "Access Key of your API Key",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -109,7 +117,10 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 
 	_ = d.Set("secret_key", res.SecretKey)
 
-	d.SetId(res.AccessKey)
+	err = identity.SetFlatIdentity(d, "access_key", res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamAPIKeyRead(ctx, d, m)
 }
@@ -147,6 +158,11 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("editable", res.Editable)
 	_ = d.Set("creation_ip", res.CreationIP)
 	_ = d.Set("default_project_id", res.DefaultProjectID)
+
+	err = identity.SetFlatIdentity(d, "access_key", res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

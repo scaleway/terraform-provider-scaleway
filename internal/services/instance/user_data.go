@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -35,6 +36,19 @@ func ResourceUserData() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    userDataSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"zone": identity.DefaultZoneAttribute(),
+			"key": {
+				Type:              schema.TypeString,
+				Description:       "Key of the user data to use",
+				RequiredForImport: true,
+			},
+			"server_id": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "ID of the server (UUID format)",
+			},
+		}),
 	}
 }
 

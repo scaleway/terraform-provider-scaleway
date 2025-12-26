@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -32,6 +33,7 @@ func ResourceBucketPolicy() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: bucketPolicySchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -107,7 +109,10 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(fmt.Errorf("error putting SCW bucket policy: %w", err))
 	}
 
-	d.SetId(regional.NewIDString(region, bucket))
+	err = identity.SetRegionalIdentity(d, region, bucket)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceObjectBucketPolicyRead(ctx, d, m)
 }

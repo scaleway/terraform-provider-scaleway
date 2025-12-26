@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -24,6 +25,13 @@ func ResourceGroup() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    groupSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"id": {
+				Type:              schema.TypeString,
+				Description:       "Unique identifier for the group (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -100,7 +108,10 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(group.ID)
+	err = identity.SetFlatIdentity(d, "id", group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
@@ -145,6 +156,11 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) di
 	if !d.Get("external_membership").(bool) {
 		_ = d.Set("user_ids", group.UserIDs)
 		_ = d.Set("application_ids", group.ApplicationIDs)
+	}
+
+	err = identity.SetFlatIdentity(d, "id", group.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

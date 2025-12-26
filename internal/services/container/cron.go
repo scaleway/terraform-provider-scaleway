@@ -10,6 +10,7 @@ import (
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -34,6 +35,7 @@ func ResourceCron() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    cronSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -105,7 +107,10 @@ func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	tflog.Info(ctx, "[INFO] cron job ready")
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceContainerCronRead(ctx, d, m)
 }
@@ -138,6 +143,11 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("status", cron.Status)
 	_ = d.Set("name", cron.Name)
 	_ = d.Set("region", region)
+
+	err = identity.SetRegionalIdentity(d, region, cron.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

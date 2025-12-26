@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    ipReverseDNSSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -70,7 +72,10 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
@@ -126,6 +131,11 @@ func ResourceIPAMIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	_ = d.Set("region", region)
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

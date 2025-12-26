@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -38,6 +39,7 @@ func ResourceContainer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    containerSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -343,7 +345,10 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceContainerRead(ctx, d, m)
 }
@@ -399,6 +404,11 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(co.PrivateNetworkID).(string)).String())
 	} else {
 		_ = d.Set("private_network_id", nil)
+	}
+
+	err = identity.SetRegionalIdentity(d, co.Region, co.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

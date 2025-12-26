@@ -125,3 +125,12 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 		},
 	})
 }
+
+func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, d := range p.ResourcesMap {
+		if d.Identity == nil {
+			t.Errorf("Identity for resource %s is nil", name)
+		}
+	}
+}

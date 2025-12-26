@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,13 @@ func ResourceBackendStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    backendStageSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"backend_stage_id": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "The ID of the backend stage (UUID format)",
+			},
+		}),
 	}
 }
 
@@ -138,7 +146,10 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(backendStage.ID)
+	err = identity.SetFlatIdentity(d, "backend_stage_id", backendStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBackendStageRead(ctx, d, m)
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -31,6 +32,7 @@ func ResourceIP() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -219,7 +221,10 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceIPAMIPRead(ctx, d, m)
 }
@@ -303,6 +308,11 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

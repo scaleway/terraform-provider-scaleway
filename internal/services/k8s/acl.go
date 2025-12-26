@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -41,6 +42,7 @@ func ResourceACL() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
 		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -129,8 +131,10 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	regionalID := regional.NewID(region, clusterID).String()
-	d.SetId(regionalID)
+	err = identity.SetRegionalIdentity(d, region, clusterID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceACLRead(ctx, d, m)
 }
@@ -163,6 +167,11 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	_ = d.Set("cluster_id", regional.NewIDString(region, clusterID))
 	_ = d.Set("region", region)
 	_ = d.Set("acl_rules", flattenACL(acls.Rules))
+
+	err = identity.SetRegionalIdentity(d, region, clusterID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

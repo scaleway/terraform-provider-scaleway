@@ -11,6 +11,7 @@ import (
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -44,6 +45,7 @@ func ResourceDeployment() *schema.Resource {
 			},
 		),
 		SchemaFunc: deploymentSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -189,7 +191,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, deployment.ID))
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceDeploymentRead(ctx, d, meta)
 }
@@ -237,6 +242,11 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 		_ = d.Set("public_network", publicBlock.([]map[string]any))
 	} else {
 		_ = d.Set("public_network", nil)
+	}
+
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil
