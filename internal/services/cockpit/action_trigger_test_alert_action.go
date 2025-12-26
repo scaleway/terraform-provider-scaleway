@@ -47,7 +47,7 @@ func (a *TriggerTestAlertAction) Configure(ctx context.Context, req action.Confi
 }
 
 func (a *TriggerTestAlertAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_cockpit_trigger_test_alert_action"
+	resp.TypeName = req.ProviderTypeName + "_cockpit_trigger_test_alert"
 }
 
 type TriggerTestAlertActionModel struct {
