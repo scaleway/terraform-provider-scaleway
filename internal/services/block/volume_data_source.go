@@ -66,15 +66,8 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 	zoneID := datasource.NewZonedID(volumeID, zone)
 	d.SetId(zoneID)
 
-	err = d.Set("volume_id", zoneID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	diags := ResourceBlockVolumeRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read volume state")...)
-	}
+	_ = d.Set("volume_id", volumeID)
+	setVolumeSchema(ctx, d, volumeID.(string), api, zone)
 
 	if d.Id() == "" {
 		return diag.Errorf("volume (%s) not found", zoneID)

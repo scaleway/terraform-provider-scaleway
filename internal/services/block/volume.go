@@ -159,15 +159,29 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	volume, err := waitForBlockVolume(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
+	volume, diags := setVolumeSchema(ctx, d, id, api, zone)
+	if diags != nil {
+		return diags
+	}
+
+	err = identity.SetZonalIdentity(d, volume.Zone, volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setVolumeSchema(ctx context.Context, d *schema.ResourceData, volumeID string, api *block.API, zone scw.Zone) (*block.Volume, diag.Diagnostics) {
+	volume, err := waitForBlockVolume(ctx, api, zone, locality.ExpandID(volumeID), d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
 
-			return nil
+			return nil, nil
 		}
 
-		return diag.FromErr(err)
+		return nil, diag.FromErr(err)
 	}
 
 	_ = d.Set("name", volume.Name)
@@ -185,17 +199,17 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	if volume.ParentSnapshotID != nil {
 		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
 			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       zone,
+			Zone:       volume.Zone,
 		})
 
 		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
-			snapshotID = zonal.NewIDString(zone, *volume.ParentSnapshotID)
+			snapshotID = zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID)
 		}
 	}
 
 	_ = d.Set("snapshot_id", snapshotID)
 
-	return nil
+	return volume, nil
 }
 
 func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

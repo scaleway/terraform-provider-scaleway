@@ -155,11 +155,6 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -179,13 +174,32 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
+	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceBlockSnapshotRead(ctx, d, m)
 }
 
 func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	snapshot, diagnostics := setSnapshotSchema(ctx, d, m)
+	if diagnostics != nil {
+		return diagnostics
+	}
+
+	err := identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setSnapshotSchema(ctx context.Context, d *schema.ResourceData, m any) (*block.Snapshot, diag.Diagnostics) {
+	api, zone, id, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return nil, diag.FromErr(err)
 	}
 
 	snapshot, err := waitForBlockSnapshot(ctx, api, zone, id, d.Timeout(schema.TimeoutRead))
@@ -193,10 +207,10 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 		if httperrors.Is404(err) {
 			d.SetId("")
 
-			return nil
+			return nil, nil
 		}
 
-		return diag.FromErr(err)
+		return nil, diag.FromErr(err)
 	}
 
 	_ = d.Set("name", snapshot.Name)
@@ -211,7 +225,7 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("tags", snapshot.Tags)
 
-	return nil
+	return snapshot, nil
 }
 
 func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
