@@ -43,7 +43,7 @@ func TestAccActionRDBInstanceCertificateRenew_Basic(t *testing.T) {
 						}
 					}
 
-					action "scaleway_rdb_instance_renew_certficate" "main" {
+					action "scaleway_rdb_instance_renew_certificate" "main" {
 						config {
 							instance_id = scaleway_rdb_instance.main.id
 							wait = true
