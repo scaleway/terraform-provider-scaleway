@@ -435,10 +435,12 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	projectID = dnsZones.DNSZones[0].ProjectID
 
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
+
 	err = identity.SetFlatIdentity(d, "record_id", record.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())

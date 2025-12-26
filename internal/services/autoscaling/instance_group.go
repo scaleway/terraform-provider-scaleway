@@ -155,7 +155,10 @@ func ResourceInstanceGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	identity.SetZonalIdentity(d, zone, group.ID)
+	err = identity.SetZonalIdentity(d, zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceGroupRead(ctx, d, m)
 }

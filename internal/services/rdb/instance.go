@@ -454,6 +454,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		id = res.ID
 	} else {
 		createReq := &rdb.CreateInstanceRequest{
@@ -510,6 +511,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		id = res.ID
 	}
 
@@ -1010,6 +1012,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
 			ID = upgradedInstance.ID
+
 			err = identity.SetRegionalIdentity(d, region, ID)
 			if err != nil {
 				return diag.FromErr(err)
