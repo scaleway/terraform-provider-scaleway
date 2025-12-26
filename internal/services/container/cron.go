@@ -144,6 +144,11 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", cron.Name)
 	_ = d.Set("region", region)
 
+	err = identity.SetRegionalIdentity(d, region, cron.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

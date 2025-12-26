@@ -134,6 +134,11 @@ func ResourceWebhookRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("created_at", types.FlattenTime(webhook.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(webhook.UpdatedAt))
 
+	err = identity.SetRegionalIdentity(d, region, webhook.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

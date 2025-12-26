@@ -146,6 +146,11 @@ func ResourceIotNetworkRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("topic_prefix", network.TopicPrefix)
 	_ = d.Set("region", string(region))
 
+	err = identity.SetRegionalIdentity(d, region, network.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

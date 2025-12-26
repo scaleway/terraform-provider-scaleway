@@ -259,6 +259,11 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 
 	_ = d.Set("contact_points", contactPointsList)
 
+	err = identity.SetRegionalIdentity(d, region, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

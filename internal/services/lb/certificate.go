@@ -237,6 +237,11 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m an
 		})
 	}
 
+	err = identity.SetZonalIdentity(d, zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

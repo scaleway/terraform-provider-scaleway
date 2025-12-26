@@ -208,6 +208,11 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("account_root_user_id", user.AccountRootUserID)
 	_ = d.Set("locked", user.Locked)
 
+	err = identity.SetFlatIdentity(d, "id", user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

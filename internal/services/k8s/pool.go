@@ -513,6 +513,11 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	_ = d.Set("nodes", nodes)
 
+	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

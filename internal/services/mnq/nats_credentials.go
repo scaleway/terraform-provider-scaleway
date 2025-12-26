@@ -104,6 +104,11 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("name", credentials.Name)
 	_ = d.Set("region", region)
 
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

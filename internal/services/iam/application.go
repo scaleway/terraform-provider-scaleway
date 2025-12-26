@@ -119,6 +119,11 @@ func resourceIamApplicationRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("editable", app.Editable)
 	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
 
+	err = identity.SetFlatIdentity(d, "id", app.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

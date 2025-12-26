@@ -228,6 +228,11 @@ func ResourceContainerTriggerRead(ctx context.Context, d *schema.ResourceData, m
 		})
 	}
 
+	err = identity.SetRegionalIdentity(d, region, trigger.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

@@ -276,6 +276,11 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("project_id", image.Image.Project)
 	_ = d.Set("organization_id", image.Image.Organization)
 
+	err = identity.SetZonalIdentity(d, image.Image.Zone, image.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

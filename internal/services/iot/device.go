@@ -253,11 +253,6 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetRegionalIdentity(d, region, res.Device.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
 		// Set user certificate to device.
@@ -277,6 +272,11 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			"key": res.Certificate.Key,
 		}
 		_ = d.Set("certificate", []map[string]any{cert})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, res.Device.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return ResourceIotDeviceRead(ctx, d, m)
@@ -365,6 +365,11 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any) d
 			"key": devCrtKey.(string),
 		}
 		_ = d.Set("certificate", []map[string]any{cert})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, device.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

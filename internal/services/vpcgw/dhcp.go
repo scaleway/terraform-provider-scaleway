@@ -244,7 +244,12 @@ func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("subnet", dhcp.Subnet.String())
 	_ = d.Set("updated_at", dhcp.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("valid_lifetime", dhcp.ValidLifetime.Seconds)
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", dhcp.Zone)
+
+	err = identity.SetZonalIdentity(d, dhcp.Zone, dhcp.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

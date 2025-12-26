@@ -142,6 +142,11 @@ func ResourceDomainValidationRead(ctx context.Context, d *schema.ResourceData, m
 
 	_ = d.Set("validated", domain.Status == "checked")
 
+	err = identity.SetFlatIdentity(d, "domain_id", d.Get("domain_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

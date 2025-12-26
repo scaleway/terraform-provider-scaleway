@@ -130,6 +130,11 @@ func ResourceFunctionTokenRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("description", types.FlattenStringPtr(token.Description))
 	_ = d.Set("expires_at", types.FlattenTime(token.ExpiresAt))
 
+	err = identity.SetRegionalIdentity(d, region, token.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

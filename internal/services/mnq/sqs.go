@@ -78,6 +78,11 @@ func ResourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("region", sqs.Region)
 	_ = d.Set("project_id", sqs.ProjectID)
 
+	err = identity.SetRegionalIdentity(d, sqs.Region, sqs.ProjectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

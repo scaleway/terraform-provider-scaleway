@@ -119,6 +119,11 @@ func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("zone", string(zone))
 	_ = d.Set("reverse", res.IP.Reverse)
 
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

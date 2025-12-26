@@ -158,6 +158,11 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) di
 		_ = d.Set("application_ids", group.ApplicationIDs)
 	}
 
+	err = identity.SetFlatIdentity(d, "id", group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

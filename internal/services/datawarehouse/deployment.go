@@ -244,6 +244,11 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 		_ = d.Set("public_network", nil)
 	}
 
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

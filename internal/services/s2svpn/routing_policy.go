@@ -167,6 +167,11 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("prefix_filter_in", prefixFilterIn)
 	_ = d.Set("prefix_filter_out", prefixFilterOut)
 
+	err = identity.SetRegionalIdentity(d, policy.Region, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

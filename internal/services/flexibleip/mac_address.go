@@ -178,6 +178,11 @@ func ResourceFlexibleIPMACRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("flexible_ip_ids_to_duplicate", types.ExpandStrings(d.Get("flexible_ip_ids_to_duplicate").(*schema.Set).List()))
 
+	err = identity.SetZonalIdentity(d, fip.Zone, fip.MacAddress.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

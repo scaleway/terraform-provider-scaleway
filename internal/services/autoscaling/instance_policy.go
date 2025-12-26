@@ -181,6 +181,11 @@ func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("instance_group_id", zonal.NewIDString(zone, policy.InstanceGroupID))
 	_ = d.Set("zone", zone)
 
+	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

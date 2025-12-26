@@ -151,6 +151,11 @@ func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("project_id", res.ProjectID)
 	_ = d.Set("disabled", res.Disabled)
 
+	err = identity.SetFlatIdentity(d, "id", res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

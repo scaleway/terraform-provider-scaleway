@@ -521,6 +521,11 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("health_check_transient_delay", types.FlattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
 	_ = d.Set("health_check_send_proxy", backend.HealthCheck.CheckSendProxy)
 
+	err = identity.SetZonalIdentity(d, zone, backend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is403(err) {

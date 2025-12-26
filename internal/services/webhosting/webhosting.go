@@ -336,6 +336,11 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("organization_id", "")
 	_ = d.Set("project_id", webhostingResponse.ProjectID)
 
+	err = identity.SetRegionalIdentity(d, webhostingResponse.Region, webhostingResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

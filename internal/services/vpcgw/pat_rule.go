@@ -168,6 +168,11 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("protocol", patRule.Protocol.String())
 	_ = d.Set("zone", zone)
 
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

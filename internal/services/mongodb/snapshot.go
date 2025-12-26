@@ -153,6 +153,11 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("updated_at", types.FlattenTime(snapshot.UpdatedAt))
 	_ = d.Set("region", snapshot.Region.String())
 
+	err = identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

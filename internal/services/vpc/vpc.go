@@ -157,6 +157,11 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 		_ = d.Set("tags", res.Tags)
 	}
 
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

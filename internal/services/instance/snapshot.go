@@ -209,6 +209,11 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Snapshot.Tags)
 
+	err = identity.SetZonalIdentity(d, snapshot.Snapshot.Zone, snapshot.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

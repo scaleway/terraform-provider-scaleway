@@ -239,6 +239,11 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("region", regionStr)
 	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
 
+	err = identity.SetRegionalIdentity(d, rr.Region, rr.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

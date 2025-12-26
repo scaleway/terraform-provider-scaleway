@@ -406,6 +406,11 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 
 	_ = d.Set("private_ips", allPrivateIPs)
 
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

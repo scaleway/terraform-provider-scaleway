@@ -173,6 +173,11 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("server_id", "")
 	}
 
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

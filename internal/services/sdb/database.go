@@ -121,6 +121,11 @@ func ResourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("region", database.Region)
 	_ = d.Set("project_id", database.ProjectID)
 
+	err = identity.SetRegionalIdentity(d, region, database.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

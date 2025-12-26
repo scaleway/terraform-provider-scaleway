@@ -483,6 +483,11 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		_ = d.Set("certificate", "")
 	}
 
+	err = identity.SetZonalIdentity(d, cluster.Zone, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

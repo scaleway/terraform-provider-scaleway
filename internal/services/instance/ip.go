@@ -197,6 +197,11 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("server_id", "")
 	}
 
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

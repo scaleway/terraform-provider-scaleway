@@ -129,6 +129,11 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
 	_ = d.Set("tags", res.PlacementGroup.Tags)
 
+	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

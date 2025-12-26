@@ -695,6 +695,11 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		})
 	}
 
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

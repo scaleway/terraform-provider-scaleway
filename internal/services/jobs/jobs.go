@@ -262,6 +262,11 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("project_id", definition.ProjectID)
 	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
 
+	err = identity.SetRegionalIdentity(d, definition.Region, definition.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

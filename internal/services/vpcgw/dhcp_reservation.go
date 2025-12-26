@@ -160,6 +160,11 @@ func ResourceVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.
 	_ = d.Set("updated_at", entry.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
 
+	err = identity.SetZonalIdentity(d, entry.Zone, entry.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

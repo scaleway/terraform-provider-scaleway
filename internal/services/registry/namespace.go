@@ -120,6 +120,11 @@ func ResourceNamespaceRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("endpoint", ns.Endpoint)
 	_ = d.Set("region", ns.Region)
 
+	err = identity.SetRegionalIdentity(d, ns.Region, ns.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

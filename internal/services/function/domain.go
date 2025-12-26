@@ -122,6 +122,11 @@ func ResourceFunctionDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("url", domain.URL)
 	_ = d.Set("region", region)
 
+	err = identity.SetRegionalIdentity(d, region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

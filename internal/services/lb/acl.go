@@ -230,6 +230,11 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		_ = d.Set("match", flattenLbACLMatch(acl.Match))
 	}
 
+	err = identity.SetZonalIdentity(d, zone, acl.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

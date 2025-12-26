@@ -314,6 +314,11 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m any) di
 		_ = d.Set("s3", conf)
 	}
 
+	err = identity.SetRegionalIdentity(d, region, response.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

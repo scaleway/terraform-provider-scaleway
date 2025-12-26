@@ -168,6 +168,11 @@ func ResourceACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	_ = d.Set("region", region)
 	_ = d.Set("acl_rules", flattenACL(acls.Rules))
 
+	err = identity.SetRegionalIdentity(d, region, clusterID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

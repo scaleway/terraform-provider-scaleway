@@ -159,6 +159,11 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("creation_ip", res.CreationIP)
 	_ = d.Set("default_project_id", res.DefaultProjectID)
 
+	err = identity.SetFlatIdentity(d, "access_key", res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

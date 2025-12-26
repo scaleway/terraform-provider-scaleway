@@ -95,6 +95,11 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("project_id", account.ProjectID)
 	_ = d.Set("endpoint", account.Endpoint)
 
+	err = identity.SetRegionalIdentity(d, region, account.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

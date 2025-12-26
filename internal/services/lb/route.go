@@ -161,6 +161,11 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
 
+	err = identity.SetZonalIdentity(d, zone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

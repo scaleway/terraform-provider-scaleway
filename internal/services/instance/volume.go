@@ -200,6 +200,11 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

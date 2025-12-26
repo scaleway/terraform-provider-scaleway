@@ -150,6 +150,11 @@ func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 		}})
 	}
 
+	err = identity.SetRegionalIdentity(d, credentials.Region, credentials.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

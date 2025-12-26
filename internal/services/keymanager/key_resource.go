@@ -211,6 +211,11 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
 	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
 
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

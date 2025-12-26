@@ -268,6 +268,11 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_ = d.Set("mqtt_ca", mqttCa)
 
+	err = identity.SetRegionalIdentity(d, response.Region, response.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

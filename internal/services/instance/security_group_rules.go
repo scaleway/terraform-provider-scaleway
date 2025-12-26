@@ -85,6 +85,11 @@ func ResourceInstanceSecurityGroupRulesRead(ctx context.Context, d *schema.Resou
 	_ = d.Set("inbound_rule", inboundRules)
 	_ = d.Set("outbound_rule", outboundRules)
 
+	err = identity.SetFlatIdentity(d, "security_group_id", d.Get("security_group_id").(string))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

@@ -406,6 +406,11 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("private_network_id", nil)
 	}
 
+	err = identity.SetRegionalIdentity(d, co.Region, co.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

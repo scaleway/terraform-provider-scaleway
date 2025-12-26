@@ -405,6 +405,11 @@ func ResourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("public_endpoint", publicEndpoints)
 	}
 
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

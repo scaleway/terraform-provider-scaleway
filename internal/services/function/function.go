@@ -349,6 +349,11 @@ func ResourceFunctionRead(ctx context.Context, d *schema.ResourceData, m any) di
 		_ = d.Set("private_network_id", nil)
 	}
 
+	err = identity.SetRegionalIdentity(d, f.Region, f.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

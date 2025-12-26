@@ -340,6 +340,11 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("bgp_session_ipv6", bgpSessionIPv6)
 
+	err = identity.SetRegionalIdentity(d, connection.Region, connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

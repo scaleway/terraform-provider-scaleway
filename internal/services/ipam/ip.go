@@ -309,6 +309,11 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
 
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

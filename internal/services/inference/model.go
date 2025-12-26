@@ -213,6 +213,11 @@ func ResourceModelRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("has_eula", model.HasEula)
 	_ = d.Set("nodes_support", flattenNodeSupport(model.NodesSupport))
 
+	err = identity.SetRegionalIdentity(d, model.Region, model.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

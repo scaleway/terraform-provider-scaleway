@@ -287,6 +287,11 @@ func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m
 		_ = d.Set("cloud_init", string(*template.CloudInit))
 	}
 
+	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

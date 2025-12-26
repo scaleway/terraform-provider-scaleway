@@ -213,6 +213,11 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 
 	_ = d.Set("rule", flattenPolicyRules(listRules.Rules))
 
+	err = identity.SetFlatIdentity(d, "id", pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

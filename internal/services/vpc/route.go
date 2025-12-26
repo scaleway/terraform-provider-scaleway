@@ -149,7 +149,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("nexthop_private_network_id", regional.NewIDString(region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	destination, err := types.FlattenIPNet(res.Destination)
 	if err != nil {
@@ -160,6 +160,11 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
+	}
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

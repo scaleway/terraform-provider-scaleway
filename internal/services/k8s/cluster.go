@@ -674,6 +674,11 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("kubeconfig", []map[string]any{kubeconfig})
 
+	err = identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

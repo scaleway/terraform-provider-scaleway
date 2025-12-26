@@ -183,6 +183,11 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
 	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
 
+	err = identity.SetRegionalIdentity(d, ns.Region, ns.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

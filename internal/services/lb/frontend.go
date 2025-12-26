@@ -384,6 +384,11 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
 	}
 
+	err = identity.SetZonalIdentity(d, zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

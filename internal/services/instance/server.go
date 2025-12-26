@@ -895,6 +895,11 @@ You can check the full list of compatible server types:
 
 	_ = d.Set("private_ips", allPrivateIPs)
 
+	err = identity.SetZonalIdentity(d, server.Zone, server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

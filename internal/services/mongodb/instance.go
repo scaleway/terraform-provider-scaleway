@@ -527,6 +527,11 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 	}
 
+	err = identity.SetRegionalIdentity(d, instance.Region, instance.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 

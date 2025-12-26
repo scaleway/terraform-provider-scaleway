@@ -190,6 +190,11 @@ func ResourceInstanceSecurityGroupRead(ctx context.Context, d *schema.ResourceDa
 		_ = d.Set("outbound_rule", outboundRules)
 	}
 
+	err = identity.SetZonalIdentity(d, res.SecurityGroup.Zone, res.SecurityGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

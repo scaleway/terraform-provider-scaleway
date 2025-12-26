@@ -127,6 +127,11 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 	_ = d.Set("domain_id", fmt.Sprintf("%s/%s", region, blocklists.Blocklists[0].DomainID))
 	_ = d.Set("type", blocklists.Blocklists[0].Type)
 
+	err = identity.SetRegionalIdentity(d, region, blocklists.Blocklists[0].ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

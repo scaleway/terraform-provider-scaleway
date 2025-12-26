@@ -196,6 +196,11 @@ func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(region, gateway.PublicConfig))
 
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

@@ -297,6 +297,11 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_ = d.Set("versions", versionsList)
 
+	err = identity.SetRegionalIdentity(d, secretResponse.Region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

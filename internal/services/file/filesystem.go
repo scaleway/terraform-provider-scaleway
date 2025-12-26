@@ -151,6 +151,11 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("number_of_attachments", int64(fileSystem.NumberOfAttachments))
 
+	err = identity.SetRegionalIdentity(d, fileSystem.Region, fileSystem.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 

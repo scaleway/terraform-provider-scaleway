@@ -311,6 +311,11 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
 
+	err = identity.SetRegionalIdentity(d, domain.Region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
