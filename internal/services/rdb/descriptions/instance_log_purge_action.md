@@ -1,3 +1,3 @@
-The [`scaleway_rdb_instance_logs_purge_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_logs_purge_action) action is helpful to purge action logs of your instance.
+The [`scaleway_rdb_instance_purge_logs`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_purge_logs) action is helpful to purge action logs of your instance.
 
 Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.

@@ -40,14 +40,14 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_cockpit_trigger_test_alert_action.main]
+								actions = [action.scaleway_cockpit_trigger_test_alert.main]
 							}
 						}
 
 						depends_on = [scaleway_cockpit_alert_manager.main]
 					}
 
-					action "scaleway_cockpit_trigger_test_alert_action" "main" {
+					action "scaleway_cockpit_trigger_test_alert" "main" {
 						config {
 							project_id = scaleway_account_project.project.id
 						}
@@ -73,14 +73,14 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_cockpit_trigger_test_alert_action.main]
+								actions = [action.scaleway_cockpit_trigger_test_alert.main]
 							}
 						}
 
 						depends_on = [scaleway_cockpit_alert_manager.main]
 					}
 
-					action "scaleway_cockpit_trigger_test_alert_action" "main" {
+					action "scaleway_cockpit_trigger_test_alert" "main" {
 						config {
 							project_id = scaleway_account_project.project.id
 						}
