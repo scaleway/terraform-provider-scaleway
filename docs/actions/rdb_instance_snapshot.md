@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_instance_snapshot"
 
 # scaleway_rdb_instance_snapshot (Action)
 
-The [`scaleway_rdb_instance_snapshot`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_snapshot) action is helpful to create a snapshot of an RDB instance.
+The [`scaleway_rdb_instance_snapshot`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_snapshot) action is helpful to perform a snapshot of your RDB instance.
 
 Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
 

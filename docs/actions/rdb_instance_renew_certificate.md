@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_instance_renew_certificate"
 
 # scaleway_rdb_instance_renew_certificate (Action)
 
-The [`scaleway_rdb_instance_renew_certificate`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_renew_certificate) action is helpful to renew the certificate of an RDB instance.
+The [`scaleway_rdb_instance_renew_certificate`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_instance_renew_certificate) action is helpful to renew the TLS certificate of an RDB instance.
 
 Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
 
