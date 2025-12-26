@@ -281,6 +281,11 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", res.Name)
 	_ = d.Set("type", res.Type)
 	_ = d.Set("state", res.Status.String())
