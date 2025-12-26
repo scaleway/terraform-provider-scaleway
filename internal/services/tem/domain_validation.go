@@ -71,7 +71,7 @@ func ResourceDomainValidationCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, d.Get("domain_id").(string))
+	err = identity.SetFlatIdentity(d, "domain_id", d.Get("domain_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}

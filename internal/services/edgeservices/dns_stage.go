@@ -109,7 +109,7 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, dnsStage.ID)
+	err = identity.SetFlatIdentity(d, "dns_stage_id", dnsStage.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

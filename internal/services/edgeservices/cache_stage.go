@@ -134,7 +134,7 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, cacheStage.ID)
+	err = identity.SetFlatIdentity(d, "cache_stage_id", cacheStage.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

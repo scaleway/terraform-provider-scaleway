@@ -118,7 +118,7 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	err = identity.SetFlatIdentity(d, res.ID)
+	err = identity.SetFlatIdentity(d, "id", res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

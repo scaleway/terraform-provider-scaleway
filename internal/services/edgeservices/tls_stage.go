@@ -131,7 +131,7 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, tlsStage.ID)
+	err = identity.SetFlatIdentity(d, "tls_stage_id", tlsStage.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

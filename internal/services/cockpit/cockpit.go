@@ -109,7 +109,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		}
 	}
 
-	err := identity.SetFlatIdentity(d, projectID)
+	err := identity.SetFlatIdentity(d, "project_id", projectID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,7 +157,7 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	_ = d.Set("project_id", projectID)
-	err = identity.SetFlatIdentity(d, projectID)
+	err = identity.SetFlatIdentity(d, "project_id", projectID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

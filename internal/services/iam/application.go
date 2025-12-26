@@ -87,7 +87,7 @@ func resourceIamApplicationCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, app.ID)
+	err = identity.SetFlatIdentity(d, "id", app.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

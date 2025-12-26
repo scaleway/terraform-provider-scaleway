@@ -164,7 +164,7 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, user.ID)
+	err = identity.SetFlatIdentity(d, "id", user.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

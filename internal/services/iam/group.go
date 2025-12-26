@@ -108,7 +108,7 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, group.ID)
+	err = identity.SetFlatIdentity(d, "id", group.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}

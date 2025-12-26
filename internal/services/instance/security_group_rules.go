@@ -52,7 +52,7 @@ func securityGroupRulesSchema() map[string]*schema.Schema {
 }
 
 func ResourceInstanceSecurityGroupRulesCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	err := identity.SetFlatIdentity(d, d.Get("security_group_id").(string))
+	err := identity.SetFlatIdentity(d, "security_group_id", d.Get("security_group_id").(string))
 	if err != nil {
 		return diag.FromErr(err)
 	}

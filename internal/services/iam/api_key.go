@@ -117,7 +117,7 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 
 	_ = d.Set("secret_key", res.SecretKey)
 
-	err = identity.SetFlatIdentity(d, res.AccessKey)
+	err = identity.SetFlatIdentity(d, "access_key", res.AccessKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}

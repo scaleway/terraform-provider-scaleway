@@ -85,7 +85,7 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, res.ID)
+	err = identity.SetFlatIdentity(d, "project_id", res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,7 +96,7 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	accountAPI := NewProjectAPI(m)
 
-	res, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
+	project, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
 		ProjectID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -109,13 +109,22 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", res.Name)
-	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("organization_id", res.OrganizationID)
+	setProjectSchema(d, project)
+
+	err = identity.SetFlatIdentity(d, "project_id", project.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
+}
+
+func setProjectSchema(d *schema.ResourceData, project *accountSDK.Project) {
+	_ = d.Set("name", project.Name)
+	_ = d.Set("description", project.Description)
+	_ = d.Set("created_at", types.FlattenTime(project.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(project.UpdatedAt))
+	_ = d.Set("organization_id", project.OrganizationID)
 }
 
 func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

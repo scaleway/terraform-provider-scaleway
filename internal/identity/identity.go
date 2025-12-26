@@ -113,18 +113,18 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 	return nil
 }
 
-func SetFlatIdentity(d *schema.ResourceData, id string) error {
+func SetFlatIdentity(d *schema.ResourceData, key string, value string) error {
 	identity, err := d.Identity()
 	if err != nil {
 		return err
 	}
 
-	err = identity.Set("id", id)
+	err = identity.Set(key, value)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(id)
+	d.SetId(value)
 
 	return nil
 }
