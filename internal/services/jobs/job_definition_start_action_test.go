@@ -193,12 +193,12 @@ func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_job_definition_start_action.main]
+								actions = [action.scaleway_job_definition_start.main]
 							}
 						}
 					}
 
-					action "scaleway_job_definition_start_action" "main" {
+					action "scaleway_job_definition_start" "main" {
 						config {
 							job_definition_id = scaleway_job_definition.main.id
 						}
