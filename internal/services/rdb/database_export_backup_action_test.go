@@ -52,12 +52,12 @@ func TestAccActionRDBDatabaseBackupExport_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_database_backup_export_action.main]
+								actions = [action.scaleway_rdb_database_export_backup.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_database_backup_export_action" "main" {
+					action "scaleway_rdb_database_export_backup" "main" {
 						config {
 							backup_id = scaleway_rdb_database_backup.main.id
 							wait = true

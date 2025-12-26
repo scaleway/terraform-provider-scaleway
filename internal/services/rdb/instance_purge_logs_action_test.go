@@ -38,12 +38,12 @@ func TestAccActionRDBInstanceLogsPurge_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_instance_logs_purge_action.main]
+								actions = [action.scaleway_rdb_instance_purge_logs.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_instance_logs_purge_action" "main" {
+					action "scaleway_rdb_instance_purge_logs" "main" {
 						config {
 							instance_id = scaleway_rdb_instance.main.id
 						}

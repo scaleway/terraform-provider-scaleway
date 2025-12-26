@@ -43,12 +43,12 @@ func TestAccActionRDBReadReplicaReset_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_read_replica_reset_action.main]
+								actions = [action.scaleway_rdb_read_replica_reset.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_read_replica_reset_action" "main" {
+					action "scaleway_rdb_read_replica_reset" "main" {
 						config {
 							read_replica_id = scaleway_rdb_read_replica.main.id
 							wait = true

@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_read_replica_reset"
 
 # scaleway_rdb_read_replica_reset (Action)
 
-The [`scaleway_rdb_read_replica_reset_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_read_replica_reset_action) action is helpful to reset a read replica.
+The [`scaleway_rdb_read_replica_reset`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/rdb_read_replica_reset_action) action is helpful to reset a read replica.
 
 Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/) and [API documentation](https://www.scaleway.com/en/developers/api/managed-databases-for-postgresql-and-mysql/) for more information.
 

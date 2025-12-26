@@ -64,12 +64,12 @@ func TestAccActionRDBDatabaseBackupRestore_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_database_backup_restore_action.main]
+								actions = [action.scaleway_rdb_database_restore_backup.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_database_backup_restore_action" "main" {
+					action "scaleway_rdb_database_restore_backup" "main" {
 						config {
 							backup_id = scaleway_rdb_database_backup.main.id
 							instance_id = scaleway_rdb_instance.restore_target.id

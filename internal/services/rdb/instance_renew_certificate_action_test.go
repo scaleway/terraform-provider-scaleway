@@ -38,12 +38,12 @@ func TestAccActionRDBInstanceCertificateRenew_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_instance_certificate_renew_action.main]
+								actions = [action.scaleway_rdb_instance_renew_certificate.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_instance_certificate_renew_action" "main" {
+					action "scaleway_rdb_instance_renew_certficate" "main" {
 						config {
 							instance_id = scaleway_rdb_instance.main.id
 							wait = true

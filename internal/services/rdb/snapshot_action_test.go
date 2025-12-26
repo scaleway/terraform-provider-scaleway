@@ -40,12 +40,12 @@ func TestAccActionRDBInstanceSnapshot_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_instance_snapshot_action.main]
+								actions = [action.scaleway_rdb_instance_snapshot.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_instance_snapshot_action" "main" {
+					action "scaleway_rdb_instance_snapshot" "main" {
 						config {
 							instance_id = scaleway_rdb_instance.main.id
 							name = "tf-rdb-snapshot"

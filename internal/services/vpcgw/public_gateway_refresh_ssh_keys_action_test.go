@@ -28,12 +28,12 @@ func TestAccActionVPCGWRefreshSSHKeys_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_vpc_public_gateway_refresh_ssh_keys_action.main]
+								actions = [action.scaleway_vpc_public_gateway_refresh_ssh_keys.main]
 							}
 						}
 					}
 
-					action "scaleway_vpc_public_gateway_refresh_ssh_keys_action" "main" {
+					action "scaleway_vpc_public_gateway_refresh_ssh_keys" "main" {
 						config {
 							gateway_id = scaleway_vpc_public_gateway.main.id
 							wait = true

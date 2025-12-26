@@ -36,12 +36,12 @@ func TestAccActionRotateKey_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_key_manager_key_rotate_action.main]
+								actions = [action.scaleway_key_manager_rotate_key.main]
 							}
 						}
 					}
 
-					action "scaleway_key_manager_key_rotate_action" "main" {
+					action "scaleway_key_manager_rotate_key" "main" {
 						config {
 							key_id = scaleway_key_manager_key.main.id
 							region = local.region
@@ -66,12 +66,12 @@ func TestAccActionRotateKey_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_key_manager_key_rotate_action.main]
+								actions = [action.scaleway_key_manager_rotate_key.main]
 							}
 						}
 					}
 
-					action "scaleway_key_manager_key_rotate_action" "main" {
+					action "scaleway_key_manager_rotate_key" "main" {
 						config {
 							key_id = scaleway_key_manager_key.main.id
 							region = local.region

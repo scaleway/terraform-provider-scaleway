@@ -38,12 +38,12 @@ func TestAccActionRDBInstanceLogPrepare_Basic(t *testing.T) {
 						lifecycle {
 							action_trigger {
 								events  = [after_create]
-								actions = [action.scaleway_rdb_instance_log_prepare_action.main]
+								actions = [action.scaleway_rdb_instance_prepare_logs.main]
 							}
 						}
 					}
 
-					action "scaleway_rdb_instance_log_prepare_action" "main" {
+					action "scaleway_rdb_instance_prepare_logs" "main" {
 						config {
 							instance_id = scaleway_rdb_instance.main.id
 							wait = true
