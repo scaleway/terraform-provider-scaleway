@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
 var (
@@ -162,6 +163,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	res = append(res, rdb.NewInstanceLogPrepareAction)
 	res = append(res, rdb.NewInstanceCertificateRenewAction)
 	res = append(res, rdb.NewDatabaseBackupExportAction)
+	res = append(res, vpcgw.NewRefreshSSHKeysAction)
 
 	return res
 }
