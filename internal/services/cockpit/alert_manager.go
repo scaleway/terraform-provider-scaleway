@@ -182,7 +182,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		if httperrors.Is404(err) {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 
 			return nil

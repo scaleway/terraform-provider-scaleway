@@ -288,6 +288,7 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			})
 
 			if httperrors.Is404(err) || httperrors.Is403(err) {
+				// Project deleted or no permissions, consider it cleaned up
 				return nil
 			}
 
