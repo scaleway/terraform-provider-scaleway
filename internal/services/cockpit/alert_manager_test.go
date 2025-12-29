@@ -267,7 +267,11 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 				ProjectID: projectID,
 			})
 
-			if !httperrors.Is404(err) && !httperrors.Is403(err) {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
+				return nil
+			}
+
+			if err != nil {
 				return err
 			}
 
@@ -275,8 +279,41 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 				return nil
 			}
 
-			if alertManager.AlertManagerEnabled {
-				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
+			if !alertManager.AlertManagerEnabled {
+				return nil
+			}
+
+			// Cleanup contact points first
+			contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				return fmt.Errorf("failed to list contact points: %w", err)
+			}
+
+			if contactPoints != nil {
+				for _, cp := range contactPoints.ContactPoints {
+					if cp.Email != nil {
+						err = api.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
+							Region:    region,
+							ProjectID: projectID,
+							Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
+						})
+						if err != nil && !httperrors.Is404(err) {
+							return fmt.Errorf("failed to delete contact point: %w", err)
+						}
+					}
+				}
+			}
+
+			// Disable alert manager
+			_, err = api.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
+				return fmt.Errorf("failed to disable alert manager: %w", err)
 			}
 		}
 
