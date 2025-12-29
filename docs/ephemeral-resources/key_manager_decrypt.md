@@ -14,7 +14,7 @@ Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-ma
 
 ### Required
 
-- `ciphertext` (String, Sensitive) Ciphertext data to decrypt. Data size must be between 1 and 131071 bytes.
+- `ciphertext` (String) Ciphertext data to decrypt. Data size must be between 1 and 131071 bytes.
 - `key_id` (String) ID of the key to decrypt with. The key must have a usage set to `symmetric_encryption` or `asymmetric_encryption`. Can be a plain UUID or a regional ID.
 
 ### Optional

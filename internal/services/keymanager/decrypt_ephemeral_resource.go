@@ -85,7 +85,6 @@ func (r *DecryptEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			"ciphertext": schema.StringAttribute{
 				Required:    true,
 				Description: "Ciphertext data to decrypt. Data size must be between 1 and 131071 bytes.",
-				Sensitive:   true,
 			},
 			"associated_data": schema.ObjectAttribute{
 				Optional:    true,
