@@ -97,7 +97,10 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		// If alert manager is already enabled, ignore the 409 error
+		if !httperrors.Is409(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	if shouldEnableLegacyManagedAlerts(d) {
