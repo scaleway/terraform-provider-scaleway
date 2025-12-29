@@ -20,10 +20,11 @@ import (
 )
 
 const (
-	DefaultCockpitTimeout = 5 * time.Minute
-	pathMetricsURL        = "/api/v1/push"
-	pathLogsURL           = "/loki/api/v1/push"
-	pathTracesURL         = "/otlp/v1/traces"
+	DefaultCockpitTimeout       = 5 * time.Minute
+	defaultCockpitRetryInterval = 15 * time.Second
+	pathMetricsURL              = "/api/v1/push"
+	pathLogsURL                 = "/loki/api/v1/push"
+	pathTracesURL               = "/otlp/v1/traces"
 )
 
 // NewGlobalAPI returns a new global cockpit API.
@@ -53,6 +54,23 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	}
 
 	return api, region, id, nil
+}
+
+func waitForExporter(
+	ctx context.Context,
+	api *cockpit.RegionalAPI,
+	region scw.Region,
+	exporterID string,
+	timeout time.Duration,
+) (*cockpit.Exporter, error) {
+	retryInterval := defaultCockpitRetryInterval
+
+	return api.WaitForExporter(&cockpit.WaitForExporterRequest{
+		Region:        region,
+		ExporterID:    exporterID,
+		Timeout:       scw.TimeDurationPtr(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
 }
 
 // NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
