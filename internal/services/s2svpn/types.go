@@ -28,21 +28,29 @@ func expandConnectionRequestBgpConfig(raw any) (config *s2s_vpn.CreateConnection
 
 	rawMap := raw.([]any)[0].(map[string]any)
 
-	privateIPNet, err := types.ExpandIPNet(rawMap["private_ip"].(string))
-	if err != nil {
-		return nil, err
-	}
-
-	peerPrivateIPNet, err := types.ExpandIPNet(rawMap["peer_private_ip"].(string))
-	if err != nil {
-		return nil, err
-	}
-
-	return &s2s_vpn.CreateConnectionRequestBgpConfig{
+	config = &s2s_vpn.CreateConnectionRequestBgpConfig{
 		RoutingPolicyID: locality.ExpandID(rawMap["routing_policy_id"].(string)),
-		PrivateIP:       &privateIPNet,
-		PeerPrivateIP:   &peerPrivateIPNet,
-	}, nil
+	}
+
+	if privateIPStr, ok := rawMap["private_ip"].(string); ok && privateIPStr != "" {
+		privateIPNet, err := types.ExpandIPNet(privateIPStr)
+		if err != nil {
+			return nil, err
+		}
+
+		config.PrivateIP = &privateIPNet
+	}
+
+	if peerPrivateIPStr, ok := rawMap["peer_private_ip"].(string); ok && peerPrivateIPStr != "" {
+		peerPrivateIPNet, err := types.ExpandIPNet(peerPrivateIPStr)
+		if err != nil {
+			return nil, err
+		}
+
+		config.PeerPrivateIP = &peerPrivateIPNet
+	}
+
+	return config, nil
 }
 
 func expandPrefixFilters(raw any) ([]scw.IPNet, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"runtime"
+	"slices"
 	"testing"
 
 	actionFramework "github.com/hashicorp/terraform-plugin-framework/action"
@@ -75,6 +76,20 @@ func TestProviderEphemeralDescriptionsAreNotEmpty(t *testing.T) {
 			assert.NotEmpty(t, markdownDescription, "Please fill up MarkdownDescription field in %s schema, %s:%d", ephemeralType, file, line)
 		} else {
 			t.Errorf("No Schema function found for the ephemeral resource %s", ephemeralType)
+		}
+	}
+}
+
+func TestProviderActionNameDoesNotContainAction(t *testing.T) {
+	exceptions := []string{"_instance_server_action"}
+
+	p := provider.NewFrameworkProvider(nil)().(providerFramework.ProviderWithActions)
+	for _, action := range p.Actions(t.Context()) {
+		resp := &actionFramework.MetadataResponse{}
+		action().Metadata(t.Context(), actionFramework.MetadataRequest{}, resp)
+
+		if !slices.Contains(exceptions, resp.TypeName) {
+			assert.NotContains(t, resp.TypeName, "action")
 		}
 	}
 }

@@ -1,3 +1,3 @@
-The [`scaleway_job_definition_start_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/job_definition_start_action) action is helpful to start a job that is already defined.
+The [`scaleway_job_definition_start`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/job_definition_start) action is helpful to start a job that is already defined.
 
 Refer to the Jobs [documentation](https://www.scaleway.com/en/docs/serverless/jobs/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-jobs/) for more information.
