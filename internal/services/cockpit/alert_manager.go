@@ -244,8 +244,10 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 		// If we can't read contact points (403), treat as empty list
 		if httperrors.Is403(err) {
 			_ = d.Set("contact_points", []map[string]any{})
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
