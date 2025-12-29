@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -271,68 +270,34 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		cockpitAPI := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
-		accountAPI := accountSDK.NewProjectAPI(meta.ExtractScwClient(tt.Meta))
 		region := scw.RegionFrPar
 
-		var projectID string
-
 		for _, rs := range state.RootModule().Resources {
-			if rs.Type == "scaleway_account_project" && rs.Primary.ID != "" {
-				projectID = rs.Primary.ID
+			if rs.Type != "scaleway_cockpit_alert_manager" {
+				continue
 			}
-		}
 
-		if projectID == "" {
-			return nil
-		}
+			projectID := rs.Primary.Attributes["project_id"]
+			if projectID == "" {
+				continue
+			}
 
-		// Cleanup alert manager
-		alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-			Region:    region,
-			ProjectID: projectID,
-		})
-
-		if err == nil && alertManager != nil && alertManager.AlertManagerEnabled {
-			// Cleanup contact points first
-			contactPoints, err := cockpitAPI.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+			alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 				Region:    region,
 				ProjectID: projectID,
 			})
-			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
-				return fmt.Errorf("failed to list contact points: %w", err)
+
+			if httperrors.Is404(err) || httperrors.Is403(err) {
+				return nil
 			}
 
-			if contactPoints != nil {
-				for _, cp := range contactPoints.ContactPoints {
-					if cp.Email != nil {
-						err = cockpitAPI.DeleteContactPoint(&cockpit.RegionalAPIDeleteContactPointRequest{
-							Region:    region,
-							ProjectID: projectID,
-							Email:     &cockpit.ContactPointEmail{To: cp.Email.To},
-						})
-						if err != nil && !httperrors.Is404(err) {
-							return fmt.Errorf("failed to delete contact point: %w", err)
-						}
-					}
-				}
+			if err != nil {
+				return err
 			}
 
-			// Disable alert manager
-			_, err = cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
-				Region:    region,
-				ProjectID: projectID,
-			})
-			if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
-				return fmt.Errorf("failed to disable alert manager: %w", err)
+			if alertManager != nil && alertManager.AlertManagerEnabled {
+				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
 			}
-		}
-
-		// Delete project
-		err = accountAPI.DeleteProject(&accountSDK.ProjectAPIDeleteProjectRequest{
-			ProjectID: projectID,
-		})
-		if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
-			return fmt.Errorf("failed to delete project: %w", err)
 		}
 
 		return nil
