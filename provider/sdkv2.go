@@ -318,6 +318,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),
 				"scaleway_key_manager_key":                     keymanager.DataSourceKey(),
+				"scaleway_key_manager_verify":                  keymanager.DataSourceVerify(),
 				"scaleway_lb":                                  lb.DataSourceLb(),
 				"scaleway_lb_acls":                             lb.DataSourceACLs(),
 				"scaleway_lb_backend":                          lb.DataSourceBackend(),
