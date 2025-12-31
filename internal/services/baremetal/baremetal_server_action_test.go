@@ -1,15 +1,13 @@
 package baremetal_test
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
 )
 
@@ -253,34 +251,11 @@ func TestAccBaremetalServerAction_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.stop", "events.#"),
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.start", "events.#"),
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.reboot", "events.#"),
-
-					checkEventsOccurrence("data.scaleway_audit_trail_event.stop"),
-					checkEventsOccurrence("data.scaleway_audit_trail_event.start"),
-					checkEventsOccurrence("data.scaleway_audit_trail_event.reboot"),
+					audittrail.CheckEventsOccurrence("data.scaleway_audit_trail_event.stop"),
+					audittrail.CheckEventsOccurrence("data.scaleway_audit_trail_event.start"),
+					audittrail.CheckEventsOccurrence("data.scaleway_audit_trail_event.reboot"),
 				),
 			},
 		},
 	})
-}
-
-func checkEventsOccurrence(resourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[resourceName]
-		if !ok {
-			return errors.New("not found: " + resourceName)
-		}
-
-		countStr := rs.Primary.Attributes["events.#"]
-
-		count, err := strconv.Atoi(countStr)
-		if err != nil {
-			return fmt.Errorf("could not parse events.# as integer: %w", err)
-		}
-
-		if count != 1 {
-			return fmt.Errorf("expected exactly 1 event, got %d", count)
-		}
-
-		return nil
-	}
 }
