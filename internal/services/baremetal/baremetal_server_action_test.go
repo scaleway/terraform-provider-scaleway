@@ -11,7 +11,7 @@ import (
 	baremetalchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal/testfuncs"
 )
 
-func TestAccBaremetalServerAction_Basic(t *testing.T) {
+func TestAccAction_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

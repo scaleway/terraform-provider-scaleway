@@ -2,6 +2,7 @@ package baremetal
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -61,10 +62,15 @@ func NewBaremetalServerAction() action.Action {
 	return &ServerBaremetalAction{}
 }
 
+//go:embed descriptions/server_action.md
+var serverActionDescription string
+
 func (s *ServerBaremetalAction) Schema(ctx context.Context, request action.SchemaRequest, response *action.SchemaResponse) {
 	actionValues := []string{"reboot", "start", "stop"}
 
 	response.Schema = schema.Schema{
+		MarkdownDescription: serverActionDescription,
+		Description:         serverActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"action": schema.StringAttribute{
 				Required:    true,
