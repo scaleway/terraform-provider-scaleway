@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
@@ -20,6 +21,9 @@ var (
 	_ action.Action              = (*ServerAppleSiliconRebootAction)(nil)
 	_ action.ActionWithConfigure = (*ServerAppleSiliconRebootAction)(nil)
 )
+
+//go:embed descriptions/server_reboot_action.md
+var serverRebootActionDescription string
 
 type ServerAppleSiliconRebootAction struct {
 	appleSiliconAPI *applesilicon.API
@@ -44,7 +48,7 @@ func (s *ServerAppleSiliconRebootAction) Configure(ctx context.Context, request 
 }
 
 func (s *ServerAppleSiliconRebootAction) Metadata(ctx context.Context, request action.MetadataRequest, response *action.MetadataResponse) {
-	response.TypeName = request.ProviderTypeName + "_apple_silicon_reboot_server_action"
+	response.TypeName = request.ProviderTypeName + "_apple_silicon_reboot_server"
 }
 
 // StartDiagnosticActionAppleSiliconModel defines the data structure for the action
@@ -60,6 +64,8 @@ func NewRebootServerAction() action.Action {
 
 func (s *ServerAppleSiliconRebootAction) Schema(ctx context.Context, request action.SchemaRequest, response *action.SchemaResponse) {
 	response.Schema = schema.Schema{
+		Description:         serverRebootActionDescription,
+		MarkdownDescription: serverRebootActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"server_id": schema.StringAttribute{
 				Required:    true,

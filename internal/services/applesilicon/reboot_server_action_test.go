@@ -8,9 +8,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/audittrail"
 )
 
-func TestAccRebootServer_Basic(t *testing.T) {
+func TestAccActionRebootServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccRebootServerAction_Basic because actions are not yet supported on OpenTofu")
+	}
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -27,13 +31,13 @@ func TestAccRebootServer_Basic(t *testing.T) {
 							action_trigger {
 							  events = [after_create]
 							  actions = [
-								action.scaleway_apple_silicon_reboot_server_action.main_reboot,
+								action.scaleway_apple_silicon_reboot_server.main_reboot,
 							  ]
 							}
 						}
 					}
 
-					action "scaleway_apple_silicon_reboot_server_action" "main_reboot" {
+					action "scaleway_apple_silicon_reboot_server" "main_reboot" {
 					  config {
 						server_id = scaleway_apple_silicon_server.main.id
 						wait      = true
@@ -52,13 +56,13 @@ func TestAccRebootServer_Basic(t *testing.T) {
 							action_trigger {
 							  events = [after_create]
 							  actions = [
-								action.scaleway_apple_silicon_reboot_server_action.main_reboot,
+								action.scaleway_apple_silicon_reboot_server.main_reboot,
 							  ]
 							}
 						}
 					}
 
-					action scaleway_apple_silicon_reboot_server_action main_reboot {
+					action scaleway_apple_silicon_reboot_server main_reboot {
 					  config {
 						server_id = scaleway_apple_silicon_server.main.id
 						wait      = true
