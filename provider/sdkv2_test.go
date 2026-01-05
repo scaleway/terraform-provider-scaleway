@@ -15,6 +15,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSDKProvider_SchemaFuncIsUsed(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, d := range p.ResourcesMap {
+		if d.SchemaFunc == nil {
+			t.Errorf("SchemaFunc for resource %s is nil", name)
+		}
+		if d.Schema != nil {
+			t.Errorf("Schema for resource %s is %v, want nil", name, d.Schema)
+		}
+	}
+}
+
 func TestAccProvider_InstanceIPZones(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
