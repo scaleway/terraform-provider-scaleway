@@ -97,3 +97,11 @@ In addition to all arguments above, the following attributes are exported:
   Use `export TF_LOG=DEBUG` to view the exact problem returned by the API.
 * Wildcards are not yet supported with Let's Encrypt.
 * Use `lifecycle` instruction with `create_before_destroy = true` to permit correct certificate replacement and prevent a `400` error from the `apply` operation.
+
+## Import
+
+Load Balancer certificates can be imported using the `{zone}/{id}`, e.g.
+
+```bash
+terraform import scaleway_lb_certificate.cert01 fr-par-1/11111111-1111-1111-1111-111111111111
+```
