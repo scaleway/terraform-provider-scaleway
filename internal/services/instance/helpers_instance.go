@@ -415,9 +415,9 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 }
 
 func (ph *privateNICsHandler) get(key string) (any, error) {
-	loc, id, err := locality.ParseLocalizedID(key)
-	if err != nil {
-		return nil, err
+	loc, id, _ := locality.ParseLocalizedID(key)
+	if loc == "" {
+		loc = ph.zone.String()
 	}
 
 	pn, ok := ph.privateNICsMap[id]
