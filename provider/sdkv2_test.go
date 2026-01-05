@@ -21,6 +21,7 @@ func TestSDKProvider_SchemaFuncIsUsed(t *testing.T) {
 		if d.SchemaFunc == nil {
 			t.Errorf("SchemaFunc for resource %s is nil", name)
 		}
+
 		if d.Schema != nil {
 			t.Errorf("Schema for resource %s is %v, want nil", name, d.Schema)
 		}
