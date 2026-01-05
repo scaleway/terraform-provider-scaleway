@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -25,6 +26,13 @@ func ResourcePolicy() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    policySchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the IAM Policy (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -150,7 +158,10 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pol.ID)
+	err = identity.SetFlatIdentity(d, "id", pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamPolicyRead(ctx, d, m)
 }
@@ -201,6 +212,11 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	_ = d.Set("rule", flattenPolicyRules(listRules.Rules))
+
+	err = identity.SetFlatIdentity(d, "id", pol.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

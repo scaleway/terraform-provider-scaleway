@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,13 @@ func ResourceUser() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"id": {
+				Type:              schema.TypeString,
+				Description:       "ID of the user (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -156,7 +164,10 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(user.ID)
+	err = identity.SetFlatIdentity(d, "id", user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamUserRead(ctx, d, m)
 }
@@ -196,6 +207,11 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("mfa", user.Mfa)
 	_ = d.Set("account_root_user_id", user.AccountRootUserID)
 	_ = d.Set("locked", user.Locked)
+
+	err = identity.SetFlatIdentity(d, "id", user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

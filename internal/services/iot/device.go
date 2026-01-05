@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -34,6 +35,7 @@ func ResourceDevice() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    deviceSchema,
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -251,8 +253,6 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Device.ID))
-
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
 		// Set user certificate to device.
@@ -272,6 +272,11 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			"key": res.Certificate.Key,
 		}
 		_ = d.Set("certificate", []map[string]any{cert})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, res.Device.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return ResourceIotDeviceRead(ctx, d, m)
@@ -360,6 +365,11 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any) d
 			"key": devCrtKey.(string),
 		}
 		_ = d.Set("certificate", []map[string]any{cert})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, device.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

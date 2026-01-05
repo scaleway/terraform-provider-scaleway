@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceNatsAccount() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    natsAccountSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -60,7 +62,10 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, account.ID))
+	err = identity.SetRegionalIdentity(d, region, account.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
@@ -89,6 +94,11 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("region", account.Region)
 	_ = d.Set("project_id", account.ProjectID)
 	_ = d.Set("endpoint", account.Endpoint)
+
+	err = identity.SetRegionalIdentity(d, region, account.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

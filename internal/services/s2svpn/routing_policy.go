@@ -10,6 +10,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -21,6 +22,7 @@ func ResourceRoutingPolicy() *schema.Resource {
 		ReadContext:   ResourceRoutingPolicyRead,
 		UpdateContext: ResourceRoutingPolicyUpdate,
 		DeleteContext: ResourceRoutingPolicyDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -116,7 +118,10 @@ func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRoutingPolicyRead(ctx, d, m)
 }
@@ -161,6 +166,11 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("is_ipv6", policy.IsIPv6)
 	_ = d.Set("prefix_filter_in", prefixFilterIn)
 	_ = d.Set("prefix_filter_out", prefixFilterOut)
+
+	err = identity.SetRegionalIdentity(d, policy.Region, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

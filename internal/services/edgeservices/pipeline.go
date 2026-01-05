@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -30,6 +31,13 @@ func ResourcePipeline() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    pipelineSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"pipeline_id": {
+				Type:              schema.TypeString,
+				RequiredForImport: true,
+				Description:       "The ID of the pipeline (UUID format)",
+			},
+		}),
 	}
 }
 
@@ -76,7 +84,10 @@ func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pipeline.ID)
+	err = identity.SetFlatIdentity(d, "pipeline_id", pipeline.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourcePipelineRead(ctx, d, m)
 }

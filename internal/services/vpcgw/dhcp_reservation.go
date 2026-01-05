@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -33,6 +34,7 @@ func ResourceDHCPReservation() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultTimeout),
 		},
 		SchemaVersion:      0,
+		Identity:           identity.DefaultZonal(),
 		SchemaFunc:         dhcpReservation,
 		CustomizeDiff:      cdf.LocalityCheck("gateway_network_id"),
 		DeprecationMessage: "The 'dhcp_reservation' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. You can use IPAM to manage your IPs. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
@@ -116,7 +118,10 @@ func ResourceVPCPublicGatewayDHCPCReservationCreate(ctx context.Context, d *sche
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -154,6 +159,11 @@ func ResourceVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.
 	_ = d.Set("created_at", entry.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", entry.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("zone", zone)
+
+	err = identity.SetZonalIdentity(d, entry.Zone, entry.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

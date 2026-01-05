@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -38,6 +39,7 @@ func ResourceSnapshot() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -159,7 +161,10 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Snapshot.ID))
+	err = identity.SetZonalIdentity(d, res.Snapshot.Zone, res.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = instanceAPI.WaitForSnapshot(&instanceSDK.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,
@@ -203,6 +208,11 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
 	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
 	_ = d.Set("tags", snapshot.Snapshot.Tags)
+
+	err = identity.SetZonalIdentity(d, snapshot.Snapshot.Zone, snapshot.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

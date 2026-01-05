@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -36,6 +37,7 @@ func ResourceImage() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceImageTimeout),
 		},
 		SchemaVersion: 0,
+		Identity:      identity.DefaultZonal(),
 		SchemaFunc:    imageSchema,
 		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}
@@ -221,7 +223,10 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Image.ID))
+	err = identity.SetZonalIdentity(d, res.Image.Zone, res.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,
@@ -270,6 +275,11 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("zone", image.Image.Zone)
 	_ = d.Set("project_id", image.Image.Project)
 	_ = d.Set("organization_id", image.Image.Organization)
+
+	err = identity.SetZonalIdentity(d, image.Image.Zone, image.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

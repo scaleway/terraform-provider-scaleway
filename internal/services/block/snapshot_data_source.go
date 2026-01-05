@@ -72,10 +72,7 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceBlockSnapshotRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read snapshot state")...)
-	}
+	setSnapshotSchema(ctx, d, m)
 
 	if d.Id() == "" {
 		return diag.Errorf("snapshot (%s) not found", zoneID)

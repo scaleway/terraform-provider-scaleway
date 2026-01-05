@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -33,6 +34,14 @@ func ResourceRegistration() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"project_id": identity.DefaultProjectIDAttribute(),
+			"task_id": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the task that the registration will run (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 

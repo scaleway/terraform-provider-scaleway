@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -36,6 +37,7 @@ func ResourcePATRule() *schema.Resource {
 		},
 		SchemaFunc:    patRuleSchema,
 		CustomizeDiff: cdf.LocalityCheck("gateway_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -123,7 +125,10 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, patRule.ID))
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -162,6 +167,11 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	_ = d.Set("public_port", int(patRule.PublicPort))
 	_ = d.Set("protocol", patRule.Protocol.String())
 	_ = d.Set("zone", zone)
+
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

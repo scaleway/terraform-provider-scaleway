@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -60,6 +61,7 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
+		Identity: identity.DefaultRegional(),
 	}
 }
 
@@ -385,7 +387,10 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -520,6 +525,11 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 				Detail:   readErr.Error(),
 			})
 		}
+	}
+
+	err = identity.SetRegionalIdentity(d, instance.Region, instance.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags

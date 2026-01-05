@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -24,6 +25,13 @@ func ResourceRouteStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
+		Identity: identity.WrapSchemaMap(map[string]*schema.Schema{
+			"route_stage": {
+				Type:              schema.TypeString,
+				Description:       "The ID of the route stage (UUID format)",
+				RequiredForImport: true,
+			},
+		}),
 	}
 }
 
@@ -127,7 +135,10 @@ func ResourceRouteStageCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(routeStage.ID)
+	err = identity.SetFlatIdentity(d, "route_stage", routeStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRouteStageRead(ctx, d, m)
 }

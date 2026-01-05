@@ -10,6 +10,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -30,6 +31,7 @@ func ResourceDomain() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    domainSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -225,7 +227,10 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, domain.ID))
+	err = identity.SetRegionalIdentity(d, domain.Region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceDomainRead(ctx, d, m)
 }
@@ -305,6 +310,11 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("region", string(region))
 	_ = d.Set("project_id", domain.ProjectID)
 	_ = d.Set("smtps_auth_user", domain.ProjectID)
+
+	err = identity.SetRegionalIdentity(d, domain.Region, domain.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

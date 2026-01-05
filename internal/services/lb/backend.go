@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -40,6 +41,7 @@ func ResourceBackend() *schema.Resource {
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
 		SchemaFunc: backendSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 
@@ -458,7 +460,10 @@ func resourceLbBackendCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbBackendRead(ctx, d, m)
 }
@@ -515,6 +520,11 @@ func resourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("health_check_https", flattenLbHCHTTPS(backend.HealthCheck.HTTPSConfig))
 	_ = d.Set("health_check_transient_delay", types.FlattenDuration(backend.HealthCheck.TransientCheckDelay.ToTimeDuration()))
 	_ = d.Set("health_check_send_proxy", backend.HealthCheck.CheckSendProxy)
+
+	err = identity.SetZonalIdentity(d, zone, backend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForLB(ctx, lbAPI, zone, backend.LB.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {

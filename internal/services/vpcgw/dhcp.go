@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -26,6 +27,7 @@ func ResourceDHCP() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion:      0,
+		Identity:           identity.DefaultZonal(),
 		SchemaFunc:         dhcpSchema,
 		DeprecationMessage: "The 'dhcp' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
 	}
@@ -197,7 +199,10 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
 }
@@ -239,7 +244,12 @@ func ResourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceDat
 	_ = d.Set("subnet", dhcp.Subnet.String())
 	_ = d.Set("updated_at", dhcp.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("valid_lifetime", dhcp.ValidLifetime.Seconds)
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", dhcp.Zone)
+
+	err = identity.SetZonalIdentity(d, dhcp.Zone, dhcp.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

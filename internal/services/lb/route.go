@@ -8,6 +8,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -30,6 +31,7 @@ func ResourceRoute() *schema.Resource {
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
 		SchemaFunc: routeSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 
@@ -122,7 +124,10 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, route.ID))
+	err = identity.SetZonalIdentity(d, frontZone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbRouteRead(ctx, d, m)
 }
@@ -155,6 +160,11 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("match_subdomains", route.Match.MatchSubdomains)
 	_ = d.Set("created_at", types.FlattenTime(route.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(route.UpdatedAt))
+
+	err = identity.SetZonalIdentity(d, zone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

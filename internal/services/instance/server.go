@@ -28,6 +28,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -49,6 +50,7 @@ func ResourceServer() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.DefaultZonal(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 			Read:    schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
@@ -516,7 +518,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(zone, res.Server.ID).String())
+	err = identity.SetZonalIdentity(d, res.Server.Zone, res.Server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -889,6 +894,11 @@ You can check the full list of compatible server types:
 	}
 
 	_ = d.Set("private_ips", allPrivateIPs)
+
+	err = identity.SetZonalIdentity(d, server.Zone, server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

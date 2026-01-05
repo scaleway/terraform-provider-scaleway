@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -31,6 +32,7 @@ func ResourceDefinition() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    definitionSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -210,7 +212,10 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, definition.ID))
+	err = identity.SetRegionalIdentity(d, definition.Region, definition.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceJobDefinitionRead(ctx, d, m)
 }
@@ -256,6 +261,11 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
 	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
+
+	err = identity.SetRegionalIdentity(d, definition.Region, definition.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

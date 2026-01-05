@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -54,6 +55,7 @@ func ResourceCluster() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
@@ -571,7 +573,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
@@ -668,6 +673,11 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	_ = d.Set("kubeconfig", []map[string]any{kubeconfig})
+
+	err = identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

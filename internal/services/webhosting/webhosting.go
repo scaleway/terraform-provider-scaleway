@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/webhosting/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -46,6 +47,7 @@ func ResourceWebhosting() *schema.Resource {
 
 			return nil
 		},
+		Identity: identity.DefaultRegional(),
 	}
 }
 
@@ -272,7 +274,10 @@ func resourceWebhostingCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, hostingResponse.ID))
+	err = identity.SetRegionalIdentity(d, region, hostingResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForHosting(ctx, api, region, hostingResponse.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -330,6 +335,11 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("region", webhostingResponse.Region)
 	_ = d.Set("organization_id", "")
 	_ = d.Set("project_id", webhostingResponse.ProjectID)
+
+	err = identity.SetRegionalIdentity(d, webhostingResponse.Region, webhostingResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

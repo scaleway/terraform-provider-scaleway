@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -33,6 +34,7 @@ func ResourceVPC() *schema.Resource {
 
 			return nil
 		},
+		Identity: identity.DefaultRegional(),
 	}
 }
 
@@ -113,7 +115,10 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCRead(ctx, d, m)
 }
@@ -150,6 +155,11 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
+	}
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

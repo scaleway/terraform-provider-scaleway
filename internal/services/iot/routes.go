@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -32,6 +33,7 @@ func ResourceRoute() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -244,7 +246,10 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -307,6 +312,11 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m any) di
 			"strategy":      response.S3Config.Strategy,
 		}}
 		_ = d.Set("s3", conf)
+	}
+
+	err = identity.SetRegionalIdentity(d, region, response.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

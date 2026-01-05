@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
@@ -35,6 +36,7 @@ func ResourceNamespace() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    namespaceSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -139,7 +141,10 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, ns.ID))
+	err = identity.SetRegionalIdentity(d, ns.Region, ns.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -177,6 +182,11 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
 	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
+
+	err = identity.SetRegionalIdentity(d, ns.Region, ns.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

@@ -34,6 +34,28 @@ func ResourceDatabase() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    databaseSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      databaseIdentity(),
+	}
+}
+
+func databaseIdentity() *schema.ResourceIdentity {
+	return &schema.ResourceIdentity{
+		SchemaFunc: func() map[string]*schema.Schema {
+			return map[string]*schema.Schema{
+				"id": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+				},
+				"region": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+				},
+				"name": {
+					Type:              schema.TypeString,
+					RequiredForImport: true,
+				},
+			}
+		},
 	}
 }
 

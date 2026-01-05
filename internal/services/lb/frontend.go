@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -39,6 +40,7 @@ func ResourceFrontend() *schema.Resource {
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
 		SchemaFunc: frontendSchema,
+		Identity:   identity.DefaultZonal(),
 	}
 }
 
@@ -316,7 +318,10 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, frontend.ID))
+	err = identity.SetZonalIdentity(d, zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("external_acls").(bool) {
 		return resourceLbFrontendRead(ctx, d, m)
@@ -377,6 +382,11 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 
 		_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
+	}
+
+	err = identity.SetZonalIdentity(d, zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

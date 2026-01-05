@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -38,6 +39,7 @@ func ResourceVolume() *schema.Resource {
 		},
 		SchemaFunc:    volumeSchema,
 		CustomizeDiff: cdf.LocalityCheck("from_snapshot_id"),
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -127,7 +129,10 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,
@@ -193,6 +198,11 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 				AttributePath: cty.GetAttrPath("type"),
 			},
 		}
+	}
+
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

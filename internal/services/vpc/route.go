@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,6 +26,7 @@ func ResourceRoute() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -113,7 +115,10 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRouteRead(ctx, d, m)
 }
@@ -144,7 +149,7 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 	_ = d.Set("nexthop_private_network_id", regional.NewIDString(region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	destination, err := types.FlattenIPNet(res.Destination)
 	if err != nil {
@@ -155,6 +160,11 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
+	}
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

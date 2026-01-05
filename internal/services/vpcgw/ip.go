@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,6 +26,7 @@ func ResourceIP() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -83,7 +85,10 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	reverse := d.Get("reverse")
 	if len(reverse.(string)) > 0 {
@@ -128,9 +133,14 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	_ = d.Set("project_id", ip.ProjectID)
 	_ = d.Set("created_at", ip.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", ip.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", ip.Zone)
 	_ = d.Set("tags", ip.Tags)
 	_ = d.Set("reverse", ip.Reverse)
+
+	err = identity.SetZonalIdentity(d, ip.Zone, ip.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

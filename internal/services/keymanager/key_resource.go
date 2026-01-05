@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -27,6 +28,7 @@ func ResourceKeyManagerKey() *schema.Resource {
 			validateUsageAlgorithmCombination(),
 		),
 		SchemaFunc: keySchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -167,7 +169,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(key.Region, key.ID))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
@@ -205,6 +210,11 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("locked", key.Locked)
 	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
 	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
+
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

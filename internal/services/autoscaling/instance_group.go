@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -30,6 +31,7 @@ func ResourceInstanceGroup() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    instanceGroupSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -153,7 +155,10 @@ func ResourceInstanceGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, group.ID))
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceGroupRead(ctx, d, m)
 }
@@ -187,6 +192,11 @@ func ResourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
 	_ = d.Set("zone", zone)
 	_ = d.Set("project_id", group.ProjectID)
+
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

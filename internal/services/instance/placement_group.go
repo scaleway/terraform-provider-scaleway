@@ -8,6 +8,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -28,6 +29,7 @@ func ResourcePlacementGroup() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    placementGroupSchema,
+		Identity:      identity.DefaultZonal(),
 	}
 }
 
@@ -90,7 +92,10 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.PlacementGroup.ID))
+	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstancePlacementGroupRead(ctx, d, m)
 }
@@ -123,6 +128,11 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	_ = d.Set("policy_type", res.PlacementGroup.PolicyType.String())
 	_ = d.Set("policy_respected", res.PlacementGroup.PolicyRespected)
 	_ = d.Set("tags", res.PlacementGroup.Tags)
+
+	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
