@@ -30,35 +30,38 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"login": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The login of the Grafana user",
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_-]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The password of the Grafana user",
-				Sensitive:   true,
-			},
-			"role": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The role of the Grafana user",
-				ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
-			},
-			"grafana_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The grafana URL",
-			},
+		SchemaFunc: cockpitGrafanaUserSchema,
+	}
+}
 
-			"project_id": account.ProjectIDSchema(),
+func cockpitGrafanaUserSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"login": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "The login of the Grafana user",
+			ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_-]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
 		},
+		"password": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The password of the Grafana user",
+			Sensitive:   true,
+		},
+		"role": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The role of the Grafana user",
+			ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
+		},
+		"grafana_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The grafana URL",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
