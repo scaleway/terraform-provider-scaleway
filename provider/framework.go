@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
@@ -167,6 +168,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	res = append(res, rdb.NewInstanceCertificateRenewAction)
 	res = append(res, rdb.NewDatabaseBackupExportAction)
 	res = append(res, baremetal.NewBaremetalServerAction)
+	res = append(res, applesilicon.NewRebootServerAction)
 	res = append(res, vpcgw.NewRefreshSSHKeysAction)
 
 	return res
