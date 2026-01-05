@@ -25,55 +25,59 @@ func ResourceCustomerGateway() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the customer gateway",
+		SchemaFunc:    customerGatewaySchema,
+	}
+}
+
+func customerGatewaySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the customer gateway",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The list of tags to apply to the customer gateway",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The list of tags to apply to the customer gateway",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"ipv4_public": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The public IPv4 address of the customer gateway",
-			},
-			"ipv6_public": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The public IPv6 address of the customer gateway",
-			},
-			"asn": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The AS Number of the customer gateway",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the TLS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the TLS stage",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Organization ID of the Project",
-			},
+		},
+		"ipv4_public": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The public IPv4 address of the customer gateway",
+		},
+		"ipv6_public": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The public IPv6 address of the customer gateway",
+		},
+		"asn": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "The AS Number of the customer gateway",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the TLS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the TLS stage",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"organization_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Organization ID of the Project",
 		},
 	}
 }
