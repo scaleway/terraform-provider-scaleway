@@ -81,7 +81,7 @@ func TestProviderEphemeralDescriptionsAreNotEmpty(t *testing.T) {
 }
 
 func TestProviderActionNameDoesNotContainAction(t *testing.T) {
-	exceptions := []string{"_instance_server_action"}
+	exceptions := []string{"_instance_server_action", "_baremetal_server_action"}
 
 	p := provider.NewFrameworkProvider(nil)().(providerFramework.ProviderWithActions)
 	for _, action := range p.Actions(t.Context()) {
