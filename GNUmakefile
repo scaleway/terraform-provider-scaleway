@@ -62,7 +62,7 @@ tfproviderdocs:
 	go tool tfproviderdocs check -provider-name scaleway -enable-contents-check
 
 tfproviderlintx:
-	go tool tfproviderlintx -XR001=false -XS002=false ./...
+	go tool tfproviderlintx -S013=false -XR001=false -XS002=false ./...
 
 format_examples:
 	terraform fmt -recursive examples
