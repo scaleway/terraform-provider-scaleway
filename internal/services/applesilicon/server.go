@@ -303,6 +303,20 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
 	_ = d.Set("zone", res.Zone)
 
+	switch res.VpcStatus {
+	case applesilicon.ServerPrivateNetworkStatusVpcDisabled:
+		_ = d.Set("enable_vpc", false)
+	case applesilicon.ServerPrivateNetworkStatusVpcEnabled:
+		_ = d.Set("enable_vpc", true)
+	}
+
+	switch res.Commitment.Type {
+	case applesilicon.CommitmentTypeNone, applesilicon.CommitmentTypeDuration24h:
+		_ = d.Set("commitment", applesilicon.CommitmentTypeDuration24h.String())
+	case applesilicon.CommitmentTypeRenewedMonthly:
+		_ = d.Set("commitment", applesilicon.CommitmentTypeRenewedMonthly.String())
+	}
+
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
 		ServerID: &res.ID,
