@@ -86,7 +86,7 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-				  name        = "tf-test-decrypt-key"
+				  name        = "tf-test-decrypt-key-ad"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"
@@ -112,7 +112,7 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 				}
 
 				resource "scaleway_secret" "main" {
-					name        = "test-decrypt-secret"
+					name        = "test-decrypt-secret-ad"
 				}
 
 				resource "scaleway_secret_version" "data" {
@@ -167,7 +167,7 @@ func TestAccDecryptEphemeralResource_InvalidAssociatedData(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-				  name        = "tf-test-decrypt-key"
+				  name        = "tf-test-decrypt-key-invalid"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"
