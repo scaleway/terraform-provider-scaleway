@@ -162,7 +162,7 @@ func testSweepCockpitDataSource(_ string) error {
 					Origin:    origin,
 				}, scw.WithAllPages())
 				if err != nil {
-					logging.L.Debugf("sweeper: failed to list cockpit datasource by origin %s", origin)
+					logging.L.Warningf("sweeper: failed to list cockpit datasource by origin %s", origin)
 
 					continue
 				}
@@ -179,7 +179,9 @@ func testSweepCockpitDataSource(_ string) error {
 				})
 				if err != nil {
 					if !httperrors.Is404(err) {
-						return fmt.Errorf("failed to delete cockpit source: %w", err)
+						logging.L.Warningf("sweeper: failed to delete cockpit source: %w", err)
+
+						continue
 					}
 				}
 			}
