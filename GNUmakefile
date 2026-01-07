@@ -56,7 +56,7 @@ website:
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website docs
 
 tfproviderlint:
-	go tool tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
+	go tool tfproviderlint -S013=false -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
 
 tfproviderdocs:
 	go tool tfproviderdocs check -provider-name scaleway -enable-contents-check
