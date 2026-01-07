@@ -163,6 +163,7 @@ func testSweepCockpitDataSource(_ string) error {
 				}, scw.WithAllPages())
 				if err != nil {
 					logging.L.Debugf("sweeper: failed to list cockpit datasource by origin %s", origin)
+
 					continue
 				}
 
