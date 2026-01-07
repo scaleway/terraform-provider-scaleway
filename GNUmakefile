@@ -1,5 +1,6 @@
 SWEEP?=all_regions
-SWEEP_DIR?=./internal/services/*
+SWEEP_ACCOUNT_DIR?=./internal/services/account
+SWEEP_DIR?=$(filter-out $(SWEEP_ACCOUNT_DIR), $(wildcard ./internal/services/*))
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
@@ -14,6 +15,7 @@ build: fmtcheck
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
 	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m
+	go test $(SWEEP_ACCOUNT_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m
 
 test: fmtcheck
 	go test $(TEST) || exit 1
@@ -56,13 +58,13 @@ website:
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website docs
 
 tfproviderlint:
-	go tool tfproviderlint -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
+	go tool tfproviderlint -S013=false -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
 
 tfproviderdocs:
 	go tool tfproviderdocs check -provider-name scaleway -enable-contents-check
 
 tfproviderlintx:
-	go tool tfproviderlintx -XR001=false -XS002=false ./...
+	go tool tfproviderlintx -S013=false -XR001=false -XS002=false ./...
 
 format_examples:
 	terraform fmt -recursive examples
