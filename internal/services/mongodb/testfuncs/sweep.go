@@ -15,6 +15,10 @@ func AddTestSweepers() {
 		Name: "scaleway_mongodb_instance",
 		F:    testSweepMongodbInstance,
 	})
+	resource.AddTestSweepers("scaleway_mongodb_instance_snapshot", &resource.Sweeper{
+		Name: "scaleway_mongodb_instance_snapshot",
+		F:    testSweepMongodbInstanceSnapshot,
+	})
 }
 
 func testSweepMongodbInstance(_ string) error {
@@ -42,6 +46,38 @@ func testSweepMongodbInstance(_ string) error {
 			})
 			if err != nil {
 				return fmt.Errorf("error deleting mongodb instance in sweeper: %w", err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepMongodbInstanceSnapshot(_ string) error {
+	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
+		mongodbAPI := mongodb.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: destroying the mongodb instance snapshot in (%s)", zone)
+
+		extractRegion, err := zone.Region()
+		if err != nil {
+			return fmt.Errorf("error extract region in (%s) in sweeper: %w", zone, err)
+		}
+
+		listSnapshot, err := mongodbAPI.ListSnapshots(&mongodb.ListSnapshotsRequest{
+			Region: extractRegion,
+		})
+		if err != nil {
+			return fmt.Errorf("error listing mongodb instance snapshot in (%s) in sweeper: %w", zone, err)
+		}
+
+		for _, snapshot := range listSnapshot.Snapshots {
+			_, err := mongodbAPI.DeleteSnapshot(&mongodb.DeleteSnapshotRequest{
+				Region:     extractRegion,
+				SnapshotID: snapshot.ID,
+			})
+			if err != nil {
+				return fmt.Errorf("error deleting mongodb instance snapshot in sweeper: %w", err)
 			}
 		}
 
