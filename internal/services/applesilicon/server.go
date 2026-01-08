@@ -12,6 +12,7 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -82,6 +83,11 @@ func serverSchema() map[string]*schema.Schema {
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
 			Description: "List of runner ids attach to the server",
+		},
+		"os_id": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 		"public_bandwidth": {
 			Type:        schema.TypeInt,
@@ -228,8 +234,14 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:           zone,
 	}
 
+	if OsID, ok := d.GetOk("os_id"); ok {
+		createReq.OsID = types.ExpandUpdatedStringPtr(OsID)
+	}
+
 	if runnerIDs, ok := d.GetOk("runner_ids"); ok {
-		createReq.AppliedRunnerConfigurations.RunnerConfigurationIDs = runnerIDs.([]string)
+		createReq.AppliedRunnerConfigurations = &applesilicon.AppliedRunnerConfigurations{
+			RunnerConfigurationIDs: locality.ExpandIDs(runnerIDs),
+		}
 	}
 
 	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {

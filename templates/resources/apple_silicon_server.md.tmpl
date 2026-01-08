@@ -41,6 +41,25 @@ resource "scaleway_apple_silicon_server" "my-server" {
 }
 ```
 
+### With `github` runner
+
+```terraform
+resource "scaleway_apple_silicon_runner" "main" {
+    name       = "TestAccRunnerGithub"
+    ci_provider   = "github"
+    url        = "https://github.com/my-repo-url"
+    token      = "MY_GITHUB_RUNNER_TOKEN"
+}
+
+resource scaleway_apple_silicon_server main {
+    name = "TestAccServerRunner"
+    type = "M2-L"
+    public_bandwidth = 1000000000
+    os_id = "cafecafe-5018-4dcd-bd08-35f031b0ac3e"
+    runner_ids = [scaleway_apple_silicon_runner.main.id]
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -57,6 +76,8 @@ The following arguments are supported:
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
   associated with.
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.
+
+- `runner_ids` - (Optional) List of runner IDs to assign to the server. At the moment, only a single runner can be attached to a server. Compatible only with runners of type `github` and `gitlab`, with the `devos-sequoia-15.6` offer and `M2-L` server type
 
 - `private_network` - (Optional) The private networks to attach to the server
     - `id` - The private network ID

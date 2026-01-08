@@ -15,6 +15,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	GitlabRunner = "gitlab"
+	GithubRunner = "github"
+)
+
 func ResourceRunner() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceAppleSiliconRunnerCreate,
@@ -92,7 +97,7 @@ func ResourceAppleSiliconRunnerCreate(ctx context.Context, d *schema.ResourceDat
 		GitlabConfiguration: nil,
 	}
 
-	if provider == "github" {
+	if provider == GithubRunner {
 		runnerConfig.GithubConfiguration = &applesilicon.GithubRunnerConfiguration{
 			URL:    d.Get("url").(string),
 			Token:  d.Get("token").(string),
@@ -100,7 +105,7 @@ func ResourceAppleSiliconRunnerCreate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	if provider == "gitlab" {
+	if provider == GitlabRunner {
 		runnerConfig.GitlabConfiguration = &applesilicon.GitlabRunnerConfiguration{
 			URL:   d.Get("url").(string),
 			Token: d.Get("token").(string),
@@ -139,6 +144,7 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -147,12 +153,12 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("status", runner.Status)
 	_ = d.Set("error_message", runner.ErrorMessage)
 
-	if runner.Configuration.Provider == "github" {
+	if runner.Configuration.Provider.String() == GithubRunner {
 		_ = d.Set("url", runner.Configuration.GithubConfiguration.URL)
 		_ = d.Set("labels", runner.Configuration.GithubConfiguration.Labels)
 	}
 
-	if runner.Configuration.Provider == "gitlab" {
+	if runner.Configuration.Provider.String() == GitlabRunner {
 		_ = d.Set("url", runner.Configuration.GitlabConfiguration.URL)
 	}
 
@@ -174,7 +180,7 @@ func ResourceAppleSiliconRunnerUpdate(ctx context.Context, d *schema.ResourceDat
 		GitlabConfiguration: nil,
 	}
 
-	if provider == "github" {
+	if provider == GithubRunner {
 		runnerConfig.GithubConfiguration = &applesilicon.GithubRunnerConfiguration{
 			URL:    d.Get("url").(string),
 			Token:  d.Get("token").(string),
@@ -182,7 +188,7 @@ func ResourceAppleSiliconRunnerUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	if provider == "gitlab" {
+	if provider == GitlabRunner {
 		runnerConfig.GitlabConfiguration = &applesilicon.GitlabRunnerConfiguration{
 			URL:   d.Get("url").(string),
 			Token: d.Get("token").(string),
@@ -208,13 +214,16 @@ func ResourceAppleSiliconRunnerDelete(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	runnerDeleteReq := &applesilicon.DeleteRunnerRequest{
 		Zone:     zone,
 		RunnerID: ID,
 	}
+
 	err = asAPI.DeleteRunner(runnerDeleteReq, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is403(err) {
 		return diag.FromErr(err)
 	}
+
 	return nil
 }

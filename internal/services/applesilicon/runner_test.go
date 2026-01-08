@@ -2,7 +2,6 @@ package applesilicon_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -13,12 +12,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 )
 
+
 func TestAccRunner_BasicGithub(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	t.Skip("can not register this cassette for security issue")
-	var githubUrl = os.Getenv("GITHUB_URL_AS")
-	var githubToken = os.Getenv("GITHUB_TOKEN_AS")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -98,13 +97,12 @@ func isRunnerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Zone:     zone,
 				RunnerID: id,
 			})
-
 			if err == nil {
 				return fmt.Errorf("runner still exists: %s", rs.Primary.ID)
 			}
 
 			if !httperrors.Is403(err) {
-				return fmt.Errorf("unexpected error: %s", err)
+				return fmt.Errorf("unexpected error: %w", err)
 			}
 		}
 
