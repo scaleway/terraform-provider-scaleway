@@ -32,7 +32,7 @@ func testSweepFlexibleIP(_ string) error {
 				Zone:  zone,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting ip in sweeper: %w", err)
+				logging.L.Warningf("error deleting ip %s in sweeper: %w", ip.ID, err)
 			}
 		}
 

@@ -50,7 +50,7 @@ func testSweepVPC(_ string) error {
 				Region: region,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting VPC in sweeper (%s)", err)
+				logging.L.Warningf("error deleting VPC %s in sweeper: %w", v.ID, err)
 			}
 		}
 
@@ -77,7 +77,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 				PrivateNetworkID: pn.ID,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting private network in sweeper: %w", err)
+				logging.L.Warningf("error deleting private network %s in sweeper: %w", pn.ID, err)
 			}
 		}
 
@@ -111,10 +111,10 @@ func testSweepVPCRoute(_ string) error {
 					RouteID: routeWithNexthop.Route.ID,
 				})
 				if err != nil {
-					logging.L.Warningf("error deleting route in sweeper: %w", err)
+					logging.L.Warningf("error deleting route %s in sweeper: %w", routeWithNexthop.Route.ID, err)
 				}
 			} else {
-				logging.L.Warningf("route is nil in RouteWithNexthop: %v", routeWithNexthop)
+				logging.L.Warningf("route %s is nil in RouteWithNexthop: %v", routeWithNexthop.Route.ID, routeWithNexthop)
 			}
 		}
 

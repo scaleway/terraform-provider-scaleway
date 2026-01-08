@@ -38,7 +38,7 @@ func testSweepRedisCluster(_ string) error {
 			})
 			if err != nil {
 				if !httperrors.Is404(err) {
-					logging.L.Warningf("error deleting redis cluster in sweeper: %w", err)
+					logging.L.Warningf("error deleting redis cluster %s in sweeper: %w", cluster.ID, err)
 				}
 			}
 		}

@@ -215,7 +215,7 @@ func testSweepCockpitAlertManager(_ string) error {
 			})
 			if err != nil {
 				if !httperrors.Is404(err) {
-					logging.L.Warningf("failed to disable alert manager: %w", err)
+					logging.L.Warningf("failed to disable alert manager on project %s: %w", project.ID, err)
 				}
 			}
 		}
