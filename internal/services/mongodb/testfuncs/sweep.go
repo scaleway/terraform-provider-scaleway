@@ -45,7 +45,7 @@ func testSweepMongodbInstance(_ string) error {
 				InstanceID: instance.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting mongodb instance in sweeper: %w", err)
+				logging.L.Warningf("error deleting mongodb instance in sweeper: %w", err)
 			}
 		}
 
@@ -77,7 +77,7 @@ func testSweepMongodbInstanceSnapshot(_ string) error {
 				SnapshotID: snapshot.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting mongodb instance snapshot in sweeper: %w", err)
+				logging.L.Warningf("error deleting mongodb instance snapshot in sweeper: %w", err)
 			}
 		}
 
