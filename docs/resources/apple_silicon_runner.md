@@ -29,7 +29,7 @@ resource "scaleway_apple_silicon_runner" "main" {
 
 ## Attributes Reference
 
-In addition to all arguments above, the following attributes are exported
+In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the runner.
 - `status` - The status of the runner
