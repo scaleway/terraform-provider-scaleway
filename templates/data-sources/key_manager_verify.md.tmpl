@@ -1,0 +1,35 @@
+---
+subcategory: "Key Manager"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Data Source: {{ .Name }}
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+
+{{ end -}}
+
+## Argument Reference
+
+- `key_id` -  ID of the key to use for signature verification. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
+
+- `region` - The [region](../guides/regions_and_zones.md#regions) of the key. If not set, the region is derived from the key_id when possible or from the [provider](../index.md#region) `region` configuration.
+
+- `digest` - Digest of the original signed message. Must be generated using the same algorithm specified in the key’s configuration, and encoded as a base64 string.
+
+- `signature` - The message signature to verify, encoded as a base64 string.
+
+- `valid` - Defines whether the signature is valid. Returns `true` if the signature is valid for the digest and key, and `false` otherwise.
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_key_manager_key` [resource](../resources/key_manager_key.md)
