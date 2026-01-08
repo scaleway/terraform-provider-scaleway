@@ -12,7 +12,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 )
 
-
 func TestAccRunner_BasicGithub(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

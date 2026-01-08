@@ -78,8 +78,10 @@ func TestAccServer_Basic(t *testing.T) {
 
 func TestAccServer_Runner(t *testing.T) {
 	t.Skip("can not register this cassette for security issue")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),

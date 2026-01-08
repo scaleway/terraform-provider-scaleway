@@ -81,6 +81,7 @@ func serverSchema() map[string]*schema.Schema {
 			Elem: &schema.Schema{
 				Type:             schema.TypeString,
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: dsf.Locality,
 			},
 			Description: "List of runner ids attach to the server",
 		},
