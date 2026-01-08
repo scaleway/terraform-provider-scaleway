@@ -86,9 +86,9 @@ func serverSchema() map[string]*schema.Schema {
 			Description: "List of runner ids attach to the server",
 		},
 		"os_id": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The OS ID of the server",
 		},
 		"public_bandwidth": {
 			Type:        schema.TypeInt,

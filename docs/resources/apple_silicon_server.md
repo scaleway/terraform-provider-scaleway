@@ -76,7 +76,10 @@ The following arguments are supported:
 
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
   associated with.
+
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.
+
+- `os_id` - (Optional) The ID of the OS to use for the server.
 
 - `runner_ids` - (Optional) List of runner IDs to assign to the server. At the moment, only a single runner can be attached to a server. Compatible only with runners of type `github` and `gitlab`, with the `devos-sequoia-15.6` offer and `M2-L` server type
 
