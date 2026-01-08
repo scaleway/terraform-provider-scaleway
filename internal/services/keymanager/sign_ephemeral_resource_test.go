@@ -25,6 +25,10 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			IsKeyManagerKeyDestroyed(tt),
+			testAccCheckSecretDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
