@@ -28,6 +28,10 @@ func AddTestSweepers() {
 		Name: "scaleway_cockpit_source",
 		F:    testSweepCockpitDataSource,
 	})
+	resource.AddTestSweepers("scaleway_cockpit_alert_manager", &resource.Sweeper{
+		Name: "scaleway_cockpit_alert_manager",
+		F:    testSweepCockpitAlertManager,
+	})
 }
 
 func testSweepCockpitToken(_ string) error {
@@ -183,6 +187,35 @@ func testSweepCockpitDataSource(_ string) error {
 
 						continue
 					}
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepCockpitAlertManager(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		accountAPI := accountSDK.NewProjectAPI(scwClient)
+		cockpitAPI := cockpit.NewRegionalAPI(scwClient)
+
+		listProjects, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list projects: %w", err)
+		}
+
+		for _, project := range listProjects.Projects {
+			if !strings.HasPrefix(project.Name, "tf_tests") {
+				continue
+			}
+
+			_, err := cockpitAPI.DisableAlertManager(&cockpit.RegionalAPIDisableAlertManagerRequest{
+				ProjectID: project.ID,
+			})
+			if err != nil {
+				if !httperrors.Is404(err) {
+					logging.L.Warningf("failed to disable alert manager on project %s: %w", project.ID, err)
 				}
 			}
 		}

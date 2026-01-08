@@ -14,7 +14,7 @@ build: fmtcheck
 
 sweep:
 	@echo "WARNING: This will destroy infrastructure. Use only in development accounts."
-	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m
+	go test $(SWEEP_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m; \
 	go test $(SWEEP_ACCOUNT_DIR) -v -sweep=$(SWEEP) $(SWEEPARGS) -timeout 60m
 
 test: fmtcheck
