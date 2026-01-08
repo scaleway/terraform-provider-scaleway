@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	_ "embed"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -9,6 +10,7 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -20,8 +22,12 @@ var (
 	GithubRunner = "github"
 )
 
+//go:embed descriptions/runner.md
+var runnerDescription string
+
 func ResourceRunner() *schema.Resource {
 	return &schema.Resource{
+		Description:   runnerDescription,
 		CreateContext: ResourceAppleSiliconRunnerCreate,
 		ReadContext:   ResourceAppleSiliconRunnerRead,
 		UpdateContext: ResourceAppleSiliconRunnerUpdate,
@@ -34,51 +40,56 @@ func ResourceRunner() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the runner",
-				Computed:    true,
-				Optional:    true,
-			},
-			"ci_provider": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The CI/CD provider for the runner. Must be either 'github' or 'gitlab'",
-				ValidateDiagFunc: verify.ValidateEnum[applesilicon.RunnerConfigurationProvider](),
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The URL of the runner to run",
-			},
-			"token": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Required:    true,
-				Description: "The token used to authenticate the runner to run",
-			},
-			"labels": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Computed:    true,
-				Description: "A list of labels that should be applied to the runner.",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the runner",
-			},
-			"error_message": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The error message of the runner",
-			},
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    runnerSchema,
+		Identity:      identity.DefaultZonal(),
+	}
+}
+
+func runnerSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Description: "The name of the runner",
+			Computed:    true,
+			Optional:    true,
 		},
+		"ci_provider": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The CI/CD provider for the runner. Must be either 'github' or 'gitlab'",
+			ValidateDiagFunc: verify.ValidateEnum[applesilicon.RunnerConfigurationProvider](),
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The URL of the runner to run",
+		},
+		"token": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Required:    true,
+			Description: "The token used to authenticate the runner to run",
+		},
+		"labels": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Computed:    true,
+			Description: "A list of labels that should be applied to the runner.",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the runner",
+		},
+		"error_message": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The error message of the runner",
+		},
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -123,7 +134,10 @@ func ResourceAppleSiliconRunnerCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, runner.ID))
+	err = identity.SetZonalIdentity(d, zone, runner.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceAppleSiliconRunnerRead(ctx, d, m)
 }
@@ -145,6 +159,11 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, zone, runner.ID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
