@@ -141,6 +141,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 	res = append(res, keymanager.NewEncryptEphemeralResource)
 	res = append(res, keymanager.NewDecryptEphemeralResource)
 	res = append(res, keymanager.NewGenerateDataKeyEphemeralResource)
+	res = append(res, keymanager.NewSignEphemeralResource)
 
 	return res
 }

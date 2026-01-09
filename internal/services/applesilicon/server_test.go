@@ -60,6 +60,11 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_apple_silicon_server.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

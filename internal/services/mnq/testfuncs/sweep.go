@@ -9,6 +9,7 @@ import (
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -46,6 +47,10 @@ func testSweepSQSCredentials(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
+			if httperrors.Is404(err) {
+				return nil
+			}
+
 			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %w", region, err)
 		}
 
@@ -55,6 +60,12 @@ func testSweepSQSCredentials(_ string) error {
 				Region:           region,
 			})
 			if err != nil {
+				if httperrors.Is404(err) {
+					logging.L.Debugf("sweeper: ignoring error (%s)", err)
+
+					continue
+				}
+
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting sqs credentials in sweeper: %w", err)
@@ -87,6 +98,12 @@ func testSweepSQS(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
+				if httperrors.Is404(err) {
+					logging.L.Debugf("sweeper: ignoring error (%s)", err)
+
+					continue
+				}
+
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return err
@@ -108,6 +125,10 @@ func testSweepSNSCredentials(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
+			if httperrors.Is404(err) {
+				return nil
+			}
+
 			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %w", region, err)
 		}
 
@@ -117,6 +138,12 @@ func testSweepSNSCredentials(_ string) error {
 				Region:           region,
 			})
 			if err != nil {
+				if httperrors.Is404(err) {
+					logging.L.Debugf("sweeper: ignoring error (%s)", err)
+
+					continue
+				}
+
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting sns credentials in sweeper: %w", err)
@@ -149,6 +176,12 @@ func testSweepSNS(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
+				if httperrors.Is404(err) {
+					logging.L.Debugf("sweeper: ignoring error (%s)", err)
+
+					continue
+				}
+
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return err
@@ -170,6 +203,10 @@ func testSweepNatsAccount(_ string) error {
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
+			if httperrors.Is404(err) {
+				return nil
+			}
+
 			return fmt.Errorf("error listing nats account in (%s) in sweeper: %w", region, err)
 		}
 
@@ -179,6 +216,12 @@ func testSweepNatsAccount(_ string) error {
 				Region:        region,
 			})
 			if err != nil {
+				if httperrors.Is404(err) {
+					logging.L.Debugf("sweeper: ignoring error (%s)", err)
+
+					continue
+				}
+
 				logging.L.Debugf("sweeper: error (%s)", err)
 
 				return fmt.Errorf("error deleting nats account in sweeper: %w", err)
