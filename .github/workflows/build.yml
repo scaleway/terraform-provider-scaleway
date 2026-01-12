@@ -9,10 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ubuntu-latest
 
     steps:
       # Checkout should always be before setup-go to ensure caching is working
@@ -33,3 +30,11 @@ jobs:
 
       - name: Build the provider
         run: go build ./
+
+      - name: Test cross-platform builds with GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          args: release --snapshot --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
