@@ -73,7 +73,7 @@ func expandACLSpecs(i any) ([]*redis.ACLRuleSpec, error) {
 }
 
 func flattenACLs(aclRules []*redis.ACLRule) any {
-	flat := []map[string]any(nil)
+	flat := make([]map[string]any, 0, len(aclRules))
 	for _, acl := range aclRules {
 		flat = append(flat, map[string]any{
 			"id":          acl.ID,
@@ -87,7 +87,7 @@ func flattenACLs(aclRules []*redis.ACLRule) any {
 
 func expandSettings(i any) []*redis.ClusterSetting {
 	rawSettings := i.(map[string]any)
-	settings := []*redis.ClusterSetting(nil)
+	settings := make([]*redis.ClusterSetting, 0, len(rawSettings))
 
 	for key, value := range rawSettings {
 		settings = append(settings, &redis.ClusterSetting{
@@ -156,7 +156,7 @@ func flattenPublicNetwork(endpoints []*redis.Endpoint) any {
 			continue
 		}
 
-		ipsFlat := []any(nil)
+		ipsFlat := make([]any, 0, len(endpoint.IPs))
 		for _, ip := range endpoint.IPs {
 			ipsFlat = append(ipsFlat, ip.String())
 		}

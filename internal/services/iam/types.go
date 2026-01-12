@@ -8,8 +8,8 @@ import (
 )
 
 func expandPermissionSetNames(rawPermissions any) *[]string {
-	permissions := []string{}
 	permissionSet := rawPermissions.(*schema.Set)
+	permissions := make([]string, 0, permissionSet.Len())
 
 	for _, rawPermission := range permissionSet.List() {
 		permissions = append(permissions, rawPermission.(string))
@@ -19,7 +19,7 @@ func expandPermissionSetNames(rawPermissions any) *[]string {
 }
 
 func flattenPermissionSetNames(permissions []string) *schema.Set {
-	rawPermissions := []any(nil)
+	rawPermissions := make([]any, 0, len(permissions))
 	for _, perm := range permissions {
 		rawPermissions = append(rawPermissions, perm)
 	}
@@ -30,9 +30,9 @@ func flattenPermissionSetNames(permissions []string) *schema.Set {
 }
 
 func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
-	rules := []*iam.RuleSpecs(nil)
-
 	rawRules := d.([]any)
+	rules := make([]*iam.RuleSpecs, 0, len(rawRules))
+
 	for _, rawRule := range rawRules {
 		mapRule := rawRule.(map[string]any)
 		rule := &iam.RuleSpecs{
@@ -55,7 +55,7 @@ func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
 }
 
 func flattenPolicyRules(rules []*iam.Rule) any {
-	rawRules := []any(nil)
+	rawRules := make([]any, 0, len(rules))
 
 	for _, rule := range rules {
 		rawRule := map[string]any{}

@@ -628,9 +628,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	var serverGetOptionIDs []*baremetal.ServerOption
-
-	serverGetOptionIDs = append(serverGetOptionIDs, server.Options...)
+	serverGetOptionIDs := append([]*baremetal.ServerOption(nil), server.Options...)
 
 	if d.HasChange("offer") {
 		ServerID := regional.ExpandID(server.ID)

@@ -472,7 +472,7 @@ func resourceLbFrontendUpdateACL(ctx context.Context, d *schema.ResourceData, lb
 
 func expandsLBACLs(d *schema.ResourceData, raw any) []*lbSDK.ACL {
 	r := raw.([]any)
-	newACL := make([]*lbSDK.ACL, 0)
+	newACL := make([]*lbSDK.ACL, 0, len(r))
 
 	for index, rawACL := range r {
 		newACL = append(newACL, expandLbACL(d, rawACL, index))

@@ -54,8 +54,8 @@ func expandPurge(raw any) []*edge_services.PurgeRequest {
 }
 
 func expandTLSSecrets(raw any, region scw.Region) []*edge_services.TLSSecret {
-	secrets := []*edge_services.TLSSecret(nil)
 	rawSecrets := raw.([]any)
+	secrets := make([]*edge_services.TLSSecret, 0, len(rawSecrets))
 
 	for _, rawSecret := range rawSecrets {
 		mapSecret := rawSecret.(map[string]any)

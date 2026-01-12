@@ -90,17 +90,17 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	////
 	// Create scaleway SDK client
 	////
-	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
-		scw.WithProfile(profile),
-	}
 
 	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	if config.HTTPClient != nil {
 		httpClient = config.HTTPClient
 	}
 
-	opts = append(opts, scw.WithHTTPClient(httpClient))
+	opts := []scw.ClientOption{
+		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
+		scw.WithProfile(profile),
+		scw.WithHTTPClient(httpClient),
+	}
 
 	scwClient, err := scw.NewClient(opts...)
 	if err != nil {

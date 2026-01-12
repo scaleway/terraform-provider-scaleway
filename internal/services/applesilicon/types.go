@@ -38,7 +38,7 @@ func expandPrivateNetworks(pn any) map[string]*[]string {
 }
 
 func flattenPrivateNetworks(region scw.Region, privateNetworks []*applesilicon.ServerPrivateNetwork) any {
-	flattenedPrivateNetworks := []map[string]any(nil)
+	flattenedPrivateNetworks := make([]map[string]any, 0, len(privateNetworks))
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]any{
 			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),
