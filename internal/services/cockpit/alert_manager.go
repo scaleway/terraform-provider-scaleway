@@ -101,7 +101,7 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if shouldEnableLegacyManagedAlerts(d) {
-		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{
+		_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
 			Region:    region,
 			ProjectID: projectID,
 		}, scw.WithContext(ctx))
@@ -324,12 +324,12 @@ func ResourceCockpitAlertManagerUpdate(ctx context.Context, d *schema.ResourceDa
 
 		switch {
 		case !newBool && oldBool:
-			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
+			_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
 				Region:    region,
 				ProjectID: projectID,
 			}, scw.WithContext(ctx))
 		case newBool && shouldEnableLegacyManagedAlerts(d):
-			_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{
+			_, err = api.EnableManagedAlerts(&cockpit.RegionalAPIEnableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
 				Region:    region,
 				ProjectID: projectID,
 			}, scw.WithContext(ctx))
@@ -415,7 +415,7 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if d.Get("enable_managed_alerts").(bool) {
-		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{
+		_, err = api.DisableManagedAlerts(&cockpit.RegionalAPIDisableManagedAlertsRequest{ //nolint:staticcheck // legacy managed alerts path
 			Region:    region,
 			ProjectID: projectID,
 		}, scw.WithContext(ctx))

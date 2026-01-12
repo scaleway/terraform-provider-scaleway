@@ -176,7 +176,7 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
 	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
-	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated))
+	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
 
 	return nil
 }
