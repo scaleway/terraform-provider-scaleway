@@ -59,15 +59,15 @@ func (f *RegionFromID) Run(ctx context.Context, req function.RunRequest, resp *f
 		return
 	}
 
-	tab := strings.Split(input.ValueString(), "/")
-	if len(tab) < 2 {
+	idParts := strings.Split(input.ValueString(), "/")
+	if len(idParts) < 2 {
 		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, "cannot parse ID: invalid format"))
 		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
 
 		return
 	}
 
-	region, err := scw.ParseRegion(tab[0])
+	region, err := scw.ParseRegion(idParts[0])
 	if err != nil {
 		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, err.Error()))
 		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
