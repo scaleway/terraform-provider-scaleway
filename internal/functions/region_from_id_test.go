@@ -17,8 +17,8 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
-		request  function.RunRequest
 		expected function.RunResponse
+		request  function.RunRequest
 	}{
 		// The example implementation uses the Go built-in string type, however
 		// if AllowNullValue was enabled and *string or types.String was used,
@@ -99,8 +99,6 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 	}
 
 	for name, testCase := range testCases {
-		name, testCase := name, testCase
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
