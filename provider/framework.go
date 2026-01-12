@@ -136,14 +136,12 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
-	var res []func() ephemeral.EphemeralResource
-
-	res = append(res, keymanager.NewEncryptEphemeralResource)
-	res = append(res, keymanager.NewDecryptEphemeralResource)
-	res = append(res, keymanager.NewGenerateDataKeyEphemeralResource)
-	res = append(res, keymanager.NewSignEphemeralResource)
-
-	return res
+	return []func() ephemeral.EphemeralResource{
+		keymanager.NewDecryptEphemeralResource,
+		keymanager.NewEncryptEphemeralResource,
+		keymanager.NewGenerateDataKeyEphemeralResource,
+		keymanager.NewSignEphemeralResource,
+	}
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
@@ -151,28 +149,26 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
-	var res []func() action.Action
-
-	res = append(res, cockpit.NewTriggerTestAlertAction)
-	res = append(res, instance.NewCreateSnapshot)
-	res = append(res, instance.NewExportSnapshot)
-	res = append(res, instance.NewServerAction)
-	res = append(res, jobs.NewStartJobDefinitionAction)
-	res = append(res, keymanager.NewRotateKeyAction)
-	res = append(res, mongodb.NewInstanceSnapshotAction)
-	res = append(res, rdb.NewInstanceSnapshotAction)
-	res = append(res, rdb.NewReadReplicaResetAction)
-	res = append(res, rdb.NewReadReplicaPromoteAction)
-	res = append(res, rdb.NewDatabaseBackupRestoreAction)
-	res = append(res, rdb.NewInstanceLogsPurgeAction)
-	res = append(res, rdb.NewInstanceLogPrepareAction)
-	res = append(res, rdb.NewInstanceCertificateRenewAction)
-	res = append(res, rdb.NewDatabaseBackupExportAction)
-	res = append(res, baremetal.NewBaremetalServerAction)
-	res = append(res, applesilicon.NewRebootServerAction)
-	res = append(res, vpcgw.NewRefreshSSHKeysAction)
-
-	return res
+	return []func() action.Action{
+		applesilicon.NewRebootServerAction,
+		baremetal.NewBaremetalServerAction,
+		cockpit.NewTriggerTestAlertAction,
+		instance.NewCreateSnapshot,
+		instance.NewExportSnapshot,
+		instance.NewServerAction,
+		jobs.NewStartJobDefinitionAction,
+		keymanager.NewRotateKeyAction,
+		mongodb.NewInstanceSnapshotAction,
+		rdb.NewDatabaseBackupExportAction,
+		rdb.NewDatabaseBackupRestoreAction,
+		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceLogPrepareAction,
+		rdb.NewInstanceLogsPurgeAction,
+		rdb.NewInstanceSnapshotAction,
+		rdb.NewReadReplicaPromoteAction,
+		rdb.NewReadReplicaResetAction,
+		vpcgw.NewRefreshSSHKeysAction,
+	}
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
