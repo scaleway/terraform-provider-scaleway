@@ -32,8 +32,8 @@ func (f *RegionFromID) Definition(ctx context.Context, req function.DefinitionRe
 				Description: "id to extract the region from",
 			},
 			function.BoolParameter{
-				Name:           "ignore-unknown-regions",
-				Description:    "Raise an error if the region passed is unknown",
+				Name:           "skip_region_validation",
+				Description:    "If true, will skip region validation with the region known by the Scaleway SDK.",
 				AllowNullValue: true,
 			},
 		},
@@ -42,9 +42,12 @@ func (f *RegionFromID) Definition(ctx context.Context, req function.DefinitionRe
 }
 
 func (f *RegionFromID) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
-	var input types.String
+	var (
+		input                types.String
+		skipRegionValidation types.Bool
+	)
 
-	resp.Error = function.ConcatFuncErrors(resp.Error, req.Arguments.Get(ctx, &input))
+	resp.Error = function.ConcatFuncErrors(resp.Error, req.Arguments.Get(ctx, &input, &skipRegionValidation))
 
 	if input.IsNull() || input.IsUnknown() {
 		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, input))
@@ -59,6 +62,10 @@ func (f *RegionFromID) Run(ctx context.Context, req function.RunRequest, resp *f
 		return
 	}
 
+	if skipRegionValidation.IsNull() || skipRegionValidation.IsUnknown() {
+		skipRegionValidation = basetypes.NewBoolValue(false)
+	}
+
 	idParts := strings.Split(input.ValueString(), "/")
 	if len(idParts) < 2 {
 		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, "cannot parse ID: invalid format"))
@@ -68,7 +75,7 @@ func (f *RegionFromID) Run(ctx context.Context, req function.RunRequest, resp *f
 	}
 
 	region, err := scw.ParseRegion(idParts[0])
-	if err != nil {
+	if err != nil && !skipRegionValidation.ValueBool() {
 		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, err.Error()))
 		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
 

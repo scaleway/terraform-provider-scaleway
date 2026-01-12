@@ -25,7 +25,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// this test case shows how the function would be expected to behave.
 		"null": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringNull()}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringNull(), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringNull()),
@@ -36,7 +36,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// this test case shows how the function would be expected to behave.
 		"unknown": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringUnknown()}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringUnknown(), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringUnknown()),
@@ -45,7 +45,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// Test valid ID format - extracts region from ID
 		"valid-id-format": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("fr-par/1111-1111-1111-1111-1111111111111111")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("fr-par/1111-1111-1111-1111-1111111111111111"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringValue("fr-par")),
@@ -54,7 +54,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// Test another valid ID format
 		"valid-id-format-amsterdam": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/1111-1111-1111-1111-1111111111111111")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/1111-1111-1111-1111-1111111111111111"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringValue("nl-ams")),
@@ -62,7 +62,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		},
 		"valid-id-multi-part": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/foo/bar")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/foo/bar"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringValue("nl-ams")),
@@ -70,7 +70,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		},
 		"unknown-id-valid-format": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("xx-yyy/11111111-1111-1111-1111-111111111111")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("xx-yyy/11111111-1111-1111-1111-111111111111"), types.BoolValue(true)}),
 			},
 			expected: function.RunResponse{
 				Result: function.NewResultData(types.StringValue("xx-yyy")),
@@ -79,7 +79,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// Test invalid format - empty string
 		"empty-string": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue(""), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Error:  function.NewArgumentFuncError(0, "bad region format, available regions are: fr-par, nl-ams, pl-waw"),
@@ -89,7 +89,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 		// Test invalid format - malformed ID
 		"malformed-id": {
 			request: function.RunRequest{
-				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("invalid-format")}),
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("invalid-format"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
 				Error:  function.NewArgumentFuncError(0, "cannot parse ID: invalid format"),
