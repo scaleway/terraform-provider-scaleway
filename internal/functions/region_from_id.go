@@ -25,7 +25,7 @@ func (f *RegionFromID) Metadata(ctx context.Context, req function.MetadataReques
 func (f *RegionFromID) Definition(ctx context.Context, req function.DefinitionRequest, resp *function.DefinitionResponse) {
 	resp.Definition = function.Definition{
 		Summary:     "Extract a region from the ID",
-		Description: "Given an ID string value, returns the region contain in the ID.",
+		Description: "Given an ID string value, returns the region contained in the ID.",
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:        "id",
