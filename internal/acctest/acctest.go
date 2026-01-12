@@ -46,8 +46,8 @@ var foldersUsingVCRv4 = []string{
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
 	fullPathSplit := strings.Split(fullFolderPath, "/")
-
 	folder := fullPathSplit[len(fullPathSplit)-1]
+
 	return slices.Contains(foldersUsingVCRv4, folder)
 }
 
