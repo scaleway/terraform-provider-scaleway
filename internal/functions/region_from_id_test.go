@@ -115,7 +115,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 	}
 }
 
-func TestAccProviderFunction_region_from_id(t *testing.T) {
+func TestAccProviderFunction_Region_From_ID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
