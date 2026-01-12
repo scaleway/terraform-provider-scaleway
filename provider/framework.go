@@ -178,9 +178,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 }
 
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
-	var res []func() function.Function
-
-	res = append(res, functions.NewRegionFromID)
-
-	return res
+	return []func() function.Function{
+		functions.NewRegionFromID,
+	}
 }
