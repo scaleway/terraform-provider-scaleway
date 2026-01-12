@@ -153,6 +153,8 @@ func TestAccCluster_Migrate(t *testing.T) {
 }
 
 func TestAccCluster_MigrateClusterSizeWithIPAMEndpoint(t *testing.T) {
+	t.Skip("The resource created in this test can't be deleted on our end, we should skip it until the problem is fixed by the product team")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -593,6 +595,8 @@ func TestAccCluster_Endpoints_Standalone(t *testing.T) {
 }
 
 func TestAccCluster_Endpoints_ClusterMode(t *testing.T) {
+	t.Skip("The resource created in this test is impossible to delete, we should skip it until the problem is fixed by the product team")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

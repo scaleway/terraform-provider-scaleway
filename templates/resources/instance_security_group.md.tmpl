@@ -120,6 +120,8 @@ The following arguments are supported:
 
 - `enable_default_security` - Whether to block SMTP on IPv4/IPv6 (Port 25, 465, 587). Set to false will unblock SMTP if your account is authorized to. If your organization is not yet authorized to send SMTP traffic, [open a support ticket](https://console.scaleway.com/support/tickets).
 
+- `tags`- (Optional) The tags of the security group.
+
 The `inbound_rule` and `outbound_rule` block supports:
 
 - `action` - (Required) The action to take when rule match. Possible values are: `accept` or `drop`.
@@ -135,8 +137,6 @@ The `inbound_rule` and `outbound_rule` block supports:
 - `ip`- (Deprecated) The ip this rule apply to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
 
 - `ip_range`- (Optional) The ip range (e.g `192.168.1.0/24`) this rule applies to. If no `ip` nor `ip_range` are specified, rule will apply to all ip. Only one of `ip` and `ip_range` should be specified.
-
-- `tags`- (Optional) The tags of the security group.
 
 ## Attributes Reference
 
