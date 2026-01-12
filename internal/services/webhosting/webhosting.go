@@ -305,7 +305,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	dnsRecordsResponse, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
-		Domain: *webhostingResponse.Domain, //nolint:staticcheck // deprecated in SDK, kept until domain_info fully propagated
+		Domain: *webhostingResponse.Domain,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -316,7 +316,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("tags", webhostingResponse.Tags)
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.Offer.ID))
-	_ = d.Set("domain", webhostingResponse.Domain) //nolint:staticcheck // deprecated in SDK, exported for backward compatibility
+	_ = d.Set("domain", webhostingResponse.Domain)
 	_ = d.Set("created_at", types.FlattenTime(webhostingResponse.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(webhostingResponse.UpdatedAt))
 	_ = d.Set("status", webhostingResponse.Status.String())
@@ -324,7 +324,7 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("platform_number", webhostingResponse.Platform.Number)
 	_ = d.Set("options", flattenHostingOptions(webhostingResponse.Offer.Options))
 	_ = d.Set("offer_name", webhostingResponse.Offer.Name)
-	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String()) //nolint:staticcheck
+	_ = d.Set("dns_status", webhostingResponse.DNSStatus.String())
 	_ = d.Set("cpanel_urls", flattenHostingCpanelUrls(webhostingResponse.Platform.ControlPanel.URLs))
 	_ = d.Set("username", webhostingResponse.User.Username)
 	_ = d.Set("region", webhostingResponse.Region)

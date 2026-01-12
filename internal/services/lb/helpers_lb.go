@@ -60,11 +60,11 @@ func IsPrivateNetworkEqual(a, b *lbSDK.PrivateNetwork) bool {
 		return false
 	}
 
-	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) { //nolint:staticcheck
+	if !reflect.DeepEqual(a.DHCPConfig, b.DHCPConfig) {
 		return false
 	}
 
-	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) { //nolint:staticcheck
+	if !reflect.DeepEqual(a.StaticConfig, b.StaticConfig) {
 		return false
 	}
 
@@ -188,8 +188,8 @@ func normalizeIPSubnetList(list []string) []string {
 }
 
 func normalizeIPSubnet(ip string) string {
-	if strings.HasSuffix(ip, "/32") {
-		return strings.TrimSuffix(ip, "/32")
+	if before, ok := strings.CutSuffix(ip, "/32"); ok {
+		return before
 	}
 
 	return ip

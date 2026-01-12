@@ -79,7 +79,7 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	token, err := api.CreateToken(&container.CreateTokenRequest{ //nolint:staticcheck
+	token, err := api.CreateToken(&container.CreateTokenRequest{
 		Region:      region,
 		ContainerID: types.ExpandStringPtr(locality.ExpandID(d.Get("container_id"))),
 		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),

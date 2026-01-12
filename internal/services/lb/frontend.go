@@ -356,8 +356,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("created_at", types.FlattenTime(frontend.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(frontend.UpdatedAt))
 
-	if frontend.Certificate != nil { //nolint:staticcheck
-		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID)) //nolint:staticcheck
+	if frontend.Certificate != nil {
+		_ = d.Set("certificate_id", zonal.NewIDString(zone, frontend.Certificate.ID))
 	} else {
 		_ = d.Set("certificate_id", "")
 	}

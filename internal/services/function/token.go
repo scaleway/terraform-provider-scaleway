@@ -82,7 +82,7 @@ func ResourceFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	token, err := api.CreateToken(&function.CreateTokenRequest{ //nolint:staticcheck
+	token, err := api.CreateToken(&function.CreateTokenRequest{
 		Region:      region,
 		FunctionID:  types.ExpandStringPtr(locality.ExpandID(d.Get("function_id"))),
 		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),

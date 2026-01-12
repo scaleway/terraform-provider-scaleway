@@ -192,7 +192,7 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("deletable", user.Deletable)
 	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
 	_ = d.Set("type", user.Type)
-	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
+	_ = d.Set("status", user.Status.String())
 	_ = d.Set("mfa", user.Mfa)
 	_ = d.Set("account_root_user_id", user.AccountRootUserID)
 	_ = d.Set("locked", user.Locked)

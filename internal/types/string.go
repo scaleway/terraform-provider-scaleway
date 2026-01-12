@@ -3,6 +3,7 @@ package types
 import (
 	"hash/crc32"
 	"reflect"
+	"slices"
 	"sort"
 
 	"github.com/scaleway/scaleway-sdk-go/namegenerator"
@@ -213,13 +214,7 @@ func StringHashcode(s string) int {
 }
 
 func SliceContainsString(slice []string, str string) bool {
-	for _, v := range slice {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(slice, str)
 }
 
 func CompareStringListsIgnoringOrder(oldListStr, newListStr []string) bool {

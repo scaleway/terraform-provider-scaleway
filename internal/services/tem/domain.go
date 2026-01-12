@@ -258,7 +258,7 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	_ = d.Set("next_check_at", types.FlattenTime(domain.NextCheckAt))
 	_ = d.Set("last_valid_at", types.FlattenTime(domain.LastValidAt))
 	_ = d.Set("revoked_at", types.FlattenTime(domain.RevokedAt))
-	_ = d.Set("last_error", domain.LastError) //nolint:staticcheck
+	_ = d.Set("last_error", domain.LastError)
 	_ = d.Set("spf_config", domain.SpfConfig)
 	_ = d.Set("dkim_config", domain.DkimConfig)
 

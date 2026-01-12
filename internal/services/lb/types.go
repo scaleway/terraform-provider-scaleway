@@ -29,7 +29,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) any {
 	var dhcpConfigExist bool
 
 	for _, pn := range privateNetworks {
-		if pn.DHCPConfig != nil { //nolint:staticcheck
+		if pn.DHCPConfig != nil {
 			dhcpConfigExist = true
 		}
 
@@ -44,7 +44,7 @@ func flattenPrivateNetworkConfigs(privateNetworks []*lb.PrivateNetwork) any {
 			"dhcp_config":        dhcpConfigExist,
 			"status":             pn.Status.String(),
 			"zone":               pn.LB.Zone.String(),
-			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig), //nolint:staticcheck
+			"static_config":      flattenLbPrivateNetworkStaticConfig(pn.StaticConfig),
 			"ipam_ids":           regional.NewIDStrings(pnRegion, pn.IpamIDs),
 		})
 	}
@@ -413,7 +413,7 @@ func flattenLbPrivateNetworkStaticConfig(cfg *lb.PrivateNetworkStaticConfig) []s
 		return nil
 	}
 
-	return *cfg.IPAddress //nolint:staticcheck
+	return *cfg.IPAddress
 }
 
 func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Zone, pnConfigs []*lb.PrivateNetwork, lbID string, timeout time.Duration) ([]*lb.PrivateNetwork, error) {
@@ -424,8 +424,8 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 			Zone:             zone,
 			LBID:             lbID,
 			PrivateNetworkID: pnConfigs[i].PrivateNetworkID,
-			StaticConfig:     pnConfigs[i].StaticConfig, //nolint:staticcheck
-			DHCPConfig:       pnConfigs[i].DHCPConfig,   //nolint:staticcheck
+			StaticConfig:     pnConfigs[i].StaticConfig,
+			DHCPConfig:       pnConfigs[i].DHCPConfig,
 			IpamIDs:          pnConfigs[i].IpamIDs,
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
@@ -448,8 +448,8 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 					return nil, err
 				}
 
-				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))     //nolint:staticcheck
-				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig)) //nolint:staticcheck
+				tflog.Debug(ctx, fmt.Sprintf("DHCP config: %v", pn.DHCPConfig))
+				tflog.Debug(ctx, fmt.Sprintf("Static config: %v", pn.StaticConfig))
 
 				return nil, fmt.Errorf("attaching private network with id: %s on error state. please check your config", pn.PrivateNetworkID)
 			}

@@ -493,8 +493,8 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	// Auto-upgrade configuration
 
-	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")                              //nolint:staticcheck
-	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour") //nolint:staticcheck
+	autoUpgradeEnable, okAutoUpgradeEnable := d.GetOkExists("auto_upgrade.0.enable")
+	autoUpgradeStartHour, okAutoUpgradeStartHour := d.GetOkExists("auto_upgrade.0.maintenance_window_start_hour")
 	autoUpgradeDay, okAutoUpgradeDay := d.GetOk("auto_upgrade.0.maintenance_window_day")
 
 	if okAutoUpgradeEnable {

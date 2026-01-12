@@ -111,7 +111,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if maxConcurrency, ok := d.GetOk("max_concurrency"); ok {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int))) //nolint:staticcheck
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int)))
 	}
 
 	if sandbox, ok := d.GetOk("sandbox"); ok {
@@ -212,7 +212,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
+		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int)))
 	}
 
 	if d.HasChanges("protocol") {
