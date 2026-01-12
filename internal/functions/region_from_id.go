@@ -2,9 +2,12 @@ package functions
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/function"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 var _ function.Function = &RegionFromID{}
@@ -23,11 +26,15 @@ func (f *RegionFromID) Definition(ctx context.Context, req function.DefinitionRe
 	resp.Definition = function.Definition{
 		Summary:     "Extract a region from the ID",
 		Description: "Given an ID string value, returns the region contain in the ID.",
-
 		Parameters: []function.Parameter{
 			function.StringParameter{
 				Name:        "id",
 				Description: "id to extract the region from",
+			},
+			function.BoolParameter{
+				Name:           "ignore-unknown-regions",
+				Description:    "Raise an error if the region passed is unknown",
+				AllowNullValue: true,
 			},
 		},
 		Return: function.StringReturn{},
@@ -35,17 +42,38 @@ func (f *RegionFromID) Definition(ctx context.Context, req function.DefinitionRe
 }
 
 func (f *RegionFromID) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
-	var input string
+	var input types.String
 
-	// Read Terraform argument data into the variable
 	resp.Error = function.ConcatFuncErrors(resp.Error, req.Arguments.Get(ctx, &input))
 
-	region, _, err := regional.ParseID(input)
-	if err != nil {
-		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, err.Error()))
+	if input.IsNull() || input.IsUnknown() {
+		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, input))
 
 		return
 	}
 
-	resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, region))
+	if input.ValueString() == "" {
+		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, "bad region format, available regions are: fr-par, nl-ams, pl-waw"))
+		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
+
+		return
+	}
+
+	tab := strings.Split(input.ValueString(), "/")
+	if len(tab) < 2 {
+		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, "cannot parse ID: invalid format"))
+		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
+
+		return
+	}
+
+	region, err := scw.ParseRegion(tab[0])
+	if err != nil {
+		resp.Error = function.ConcatFuncErrors(resp.Error, function.NewArgumentFuncError(0, err.Error()))
+		resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, basetypes.NewStringUnknown()))
+
+		return
+	}
+
+	resp.Error = function.ConcatFuncErrors(resp.Error, resp.Result.Set(ctx, types.StringValue(region.String())))
 }

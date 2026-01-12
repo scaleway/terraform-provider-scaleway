@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 )
 
@@ -66,13 +68,21 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 				Result: function.NewResultData(types.StringValue("nl-ams")),
 			},
 		},
+		"unknown-id-valid-format": {
+			request: function.RunRequest{
+				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("xx-yyy/11111111-1111-1111-1111-111111111111")}),
+			},
+			expected: function.RunResponse{
+				Result: function.NewResultData(types.StringValue("xx-yyy")),
+			},
+		},
 		// Test invalid format - empty string
 		"empty-string": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("")}),
 			},
 			expected: function.RunResponse{
-				Error:  function.NewArgumentFuncError(0, "cannot parse empty ID"),
+				Error:  function.NewArgumentFuncError(0, "bad region format, available regions are: fr-par, nl-ams, pl-waw"),
 				Result: function.NewResultData(types.StringUnknown()),
 			},
 		},
@@ -105,4 +115,39 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestAccProviderFunction_region_from_id(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// Can get the region from a resource's id in one step
+				Config: `
+# terraform block required for provider function to be found
+terraform {
+  required_providers {
+    scaleway = {
+      source = "scaleway/scaleway"
+    }
+  }
+}
+
+resource "scaleway_secret" "main" {
+	name = "terraform_test_region_from_id"
+}
+
+output "region" {
+  value = provider::scaleway::region_from_id(scaleway_secret.main.id)
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckOutput("region", "fr-par"),
+				),
+			},
+		},
+	})
 }
