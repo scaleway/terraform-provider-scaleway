@@ -12,7 +12,7 @@ import (
 )
 
 func expandOptions(i any) ([]*baremetal.ServerOption, error) {
-	options := []*baremetal.ServerOption(nil)
+	options := make([]*baremetal.ServerOption, 0, len(i.(*schema.Set).List()))
 
 	for _, op := range i.(*schema.Set).List() {
 		rawOption := op.(map[string]any)
@@ -191,7 +191,7 @@ func flattenOptions(zone scw.Zone, options []*baremetal.ServerOption) any {
 }
 
 func flattenPrivateNetworks(region scw.Region, privateNetworks []*baremetalV3.ServerPrivateNetwork) any {
-	flattenedPrivateNetworks := []map[string]any(nil)
+	flattenedPrivateNetworks := make([]map[string]any, 0, len(privateNetworks))
 	for _, privateNetwork := range privateNetworks {
 		flattenedPrivateNetworks = append(flattenedPrivateNetworks, map[string]any{
 			"id":          regional.NewIDString(region, privateNetwork.PrivateNetworkID),

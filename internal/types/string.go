@@ -186,7 +186,7 @@ func ExpandStringsOrEmpty(data any) []string {
 }
 
 func FlattenSliceIDs(certificates []string, zone scw.Zone) any {
-	res := []any(nil)
+	res := make([]any, 0, len(certificates))
 	for _, certificateID := range certificates {
 		res = append(res, zonal.NewIDString(zone, certificateID))
 	}
