@@ -657,8 +657,8 @@ func normalizeRecordName(name, dnsZone string) string {
 	}
 
 	suffix := "." + dnsZone
-	if strings.HasSuffix(name, suffix) {
-		return strings.TrimSuffix(name, suffix)
+	if before, ok := strings.CutSuffix(name, suffix); ok {
+		return before
 	}
 
 	return name

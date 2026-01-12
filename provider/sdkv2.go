@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"maps"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -76,13 +77,9 @@ func addBetaResources(provider *schema.Provider) {
 	betaResources := map[string]*schema.Resource{}
 	betaDataSources := map[string]*schema.Resource{}
 
-	for resourceName, resource := range betaResources {
-		provider.ResourcesMap[resourceName] = resource
-	}
+	maps.Copy(provider.ResourcesMap, betaResources)
 
-	for resourceName, resource := range betaDataSources {
-		provider.DataSourcesMap[resourceName] = resource
-	}
+	maps.Copy(provider.DataSourcesMap, betaDataSources)
 }
 
 // SDKProvider returns a terraform.ResourceProvider.
