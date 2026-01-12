@@ -8,11 +8,13 @@ page_title: "Scaleway: scaleway_rdb_user"
 Creates and manages database users.
 For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
+
+
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic user creation
+
 resource "scaleway_rdb_instance" "main" {
   name           = "test-rdb"
   node_type      = "DB-DEV-S"
@@ -24,15 +26,15 @@ resource "scaleway_rdb_instance" "main" {
 }
 
 resource "random_password" "db_password" {
-  length           = 20
-  special          = true
-  upper            = true
-  lower            = true
-  numeric          = true
-  min_upper        = 1
-  min_lower        = 1
-  min_numeric      = 1
-  min_special      = 1
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
   # Exclude characters that might cause issues in some contexts
   override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 }
@@ -44,6 +46,9 @@ resource "scaleway_rdb_user" "db_admin" {
   is_admin    = true
 }
 ```
+
+
+
 
 ## Argument Reference
 
@@ -57,7 +62,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `name` will recreate the database user.
 
-- `password` - (Required) database user password. The password must meet the following requirements based on ISO27001 standards:
+- `password` - (Optional) database user password. The password must meet the following requirements based on ISO27001 standards:
     - **Length**: 8-128 characters
     - **Character types required**:
         - At least 1 lowercase letter (a-z)
@@ -66,6 +71,10 @@ The following arguments are supported:
         - At least 1 special character (!@#$%^&*()_+-=[]{}|;:,.<>?)
 
     For secure password generation, consider using the `random_password` resource with appropriate parameters.
+
+- `password_wo` - (Optional) Database user password in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `is_admin` - (Optional) Grant admin permissions to the database user.
 

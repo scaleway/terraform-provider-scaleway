@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/user.md
+var userDescription string
+
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDescription,
 		CreateContext: ResourceUserCreate,
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
@@ -57,10 +62,25 @@ func userSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Sensitive:   true,
-			Description: "Database user password",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			Description:  "Database user password",
+			ExactlyOneOf: []string{"password", "password_wo"},
+		},
+		"password_wo": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Database user password in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:    true,
+			ExactlyOneOf: []string{"password", "password_wo"},
+			RequiredWith: []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"is_admin": {
 			Type:        schema.TypeBool,
@@ -79,7 +99,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	ins, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
@@ -87,11 +107,19 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	var password string
+
+	if p, exists := d.GetOk("password"); exists {
+		password = p.(string)
+	} else {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	}
+
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
 		InstanceID: ins.ID,
 		Name:       d.Get("name").(string),
-		Password:   d.Get("password").(string),
+		Password:   password,
 		IsAdmin:    d.Get("is_admin").(bool),
 	}
 
@@ -160,7 +188,7 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	if len(res.Users) == 0 {
-		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
+		tflog.Warn(ctx, fmt.Sprintf("couldn't find user with name: [%s]", userName))
 		d.SetId("")
 
 		return nil
@@ -196,8 +224,15 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		Name:       userName,
 	}
 
-	if d.HasChange("password") {
-		req.Password = types.ExpandStringPtr(d.Get("password"))
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			req.Password = types.ExpandStringPtr(password)
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+		}
 	}
 
 	if d.HasChange("is_admin") {
