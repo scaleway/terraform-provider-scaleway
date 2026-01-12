@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -101,13 +102,7 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	}
 
 	if i.Response.Code >= 400 {
-		for _, httpCode := range codes {
-			if i.Response.Code == httpCode {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(codes, i.Response.Code)
 	}
 
 	return true
