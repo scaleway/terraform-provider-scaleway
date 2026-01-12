@@ -182,6 +182,7 @@ require (
 )
 
 tool (
+	github.com/bflad/gopaniccheck/cmd/gopaniccheck
 	github.com/bflad/tfproviderdocs
 	github.com/bflad/tfproviderlint/cmd/tfproviderlint
 	github.com/bflad/tfproviderlint/cmd/tfproviderlintx

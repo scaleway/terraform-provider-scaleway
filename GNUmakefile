@@ -66,6 +66,9 @@ tfproviderdocs:
 tfproviderlintx:
 	go tool tfproviderlintx -S013=false -XR001=false -XS002=false ./...
 
+gopaniccheck:
+	go tool gopaniccheck ./...
+
 format_examples:
 	terraform fmt -recursive examples
 
