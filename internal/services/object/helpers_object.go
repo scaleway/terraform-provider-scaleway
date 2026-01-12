@@ -553,10 +553,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 }
 
 func findDeletionWorkerCapacity() int {
-	deletionWorkers := runtime.NumCPU()
-	if deletionWorkers > maxObjectVersionDeletionWorkers {
-		deletionWorkers = maxObjectVersionDeletionWorkers
-	}
+	deletionWorkers := min(runtime.NumCPU(), maxObjectVersionDeletionWorkers)
 
 	return deletionWorkers
 }

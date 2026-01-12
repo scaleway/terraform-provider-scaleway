@@ -2,6 +2,7 @@ package acctest
 
 import (
 	"context"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
@@ -47,9 +48,7 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 		},
 	}
 
-	for k, v := range tt.ProviderFactories {
-		providers[k] = v
-	}
+	maps.Copy(providers, tt.ProviderFactories)
 
 	return providers
 }

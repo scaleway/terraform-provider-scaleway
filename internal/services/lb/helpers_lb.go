@@ -188,8 +188,8 @@ func normalizeIPSubnetList(list []string) []string {
 }
 
 func normalizeIPSubnet(ip string) string {
-	if strings.HasSuffix(ip, "/32") {
-		return strings.TrimSuffix(ip, "/32")
+	if before, ok := strings.CutSuffix(ip, "/32"); ok {
+		return before
 	}
 
 	return ip
