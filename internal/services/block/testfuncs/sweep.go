@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -22,13 +22,13 @@ func AddTestSweepers() {
 }
 
 func testSweepBlockVolume(_ string) error {
-	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
-		blockAPI := blockSDK.NewAPI(scwClient)
+	return acctest.SweepZones((&block.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
+		blockAPI := block.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the block volumes in (%s)", zone)
 
 		listVolumes, err := blockAPI.ListVolumes(
-			&blockSDK.ListVolumesRequest{
+			&block.ListVolumesRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -36,7 +36,7 @@ func testSweepBlockVolume(_ string) error {
 		}
 
 		for _, volume := range listVolumes.Volumes {
-			err := blockAPI.DeleteVolume(&blockSDK.DeleteVolumeRequest{
+			err := blockAPI.DeleteVolume(&block.DeleteVolumeRequest{
 				VolumeID: volume.ID,
 				Zone:     zone,
 			})
@@ -52,13 +52,13 @@ func testSweepBlockVolume(_ string) error {
 }
 
 func testSweepSnapshot(_ string) error {
-	return acctest.SweepZones((&blockSDK.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
-		blockAPI := blockSDK.NewAPI(scwClient)
+	return acctest.SweepZones((&block.API{}).Zones(), func(scwClient *scw.Client, zone scw.Zone) error {
+		blockAPI := block.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the block snapshots in (%s)", zone)
 
 		listSnapshots, err := blockAPI.ListSnapshots(
-			&blockSDK.ListSnapshotsRequest{
+			&block.ListSnapshotsRequest{
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -66,7 +66,7 @@ func testSweepSnapshot(_ string) error {
 		}
 
 		for _, snapshot := range listSnapshots.Snapshots {
-			err := blockAPI.DeleteSnapshot(&blockSDK.DeleteSnapshotRequest{
+			err := blockAPI.DeleteSnapshot(&block.DeleteSnapshotRequest{
 				SnapshotID: snapshot.ID,
 				Zone:       zone,
 			})
