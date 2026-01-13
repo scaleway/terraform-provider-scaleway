@@ -2414,14 +2414,14 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_volume" "main" {
-						size_in_gb = 20
+						size_in_gb = 1600
 						type = "scratch"
 						zone = "fr-par-2"
 					}
 			
 					resource "scaleway_instance_server" "main" {
 						name = "test-acc-server-scratch"
-						type = "H100-1-80G"
+						type = "L40S-1-48G"
 						image = "ubuntu_jammy_gpu_os_12"
 						state = "stopped"
 						zone = "fr-par-2"
@@ -2432,10 +2432,10 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "H100-1-80G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "L40S-1-48G"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "1600"),
 				),
 			},
 		},
