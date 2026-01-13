@@ -112,7 +112,7 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
+			_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 				Bucket: scw.StringPtr(bucketName),
 				Key:    scw.StringPtr(key),
 			})
@@ -234,7 +234,7 @@ func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return errors.New("no ID is set")
 		}
 
-		_, err = s3Client.GetObject(ctx, &s3.GetObjectInput{
+		_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
 		})
