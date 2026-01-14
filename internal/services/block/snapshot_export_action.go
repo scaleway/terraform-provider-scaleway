@@ -154,7 +154,5 @@ func (e *ExportSnapshot) Invoke(ctx context.Context, req action.InvokeRequest, r
 				"error waiting for block snapshot",
 				err.Error())
 		}
-
-
 	}
 }
