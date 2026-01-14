@@ -265,7 +265,6 @@ func poolSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Computed:         true,
 			Optional:         true,
-			ForceNew:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
 		},
@@ -565,6 +564,10 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	updateRequest.UpgradePolicy = upgradePolicyReq
+
+	if d.HasChange("security_group_id") {
+		updateRequest.SecurityGroupID = types.ExpandStringPtr(d.Get("security_group_id"))
+	}
 
 	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 	if err != nil {
