@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_rdb_user"
 
 # Resource: scaleway_rdb_user
 
-Creates and manages database users.
+The [`scaleway_rdb_user`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_user) resource creates and manages database users.
 For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
 
 
@@ -44,6 +44,44 @@ resource "scaleway_rdb_user" "db_admin" {
   name        = "devtools"
   password    = random_password.db_password.result
   is_admin    = true
+}
+```
+
+```terraform
+### Usage of ephemeral random_password for user password without storing it in state
+
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-15"
+  is_ha_cluster  = true
+  disable_backup = true
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+}
+
+// Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "db_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+// Pass the ephemeral password with password_wo (not stored in the state)
+resource "scaleway_rdb_user" "db_admin" {
+  instance_id         = scaleway_rdb_instance.main.id
+  name                = "devtools"
+  password_wo         = random_password.db_password.result
+  password_wo_version = 1
+  is_admin            = true
 }
 ```
 
