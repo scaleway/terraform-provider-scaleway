@@ -1,11 +1,13 @@
 package edgeservices
 
 import (
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -87,7 +89,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) any {
 	return secretsI
 }
 
-func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
+func expandLBBackendConfig(d *schema.ResourceData, zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
 	lbConfigs := []*edge_services.ScalewayLB(nil)
 	rawLbConfigs := raw.([]any)
 
@@ -102,8 +104,12 @@ func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBack
 		innerMap := lbConfigList[0].(map[string]any)
 
 		configZone := zone
-		if zoneStr, ok := innerMap["zone"]; ok && zoneStr != "" {
-			configZone = scw.Zone(zoneStr.(string))
+		if rawZone, ok := meta.GetRawConfigForKey(d, "lb_backend_config.0.lb_config.0.zone", cty.String); ok && rawZone != nil && rawZone != "" {
+			configZone = scw.Zone(rawZone.(string))
+		} else if lbID, ok := innerMap["id"].(string); ok && lbID != "" {
+			if zonalID := zonal.ExpandID(lbID); zonalID.Zone != "" {
+				configZone = zonalID.Zone
+			}
 		}
 
 		lbConfig := &edge_services.ScalewayLB{
