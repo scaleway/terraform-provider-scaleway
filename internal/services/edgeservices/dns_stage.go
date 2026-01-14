@@ -2,6 +2,7 @@ package edgeservices
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -148,15 +149,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
-		found := false
-
-		for _, newFQDN := range newFQDNs {
-			if oldFQDN.(string) == newFQDN {
-				found = true
-
-				break
-			}
-		}
+		found := slices.Contains(newFQDNs, oldFQDN.(string))
 
 		if !found {
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
