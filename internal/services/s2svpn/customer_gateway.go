@@ -2,7 +2,6 @@ package s2svpn
 
 import (
 	"context"
-	"net"
 	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -96,12 +95,22 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		Asn:       uint32(d.Get("asn").(int)),
 	}
 
-	if d.Get("ipv4_public").(string) != "" {
-		req.IPv4Public = scw.IPPtr(net.ParseIP(d.Get("ipv4_public").(string)))
+	if ipv4Public, ok := d.GetOk("ipv4_public"); ok {
+		ipv4PublicNet, err := types.ExpandIPNet(ipv4Public.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv4Public = &ipv4PublicNet
 	}
 
-	if d.Get("ipv6_public").(string) != "" {
-		req.IPv6Public = scw.IPPtr(net.ParseIP(d.Get("ipv6_public").(string)))
+	if ipv6Public, ok := d.GetOk("ipv6_public"); ok {
+		ipv6PublicNet, err := types.ExpandIPNet(ipv6Public.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv6Public = &ipv6PublicNet
 	}
 
 	res, err := api.CreateCustomerGateway(req, scw.WithContext(ctx))
@@ -171,12 +180,22 @@ func ResourceCustomerGatewayUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("ipv4_public") {
-		req.IPv4Public = scw.IPPtr(net.ParseIP(d.Get("ipv4_public").(string)))
+		ipv4PublicNet, err := types.ExpandIPNet(d.Get("ipv4_public").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv4Public = &ipv4PublicNet
 		hasChanged = true
 	}
 
 	if d.HasChange("ipv6_public") {
-		req.IPv6Public = scw.IPPtr(net.ParseIP(d.Get("ipv6_public").(string)))
+		ipv6PublicNet, err := types.ExpandIPNet(d.Get("ipv6_public").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv6Public = &ipv6PublicNet
 		hasChanged = true
 	}
 
