@@ -94,6 +94,11 @@ func backendStageSchema() map[string]*schema.Schema {
 									Optional:    true,
 									Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
 								},
+								"has_websocket": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Defines whether to forward websocket requests to the load balancer",
+								},
 								"zone": zonal.Schema(),
 							},
 						},

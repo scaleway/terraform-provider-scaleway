@@ -113,11 +113,12 @@ func expandLBBackendConfig(d *schema.ResourceData, zone scw.Zone, raw any) *edge
 		}
 
 		lbConfig := &edge_services.ScalewayLB{
-			ID:         locality.ExpandID(innerMap["id"]),
-			Zone:       configZone,
-			FrontendID: locality.ExpandID(innerMap["frontend_id"]),
-			IsSsl:      types.ExpandBoolPtr(innerMap["is_ssl"]),
-			DomainName: types.ExpandStringPtr(innerMap["domain_name"]),
+			ID:           locality.ExpandID(innerMap["id"]),
+			Zone:         configZone,
+			FrontendID:   locality.ExpandID(innerMap["frontend_id"]),
+			IsSsl:        types.ExpandBoolPtr(innerMap["is_ssl"]),
+			DomainName:   types.ExpandStringPtr(innerMap["domain_name"]),
+			HasWebsocket: types.ExpandBoolPtr(innerMap["has_websocket"]),
 		}
 		lbConfigs = append(lbConfigs, lbConfig)
 	}
@@ -136,11 +137,12 @@ func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBa
 
 	for i, lbConfig := range lbConfigs.LBs {
 		inner[i] = map[string]any{
-			"id":          zonal.NewIDString(zone, lbConfig.ID),
-			"frontend_id": zonal.NewIDString(zone, lbConfig.FrontendID),
-			"is_ssl":      types.FlattenBoolPtr(lbConfig.IsSsl),
-			"domain_name": types.FlattenStringPtr(lbConfig.DomainName),
-			"zone":        lbConfig.Zone.String(),
+			"id":            zonal.NewIDString(zone, lbConfig.ID),
+			"frontend_id":   zonal.NewIDString(zone, lbConfig.FrontendID),
+			"is_ssl":        types.FlattenBoolPtr(lbConfig.IsSsl),
+			"domain_name":   types.FlattenStringPtr(lbConfig.DomainName),
+			"zone":          lbConfig.Zone.String(),
+			"has_websocket": types.FlattenBoolPtr(lbConfig.HasWebsocket),
 		}
 	}
 
