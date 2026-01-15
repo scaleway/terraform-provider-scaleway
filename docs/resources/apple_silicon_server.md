@@ -45,6 +45,10 @@ resource "scaleway_apple_silicon_server" "my-server" {
 ### With `github` runner
 
 ```terraform
+data "scaleway_apple_silicon_os" "by_name" {
+  name = "devos-sequoia-15.6"
+}
+
 resource "scaleway_apple_silicon_runner" "main" {
     name       = "TestAccRunnerGithub"
     ci_provider   = "github"
@@ -56,7 +60,7 @@ resource scaleway_apple_silicon_server main {
     name = "TestAccServerRunner"
     type = "M2-L"
     public_bandwidth = 1000000000
-    os_id = "cafecafe-5018-4dcd-bd08-35f031b0ac3e"
+    os_id = data.scaleway_apple_silicon_os.by_name.id
     runner_ids = [scaleway_apple_silicon_runner.main.id]
 }
 ```

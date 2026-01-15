@@ -17,11 +17,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
-var (
-	GitlabRunner = "gitlab"
-	GithubRunner = "github"
-)
-
 //go:embed descriptions/runner.md
 var runnerDescription string
 
@@ -108,19 +103,27 @@ func ResourceAppleSiliconRunnerCreate(ctx context.Context, d *schema.ResourceDat
 		GitlabConfiguration: nil,
 	}
 
-	if provider == GithubRunner {
+	switch provider {
+	case applesilicon.RunnerConfigurationProviderGithub.String():
 		runnerConfig.GithubConfiguration = &applesilicon.GithubRunnerConfiguration{
 			URL:    d.Get("url").(string),
 			Token:  d.Get("token").(string),
 			Labels: nil,
 		}
-	}
 
-	if provider == GitlabRunner {
+	case applesilicon.RunnerConfigurationProviderGitlab.String():
 		runnerConfig.GitlabConfiguration = &applesilicon.GitlabRunnerConfiguration{
 			URL:   d.Get("url").(string),
 			Token: d.Get("token").(string),
 		}
+
+	default:
+		return diag.Errorf(
+			"unsupported runner configuration provider %q; expected %q or %q",
+			provider,
+			applesilicon.RunnerConfigurationProviderGithub,
+			applesilicon.RunnerConfigurationProviderGitlab,
+		)
 	}
 
 	createRunnerReq := &applesilicon.CreateRunnerRequest{
@@ -172,12 +175,12 @@ func ResourceAppleSiliconRunnerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("status", runner.Status)
 	_ = d.Set("error_message", runner.ErrorMessage)
 
-	if runner.Configuration.Provider.String() == GithubRunner {
+	if runner.Configuration.Provider.String() == applesilicon.RunnerConfigurationProviderGithub.String() {
 		_ = d.Set("url", runner.Configuration.GithubConfiguration.URL)
 		_ = d.Set("labels", runner.Configuration.GithubConfiguration.Labels)
 	}
 
-	if runner.Configuration.Provider.String() == GitlabRunner {
+	if runner.Configuration.Provider.String() == applesilicon.RunnerConfigurationProviderGitlab.String() {
 		_ = d.Set("url", runner.Configuration.GitlabConfiguration.URL)
 	}
 
@@ -199,7 +202,7 @@ func ResourceAppleSiliconRunnerUpdate(ctx context.Context, d *schema.ResourceDat
 		GitlabConfiguration: nil,
 	}
 
-	if provider == GithubRunner {
+	if provider == applesilicon.RunnerConfigurationProviderGithub.String() {
 		runnerConfig.GithubConfiguration = &applesilicon.GithubRunnerConfiguration{
 			URL:    d.Get("url").(string),
 			Token:  d.Get("token").(string),
@@ -207,7 +210,7 @@ func ResourceAppleSiliconRunnerUpdate(ctx context.Context, d *schema.ResourceDat
 		}
 	}
 
-	if provider == GitlabRunner {
+	if provider == applesilicon.RunnerConfigurationProviderGitlab.String() {
 		runnerConfig.GitlabConfiguration = &applesilicon.GitlabRunnerConfiguration{
 			URL:   d.Get("url").(string),
 			Token: d.Get("token").(string),

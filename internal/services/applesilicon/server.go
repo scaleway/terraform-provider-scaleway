@@ -86,9 +86,11 @@ func serverSchema() map[string]*schema.Schema {
 			Description: "List of runner ids attach to the server",
 		},
 		"os_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The OS ID of the server",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The OS ID of the server",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
 		},
 		"public_bandwidth": {
 			Type:        schema.TypeInt,
@@ -236,7 +238,8 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if OsID, ok := d.GetOk("os_id"); ok {
-		createReq.OsID = types.ExpandUpdatedStringPtr(OsID)
+		id := zonal.ExpandID(OsID).ID
+		createReq.OsID = &id
 	}
 
 	if runnerIDs, ok := d.GetOk("runner_ids"); ok {

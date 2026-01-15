@@ -14,7 +14,6 @@ import (
 )
 
 var (
-	devOSID     = "cafecafe-5018-4dcd-bd08-35f031b0ac3e"
 	githubUrl   = os.Getenv("GITHUB_URL_AS")
 	githubToken = os.Getenv("GITHUB_TOKEN_AS")
 )
@@ -88,6 +87,10 @@ func TestAccServer_Runner(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+					data "scaleway_apple_silicon_os" "devos" {
+						name = "devos-sequoia-15.6"
+					}
+
 					resource "scaleway_apple_silicon_runner" "main" {
 						name       = "TestAccRunnerGithub"
 						ci_provider   = "github"
@@ -99,10 +102,10 @@ func TestAccServer_Runner(t *testing.T) {
 						name = "TestAccServerRunner"
 						type = "M2-L"
 						public_bandwidth = 1000000000
-						os_id = "%s"
+						os_id = data.scaleway_apple_silicon_os.devos.id
 						runner_ids = [scaleway_apple_silicon_runner.main.id]
 					}
-				`, githubUrl, githubToken, devOSID),
+				`, githubUrl, githubToken),
 				Check: resource.ComposeTestCheckFunc(
 					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
 					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerRunner"),
@@ -111,7 +114,7 @@ func TestAccServer_Runner(t *testing.T) {
 					// Computed
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
-					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "os_id", devOSID),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "os_id"),
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "runner_ids.0"),
 				),
 			},
