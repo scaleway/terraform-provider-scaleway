@@ -103,12 +103,14 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	r, err := request.GetBody()
 	if err != nil {
 		logging.L.Errorf("cassette body matcher: failed to copy request body: %v", err)
+
 		return false
 	}
 
 	requestBody, err := io.ReadAll(r)
 	if err != nil {
 		logging.L.Errorf("cassette body matcher: failed to read actualRequest body: %v", err)
+
 		return false
 	}
 
@@ -130,6 +132,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
 			logging.L.Errorf("cassette body matcher: failed to parse body as url values: %v", err)
+
 			return false
 		}
 
@@ -144,6 +147,7 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	err = json.Unmarshal(requestBody, &requestJSON)
 	if err != nil {
 		logging.L.Errorf("cassette body matcher: failed to parse request body as json: %v", err)
+
 		return false
 	}
 
