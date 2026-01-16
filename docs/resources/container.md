@@ -26,8 +26,8 @@ resource "scaleway_container" "main" {
   namespace_id    = scaleway_container_namespace.main.id
   registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
   port            = 9997
-  cpu_limit       = 140
-  memory_limit    = 256
+  cpu_limit       = 1024
+  memory_limit    = 2048
   min_scale       = 3
   max_scale       = 5
   timeout         = 600
@@ -101,6 +101,44 @@ $ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
 ```
 
 Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
+
+### Deploying containers with mutable images
+
+When using mutable images (e.g., `latest` tag), you can use the `scaleway_container_registry_image` data source along with the `registry_sha256` argument to trigger container redeployments when the image is updated.
+
+```terraform
+# Ideally, you would create the namespace separately.
+# For demonstration purposes, this example assumes the "nginx:latest" image is already available
+# in the referenced namespace.
+resource "scaleway_registry_namespace" "main" {
+  name = "some-unique-name"
+}
+
+data "scaleway_registry_image" "nginx" {
+  namespace_id = scaleway_registry_namespace.main.id
+  name = "nginx"
+}
+
+data "scaleway_registry_image_tag" "nginx_latest" {
+  image_id = data.scaleway_registry_image.nginx.id
+  name         = "latest"
+}
+
+resource "scaleway_container_namespace" "main" {
+  name        = "my-container-namespace"
+}
+
+resource "scaleway_container" "main" {
+  name            = "nginx-latest"
+  namespace_id    = scaleway_container_namespace.main.id
+  registry_image  = "${scaleway_registry_namespace.main.endpoint}/nginx:latest"
+  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
+  port            = 80
+  deploy          = true
+}
+```
+
+Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
 
 ## Argument Reference
 
@@ -223,7 +261,7 @@ You can determine the computing resources to allocate to each container.
 The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
 
 | Memory (in MB) | vCPU |
-|----------------|------|
+| -------------- | ---- |
 | 128            | 70m  |
 | 256            | 140m |
 | 512            | 280m |
