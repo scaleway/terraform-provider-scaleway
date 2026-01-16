@@ -36,14 +36,3 @@ func Schema() *schema.Schema {
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
 }
-
-func OptionalSchema() *schema.Schema {
-	return &schema.Schema{
-		Type:             schema.TypeString,
-		Optional:         true,
-		Computed:         true,
-		Description:      "The zone you want to attach the resource to",
-		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllZones(), "zone"),
-		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
-	}
-}

@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -115,7 +117,7 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the VPN gateway",
 		},
-		"zone":       zonal.OptionalSchema(),
+		"zone":       zonal.Schema(),
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -132,7 +134,11 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	zone := scw.Zone(d.Get("zone").(string))
+	var zonePtr *scw.Zone
+	if rawZone, ok := meta.GetRawConfigForKey(d, "zone", cty.String); ok && rawZone != nil && rawZone != "" {
+		zone := scw.Zone(rawZone.(string))
+		zonePtr = &zone
+	}
 
 	req := &s2svpn.CreateVpnGatewayRequest{
 		Region:            region,
@@ -143,7 +149,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		PrivateNetworkID:  regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		IpamPrivateIPv4ID: types.ExpandStringPtr(d.Get("ipam_private_ipv4_id").(string)),
 		IpamPrivateIPv6ID: types.ExpandStringPtr(d.Get("ipam_private_ipv6_id").(string)),
-		Zone:              &zone,
+		Zone:              zonePtr,
 		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")),
 	}
 
