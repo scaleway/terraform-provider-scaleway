@@ -135,6 +135,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	var zonePtr *scw.Zone
+
 	if rawZone, ok := meta.GetRawConfigForKey(d, "zone", cty.String); ok && rawZone != nil && rawZone != "" {
 		zone := scw.Zone(rawZone.(string))
 		zonePtr = &zone
