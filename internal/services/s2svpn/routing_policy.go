@@ -49,11 +49,13 @@ func routingPolicySchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Optional:    true,
+			ForceNew:    true,
 			Description: "IP prefixes version of the routing policy",
 		},
 		"prefix_filter_in": {
 			Type:        schema.TypeList,
 			Optional:    true,
+			ForceNew:    true,
 			Description: "IP prefixes to accept from the peer (ranges of route announcements to accept)",
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
@@ -63,6 +65,7 @@ func routingPolicySchema() map[string]*schema.Schema {
 		"prefix_filter_out": {
 			Type:        schema.TypeList,
 			Optional:    true,
+			ForceNew:    true,
 			Description: "IP prefix filters to advertise to the peer (ranges of routes to advertise)",
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
