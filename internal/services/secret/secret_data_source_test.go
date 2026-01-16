@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,7 +26,7 @@ func TestAccDataSourceSecret_Basic(t *testing.T) {
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
-			testAccCheckSecretDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -65,7 +66,7 @@ func TestAccDataSourceSecret_Path(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		CheckDestroy:             testAccCheckSecretDestroy(tt),
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

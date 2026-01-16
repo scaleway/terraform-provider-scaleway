@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	audit_trail "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,7 +29,7 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 			func(_ *terraform.State) error {
 				return terminateFakeSideProject()
 			},
-			testAccCheckSecretDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
