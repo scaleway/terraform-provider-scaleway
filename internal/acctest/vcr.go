@@ -102,12 +102,16 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	r, err := request.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy request body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to copy request body: %v", err)
+
+		return false
 	}
 
 	requestBody, err := io.ReadAll(r)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to read actualRequest body: %v", err)
+
+		return false
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
@@ -127,7 +131,9 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	if !json.Valid(requestBody) {
 		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
-			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
+			logging.L.Errorf("cassette body matcher: failed to parse body as url values: %v", err)
+
+			return false
 		}
 
 		// Remove keys that should be ignored during comparison
@@ -140,7 +146,9 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	err = json.Unmarshal(requestBody, &requestJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse request body as json: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to parse request body as json: %v", err)
+
+		return false
 	}
 
 	err = json.Unmarshal([]byte(cassette.Body), &cassetteJSON)
