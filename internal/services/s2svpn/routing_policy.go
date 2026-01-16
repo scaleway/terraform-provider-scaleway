@@ -49,6 +49,7 @@ func routingPolicySchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Optional:    true,
+			ForceNew:    true,
 			Description: "IP prefixes version of the routing policy",
 		},
 		"prefix_filter_in": {
@@ -189,6 +190,16 @@ func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_in") {
+		req.PrefixFilterIn = types.ExpandStringsPtr(d.Get("prefix_filter_in"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_out") {
+		req.PrefixFilterOut = types.ExpandStringsPtr(d.Get("prefix_filter_out"))
 		hasChanged = true
 	}
 
