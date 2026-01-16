@@ -55,7 +55,6 @@ func routingPolicySchema() map[string]*schema.Schema {
 		"prefix_filter_in": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			Description: "IP prefixes to accept from the peer (ranges of route announcements to accept)",
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
@@ -65,7 +64,6 @@ func routingPolicySchema() map[string]*schema.Schema {
 		"prefix_filter_out": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			Description: "IP prefix filters to advertise to the peer (ranges of routes to advertise)",
 			Elem: &schema.Schema{
 				Type:         schema.TypeString,
@@ -192,6 +190,16 @@ func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_in") {
+		req.PrefixFilterIn = types.ExpandStringsPtr(d.Get("prefix_filter_in"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_out") {
+		req.PrefixFilterOut = types.ExpandStringsPtr(d.Get("prefix_filter_out"))
 		hasChanged = true
 	}
 
