@@ -72,6 +72,114 @@ func TestAccUser_Basic(t *testing.T) {
 	})
 }
 
+func TestAccUser_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	instanceName := "TestAccScalewayRdbUser_PasswordWO"
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Create user with password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name      = "%s"
+						node_type = "db-dev-s"
+						engine    = %q
+						is_ha_cluster = false
+						tags      = ["terraform-test", "scaleway_rdb_user", "password_wo"]
+					}
+
+					resource scaleway_rdb_user db_user_wo {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "test_user_wo"
+						password_wo = "R34lP4sSw#Rd_WO"
+						password_wo_version = 1
+						is_admin    = false
+					}`, instanceName, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user_wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user_wo", "name", "test_user_wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user_wo", "is_admin", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user_wo", "password_wo_version", "1"),
+				),
+			},
+			// Update user password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name      = "%s"
+						node_type = "db-dev-s"
+						engine    = %q
+						is_ha_cluster = false
+						tags      = ["terraform-test", "scaleway_rdb_user", "password_wo"]
+					}
+
+					resource scaleway_rdb_user db_user_wo {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "test_user_wo"
+						password_wo = "R34lP4sSw#Rd_WO_2"
+						password_wo_version = 2
+						is_admin    = false
+					}`, instanceName, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user_wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user_wo", "password_wo_version", "2"),
+				),
+			},
+			// Update user from password_wo to password should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name      = "%s"
+						node_type = "db-dev-s"
+						engine    = %q
+						is_ha_cluster = false
+						tags      = ["terraform-test", "scaleway_rdb_user", "password_wo"]
+					}
+
+					resource scaleway_rdb_user db_user_wo {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "test_user_wo"
+						password = "R34lP4sSw#Rd_WO_3"
+						is_admin    = false
+					}`, instanceName, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user_wo"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_user.db_user_wo", "password"),
+				),
+			},
+			// Update user from password to password_wo should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name      = "%s"
+						node_type = "db-dev-s"
+						engine    = %q
+						is_ha_cluster = false
+						tags      = ["terraform-test", "scaleway_rdb_user", "password_wo"]
+					}
+
+					resource scaleway_rdb_user db_user_wo {
+						instance_id = scaleway_rdb_instance.main.id
+						name        = "test_user_wo"
+						password_wo = "R34lP4sSw#Rd_WO_4"
+						password_wo_version = 1
+						is_admin    = false
+					}`, instanceName, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_rdb_instance.main", "scaleway_rdb_user.db_user_wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_user.db_user_wo", "password_wo_version", "1"),
+				),
+			},
+		},
+	})
+}
+
 func isUserPresent(tt *acctest.TestTools, instance string, user string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		instanceResource, ok := state.RootModule().Resources[instance]

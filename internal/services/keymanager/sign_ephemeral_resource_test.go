@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccSignEphemeralResource_Basic(t *testing.T) {
@@ -27,7 +28,7 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			IsKeyManagerKeyDestroyed(tt),
-			testAccCheckSecretDestroyed(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{

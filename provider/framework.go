@@ -7,16 +7,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
@@ -142,6 +145,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 		keymanager.NewEncryptEphemeralResource,
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
+		iam.NewApiKeyEphemeralResource,
 	}
 }
 
@@ -175,4 +179,10 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{}
+}
+
+func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
+	return []func() function.Function{
+		functions.NewRegionFromID,
+	}
 }
