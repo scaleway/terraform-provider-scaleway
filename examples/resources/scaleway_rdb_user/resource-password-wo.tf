@@ -29,7 +29,7 @@ ephemeral "random_password" "db_password" {
 resource "scaleway_rdb_user" "db_admin" {
   instance_id         = scaleway_rdb_instance.main.id
   name                = "devtools"
-  password_wo         = random_password.db_password.result
+  password_wo         = ephemeral.random_password.db_password.result
   password_wo_version = 1
   is_admin            = true
 }
