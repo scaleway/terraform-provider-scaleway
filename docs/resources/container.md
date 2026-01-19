@@ -104,7 +104,7 @@ Keep in mind that you should revoke your legacy JWT tokens to ensure maximum sec
 
 ### Deploying containers with mutable images
 
-When using mutable images (e.g., `latest` tag), you can use the `scaleway_container_registry_image` data source along with the `registry_sha256` argument to trigger container redeployments when the image is updated.
+When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along with the `registry_sha256` argument to trigger container redeployments when the image is updated.
 
 ```terraform
 # Ideally, you would create the namespace separately.
