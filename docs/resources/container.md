@@ -11,6 +11,7 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 
 For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
+
 ## Example Usage
 
 ```terraform
@@ -36,8 +37,8 @@ resource "scaleway_container" "main" {
   protocol        = "http1"
   deploy          = true
 
-  command = [ "bash", "-c", "script.sh" ]
-  args =    [ "some", "args" ]
+  command = ["bash", "-c", "script.sh"]
+  args    = ["some", "args"]
 
   environment_variables = {
     "foo" = "var"
@@ -47,8 +48,6 @@ resource "scaleway_container" "main" {
   }
 }
 ```
-
-### Managing authentication of private containers with IAM
 
 ```terraform
 # Project to be referenced in the IAM policy
@@ -91,22 +90,17 @@ output "container_endpoint" {
   value = scaleway_container.private.domain_name
 }
 
+# Then you can access your private container using the API key:
+# $ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
+#   "https://$(terraform output -raw container_endpoint)/"
+
+# Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
 ```
-
-Then you can access your private container using the API key:
-
-```shell
-$ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
-  "https://$(terraform output -raw container_endpoint)/"
-```
-
-Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
-
-### Deploying containers with mutable images
-
-When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along with the `registry_sha256` argument to trigger container redeployments when the image is updated.
 
 ```terraform
+# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along 
+# with the `registry_sha256` argument to trigger container redeployments when the image is updated.
+
 # Ideally, you would create the namespace separately.
 # For demonstration purposes, this example assumes the "nginx:latest" image is already available
 # in the referenced namespace.
@@ -116,16 +110,16 @@ resource "scaleway_registry_namespace" "main" {
 
 data "scaleway_registry_image" "nginx" {
   namespace_id = scaleway_registry_namespace.main.id
-  name = "nginx"
+  name         = "nginx"
 }
 
 data "scaleway_registry_image_tag" "nginx_latest" {
   image_id = data.scaleway_registry_image.nginx.id
-  name         = "latest"
+  name     = "latest"
 }
 
 resource "scaleway_container_namespace" "main" {
-  name        = "my-container-namespace"
+  name = "my-container-namespace"
 }
 
 resource "scaleway_container" "main" {
@@ -136,9 +130,12 @@ resource "scaleway_container" "main" {
   port            = 80
   deploy          = true
 }
+
+# Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
 ```
 
-Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
+
+
 
 ## Argument Reference
 
@@ -261,7 +258,7 @@ You can determine the computing resources to allocate to each container.
 The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
 
 | Memory (in MB) | vCPU |
-| -------------- | ---- |
+|----------------|------|
 | 128            | 70m  |
 | 256            | 140m |
 | 512            | 280m |

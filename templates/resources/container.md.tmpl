@@ -12,96 +12,16 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 
 For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
+{{ if .HasExamples }}
 ## Example Usage
 
-```terraform
-resource "scaleway_container_namespace" "main" {
-  name        = "my-ns-test"
-  description = "test container"
-}
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-resource "scaleway_container" "main" {
-  name            = "my-container-02"
-  description     = "environment variables test"
-  tags            = ["tag1", "tag2"]
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
-  port            = 9997
-  cpu_limit       = 140
-  memory_limit    = 256
-  min_scale       = 3
-  max_scale       = 5
-  timeout         = 600
-  max_concurrency = 80
-  privacy         = "private"
-  protocol        = "http1"
-  deploy          = true
+{{ end }}
 
-  command = [ "bash", "-c", "script.sh" ]
-  args =    [ "some", "args" ]
 
-  environment_variables = {
-    "foo" = "var"
-  }
-  secret_environment_variables = {
-    "key" = "secret"
-  }
-}
-```
-
-### Managing authentication of private containers with IAM
-
-```terraform
-# Project to be referenced in the IAM policy
-data "scaleway_account_project" "default" {
-  name = "default"
-}
-
-# IAM resources
-resource "scaleway_iam_application" "container_auth" {
-  name = "container-auth"
-}
-resource "scaleway_iam_policy" "access_private_containers" {
-  application_id = scaleway_iam_application.container_auth.id
-  rule {
-    project_ids          = [data.scaleway_account_project.default.id]
-    permission_set_names = ["ContainersPrivateAccess"]
-  }
-}
-resource "scaleway_iam_api_key" "api_key" {
-  application_id = scaleway_iam_application.container_auth.id
-}
-
-# Container resources
-resource "scaleway_container_namespace" "private" {
-  name = "private-container-namespace"
-}
-resource "scaleway_container" "private" {
-  namespace_id   = scaleway_container_namespace.private.id
-  registry_image = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
-  privacy        = "private"
-  deploy         = true
-}
-
-# Output the secret key and the container's endpoint for the curl command
-output "secret_key" {
-  value     = scaleway_iam_api_key.api_key.secret_key
-  sensitive = true
-}
-output "container_endpoint" {
-  value = scaleway_container.private.domain_name
-}
-
-```
-
-Then you can access your private container using the API key:
-
-```shell
-$ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
-  "https://$(terraform output -raw container_endpoint)/"
-```
-
-Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
+{{ end -}}
 
 ## Argument Reference
 
