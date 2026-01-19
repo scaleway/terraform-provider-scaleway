@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -156,6 +157,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 	return []func() action.Action{
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
+		block.NewExportSnapshot,
 		cockpit.NewTriggerTestAlertAction,
 		instance.NewCreateSnapshot,
 		instance.NewExportSnapshot,
