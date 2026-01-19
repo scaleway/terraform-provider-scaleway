@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -25,8 +26,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceRdbInstanceCreate,
 		ReadContext:   ResourceRdbInstanceRead,
 		UpdateContext: ResourceRdbInstanceUpdate,
@@ -118,10 +123,25 @@ func instanceSchema() map[string]*schema.Schema {
 			Description: "Identifier for the first user of the database instance",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Optional:    true,
-			Description: "Password for the first user of the database instance",
+			Type:         schema.TypeString,
+			Sensitive:    true,
+			Optional:     true,
+			Description:  "Password for the first user of the database instance. Only one of `password` or `password_wo` should be specified.",
+			ExactlyOneOf: []string{"password", "password_wo"},
+		},
+		"password_wo": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Password for the first user of the database instance in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:    true,
+			ExactlyOneOf: []string{"password", "password_wo"},
+			RequiredWith: []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"settings": {
 			Type: schema.TypeMap,
@@ -451,6 +471,13 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		d.SetId(regional.NewIDString(region, res.ID))
 		id = res.ID
 	} else {
+		var password string
+		if p, exists := d.GetOk("password"); exists {
+			password = p.(string)
+		} else {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		}
+
 		createReq := &rdb.CreateInstanceRequest{
 			Region:        region,
 			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
@@ -460,7 +487,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			IsHaCluster:   d.Get("is_ha_cluster").(bool),
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
-			Password:      d.Get("password").(string),
+			Password:      password,
 			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 			Encryption: &rdb.EncryptionAtRest{
 				Enabled: d.Get("encryption_at_rest").(bool),
@@ -1109,7 +1136,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	// Update user
 	////////////////////
-	if d.HasChange("password") {
+	if d.HasChange("password") || (d.HasChange("password_wo_version") && d.Get("password_wo_version").(int) > 0) {
 		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -1119,7 +1146,17 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   types.ExpandStringPtr(d.Get("password")),
+		}
+
+		if password, ok := d.GetOk("password"); ok {
+			if d.HasChange("password") {
+				// Check password field is being set (not just removed)
+				req.Password = types.ExpandStringPtr(password)
+			}
+		} else if _, ok := d.GetOk("password_wo_version"); ok {
+			if d.HasChange("password_wo_version") {
+				req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			}
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))
