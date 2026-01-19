@@ -1,4 +1,4 @@
-package keymanager_test
+package secrettestfuncs
 
 import (
 	"context"
@@ -14,14 +14,14 @@ import (
 )
 
 const (
-	destroyWaitTimeout = 3 * time.Minute
+	DestroyWaitTimeout = 3 * time.Minute
 )
 
-func testAccCheckSecretDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
+func CheckSecretDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()
 
-		return retry.RetryContext(ctx, destroyWaitTimeout, func() *retry.RetryError {
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
 			for _, rs := range state.RootModule().Resources {
 				if rs.Type != "scaleway_secret" {
 					continue
