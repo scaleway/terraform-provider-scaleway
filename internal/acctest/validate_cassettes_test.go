@@ -22,6 +22,11 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
+var (
+	ErrCassetteStatusMismatch = errors.New("status mismatch found in cassette")
+	ErrNoMatchingTest         = errors.New("cassette has no matching test")
+)
+
 const servicesDir = "../services"
 
 func exceptionsCassettesCases() map[string]struct{} {
@@ -82,7 +87,7 @@ func checkErrorCode(c *cassette.Cassette) error {
 	for _, i := range c.Interactions {
 		if !checkErrCodeExcept(i, c, http.StatusBadRequest, http.StatusNotFound, http.StatusTooManyRequests, http.StatusForbidden, http.StatusGone) &&
 			!isTransientStateError(i) {
-			return fmt.Errorf("status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", i.Response.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
+			return fmt.Errorf("%w: status: %v found on %s. method: %s, url %s\nrequest body = %v\nresponse body = %v", ErrCassetteStatusMismatch, i.Response.Code, c.Name, i.Request.Method, i.Request.URL, i.Request.Body, i.Response.Body)
 		}
 	}
 
@@ -190,7 +195,7 @@ func TestAccCassettes_CheckOrphans(t *testing.T) {
 	// Look for cassettes with no matching test
 	for actualCassettePath := range actualCassettesPaths {
 		if _, ok := expectedCassettesPaths[actualCassettePath]; !ok {
-			cassetteWithNoTestErrs = append(cassetteWithNoTestErrs, fmt.Errorf("+ cassette [%s] has no matching test", actualCassettePath))
+			cassetteWithNoTestErrs = append(cassetteWithNoTestErrs, fmt.Errorf("%w + cassette [%s] has no matching test", ErrNoMatchingTest, actualCassettePath))
 		}
 	}
 

@@ -1,6 +1,7 @@
 package autoscaling_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
+)
+
+var (
+	ErrAutoscalingResourceNotFound = errors.New("resource not found")
+	ErrAutoscalingStillExists      = errors.New("autoscaling instance group still exists")
 )
 
 func TestAccInstanceGroup_Basic(t *testing.T) {
@@ -117,7 +123,7 @@ func testAccCheckInstanceGroupExists(tt *acctest.TestTools, n string) resource.T
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrAutoscalingResourceNotFound, n)
 		}
 
 		api, zone, id, err := autoscaling.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -154,7 +160,7 @@ func testAccCheckInstanceGroupDestroy(tt *acctest.TestTools) resource.TestCheckF
 				Zone:            zone,
 			})
 			if err == nil {
-				return fmt.Errorf("autoscaling instance group (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrAutoscalingStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

@@ -15,6 +15,13 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
+var (
+	ErrAuditEventNotFoundYet      = errors.New("audit event not found yet for resource, retrying")
+	ErrResourceNotFound           = errors.New("resource not found")
+	ErrAttributeNotFound          = errors.New("attribute not found")
+	ErrUnexpectedResourceID       = errors.New("unexpected resource ID")
+)
+
 const (
 	defaultAuditTrailEventsTimeout = 20 * time.Second
 	destroyWaitTimeout             = 3 * time.Minute
@@ -54,7 +61,7 @@ func waitForAuditTrailEvents(t *testing.T, ctx context.Context, api *audit_trail
 		}
 
 		// Not found yet
-		return retry.RetryableError(errors.New("audit event not found yet for resource, retrying..."))
+		return retry.RetryableError(ErrAuditEventNotFoundYet)
 	})
 	if err != nil {
 		t.Fatalf("timed out waiting for audit trail event: %v", err)
@@ -115,35 +122,35 @@ func checkSecretResourceIDMatchesEvent(resourceName, resourceIDAttr, eventsDataS
 		// Retrieve the secret resource and relevant attribute
 		resource, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", resourceName)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, resourceName)
 		}
 
 		resourceID, ok := resource.Primary.Attributes[resourceIDAttr]
 		if !ok {
-			return fmt.Errorf("attribute not found: %s %s", resource, resourceIDAttr)
+			return fmt.Errorf("%w: %s %s", ErrAttributeNotFound, resource, resourceIDAttr)
 		}
 
 		// Retrieve the events data source and relevant attributes
 		events, ok := s.RootModule().Resources[eventsDataSourceName]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", eventsDataSourceName)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, eventsDataSourceName)
 		}
 
 		eventResourceID, ok := events.Primary.Attributes[eventResourceIDAttr]
 		if !ok {
-			return fmt.Errorf("attribute not found: %s %s", events, eventResourceIDAttr)
+			return fmt.Errorf("%w: %s %s", ErrAttributeNotFound, events, eventResourceIDAttr)
 		}
 
 		eventLocality, ok := events.Primary.Attributes[eventLocalityAttr]
 		if !ok {
-			return fmt.Errorf("attribute not found: %s %s", events, eventLocalityAttr)
+			return fmt.Errorf("%w: %s %s", ErrAttributeNotFound, events, eventLocalityAttr)
 		}
 
 		// Format event resource ID to match the secret resource ID pattern
 		eventResourceFormattedID := fmt.Sprintf("%s/%s", eventLocality, eventResourceID)
 
 		if resourceID != eventResourceFormattedID {
-			return fmt.Errorf("expected %s, got %s", resourceID, eventResourceFormattedID)
+			return fmt.Errorf("%w: expected %s, got %s", ErrUnexpectedResourceID, resourceID, eventResourceFormattedID)
 		}
 
 		return nil

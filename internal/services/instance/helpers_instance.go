@@ -25,6 +25,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+var (
+	ErrServerLocked            = errors.New("server is locked")
+	ErrServerInvalidState      = errors.New("server is in an invalid state")
+	ErrServerTransientState    = errors.New("server is in a transient state")
+	ErrUnknownStateTransition   = errors.New("don't know how to reach state")
+	ErrVolumeSizeConstraint    = errors.New("total local volume size constraint violation")
+	ErrVolumeSizeMustBeEqual   = errors.New("total local volume size must be equal")
+	ErrVolumeSizeMustBeBetween = errors.New("total local volume size must be between")
+	ErrPrivateNetworkNotFound  = errors.New("could not find private network ID")
+	ErrServerProjectIDNotFound = errors.New("no project ID found for server")
+	ErrServerProjectIDRetrieval = errors.New("get private NIC's project ID")
+)
+
 const (
 	// InstanceServerStateStopped transient state of the instance event stop
 	InstanceServerStateStopped = "stopped"
@@ -127,10 +140,10 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 	case instance.ServerStateRunning:
 		return InstanceServerStateStarted, nil
 	case instance.ServerStateLocked:
-		return "", errors.New("server is locked, please contact Scaleway support: https://console.scaleway.com/support/tickets")
+		return "", fmt.Errorf("%w, please contact Scaleway support: https://console.scaleway.com/support/tickets", ErrServerLocked)
 	}
 
-	return "", errors.New("server is in an invalid state, someone else might be executing action at the same time")
+	return "", fmt.Errorf("%w, someone else might be executing action at the same time", ErrServerInvalidState)
 }
 
 // serverStateExpand converts terraform state to an API state or return an error.
@@ -146,7 +159,7 @@ func serverStateExpand(rawState string) (instance.ServerState, error) {
 	}[rawState]
 
 	if !exist {
-		return "", errors.New("server is in a transient state, someone else might be executing another action at the same time")
+		return "", fmt.Errorf("%w, someone else might be executing another action at the same time", ErrServerTransientState)
 	}
 
 	return apiState, nil
@@ -178,7 +191,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
 	if !exist {
-		return fmt.Errorf("don't know how to reach state %s from state %s for server %s", toState, fromState, serverID)
+		return fmt.Errorf("%w %s from state %s for server %s", ErrUnknownStateTransition, toState, fromState, serverID)
 	}
 
 	// We need to check that all volumes are ready
@@ -260,12 +273,12 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 	if localVolumeTotalSize < volumeConstraint.MinSize || localVolumeTotalSize > volumeConstraint.MaxSize {
 		minSize := humanize.Bytes(uint64(volumeConstraint.MinSize))
 		if volumeConstraint.MinSize == volumeConstraint.MaxSize {
-			return fmt.Errorf("%s total local volume size must be equal to %s", commercialType, minSize)
+			return fmt.Errorf("%s %w to %s", commercialType, ErrVolumeSizeMustBeEqual, minSize)
 		}
 
 		maxSize := humanize.Bytes(uint64(volumeConstraint.MaxSize))
 
-		return fmt.Errorf("%s total local volume size must be between %s and %s", commercialType, minSize, maxSize)
+		return fmt.Errorf("%s %w %s and %s", commercialType, ErrVolumeSizeMustBeBetween, minSize, maxSize)
 	}
 
 	return nil
@@ -422,7 +435,7 @@ func (ph *privateNICsHandler) get(key string) (any, error) {
 
 	pn, ok := ph.privateNICsMap[id]
 	if !ok {
-		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
+		return nil, fmt.Errorf("%w %s on locality %s", ErrPrivateNetworkNotFound, key, loc)
 	}
 
 	return map[string]any{
@@ -547,11 +560,11 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 		ServerID: serverID,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return "", fmt.Errorf("get private NIC's project ID: error getting server %s", serverID)
+		return "", fmt.Errorf("%w: error getting server %s", ErrServerProjectIDRetrieval, serverID)
 	}
 
 	if server.Server.Project == "" {
-		return "", fmt.Errorf("no project ID found for server %s", serverID)
+		return "", fmt.Errorf("%w %s", ErrServerProjectIDNotFound, serverID)
 	}
 
 	return server.Server.Project, nil

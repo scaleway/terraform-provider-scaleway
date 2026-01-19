@@ -13,6 +13,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+var (
+	ErrResourceNotFound = errors.New("not found")
+	ErrUnexpectedEventCount = errors.New("unexpected event count")
+)
+
 // newAPIWithRegionAndProjectID returns a new Audit Trail API, with region and projectID
 func newAPIWithRegion(d *schema.ResourceData, m any) (*audittrailSDK.API, scw.Region, error) {
 	api := audittrailSDK.NewAPI(meta.ExtractScwClient(m))
@@ -29,7 +34,7 @@ func CheckEventsOccurrence(resourceName string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resourceName]
 		if !ok {
-			return errors.New("not found: " + resourceName)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, resourceName)
 		}
 
 		countStr := rs.Primary.Attributes["events.#"]
@@ -40,7 +45,7 @@ func CheckEventsOccurrence(resourceName string) resource.TestCheckFunc {
 		}
 
 		if count != 1 {
-			return fmt.Errorf("expected exactly 1 event, got %d", count)
+			return fmt.Errorf("%w: expected exactly 1 event, got %d", ErrUnexpectedEventCount, count)
 		}
 
 		return nil

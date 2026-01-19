@@ -40,6 +40,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrInstanceMustBeStoppedForPlacementGroup = errors.New("instance must be stopped to change placement group")
+	ErrLocalVolumeSizeConstraint              = errors.New("local volume total size does not respect type constraint")
+	ErrFailedToChangeServerType                = errors.New("failed to change server type server")
+	ErrInstanceMustBeStoppedForLocalVolumes   = errors.New("instance must be stopped to change local volumes")
+	ErrProductCatalogEntryNotFound            = errors.New("could not find product catalog entry")
+)
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceInstanceServerCreate,
@@ -964,7 +972,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Null: true}
 		} else {
 			if !isStopped {
-				return diag.FromErr(errors.New("instance must be stopped to change placement group"))
+				return diag.FromErr(ErrInstanceMustBeStoppedForPlacementGroup)
 			}
 
 			updateRequest.PlacementGroup = &instanceSDK.NullableStringValue{Value: placementGroupID}
@@ -1373,7 +1381,8 @@ func instanceServerCanMigrate(api *instanceSDK.API, server *instanceSDK.Server, 
 	if serverType.VolumesConstraint != nil &&
 		(localVolumeSize > serverType.VolumesConstraint.MaxSize) ||
 		(localVolumeSize < serverType.VolumesConstraint.MinSize) {
-		return fmt.Errorf("local volume total size does not respect type constraint, expected beteween (%dGB, %dGB), got %sGB",
+		return fmt.Errorf("%w, expected beteween (%dGB, %dGB), got %sGB",
+			ErrLocalVolumeSizeConstraint,
 			serverType.VolumesConstraint.MinSize/scw.GB,
 			serverType.VolumesConstraint.MaxSize/scw.GB,
 			localVolumeSize/scw.GB)
@@ -1516,7 +1525,7 @@ func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, 
 		CommercialType: types.ExpandStringPtr(d.Get("type")),
 	})
 	if err != nil {
-		return errors.New("failed to change server type server")
+		return ErrFailedToChangeServerType
 	}
 
 	err = reachState(ctx, api, zone, id, beginningState)
@@ -1666,7 +1675,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 
 		// local volumes can only be added when the server is stopped
 		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
-			return nil, errors.New("instance must be stopped to change local volumes")
+			return nil, ErrInstanceMustBeStoppedForLocalVolumes
 		}
 
 		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
@@ -1695,7 +1704,7 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 		}
 	}
 
-	return "", fmt.Errorf("could not find product catalog entry for %q in %s", commercialType, zone)
+	return "", fmt.Errorf("%w for %q in %s", ErrProductCatalogEntryNotFound, commercialType, zone)
 }
 
 func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {
