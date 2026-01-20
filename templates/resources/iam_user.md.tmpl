@@ -1,50 +1,22 @@
 {{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "IAM"
-page_title: "Scaleway: scaleway_iam_user"
+page_title: "Scaleway: {{ .Name }}"
 ---
 
-# Resource: scaleway_iam_user
+# Resource: {{ .Name }}
 
-Creates and manages Scaleway IAM [Users](https://www.scaleway.com/en/docs/iam/concepts/#member).
-For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/iam/#path-users-list-users-of-an-organization).
+{{ .Description }}
 
+{{ if .HasExamples }}
 ## Example Usage
 
-### User
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-```terraform
-resource "scaleway_iam_user" "user" {
-  email      = "foo@test.com"
-  tags       = ["test-tag"]
-  username   = "foo"
-  first_name = "Foo"
-  last_name  = "Bar"
-}
-```
+{{ end }}
 
-### Multiple users
-
-```terraform
-locals {
-  users = [
-    {
-      email = "test@test.com"
-      username = "test"
-    },
-    {
-      email = "test2@test.com"
-      username = "test2"
-    }
-  ]
-}
-
-resource "scaleway_iam_user" "users" {
-  count    = length(local.users)
-  email    = local.users[count.index].email
-  username = local.users[count.index].username
-}
-```
+{{ end -}}
 
 ## Argument Reference
 
@@ -56,7 +28,11 @@ resource "scaleway_iam_user" "users" {
 
 - `username` - (Required) The username of the IAM user.
 
-- `password` - The password for first access.
+- `password` - The password for first access. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) The password for first access in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `send_password_email` - Whether or not to send an email containing the password for first access.
 
