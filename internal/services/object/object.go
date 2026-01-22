@@ -134,7 +134,7 @@ func objectSchema() map[string]*schema.Schema {
 		"sse_customer_key_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "Customer's encryption keys to encrypt data (SSE-C) in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified. `sse_customer_key_wo` will not be set in the Terraform state. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`.",
+			Description:   "Customer's encryption keys to encrypt data (SSE-C) in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified. `sse_customer_key_wo` will not be set in the Terraform state. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`. Important: Objects encrypted with `sse_customer_key_wo` cannot be read back by Terraform since the encryption key is not stored in state. This means attributes like `content_type`, `metadata`, and `tags` will not be populated from the actual object. Additionally, data sources cannot use `sse_customer_key_wo` because data sources cannot have write-only attributes - the key would be exposed in the state, defeating the purpose of write-only mode.",
 			WriteOnly:     true,
 			ConflictsWith: []string{"sse_customer_key"},
 			RequiredWith:  []string{"sse_customer_key_wo_version"},
