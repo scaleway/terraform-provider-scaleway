@@ -192,12 +192,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
 	}
 
-	var encryptionKeyStr string
-	if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
-		encryptionKeyStr = d.GetRawConfig().GetAttr("sse_customer_key_wo").AsString()
-	} else if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
-		encryptionKeyStr = encryptionKey.(string)
-	}
+	encryptionKeyStr := getEncryptionKeyStr(d)
 
 	if encryptionKeyStr != "" {
 		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
@@ -298,12 +293,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
-		var encryptionKeyStr string
-		if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
-			encryptionKeyStr = d.GetRawConfig().GetAttr("sse_customer_key_wo").AsString()
-		} else if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
-			encryptionKeyStr = encryptionKey.(string)
-		}
+		encryptionKeyStr := getEncryptionKeyStr(d)
 
 		if encryptionKeyStr != "" {
 			digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
@@ -342,12 +332,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
-		var encryptionKeyStr string
-		if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
-			encryptionKeyStr = d.GetRawConfig().GetAttr("sse_customer_key_wo").AsString()
-		} else if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
-			encryptionKeyStr = encryptionKey.(string)
-		}
+		encryptionKeyStr := getEncryptionKeyStr(d)
 
 		if encryptionKeyStr != "" {
 			digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
@@ -504,6 +489,17 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 	}
 
 	return false
+}
+
+func getEncryptionKeyStr(d *schema.ResourceData) string {
+	var encryptionKeyStr string
+	if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
+		encryptionKeyStr = d.GetRawConfig().GetAttr("sse_customer_key_wo").AsString()
+	} else if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
+		encryptionKeyStr = encryptionKey.(string)
+	}
+
+	return encryptionKeyStr
 }
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {
