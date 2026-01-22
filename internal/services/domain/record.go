@@ -98,6 +98,13 @@ func recordSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The data of the record",
 			Required:    true,
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				recordType := domain.RecordType(d.Get("type").(string))
+				dnsZone := d.Get("dns_zone").(string)
+
+				return normalizeRecordData(oldValue, recordType, dnsZone) ==
+					normalizeRecordData(newValue, recordType, dnsZone)
+			},
 		},
 		"ttl": {
 			Type:         schema.TypeInt,
@@ -260,7 +267,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordType := domain.RecordType(d.Get("type").(string))
-	recordData := d.Get("data").(string)
+	recordData := normalizeRecordData(d.Get("data").(string), recordType, dnsZone)
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Data:              recordData,
@@ -268,7 +275,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		TTL:               uint32(d.Get("ttl").(int)),
 		Type:              recordType,
 		Priority:          uint32(d.Get("priority").(int)),
-		GeoIPConfig:       expandDomainGeoIPConfig(d.Get("data").(string), geoIP, okGeoIP),
+		GeoIPConfig:       expandDomainGeoIPConfig(recordData, geoIP, okGeoIP),
 		HTTPServiceConfig: expandDomainHTTPService(d.GetOk("http_service")),
 		WeightedConfig:    expandDomainWeighted(d.GetOk("weighted")),
 		ViewConfig:        expandDomainView(d.GetOk("view")),
@@ -455,13 +462,16 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
+	recordType := domain.RecordType(d.Get("type").(string))
+	recordData := normalizeRecordData(d.Get("data").(string), recordType, dnsZone)
+
 	record := &domain.Record{
 		Name:              recordName,
-		Data:              d.Get("data").(string),
+		Data:              recordData,
 		Priority:          uint32(d.Get("priority").(int)),
 		TTL:               uint32(d.Get("ttl").(int)),
-		Type:              domain.RecordType(d.Get("type").(string)),
-		GeoIPConfig:       expandDomainGeoIPConfig(d.Get("data").(string), geoIP, okGeoIP),
+		Type:              recordType,
+		GeoIPConfig:       expandDomainGeoIPConfig(recordData, geoIP, okGeoIP),
 		HTTPServiceConfig: expandDomainHTTPService(d.GetOk("http_service")),
 		WeightedConfig:    expandDomainWeighted(d.GetOk("weighted")),
 		ViewConfig:        expandDomainView(d.GetOk("view")),
