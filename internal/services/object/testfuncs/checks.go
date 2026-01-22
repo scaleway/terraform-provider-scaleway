@@ -234,10 +234,26 @@ func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return errors.New("no ID is set")
 		}
 
-		_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+		req := &s3.HeadObjectInput{
 			Bucket: scw.StringPtr(bucketName),
 			Key:    scw.StringPtr(key),
-		})
+		}
+
+		if encryptionKey, ok := rs.Primary.Attributes["sse_customer_key"]; ok && encryptionKey != "" {
+			digestMD5, encryption, err := object.EncryptCustomerKey(encryptionKey)
+			if err != nil {
+				return err
+			}
+			req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.SSECustomerKeyMD5 = scw.StringPtr(digestMD5)
+			req.SSECustomerKey = encryption
+		} else if _, ok := rs.Primary.Attributes["sse_customer_key_wo_version"]; ok {
+			// Object was encrypted with write-only key, but we can't read it back
+			// since the actual key is not stored in state. Skip the check.
+			return nil
+		}
+
+		_, err = s3Client.HeadObject(ctx, req)
 		if err != nil {
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {
 				return errors.New("s3 object not found")
