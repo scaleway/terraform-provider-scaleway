@@ -64,10 +64,12 @@ func DataSourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) di
 	// set the key in the state.
 	if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
 		encryptionKeyStr := encryptionKey.(string)
+
 		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.SSECustomerAlgorithm = aws.String("AES256")
 		req.SSECustomerKeyMD5 = aws.String(digestMD5)
 		req.SSECustomerKey = encryption

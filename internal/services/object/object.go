@@ -391,6 +391,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	d.SetId(regional.NewIDString(region, objectID(bucketUpdated, keyUpdated)))
+
 	return resourceObjectCreate(ctx, d, m)
 }
 
@@ -442,6 +443,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		// Skip the HeadObject call and return partial state
 		_ = d.Set("content_type", "")
 		_ = d.Set("metadata", map[string]string{})
+
 		return nil
 	} else if encryption, ok := d.GetOk("sse_customer_key"); ok {
 		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))

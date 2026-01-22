@@ -210,7 +210,8 @@ func TestAccDataSourceObject_EncryptedWO(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					objectchecks.IsObjectExists(tt, "scaleway_object.file"),
-				)},
+				),
+			},
 		},
 	})
 }

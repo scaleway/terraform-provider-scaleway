@@ -244,6 +244,7 @@ func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			if err != nil {
 				return err
 			}
+
 			req.SSECustomerAlgorithm = scw.StringPtr("AES256")
 			req.SSECustomerKeyMD5 = scw.StringPtr(digestMD5)
 			req.SSECustomerKey = encryption
