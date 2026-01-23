@@ -217,3 +217,135 @@ func TestExpandNewContact(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeTargetFQDN(t *testing.T) {
+	tests := []struct {
+		name     string
+		target   string
+		dnsZone  string
+		expected string
+	}{
+		{
+			name:     "empty target",
+			target:   "",
+			dnsZone:  "example.com",
+			expected: "",
+		},
+		{
+			name:     "at sign target becomes empty",
+			target:   "@",
+			dnsZone:  "example.com",
+			expected: "",
+		},
+		{
+			name:     "relative target expands to fqdn",
+			target:   "www",
+			dnsZone:  "example.com",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "relative target expands to fqdn even if zone has trailing dot",
+			target:   "www",
+			dnsZone:  "example.com.",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "fqdn without trailing dot gets one",
+			target:   "www.example.com",
+			dnsZone:  "example.com",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "fqdn with trailing dot stays the same",
+			target:   "www.example.com.",
+			dnsZone:  "example.com",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "trims whitespace and lowercases",
+			target:   "  WWW  ",
+			dnsZone:  "Example.COM",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "fqdn gets lowercased",
+			target:   "WWW.EXAMPLE.COM",
+			dnsZone:  "example.com",
+			expected: "www.example.com.",
+		},
+		{
+			name:     "multiple trailing dots are cleaned",
+			target:   "www.example.com....",
+			dnsZone:  "example.com",
+			expected: "www.example.com.",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := domain.NormalizeTargetFQDN(tt.target, tt.dnsZone)
+			if got != tt.expected {
+				t.Fatalf("NormalizeTargetFQDN(%q, %q) = %q, want %q",
+					tt.target, tt.dnsZone, got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNormalizeRecordData(t *testing.T) {
+	dnsZone := "scaleway-terraform.com"
+
+	tests := []struct {
+		name       string
+		data       string
+		recordType domainSDK.RecordType
+		expected   string
+	}{
+		{
+			name:       "CNAME relative expands",
+			data:       "www",
+			recordType: domainSDK.RecordTypeCNAME,
+			expected:   "www.scaleway-terraform.com.",
+		},
+		{
+			name:       "NS fqdn becomes canonical",
+			data:       "ns1.example.net",
+			recordType: domainSDK.RecordTypeNS,
+			expected:   "ns1.example.net.",
+		},
+		{
+			name:       "MX fqdn becomes canonical",
+			data:       "mail.example.net",
+			recordType: domainSDK.RecordTypeMX,
+			expected:   "mail.example.net.",
+		},
+		{
+			name:       "A record stays untouched",
+			data:       "1.2.3.4",
+			recordType: domainSDK.RecordTypeA,
+			expected:   "1.2.3.4",
+		},
+		{
+			name:       "TXT record stays untouched",
+			data:       "hello world",
+			recordType: domainSDK.RecordTypeTXT,
+			expected:   "hello world",
+		},
+		{
+			name:       "empty stays empty",
+			data:       "",
+			recordType: domainSDK.RecordTypeCNAME,
+			expected:   "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := domain.NormalizeRecordData(tt.data, tt.recordType, dnsZone)
+			if got != tt.expected {
+				t.Fatalf("NormalizeRecordData(%q, %q, %q) = %q, want %q",
+					tt.data, tt.recordType.String(), dnsZone, got, tt.expected)
+			}
+		})
+	}
+}
