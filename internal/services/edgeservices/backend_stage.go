@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -75,14 +76,16 @@ func backendStageSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"id": {
-									Type:        schema.TypeString,
-									Optional:    true,
-									Description: "ID of the Load Balancer",
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
 								},
 								"frontend_id": {
-									Type:        schema.TypeString,
-									Optional:    true,
-									Description: "ID of the frontend linked to the Load Balancer",
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the frontend linked to the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
 								},
 								"is_ssl": {
 									Type:        schema.TypeBool,
