@@ -28,7 +28,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-01-16T13:43:46Z"
+		expiresAt = "2026-01-22T16:35:05Z"
 	}
 
 	description := "tf_test_api_key_er_with_app"
@@ -121,7 +121,7 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-01-16T13:43:46Z"
+		expiresAt = "2026-01-22T16:35:28Z"
 	}
 
 	description := "tf_test_api_key_er_project"
