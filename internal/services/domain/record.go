@@ -98,6 +98,13 @@ func recordSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The data of the record",
 			Required:    true,
+			// NOTE: For CNAME/NS/MX records, the Scaleway API normalizes the "data" field to an absolute FQDN with a trailing dot. Example:
+			//
+			//   config: data = "www"
+			//   API/state: data = "www.scaleway-terraform.com."
+			//
+			// Without diff suppression, Terraform would continuously plan an update
+			// We normalize both values before comparison to avoid plan drift
 			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 				recordType := domain.RecordType(d.Get("type").(string))
 				dnsZone := d.Get("dns_zone").(string)
