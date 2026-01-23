@@ -1,10 +1,11 @@
-package domain
+package domain_test
 
 import (
 	"testing"
 
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -84,7 +85,7 @@ func TestExpandContact(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ExpandContact(tt.contactMap)
+			result := domain.ExpandContact(tt.contactMap)
 
 			assert.Equal(t, tt.expected, result)
 		})
@@ -210,7 +211,7 @@ func TestExpandNewContact(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := ExpandNewContact(tt.contactMap)
+			result := domain.ExpandNewContact(tt.contactMap)
 
 			assert.Equal(t, tt.expected, result)
 		})
@@ -282,9 +283,9 @@ func TestNormalizeTargetFQDN(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := normalizeTargetFQDN(tt.target, tt.dnsZone)
+			got := domain.NormalizeTargetFQDN(tt.target, tt.dnsZone)
 			if got != tt.expected {
-				t.Fatalf("normalizeTargetFQDN(%q, %q) = %q, want %q",
+				t.Fatalf("NormalizeTargetFQDN(%q, %q) = %q, want %q",
 					tt.target, tt.dnsZone, got, tt.expected)
 			}
 		})
@@ -340,9 +341,9 @@ func TestNormalizeRecordData(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := normalizeRecordData(tt.data, tt.recordType, dnsZone)
+			got := domain.NormalizeRecordData(tt.data, tt.recordType, dnsZone)
 			if got != tt.expected {
-				t.Fatalf("normalizeRecordData(%q, %q, %q) = %q, want %q",
+				t.Fatalf("NormalizeRecordData(%q, %q, %q) = %q, want %q",
 					tt.data, tt.recordType.String(), dnsZone, got, tt.expected)
 			}
 		})

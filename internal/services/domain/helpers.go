@@ -664,7 +664,7 @@ func normalizeRecordName(name, dnsZone string) string {
 	return name
 }
 
-func normalizeRecordData(data string, recordType domain.RecordType, dnsZone string) string {
+func NormalizeRecordData(data string, recordType domain.RecordType, dnsZone string) string {
 	data = strings.TrimSpace(data)
 	if data == "" {
 		return ""
@@ -672,13 +672,13 @@ func normalizeRecordData(data string, recordType domain.RecordType, dnsZone stri
 
 	switch recordType {
 	case domain.RecordTypeCNAME, domain.RecordTypeNS, domain.RecordTypeMX:
-		return normalizeTargetFQDN(data, dnsZone)
+		return NormalizeTargetFQDN(data, dnsZone)
 	default:
 		return data
 	}
 }
 
-func normalizeTargetFQDN(target, dnsZone string) string {
+func NormalizeTargetFQDN(target, dnsZone string) string {
 	target = strings.TrimSpace(target)
 	if target == "" || target == "@" {
 		return ""

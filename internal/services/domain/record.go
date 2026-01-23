@@ -102,8 +102,8 @@ func recordSchema() map[string]*schema.Schema {
 				recordType := domain.RecordType(d.Get("type").(string))
 				dnsZone := d.Get("dns_zone").(string)
 
-				return normalizeRecordData(oldValue, recordType, dnsZone) ==
-					normalizeRecordData(newValue, recordType, dnsZone)
+				return NormalizeRecordData(oldValue, recordType, dnsZone) ==
+					NormalizeRecordData(newValue, recordType, dnsZone)
 			},
 		},
 		"ttl": {
@@ -267,7 +267,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordType := domain.RecordType(d.Get("type").(string))
-	recordData := normalizeRecordData(d.Get("data").(string), recordType, dnsZone)
+	recordData := NormalizeRecordData(d.Get("data").(string), recordType, dnsZone)
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Data:              recordData,
@@ -463,7 +463,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	recordType := domain.RecordType(d.Get("type").(string))
-	recordData := normalizeRecordData(d.Get("data").(string), recordType, dnsZone)
+	recordData := NormalizeRecordData(d.Get("data").(string), recordType, dnsZone)
 
 	record := &domain.Record{
 		Name:              recordName,
