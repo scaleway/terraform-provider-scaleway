@@ -65,7 +65,7 @@ func TestAccDataSourceVerify_Basic(t *testing.T) {
 				  key_id = scaleway_key_manager_key.main.id
 				  region = "fr-par"
 				  digest = "%[1]s"
-				  signature = data.scaleway_secret_version.data_v1.data
+				  signature = base64decode(data.scaleway_secret_version.data_v1.data)
 				}
 				`, digest),
 				Check: resource.ComposeTestCheckFunc(
@@ -141,7 +141,7 @@ func TestAccDataSourceVerify_Invalid(t *testing.T) {
 				  key_id = scaleway_key_manager_key.other.id
 				  region = "fr-par"
 				  digest = "%[1]s"
-				  signature = data.scaleway_secret_version.data_v1.data
+				  signature = base64decode(data.scaleway_secret_version.data_v1.data)
 				}
 				`, digest),
 				Check: resource.ComposeTestCheckFunc(
