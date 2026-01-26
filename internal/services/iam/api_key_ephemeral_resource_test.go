@@ -28,7 +28,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-01-16T13:43:46Z"
+		expiresAt = "2026-01-22T16:35:05Z"
 	}
 
 	description := "tf_test_api_key_er_with_app"
@@ -121,7 +121,7 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-01-16T13:43:46Z"
+		expiresAt = "2026-01-22T16:35:28Z"
 	}
 
 	description := "tf_test_api_key_er_project"
@@ -242,10 +242,15 @@ func testAccCheckEphemeralIamAPIKeyExists(tt *acctest.TestTools, name string) re
 			return fmt.Errorf("resource not found: %s", name)
 		}
 
+		key, err := base64.StdEncoding.DecodeString(rs.Primary.Attributes["data"])
+		if err != nil {
+			return fmt.Errorf("could not find api key: %w", err)
+		}
+
 		iamAPI := iam.NewAPI(tt.Meta)
 
-		_, err := iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
-			AccessKey: rs.Primary.Attributes["data"],
+		_, err = iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
+			AccessKey: string(key),
 		})
 		if err != nil {
 			return fmt.Errorf("could not find api key: %w", err)
