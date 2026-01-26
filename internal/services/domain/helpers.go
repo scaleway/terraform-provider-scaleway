@@ -28,12 +28,12 @@ func NewRegistrarDomainAPI(m any) *domain.RegistrarAPI {
 	return domain.NewRegistrarAPI(meta.ExtractScwClient(m))
 }
 
-func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record) (*domain.Record, error) {
+func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record, dnsZone string) (*domain.Record, error) {
 	var currentRecord *domain.Record
 
 	for _, r := range records {
-		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type).(string)
+		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type, dnsZone).(string)
+		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type, dnsZone).(string)
 
 		if dnsType == domain.RecordTypeSRV {
 			if flattedData == flattenCurrentData {
@@ -671,6 +671,8 @@ func NormalizeRecordData(data string, recordType domain.RecordType, dnsZone stri
 	}
 
 	switch recordType {
+	case domain.RecordTypeSRV:
+		return NormalizeSRVData(data, dnsZone)
 	case domain.RecordTypeCNAME, domain.RecordTypeNS, domain.RecordTypeMX:
 		return NormalizeTargetFQDN(data, dnsZone)
 	default:
