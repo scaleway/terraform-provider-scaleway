@@ -3,6 +3,7 @@ package audittrail
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -17,6 +18,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
+)
+
+var (
+	ErrInvalidOrderByValue = errors.New("invalid order_by value")
 )
 
 //go:embed descriptions/event.md
@@ -312,7 +317,7 @@ func readOptionalData(d *schema.ResourceData, req *audittrailSDK.ListEventsReque
 		case "recorded_at_desc":
 			req.OrderBy = audittrailSDK.ListEventsRequestOrderByRecordedAtDesc
 		default:
-			return fmt.Errorf("invalid order_by value: %s, must be 'recorded_at_asc' or 'recorded_at_desc'", orderBy)
+			return fmt.Errorf("%w: %s, must be 'recorded_at_asc' or 'recorded_at_desc'", ErrInvalidOrderByValue, orderBy)
 		}
 	}
 

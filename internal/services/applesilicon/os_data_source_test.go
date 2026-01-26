@@ -1,6 +1,7 @@
 package applesilicon_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -9,6 +10,10 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+)
+
+var (
+	ErrAppleSiliconOSNotFound = errors.New("not found")
 )
 
 func TestAccDataSourceOS_Basic(t *testing.T) {
@@ -50,7 +55,7 @@ func testAccCheckAppleSiliconOsExists(tt *acctest.TestTools, n string) resource.
 		rs, ok := s.RootModule().Resources[n]
 
 		if !ok {
-			return fmt.Errorf("not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrAppleSiliconOSNotFound, n)
 		}
 
 		zone, ID, err := zonal.ParseID(rs.Primary.ID)

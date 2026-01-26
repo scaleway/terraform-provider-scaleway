@@ -7,6 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 )
 
+var (
+	ErrMultipleElementsFound = errors.New("multiple elements found")
+	ErrNoElementFound       = errors.New("no element found")
+	ErrMultipleMatches      = errors.New("multiple matches")
+	ErrNoMatchesFound       = errors.New("no matches found")
+)
+
 // FindExact finds the first element in 'slice' matching the condition defined by 'finder'.
 // It returns the first matching element and an error if either no match is found or multiple matches are found.
 func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, error) {
@@ -20,7 +27,7 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 				// More than one element found with the same search name
 				var zero T
 
-				return zero, fmt.Errorf("multiple elements found with the name %s", searchName)
+				return zero, fmt.Errorf("%w with the name %s", ErrMultipleElementsFound, searchName)
 			}
 
 			found = elem
@@ -31,7 +38,7 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 	if !foundFlag {
 		var zero T
 
-		return zero, fmt.Errorf("no element found with the name %s", searchName)
+		return zero, fmt.Errorf("%w with the name %s", ErrNoElementFound, searchName)
 	}
 
 	return found, nil
@@ -41,10 +48,10 @@ func FindExact[T any](slice []T, finder func(T) bool, searchName string) (T, err
 func SingularDataSourceFindError(resourceType string, err error) error {
 	if notFound(err) {
 		if errors.Is(err, &TooManyResultsError{}) {
-			return fmt.Errorf("multiple %[1]ss matched; use additional constraints to reduce matches to a single %[1]s", resourceType)
+			return fmt.Errorf("%w; use additional constraints to reduce matches to a single %[1]s", ErrMultipleMatches, resourceType)
 		}
 
-		return fmt.Errorf("no matching %[1]s found", resourceType)
+		return fmt.Errorf("%w", ErrNoMatchesFound)
 	}
 
 	return fmt.Errorf("reading %s: %w", resourceType, err)

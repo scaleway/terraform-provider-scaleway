@@ -1,6 +1,7 @@
 package blocktestfuncs
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,11 +12,17 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 )
 
+var (
+	ErrBlockResourceNotFound = errors.New("resource not found")
+	ErrBlockVolumeStillExists = errors.New("block volume still exists")
+	ErrBlockSnapshotStillExists = errors.New("block snapshot still exists")
+)
+
 func IsSnapshotPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrBlockResourceNotFound, n)
 		}
 
 		api, zone, id, err := block.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -39,7 +46,7 @@ func IsVolumePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrBlockResourceNotFound, n)
 		}
 
 		api, zone, id, err := block.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -76,7 +83,7 @@ func IsVolumeDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Zone:     zone,
 			})
 			if err == nil {
-				return fmt.Errorf("block volume (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrBlockVolumeStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) && !httperrors.Is410(err) {
@@ -105,7 +112,7 @@ func IsSnapshotDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				Zone:       zone,
 			})
 			if err == nil {
-				return fmt.Errorf("block snapshot (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrBlockSnapshotStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

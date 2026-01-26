@@ -1,10 +1,15 @@
 package cockpit
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+)
+
+var (
+	ErrInvalidDataSourceType = errors.New("invalid data source type")
 )
 
 var scopeMapping = map[string]cockpit.TokenScope{
@@ -81,7 +86,7 @@ func createCockpitPushURL(sourceType cockpit.DataSourceType, url string) (string
 	case cockpit.DataSourceTypeTraces:
 		return url + pathTracesURL, nil
 	default:
-		return "", fmt.Errorf("invalid data source type: %v", sourceType)
+		return "", fmt.Errorf("%w: %v", ErrInvalidDataSourceType, sourceType)
 	}
 }
 

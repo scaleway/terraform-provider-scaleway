@@ -18,6 +18,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrIPNotFoundWithFilters    = errors.New("no ip found with given filters")
+	ErrMultipleIPsFoundWithFilter = errors.New("more than one ip found with given filter")
+)
+
 func DataSourceIP() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceIPAMIPRead,
@@ -200,11 +205,11 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 			if len(resp.IPs) == 0 {
 				// Retry if no IPs are found
-				return retry.RetryableError(errors.New("no ip found with given filters"))
+				return retry.RetryableError(ErrIPNotFoundWithFilters)
 			}
 
 			if len(resp.IPs) > 1 {
-				return retry.NonRetryableError(errors.New("more than one ip found with given filter"))
+				return retry.NonRetryableError(ErrMultipleIPsFoundWithFilter)
 			}
 
 			ip = resp.IPs[0].Address

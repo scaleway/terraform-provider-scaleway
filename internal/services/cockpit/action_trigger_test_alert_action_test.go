@@ -2,12 +2,18 @@ package cockpit_test
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+)
+
+var (
+	ErrCockpitEventNotFound = errors.New("not found")
+	ErrTriggerTestAlertNotFound = errors.New("did not find the TriggerTestAlert event")
 )
 
 func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
@@ -96,7 +102,7 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 					func(state *terraform.State) error {
 						rs, ok := state.RootModule().Resources["data.scaleway_audit_trail_event.cockpit"]
 						if !ok {
-							return errors.New("not found: data.scaleway_audit_trail_event.cockpit")
+							return fmt.Errorf("%w: data.scaleway_audit_trail_event.cockpit", ErrCockpitEventNotFound)
 						}
 
 						for key, value := range rs.Primary.Attributes {
@@ -109,7 +115,7 @@ func TestAccActionCockpitTriggerTestAlert_Basic(t *testing.T) {
 							}
 						}
 
-						return errors.New("did not find the TriggerTestAlert event")
+						return ErrTriggerTestAlertNotFound
 					},
 				),
 			},

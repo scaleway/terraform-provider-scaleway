@@ -16,6 +16,13 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrPrivateNICNotFound        = errors.New("found no private nic with given filters")
+	ErrMultiplePrivateNICsFound   = errors.New("found more than one private nic with given filters")
+	ErrMultiplePrivateNICsForPN   = errors.New("found more than one private nic for request private network")
+	ErrPrivateNICNotFoundForPN    = errors.New("could not find a private_nic for private network")
+)
+
 func DataSourcePrivateNIC() *schema.Resource {
 	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivateNIC().SchemaFunc())
@@ -103,9 +110,9 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 		case len(privateNICs) == 1:
 			return privateNICs[0], nil
 		case len(privateNICs) == 0:
-			return nil, errors.New("found no private nic with given filters")
+			return nil, ErrPrivateNICNotFound
 		default:
-			return nil, errors.New("found more than one private nic with given filters")
+			return nil, ErrMultiplePrivateNICsFound
 		}
 	}
 
@@ -114,7 +121,7 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 	for _, pnic := range privateNICs {
 		if pnic.PrivateNetworkID == privateNetworkID {
 			if privateNIC != nil {
-				return nil, fmt.Errorf("found more than one private nic for request private network (%s)", privateNetworkID)
+				return nil, fmt.Errorf("%w (%s)", ErrMultiplePrivateNICsForPN, privateNetworkID)
 			}
 
 			privateNIC = pnic
@@ -125,5 +132,5 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 		return privateNIC, nil
 	}
 
-	return nil, fmt.Errorf("could not find a private_nic for private network (%s)", privateNetworkID)
+	return nil, fmt.Errorf("%w (%s)", ErrPrivateNICNotFoundForPN, privateNetworkID)
 }

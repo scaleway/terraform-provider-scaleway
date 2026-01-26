@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -17,6 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+)
+
+var (
+	ErrInvalidAlertManagerIDFormat = errors.New("invalid alert manager ID format")
+	ErrInvalidCockpitID             = errors.New("invalid cockpit ID")
+	ErrInvalidUpgradeIDType         = errors.New("upgrade: expected 'id' to be a string")
 )
 
 const (
@@ -62,7 +69,7 @@ func NewAPIWithRegionAndProjectID(m any, id string) (*cockpit.RegionalAPI, scw.R
 
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
-		return nil, "", "", fmt.Errorf("invalid alert manager ID format: %s, expected region/projectID/1", id)
+		return nil, "", "", fmt.Errorf("%w: %s, expected region/projectID/1", ErrInvalidAlertManagerIDFormat, id)
 	}
 
 	return api, scw.Region(parts[0]), parts[1], nil
@@ -97,7 +104,7 @@ func cockpitIDWithProjectID(projectID string, id string) string {
 func parseCockpitID(id string) (projectID string, cockpitID string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 2 {
-		return "", "", fmt.Errorf("invalid cockpit ID: %s", id)
+		return "", "", fmt.Errorf("%w: %s", ErrInvalidCockpitID, id)
 	}
 
 	return parts[0], parts[1], nil
@@ -122,7 +129,7 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]any, _ any
 			rawState["id"] = regional.NewIDString(defaultRegion, ID)
 		}
 	} else {
-		return nil, fmt.Errorf("upgrade: expected 'id' to be a string, got %T", rawState["id"])
+		return nil, fmt.Errorf("%w, got %T", ErrInvalidUpgradeIDType, rawState["id"])
 	}
 
 	return rawState, nil

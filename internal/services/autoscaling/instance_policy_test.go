@@ -1,6 +1,7 @@
 package autoscaling_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
+)
+
+var (
+	ErrAutoscalingPolicyResourceNotFound = errors.New("resource not found")
+	ErrAutoscalingPolicyStillExists      = errors.New("autoscaling instance policy still exists")
 )
 
 func TestAccInstancePolicy_Basic(t *testing.T) {
@@ -133,7 +139,7 @@ func testAccCheckInstancePolicyExists(tt *acctest.TestTools, n string) resource.
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrAutoscalingPolicyResourceNotFound, n)
 		}
 
 		api, zone, id, err := autoscaling.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -170,7 +176,7 @@ func testAccCheckInstancePolicyDestroy(tt *acctest.TestTools) resource.TestCheck
 				Zone:     zone,
 			})
 			if err == nil {
-				return fmt.Errorf("autoscaling instance policy (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrAutoscalingPolicyStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

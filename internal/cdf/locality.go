@@ -12,6 +12,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+var (
+	ErrMissingLocality      = errors.New("missing locality zone or region to check IDs")
+	ErrDifferentLocality     = errors.New("has different locality than the resource")
+)
+
 // expandListKeys return the list of keys for an attribute in a list
 // example for private-networks.#.id in a list of size 2
 // will return private-networks.0.id and private-networks.1.id
@@ -71,7 +76,7 @@ func LocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 		l := getLocality(diff, m)
 
 		if l == "" {
-			return errors.New("missing locality zone or region to check IDs")
+			return ErrMissingLocality
 		}
 
 		for _, key := range keys {
@@ -82,13 +87,13 @@ func LocalityCheck(keys ...string) schema.CustomizeDiffFunc {
 				for _, listKey := range listKeys {
 					IDLocality, _, err := locality.ParseLocalizedID(diff.Get(listKey).(string))
 					if err == nil && !locality.CompareLocalities(IDLocality, l) {
-						return fmt.Errorf("given %s %s has different locality than the resource %q", listKey, diff.Get(listKey), l)
+						return fmt.Errorf("given %s %s %w %q", listKey, diff.Get(listKey), ErrDifferentLocality, l)
 					}
 				}
 			} else {
 				IDLocality, _, err := locality.ParseLocalizedID(diff.Get(key).(string))
 				if err == nil && !locality.CompareLocalities(IDLocality, l) {
-					return fmt.Errorf("given %s %s has different locality than the resource %q", key, diff.Get(key), l)
+					return fmt.Errorf("given %s %s %w %q", key, diff.Get(key), ErrDifferentLocality, l)
 				}
 			}
 		}

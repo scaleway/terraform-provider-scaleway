@@ -1,6 +1,7 @@
 package autoscaling_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
+)
+
+var (
+	ErrAutoscalingTemplateResourceNotFound = errors.New("resource not found")
+	ErrAutoscalingTemplateStillExists      = errors.New("autoscaling instance template still exists")
 )
 
 func TestAccInstanceTemplate_Basic(t *testing.T) {
@@ -128,7 +134,7 @@ func testAccCheckInstanceTemplateExists(tt *acctest.TestTools, n string) resourc
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrAutoscalingTemplateResourceNotFound, n)
 		}
 
 		api, zone, id, err := autoscaling.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -165,7 +171,7 @@ func testAccCheckInstanceTemplateDestroy(tt *acctest.TestTools) resource.TestChe
 				Zone:       zone,
 			})
 			if err == nil {
-				return fmt.Errorf("autoscaling instance template (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrAutoscalingTemplateStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is404(err) {

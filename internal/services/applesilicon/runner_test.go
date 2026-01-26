@@ -1,6 +1,7 @@
 package applesilicon_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+)
+
+var (
+	ErrAppleSiliconResourceNotFound = errors.New("resource not found")
+	ErrAppleSiliconRunnerStillExists = errors.New("runner still exists")
 )
 
 func TestAccRunner_BasicGithub(t *testing.T) {
@@ -63,7 +69,7 @@ func isRunnerPresent(tt *acctest.TestTools, resourceName string) resource.TestCh
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", resourceName)
+			return fmt.Errorf("%w: %s", ErrAppleSiliconResourceNotFound, resourceName)
 		}
 
 		api, zone, id, err := applesilicon.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -97,7 +103,7 @@ func isRunnerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				RunnerID: id,
 			})
 			if err == nil {
-				return fmt.Errorf("runner still exists: %s", rs.Primary.ID)
+				return fmt.Errorf("%w: %s", ErrAppleSiliconRunnerStillExists, rs.Primary.ID)
 			}
 
 			if !httperrors.Is403(err) {

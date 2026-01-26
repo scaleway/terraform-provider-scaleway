@@ -14,6 +14,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+var (
+	ErrVPCRoutingCannotBeDisabled = errors.New("routing cannot be disabled on this VPC")
+)
+
 func ResourceVPC() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceVPCCreate,
@@ -28,7 +32,7 @@ func ResourceVPC() *schema.Resource {
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			before, after := diff.GetChange("enable_routing")
 			if before != nil && before.(bool) && after != nil && !after.(bool) {
-				return errors.New("routing cannot be disabled on this VPC")
+				return ErrVPCRoutingCannotBeDisabled
 			}
 
 			return nil

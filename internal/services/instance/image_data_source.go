@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 
@@ -13,6 +14,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+)
+
+var (
+	ErrImageNotFound          = errors.New("no image found")
+	ErrMultipleImagesFound     = errors.New("multiple images found")
 )
 
 func DataSourceImage() *schema.Resource {
@@ -127,11 +133,11 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		if len(matchingImages) == 0 {
-			return diag.FromErr(fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("%w with the name %s and architecture %s in zone %s", ErrImageNotFound, d.Get("name"), d.Get("architecture"), zone))
 		}
 
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
-			return diag.FromErr(fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("%w: %d images found with the same name %s and architecture %s in zone %s", ErrMultipleImagesFound, len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
 		}
 
 		sort.Slice(matchingImages, func(i, j int) bool {

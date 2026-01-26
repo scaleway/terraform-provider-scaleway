@@ -11,21 +11,35 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
+var (
+	ErrResourceIDNotSet          = errors.New("resourceID was not set")
+	ErrResourceNotFound          = errors.New("resource was not found")
+	ErrResourceIDPersisted       = errors.New("resource ID persisted when it should have changed")
+	ErrResourceIDChanged         = errors.New("resource ID changed when it should have persisted")
+	ErrResourceAttributeNotFound = errors.New("resource attribute not found")
+	ErrResourceNotFoundSimple    = errors.New("not found")
+	ErrIDMismatch               = errors.New("ID mismatch")
+	ErrResourceNotDestroyed      = errors.New("resource was not destroyed")
+	ErrInvalidIPv4              = errors.New("is not a valid IPv4")
+	ErrInvalidIPv6              = errors.New("is not a valid IPv6")
+	ErrInvalidIP                = errors.New("is not a valid IP")
+)
+
 // CheckResourceIDChanged checks that the ID of the resource has indeed changed, in case of ForceNew for example.
 // It will fail if resourceID is empty so be sure to use acctest.CheckResourceIDPersisted first in a test suite.
 func CheckResourceIDChanged(resourceName string, resourceID *string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if resourceID == nil || *resourceID == "" {
-			return errors.New("resourceID was not set")
+			return ErrResourceIDNotSet
 		}
 
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("resource was not found: %s", resourceName)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, resourceName)
 		}
 
 		if *resourceID == rs.Primary.ID {
-			return errors.New("resource ID persisted when it should have changed")
+			return ErrResourceIDPersisted
 		}
 
 		*resourceID = rs.Primary.ID
@@ -40,11 +54,11 @@ func CheckResourceIDPersisted(resourceName string, resourceID *string) resource.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return fmt.Errorf("resource was not found: %s", resourceName)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, resourceName)
 		}
 
 		if *resourceID != "" && *resourceID != rs.Primary.ID {
-			return errors.New("resource ID changed when it should have persisted")
+			return ErrResourceIDChanged
 		}
 
 		*resourceID = rs.Primary.ID
@@ -58,19 +72,19 @@ func CheckResourceRawIDMatches(res1, attr1, res2, attr2 string) resource.TestChe
 	return func(s *terraform.State) error {
 		rs1, ok1 := s.RootModule().Resources[res1]
 		if !ok1 {
-			return fmt.Errorf("not found: %s", res1)
+			return fmt.Errorf("%w: %s", ErrResourceNotFoundSimple, res1)
 		}
 
 		rs2, ok2 := s.RootModule().Resources[res2]
 		if !ok2 {
-			return fmt.Errorf("not found: %s", res2)
+			return fmt.Errorf("%w: %s", ErrResourceNotFoundSimple, res2)
 		}
 
 		id1 := locality.ExpandID(rs1.Primary.Attributes[attr1])
 		id2 := locality.ExpandID(rs2.Primary.Attributes[attr2])
 
 		if id1 != id2 {
-			return fmt.Errorf("ID mismatch: %s from resource %s does not match ID %s from resource %s", id1, res1, id2, res2)
+			return fmt.Errorf("%w: %s from resource %s does not match ID %s from resource %s", ErrIDMismatch, id1, res1, id2, res2)
 		}
 
 		return nil
@@ -87,12 +101,12 @@ func CheckResourceAttrFunc(name string, key string, test func(string) error) res
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
+			return fmt.Errorf("%w: %s", ErrResourceNotFoundSimple, name)
 		}
 
 		value, ok := rs.Primary.Attributes[key]
 		if !ok {
-			return fmt.Errorf("key not found: %s", key)
+			return fmt.Errorf("%w: %s", ErrResourceAttributeNotFound, key)
 		}
 
 		err := test(value)
@@ -108,7 +122,7 @@ func CheckResourceAttrIPv4(name string, key string) resource.TestCheckFunc {
 	return CheckResourceAttrFunc(name, key, func(value string) error {
 		ip := net.ParseIP(value)
 		if ip.To4() == nil {
-			return fmt.Errorf("%s is not a valid IPv4", value)
+			return fmt.Errorf("%w", ErrInvalidIPv4)
 		}
 
 		return nil
@@ -119,7 +133,7 @@ func CheckResourceAttrIPv6(name string, key string) resource.TestCheckFunc {
 	return CheckResourceAttrFunc(name, key, func(value string) error {
 		ip := net.ParseIP(value)
 		if ip.To16() == nil {
-			return fmt.Errorf("%s is not a valid IPv6", value)
+			return fmt.Errorf("%w", ErrInvalidIPv6)
 		}
 
 		return nil
@@ -130,7 +144,7 @@ func CheckResourceAttrIP(name string, key string) resource.TestCheckFunc {
 	return CheckResourceAttrFunc(name, key, func(value string) error {
 		ip := net.ParseIP(value)
 		if ip == nil {
-			return fmt.Errorf("%s is not a valid IP", value)
+			return fmt.Errorf("%w", ErrInvalidIP)
 		}
 
 		return nil

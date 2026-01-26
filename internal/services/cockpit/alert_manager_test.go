@@ -16,6 +16,18 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+var (
+	ErrAlertManagerNotFound = errors.New("alert manager not found")
+	ErrContactPointNotFound  = errors.New("contact point not found")
+	ErrAlertManagerStillEnabled = errors.New("cockpit alert manager still enabled")
+	ErrAlertManagerIDEmpty   = errors.New("alert manager ID is empty")
+	ErrInvalidAlertManagerIDParts = errors.New("alert manager ID should have 3 parts")
+	ErrEmptyRegionPart       = errors.New("region part of ID is empty")
+	ErrEmptyProjectIDPart    = errors.New("project ID part of ID is empty")
+	ErrInvalidThirdPart      = errors.New("third part of ID should be '1'")
+	ErrProjectIDMismatch     = errors.New("project_id mismatch")
+)
+
 func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -229,7 +241,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return errors.New("alert manager not found: " + resourceName)
+			return fmt.Errorf("%w: %s", ErrAlertManagerNotFound, resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
@@ -248,7 +260,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 			}
 		}
 
-		return errors.New("contact point with email " + rs.Primary.Attributes["emails.0"] + " not found in project " + projectID)
+		return fmt.Errorf("%w: contact point with email %s not found in project %s", ErrContactPointNotFound, rs.Primary.Attributes["emails.0"], projectID)
 	}
 }
 
@@ -276,7 +288,7 @@ func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resourc
 			}
 
 			if alertManager.AlertManagerEnabled {
-				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
+				return fmt.Errorf("%w (%s)", ErrAlertManagerStillEnabled, rs.Primary.ID)
 			}
 		}
 
@@ -289,12 +301,12 @@ func testAccCheckAlertManagerIDFormat(tt *acctest.TestTools, resourceName string
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return errors.New("alert manager not found: " + resourceName)
+			return fmt.Errorf("%w: %s", ErrAlertManagerNotFound, resourceName)
 		}
 
 		id := rs.Primary.ID
 		if id == "" {
-			return errors.New("alert manager ID is empty")
+			return ErrAlertManagerIDEmpty
 		}
 
 		parts := strings.Split(id, "/")
@@ -440,7 +452,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return errors.New("alert manager not found: " + resourceName)
+			return fmt.Errorf("%w: %s", ErrAlertManagerNotFound, resourceName)
 		}
 
 		actualCountStr := rs.Primary.Attributes["preconfigured_alert_ids.#"]
@@ -501,7 +513,7 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
-			return errors.New("alert manager not found: " + resourceName)
+			return fmt.Errorf("%w: %s", ErrAlertManagerNotFound, resourceName)
 		}
 
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))

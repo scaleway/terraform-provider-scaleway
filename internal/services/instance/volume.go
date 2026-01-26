@@ -21,6 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrOnlyBlockVolumeCanBeResized = errors.New("only block volume can be resized")
+	ErrBlockVolumeCannotBeResizedDown = errors.New("block volumes cannot be resized down")
+	ErrVolumeStillAttachedToServer = errors.New("volume is still attached to a server")
+)
+
 func ResourceVolume() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceInstanceVolumeCreate,
@@ -222,11 +228,11 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("size_in_gb") {
 		if d.Get("type") != instanceSDK.VolumeVolumeTypeBSSD.String() {
-			return diag.FromErr(errors.New("only block volume can be resized"))
+			return diag.FromErr(ErrOnlyBlockVolumeCanBeResized)
 		}
 
 		if oldSize, newSize := d.GetChange("size_in_gb"); oldSize.(int) > newSize.(int) {
-			return diag.FromErr(errors.New("block volumes cannot be resized down"))
+			return diag.FromErr(ErrBlockVolumeCannotBeResizedDown)
 		}
 
 		_, err = instancehelpers.WaitForVolume(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
@@ -280,7 +286,7 @@ func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if volume.Server != nil {
-		return diag.FromErr(errors.New("volume is still attached to a server"))
+		return diag.FromErr(ErrVolumeStillAttachedToServer)
 	}
 
 	deleteRequest := &instanceSDK.DeleteVolumeRequest{

@@ -17,6 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+var (
+	ErrVPCUpgradeIDNotExist        = errors.New("upgrade: id not exist")
+	ErrVPCUpgradeLocalityRetrieval = errors.New("upgrade: could not retrieve the locality")
+	ErrVPCUnrecognizedIDFormat     = errors.New("unrecognized ID format")
+)
+
 const defaultVPCPrivateNetworkRetryInterval = 30 * time.Second
 
 // vpcAPIWithRegion returns a new VPC API and the region for a Create request
@@ -70,7 +76,7 @@ func vpcPrivateNetworkV1SUpgradeFunc(_ context.Context, rawState map[string]any,
 
 	ID, exist := rawState["id"]
 	if !exist {
-		return nil, errors.New("upgrade: id not exist")
+		return nil, ErrVPCUpgradeIDNotExist
 	}
 
 	rawState["id"], err = vpcPrivateNetworkUpgradeV1ZonalToRegionalID(ID.(string))
@@ -85,7 +91,7 @@ func vpcPrivateNetworkUpgradeV1ZonalToRegionalID(element string) (string, error)
 	l, id, err := locality.ParseLocalizedID(element)
 	// return error if l cannot be parsed
 	if err != nil {
-		return "", fmt.Errorf("upgrade: could not retrieve the locality from `%s`", element)
+		return "", fmt.Errorf("%w from `%s`", ErrVPCUpgradeLocalityRetrieval, element)
 	}
 	// if locality is already regional return
 	if validator.IsRegion(l) {
@@ -123,7 +129,7 @@ func vpcRouteExpandResourceID(id string) (string, error) {
 
 		return ID, nil
 	default:
-		return "", fmt.Errorf("unrecognized ID format: %s", id)
+		return "", fmt.Errorf("%w: %s", ErrVPCUnrecognizedIDFormat, id)
 	}
 }
 

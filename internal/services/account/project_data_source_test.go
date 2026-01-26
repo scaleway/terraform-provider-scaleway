@@ -1,12 +1,17 @@
 package account_test
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+)
+
+var (
+	ErrExpectedAtLeastOneProject = errors.New("expected at least one project")
 )
 
 const dummyOrgID = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
@@ -151,7 +156,7 @@ func TestAccDataSourceProject_List(t *testing.T) {
 						}
 
 						if count < 1 {
-							return fmt.Errorf("expected at least one project, got %d", count)
+							return fmt.Errorf("%w, got %d", ErrExpectedAtLeastOneProject, count)
 						}
 
 						return nil
