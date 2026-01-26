@@ -826,3 +826,70 @@ func TestAccObject_Encryption(t *testing.T) {
 		},
 	})
 }
+
+func TestAccObject_EncryptionWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-object-encrypt-wo")
+	objectKey := "myfile/foo"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			objectchecks.IsObjectDestroyed(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "%s"
+						content = "Hello World"
+						sse_customer_key_wo = "%s"
+						sse_customer_key_wo_version = 1
+					}
+				`, bucketName, objectTestsMainRegion, objectKey, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttrPair("scaleway_object.by-content", "bucket", "scaleway_object_bucket.base-01", "id"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "key", objectKey),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "sse_customer_key_wo_version", "1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%s"
+						region= "%s"
+						tags = {
+							foo = "bar"
+						}
+					}
+
+					resource scaleway_object "by-content" {
+						bucket = scaleway_object_bucket.base-01.id
+						key = "%s/bar"
+						content = "Hello World"
+						sse_customer_key_wo = "%s"
+						sse_customer_key_wo_version = 2
+					}
+				`, bucketName, objectTestsMainRegion, objectKey, encryptionStr),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					resource.TestCheckResourceAttrPair("scaleway_object.by-content", "bucket", "scaleway_object_bucket.base-01", "id"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "key", objectKey+"/bar"),
+					resource.TestCheckResourceAttr("scaleway_object.by-content", "sse_customer_key_wo_version", "2"),
+				),
+			},
+		},
+	})
+}

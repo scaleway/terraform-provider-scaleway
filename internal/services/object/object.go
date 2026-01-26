@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5" //nolint:gosec
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -23,8 +24,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/object.md
+var objectDescription string
+
 func ResourceObject() *schema.Resource {
 	return &schema.Resource{
+		Description:   objectDescription,
 		CreateContext: resourceObjectCreate,
 		ReadContext:   resourceObjectRead,
 		UpdateContext: resourceObjectUpdate,
@@ -119,11 +124,26 @@ func objectSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"sse_customer_key": {
-			Type:         schema.TypeString,
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			Description:   "Customer's encryption keys to encrypt data (SSE-C). Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified.",
+			ValidateFunc:  validation.StringLenBetween(32, 32),
+			ConflictsWith: []string{"sse_customer_key_wo"},
+		},
+		"sse_customer_key_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Customer's encryption keys to encrypt data (SSE-C) in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified. `sse_customer_key_wo` will not be set in the Terraform state. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`. Important: Objects encrypted with `sse_customer_key_wo` cannot be read back by Terraform since the encryption key is not stored in state. This means attributes like `content_type`, `metadata`, and `tags` will not be populated from the actual object. Additionally, data sources cannot use `sse_customer_key_wo` because data sources cannot have write-only attributes - the key would be exposed in the state, defeating the purpose of write-only mode.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"sse_customer_key"},
+			RequiredWith:  []string{"sse_customer_key_wo_version"},
+		},
+		"sse_customer_key_wo_version": {
+			Type:         schema.TypeInt,
 			Optional:     true,
-			Sensitive:    true,
-			Description:  "Customer's encryption keys to encrypt data (SSE-C)",
-			ValidateFunc: validation.StringLenBetween(32, 32),
+			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) SSE customer key. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`.",
+			RequiredWith: []string{"sse_customer_key_wo"},
 		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -172,8 +192,10 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		req.ACL = s3Types.ObjectCannedACL(*visibilityStr)
 	}
 
-	if encryptionKeyStr, ok := d.GetOk("sse_customer_key"); ok {
-		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr.(string))
+	encryptionKeyStr := getEncryptionKeyStr(d)
+
+	if encryptionKeyStr != "" {
+		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -271,8 +293,10 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
-		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
-			digestMD5, encryption, err := EncryptCustomerKey(encryptionKey.(string))
+		encryptionKeyStr := getEncryptionKeyStr(d)
+
+		if encryptionKeyStr != "" {
+			digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -308,8 +332,10 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			req.ContentType = types.ExpandStringPtr(contentType)
 		}
 
-		if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
-			digestMD5, encryption, err := EncryptCustomerKey(encryptionKey.(string))
+		encryptionKeyStr := getEncryptionKeyStr(d)
+
+		if encryptionKeyStr != "" {
+			digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -363,34 +389,14 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	ctx, cancel := context.WithTimeout(ctx, d.Timeout(schema.TimeoutRead))
 	defer cancel()
 
-	req := &s3.HeadObjectInput{
-		Bucket: types.ExpandStringPtr(bucket),
-		Key:    types.ExpandStringPtr(key),
-	}
-
-	if encryption, ok := d.GetOk("sse_customer_key"); ok {
-		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))
-		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
-	}
-
-	obj, err := s3Client.HeadObject(ctx, req)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_ = d.Set("region", region)
 	_ = d.Set("bucket", regional.NewIDString(region, bucket))
 	_ = d.Set("key", key)
 
-	for k, v := range obj.Metadata {
-		if k != strings.ToLower(k) {
-			obj.Metadata[strings.ToLower(k)] = v
-			delete(obj.Metadata, k)
-		}
+	req := &s3.HeadObjectInput{
+		Bucket: types.ExpandStringPtr(bucket),
+		Key:    types.ExpandStringPtr(key),
 	}
-
-	_ = d.Set("metadata", types.FlattenMap(obj.Metadata))
-	_ = d.Set("content_type", &obj.ContentType)
 
 	tags, err := s3Client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
 		Bucket: types.ExpandStringPtr(bucket),
@@ -415,6 +421,34 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	} else {
 		_ = d.Set("visibility", s3Types.ObjectCannedACLPrivate)
 	}
+
+	if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
+		// Object was encrypted with write-only key, but we can't read it back
+		// since the actual key is not stored in state. This is expected behavior.
+		// Skip the HeadObject call and return partial state
+		_ = d.Set("content_type", "")
+		_ = d.Set("metadata", map[string]string{})
+
+		return nil
+	} else if encryption, ok := d.GetOk("sse_customer_key"); ok {
+		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))
+		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+	}
+
+	obj, err := s3Client.HeadObject(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for k, v := range obj.Metadata {
+		if k != strings.ToLower(k) {
+			obj.Metadata[strings.ToLower(k)] = v
+			delete(obj.Metadata, k)
+		}
+	}
+
+	_ = d.Set("metadata", types.FlattenMap(obj.Metadata))
+	_ = d.Set("content_type", &obj.ContentType)
 
 	return nil
 }
@@ -455,6 +489,17 @@ func objectIsPublic(acl *s3.GetObjectAclOutput) bool {
 	}
 
 	return false
+}
+
+func getEncryptionKeyStr(d *schema.ResourceData) string {
+	var encryptionKeyStr string
+	if _, ok := d.GetOk("sse_customer_key_wo_version"); ok {
+		encryptionKeyStr = d.GetRawConfig().GetAttr("sse_customer_key_wo").AsString()
+	} else if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
+		encryptionKeyStr = encryptionKey.(string)
+	}
+
+	return encryptionKeyStr
 }
 
 func validateMapKeyLowerCase() schema.SchemaValidateDiagFunc {

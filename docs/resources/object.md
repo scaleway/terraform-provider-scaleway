@@ -9,14 +9,17 @@ The `scaleway_object` resource allows you to create and manage objects for [Scal
 
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/how-to/upload-files-into-a-bucket/) for more information on Object Storage objects.
 
+
 ## Example Usage
 
 ```terraform
+### Basic object creation
+
 resource "scaleway_object_bucket" "some_bucket" {
   name = "some-unique-name"
 }
 
-resource scaleway_object "some_file" {
+resource "scaleway_object" "some_file" {
   bucket = scaleway_object_bucket.some_bucket.id
   key    = "object_path"
 
@@ -24,6 +27,40 @@ resource scaleway_object "some_file" {
   hash = filemd5("myfile")
 }
 ```
+
+```terraform
+### Using Write-Only SSE Customer Key
+
+resource "scaleway_object_bucket" "encrypted_bucket" {
+  name = "encrypted-bucket"
+}
+
+# Generate an ephemeral encryption key (not stored in the state)
+ephemeral "random_password" "encryption_key" {
+  length      = 32
+  special     = false
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  # Only hex characters for SSE-C keys
+  override_special = ""
+}
+
+resource "scaleway_object" "encrypted_file" {
+  bucket  = scaleway_object_bucket.encrypted_bucket.id
+  key     = "secret-file"
+  content = "This is a secret content"
+
+  # Use write-only encryption key
+  sse_customer_key_wo         = ephemeral.random_password.encryption_key.result
+  sse_customer_key_wo_version = 1
+}
+```
+
+
 
 ## Argument Reference
 
@@ -53,7 +90,11 @@ The following arguments are supported:
 
 * `tags` - (Optional) Map of tags.
 
-* `sse_customer_key` - (Optional) Customer's encryption keys to encrypt data (SSE-C)
+* `sse_customer_key` - (Optional) Customer's encryption keys to encrypt data (SSE-C). Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified.
+
+* `sse_customer_key_wo` - (Optional) Customer's encryption keys to encrypt data (SSE-C) in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `sse_customer_key` or `sse_customer_key_wo` should be specified. `sse_customer_key_wo` will not be set in the Terraform state. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`. **Important:** Objects encrypted with `sse_customer_key_wo` cannot be read back by Terraform since the encryption key is not stored in state. This means attributes like `content_type`, `metadata`, and `tags` will not be populated from the actual object. Additionally, data sources cannot use `sse_customer_key_wo` because data sources cannot have write-only attributes - the key would be exposed in the state, defeating the purpose of write-only mode.
+
+* `sse_customer_key_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) SSE customer key. To update the `sse_customer_key_wo`, you must also update the `sse_customer_key_wo_version`.
 
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
