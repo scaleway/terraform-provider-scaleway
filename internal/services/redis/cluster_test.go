@@ -946,3 +946,102 @@ func getLatestVersion(tt *acctest.TestTools) string {
 
 	return ""
 }
+
+func TestAccCluster_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestRedisVersion := getLatestVersion(tt)
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isClusterDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Create cluster with password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_redis_cluster" "password_wo_cluster" {
+				    	name = "test_redis_password_wo"
+				    	version = "%s"
+				    	node_type = "RED1-XS"
+				    	user_name = "my_initial_user"
+				    	password_wo = "thiZ_is_v&ry_s3cret_WO_1"
+				    	password_wo_version = 1
+						cluster_size = 1
+						tls_enabled = "true"
+						zone = "fr-par-2"
+					}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "name", "test_redis_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "version", latestRedisVersion),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "node_type", "RED1-XS"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password_wo_version", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "cluster_size", "1"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "tls_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "zone", "fr-par-2"),
+				),
+			},
+			// Update cluster password_wo with new version
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_redis_cluster" "password_wo_cluster" {
+				    	name = "test_redis_password_wo"
+				    	version = "%s"
+				    	node_type = "RED1-XS"
+				    	user_name = "my_initial_user"
+				    	password_wo = "thiZ_is_v&ry_s3cret_WO_2"
+				    	password_wo_version = 2
+						cluster_size = 1
+						tls_enabled = "true"
+						zone = "fr-par-2"
+					}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password_wo_version", "2"),
+				),
+			},
+			// Update cluster from password_wo to regular password
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_redis_cluster" "password_wo_cluster" {
+				    	name = "test_redis_password_wo"
+				    	version = "%s"
+				    	node_type = "RED1-XS"
+				    	user_name = "my_initial_user"
+				    	password = "thiZ_is_v&ry_s3cret_regular"
+						cluster_size = 1
+						tls_enabled = "true"
+						zone = "fr-par-2"
+					}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password", "thiZ_is_v&ry_s3cret_regular"),
+				),
+			},
+			// Update cluster from regular password back to password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_redis_cluster" "password_wo_cluster" {
+				    	name = "test_redis_password_wo"
+				    	version = "%s"
+				    	node_type = "RED1-XS"
+				    	user_name = "my_initial_user"
+				    	password_wo = "thiZ_is_v&ry_s3cret_WO_final"
+				    	password_wo_version = 3
+						cluster_size = 1
+						tls_enabled = "true"
+						zone = "fr-par-2"
+					}
+				`, latestRedisVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
+					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password_wo_version", "3"),
+				),
+			},
+		},
+	})
+}
