@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"strings"
@@ -26,8 +27,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cluster.md
+var clusterDescription string
+
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
+		Description:   clusterDescription,
 		CreateContext: ResourceClusterCreate,
 		ReadContext:   ResourceClusterRead,
 		UpdateContext: ResourceClusterUpdate,
@@ -75,10 +80,25 @@ func clusterSchema() map[string]*schema.Schema {
 			Description: "Name of the user created when the cluster is created",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Required:    true,
-			Description: "Password of the user",
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password of the user. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password of the user in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"tags": {
 			Type:     schema.TypeList,
@@ -284,6 +304,14 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		// If `password` is not set, it will be set as the default empty string
+		password = d.Get("password").(string)
+	}
+
 	createReq := &redis.CreateClusterRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
@@ -291,7 +319,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		Version:   d.Get("version").(string),
 		NodeType:  d.Get("node_type").(string),
 		UserName:  d.Get("user_name").(string),
-		Password:  d.Get("password").(string),
+		Password:  password,
 	}
 
 	tags, tagsExist := d.GetOk("tags")
@@ -374,7 +402,11 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("node_type", cluster.NodeType)
 	_ = d.Set("user_name", d.Get("user_name").(string))
-	_ = d.Set("password", d.Get("password").(string))
+	// Only set password if password_wo is not being used
+	if _, ok := d.GetOk("password_wo_version"); !ok {
+		_ = d.Set("password", d.Get("password").(string))
+	}
+
 	_ = d.Set("zone", cluster.Zone.String())
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
@@ -500,8 +532,15 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
 	}
 
-	if d.HasChange("password") {
-		req.Password = types.ExpandStringPtr(d.Get("password"))
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			req.Password = types.ExpandStringPtr(password)
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+		}
 	}
 
 	if d.HasChange("tags") {
