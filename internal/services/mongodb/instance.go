@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -26,8 +27,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceInstanceCreate,
 		ReadContext:   ResourceInstanceRead,
 		UpdateContext: ResourceInstanceUpdate,
@@ -104,9 +109,31 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Sensitive:   true,
 			Optional:    true,
-			Description: "Password of the user",
+			Description: "Password of the user. Only one of `password` or `password_wo` should be specified.",
 			ConflictsWith: []string{
 				"snapshot_id",
+				"password_wo",
+			},
+		},
+		"password_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Password of the user in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:   true,
+			ConflictsWith: []string{
+				"snapshot_id",
+				"password",
+			},
+			RequiredWith: []string{
+				"password_wo_version",
+			},
+		},
+		"password_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{
+				"password_wo",
 			},
 		},
 		// volume
@@ -314,6 +341,14 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		version := d.Get("version").(string)
 		normalizeVersion := NormalizeMongoDBVersion(version)
 
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &mongodb.CreateInstanceRequest{
 			Region:     region,
 			ProjectID:  d.Get("project_id").(string),
@@ -322,7 +357,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 			NodeType:   d.Get("node_type").(string),
 			NodeAmount: *nodeNumber,
 			UserName:   d.Get("user_name").(string),
-			Password:   d.Get("password").(string),
+			Password:   password,
 		}
 
 		volumeRequestDetails := &mongodb.Volume{
@@ -525,56 +560,45 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 	return diags
 }
 
-func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
+	oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
+	oldSize := uint64(oldSizeInterface.(int))
+	newSize := uint64(newSizeInterface.(int))
+
+	if newSize < oldSize {
+		return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
+	}
+
+	if newSize%5 != 0 {
+		return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
+	}
+
+	size := scw.Size(newSize * uint64(scw.GB))
+
+	upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
+		InstanceID:      id,
+		Region:          region,
+		VolumeSizeBytes: &size,
+	}
+
+	_, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	////////////////////
-	// Upgrade instance
-	////////////////////
-
-	if d.HasChange("volume_size_in_gb") {
-		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
-		oldSize := uint64(oldSizeInterface.(int))
-		newSize := uint64(newSizeInterface.(int))
-
-		if newSize < oldSize {
-			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
-		}
-
-		if newSize%5 != 0 {
-			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
-		}
-
-		size := scw.Size(newSize * uint64(scw.GB))
-
-		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
-			InstanceID:      ID,
-			Region:          region,
-			VolumeSizeBytes: &size,
-		}
-
-		_, err = mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	////////////////////
-	// Update instance
-	////////////////////
+	return nil
+}
 
+func handleInstanceUpdate(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
 	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: id,
 	}
 
 	if d.HasChange("name") {
@@ -594,10 +618,35 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if shouldUpdateInstance {
-		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
+		_, err := mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	////////////////////
+	// Upgrade instance
+	////////////////////
+	if d.HasChange("volume_size_in_gb") {
+		if diag := handleVolumeSizeUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
+			return diag
+		}
+	}
+
+	////////////////////
+	// Update instance
+	////////////////////
+	if diag := handleInstanceUpdate(ctx, mongodbAPI, region, ID, d); diag != nil {
+		return diag
 	}
 
 	////////////////////
@@ -623,10 +672,17 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		})
 	}
 
-	if d.HasChange("password") {
-		password := d.Get("password").(string)
-		updateUserRequest.Password = &password
-		shouldUpdateUser = true
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			updateUserRequest.Password = types.ExpandStringPtr(password.(string))
+			shouldUpdateUser = true
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			updateUserRequest.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			shouldUpdateUser = true
+		}
 	}
 
 	if shouldUpdateUser {
