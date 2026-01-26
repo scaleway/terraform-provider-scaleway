@@ -8,11 +8,13 @@ page_title: "Scaleway: scaleway_mongodb_instance"
 Creates and manages Scaleway MongoDB® instance.
 For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
 
+
+
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic MongoDB instance creation
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-basic1"
   version           = "7.0.12"
@@ -21,13 +23,41 @@ resource "scaleway_mongodb_instance" "main" {
   user_name         = "my_initial_user"
   password          = "thiZ_is_v&ry_s3cret"
   volume_size_in_gb = 5
-
 }
 ```
 
-### Private Network
+```terraform
+### Creating a MongoDB instance using a Write Only password (not stored in state)
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "db_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_mongodb_instance" "password_wo_instance" {
+  name                = "test-mongodb-password-wo"
+  version             = "7.0.12"
+  node_type           = "MGDB-PLAY2-NANO"
+  node_number         = 1
+  user_name           = "my_initial_user"
+  password_wo         = ephemeral.random_password.db_password.result
+  password_wo_version = 1
+}
+```
 
 ```terraform
+### MongoDB instance with Private Network
+
 resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
@@ -43,15 +73,14 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 
   private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
+    pn_id = scaleway_vpc_private_network.pn02.id
   }
-
 }
 ```
 
-### Private Network and Public Network
-
 ```terraform
+### MongoDB instance with Private Network and Public Network
+
 resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
@@ -67,17 +96,27 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 
   private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
+    pn_id = scaleway_vpc_private_network.pn02.id
   }
 
   public_network {}
-
 }
 ```
 
-### With Snapshot Scheduling
+```terraform
+### MongoDB instance restored from Snapshot
+
+resource "scaleway_mongodb_instance" "restored_instance" {
+  snapshot_id = "${scaleway_vpc_private_network.pn.id}scaleway_mongodb_snapshot.main_snapshot.id"
+  name        = "restored-mongodb-from-snapshot"
+  node_type   = "MGDB-PLAY2-NANO"
+  node_number = 1
+}
+```
 
 ```terraform
+### MongoDB instance with Snapshot Scheduling
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-with-snapshots"
   version           = "7.0.12"
@@ -94,17 +133,9 @@ resource "scaleway_mongodb_instance" "main" {
 }
 ```
 
-### Restore From Snapshot
 
-```terraform
 
-resource "scaleway_mongodb_instance" "restored_instance" {
-  snapshot_id = "${scaleway_vpc_private_network.pn.idscaleway_mongodb_snapshot.main_snapshot.id}"
-  name        = "restored-mongodb-from-snapshot"
-  node_type   = "MGDB-PLAY2-NANO"
-  node_number = 1
-}
-```
+
 
 ## Argument Reference
 
