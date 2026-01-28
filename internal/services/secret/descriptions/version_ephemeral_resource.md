@@ -1,0 +1,7 @@
+The [`scaleway_secret_version`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/secret_version) Ephemeral Resource is used to access and read secret versions from Scaleway Secret Manager.
+
+Contrary to the secret_version data source, this is an [ephemeral resource](https://developer.hashicorp.com/terraform/plugin/framework/ephemeral-resources): it will not be persisted in plan or state artifacts.
+
+This ephemeral resource is particularly useful when you need to access secret values during Terraform execution without persisting them in the state file, especially if that secret's data has been set with the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) attribute [`data_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-2). You can avoid exposing sensitive data in your Terraform state files, from the creation to the access of your secret_version resource.
+
+Refer to the Secret Manager [documentation](https://www.scaleway.com/en/docs/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
