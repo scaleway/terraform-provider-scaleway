@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -78,5 +79,25 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
 
-	return ResourceK8SPoolRead(ctx, d, m)
+	req := &k8s.GetPoolRequest{
+		Region: region,
+		PoolID: poolID.(string),
+	}
+	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	nodes, err := getNodes(ctx, k8sAPI, pool)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPoolState(ctx, d, m, pool, k8sAPI, nodes)
 }
