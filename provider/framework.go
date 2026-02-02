@@ -26,6 +26,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
@@ -147,6 +148,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
 		iam.NewApiKeyEphemeralResource,
+		secret.NewVersionEphemeralResource,
 	}
 }
 
