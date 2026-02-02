@@ -5,50 +5,40 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAccDataSourceSecret_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	ctx := t.Context()
-	secretName := "scalewayDataSourceSecret"
-	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
-	require.NoError(t, err)
+	secretName := "scalewayDataSourceSecretBasic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			func(_ *terraform.State) error {
-				return terminateFakeSideProject()
-			},
 			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_secret" "main" {
-					  name        = "%[1]s"
+					  name        = "%s"
 					  description = "DataSourceSecret test description"
-					  project_id  = "%[3]s"
 					}
 					
 					data "scaleway_secret" "by_name" {
 					  name            = scaleway_secret.main.name
-					  organization_id = "%[2]s"
-					  project_id      = "%[3]s"
+					  depends_on	  = [scaleway_secret.main]
+					  project_id 	  = scaleway_secret.main.project_id
 					}
 					
 					data "scaleway_secret" "by_id" {
 					  secret_id       = scaleway_secret.main.id
-					  organization_id = "%[2]s"
-					  project_id      = "%[3]s"
+					  depends_on	  = [scaleway_secret.main]
 					}
-				`, secretName, project.OrganizationID, project.ID),
+				`, secretName),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckSecretExists(tt, "data.scaleway_secret.by_name"),
 					resource.TestCheckResourceAttr("data.scaleway_secret.by_name", "name", secretName),
