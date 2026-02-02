@@ -34,7 +34,7 @@ func TestAccSignEphemeralResource_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-					name        = "tf-test-encrypt-key"
+					name        = "tf-test-sign-key"
 					region      = "fr-par"
 					usage       = "asymmetric_signing"
 					algorithm   = "rsa_pss_2048_sha256"
