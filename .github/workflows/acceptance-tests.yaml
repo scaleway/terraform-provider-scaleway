@@ -54,11 +54,13 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -105,7 +107,7 @@ jobs:
           SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
       - name: Run Acceptance Tests
         run: |
-          SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
+          SKIP_PATTERN="${STEPS_SKIP_CONFIG_OUTPUTS_SKIP_PATTERN}"
 
           if [ -n "$SKIP_PATTERN" ]; then
             echo ""
@@ -144,6 +146,7 @@ jobs:
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_ENABLE_BETA: true
+          STEPS_SKIP_CONFIG_OUTPUTS_SKIP_PATTERN: ${{ steps.skip-config.outputs.skip_pattern }}
   test-scwconfig:
     strategy:
       fail-fast: false
@@ -151,13 +154,15 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
       - name: Run scwconfig tests
         run: go tool gotestsum --format github-actions -- ./internal/services/scwconfig -timeout=2m
         env:
@@ -214,13 +219,15 @@ jobs:
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
       - name: Install OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@e95ccdd20623115bfd7d47df14a3250d6066a9d0 # v1.0.7
         with:
           tofu_version: '1.11.0-beta1'
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -267,7 +274,7 @@ jobs:
           SKIP_TESTS_ALL: ${{ vars.SKIP_TESTS_ALL }}
       - name: Run Acceptance Tests
         run: |
-          SKIP_PATTERN="${{ steps.skip-config.outputs.skip_pattern }}"
+          SKIP_PATTERN="${STEPS_SKIP_CONFIG_OUTPUTS_SKIP_PATTERN}"
 
           if [ -n "$SKIP_PATTERN" ]; then
             echo ""
@@ -310,3 +317,5 @@ jobs:
           SCW_ENABLE_BETA: true
           TF_ACC_LOG: trace
           TF_ACC_OPENTOFU: true
+
+          STEPS_SKIP_CONFIG_OUTPUTS_SKIP_PATTERN: ${{ steps.skip-config.outputs.skip_pattern }}
