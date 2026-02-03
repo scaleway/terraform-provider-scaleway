@@ -98,7 +98,6 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"secret_name": schema.StringAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "The name of the secret.  Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(
@@ -255,6 +254,7 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		}
 
 		secretID = foundSecret.ID
+		data.SecretID = types.StringValue(secretID)
 	case !data.SecretID.IsNull() && !data.SecretID.IsUnknown():
 		secretID = locality.ExpandID(data.SecretID.ValueString())
 	default:
