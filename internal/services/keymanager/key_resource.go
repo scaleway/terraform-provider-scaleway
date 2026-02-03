@@ -23,6 +23,9 @@ func ResourceKeyManagerKey() *schema.Resource {
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		CustomizeDiff: customdiff.All(
 			validateUsageAlgorithmCombination(),
 		),
