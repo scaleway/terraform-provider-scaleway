@@ -67,9 +67,15 @@ func wafStageSchema() map[string]*schema.Schema {
 func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
+	backendStageID := d.Get("backend_stage_id").(string)
+
+	if err := validateWAFBackendStageIsNotS3(ctx, api, backendStageID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	wafStage, err := api.CreateWafStage(&edgeservices.CreateWafStageRequest{
 		PipelineID:     d.Get("pipeline_id").(string),
-		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
+		BackendStageID: types.ExpandStringPtr(backendStageID),
 		ParanoiaLevel:  uint32(d.Get("paranoia_level").(int)),
 		Mode:           edgeservices.WafStageMode(d.Get("mode").(string)),
 	}, scw.WithContext(ctx))
@@ -128,7 +134,13 @@ func ResourceWAFStageUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if d.HasChange("backend_stage_id") {
-		updateRequest.BackendStageID = types.ExpandStringPtr(d.Get("backend_stage_id").(string))
+		backendStageID := d.Get("backend_stage_id").(string)
+
+		if err := validateWAFBackendStageIsNotS3(ctx, api, backendStageID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		updateRequest.BackendStageID = types.ExpandStringPtr(backendStageID)
 		hasChanged = true
 	}
 

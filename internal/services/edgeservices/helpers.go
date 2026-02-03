@@ -1,6 +1,9 @@
 package edgeservices
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -34,4 +37,23 @@ func edgeServicesAPIWithZone(d *schema.ResourceData, m any) (*edgeservices.API, 
 	}
 
 	return api, zone, nil
+}
+
+func validateWAFBackendStageIsNotS3(ctx context.Context, api *edgeservices.API, backendStageID string) error {
+	if backendStageID == "" {
+		return nil
+	}
+
+	backendStage, err := api.GetBackendStage(&edgeservices.GetBackendStageRequest{
+		BackendStageID: backendStageID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return fmt.Errorf("failed to get backend stage: %w", err)
+	}
+
+	if backendStage.ScalewayS3 != nil {
+		return fmt.Errorf("WAF stage is only supported with Load Balancer backends")
+	}
+
+	return nil
 }

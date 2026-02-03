@@ -1,0 +1,860 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 110
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","name":"test-waf-s3-pipeline-rejection","description":""}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 463
+        uncompressed: false
+        body: '{"created_at":"2026-02-03T09:52:24.083280456Z","description":"","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"dns","type":"config"}],"id":"741478be-ff2d-4cf9-bd39-ccc30ae88272","name":"test-waf-s3-pipeline-rejection","organization_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","status":"warning","updated_at":"2026-02-03T09:52:24.083280456Z"}'
+        headers:
+            Content-Length:
+                - "463"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9be80c83-8e02-4b9a-a27e-56934c12910c
+        status: 200 OK
+        code: 200
+        duration: 254.453417ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/741478be-ff2d-4cf9-bd39-ccc30ae88272
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 457
+        uncompressed: false
+        body: '{"created_at":"2026-02-03T09:52:24.083280Z","description":"","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"dns","type":"config"}],"id":"741478be-ff2d-4cf9-bd39-ccc30ae88272","name":"test-waf-s3-pipeline-rejection","organization_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","status":"warning","updated_at":"2026-02-03T09:52:24.083280Z"}'
+        headers:
+            Content-Length:
+                - "457"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:24 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9109fd62-1559-4497-b0ff-bdb2e804707b
+        status: 200 OK
+        code: 200
+        duration: 57.892042ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 0c7a8bb0-2163-4dc2-b697-542cf1ee52ed
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095223Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/
+        method: PUT
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Date:
+                - Tue, 03 Feb 2026 09:52:23 GMT
+            Location:
+                - /test-waf-s3-backend-rejection
+            X-Amz-Id-2:
+                - txg92a1a79666924ba6914e-006981c557
+            X-Amz-Request-Id:
+                - txg92a1a79666924ba6914e-006981c557
+        status: 200 OK
+        code: 200
+        duration: 4.935999125s
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 98d98ef2-6923-4f38-9efd-22dff6e0e0f9
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,Z,e
+            X-Amz-Acl:
+                - private
+            X-Amz-Checksum-Crc32:
+                - AAAAAA==
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095228Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?acl=
+        method: PUT
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Length:
+                - "0"
+            Date:
+                - Tue, 03 Feb 2026 09:52:28 GMT
+            X-Amz-Id-2:
+                - txga7274833a71040fbae29-006981c55c
+            X-Amz-Request-Id:
+                - txga7274833a71040fbae29-006981c55c
+        status: 200 OK
+        code: 200
+        duration: 236.860125ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 89c12c3e-e604-4237-a034-1df9780bf6c8
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txgbffee8fdbd6340d7aa60-006981c55d
+            X-Amz-Request-Id:
+                - txgbffee8fdbd6340d7aa60-006981c55d
+        status: 200 OK
+        code: 200
+        duration: 140.003958ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 0482eeee-4147-4119-a92c-4019252c40e1
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?object-lock=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 298
+        uncompressed: false
+        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txgc40dce9f79974abe9fcc-006981c55d</RequestId><HostId>txgc40dce9f79974abe9fcc-006981c55d</HostId><Resource>/test-waf-s3-backend-rejection</Resource></Error>
+        headers:
+            Content-Length:
+                - "298"
+            Content-Type:
+                - application/xml
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txgc40dce9f79974abe9fcc-006981c55d
+            X-Amz-Request-Id:
+                - txgc40dce9f79974abe9fcc-006981c55d
+        status: 404 Not Found
+        code: 404
+        duration: 147.697916ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 73e2843e-6508-4939-9caa-0ad8571a2bc3
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 255
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-waf-s3-backend-rejection</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+        headers:
+            Content-Length:
+                - "255"
+            Content-Type:
+                - application/xml
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txg9a5e967dcf11448d9a50-006981c55d
+            X-Amz-Request-Id:
+                - txg9a5e967dcf11448d9a50-006981c55d
+        status: 200 OK
+        code: 200
+        duration: 90.07525ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 374e6159-b759-477c-ab39-203499522bd0
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?tagging=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 297
+        uncompressed: false
+        body: <Error><Code>NoSuchTagSet</Code><Message>The TagSet does not exist</Message><RequestId>txg93f4289b790647ee8bf3-006981c55d</RequestId><HostId>txg93f4289b790647ee8bf3-006981c55d</HostId><Resource>/test-waf-s3-backend-rejection</Resource><BucketName>test-waf-s3-backend-rejection</BucketName></Error>
+        headers:
+            Content-Length:
+                - "297"
+            Content-Type:
+                - application/xml
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txg93f4289b790647ee8bf3-006981c55d
+            X-Amz-Request-Id:
+                - txg93f4289b790647ee8bf3-006981c55d
+        status: 404 Not Found
+        code: 404
+        duration: 51.051334ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - b8ba5ab1-b622-4f7a-a162-d3f6bb7e37a4
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?cors=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 266
+        uncompressed: false
+        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txgaf3aa6facd6340e3b529-006981c55d</RequestId><HostId>txgaf3aa6facd6340e3b529-006981c55d</HostId><Resource>/test-waf-s3-backend-rejection</Resource></Error>
+        headers:
+            Content-Length:
+                - "266"
+            Content-Type:
+                - application/xml
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txgaf3aa6facd6340e3b529-006981c55d
+            X-Amz-Request-Id:
+                - txgaf3aa6facd6340e3b529-006981c55d
+        status: 404 Not Found
+        code: 404
+        duration: 225.10975ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 0c62a06d-64ec-4a6b-8946-35d01958494f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?versioning=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 107
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <VersioningConfiguration><Status></Status></VersioningConfiguration>
+        headers:
+            Content-Length:
+                - "107"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txgc3ab8fb32f524731aec6-006981c55d
+            X-Amz-Request-Id:
+                - txgc3ab8fb32f524731aec6-006981c55d
+        status: 200 OK
+        code: 200
+        duration: 36.233333ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 28a33785-601a-41c8-ad59-7a73a88cbc16
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095229Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/?lifecycle=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 330
+        uncompressed: false
+        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txgd371253b9f2a4761885c-006981c55d</RequestId><HostId>txgd371253b9f2a4761885c-006981c55d</HostId><Resource>/test-waf-s3-backend-rejection</Resource><BucketName>test-waf-s3-backend-rejection</BucketName></Error>
+        headers:
+            Content-Length:
+                - "330"
+            Content-Type:
+                - application/xml
+            Date:
+                - Tue, 03 Feb 2026 09:52:29 GMT
+            X-Amz-Id-2:
+                - txgd371253b9f2a4761885c-006981c55d
+            X-Amz-Request-Id:
+                - txgd371253b9f2a4761885c-006981c55d
+        status: 404 Not Found
+        code: 404
+        duration: 41.414292ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 106
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"scaleway_s3":{"bucket_name":"test-waf-s3-backend-rejection","bucket_region":"fr-par","is_website":true}}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/741478be-ff2d-4cf9-bd39-ccc30ae88272/backend-stages
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 295
+        uncompressed: false
+        body: '{"created_at":"2026-02-03T09:52:30.298088054Z","id":"fb08566d-dd2b-47b9-ac72-2d23239b54c2","pipeline_id":"741478be-ff2d-4cf9-bd39-ccc30ae88272","scaleway_s3":{"bucket_name":"test-waf-s3-backend-rejection","bucket_region":"fr-par","is_website":true},"updated_at":"2026-02-03T09:52:30.298088054Z"}'
+        headers:
+            Content-Length:
+                - "295"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - dc116446-ec19-49cc-b763-d7fb1a85d94d
+        status: 200 OK
+        code: 200
+        duration: 584.836458ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/fb08566d-dd2b-47b9-ac72-2d23239b54c2
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 289
+        uncompressed: false
+        body: '{"created_at":"2026-02-03T09:52:30.298088Z","id":"fb08566d-dd2b-47b9-ac72-2d23239b54c2","pipeline_id":"741478be-ff2d-4cf9-bd39-ccc30ae88272","scaleway_s3":{"bucket_name":"test-waf-s3-backend-rejection","bucket_region":"fr-par","is_website":true},"updated_at":"2026-02-03T09:52:30.298088Z"}'
+        headers:
+            Content-Length:
+                - "289"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 0eb31e3d-cd54-48d1-97a9-b25b2f2ba544
+        status: 200 OK
+        code: 200
+        duration: 67.273792ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/fb08566d-dd2b-47b9-ac72-2d23239b54c2
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 289
+        uncompressed: false
+        body: '{"created_at":"2026-02-03T09:52:30.298088Z","id":"fb08566d-dd2b-47b9-ac72-2d23239b54c2","pipeline_id":"741478be-ff2d-4cf9-bd39-ccc30ae88272","scaleway_s3":{"bucket_name":"test-waf-s3-backend-rejection","bucket_region":"fr-par","is_website":true},"updated_at":"2026-02-03T09:52:30.298088Z"}'
+        headers:
+            Content-Length:
+                - "289"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 79e57142-f1c5-4af9-8b2d-5bcf4479e1df
+        status: 200 OK
+        code: 200
+        duration: 59.0435ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/fb08566d-dd2b-47b9-ac72-2d23239b54c2
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 59251ec5-ee4f-4d18-bf8f-00a24aca1838
+        status: 204 No Content
+        code: 204
+        duration: 165.611959ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/741478be-ff2d-4cf9-bd39-ccc30ae88272
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 03ce8a99-04a8-4802-a2ac-469878275f3b
+        status: 204 No Content
+        code: 204
+        duration: 119.11325ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-waf-s3-backend-rejection.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 0e125e15-46d6-4fe0-a60a-c1bb4cab605f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260203T095230Z
+        url: https://test-waf-s3-backend-rejection.s3.fr-par.scw.cloud/
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Date:
+                - Tue, 03 Feb 2026 09:52:30 GMT
+            X-Amz-Id-2:
+                - txga13cc669a3d24862be33-006981c55e
+            X-Amz-Request-Id:
+                - txga13cc669a3d24862be33-006981c55e
+        status: 204 No Content
+        code: 204
+        duration: 191.055417ms
