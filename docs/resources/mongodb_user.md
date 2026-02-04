@@ -170,9 +170,9 @@ resource "scaleway_secret_version" "renewed" {
 # }
 
 # Query the first password version as an Ephemeral Resource (not stored in the state)
-# ephemeral "secret_version" "main" {
+# ephemeral "scaleway_secret_version" "main" {
 #   secret_id = scaleway_secret.main.id
-#   version   = 1
+#   revision   = 1
 # }
 
 
@@ -180,7 +180,7 @@ resource "scaleway_secret_version" "renewed" {
 # resource "scaleway_mongodb_user" "main" {
 #   instance_id = scaleway_mongodb_instance.main.id
 #   name        = "test_user"
-#   password_wo = ephemeral.secret_version.main.data
+#   password_wo = ephemeral.scaleway_secret_version.main.data
 #   password_wo_version = 1
 #   roles {
 #     role          = "read_write"
