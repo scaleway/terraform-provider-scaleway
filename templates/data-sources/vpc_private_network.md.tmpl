@@ -21,7 +21,13 @@ data "scaleway_vpc_private_network" "my_name_and_vpc_id" {
   vpc_id = "11111111-1111-1111-1111-111111111111"
 }
 
-# Get info by IP ID
+# Get info by name in a specific region
+data "scaleway_vpc_private_network" "my_name_and_region" {
+  name   = "foobar"
+  region = "nl-ams"
+}
+
+# Get info by Private Network ID
 data "scaleway_vpc_private_network" "my_id" {
   private_network_id = "11111111-1111-1111-1111-111111111111"
 }
@@ -32,6 +38,7 @@ data "scaleway_vpc_private_network" "my_id" {
 - `name` - (Optional) Name of the Private Network. Cannot be used with `private_network_id`.
 - `vpc_id` - (Optional) ID of the VPC the Private Network is in. Cannot be used with `private_network_id`.
 - `private_network_id` - (Optional) ID of the Private Network. Cannot be used with `name` or `vpc_id`.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Private Network exists.
 - `project_id` - (Optional) The ID of the Project the Private Network is associated with.
 
 ## Attributes Reference
