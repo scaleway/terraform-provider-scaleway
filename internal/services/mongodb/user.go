@@ -127,6 +127,7 @@ func userSchema() map[string]*schema.Schema {
 					"any_database": {
 						Type:        schema.TypeBool,
 						Optional:    true,
+						Default:     false,
 						Description: "Apply role to any database",
 					},
 				},

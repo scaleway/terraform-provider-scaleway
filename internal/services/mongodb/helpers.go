@@ -92,9 +92,7 @@ func expandUserRoles(rolesSet *schema.Set) []*mongodb.UserRole {
 
 		if dbName, ok := roleMap["database_name"]; ok && dbName.(string) != "" {
 			userRole.DatabaseName = types.ExpandStringPtr(dbName)
-		}
-
-		if anyDB, ok := roleMap["any_database"]; ok && anyDB.(bool) {
+		} else if anyDB, ok := roleMap["any_database"]; ok && anyDB.(bool) {
 			userRole.AnyDatabase = scw.BoolPtr(true)
 		}
 
@@ -119,9 +117,8 @@ func flattenUserRoles(roles []*mongodb.UserRole) []any {
 
 		if role.DatabaseName != nil {
 			roleMap["database_name"] = *role.DatabaseName
-		}
-
-		if role.AnyDatabase != nil && *role.AnyDatabase {
+			roleMap["any_database"] = false
+		} else if role.AnyDatabase != nil && *role.AnyDatabase {
 			roleMap["any_database"] = true
 		}
 
