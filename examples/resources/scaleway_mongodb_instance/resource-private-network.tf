@@ -15,6 +15,6 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 
   private_network {
-    pn_id = scaleway_vpc_private_network.pn02.id
+    pn_id = scaleway_vpc_private_network.pn01.id
   }
 }
