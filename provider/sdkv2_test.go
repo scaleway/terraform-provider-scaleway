@@ -242,6 +242,7 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_object_bucket_lock_configuration",
 		"scaleway_object_bucket_policy",
 		"scaleway_object_bucket_website_configuration",
+		"scaleway_opensearch_deployment",
 		"scaleway_rdb_acl",
 		"scaleway_rdb_database",
 		"scaleway_rdb_database_backup",
