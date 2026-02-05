@@ -1,0 +1,1 @@
+Manages MongoDB users. For more information, see [the documentation](https://developers.scaleway.com/products/mongodb/api/).
