@@ -27,12 +27,13 @@ const (
 )
 
 type CredentialsSource struct {
-	Variables     map[string][]string
-	AccessKey     string
-	SecretKey     string
-	ProjectID     string
-	DefaultZone   string
-	DefaultRegion string
+	Variables      map[string][]string
+	AccessKey      string
+	SecretKey      string
+	ProjectID      string
+	OrganizationID string
+	DefaultZone    string
+	DefaultRegion  string
 }
 
 // Meta contains config and SDK clients used by resources.
@@ -142,6 +143,10 @@ func (m Meta) ZoneSource() string {
 	return m.credentialsSource.DefaultZone
 }
 
+func (m Meta) OrganizationIDSource() string {
+	return m.credentialsSource.OrganizationID
+}
+
 // HasMultipleVariableSources return an informative message during the Provider initialization
 // if there are multiple sources of configuration that could confuse the user
 //
@@ -151,7 +156,7 @@ func (m Meta) ZoneSource() string {
 func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 	multiple := false
 
-	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
+	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultOrganizationIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
 
 	w := new(tabwriter.Writer)
 	buf := &bytes.Buffer{}
@@ -334,6 +339,11 @@ func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, en
 		if profile.DefaultProjectID != nil {
 			credentialsSource.ProjectID = source
 			credentialsSource.Variables[scw.ScwDefaultProjectIDEnv] = append(credentialsSource.Variables[scw.ScwDefaultProjectIDEnv], source)
+		}
+
+		if profile.DefaultOrganizationID != nil {
+			credentialsSource.OrganizationID = source
+			credentialsSource.Variables[scw.ScwDefaultOrganizationIDEnv] = append(credentialsSource.Variables[scw.ScwDefaultOrganizationIDEnv], source)
 		}
 
 		if profile.DefaultRegion != nil {
