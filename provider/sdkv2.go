@@ -35,6 +35,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
@@ -149,6 +150,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_datawarehouse_deployment":            datawarehouse.ResourceDeployment(),
 				"scaleway_datawarehouse_user":                  datawarehouse.ResourceUser(),
 				"scaleway_datawarehouse_database":              datawarehouse.ResourceDatabase(),
+				"scaleway_kafka_cluster":                       kafka.ResourceCluster(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
