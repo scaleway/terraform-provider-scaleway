@@ -112,10 +112,12 @@ In addition to all arguments above, the following attributes are exported:
 
 You can scale your OpenSearch cluster by modifying the following attributes:
 
-- `node_amount` - Add more nodes for high availability and better performance.
+- `node_amount` - Add more nodes for high availability and better performance (can be increased).
 - `volume.size_bytes` - Increase storage capacity (cannot be decreased).
 
 These operations are performed in-place without recreating the cluster.
+
+~> **Important:** When scaling `node_amount` or increasing `volume.size_bytes`, the deployment name must remain unchanged. Changing the name along with these attributes may cause unexpected behavior.
 
 ### Changing Node Type
 
