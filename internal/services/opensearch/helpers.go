@@ -19,7 +19,7 @@ func NewAPI(m any) *searchdbapi.API {
 }
 
 // opensearchAPIWithRegion returns a new OpenSearch API and the region for a Create request
-func opensearchAPIWithRegion(d *schema.ResourceData, m any) (*searchdbapi.API, scw.Region, error) {
+func newAPIWithRegion(d *schema.ResourceData, m any) (*searchdbapi.API, scw.Region, error) {
 	api := searchdbapi.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
