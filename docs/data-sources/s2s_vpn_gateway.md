@@ -5,23 +5,29 @@ page_title: "Scaleway: scaleway_s2s_vpn_gateway"
 
 # scaleway_s2s_vpn_gateway
 
-Gets information about a Site-to-Site VPN Gateway.
+
 
 For further information refer to the Site-to-Site VPN [API documentation](https://www.scaleway.com/en/developers/api/site-to-site-vpn/).
 
+
 ## Example Usage
 
-```hcl
-# Get info by name
-data "scaleway_s2s_vpn_gateway" "my_gateway" {
-  name = "foobar"
-}
-
+```terraform
 # Get info by gateway ID
 data "scaleway_s2s_vpn_gateway" "my_gateway" {
   vpn_gateway_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
+
+```terraform
+# Get info by name
+data "scaleway_s2s_vpn_gateway" "my_gateway" {
+  name = "foobar"
+}
+```
+
+
+
 
 ## Argument Reference
 
