@@ -76,6 +76,82 @@ resource "scaleway_opensearch_deployment" "main" {
 	})
 }
 
+func TestAccDeployment_InPlaceUpgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "upgrade" {
+  name        = "tf-test-opensearch-upgrade"
+  version     = "%s"
+  node_amount = 1
+  node_type   = "%s"
+  password    = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_bytes = 5000000000
+  }
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "volume.0.size_bytes", "5000000000"),
+				),
+			},
+			{
+				// Scale up: increase node_amount
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "upgrade" {
+  name        = "tf-test-opensearch-upgrade"
+  version     = "%s"
+  node_amount = 3
+  node_type   = "%s"
+  password    = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_bytes = 5000000000
+  }
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "3"),
+				),
+			},
+			{
+				// Increase storage
+				Config: fmt.Sprintf(`
+resource "scaleway_opensearch_deployment" "upgrade" {
+  name        = "tf-test-opensearch-upgrade"
+  version     = "%s"
+  node_amount = 3
+  node_type   = "%s"
+  password    = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_bytes = 10000000000
+  }
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "3"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "volume.0.size_bytes", "10000000000"),
+				),
+			},
+		},
+	})
+}
+
 func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
