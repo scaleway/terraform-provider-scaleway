@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	jobsSDK "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobsSDK "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -56,6 +56,8 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 				continue
 			}
 
+			ctx := context.Background()
+
 			api, region, id, err := jobs.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
@@ -65,7 +67,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 			jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
 				Region:          region,
 				JobDefinitionID: scw.StringPtr(id),
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 			if err != nil {
 				return fmt.Errorf("failed to list job runs: %w", err)
 			}
@@ -78,7 +80,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 					_, err := api.StopJobRun(&jobsSDK.StopJobRunRequest{
 						JobRunID: jobRun.ID,
 						Region:   region,
-					}, scw.WithContext(context.Background()))
+					}, scw.WithContext(ctx))
 					if err != nil && !httperrors.Is404(err) {
 						return fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, err)
 					}
@@ -92,7 +94,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 				_, err := api.WaitForJobRun(&jobsSDK.WaitForJobRunRequest{
 					JobRunID: jobRunID,
 					Region:   region,
-				}, scw.WithContext(context.Background()))
+				}, scw.WithContext(ctx))
 				if err != nil && !httperrors.Is404(err) {
 					return fmt.Errorf("failed to wait for job run %s: %w", jobRunID, err)
 				}
@@ -102,7 +104,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 			err = api.DeleteJobDefinition(&jobsSDK.DeleteJobDefinitionRequest{
 				JobDefinitionID: id,
 				Region:          region,
-			})
+			}, scw.WithContext(ctx))
 			if err == nil {
 				// Successfully deleted, resource is destroyed
 				continue
@@ -127,10 +129,12 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 		return
 	}
 
+	ctx := context.Background()
+
 	jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
 		Region:          region,
 		JobDefinitionID: scw.StringPtr(id),
-	}, scw.WithContext(context.Background()))
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return
 	}
@@ -140,7 +144,7 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 			_, _ = api.StopJobRun(&jobsSDK.StopJobRunRequest{
 				JobRunID: jobRun.ID,
 				Region:   region,
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 		}
 	}
 
@@ -149,7 +153,7 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 			_, _ = api.WaitForJobRun(&jobsSDK.WaitForJobRunRequest{
 				JobRunID: jobRun.ID,
 				Region:   region,
-			}, scw.WithContext(context.Background()))
+			}, scw.WithContext(ctx))
 		}
 	}
 
@@ -157,10 +161,71 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 	_ = api.DeleteJobDefinition(&jobsSDK.DeleteJobDefinitionRequest{
 		JobDefinitionID: id,
 		Region:          region,
-	})
+	}, scw.WithContext(ctx))
 }
 
 func TestAccActionJobDefinitionStart_Basic(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccActionJobDefinitionStart_Basic because actions are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	var jobDefinitionID string
+
+	defer func() {
+		if jobDefinitionID != "" {
+			cleanupJobRuns(tt, jobDefinitionID)
+		}
+	}()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_job_definition" "main" {
+						name                   = "test-jobs-action-start"
+						cpu_limit              = 120
+						memory_limit           = 256
+						local_storage_capacity = 5120
+						image_uri              = "docker.io/alpine:latest"
+						startup_command        = ["echo", "-e"]
+						args                   = ["Hello World"]
+
+						lifecycle {
+							action_trigger {
+								events  = [after_create]
+								actions = [action.scaleway_job_definition_start.main]
+							}
+						}
+					}
+
+					action "scaleway_job_definition_start" "main" {
+						config {
+							job_definition_id = scaleway_job_definition.main.id
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isJobRunCreated(tt, "scaleway_job_definition.main"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_job_definition.main"]
+						if ok {
+							jobDefinitionID = rs.Primary.ID
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func TestAccActionJobDefinitionStart_LegacyCommand(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccActionJobDefinitionStart_Basic because actions are not yet supported on OpenTofu")
 	}

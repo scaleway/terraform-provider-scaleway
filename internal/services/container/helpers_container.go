@@ -228,7 +228,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("deploy") {
-		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy"))
+		req.Redeploy = types.ExpandBoolPtr(d.Get("deploy")) //nolint: staticcheck
 	}
 
 	if d.HasChanges("sandbox") {
@@ -259,7 +259,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 
 	imageHasChanged := d.HasChanges("registry_sha256")
 	if imageHasChanged {
-		req.Redeploy = &imageHasChanged
+		req.Redeploy = &imageHasChanged //nolint: staticcheck
 	}
 
 	if d.HasChanges("local_storage_limit") {

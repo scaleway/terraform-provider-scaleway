@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -160,10 +160,10 @@ func flattenJobDefinitionSecret(jobSecrets []*jobs.Secret) []any {
 }
 
 func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []JobDefinitionSecret, region scw.Region, jobID string) error {
-	secretConfigs := []*jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
+	secretConfigs := make([]*jobs.CreateSecretsRequestSecretConfig, 0, len(jobSecrets))
 
 	for _, parsedSecretRef := range jobSecrets {
-		secretConfig := &jobs.CreateJobDefinitionSecretsRequestSecretConfig{}
+		secretConfig := &jobs.CreateSecretsRequestSecretConfig{}
 
 		secretConfigs = append(secretConfigs, secretConfig)
 
@@ -189,7 +189,7 @@ func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []
 		}
 	}
 
-	_, err := api.CreateJobDefinitionSecrets(&jobs.CreateJobDefinitionSecretsRequest{
+	_, err := api.CreateSecrets(&jobs.CreateSecretsRequest{
 		Region:          region,
 		JobDefinitionID: jobID,
 		Secrets:         secretConfigs,

@@ -18,9 +18,12 @@ Refer to the Jobs [documentation](https://www.scaleway.com/en/docs/serverless/jo
 
 ### Optional
 
-- `command` (String) Contextual startup command for this specific job run.
+- `args` (List of String) Arguments passed to the startup command at job runtime (in list of strings format).
+- `command` (String, Deprecated) Contextual startup command for this specific job run (in string format).
 - `environment_variables` (Map of String) Contextual environment variables for this specific job run.
 - `region` (String) Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration.
 - `replicas` (Number) Number of jobs to run.
+- `startup_command` (List of String) Contextual startup command for this specific job run (in list of strings format).
 
 
+~> **Important:** If both command and startup_command are provided, only startup_command will be used.

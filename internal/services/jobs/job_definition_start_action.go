@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -55,6 +55,8 @@ type StartJobDefinitionActionModel struct {
 	JobDefinitionID      types.String `tfsdk:"job_definition_id"`
 	Region               types.String `tfsdk:"region"`
 	Command              types.String `tfsdk:"command"`
+	StartupCommand       types.List   `tfsdk:"startup_command"`
+	Args                 types.List   `tfsdk:"args"`
 	EnvironmentVariables types.Map    `tfsdk:"environment_variables"`
 	Replicas             types.Int64  `tfsdk:"replicas"`
 }
@@ -80,8 +82,19 @@ func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.Schema
 			},
 			"region": regional.SchemaAttribute("Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration."),
 			"command": schema.StringAttribute{
+				Optional:           true,
+				DeprecationMessage: "Please use startup_command instead",
+				Description:        "Contextual startup command for this specific job run (in string format).",
+			},
+			"startup_command": schema.ListAttribute{
 				Optional:    true,
-				Description: "Contextual startup command for this specific job run.",
+				ElementType: types.StringType,
+				Description: "Contextual startup command for this specific job run (in list of strings format).",
+			},
+			"args": schema.ListAttribute{
+				Optional:    true,
+				ElementType: types.StringType,
+				Description: "Arguments passed to the startup command at job runtime (in list of strings format).",
 			},
 			"environment_variables": schema.MapAttribute{
 				Optional:    true,
@@ -161,7 +174,39 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 
 	if !data.Command.IsNull() && data.Command.ValueString() != "" {
 		command := data.Command.ValueString()
-		startReq.Command = &command
+		startReq.Command = &command //nolint: staticcheck
+	}
+
+	if !data.StartupCommand.IsNull() {
+		command, diags := data.StartupCommand.ToListValue(ctx)
+		if len(diags) > 0 {
+			return
+		}
+
+		var cmdList []string
+
+		diags = command.ElementsAs(ctx, cmdList, false)
+		if len(diags) > 0 {
+			return
+		}
+
+		startReq.StartupCommand = &cmdList
+	}
+
+	if !data.Args.IsNull() {
+		args, diags := data.Args.ToListValue(ctx)
+		if len(diags) > 0 {
+			return
+		}
+
+		var argList []string
+
+		diags = args.ElementsAs(ctx, argList, false)
+		if len(diags) > 0 {
+			return
+		}
+
+		startReq.Args = &argList
 	}
 
 	if !data.EnvironmentVariables.IsNull() {
