@@ -70,10 +70,11 @@ func clusterSchema() map[string]*schema.Schema {
 			Description: "Node type to use for the cluster",
 		},
 		"volume_type": {
-			Type:        schema.TypeString,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Type of volume where data is stored",
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.ValidateEnum[kafkaapi.VolumeType](),
+			Description:      "Type of volume where data is stored",
 		},
 		"volume_size_in_gb": {
 			Type:        schema.TypeInt,
@@ -294,14 +295,14 @@ func resourceClusterRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		_ = d.Set("volume_size_in_gb", int(cluster.Volume.SizeBytes/scw.GB))
 	}
 
-	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints)
+	publicBlock, hasPublic := flattenPublicNetwork(cluster.Endpoints, cluster.Region)
 	if hasPublic {
 		_ = d.Set("public_network", publicBlock.([]map[string]any))
 	} else {
 		_ = d.Set("public_network", nil)
 	}
 
-	privateBlock, hasPrivate := flattenPrivateNetwork(cluster.Endpoints)
+	privateBlock, hasPrivate := flattenPrivateNetwork(cluster.Endpoints, cluster.Region)
 	if hasPrivate {
 		_ = d.Set("private_network", privateBlock.([]map[string]any))
 	}
