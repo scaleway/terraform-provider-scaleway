@@ -1,3 +1,4 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "OpenSearch"
 page_title: "Scaleway: scaleway_opensearch_deployment"
@@ -21,8 +22,8 @@ resource "scaleway_opensearch_deployment" "main" {
   password    = "ThisIsASecurePassword123!"
   
   volume {
-    type       = "sbs_5k"
-    size_bytes = 5000000000
+    type        = "sbs_5k"
+    size_in_gb = 5
   }
 }
 ```
@@ -39,8 +40,8 @@ resource "scaleway_opensearch_deployment" "prod" {
   tags        = ["production", "logs"]
   
   volume {
-    type       = "sbs_15k"  # High IOPS for production
-    size_bytes = 100000000000  # 100 GB
+    type        = "sbs_15k"  # High IOPS for production
+    size_in_gb = 100  # 100 GB
   }
 }
 
@@ -62,8 +63,8 @@ resource "scaleway_opensearch_deployment" "analytics" {
   tags        = ["analytics", "dev", "team-data"]
   
   volume {
-    type       = "sbs_5k"
-    size_bytes = 10000000000
+    type        = "sbs_5k"
+    size_in_gb = 10
   }
 }
 ```
@@ -73,11 +74,11 @@ resource "scaleway_opensearch_deployment" "analytics" {
 The following arguments are supported:
 
 - `version` - (Required, Forces new resource) OpenSearch version to use (e.g., "2.0"). Changing this forces recreation of the deployment.
-- `node_amount` - (Required) Number of nodes in the cluster. Can be upgraded to add more nodes for high availability.
+- `node_amount` - (Required, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the deployment.
 - `node_type` - (Required, Forces new resource) Type of node to use (e.g., "SEARCHDB-SHARED-2C-8G", "SEARCHDB-DEDICATED-2C-8G"). Changing this forces recreation of the deployment.
 - `volume` - (Required) Volume configuration for the cluster.
     - `type` - (Required, Forces new resource) Volume type. Valid values are `sbs_5k` (5K IOPS) or `sbs_15k` (15K IOPS). Changing this forces recreation of the deployment.
-    - `size_bytes` - (Required) Volume size in bytes. Can be increased but not decreased.
+    - `size_in_gb` - (Required, Forces new resource) Volume size in GB. Changing this forces recreation of the deployment.
 - `password` - (Optional, Forces new resource) Password for the OpenSearch user. Must be at least 12 characters long. If not specified, you will need to reset the password through the API or console. Changing this forces recreation of the deployment.
 - `name` - (Optional) Name of the OpenSearch deployment. If not specified, a random name will be generated.
 - `user_name` - (Optional, Forces new resource) Username for the deployment. If not specified, the default username will be used. Changing this forces recreation of the deployment.
@@ -108,20 +109,9 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Upgrade Notes
 
-### Scaling the Cluster
+### Changing Resources
 
-You can scale your OpenSearch cluster by modifying the following attributes:
-
-- `node_amount` - Add more nodes for high availability and better performance (can be increased).
-- `volume.size_bytes` - Increase storage capacity (cannot be decreased).
-
-These operations are performed in-place without recreating the cluster.
-
-~> **Important:** When scaling `node_amount` or increasing `volume.size_bytes`, the deployment name must remain unchanged. Changing the name along with these attributes may cause unexpected behavior.
-
-### Changing Node Type
-
-Changing the `node_type` requires recreating the deployment. Plan accordingly:
+Most attribute changes require recreating the deployment due to API limitations. Plan accordingly:
 
 1. Create a snapshot of your data (manual process)
 2. Modify the `node_type` in your Terraform configuration
