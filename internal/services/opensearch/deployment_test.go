@@ -34,8 +34,8 @@ resource "scaleway_opensearch_deployment" "main" {
   node_type   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
-    type       = "sbs_5k"
-    size_bytes = 5000000000
+    type        = "sbs_5k"
+    size_in_gb = 5
   }
 }
 `, latestVersion, nodeType),
@@ -46,7 +46,7 @@ resource "scaleway_opensearch_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_amount", "1"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_type", nodeType),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "volume.0.type", "sbs_5k"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "volume.0.size_bytes", "5000000000"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "volume.0.size_in_gb", "5"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "endpoints.#", "1"),
 				),
 			},
@@ -60,8 +60,8 @@ resource "scaleway_opensearch_deployment" "main" {
   password    = "ThisIsASecurePassword123!"
   tags        = ["tag1", "tag2"]
   volume {
-    type       = "sbs_5k"
-    size_bytes = 5000000000
+    type        = "sbs_5k"
+    size_in_gb = 5
   }
 }
 `, latestVersion, nodeType),
@@ -110,8 +110,8 @@ resource "scaleway_opensearch_deployment" "pn" {
   }
   
   volume {
-    type       = "sbs_5k"
-    size_bytes = 5000000000
+    type        = "sbs_5k"
+    size_in_gb = 5
   }
 }
 `, latestVersion, nodeType),

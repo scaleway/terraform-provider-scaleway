@@ -114,11 +114,11 @@ func deploymentSchema() map[string]*schema.Schema {
 						ValidateDiagFunc: verify.ValidateEnum[searchdbapi.VolumeType](),
 						Description:      "Volume type (sbs_5k, sbs_15k)",
 					},
-					"size_bytes": {
+					"size_in_gb": {
 						Type:        schema.TypeInt,
 						Required:    true,
 						ForceNew:    true,
-						Description: "Volume size in bytes",
+						Description: "Volume size in GB",
 					},
 				},
 			},
@@ -220,9 +220,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		volumeList := v.([]any)
 		if len(volumeList) > 0 {
 			volumeMap := volumeList[0].(map[string]any)
+			sizeGB := uint64(volumeMap["size_in_gb"].(int))
 			req.Volume = &searchdbapi.Volume{
 				Type:      searchdbapi.VolumeType(volumeMap["type"].(string)),
-				SizeBytes: scw.Size(uint64(volumeMap["size_bytes"].(int))),
+				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000), // Convert GB to bytes
 			}
 		}
 	}
@@ -300,10 +301,11 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	if deployment.Volume != nil {
+		sizeGB := int(uint64(deployment.Volume.SizeBytes) / (1000 * 1000 * 1000))
 		_ = d.Set("volume", []map[string]any{
 			{
 				"type":       string(deployment.Volume.Type),
-				"size_bytes": int(deployment.Volume.SizeBytes),
+				"size_in_gb": sizeGB,
 			},
 		})
 	}
