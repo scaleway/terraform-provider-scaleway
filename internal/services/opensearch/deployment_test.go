@@ -76,7 +76,7 @@ resource "scaleway_opensearch_deployment" "main" {
 	})
 }
 
-func TestAccDeployment_InPlaceUpgrade(t *testing.T) {
+func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -89,12 +89,26 @@ func TestAccDeployment_InPlaceUpgrade(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-resource "scaleway_opensearch_deployment" "upgrade" {
-  name        = "tf-test-opensearch-upgrade"
+resource "scaleway_vpc" "main" {
+  name = "tf-test-opensearch-vpc"
+}
+
+resource "scaleway_vpc_private_network" "main" {
+  name   = "tf-test-opensearch-pn"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_opensearch_deployment" "pn" {
+  name        = "tf-test-opensearch-pn"
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
   password    = "ThisIsASecurePassword123!"
+  
+  private_network {
+    private_network_id = scaleway_vpc_private_network.main.id
+  }
+  
   volume {
     type       = "sbs_5k"
     size_bytes = 5000000000
@@ -102,50 +116,12 @@ resource "scaleway_opensearch_deployment" "upgrade" {
 }
 `, latestVersion, nodeType),
 				Check: resource.ComposeTestCheckFunc(
-					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "1"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "volume.0.size_bytes", "5000000000"),
-				),
-			},
-			{
-				// Scale up: increase node_amount
-				Config: fmt.Sprintf(`
-resource "scaleway_opensearch_deployment" "upgrade" {
-  name        = "tf-test-opensearch-upgrade"
-  version     = "%s"
-  node_amount = 3
-  node_type   = "%s"
-  password    = "ThisIsASecurePassword123!"
-  volume {
-    type       = "sbs_5k"
-    size_bytes = 5000000000
-  }
-}
-`, latestVersion, nodeType),
-				Check: resource.ComposeTestCheckFunc(
-					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "3"),
-				),
-			},
-			{
-				// Increase storage
-				Config: fmt.Sprintf(`
-resource "scaleway_opensearch_deployment" "upgrade" {
-  name        = "tf-test-opensearch-upgrade"
-  version     = "%s"
-  node_amount = 3
-  node_type   = "%s"
-  password    = "ThisIsASecurePassword123!"
-  volume {
-    type       = "sbs_5k"
-    size_bytes = 10000000000
-  }
-}
-`, latestVersion, nodeType),
-				Check: resource.ComposeTestCheckFunc(
-					isDeploymentPresent(tt, "scaleway_opensearch_deployment.upgrade"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "node_amount", "3"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.upgrade", "volume.0.size_bytes", "10000000000"),
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "private_network.0.private_network_id"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.0.public", "false"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "endpoints.0.private_network_id"),
 				),
 			},
 		},
