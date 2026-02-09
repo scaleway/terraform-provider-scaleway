@@ -8,10 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceDeployment() *schema.Resource {
@@ -58,6 +61,7 @@ func deploymentSchema() map[string]*schema.Schema {
 		"node_amount": {
 			Type:        schema.TypeInt,
 			Required:    true,
+			ForceNew:    true,
 			Description: "Number of nodes",
 		},
 		"node_type": {
@@ -79,6 +83,23 @@ func deploymentSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "Password for the deployment user",
 		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			ForceNew:    true,
+			MaxItems:    1,
+			Description: "Private network configuration",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "UUID of the Private Network",
+					},
+				},
+			},
+		},
 		"volume": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -87,14 +108,16 @@ func deploymentSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"type": {
-						Type:        schema.TypeString,
-						Required:    true,
-						ForceNew:    true,
-						Description: "Volume type (sbs_5k, sbs_15k)",
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						ValidateDiagFunc: verify.ValidateEnum[searchdbapi.VolumeType](),
+						Description:      "Volume type (sbs_5k, sbs_15k)",
 					},
 					"size_bytes": {
 						Type:        schema.TypeInt,
 						Required:    true,
+						ForceNew:    true,
 						Description: "Volume size in bytes",
 					},
 				},
@@ -204,11 +227,27 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	// Create public endpoint by default
-	req.Endpoints = []*searchdbapi.EndpointSpec{
-		{
-			Public: &searchdbapi.EndpointSpecPublicDetails{},
-		},
+	// Handle endpoint configuration
+	if v, ok := d.GetOk("private_network"); ok {
+		pnList := v.([]any)
+		if len(pnList) > 0 {
+			pnMap := pnList[0].(map[string]any)
+			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
+			req.Endpoints = []*searchdbapi.EndpointSpec{
+				{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				},
+			}
+		}
+	} else {
+		// Create public endpoint by default
+		req.Endpoints = []*searchdbapi.EndpointSpec{
+			{
+				Public: &searchdbapi.EndpointSpecPublicDetails{},
+			},
+		}
 	}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
@@ -232,10 +271,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
-	deployment, err := api.GetDeployment(&searchdbapi.GetDeploymentRequest{
-		Region:       region,
-		DeploymentID: id,
-	}, scw.WithContext(ctx))
+	deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -283,14 +319,11 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	var diags diag.Diagnostics
-
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Handle standard updates (name, tags)
 	if d.HasChanges("name", "tags") {
 		req := &searchdbapi.UpdateDeploymentRequest{
 			Region:       region,
@@ -321,60 +354,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
-	// Handle upgrade operations (node_amount, volume size)
-	if d.HasChange("node_amount") {
-		upgradeReq := &searchdbapi.UpgradeDeploymentRequest{
-			Region:       region,
-			DeploymentID: id,
-			NodeAmount:   scw.Uint32Ptr(uint32(d.Get("node_amount").(int))),
-		}
-
-		_, err := api.UpgradeDeployment(upgradeReq, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("volume") {
-		oldVolume, newVolume := d.GetChange("volume")
-		oldList := oldVolume.([]any)
-		newList := newVolume.([]any)
-
-		if len(oldList) > 0 && len(newList) > 0 {
-			oldVolumeMap := oldList[0].(map[string]any)
-			newVolumeMap := newList[0].(map[string]any)
-
-			oldSize := uint64(oldVolumeMap["size_bytes"].(int))
-			newSize := uint64(newVolumeMap["size_bytes"].(int))
-
-			if oldSize != newSize {
-				upgradeReq := &searchdbapi.UpgradeDeploymentRequest{
-					Region:          region,
-					DeploymentID:    id,
-					VolumeSizeBytes: scw.Uint64Ptr(newSize),
-				}
-
-				_, err := api.UpgradeDeployment(upgradeReq, scw.WithContext(ctx))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-
-				_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			}
-		}
-	}
-
-	readDiags := resourceDeploymentRead(ctx, d, meta)
-
-	return append(diags, readDiags...)
+	return resourceDeploymentRead(ctx, d, meta)
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -403,4 +383,3 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	return nil
 }
-
