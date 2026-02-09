@@ -56,6 +56,7 @@ func fetchAvailableKafkaNodeType(tt *acctest.TestTools) string {
 	}
 
 	tt.T.Fatal("no kafka node types available")
+
 	return ""
 }
 

@@ -2,11 +2,13 @@ package kafka
 
 import (
 	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 // flattenPublicNetwork scans through all endpoints and returns at most one "public" block.
 // It returns ([]map[string]interface{}, true) if a public endpoint exists, or (nil, false) otherwise.
-func flattenPublicNetwork(endpoints []*kafkaapi.Endpoint) (any, bool) {
+func flattenPublicNetwork(endpoints []*kafkaapi.Endpoint, region scw.Region) (any, bool) {
 	publicFlat := make([]map[string]any, 0, 1)
 
 	for _, endpoint := range endpoints {
@@ -20,7 +22,7 @@ func flattenPublicNetwork(endpoints []*kafkaapi.Endpoint) (any, bool) {
 		}
 
 		publicFlat = append(publicFlat, map[string]any{
-			"id":          endpoint.ID,
+			"id":          regional.NewIDString(region, endpoint.ID),
 			"dns_records": dnsRecords,
 			"port":        int(endpoint.Port),
 		})
@@ -33,7 +35,7 @@ func flattenPublicNetwork(endpoints []*kafkaapi.Endpoint) (any, bool) {
 
 // flattenPrivateNetwork scans through all endpoints and returns at most one "private" block.
 // It returns ([]map[string]interface{}, true) if a private endpoint exists, or (nil, false) otherwise.
-func flattenPrivateNetwork(endpoints []*kafkaapi.Endpoint) (any, bool) {
+func flattenPrivateNetwork(endpoints []*kafkaapi.Endpoint, region scw.Region) (any, bool) {
 	privateFlat := make([]map[string]any, 0, 1)
 
 	for _, endpoint := range endpoints {
@@ -47,8 +49,8 @@ func flattenPrivateNetwork(endpoints []*kafkaapi.Endpoint) (any, bool) {
 		}
 
 		privateFlat = append(privateFlat, map[string]any{
-			"pn_id":       endpoint.PrivateNetwork.PrivateNetworkID,
-			"id":          endpoint.ID,
+			"pn_id":       regional.NewIDString(region, endpoint.PrivateNetwork.PrivateNetworkID),
+			"id":          regional.NewIDString(region, endpoint.ID),
 			"dns_records": dnsRecords,
 			"port":        int(endpoint.Port),
 		})
