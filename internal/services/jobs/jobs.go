@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -60,12 +60,31 @@ func definitionSchema() map[string]*schema.Schema {
 		"image_uri": {
 			Type:        schema.TypeString,
 			Description: "Image URI to use for the job",
-			Optional:    true,
+			Required:    true,
 		},
 		"command": {
-			Type:        schema.TypeString,
-			Description: "Command to use for the job",
+			Type:          schema.TypeString,
+			Description:   "Command to use for the job (in string format)",
+			Optional:      true,
+			Deprecated:    "Please use startup_command instead",
+			ConflictsWith: []string{"startup_command"},
+		},
+		"startup_command": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:      true,
+			ConflictsWith: []string{"command"},
+			Description:   "Command to use for the job (in list format). Overrides the default command defined in the job image.",
+		},
+		"args": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 			Optional:    true,
+			Description: "Job arguments in list format. Overrides the default arguments defined in the job image.",
 		},
 		"timeout": {
 			Type:             schema.TypeString,
@@ -87,7 +106,7 @@ func definitionSchema() map[string]*schema.Schema {
 		"local_storage_capacity": {
 			Type:        schema.TypeInt,
 			Description: "Local storage capacity of the job in MiB",
-			Optional:    true,
+			Required:    true,
 		},
 		"cron": {
 			Type:        schema.TypeList,
@@ -174,11 +193,14 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
-		Command:              d.Get("command").(string),
+		Command:              scw.StringPtr(d.Get("command").(string)),
+		StartupCommand:       types.ExpandStrings(d.Get("startup_command")),
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
+		Args:                 types.ExpandStrings(d.Get("args")),
+		LocalStorageCapacity: uint32(d.Get("local_storage_capacity").(int)),
 	}
 
 	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
@@ -193,10 +215,6 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		req.JobTimeout = scw.NewDurationFromTimeDuration(duration)
-	}
-
-	if localStorageCapacity, ok := d.GetOk("local_storage_capacity"); ok {
-		req.LocalStorageCapacity = types.ExpandUint32Ptr(localStorageCapacity)
 	}
 
 	definition, err := api.CreateJobDefinition(req, scw.WithContext(ctx))
@@ -235,7 +253,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	rawSecretRefs, err := api.ListJobDefinitionSecrets(&jobs.ListJobDefinitionSecretsRequest{
+	rawSecretRefs, err := api.ListSecrets(&jobs.ListSecretsRequest{
 		Region:          region,
 		JobDefinitionID: id,
 	})
@@ -249,6 +267,8 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("local_storage_capacity", int(definition.LocalStorageCapacity))
 	_ = d.Set("image_uri", definition.ImageURI)
 	_ = d.Set("command", definition.Command)
+	_ = d.Set("startup_command", types.FlattenSliceString(definition.StartupCommand))
+	_ = d.Set("args", types.FlattenSliceString(definition.Args))
 	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
 	_ = d.Set("description", definition.Description)
 	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
@@ -292,7 +312,15 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("command") {
-		req.Command = types.ExpandUpdatedStringPtr(d.Get("command"))
+		req.Command = types.ExpandUpdatedStringPtr(d.Get("command")) //nolint: staticcheck
+	}
+
+	if d.HasChange("startup_command") {
+		req.StartupCommand = types.ExpandUpdatedStringsPtr(d.Get("startup_command"))
+	}
+
+	if d.HasChange("args") {
+		req.Args = types.ExpandUpdatedStringsPtr(d.Get("args"))
 	}
 
 	if d.HasChange("env") {
@@ -335,12 +363,11 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		for _, secret := range toDelete {
-			deleteReq := &jobs.DeleteJobDefinitionSecretRequest{
-				Region:          region,
-				JobDefinitionID: id,
-				SecretID:        secret.SecretReferenceID,
+			deleteReq := &jobs.DeleteSecretRequest{
+				Region:   region,
+				SecretID: secret.SecretReferenceID,
 			}
-			if err := api.DeleteJobDefinitionSecret(deleteReq, scw.WithContext(ctx)); err != nil {
+			if err := api.DeleteSecret(deleteReq, scw.WithContext(ctx)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
