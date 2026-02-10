@@ -263,7 +263,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, deployment.ID))
+	err = identity.SetRegionalIdentity(d, region, deployment.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceDeploymentRead(ctx, d, meta)
 }
@@ -282,6 +285,11 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
