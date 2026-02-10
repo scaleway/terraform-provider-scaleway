@@ -75,6 +75,15 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 	if secretEnvVariablesRaw, ok := d.GetOk("secret_environment_variables"); ok {
 		req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvVariablesRaw)
+	} else if _, ok := d.GetOk("secret_environment_variables_wo_version"); ok {
+		secretEnvVariablesRaw := d.GetRawConfig().GetAttr("secret_environment_variables_wo")
+		if secretEnvVariablesRaw.IsKnown() && !secretEnvVariablesRaw.IsNull() {
+			secretEnvMap := make(map[string]any)
+			for key, value := range secretEnvVariablesRaw.AsValueMap() {
+				secretEnvMap[key] = value.AsString()
+			}
+			req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvMap)
+		}
 	}
 
 	if minScale, ok := d.GetOk("min_scale"); ok {
@@ -170,9 +179,22 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 		req.EnvironmentVariables = types.ExpandMapPtrStringString(envVariablesRaw)
 	}
 
-	if d.HasChanges("secret_environment_variables") {
-		oldEnv, newEnv := d.GetChange("secret_environment_variables")
-		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+	if _, ok := d.GetOk("secret_environment_variables"); ok {
+		if d.HasChange("secret_environment_variables") {
+			oldEnv, newEnv := d.GetChange("secret_environment_variables")
+			req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+		}
+	} else if _, ok := d.GetOk("secret_environment_variables_wo_version"); ok {
+		if d.HasChange("secret_environment_variables_wo_version") {
+			secretEnvVariablesRaw := d.GetRawConfig().GetAttr("secret_environment_variables_wo")
+			if secretEnvVariablesRaw.IsKnown() && !secretEnvVariablesRaw.IsNull() {
+				secretEnvMap := make(map[string]any)
+				for key, value := range secretEnvVariablesRaw.AsValueMap() {
+					secretEnvMap[key] = value.AsString()
+				}
+				req.SecretEnvironmentVariables = expandContainerSecrets(secretEnvMap)
+			}
+		}
 	}
 
 	if d.HasChange("tags") {

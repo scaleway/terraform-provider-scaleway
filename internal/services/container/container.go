@@ -93,6 +93,25 @@ func containerSchema() map[string]*schema.Schema {
 			DiffSuppressFunc:      dsf.CompareArgon2idPasswordAndHash,
 			DiffSuppressOnRefresh: true,
 		},
+		"secret_environment_variables_wo": {
+			Type:          schema.TypeMap,
+			Optional:      true,
+			Description:   "The secret environment variables to be injected into your container at runtime in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. This attribute is not stored in the Terraform state, providing better security for sensitive data.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"secret_environment_variables"},
+			RequiredWith:  []string{"secret_environment_variables_wo_version"},
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringLenBetween(0, 1000),
+			},
+			ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+		},
+		"secret_environment_variables_wo_version": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			Description:   "The version of the write-only secret environment variables. Increment this value to force an update of the secret environment variables when using write-only mode.",
+			RequiredWith:  []string{"secret_environment_variables_wo"},
+		},
 		"min_scale": {
 			Type:        schema.TypeInt,
 			Computed:    true,
@@ -390,7 +409,9 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("scaling_option", flattenScalingOption(co.ScalingOption))
 	_ = d.Set("region", co.Region.String())
 	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
-	_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
+	if _, ok := d.GetOk("secret_environment_variables_wo_version"); !ok {
+		_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
+	}
 	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
 	_ = d.Set("command", types.FlattenSliceString(co.Command))
 	_ = d.Set("args", types.FlattenSliceString(co.Args))

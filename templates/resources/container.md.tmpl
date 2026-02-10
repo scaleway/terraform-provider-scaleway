@@ -1,16 +1,12 @@
 {{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "Containers"
-page_title: "Scaleway: scaleway_container"
+page_title: "Scaleway: {{ .Name }}"
 ---
 
-# Resource: scaleway_container
+# Resource: {{ .Name }}
 
-The `scaleway_container` resource allows you to create and manage [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
-
-Refer to the Serverless Containers [product documentation](https://www.scaleway.com/en/docs/serverless/containers/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/) for more information.
-
-For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
+{{ .Description }}
 
 {{ if .HasExamples }}
 ## Example Usage
@@ -39,7 +35,11 @@ The following arguments are supported:
 
 - `environment_variables` - (Optional) The [environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#environment-variables) of the container.
 
-- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#secrets) of the container.
+- `secret_environment_variables` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#secrets) of the container. Conflicts with `secret_environment_variables_wo`.
+
+- `secret_environment_variables_wo` - (Optional) The [secret environment variables](https://www.scaleway.com/en/docs/serverless-containers/concepts/#secrets) of the container in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. This attribute is not stored in the Terraform state, providing better security for sensitive data. Conflicts with `secret_environment_variables`. Requires `secret_environment_variables_wo_version` to be set.
+
+- `secret_environment_variables_wo_version` - (Optional) The version of the write-only secret environment variables. Increment this value to force an update of the secret environment variables when using write-only mode. Required when using `secret_environment_variables_wo`.
 
 - `min_scale` - (Optional) The minimum number of container instances running continuously.
 

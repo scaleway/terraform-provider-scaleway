@@ -1,0 +1,1 @@
+Manages Scaleway Serverless Containers. For more information, see [the documentation](https://www.scaleway.com/en/docs/serverless/containers/).

@@ -216,6 +216,140 @@ func TestAccContainer_Env(t *testing.T) {
 	})
 }
 
+func TestAccContainer_EnvWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isContainerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"test" = "test"
+						}
+						secret_environment_variables_wo = {
+							"test_secret" = "test_secret"
+							"first_secret" = "first_secret"
+						}
+						secret_environment_variables_wo_version = 1
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.first_secret", "first_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"foo" = "bar"
+						}
+						secret_environment_variables_wo = {
+							"foo_secret" = "bar_secret"
+							"test_secret" = "updated_secret"
+						}
+						secret_environment_variables_wo_version = 2
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.test_secret", "updated_secret"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.first_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {}
+						secret_environment_variables_wo = {}
+						secret_environment_variables_wo_version = 3
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.%"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "environment_variables.foo"),
+					resource.TestCheckNoResourceAttr("scaleway_container.main", "secret_environment_variables.foo_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"test" = "test"
+						}
+						secret_environment_variables = {
+							"test_secret" = "test_secret"
+						}
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.test", "test"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.test_secret", "test_secret"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_container_namespace main {
+					}
+
+					resource scaleway_container main {
+						namespace_id = scaleway_container_namespace.main.id
+						environment_variables = {
+							"foo" = "bar"
+						}
+						secret_environment_variables_wo = {
+							"foo_secret" = "bar_secret"
+						}
+						secret_environment_variables_wo_version = 4
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isContainerPresent(tt, "scaleway_container.main"),
+					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
+					acctest.CheckResourceAttrUUID("scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_container.main", "environment_variables.foo", "bar"),
+					passwordMatchHash("scaleway_container.main", "secret_environment_variables.foo_secret", "bar_secret"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccContainer_WithIMG(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
