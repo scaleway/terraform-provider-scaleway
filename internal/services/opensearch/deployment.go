@@ -288,11 +288,17 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
+	diags := setDeploymentState(d, deployment)
+
 	err = identity.SetRegionalIdentity(d, deployment.Region, deployment.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	return diags
+}
+
+func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployment) diag.Diagnostics {
 	_ = d.Set("region", string(deployment.Region))
 	_ = d.Set("project_id", deployment.ProjectID)
 	_ = d.Set("name", deployment.Name)
