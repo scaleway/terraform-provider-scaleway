@@ -5,13 +5,41 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
-Creates and manages Scaleway Compute Baremetal servers. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal/).
+
+
 
 ## Example Usage
 
+```terraform
 ### Basic
 
+data "scaleway_iam_ssh_key" "my_ssh_key" {
+  name       = "main"
+  public_key = "ssh XXXXXXXXXXX"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-2"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+}
+```
+
 ```terraform
+### Basic
+
 data "scaleway_iam_ssh_key" "my_ssh_key" {
   name       = "main"
   public_key = "ssh XXXXXXXXXXX"
@@ -30,12 +58,56 @@ resource "scaleway_baremetal_server" "my_server" {
 }
 ```
 
-### With option
+```terraform
+### Migrate from hourly to monthly plan
+
+#### Hourly Plan Example
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone                = "fr-par-2"
+  name                = "EM-B112X-SSD"
+  subscription_period = "hourly"
+}
+
+resource "scaleway_baremetal_server" "my_server" {
+  name                     = "UpdateSubscriptionPeriod"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone                     = "fr-par-2"
+  install_config_afterward = true
+}
+
+#### Monthly Plan Example
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone                = "fr-par-2"
+  name                = "EM-B112X-SSD"
+  subscription_period = "monthly"
+}
+
+resource "scaleway_baremetal_server" "my_server" {
+  name                     = "UpdateSubscriptionPeriod"
+  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
+  zone                     = "fr-par-2"
+  install_config_afterward = true
+}
+```
 
 ```terraform
-data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name       = "main"
-  public_key = "ssh XXXXXXXXXXX"
+### Creating a Baremetal server using a Write Only password (not stored in state)
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "server_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -49,37 +121,33 @@ data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-B112X-SSD"
 }
 
-data "scaleway_baremetal_option" "private_network" {
-  zone = "fr-par-2"
-  name = "Private Network"
+resource "scaleway_iam_ssh_key" "main" {
+  name       = "my_ssh_key"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH user@example.com"
 }
 
-data "scaleway_baremetal_option" "remote_access" {
-  zone = "fr-par-2"
-  name = "Remote Access"
-}
-
-resource "scaleway_baremetal_server" "base" {
-  zone        = "fr-par-2"
-  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-  os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
-
-  options {
-    id = data.scaleway_baremetal_option.private_network.option_id
-  }
-
-  options {
-    id = data.scaleway_baremetal_option.remote_access.option_id
-  }
+resource "scaleway_baremetal_server" "password_wo_server" {
+  name                        = "test-bm-password-wo"
+  zone                        = "fr-par-2"
+  offer                       = data.scaleway_baremetal_offer.my_offer.offer_id
+  description                 = "Baremetal server with write-only password"
+  os                          = data.scaleway_baremetal_os.my_os.id
+  hostname                    = "test-bm-password-wo"
+  user                        = "myuser"
+  password_wo                 = ephemeral.random_password.server_password.result
+  password_wo_version         = 1
+  service_user                = "myserviceuser"
+  service_password_wo         = ephemeral.random_password.server_password.result
+  service_password_wo_version = 1
+  ssh_key_ids                 = [scaleway_iam_ssh_key.main.id]
 }
 ```
 
-### With cloud-init
-
 ```terraform
+### With cloud-init using heredoc
+
 data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name       = "main"
+  name = "main"
 }
 
 data "scaleway_baremetal_os" "my_os" {
@@ -100,34 +168,7 @@ resource "scaleway_baremetal_server" "my_server_ci" {
   os          = data.scaleway_baremetal_os.my_os.os_id
   ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 
-  cloud_init = file("userdata.yaml")
-}
-```
-
-```terraform
-data "scaleway_iam_ssh_key" "my_ssh_key" {
-  name       = "main"
-}
-
-data "scaleway_baremetal_offer" "my_offer" {
-  zone = "fr-par-2"
-  name = "EM-I220E-NVME"
-}
-
-data "scaleway_baremetal_os" "my_os" {
-  zone    = "fr-par-1"
-  name    = "Ubuntu"
-  version = "22.04 LTS (Jammy Jellyfish)"
-}
-
-
-resource "scaleway_baremetal_server" "my_server_ci" {
-  zone        = "fr-par-2"
-  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-  os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
-
-    cloud_init = <<EOF
+  cloud_init = <<EOF
 #cloud-config
 packages:
   - htop
@@ -139,9 +180,37 @@ EOF
 }
 ```
 
-### With private network
+```terraform
+### With cloud-init
+
+data "scaleway_iam_ssh_key" "my_ssh_key" {
+  name = "main"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-1"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-I220E-NVME"
+}
+
+resource "scaleway_baremetal_server" "my_server_ci" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  cloud_init  = "#cloud-config\napt_update: true\napt_upgrade: true"
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+}
+```
 
 ```terraform
+### With custom partitioning
+
 data "scaleway_iam_ssh_key" "my_ssh_key" {
   name       = "main"
   public_key = "ssh XXXXXXXXXXX"
@@ -158,40 +227,24 @@ data "scaleway_baremetal_offer" "my_offer" {
   name = "EM-B112X-SSD"
 }
 
-data "scaleway_baremetal_option" "private_network" {
-  zone = "fr-par-2"
-  name = "Private Network"
-}
-
-resource "scaleway_vpc_private_network" "pn" {
-  region = "fr-par"
-  name   = "baremetal_private_network"
-}
-
 resource "scaleway_baremetal_server" "my_server" {
-  zone        = "fr-par-2"
-  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
-  os          = data.scaleway_baremetal_os.my_os.os_id
-  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
-
-  options {
-    id = data.scaleway_baremetal_option.private_network.option_id
-  }
-  private_network {
-    id = scaleway_vpc_private_network.pn.id
-  }
+  zone         = "fr-par-2"
+  offer        = data.scaleway_baremetal_offer.my_offer.offer_id
+  os           = data.scaleway_baremetal_os.my_os.os_id
+  partitioning = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912},{\"label\":\"swap\",\"number\":2,\"size\":4294967296},{\"label\":\"boot\",\"number\":3,\"size\":1073741824},{\"label\":\"root\",\"number\":4,\"size\":1017827045376}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"swap\",\"number\":1,\"size\":4294967296},{\"label\":\"boot\",\"number\":2,\"size\":1073741824},{\"label\":\"root\",\"number\":3,\"size\":1017827045376}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/md0\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/md1\",\"format\":\"ext4\",\"mountpoint\":\"/\"}],\"raids\":[{\"devices\":[\"/dev/nvme0n1p3\",\"/dev/nvme1n1p2\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md0\"},{\"devices\":[\"/dev/nvme0n1p4\",\"/dev/nvme1n1p3\"],\"level\":\"raid_level_1\",\"name\":\"/dev/md1\"}],\"zfs\":{\"pools\":[]}}"
+  ssh_key_ids  = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 }
 ```
 
+```terraform
 ### With IPAM IP IDs
 
-```terraform
 resource "scaleway_vpc" "vpc01" {
-  name = "vpc_baremetal"
+  name = "TestAccScalewayBaremetalIPAM"
 }
 
 resource "scaleway_vpc_private_network" "pn01" {
-  name = "private_network_baremetal"
+  name = "TestAccScalewayBaremetalIPAM"
   ipv4_subnet {
     subnet = "172.16.64.0/22"
   }
@@ -242,9 +295,97 @@ resource "scaleway_baremetal_server" "my_server" {
 }
 ```
 
-### Without install config
+```terraform
+### With option
+
+data "scaleway_iam_ssh_key" "my_ssh_key" {
+  name       = "main"
+  public_key = "ssh XXXXXXXXXXX"
+}
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-2"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+data "scaleway_baremetal_option" "private_network" {
+  zone = "fr-par-2"
+  name = "Private Network"
+}
+
+data "scaleway_baremetal_option" "remote_access" {
+  zone = "fr-par-2"
+  name = "Remote Access"
+}
+
+resource "scaleway_baremetal_server" "base" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+
+  options {
+    id = data.scaleway_baremetal_option.private_network.option_id
+  }
+
+  options {
+    id = data.scaleway_baremetal_option.remote_access.option_id
+  }
+}
+```
 
 ```terraform
+### With private network
+
+data "scaleway_baremetal_os" "my_os" {
+  zone    = "fr-par-2"
+  name    = "Ubuntu"
+  version = "22.04 LTS (Jammy Jellyfish)"
+}
+
+data "scaleway_baremetal_offer" "my_offer" {
+  zone = "fr-par-2"
+  name = "EM-B112X-SSD"
+}
+
+data "scaleway_baremetal_option" "private_network" {
+  zone = "fr-par-2"
+  name = "Private Network"
+}
+
+resource "scaleway_vpc_private_network" "pn" {
+  name = "baremetal_private_network"
+}
+
+resource "scaleway_iam_ssh_key" "my_ssh_key" {
+  name       = "main"
+  public_key = "ssh XXXXXXXXXXX"
+}
+
+resource "scaleway_baremetal_server" "my_server" {
+  zone        = "fr-par-2"
+  offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+  os          = data.scaleway_baremetal_os.my_os.os_id
+  ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
+
+  options {
+    id = data.scaleway_baremetal_option.private_network.option_id
+  }
+  private_network {
+    id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
+```terraform
+### Without install config
+
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"
   name = "EM-B112X-SSD"
@@ -257,84 +398,8 @@ resource "scaleway_baremetal_server" "my_server" {
 }
 ```
 
-### With custom partitioning
 
-```terraform
-variable "configCustomPartitioning" {
-  default = "{\"disks\":[{\"device\":\"/dev/nvme0n1\",\"partitions\":[{\"label\":\"uefi\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"boot\",\"number\":2,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"root\",\"number\":3,\"size\":1018839433216,\"useAllAvailableSpace\":false}]},{\"device\":\"/dev/nvme1n1\",\"partitions\":[{\"label\":\"boot\",\"number\":1,\"size\":536870912,\"useAllAvailableSpace\":false},{\"label\":\"data\",\"number\":2,\"size\":1018839433216,\"useAllAvailableSpace\":false}]}],\"filesystems\":[{\"device\":\"/dev/nvme0n1p1\",\"format\":\"fat32\",\"mountpoint\":\"/boot/efi\"},{\"device\":\"/dev/nvme0n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/boot\"},{\"device\":\"/dev/nvme0n1p3\",\"format\":\"ext4\",\"mountpoint\":\"/\"},{\"device\":\"/dev/nvme1n1p2\",\"format\":\"ext4\",\"mountpoint\":\"/data\"}],\"raids\":[]}"
-}
 
-data "scaleway_baremetal_os" "my_os" {
-  zone    = "fr-par-1"
-  name    = "Ubuntu"
-  version = "22.04 LTS (Jammy Jellyfish)"
-}
-
-resource "scaleway_iam_ssh_key" "my_ssh_key" {
-  name       = "my_ssh_key"
-  public_key = "ssh XXXXXXXXXXX"
-}
-
-data "scaleway_baremetal_offer" "my_offer" {
-  zone                = "fr-par-1"
-  name                = "EM-B220E-NVME"
-  subscription_period = "hourly"
-}
-
-resource "scaleway_baremetal_server" "my_server" {
-  name         = "my_super_server"
-  zone         = "fr-par-1"
-  description  = "test a description"
-  offer        = data.scaleway_baremetal_offer.my_offer.offer_id
-  os           = data.scaleway_baremetal_os.my_os.os_id
-  partitioning = var.configCustomPartitioning
-
-  tags        = ["terraform-test", "scaleway_baremetal_server", "minimal"]
-  ssh_key_ids = [scaleway_iam_ssh_key.my_ssh_key.id]
-}
-
-```
-
-### Migrate from hourly to monthly plan
-
-To migrate from an hourly to a monthly subscription for a Scaleway Baremetal server, it is important to understand that the migration can only be done by using the data source.
-You cannot directly modify the subscription_period of an existing scaleway_baremetal_offer resource. Instead, you must define the monthly offer using the data source and then update the server configuration accordingly.
-
-#### Hourly Plan Example
-
-```terraform
-data "scaleway_baremetal_offer" "my_offer" {
-  zone                = "fr-par-1"
-  name                = "EM-B220E-NVME"
-  subscription_period = "hourly"
-}
-
-resource "scaleway_baremetal_server" "my_server" {
-  name                     = "UpdateSubscriptionPeriod"
-  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
-  zone                     = "%s"
-  install_config_afterward = true
-}
-```
-
-#### Monthly Plan Example
-
-```terraform
-data "scaleway_baremetal_offer" "my_offer" {
-  zone                = "fr-par-1"
-  name                = "EM-B220E-NVME"
-  subscription_period = "monthly"
-}
-
-resource "scaleway_baremetal_server" "my_server" {
-  name                     = "UpdateSubscriptionPeriod"
-  offer                    = data.scaleway_baremetal_offer.my_offer.offer_id
-  zone                     = "fr-par-1"
-  install_config_afterward = true
-}
-```
-
-**Important**  Once you migrate to a monthly subscription, you cannot downgrade back to an hourly plan. Ensure that the monthly plan meets your needs before making the switch.
 
 ## Argument Reference
 
@@ -350,9 +415,13 @@ The following arguments are supported:
   ~> **Important:** Updates to `os` will reinstall the server.
 - `ssh_key_ids` - (Required) List of SSH keys allowed to connect to the server.
 - `user` - (Optional) User used for the installation.
-- `password` - (Optional) Password used for the installation. May be required depending on used os.
+- `password` - (Optional) Password used for the installation. May be required depending on used os. Only one of `password` or `password_wo` should be specified.
+- `password_wo` - (Optional) Password used for the installation in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`. May be required depending on used os.
+- `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
 - `service_user` - (Optional) User used for the service to install.
-- `service_password` - (Optional) Password used for the service to install. May be required depending on used os.
+- `service_password` - (Optional) Password used for the service to install. May be required depending on used os. Only one of `service_password` or `service_password_wo` should be specified.
+- `service_password_wo` - (Optional) Password used for the service to install in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `service_password` or `service_password_wo` should be specified. `service_password_wo` will not be set in the Terraform state. To update the `service_password_wo`, you must also update the `service_password_wo_version`. May be required depending on used os.
+- `service_password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) service password. To update the `service_password_wo`, you must also update the `service_password_wo_version`.
 - `reinstall_on_config_changes` - (Optional) If True, this boolean allows to reinstall the server on install config changes.
   ~> **Important:** Updates to `ssh_key_ids`, `user`, `password`, `service_user` or `service_password` will not take effect on the server, it requires to reinstall it. To do so please set 'reinstall_on_config_changes' argument to true.
 - `install_config_afterward` - (Optional) If True, this boolean allows to create a server without the install config if you want to provide it later.
