@@ -215,6 +215,7 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_k8s_acl",
 		"scaleway_k8s_cluster",
 		"scaleway_k8s_pool",
+		"scaleway_kafka_cluster",
 		"scaleway_key_manager_key",
 		"scaleway_lb",
 		"scaleway_lb_acl",
