@@ -180,6 +180,8 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	if !data.StartupCommand.IsNull() {
 		command, diags := data.StartupCommand.ToListValue(ctx)
 		if len(diags) > 0 {
+			resp.Diagnostics.Append(diags[0])
+
 			return
 		}
 
@@ -187,6 +189,8 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 
 		diags = command.ElementsAs(ctx, cmdList, false)
 		if len(diags) > 0 {
+			resp.Diagnostics.Append(diags[0])
+
 			return
 		}
 
@@ -196,6 +200,8 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 	if !data.Args.IsNull() {
 		args, diags := data.Args.ToListValue(ctx)
 		if len(diags) > 0 {
+			resp.Diagnostics.Append(diags[0])
+
 			return
 		}
 
@@ -203,6 +209,8 @@ func (a *StartJobDefinitionAction) Invoke(ctx context.Context, req action.Invoke
 
 		diags = args.ElementsAs(ctx, argList, false)
 		if len(diags) > 0 {
+			resp.Diagnostics.Append(diags[0])
+
 			return
 		}
 
