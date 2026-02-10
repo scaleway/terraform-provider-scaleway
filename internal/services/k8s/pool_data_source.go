@@ -83,6 +83,7 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 		Region: region,
 		PoolID: poolID.(string),
 	}
+
 	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

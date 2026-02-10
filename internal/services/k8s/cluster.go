@@ -647,6 +647,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.C
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
+
 	var err error
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = GetMinorVersionFromFull(version)
@@ -654,6 +655,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.C
 			return diag.FromErr(err)
 		}
 	}
+
 	_ = d.Set("version", version)
 
 	// autoscaler_config
