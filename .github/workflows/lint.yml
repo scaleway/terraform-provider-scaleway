@@ -29,7 +29,7 @@ jobs:
       - name: Checkout Actions Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Spell Check Repo
-        uses: crate-ci/typos@9066e9940a8a05b98fb4733c62a726f83c9e57f8 # v1.43.3
+        uses: crate-ci/typos@78bc6fb2c0d734235d57a2d6b9de923cc325ebdd # v1.43.4
         env:
           CLICOLOR: 1
 
@@ -42,8 +42,6 @@ jobs:
       - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
-      - name: Install tfproviderlint
-        run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
       - name: Run tfproviderlint
         run: make tfproviderlint
       - name: Run tfproviderlintx
@@ -61,7 +59,6 @@ jobs:
         with:
           go-version: stable
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-      - run: go install github.com/bflad/tfproviderdocs@latest
       - run: make tfproviderdocs
 
   actionlint:
@@ -70,7 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Check workflow files
-        uses: rhysd/actionlint@d6a6581d4e20a03639473cfb59325dfafdc8c2c8 # v1.7.1
+        uses: rhysd/actionlint@0933c147c9d6587653d45fdcb4c497c57a65f9af # v1.7.10
         with:
           args: -color -ignore SC2086
 
