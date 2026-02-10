@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "OpenSearch"
 page_title: "Scaleway: scaleway_opensearch_deployment"
