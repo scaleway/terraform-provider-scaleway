@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -33,6 +34,7 @@ func ResourceCluster() *schema.Resource {
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
 		SchemaFunc: clusterSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -249,7 +251,7 @@ func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, cluster.ID))
+	identity.SetRegionalIdentity(d, region, cluster.ID)
 
 	return resourceClusterRead(ctx, d, meta)
 }
@@ -279,6 +281,13 @@ func resourceClusterRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setClusterState(d, cluster)
+	identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+
+	return diags
+}
+
+func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Diagnostics {
 	_ = d.Set("region", string(cluster.Region))
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("name", cluster.Name)
