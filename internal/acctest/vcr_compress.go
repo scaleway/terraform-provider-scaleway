@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"go.yaml.in/yaml/v4"
 	cassetteV3 "gopkg.in/dnaeon/go-vcr.v3/cassette"
@@ -87,6 +88,10 @@ var transientStates = map[string]bool{
 	redis.ClusterStatusProvisioning.String(): true,
 	redis.ClusterStatusDeleting.String():     true,
 	redis.ClusterStatusInitializing.String(): true,
+
+	searchdbapi.DeploymentStatusCreating.String():  true,
+	searchdbapi.DeploymentStatusDeleting.String():  true,
+	searchdbapi.DeploymentStatusUpgrading.String(): true,
 
 	tem.DomainStatusPending.String(): true,
 }
