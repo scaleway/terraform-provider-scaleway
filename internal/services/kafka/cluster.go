@@ -180,7 +180,7 @@ func clusterSchema() map[string]*schema.Schema {
 }
 
 func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := kafkaAPIWithRegion(d, meta)
+	api, region, err := newAPIWithRegion(d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
