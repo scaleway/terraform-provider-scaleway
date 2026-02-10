@@ -18,8 +18,8 @@ func NewAPI(m any) *kafkaapi.API {
 	return kafkaapi.NewAPI(meta.ExtractScwClient(m))
 }
 
-// kafkaAPIWithRegion returns a new Kafka API and the region for a Create request
-func kafkaAPIWithRegion(d *schema.ResourceData, m any) (*kafkaapi.API, scw.Region, error) {
+// newAPIWithRegion returns a new Kafka API and the region for a Create request
+func newAPIWithRegion(d *schema.ResourceData, m any) (*kafkaapi.API, scw.Region, error) {
 	api := kafkaapi.NewAPI(meta.ExtractScwClient(m))
 
 	region, err := meta.ExtractRegion(d, m)
