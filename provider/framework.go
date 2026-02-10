@@ -25,6 +25,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
@@ -146,6 +148,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
 		iam.NewApiKeyEphemeralResource,
+		secret.NewVersionEphemeralResource,
 	}
 }
 
@@ -173,6 +176,8 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewInstanceSnapshotAction,
 		rdb.NewReadReplicaPromoteAction,
 		rdb.NewReadReplicaResetAction,
+		s2svpn.NewConnectionEnableRoutePropagationAction,
+		s2svpn.NewConnectionDisableRoutePropagationAction,
 		vpcgw.NewRefreshSSHKeysAction,
 	}
 }

@@ -281,3 +281,12 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		}
 	}
 }
+
+func TestSDKProvider_ResourceImporterNotEmpty(t *testing.T) {
+	p := provider.SDKProvider(nil)()
+	for name, d := range p.ResourcesMap {
+		if d.Importer == nil {
+			t.Errorf("Importer for resource %s is nil", name)
+		}
+	}
+}

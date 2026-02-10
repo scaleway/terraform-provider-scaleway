@@ -8,11 +8,13 @@ page_title: "Scaleway: scaleway_mongodb_instance"
 Creates and manages Scaleway MongoDB® instance.
 For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
 
+
+
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic MongoDB instance creation
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-basic1"
   version           = "7.0.12"
@@ -21,13 +23,132 @@ resource "scaleway_mongodb_instance" "main" {
   user_name         = "my_initial_user"
   password          = "thiZ_is_v&ry_s3cret"
   volume_size_in_gb = 5
-
 }
 ```
 
-### Private Network
+```terraform
+### Create and instance with a Write Only password (not stored in state), update and rollback the password while ensuring the password is not stored in the state
+
+# Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "main" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_secret" "main" {
+  name        = "mongodb-instance-password"
+  description = "Password for MongoDB instance"
+}
+
+# Store the generated password in a Write Only data (not stored in the state)
+resource "scaleway_secret_version" "main" {
+  secret_id       = scaleway_secret.main.id
+  data_wo         = ephemeral.random_password.main.result
+  data_wo_version = 1
+}
+
+# Create an instance, using the ephemeral password in the Write Only password attribute (not stored in the state)
+resource "scaleway_mongodb_instance" "password_wo_instance" {
+  name                = "test-mongodb-password-wo-rollback"
+  version             = "7.0.12"
+  node_type           = "MGDB-PLAY2-NANO"
+  node_number         = 1
+  user_name           = "my_initial_user"
+  password_wo         = ephemeral.random_password.main.result
+  password_wo_version = scaleway_secret_version.main.data_wo_version
+}
+
+## Generate a new ephemeral password (not stored in the state)
+ephemeral "random_password" "renewed" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+# Store the renewed generated password in a Write Only data (not stored in the state)
+resource "scaleway_secret_version" "renewed" {
+  secret_id       = scaleway_secret.main.id
+  data_wo         = ephemeral.random_password.renewed.result
+  data_wo_version = 2
+}
+
+# Renew the instance password
+# resource "scaleway_mongodb_instance" "password_wo_instance" {
+#   name                = "test-mongodb-password-wo-rollback"
+#   version             = "7.0.12"
+#   node_type           = "MGDB-PLAY2-NANO"
+#   node_number         = 1
+#   user_name           = "my_initial_user"
+#   password_wo         = ephemeral.random_password.renewed.result
+#   password_wo_version = scaleway_secret_version.renewed.data_wo_version
+# }
+
+# Query the first password version as an Ephemeral Resource (not stored in the state)
+# ephemeral "scaleway_secret_version" "main" {
+#   secret_id = scaleway_secret.main.id
+#   revision  = 1
+# }
+
+# resource "scaleway_mongodb_instance" "password_wo_instance" {
+#   name                = "test-mongodb-password-wo-rollback"
+#   version             = "7.0.12"
+#   node_type           = "MGDB-PLAY2-NANO"
+#   node_number         = 1
+#   user_name           = "my_initial_user"
+#   password_wo         = ephemeral.scaleway_secret_version.main.data
+#   password_wo_version = 1
+# }
+```
 
 ```terraform
+### Creating a MongoDB instance using a Write Only password (not stored in state)
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "db_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_mongodb_instance" "password_wo_instance" {
+  name                = "test-mongodb-password-wo"
+  version             = "7.0.12"
+  node_type           = "MGDB-PLAY2-NANO"
+  node_number         = 1
+  user_name           = "my_initial_user"
+  password_wo         = ephemeral.random_password.db_password.result
+  password_wo_version = 1
+}
+```
+
+```terraform
+### MongoDB instance with Private Network
+
 resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
@@ -43,15 +164,14 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 
   private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
+    pn_id = scaleway_vpc_private_network.pn01.id
   }
-
 }
 ```
 
-### Private Network and Public Network
-
 ```terraform
+### MongoDB instance with Private Network and Public Network
+
 resource "scaleway_vpc_private_network" "pn01" {
   name   = "my_private_network"
   region = "fr-par"
@@ -67,17 +187,42 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 
   private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
+    pn_id = scaleway_vpc_private_network.pn01.id
   }
 
   public_network {}
-
 }
 ```
 
-### With Snapshot Scheduling
+```terraform
+### MongoDB instance restored from Snapshot
+
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-basic1"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 5
+}
+
+resource "scaleway_mongodb_snapshot" "main_snapshot" {
+  instance_id = scaleway_mongodb_instance.main.id
+  name        = "my-mongodb-snapshot"
+}
+
+resource "scaleway_mongodb_instance" "restored_instance" {
+  snapshot_id = scaleway_mongodb_snapshot.main_snapshot.id
+  name        = "restored-mongodb-from-snapshot"
+  node_type   = "MGDB-PLAY2-NANO"
+  node_number = 1
+}
+```
 
 ```terraform
+### MongoDB instance with Snapshot Scheduling
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-with-snapshots"
   version           = "7.0.12"
@@ -94,17 +239,9 @@ resource "scaleway_mongodb_instance" "main" {
 }
 ```
 
-### Restore From Snapshot
 
-```terraform
 
-resource "scaleway_mongodb_instance" "restored_instance" {
-  snapshot_id = "${scaleway_vpc_private_network.pn.idscaleway_mongodb_snapshot.main_snapshot.id}"
-  name        = "restored-mongodb-from-snapshot"
-  node_type   = "MGDB-PLAY2-NANO"
-  node_number = 1
-}
-```
+
 
 ## Argument Reference
 

@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -19,8 +20,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/user.md
+var userDescription string
+
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDescription,
 		CreateContext: ResourceUserCreate,
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
@@ -79,10 +84,29 @@ func userSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Sensitive:   true,
-			Description: "MongoDB user password",
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			Description:  "MongoDB user password. Only one of `password` or `password_wo` should be specified.",
+			ExactlyOneOf: []string{"password", "password_wo"},
+		},
+		"password_wo": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "MongoDB user password in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:    true,
+			ExactlyOneOf: []string{"password", "password_wo"},
+			RequiredWith: []string{
+				"password_wo_version",
+			},
+		},
+		"password_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{
+				"password_wo",
+			},
 		},
 		"roles": {
 			Type:        schema.TypeSet,
@@ -103,6 +127,7 @@ func userSchema() map[string]*schema.Schema {
 					"any_database": {
 						Type:        schema.TypeBool,
 						Optional:    true,
+						Default:     false,
 						Description: "Apply role to any database",
 					},
 				},
@@ -127,11 +152,19 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		// If `password` is not set, it will be set as the default empty string
+		password = d.Get("password").(string)
+	}
+
 	createReq := &mongodb.CreateUserRequest{
 		Region:     region,
 		InstanceID: instance.ID,
 		Name:       d.Get("name").(string),
-		Password:   d.Get("password").(string),
+		Password:   password,
 	}
 
 	user, err := mongodbAPI.CreateUser(createReq, scw.WithContext(ctx))
@@ -206,6 +239,10 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	_ = d.Set("name", user.Name)
 	_ = d.Set("region", string(region))
 
+	if _, ok := d.GetOk("password_wo_version"); !ok {
+		_ = d.Set("password", d.Get("password"))
+	}
+
 	// Set user roles
 	if len(user.Roles) > 0 {
 		_ = d.Set("roles", flattenUserRoles(user.Roles))
@@ -229,17 +266,33 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("password") {
-		req := &mongodb.UpdateUserRequest{
-			Region:     region,
-			InstanceID: instanceID,
-			Name:       userName,
-			Password:   types.ExpandStringPtr(d.Get("password")),
-		}
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			req := &mongodb.UpdateUserRequest{
+				Region:     region,
+				InstanceID: instanceID,
+				Name:       userName,
+				Password:   types.ExpandStringPtr(password.(string)),
+			}
 
-		_, err = mongodbAPI.UpdateUser(req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
+			_, err = mongodbAPI.UpdateUser(req, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			req := &mongodb.UpdateUserRequest{
+				Region:     region,
+				InstanceID: instanceID,
+				Name:       userName,
+				Password:   types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString()),
+			}
+
+			_, err = mongodbAPI.UpdateUser(req, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

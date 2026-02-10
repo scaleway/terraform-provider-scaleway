@@ -282,9 +282,9 @@ func TestAccSecretVersion_DataWO(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.secretB_version", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_secret_version.secretB_version", "created_at"),
 					// Ensure data_wo (and data) are not in state
-					testAccCheckNotInState("scaleway_secret_version.secretA_version", "data_wo"),
-					testAccCheckNotInState("scaleway_secret_version.secretB_version", "data_wo"),
-					testAccCheckNotInState("scaleway_secret_version.secretB_version", "data"),
+					testAccCheckAttributeNotInState("scaleway_secret_version.secretA_version", "data_wo"),
+					testAccCheckAttributeNotInState("scaleway_secret_version.secretB_version", "data_wo"),
+					testAccCheckAttributeNotInState("scaleway_secret_version.secretB_version", "data"),
 				),
 			},
 		},
@@ -399,7 +399,7 @@ func testAccCheckSecretVersionDestroy(tt *acctest.TestTools) resource.TestCheckF
 	}
 }
 
-func testAccCheckNotInState(resource, attribute string) resource.TestCheckFunc {
+func testAccCheckAttributeNotInState(resource, attribute string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[resource]
 		if !ok {

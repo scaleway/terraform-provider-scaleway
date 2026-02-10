@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
       - name: Run terrafmt on documentation
@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Spell Check Repo
-        uses: crate-ci/typos@v1.41.0
+        uses: crate-ci/typos@78bc6fb2c0d734235d57a2d6b9de923cc325ebdd # v1.43.4
         env:
           CLICOLOR: 1
 
@@ -38,12 +38,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
-      - name: Install tfproviderlint
-        run: go install github.com/bflad/tfproviderlint/cmd/tfproviderlint
       - name: Run tfproviderlint
         run: make tfproviderlint
       - name: Run tfproviderlintx
@@ -56,21 +54,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout should always be before setup-go to ensure caching is working
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
           go-version: stable
-      - uses: hashicorp/setup-terraform@v3
-      - run: go install github.com/bflad/tfproviderdocs@latest
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
       - run: make tfproviderdocs
 
   actionlint:
     name: actionlint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Check workflow files
-        uses: docker://rhysd/actionlint:latest
+        uses: rhysd/actionlint@0933c147c9d6587653d45fdcb4c497c57a65f9af # v1.7.10
         with:
           args: -color -ignore SC2086
 
@@ -78,9 +75,9 @@ jobs:
     name: golangci-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v9.2.0
+        uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
           version: v2.8.0
           args: --timeout 5m
