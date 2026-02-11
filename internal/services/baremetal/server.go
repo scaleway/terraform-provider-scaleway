@@ -574,7 +574,12 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		}
 	}
 
-	return setServerState(d, server, offer, os, listPrivateNetworks, allPrivateIPs)
+	stateDiags := setServerState(d, server, offer, os, listPrivateNetworks, allPrivateIPs)
+	if stateDiags != nil {
+		diags = append(diags, stateDiags...)
+	}
+
+	return diags
 }
 
 func setServerState(d *schema.ResourceData, server *baremetal.Server, offer *baremetal.Offer, os *baremetal.OS, listPrivateNetworks *baremetalV3.ListServerPrivateNetworksResponse, allPrivateIPs []map[string]any) diag.Diagnostics {
