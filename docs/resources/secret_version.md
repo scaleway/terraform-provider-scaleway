@@ -37,17 +37,27 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Required) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](/#data-information).
+- `data` - (Optional) The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
+- `data_wo` - (Optional) The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
+- `data_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
-Note: The `data` should be a base64-encoded string when sent from the API. **The provider handles this encoding so you do not need to encode the data yourself.**
+Only one of `data` or `data_wo` should be specified. If both are provided, Terraform will return an error.
 
+Note: The `data` (or `data_wo`) should be a raw string. **The provider handles encoding this string to base64 before sending it to the API so you do not need to encode the data yourself.** The maximum size for either field is 64KiB.
+
+#### `data`
 Updating `data` will force the creation of a new secret version.
 
 Keep in mind that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+
+#### `data_wo`
+`data_wo` is a [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) attribute, ideal for sensitive secrets that should not be stored in Terraform state. As such, its value is ephemeral and **will not be stored in the state** or displayed in plans.
+
+To update the `data_wo` and trigger a new version creation, you must also update the `data_wo_version` attribute.
 
 ~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
 

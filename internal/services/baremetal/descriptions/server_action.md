@@ -1,0 +1,3 @@
+The [`scaleway_baremetal_server_action`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/instance_server_action) action is helpful to trigger a server action on your baremetal.
+
+Refer to the Baremetal [documentation](https://www.scaleway.com/en/docs/elastic-metal/)) and [API documentation](https://www.scaleway.com/en/developers/api/elastic-metal/) for more information.

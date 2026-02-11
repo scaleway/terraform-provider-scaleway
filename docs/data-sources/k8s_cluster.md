@@ -5,21 +5,30 @@ page_title: "Scaleway: scaleway_k8s_cluster"
 
 # scaleway_k8s_cluster
 
-Gets information about a Kubernetes Cluster.
+The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/data-sources/k8s_cluster) data source is used to retrieve information about a Kubernetes Cluster.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
+
+
 
 ## Example Usage
 
-```hcl
-# Get info by cluster name
-data "scaleway_k8s_cluster" "my_key" {
-  name = "my-cluster-name"
-}
-
+```terraform
 # Get info by cluster id
 data "scaleway_k8s_cluster" "my_key" {
   cluster_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
+
+```terraform
+# Get info by cluster name
+data "scaleway_k8s_cluster" "my_key" {
+  name = "my-cluster-name"
+}
+```
+
+
+
 
 ## Argument Reference
 

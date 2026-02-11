@@ -255,7 +255,7 @@ func serverSchema() map[string]*schema.Schema {
 		"state": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Default:     InstanceServerStateStarted,
+			Computed:    true,
 			Description: "The state of the server should be: started, stopped, standby",
 			ValidateFunc: validation.StringInSlice([]string{
 				InstanceServerStateStarted,
@@ -1699,13 +1699,13 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 }
 
 func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {
-	if volumes == nil || volumes["0"] == nil || volumes["0"].Name != nil {
+	if volumes == nil || volumes["0"] == nil {
 		return nil
 	}
 
 	if rootVolumeName, setByUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setByUser {
-		if *volumes["0"].Name != rootVolumeName {
-			_, err := api.UpdateVolume(&instanceSDK.UpdateVolumeRequest{
+		if volumes["0"].Name == nil || *volumes["0"].Name != rootVolumeName {
+			err := api.RenameUnknownVolume(&instancehelpers.RenameUnknownVolumeRequest{
 				Zone:     zone,
 				VolumeID: volumes["0"].ID,
 				Name:     scw.StringPtr(rootVolumeName.(string)),

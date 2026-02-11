@@ -349,12 +349,13 @@ func flattenHealthCheck(healthCheck *container.ContainerHealthCheckSpec) any {
 		interval = healthCheck.Interval.ToTimeDuration()
 	}
 
-	flattenedHealthCheck := []map[string]any(nil)
-	flattenedHealthCheck = append(flattenedHealthCheck, map[string]any{
-		"http":              flattenHealthCheckHTTP(healthCheck.HTTP),
-		"failure_threshold": types.FlattenUint32Ptr(&healthCheck.FailureThreshold),
-		"interval":          types.FlattenDuration(interval),
-	})
+	flattenedHealthCheck := []map[string]any{
+		{
+			"http":              flattenHealthCheckHTTP(healthCheck.HTTP),
+			"failure_threshold": types.FlattenUint32Ptr(&healthCheck.FailureThreshold),
+			"interval":          types.FlattenDuration(interval),
+		},
+	}
 
 	return flattenedHealthCheck
 }
@@ -364,10 +365,11 @@ func flattenHealthCheckHTTP(healthCheckHTTP *container.ContainerHealthCheckSpecH
 		return nil
 	}
 
-	flattenedHealthCheckHTTP := []map[string]any(nil)
-	flattenedHealthCheckHTTP = append(flattenedHealthCheckHTTP, map[string]any{
-		"path": types.FlattenStringPtr(&healthCheckHTTP.Path),
-	})
+	flattenedHealthCheckHTTP := []map[string]any{
+		{
+			"path": types.FlattenStringPtr(&healthCheckHTTP.Path),
+		},
+	}
 
 	return flattenedHealthCheckHTTP
 }
@@ -417,12 +419,13 @@ func flattenScalingOption(scalingOption *container.ContainerScalingOption) any {
 		return nil
 	}
 
-	flattenedScalingOption := []map[string]any(nil)
-	flattenedScalingOption = append(flattenedScalingOption, map[string]any{
-		"concurrent_requests_threshold": types.FlattenUint32Ptr(scalingOption.ConcurrentRequestsThreshold),
-		"cpu_usage_threshold":           types.FlattenUint32Ptr(scalingOption.CPUUsageThreshold),
-		"memory_usage_threshold":        types.FlattenUint32Ptr(scalingOption.MemoryUsageThreshold),
-	})
+	flattenedScalingOption := []map[string]any{
+		{
+			"concurrent_requests_threshold": types.FlattenUint32Ptr(scalingOption.ConcurrentRequestsThreshold),
+			"cpu_usage_threshold":           types.FlattenUint32Ptr(scalingOption.CPUUsageThreshold),
+			"memory_usage_threshold":        types.FlattenUint32Ptr(scalingOption.MemoryUsageThreshold),
+		},
+	}
 
 	return flattenedScalingOption
 }

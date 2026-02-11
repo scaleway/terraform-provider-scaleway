@@ -5,11 +5,13 @@ page_title: "Scaleway: scaleway_k8s_cluster"
 
 # Resource: scaleway_k8s_cluster
 
-Creates and manages Scaleway Kubernetes clusters. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/).
+The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/k8s_cluster) resource allows you to create and manage Scaleway Kubernetes clusters.
+
+Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
+
+
 
 ## Example Usage
-
-### Basic
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -29,30 +31,6 @@ resource "scaleway_k8s_pool" "pool" {
   size       = 1
 }
 ```
-
-### Multicloud
-
-```terraform
-resource "scaleway_k8s_cluster" "cluster" {
-  name                        = "tf-cluster"
-  type                        = "multicloud"
-  version                     = "1.32.3"
-  cni                         = "kilo"
-  delete_additional_resources = false
-}
-
-resource "scaleway_k8s_pool" "pool" {
-  cluster_id = scaleway_k8s_cluster.cluster.id
-  name       = "tf-pool"
-  node_type  = "external"
-  size       = 0
-  min_size   = 0
-}
-```
-
-For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
-
-### With additional configuration
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -89,50 +67,9 @@ resource "scaleway_k8s_pool" "pool" {
 }
 ```
 
-### With the kubernetes provider
-
 ```terraform
-resource "scaleway_vpc_private_network" "pn" {}
+# Example with an Helm provider
 
-resource "scaleway_k8s_cluster" "cluster" {
-  name                        = "tf-cluster"
-  version                     = "1.29.1"
-  cni                         = "cilium"
-  private_network_id          = scaleway_vpc_private_network.pn.id
-  delete_additional_resources = false
-}
-
-resource "scaleway_k8s_pool" "pool" {
-  cluster_id = scaleway_k8s_cluster.cluster.id
-  name       = "tf-pool"
-  node_type  = "DEV1-M"
-  size       = 1
-}
-
-resource "null_resource" "kubeconfig" {
-  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
-  triggers = {
-    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
-    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
-    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
-  }
-}
-
-provider "kubernetes" {
-  host  = null_resource.kubeconfig.triggers.host
-  token = null_resource.kubeconfig.triggers.token
-  cluster_ca_certificate = base64decode(
-    null_resource.kubeconfig.triggers.cluster_ca_certificate
-  )
-}
-```
-
-The `null_resource` is needed because when the cluster is created, its status is `pool_required`, but the kubeconfig can already be downloaded.
-It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
-
-### With the Helm provider
-
-```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -215,6 +152,70 @@ resource "helm_release" "nginx_ingress" {
   //}
 }
 ```
+
+```terraform
+# Example with the kubernetes provider 
+
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name                        = "tf-cluster"
+  version                     = "1.29.1"
+  cni                         = "cilium"
+  private_network_id          = scaleway_vpc_private_network.pn.id
+  delete_additional_resources = false
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name       = "tf-pool"
+  node_type  = "DEV1-M"
+  size       = 1
+}
+
+# The `null_resource` is needed because when the cluster is created, its status is `pool_required`, but the kubeconfig can already be downloaded.
+# It leads the `kubernetes` provider to start creating its objects, but the DNS entry for the Kubernetes master is not yet ready, that's why it's needed to wait for at least a pool.
+resource "null_resource" "kubeconfig" {
+  depends_on = [scaleway_k8s_pool.pool] # at least one pool here
+  triggers = {
+    host                   = scaleway_k8s_cluster.cluster.kubeconfig[0].host
+    token                  = scaleway_k8s_cluster.cluster.kubeconfig[0].token
+    cluster_ca_certificate = scaleway_k8s_cluster.cluster.kubeconfig[0].cluster_ca_certificate
+  }
+}
+
+provider "kubernetes" {
+  host  = null_resource.kubeconfig.triggers.host
+  token = null_resource.kubeconfig.triggers.token
+  cluster_ca_certificate = base64decode(
+    null_resource.kubeconfig.triggers.cluster_ca_certificate
+  )
+}
+```
+
+```terraform
+# Multicloud Kubernetes Cluster Example
+# For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
+
+resource "scaleway_k8s_cluster" "cluster" {
+  name                        = "tf-cluster"
+  type                        = "multicloud"
+  version                     = "1.32.3"
+  cni                         = "kilo"
+  delete_additional_resources = false
+}
+
+resource "scaleway_k8s_pool" "pool" {
+  cluster_id = scaleway_k8s_cluster.cluster.id
+  name       = "tf-pool"
+  node_type  = "external"
+  size       = 0
+  min_size   = 0
+}
+```
+
+
+
 
 ## Argument Reference
 

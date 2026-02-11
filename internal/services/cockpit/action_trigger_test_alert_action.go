@@ -2,15 +2,18 @@ package cockpit
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/action/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -44,7 +47,7 @@ func (a *TriggerTestAlertAction) Configure(ctx context.Context, req action.Confi
 }
 
 func (a *TriggerTestAlertAction) Metadata(ctx context.Context, req action.MetadataRequest, resp *action.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_cockpit_trigger_test_alert_action"
+	resp.TypeName = req.ProviderTypeName + "_cockpit_trigger_test_alert"
 }
 
 type TriggerTestAlertActionModel struct {
@@ -56,14 +59,22 @@ func NewTriggerTestAlertAction() action.Action {
 	return &TriggerTestAlertAction{}
 }
 
+//go:embed descriptions/triggerTest_action.md
+var triggerTestAlertActionDescription string
+
 func (a *TriggerTestAlertAction) Schema(ctx context.Context, req action.SchemaRequest, resp *action.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: triggerTestAlertActionDescription,
+		Description:         triggerTestAlertActionDescription,
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Required:    true,
 				Description: "ID of the Project",
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
 			},
-			"region": regional.SchemaAttribute(),
+			"region": regional.SchemaAttribute("The region you want to attach the resource to"),
 		},
 	}
 }

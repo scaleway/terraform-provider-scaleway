@@ -420,7 +420,7 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	projectID := d.Get("project_id").(string)
 
-	domainNames := make([]string, 0)
+	domainNames := make([]string, 0, len(d.Get("domain_names").([]any)))
 	for _, v := range d.Get("domain_names").([]any) {
 		domainNames = append(domainNames, v.(string))
 	}

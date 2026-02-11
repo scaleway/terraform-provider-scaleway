@@ -21,7 +21,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const marketplaceImageType = "instance_sbs"
+const (
+	marketplaceImageType = "instance_sbs"
+	ubuntuImage          = "ubuntu_focal"
+)
 
 var apiGeneratedVolumeNamePrefixesByImage = map[string]string{
 	"ubuntu_jammy": "Ubuntu 22.04 Jammy Jellyfish",
@@ -45,7 +48,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					  tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
@@ -68,7 +71,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					  tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
@@ -99,7 +102,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 					  type  = "DEV1-S"
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
@@ -119,7 +122,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.delete_on_termination", "true"),
@@ -140,7 +143,7 @@ func TestAccServer_Minimal2(t *testing.T) {
 					  }
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main2"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main2"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.delete_on_termination", "true"),
@@ -154,11 +157,64 @@ func TestAccServer_Minimal2(t *testing.T) {
 	})
 }
 
-func TestAccServer_RootVolumeFromImage(t *testing.T) {
+func TestAccServer_RootVolumeFromImage_Block(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	image := "ubuntu_focal"
+	serverID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "base" {
+						image = "%s"
+						type  = "DEV1-S"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 10
+							name = "named-volume"
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
+					}`, ubuntuImage),
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_server" "base" {
+						image = "%s"
+						type  = "DEV1-S"
+						root_volume {
+							volume_type = "sbs_volume"
+							size_in_gb = 10
+							name = "renamed"
+						}
+						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
+					}`, ubuntuImage),
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
 	serverID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -176,9 +232,9 @@ func TestAccServer_RootVolumeFromImage(t *testing.T) {
 							name = "named-volume"
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, image),
+					}`, ubuntuImage),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
@@ -196,9 +252,9 @@ func TestAccServer_RootVolumeFromImage(t *testing.T) {
 							name = "renamed"
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, image),
+					}`, ubuntuImage),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
@@ -216,10 +272,10 @@ func TestAccServer_RootVolumeFromImage(t *testing.T) {
 							delete_on_termination = true
 						}
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, image),
+					}`, ubuntuImage),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuImage),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
 					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
@@ -254,7 +310,7 @@ func TestAccServer_RootVolumeFromID(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_id" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
@@ -281,7 +337,7 @@ func TestAccServer_RootVolumeFromID(t *testing.T) {
 			{
 				RefreshState: true,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"), // New volume name should be readable from root_volume attribute after refreshing the state
@@ -317,7 +373,7 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "true"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 				),
@@ -335,47 +391,9 @@ func TestAccServer_RootVolume_Boot(t *testing.T) {
 						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "false"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolume_ID(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "server_volume" {
-					  type       = "b_ssd"
-					  name       = "tf_tests_rootvolume"
-					  size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-S"
-						state = "stopped"
-						root_volume {
-							volume_id = scaleway_instance_volume.server_volume.id
-							boot = true
-							delete_on_termination = false
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.server_volume", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.size_in_gb", "scaleway_instance_volume.server_volume", "size_in_gb"),
 				),
 			},
 		},
@@ -406,7 +424,7 @@ func TestAccServer_Basic(t *testing.T) {
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
@@ -431,7 +449,7 @@ func TestAccServer_Basic(t *testing.T) {
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
@@ -466,7 +484,7 @@ func TestAccServer_State1(t *testing.T) {
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
 				),
 			},
@@ -485,7 +503,7 @@ func TestAccServer_State1(t *testing.T) {
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "standby"),
 				),
 			},
@@ -504,7 +522,7 @@ func TestAccServer_State1(t *testing.T) {
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "stopped"),
 				),
 			},
@@ -535,7 +553,7 @@ func TestAccServer_State2(t *testing.T) {
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "stopped"),
 				),
 			},
@@ -554,7 +572,7 @@ func TestAccServer_State2(t *testing.T) {
 					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "standby"),
 				),
 			},
@@ -586,7 +604,7 @@ EOF
 				 	}
 				}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.foo", "bar"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
@@ -615,7 +633,7 @@ func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
 						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.%", "0"),
 				),
 			},
@@ -638,7 +656,7 @@ EOF
 						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
@@ -680,7 +698,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
 			},
@@ -715,7 +733,7 @@ func TestAccServer_AdditionalVolumes(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block"),
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_volume.block", "size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 				),
@@ -817,9 +835,9 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group", "${count.index}" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.ha.0"),
-					isServerPresent(tt, "scaleway_instance_server.ha.1"),
-					isServerPresent(tt, "scaleway_instance_server.ha.2"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.ha.0"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.ha.1"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.ha.2"),
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.ha"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.ha", "policy_respected", "true"),
 
@@ -854,7 +872,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.server01"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
 					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "public_ips.0.address"),
 				),
 			},
@@ -866,7 +884,7 @@ func TestAccServer_Ipv6(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.server01"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "public_ips.#", "0"),
 				),
 			},
@@ -923,7 +941,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
 				),
@@ -940,7 +958,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					isIPAttachedToServer(tt, "scaleway_instance_ip.second", "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
@@ -957,7 +975,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ips.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
@@ -975,7 +993,7 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
 					acctest.CheckResourceAttrIPv4("scaleway_instance_server.base", "public_ips.0.address"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
@@ -983,27 +1001,6 @@ func TestAccServer_WithReservedIP(t *testing.T) {
 			},
 		},
 	})
-}
-
-func isServerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
-		}
-
-		instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		_, err = instanceAPI.GetServer(&instanceSDK.GetServerRequest{ServerID: ID, Zone: zone})
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
 }
 
 func arePrivateNICsPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
@@ -1093,7 +1090,7 @@ func TestAccServer_AlterTags(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "web"),
 				),
@@ -1108,7 +1105,7 @@ func TestAccServer_AlterTags(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
 				),
 			},
@@ -1143,7 +1140,7 @@ func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 				),
 			},
 		},
@@ -1181,7 +1178,7 @@ func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 				),
 			},
 		},
@@ -1367,7 +1364,7 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 						type  = "DEV1-S"	
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "0"),
 				),
 			},
@@ -1493,8 +1490,8 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.control"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
@@ -1523,8 +1520,8 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.control"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
 					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", true),
@@ -1554,8 +1551,8 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
-					isServerPresent(tt, "scaleway_instance_server.control"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.focal", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
 					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", false),
@@ -2284,7 +2281,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  }
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
@@ -2316,7 +2313,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  }
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
@@ -2351,7 +2348,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  }
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
@@ -2389,7 +2386,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					  }
 					}`, image),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.base"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
@@ -2417,14 +2414,14 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_volume" "main" {
-						size_in_gb = 20
+						size_in_gb = 1600
 						type = "scratch"
 						zone = "fr-par-2"
 					}
 			
 					resource "scaleway_instance_server" "main" {
 						name = "test-acc-server-scratch"
-						type = "H100-1-80G"
+						type = "L40S-1-48G"
 						image = "ubuntu_jammy_gpu_os_12"
 						state = "stopped"
 						zone = "fr-par-2"
@@ -2433,12 +2430,12 @@ func TestAccServer_ScratchStorage(t *testing.T) {
 						additional_volume_ids = [scaleway_instance_volume.main.id]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "scaleway_instance_server.main"),
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "H100-1-80G"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "L40S-1-48G"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "1600"),
 				),
 			},
 		},

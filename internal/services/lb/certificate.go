@@ -20,6 +20,9 @@ func ResourceCertificate() *schema.Resource {
 		ReadContext:   resourceLbCertificateRead,
 		UpdateContext: resourceLbCertificateUpdate,
 		DeleteContext: resourceLbCertificateDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultLbLbTimeout),

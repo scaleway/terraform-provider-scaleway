@@ -135,6 +135,10 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 
 // serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
+	if rawState == "" {
+		return instance.ServerStateRunning, nil
+	}
+
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,
@@ -411,9 +415,9 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 }
 
 func (ph *privateNICsHandler) get(key string) (any, error) {
-	loc, id, err := locality.ParseLocalizedID(key)
-	if err != nil {
-		return nil, err
+	loc, id, _ := locality.ParseLocalizedID(key)
+	if loc == "" {
+		loc = ph.zone.String()
 	}
 
 	pn, ok := ph.privateNICsMap[id]

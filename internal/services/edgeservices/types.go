@@ -1,11 +1,13 @@
 package edgeservices
 
 import (
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -54,8 +56,8 @@ func expandPurge(raw any) []*edge_services.PurgeRequest {
 }
 
 func expandTLSSecrets(raw any, region scw.Region) []*edge_services.TLSSecret {
-	secrets := []*edge_services.TLSSecret(nil)
 	rawSecrets := raw.([]any)
+	secrets := make([]*edge_services.TLSSecret, 0, len(rawSecrets))
 
 	for _, rawSecret := range rawSecrets {
 		mapSecret := rawSecret.(map[string]any)
@@ -87,7 +89,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) any {
 	return secretsI
 }
 
-func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
+func expandLBBackendConfig(d *schema.ResourceData, zone scw.Zone, raw any) *edge_services.ScalewayLBBackendConfig {
 	lbConfigs := []*edge_services.ScalewayLB(nil)
 	rawLbConfigs := raw.([]any)
 
@@ -102,16 +104,21 @@ func expandLBBackendConfig(zone scw.Zone, raw any) *edge_services.ScalewayLBBack
 		innerMap := lbConfigList[0].(map[string]any)
 
 		configZone := zone
-		if zoneStr, ok := innerMap["zone"]; ok && zoneStr != "" {
-			configZone = scw.Zone(zoneStr.(string))
+		if rawZone, ok := meta.GetRawConfigForKey(d, "lb_backend_config.0.lb_config.0.zone", cty.String); ok && rawZone != nil && rawZone != "" {
+			configZone = scw.Zone(rawZone.(string))
+		} else if lbID, ok := innerMap["id"].(string); ok && lbID != "" {
+			if zonalID := zonal.ExpandID(lbID); zonalID.Zone != "" {
+				configZone = zonalID.Zone
+			}
 		}
 
 		lbConfig := &edge_services.ScalewayLB{
-			ID:         locality.ExpandID(innerMap["id"]),
-			Zone:       configZone,
-			FrontendID: locality.ExpandID(innerMap["frontend_id"]),
-			IsSsl:      types.ExpandBoolPtr(innerMap["is_ssl"]),
-			DomainName: types.ExpandStringPtr(innerMap["domain_name"]),
+			ID:           locality.ExpandID(innerMap["id"]),
+			Zone:         configZone,
+			FrontendID:   locality.ExpandID(innerMap["frontend_id"]),
+			IsSsl:        types.ExpandBoolPtr(innerMap["is_ssl"]),
+			DomainName:   types.ExpandStringPtr(innerMap["domain_name"]),
+			HasWebsocket: types.ExpandBoolPtr(innerMap["has_websocket"]),
 		}
 		lbConfigs = append(lbConfigs, lbConfig)
 	}
@@ -129,12 +136,18 @@ func flattenLBBackendConfig(zone scw.Zone, lbConfigs *edge_services.ScalewayLBBa
 	inner := make([]any, len(lbConfigs.LBs))
 
 	for i, lbConfig := range lbConfigs.LBs {
+		configZone := lbConfig.Zone
+		if configZone == "" {
+			configZone = zone
+		}
+
 		inner[i] = map[string]any{
-			"id":          zonal.NewIDString(zone, lbConfig.ID),
-			"frontend_id": zonal.NewIDString(zone, lbConfig.FrontendID),
-			"is_ssl":      types.FlattenBoolPtr(lbConfig.IsSsl),
-			"domain_name": types.FlattenStringPtr(lbConfig.DomainName),
-			"zone":        lbConfig.Zone.String(),
+			"id":            zonal.NewIDString(configZone, lbConfig.ID),
+			"frontend_id":   zonal.NewIDString(configZone, lbConfig.FrontendID),
+			"is_ssl":        types.FlattenBoolPtr(lbConfig.IsSsl),
+			"domain_name":   types.FlattenStringPtr(lbConfig.DomainName),
+			"zone":          configZone.String(),
+			"has_websocket": types.FlattenBoolPtr(lbConfig.HasWebsocket),
 		}
 	}
 

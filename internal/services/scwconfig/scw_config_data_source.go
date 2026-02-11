@@ -27,6 +27,16 @@ func configSchema() map[string]*schema.Schema {
 			Description: "Where the project id definition comes from (Environment, configuration file, variable, ...)",
 			Computed:    true,
 		},
+		"organization_id": {
+			Type:        schema.TypeString,
+			Description: "Organization ID used",
+			Computed:    true,
+		},
+		"organization_id_source": {
+			Type:        schema.TypeString,
+			Description: "Where the organization id definition comes from (Environment, configuration file, variable, ...)",
+			Computed:    true,
+		},
 		"access_key": {
 			Type:        schema.TypeString,
 			Description: "Access Key used",
@@ -88,6 +98,10 @@ func dataSourceConfigRead(_ context.Context, d *schema.ResourceData, m any) diag
 	projectID, _ := client.GetDefaultProjectID()
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("project_id_source", providerMeta.ProjectIDSource())
+
+	organizationID, _ := client.GetDefaultOrganizationID()
+	_ = d.Set("organization_id", organizationID)
+	_ = d.Set("organization_id_source", providerMeta.OrganizationIDSource())
 
 	zone, _ := client.GetDefaultZone()
 	_ = d.Set("zone", zone)

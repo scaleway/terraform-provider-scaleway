@@ -43,13 +43,31 @@ func versionSchema() map[string]*schema.Schema {
 		},
 		"data": {
 			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The data payload of your secret version.",
+			Optional:    true,
+			Description: "The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified.",
 			Sensitive:   true,
 			ForceNew:    true,
 			StateFunc: func(i any) string {
 				return Base64Encoded([]byte(i.(string)))
 			},
+			ExactlyOneOf: []string{"data", "data_wo"},
+		},
+		"data_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Sensitive:   true,
+			WriteOnly:   true,
+			StateFunc: func(i any) string {
+				return Base64Encoded([]byte(i.(string)))
+			},
+			ExactlyOneOf: []string{"data", "data_wo"},
+		},
+		"data_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.",
 		},
 		"description": {
 			Type:        schema.TypeString,
@@ -64,7 +82,7 @@ func versionSchema() map[string]*schema.Schema {
 		"revision": {
 			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "The revision of secret version",
+			Description: "The revision of secret version.",
 		},
 		"created_at": {
 			Type:        schema.TypeString,
@@ -87,7 +105,18 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	secretID := locality.ExpandID(d.Get("secret_id").(string))
-	payloadSecretRaw := []byte(d.Get("data").(string))
+
+	var payloadSecretRaw []byte
+
+	isDataWO := false
+
+	if data, exists := d.GetOk("data"); exists {
+		payloadSecretRaw = []byte(data.(string))
+	} else {
+		isDataWO = true
+		payloadSecretRaw = []byte(d.Get("data_wo").(string))
+	}
+
 	secretCreateVersionRequest := &secret.CreateSecretVersionRequest{
 		Region:      region,
 		SecretID:    secretID,
@@ -100,7 +129,13 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("data", Base64Encoded(payloadSecretRaw))
+	// Note: We intentionally don't set data_wo in the state because it's write-only and should
+	// not be stored.
+	// The actual secret value is only used for API calls and never persisted in the state.
+	// It can be retrieved with the datasource.
+	if !isDataWO {
+		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
+	}
 
 	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
 

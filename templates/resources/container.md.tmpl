@@ -12,42 +12,16 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 
 For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
+{{ if .HasExamples }}
 ## Example Usage
 
-```terraform
-resource "scaleway_container_namespace" "main" {
-  name        = "my-ns-test"
-  description = "test container"
-}
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-resource "scaleway_container" "main" {
-  name            = "my-container-02"
-  description     = "environment variables test"
-  tags            = ["tag1", "tag2"]
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
-  port            = 9997
-  cpu_limit       = 140
-  memory_limit    = 256
-  min_scale       = 3
-  max_scale       = 5
-  timeout         = 600
-  max_concurrency = 80
-  privacy         = "private"
-  protocol        = "http1"
-  deploy          = true
+{{ end }}
 
-  command = [ "bash", "-c", "script.sh" ]
-  args =    [ "some", "args" ]
 
-  environment_variables = {
-    "foo" = "var"
-  }
-  secret_environment_variables = {
-    "key" = "secret"
-  }
-}
-```
+{{ end -}}
 
 ## Argument Reference
 

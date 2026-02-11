@@ -2,6 +2,7 @@ package acctest
 
 import (
 	"context"
+	"maps"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
@@ -47,9 +48,7 @@ func FakeSideProjectProviders(ctx context.Context, tt *TestTools, project *accou
 		},
 	}
 
-	for k, v := range tt.ProviderFactories {
-		providers[k] = v
-	}
+	maps.Copy(providers, tt.ProviderFactories)
 
 	return providers
 }
@@ -70,9 +69,9 @@ func CreateFakeIAMManager(tt *TestTools) (*account.Project, *iam.APIKey, *iam.Po
 		return nil
 	}
 
-	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
-	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
-	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+	projectName := sdkacctest.RandomWithPrefix("tf-test-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
 
@@ -175,9 +174,9 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 		return nil
 	}
 
-	projectName := sdkacctest.RandomWithPrefix("test-acc-scaleway-project")
-	iamApplicationName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-app")
-	iamPolicyName := sdkacctest.RandomWithPrefix("test-acc-scaleway-iam-policy")
+	projectName := sdkacctest.RandomWithPrefix("tf-test-scaleway-project")
+	iamApplicationName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-app")
+	iamPolicyName := sdkacctest.RandomWithPrefix("tf-test-scaleway-iam-policy")
 
 	projectAPI := account.NewProjectAPI(tt.Meta.ScwClient())
 

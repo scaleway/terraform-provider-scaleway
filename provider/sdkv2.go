@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"maps"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -76,13 +77,9 @@ func addBetaResources(provider *schema.Provider) {
 	betaResources := map[string]*schema.Resource{}
 	betaDataSources := map[string]*schema.Resource{}
 
-	for resourceName, resource := range betaResources {
-		provider.ResourcesMap[resourceName] = resource
-	}
+	maps.Copy(provider.ResourcesMap, betaResources)
 
-	for resourceName, resource := range betaDataSources {
-		provider.DataSourcesMap[resourceName] = resource
-	}
+	maps.Copy(provider.DataSourcesMap, betaDataSources)
 }
 
 // SDKProvider returns a terraform.ResourceProvider.
@@ -131,6 +128,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.ResourceProject(),
 				"scaleway_account_ssh_key":                     iam.ResourceSSKKey(),
 				"scaleway_apple_silicon_server":                applesilicon.ResourceServer(),
+				"scaleway_apple_silicon_runner":                applesilicon.ResourceRunner(),
 				"scaleway_autoscaling_instance_group":          autoscaling.ResourceInstanceGroup(),
 				"scaleway_autoscaling_instance_policy":         autoscaling.ResourceInstancePolicy(),
 				"scaleway_autoscaling_instance_template":       autoscaling.ResourceInstanceTemplate(),
@@ -268,6 +266,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_project":                     account.DataSourceProject(),
 				"scaleway_account_projects":                    account.DataSourceProjects(),
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
+				"scaleway_apple_silicon_os":                    applesilicon.DataSourceOS(),
 				"scaleway_audit_trail_event":                   audittrail.DataSourceEvent(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
@@ -281,6 +280,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_block_volume":                        block.DataSourceVolume(),
 				"scaleway_cockpit":                             cockpit.DataSourceCockpit(),
 				"scaleway_cockpit_grafana":                     cockpit.DataSourceCockpitGrafana(),
+				"scaleway_cockpit_preconfigured_alert":         cockpit.DataSourceCockpitPreconfiguredAlert(),
 				"scaleway_cockpit_source":                      cockpit.DataSourceCockpitSource(),
 				"scaleway_cockpit_sources":                     cockpit.DataSourceCockpitSources(),
 				"scaleway_config":                              scwconfig.DataSourceConfig(),
@@ -317,6 +317,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),
 				"scaleway_key_manager_key":                     keymanager.DataSourceKey(),
+				"scaleway_key_manager_verify":                  keymanager.DataSourceVerify(),
 				"scaleway_lb":                                  lb.DataSourceLb(),
 				"scaleway_lb_acls":                             lb.DataSourceACLs(),
 				"scaleway_lb_backend":                          lb.DataSourceBackend(),

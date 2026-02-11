@@ -10,10 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 func ResourceDeployment() *schema.Resource {
@@ -132,6 +135,55 @@ func deploymentSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			ForceNew:    true,
+			Description: "Private network to expose your datawarehouse deployment",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Description:      "The private network ID",
+					},
+					// Computed
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The endpoint ID",
+					},
+					"dns_record": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "DNS record for the private endpoint",
+					},
+					"services": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of services exposed on the private endpoint",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"protocol": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Service protocol (e.g. \"tcp\", \"https\", \"mysql\")",
+								},
+								"port": {
+									Type:        schema.TypeInt,
+									Computed:    true,
+									Description: "TCP port number",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 		// Computed
 		"status": {
 			Type:        schema.TypeString,
@@ -173,10 +225,26 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		req.Tags = types.ExpandStrings(v)
 	}
 
+	// Always create a public endpoint by default
 	req.Endpoints = []*datawarehouseapi.EndpointSpec{
 		{
 			Public: &datawarehouseapi.EndpointSpecPublicDetails{},
 		},
+	}
+
+	// Add private network endpoint if configured
+	if privateNetworkList, ok := d.GetOk("private_network"); ok {
+		privateNetworks := privateNetworkList.([]any)
+		if len(privateNetworks) > 0 {
+			pn := privateNetworks[0].(map[string]any)
+			privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
+
+			req.Endpoints = append(req.Endpoints, &datawarehouseapi.EndpointSpec{
+				PrivateNetwork: &datawarehouseapi.EndpointSpecPrivateNetworkDetails{
+					PrivateNetworkID: privateNetworkID,
+				},
+			})
+		}
 	}
 
 	deployment, err := api.CreateDeployment(req, scw.WithContext(ctx))
@@ -232,11 +300,16 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", deployment.UpdatedAt.Format(time.RFC3339))
 
-	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints)
+	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints, deployment.Region)
 	if hasPublic {
 		_ = d.Set("public_network", publicBlock.([]map[string]any))
 	} else {
 		_ = d.Set("public_network", nil)
+	}
+
+	privateBlock, hasPrivate := flattenPrivateNetwork(deployment.Endpoints, deployment.Region)
+	if hasPrivate {
+		_ = d.Set("private_network", privateBlock.([]map[string]any))
 	}
 
 	return nil

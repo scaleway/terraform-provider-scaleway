@@ -7,16 +7,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
 var (
@@ -123,14 +134,22 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.ResourceData = m
 	resp.DataSourceData = m
 	resp.ActionData = m
+	resp.EphemeralResourceData = m
 }
 
-func (p *ScalewayProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
-	return []func() ephemeral.EphemeralResource{}
+	return []func() ephemeral.EphemeralResource{
+		keymanager.NewDecryptEphemeralResource,
+		keymanager.NewEncryptEphemeralResource,
+		keymanager.NewGenerateDataKeyEphemeralResource,
+		keymanager.NewSignEphemeralResource,
+		iam.NewApiKeyEphemeralResource,
+		secret.NewVersionEphemeralResource,
+	}
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
@@ -138,16 +157,37 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
-	var res []func() action.Action
-
-	res = append(res, instance.NewServerAction)
-	res = append(res, cockpit.NewTriggerTestAlertAction)
-	res = append(res, jobs.NewStartJobDefinitionAction)
-	res = append(res, keymanager.NewRotateKeyAction)
-
-	return res
+	return []func() action.Action{
+		applesilicon.NewRebootServerAction,
+		baremetal.NewBaremetalServerAction,
+		block.NewExportSnapshot,
+		cockpit.NewTriggerTestAlertAction,
+		instance.NewCreateSnapshot,
+		instance.NewExportSnapshot,
+		instance.NewServerAction,
+		jobs.NewStartJobDefinitionAction,
+		keymanager.NewRotateKeyAction,
+		mongodb.NewInstanceSnapshotAction,
+		rdb.NewDatabaseBackupExportAction,
+		rdb.NewDatabaseBackupRestoreAction,
+		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceLogPrepareAction,
+		rdb.NewInstanceLogsPurgeAction,
+		rdb.NewInstanceSnapshotAction,
+		rdb.NewReadReplicaPromoteAction,
+		rdb.NewReadReplicaResetAction,
+		s2svpn.NewConnectionEnableRoutePropagationAction,
+		s2svpn.NewConnectionDisableRoutePropagationAction,
+		vpcgw.NewRefreshSSHKeysAction,
+	}
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{}
+}
+
+func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
+	return []func() function.Function{
+		functions.NewRegionFromID,
+	}
 }

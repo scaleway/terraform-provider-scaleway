@@ -657,9 +657,42 @@ func normalizeRecordName(name, dnsZone string) string {
 	}
 
 	suffix := "." + dnsZone
-	if strings.HasSuffix(name, suffix) {
-		return strings.TrimSuffix(name, suffix)
+	if before, ok := strings.CutSuffix(name, suffix); ok {
+		return before
 	}
 
 	return name
+}
+
+func NormalizeRecordData(data string, recordType domain.RecordType, dnsZone string) string {
+	data = strings.TrimSpace(data)
+	if data == "" {
+		return ""
+	}
+
+	switch recordType {
+	case domain.RecordTypeCNAME, domain.RecordTypeNS, domain.RecordTypeMX:
+		return NormalizeTargetFQDN(data, dnsZone)
+	default:
+		return data
+	}
+}
+
+func NormalizeTargetFQDN(target, dnsZone string) string {
+	target = strings.TrimSpace(target)
+	if target == "" || target == "@" {
+		return ""
+	}
+
+	target = strings.ToLower(target)
+	dnsZone = strings.ToLower(strings.TrimSpace(dnsZone))
+
+	target = strings.TrimRight(target, ".")
+	dnsZone = strings.TrimRight(dnsZone, ".")
+
+	if strings.Contains(target, ".") {
+		return target + "."
+	}
+
+	return fmt.Sprintf("%s.%s.", target, dnsZone)
 }
