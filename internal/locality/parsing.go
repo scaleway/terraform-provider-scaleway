@@ -1,6 +1,7 @@
 package locality
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -65,12 +66,11 @@ func CompareLocalities(loc1, loc2 string) bool {
 
 // ExtractUUID takes an ID of any form, localized or not, and returns only the UUID part.
 func ExtractUUID(inputID string) (string, error) {
-	tab := strings.Split(inputID, "/")
-	for _, section := range tab {
+	for section := range strings.SplitSeq(inputID, "/") {
 		if validation.IsUUID(section) {
 			return section, nil
 		}
 	}
 
-	return "", fmt.Errorf("input ID did not contain any UUID")
+	return "", errors.New("input ID did not contain any UUID")
 }
