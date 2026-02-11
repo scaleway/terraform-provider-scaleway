@@ -176,7 +176,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_edge_services_route_stage",
 		"scaleway_edge_services_tls_stage",
 		"scaleway_edge_services_waf_stage",
-		"scaleway_file_filesystem",
 		"scaleway_flexible_ip",
 		"scaleway_flexible_ip_mac_address",
 		"scaleway_function",

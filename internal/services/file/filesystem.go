@@ -10,6 +10,7 @@ import (
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -32,6 +33,7 @@ func ResourceFileSystem() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    fileSystemSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -103,14 +105,17 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any
 		req.Size = sizeInBytes
 	}
 
-	file, err := api.CreateFileSystem(req, scw.WithContext(ctx))
+	fileSystem, err := api.CreateFileSystem(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, file.ID))
+	err = identity.SetRegionalIdentity(d, fileSystem.Region, fileSystem.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = waitForFileSystem(ctx, api, region, file.ID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForFileSystem(ctx, api, region, fileSystem.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -135,6 +140,17 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	err = identity.SetRegionalIdentity(d, fileSystem.Region, fileSystem.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	setFileSystemState(d, fileSystem)
+
+	return nil
+}
+
+func setFileSystemState(d *schema.ResourceData, fileSystem *file.FileSystem) {
 	_ = d.Set("name", fileSystem.Name)
 	_ = d.Set("project_id", fileSystem.ProjectID)
 	_ = d.Set("region", fileSystem.Region)
@@ -145,8 +161,6 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("number_of_attachments", int64(fileSystem.NumberOfAttachments))
-
-	return nil
 }
 
 func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
