@@ -70,6 +70,11 @@ func TestAccUser_Member(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_user.member_user", "type", "member"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_user.member_user",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

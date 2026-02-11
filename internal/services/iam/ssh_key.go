@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"golang.org/x/crypto/ssh"
@@ -26,6 +27,7 @@ func ResourceSSKKey() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    sshKeySchema,
+		Identity:      identity.FlatIdentity("id", "SSH key UUID"),
 	}
 }
 
@@ -110,7 +112,10 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetFlatIdentity(d, "id", res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamSSHKeyRead(ctx, d, m)
 }

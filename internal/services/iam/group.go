@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -24,6 +25,7 @@ func ResourceGroup() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    groupSchema,
+		Identity:      identity.FlatIdentity("id", "Group UUID"),
 	}
 }
 
@@ -135,6 +137,12 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	setGroupState(d, group)
+
+	return nil
+}
+
+func setGroupState(d *schema.ResourceData, group *iam.Group) {
 	_ = d.Set("name", group.Name)
 	_ = d.Set("description", group.Description)
 	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
@@ -146,8 +154,6 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) di
 		_ = d.Set("user_ids", group.UserIDs)
 		_ = d.Set("application_ids", group.ApplicationIDs)
 	}
-
-	return nil
 }
 
 func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

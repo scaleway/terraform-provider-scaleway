@@ -83,6 +83,11 @@ func TestAccPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
