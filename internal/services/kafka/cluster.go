@@ -251,7 +251,9 @@ func resourceClusterCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	identity.SetRegionalIdentity(d, region, cluster.ID)
+	if err := identity.SetRegionalIdentity(d, region, cluster.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceClusterRead(ctx, d, meta)
 }
@@ -282,7 +284,9 @@ func resourceClusterRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	diags := setClusterState(d, cluster)
-	identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err := identity.SetRegionalIdentity(d, cluster.Region, cluster.ID); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
 
 	return diags
 }
