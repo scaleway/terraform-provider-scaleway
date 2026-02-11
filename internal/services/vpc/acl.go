@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -24,6 +25,7 @@ func ResourceACL() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -135,7 +137,10 @@ func ResourceVPCACLCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, regional.ExpandID(d.Get("vpc_id").(string)).ID))
+	err = identity.SetRegionalIdentity(d, region, regional.ExpandID(d.Get("vpc_id").(string)).ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCACLRead(ctx, d, m)
 }
@@ -163,6 +168,11 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_ = d.Set("rules", flattenACLRules(acl.Rules))
 	_ = d.Set("default_policy", acl.DefaultPolicy.String())
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

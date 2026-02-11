@@ -101,14 +101,13 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceVPCRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read VPC")...)
+	res, err := vpcAPI.GetVPC(&vpc.GetVPCRequest{
+		Region: region,
+		VpcID:  regional.ExpandID(vpcID).ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("VPC (%s) not found", regionalID)
-	}
-
-	return nil
+	return setVPCState(d, res, region)
 }
