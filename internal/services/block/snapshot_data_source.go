@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -72,14 +73,20 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceBlockSnapshotRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read snapshot state")...)
+	// Wait for the snapshot and use it to set the state
+	snapshot, err := waitForBlockSnapshot(ctx, api, zone, snapshotID.(string), d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("snapshot (%s) not found", zoneID)
-	}
+	// Set the state using the snapshot from waitForBlockSnapshot
+	setSnapshotState(d, snapshot)
 
 	return nil
 }
