@@ -112,6 +112,11 @@ func TestAccServer_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -175,7 +180,6 @@ apt_upgrade: true
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
 				),
 			},
-
 			{
 				// Update cloud-init + reinstall
 				Config: fmt.Sprintf(`
@@ -225,6 +229,11 @@ EOF
 					),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -345,6 +354,11 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "os"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -402,6 +416,11 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -453,6 +472,11 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.TP", "service_user"),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.TP", "ssh_key_ids.0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.TP",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -518,6 +542,11 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "ipv6.#", "1"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "ipv6.0.version", "IPv6"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -609,6 +638,11 @@ func TestAccServer_AddOption(t *testing.T) {
 					testAccCheckBaremetalServerHasOptions(tt, "scaleway_baremetal_server.base"),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "options.0.id", "data.scaleway_baremetal_option.private_network", "option_id"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -991,6 +1025,11 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "private_network.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -1115,6 +1154,11 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn", "id"),
 					resource.TestCheckTypeSetElemAttrPair("scaleway_baremetal_server.base", "private_network.*.id", "scaleway_vpc_private_network.pn2", "id"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -1295,6 +1339,11 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 					testIPAMIPs(tt, "scaleway_ipam_ip", "data.scaleway_ipam_ips.base"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -1387,6 +1436,11 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.server01", "zone", Zone),
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.server01", "offer_id", "data.scaleway_baremetal_offer.my_offer", "offer_id"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_baremetal_server.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
