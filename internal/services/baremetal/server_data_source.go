@@ -2,12 +2,18 @@ package baremetal
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
+	baremetalV3 "github.com/scaleway/scaleway-sdk-go/api/baremetal/v3"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -73,7 +79,97 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceServerRead(ctx, d, m)
+	server, err := api.GetServer(&baremetal.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID.(string),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	offer, err := api.GetOffer(&baremetal.GetOfferRequest{
+		Zone:    server.Zone,
+		OfferID: server.OfferID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var os *baremetal.OS
+	if server.Install != nil {
+		os, err = api.GetOS(&baremetal.GetOSRequest{
+			Zone: server.Zone,
+			OsID: server.Install.OsID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	privateNetworkAPI, _, err := newPrivateNetworkAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&baremetalV3.PrivateNetworkAPIListServerPrivateNetworksRequest{
+		Zone:     server.Zone,
+		ServerID: &server.ID,
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to list server's private networks: %w", err))
+	}
+
+	privateNetworkIDs := make([]string, 0, listPrivateNetworks.TotalCount)
+	for _, pn := range listPrivateNetworks.ServerPrivateNetworks {
+		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
+	}
+
+	// Read private IPs if possible
+	allPrivateIPs := make([]map[string]any, 0, listPrivateNetworks.TotalCount)
+	diags := diag.Diagnostics{}
+
+	pnRegion, err := server.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for _, privateNetworkID := range privateNetworkIDs {
+		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType:     &resourceType,
+			PrivateNetworkID: &privateNetworkID,
+			ProjectID:        &server.ProjectID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pnRegion, opts)
+
+		switch {
+		case err == nil:
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		case httperrors.Is403(err):
+			return append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       "Unauthorized to read server's private IPs, please check your IAM permissions",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		default:
+			diags = append(diags, diag.Diagnostic{
+				Severity:      diag.Warning,
+				Summary:       fmt.Sprintf("Unable to get private IPs for server %s (pn_id: %s)", server.ID, privateNetworkID),
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("private_ips"),
+			})
+		}
+	}
+
+	diags = setServerState(d, server, offer, os, listPrivateNetworks, allPrivateIPs)
 	if diags != nil {
 		return diags
 	}

@@ -147,7 +147,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_autoscaling_instance_group",
 		"scaleway_autoscaling_instance_policy",
 		"scaleway_autoscaling_instance_template",
-		"scaleway_baremetal_server",
 		"scaleway_block_snapshot",
 		"scaleway_block_volume",
 		"scaleway_cockpit",
