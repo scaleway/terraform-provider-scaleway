@@ -46,6 +46,12 @@ func TestAccVolume_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_volume.test", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_volume.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"migrate_to_sbs"},
+			},
 		},
 	})
 }
@@ -188,6 +194,12 @@ func TestAccVolume_Scratch(t *testing.T) {
 						type       = "scratch"
 						size_in_gb = 20
 					}`,
+			},
+			{
+				ResourceName:            "scaleway_instance_volume.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"migrate_to_sbs"},
 			},
 		},
 	})
