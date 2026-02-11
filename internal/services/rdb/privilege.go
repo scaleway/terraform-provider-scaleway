@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -39,6 +40,7 @@ func ResourcePrivilege() *schema.Resource {
 		},
 		SchemaFunc:    privilegeSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -122,7 +124,10 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
+	compositeID := locality.ExpandID(instanceID) + "/" + databaseName + "/" + userName
+	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
@@ -192,7 +197,12 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("user_name", privilege.UserName)
 	_ = d.Set("permission", privilege.Permission)
 	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("region", region)
+	_ = d.Set("region", string(region))
+
+	compositeID := instanceID + "/" + databaseName + "/" + userName
+	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
