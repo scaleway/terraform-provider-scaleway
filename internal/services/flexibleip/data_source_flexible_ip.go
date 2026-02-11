@@ -8,6 +8,7 @@ import (
 	flexibleip "github.com/scaleway/scaleway-sdk-go/api/flexibleip/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -84,10 +85,27 @@ func DataSourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceFlexibleIPRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read flexible ip state")...)
+	_, err = waitFlexibleIP(ctx, fipAPI, zone, zoneID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		return diag.FromErr(err)
 	}
+
+	flexibleIP, err := fipAPI.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+		Zone:  zone,
+		FipID: zoneID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		// We check for 403 because flexible API returns 403 for a deleted IP
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	setIpState(d, flexibleIP)
 
 	if d.Id() == "" {
 		return diag.Errorf("flexible ip (%s) not found", ipID)
