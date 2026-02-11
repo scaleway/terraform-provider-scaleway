@@ -140,6 +140,7 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	identity.SetRegionalIdentity(d, fileSystem.Region, fileSystem.ID)
 	setFileSystemState(d, fileSystem)
 
 	return nil
