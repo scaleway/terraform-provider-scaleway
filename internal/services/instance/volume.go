@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -37,6 +38,7 @@ func ResourceVolume() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
 		SchemaFunc:    volumeSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: cdf.LocalityCheck("from_snapshot_id"),
 	}
 }
@@ -127,9 +129,12 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
+	err = identity.SetZonalIdentity(d, zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
+	volume, err := instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
@@ -139,7 +144,40 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceVolumeRead(ctx, d, m)
+	return setVolumeState(d, volume)
+}
+
+func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume) diag.Diagnostics {
+	_ = d.Set("name", volume.Name)
+	_ = d.Set("organization_id", volume.Organization)
+	_ = d.Set("project_id", volume.Project)
+	_ = d.Set("zone", volume.Zone)
+	_ = d.Set("type", volume.VolumeType.String())
+	_ = d.Set("tags", volume.Tags)
+
+	_, fromSnapshot := d.GetOk("from_snapshot_id")
+	if !fromSnapshot {
+		_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
+	}
+
+	if volume.Server != nil {
+		_ = d.Set("server_id", volume.Server.ID)
+	} else {
+		_ = d.Set("server_id", nil)
+	}
+
+	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Volume type `b_ssd` is deprecated",
+				Detail:        "If you want to migrate existing volumes, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
+	}
+
+	return nil
 }
 
 func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -166,36 +204,12 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(fmt.Errorf("couldn't read volume: %w", err))
 	}
 
-	_ = d.Set("name", res.Volume.Name)
-	_ = d.Set("organization_id", res.Volume.Organization)
-	_ = d.Set("project_id", res.Volume.Project)
-	_ = d.Set("zone", string(zone))
-	_ = d.Set("type", res.Volume.VolumeType.String())
-	_ = d.Set("tags", res.Volume.Tags)
-
-	_, fromSnapshot := d.GetOk("from_snapshot_id")
-	if !fromSnapshot {
-		_ = d.Set("size_in_gb", int(res.Volume.Size/scw.GB))
+	err = identity.SetZonalIdentity(d, zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if res.Volume.Server != nil {
-		_ = d.Set("server_id", res.Volume.Server.ID)
-	} else {
-		_ = d.Set("server_id", nil)
-	}
-
-	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
-		return diag.Diagnostics{
-			{
-				Severity:      diag.Warning,
-				Summary:       "Volume type `b_ssd` is deprecated",
-				Detail:        "If you want to migrate existing volumes, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
-				AttributePath: cty.GetAttrPath("type"),
-			},
-		}
-	}
-
-	return nil
+	return setVolumeState(d, res.Volume)
 }
 
 func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
