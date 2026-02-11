@@ -50,6 +50,11 @@ func TestAccSSHKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -76,6 +81,11 @@ func TestAccSSHKey_WithNewLine(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -116,6 +126,11 @@ func TestAccSSHKey_ChangeResourceName(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "name", name),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.second", "public_key", SSHKeyWithoutComment),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_ssh_key.second",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -174,6 +189,11 @@ func TestAccSSHKey_Disabled(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "disabled", "false"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

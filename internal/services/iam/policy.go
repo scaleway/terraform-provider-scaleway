@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -25,6 +26,7 @@ func ResourcePolicy() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    policySchema,
+		Identity:      identity.FlatIdentity("id", "Policy UUID"),
 	}
 }
 
@@ -158,7 +160,7 @@ func resourceIamPolicyCreate(ctx context.Context, d *schema.ResourceData, m any)
 func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
-	pol, err := api.GetPolicy(&iam.GetPolicyRequest{
+	policy, err := api.GetPolicy(&iam.GetPolicyRequest{
 		PolicyID: d.Id(),
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -171,38 +173,42 @@ func resourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", pol.Name)
-	_ = d.Set("description", pol.Description)
-	_ = d.Set("created_at", types.FlattenTime(pol.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(pol.UpdatedAt))
-	_ = d.Set("organization_id", pol.OrganizationID)
-	_ = d.Set("editable", pol.Editable)
-	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
-
-	if pol.UserID != nil {
-		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))
-	}
-
-	if pol.GroupID != nil {
-		_ = d.Set("group_id", types.FlattenStringPtr(pol.GroupID))
-	}
-
-	if pol.ApplicationID != nil {
-		_ = d.Set("application_id", types.FlattenStringPtr(pol.ApplicationID))
-	}
-
-	_ = d.Set("no_principal", types.FlattenBoolPtr(pol.NoPrincipal))
-
-	listRules, err := api.ListRules(&iam.ListRulesRequest{
-		PolicyID: pol.ID,
+	rules, err := api.ListRules(&iam.ListRulesRequest{
+		PolicyID: policy.ID,
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to list policy's rules: %w", err))
 	}
 
-	_ = d.Set("rule", flattenPolicyRules(listRules.Rules))
+	setPolicyState(d, policy, rules)
 
 	return nil
+}
+
+func setPolicyState(d *schema.ResourceData, policy *iam.Policy, rules *iam.ListRulesResponse) {
+	_ = d.Set("name", policy.Name)
+	_ = d.Set("description", policy.Description)
+	_ = d.Set("created_at", types.FlattenTime(policy.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(policy.UpdatedAt))
+	_ = d.Set("organization_id", policy.OrganizationID)
+	_ = d.Set("editable", policy.Editable)
+	_ = d.Set("tags", types.FlattenSliceString(policy.Tags))
+
+	if policy.UserID != nil {
+		_ = d.Set("user_id", types.FlattenStringPtr(policy.UserID))
+	}
+
+	if policy.GroupID != nil {
+		_ = d.Set("group_id", types.FlattenStringPtr(policy.GroupID))
+	}
+
+	if policy.ApplicationID != nil {
+		_ = d.Set("application_id", types.FlattenStringPtr(policy.ApplicationID))
+	}
+
+	_ = d.Set("no_principal", types.FlattenBoolPtr(policy.NoPrincipal))
+
+	_ = d.Set("rule", flattenPolicyRules(rules.Rules))
 }
 
 func resourceIamPolicyUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

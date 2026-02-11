@@ -99,6 +99,11 @@ func TestAccGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_basic", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_group.main_basic",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -198,6 +203,11 @@ func TestAccGroup_Applications(t *testing.T) {
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_app", "application_ids.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_group.main_app",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -289,6 +299,11 @@ func TestAccGroup_Users(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_user", "user_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_user", "user_ids.0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_group.main_user",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -458,6 +473,11 @@ func TestAccGroup_UsersAndApplications(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_group.main_mix", "user_ids.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_iam_group.main_mix", "user_ids.0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_group.main_mix",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

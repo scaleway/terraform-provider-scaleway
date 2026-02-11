@@ -33,6 +33,16 @@ func DefaultRegional() *schema.ResourceIdentity {
 	})
 }
 
+func FlatIdentity(key, description string) *schema.ResourceIdentity {
+	return WrapSchemaMap(map[string]*schema.Schema{
+		key: {
+			Type:              schema.TypeString,
+			Description:       description,
+			RequiredForImport: true,
+		},
+	})
+}
+
 func WrapSchemaMap(m map[string]*schema.Schema) *schema.ResourceIdentity {
 	return &schema.ResourceIdentity{
 		SchemaFunc: func() map[string]*schema.Schema {
