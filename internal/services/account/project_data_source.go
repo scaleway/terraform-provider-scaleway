@@ -9,6 +9,7 @@ import (
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -79,10 +80,20 @@ func DataSourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(projectID)
 	_ = d.Set("project_id", projectID)
 
-	diags := resourceAccountProjectRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read account project")...)
+	res, err := accountAPI.GetProject(&accountSDK.ProjectAPIGetProjectRequest{
+		ProjectID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
+
+	setProjectState(d, res)
 
 	if d.Id() == "" {
 		return diag.Errorf("account project (%s) not found", projectID)
