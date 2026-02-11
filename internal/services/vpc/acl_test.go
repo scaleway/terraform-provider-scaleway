@@ -57,6 +57,12 @@ func TestAccACL_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "default_policy", "drop"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_vpc_acl.acl01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"vpc_id", "is_ipv6"},
+			},
 		},
 	})
 }

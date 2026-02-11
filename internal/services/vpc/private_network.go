@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -32,6 +33,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
 		},
 		SchemaFunc: privateNetworkSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -232,7 +234,10 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
@@ -257,6 +262,17 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	diags := setPrivateNetworkState(d, m, pn, region)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork, region scw.Region) diag.Diagnostics {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)

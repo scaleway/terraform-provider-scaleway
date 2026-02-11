@@ -33,6 +33,11 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_custom_routes_propagation", "true"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc.vpc01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

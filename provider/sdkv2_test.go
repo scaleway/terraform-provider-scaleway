@@ -263,17 +263,13 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_tem_domain_validation",
 		"scaleway_tem_blocked_list",
 		"scaleway_tem_webhook",
-		"scaleway_vpc",
-		"scaleway_vpc_acl",
 		"scaleway_vpc_gateway_network",
-		"scaleway_vpc_private_network",
 		"scaleway_vpc_public_gateway",
 		"scaleway_vpc_public_gateway_dhcp",
 		"scaleway_vpc_public_gateway_dhcp_reservation",
 		"scaleway_vpc_public_gateway_ip",
 		"scaleway_vpc_public_gateway_ip_reverse_dns",
 		"scaleway_vpc_public_gateway_pat_rule",
-		"scaleway_vpc_route",
 		"scaleway_webhosting",
 	}
 
