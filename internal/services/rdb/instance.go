@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -49,6 +50,7 @@ func ResourceInstance() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    instanceSchema,
 		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -468,7 +470,9 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
 		id = res.ID
 	} else {
 		var password string
@@ -529,7 +533,9 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
 		id = res.ID
 	}
 
@@ -848,6 +854,10 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		_ = d.Set("load_balancer", lbI)
 	}
 
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+
 	return diags
 }
 
@@ -1030,7 +1040,9 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
