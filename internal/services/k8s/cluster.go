@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -54,6 +55,7 @@ func ResourceCluster() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 				autoUpgradeEnable, okAutoUpgradeEnable := diff.GetOkExists("auto_upgrade.0.enable")
@@ -571,7 +573,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 		return append(diag.FromErr(err), diags...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if strings.Contains(clusterType.(string), "multicloud") {
 		// In case of multi-cloud, we do not have the guarantee that a pool will be created in Scaleway.
@@ -608,7 +613,21 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("region", string(region))
+	diagnostics := setClusterState(ctx, d, cluster, k8sAPI)
+	if diagnostics.HasError() {
+		return diagnostics
+	}
+
+	err = identity.SetRegionalIdentity(d, cluster.Region, cluster.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.Cluster, k8sAPI *k8s.API) diag.Diagnostics {
+	_ = d.Set("region", cluster.Region)
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("type", cluster.Type)
 	_ = d.Set("organization_id", cluster.OrganizationID)
@@ -628,6 +647,8 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	// if autoupgrade is enabled, we only set the minor k8s version (x.y)
 	version := cluster.Version
+
+	var err error
 	if cluster.AutoUpgrade != nil && cluster.AutoUpgrade.Enabled {
 		version, err = GetMinorVersionFromFull(version)
 		if err != nil {
@@ -653,15 +674,17 @@ func ResourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any) 
 	////
 	// Read kubeconfig
 	////
-	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, region, clusterID)
+	kubeconfig, err := flattenKubeconfig(ctx, k8sAPI, cluster.Region, cluster.ID)
 	if err != nil {
 		if httperrors.Is403(err) {
-			return diag.Diagnostics{diag.Diagnostic{
-				Severity:      diag.Warning,
-				Summary:       "Cannot read kubeconfig: unauthorized",
-				Detail:        "Got 403 while reading kubeconfig, please check your permissions",
-				AttributePath: cty.GetAttrPath("kubeconfig"),
-			}}
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Cannot read kubeconfig: unauthorized",
+					Detail:        "Got 403 while reading kubeconfig, please check your permissions",
+					AttributePath: cty.GetAttrPath("kubeconfig"),
+				},
+			}
 		}
 
 		return diag.FromErr(err)

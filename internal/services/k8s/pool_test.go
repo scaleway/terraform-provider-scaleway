@@ -90,6 +90,12 @@ func TestAccPool_Basic(t *testing.T) {
 					testAccCheckK8SPoolServersAreInPrivateNetwork(tt, "scaleway_k8s_cluster.minimal", "scaleway_k8s_pool.default", "scaleway_vpc_private_network.minimal"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_k8s_pool.default",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"wait_for_pool_ready", "size"},
+			},
 		},
 	})
 }
