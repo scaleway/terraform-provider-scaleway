@@ -41,6 +41,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
@@ -222,6 +223,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mongodb_snapshot":                    mongodb.ResourceSnapshot(),
 				"scaleway_mongodb_user":                        mongodb.ResourceUser(),
 				"scaleway_object":                              object.ResourceObject(),
+				"scaleway_opensearch_deployment":               opensearch.ResourceDeployment(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":    object.ResourceLockConfiguration(),
