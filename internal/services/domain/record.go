@@ -98,7 +98,7 @@ func recordSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The data of the record",
 			Required:    true,
-			// NOTE: For CNAME/NS/MX records, the Scaleway API normalizes the "data" field to an absolute FQDN with a trailing dot. Example:
+			// NOTE: For CNAME/NS/MX/SRV records, the Scaleway API normalizes the "data" field to an absolute FQDN with a trailing dot. Example:
 			//
 			//   config: data = "www"
 			//   API/state: data = "www.scaleway-terraform.com."
@@ -323,7 +323,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType, dnsZone).(string), dnsZoneData.Records, dnsZone)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -436,7 +436,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", FlattenDomainData(record.Data, record.Type).(string))
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
