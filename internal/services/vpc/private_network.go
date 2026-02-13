@@ -306,7 +306,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
 		PrivateNetworkID:               ID,
 		Region:                         region,
-		Name:                           scw.StringPtr(d.Get("name").(string)),
+		Name:                           new(d.Get("name").(string)),
 		Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
 		DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 	}, scw.WithContext(ctx))

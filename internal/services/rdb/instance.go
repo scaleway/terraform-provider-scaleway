@@ -542,14 +542,14 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
-		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
-			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+			updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
 		}
 
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
-			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+			updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
 		}
 
 		mustUpdate = true
@@ -904,7 +904,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					rdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
-						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
+						VolumeSize: new(newSize * uint64(scw.GB)),
 					})
 			}
 		case rdb.VolumeTypeLssd:
@@ -952,7 +952,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
 			})
 	}
 
@@ -979,7 +979,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:           region,
 				InstanceID:       ID,
-				EnableEncryption: scw.BoolPtr(newValue.(bool)),
+				EnableEncryption: new(newValue.(bool)),
 			})
 	}
 
@@ -1051,7 +1051,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 						Region:     region,
 						InstanceID: oldInstanceID,
-						Timeout:    scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
 					}, scw.WithContext(ctx))
 					if err != nil && !httperrors.Is404(err) {
 						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
@@ -1079,15 +1079,15 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("disable_backup") {
-		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		req.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 	}
 
 	if d.HasChange("backup_schedule_frequency") {
-		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+		req.BackupScheduleFrequency = new(uint32(d.Get("backup_schedule_frequency").(int)))
 	}
 
 	if d.HasChange("backup_schedule_retention") {
-		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+		req.BackupScheduleRetention = new(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 
 	if d.HasChange("backup_same_region") {

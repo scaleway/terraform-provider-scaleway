@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -115,7 +114,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	}
 
 	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
+		Bucket: new(bucket),
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
@@ -149,7 +148,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	// expectedBucketOwner and routing not supported
 
 	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
+		Bucket: new(bucket),
 	})
 	if err != nil {
 		if IsS3Err(err, ErrCodeNoSuchBucket, "") {

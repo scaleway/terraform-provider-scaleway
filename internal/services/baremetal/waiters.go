@@ -19,7 +19,7 @@ func waitForServer(ctx context.Context, api *baremetal.API, zone scw.Zone, serve
 	server, err := api.WaitForServer(&baremetal.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      serverID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -35,7 +35,7 @@ func waitForServerInstall(ctx context.Context, api *baremetal.API, zone scw.Zone
 	server, err := api.WaitForServerInstall(&baremetal.WaitForServerInstallRequest{
 		Zone:          zone,
 		ServerID:      serverID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -51,7 +51,7 @@ func waitForServerOptions(ctx context.Context, api *baremetal.API, zone scw.Zone
 	server, err := api.WaitForServerOptions(&baremetal.WaitForServerOptionsRequest{
 		Zone:          zone,
 		ServerID:      serverID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -67,7 +67,7 @@ func waitForServerPrivateNetwork(ctx context.Context, api *baremetalV3.PrivateNe
 	serverPrivateNetwork, err := api.WaitForServerPrivateNetworks(&baremetalV3.WaitForServerPrivateNetworksRequest{
 		Zone:          zone,
 		ServerID:      serverID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

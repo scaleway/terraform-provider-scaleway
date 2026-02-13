@@ -19,7 +19,7 @@ func waitForDeployment(ctx context.Context, inferenceAPI *inference.API, region 
 		Region:        region,
 		DeploymentID:  id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return deployment, err
@@ -35,7 +35,7 @@ func waitForModel(ctx context.Context, inferenceAPI *inference.API, region scw.R
 		ModelID:       id,
 		Region:        region,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return model, err

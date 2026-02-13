@@ -320,7 +320,7 @@ func TestAccActionServer_Backup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
 					checkImage(tt, "scaleway_instance_server.main", imageSpecsCheck{
-						RootVolumeSize: scw.SizePtr(scw.Size(uint64(rootVolumeSize)) * scw.GB),
+						RootVolumeSize: new(scw.Size(uint64(rootVolumeSize)) * scw.GB),
 						RootVolumeType: &rootVolumeType,
 					}),
 				),

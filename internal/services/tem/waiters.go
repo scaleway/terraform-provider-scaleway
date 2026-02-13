@@ -19,7 +19,7 @@ func WaitForDomain(ctx context.Context, api *tem.API, region scw.Region, id stri
 		Region:        region,
 		DomainID:      id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return domain, err

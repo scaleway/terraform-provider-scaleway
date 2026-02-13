@@ -200,7 +200,7 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
 		ProjectID:       projectID,
-		IsPreconfigured: scw.BoolPtr(true),
+		IsPreconfigured: new(true),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)

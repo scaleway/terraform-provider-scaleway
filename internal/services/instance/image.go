@@ -227,7 +227,7 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		ImageID:       res.Image.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

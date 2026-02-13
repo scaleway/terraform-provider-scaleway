@@ -25,7 +25,7 @@ func ExpandStringPtr(data any) *string {
 		return nil
 	}
 
-	return scw.StringPtr(data.(string))
+	return new(data.(string))
 }
 
 // NewRandomName returns a random name prefixed for terraform.

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -243,11 +242,11 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	req := &s3.CreateBucketInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	}
 
 	if v, ok := d.GetOk("object_lock_enabled"); ok {
-		req.ObjectLockEnabledForBucket = scw.BoolPtr(v.(bool))
+		req.ObjectLockEnabledForBucket = new(v.(bool))
 	}
 
 	_, err = s3Client.CreateBucket(ctx, req)
@@ -270,7 +269,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	if len(tagsSet) > 0 {
 		_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			Tagging: &s3Types.Tagging{
 				TagSet: tagsSet,
 			},
@@ -293,7 +292,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m a
 		acl := d.Get("acl").(string)
 
 		_, err := s3Client.PutBucketAcl(ctx, &s3.PutBucketAclInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			ACL:    s3Types.BucketCannedACL(acl),
 		})
 		if err != nil {
@@ -316,14 +315,14 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 		if len(tagsSet) > 0 {
 			_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
-				Bucket: scw.StringPtr(bucketName),
+				Bucket: new(bucketName),
 				Tagging: &s3Types.Tagging{
 					TagSet: tagsSet,
 				},
 			})
 		} else {
 			_, err = s3Client.DeleteBucketTagging(ctx, &s3.DeleteBucketTaggingInput{
-				Bucket: scw.StringPtr(bucketName),
+				Bucket: new(bucketName),
 			})
 		}
 
@@ -528,7 +527,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
 	_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
@@ -541,7 +540,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	var tagsSet []s3Types.Tag
 
 	tagsResponse, err := s3Client.GetBucketTagging(ctx, &s3.GetBucketTaggingInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
@@ -560,7 +559,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 
 	if err != nil && !IsS3Err(err, ErrCodeNoSuchCORSConfiguration, "The CORS configuration does not exist") {
@@ -571,7 +570,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
@@ -585,7 +584,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	// Read the lifecycle configuration
 	lifecycle, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
@@ -703,7 +702,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	_, err = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		var noSuchBucket *s3Types.NoSuchBucket
@@ -738,7 +737,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 	vc := expandObjectBucketVersioning(v)
 
 	i := &s3.PutBucketVersioningInput{
-		Bucket:                  scw.StringPtr(bucketName),
+		Bucket:                  new(bucketName),
 		VersioningConfiguration: vc,
 	}
 	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
@@ -760,7 +759,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
 
 		_, err := s3conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			return fmt.Errorf("error deleting S3 CORS: %w", err)
@@ -769,7 +768,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 		// Put CORS
 		rules := expandBucketCORS(ctx, rawCors, bucketName)
 		corsInput := &s3.PutBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			CORSConfiguration: &s3Types.CORSConfiguration{
 				CORSRules: rules,
 			},

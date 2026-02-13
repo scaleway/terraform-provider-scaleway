@@ -298,7 +298,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 				},
 			},
 		},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -464,7 +464,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	dnsZone := d.Get("dns_zone").(string)
 	req := &domain.UpdateDNSZoneRecordsRequest{
 		DNSZone:          dnsZone,
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	}
 
 	geoIP, okGeoIP := d.GetOk("geo_ip")
@@ -487,7 +487,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	req.Changes = []*domain.RecordChange{
 		{
 			Set: &domain.RecordChangeSet{
-				ID:      scw.StringPtr(locality.ExpandID(d.Id())),
+				ID:      new(locality.ExpandID(d.Id())),
 				Records: []*domain.Record{record},
 			},
 		},
@@ -520,7 +520,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 				},
 			},
 		},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	})
 	if err != nil {
 		return diag.FromErr(err)

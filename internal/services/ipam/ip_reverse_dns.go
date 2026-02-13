@@ -75,7 +75,7 @@ func ResourceIPAMIPReverseDNSCreate(ctx context.Context, d *schema.ResourceData,
 	if hostname, ok := d.GetOk("hostname"); ok {
 		reverse := &ipam.Reverse{
 			Hostname: hostname.(string),
-			Address:  scw.IPPtr(net.ParseIP(d.Get("address").(string))),
+			Address:  new(net.ParseIP(d.Get("address").(string))),
 		}
 
 		updateReverseReq := &ipam.UpdateIPRequest{
@@ -139,7 +139,7 @@ func ResourceIPAMIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData,
 	if d.HasChanges("hostname", "address") {
 		reverse := &ipam.Reverse{
 			Hostname: d.Get("hostname").(string),
-			Address:  scw.IPPtr(net.ParseIP(d.Get("address").(string))),
+			Address:  new(net.ParseIP(d.Get("address").(string))),
 		}
 
 		updateReverseReq := &ipam.UpdateIPRequest{

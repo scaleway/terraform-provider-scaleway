@@ -77,8 +77,8 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 
 		snapshots, err := api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
 			Region:     region,
-			InstanceID: scw.StringPtr(id),
-			Name:       scw.StringPtr(snapshotName),
+			InstanceID: new(id),
+			Name:       new(snapshotName),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return fmt.Errorf("failed to list snapshots: %w", err)

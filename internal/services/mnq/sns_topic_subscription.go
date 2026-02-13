@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -181,7 +180,7 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 	}
 
 	subAttributes, err := snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
-		SubscriptionArn: scw.StringPtr(arn.String()),
+		SubscriptionArn: new(arn.String()),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -214,7 +213,7 @@ func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = snsClient.Unsubscribe(ctx, &sns.UnsubscribeInput{
-		SubscriptionArn: scw.StringPtr(arn.String()),
+		SubscriptionArn: new(arn.String()),
 	})
 	if err != nil {
 		return diag.FromErr(err)

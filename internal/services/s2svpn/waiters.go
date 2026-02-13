@@ -23,7 +23,7 @@ func waitForVPNGateway(ctx context.Context, api *s2s_vpn.API, region scw.Region,
 	server, err := api.WaitForVpnGateway(&s2s_vpn.WaitForVpnGatewayRequest{
 		GatewayID:     vpngwID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

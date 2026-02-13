@@ -19,7 +19,7 @@ func waitForNamespace(ctx context.Context, functionAPI *function.API, region scw
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return ns, err
@@ -35,7 +35,7 @@ func waitForFunction(ctx context.Context, functionAPI *function.API, region scw.
 		Region:        region,
 		FunctionID:    id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return f, err
@@ -51,7 +51,7 @@ func waitForCron(ctx context.Context, functionAPI *function.API, region scw.Regi
 		Region:        region,
 		CronID:        cronID,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 }
 
@@ -65,7 +65,7 @@ func waitForDomain(ctx context.Context, functionAPI *function.API, region scw.Re
 		Region:        region,
 		DomainID:      id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return domain, err
@@ -81,7 +81,7 @@ func waitForTrigger(ctx context.Context, functionAPI *function.API, region scw.R
 		Region:        region,
 		TriggerID:     id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return trigger, err

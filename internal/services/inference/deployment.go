@@ -224,15 +224,15 @@ func ResourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if isAcceptingEula, ok := d.GetOk("accept_eula"); ok {
-		req.AcceptEula = scw.BoolPtr(isAcceptingEula.(bool))
+		req.AcceptEula = new(isAcceptingEula.(bool))
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
-		req.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+		req.MinSize = new(uint32(minSize.(int)))
 	}
 
 	if maxSize, ok := d.GetOk("max_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+		req.MaxSize = new(uint32(maxSize.(int)))
 	}
 
 	if quantization, ok := d.GetOk("quantization"); ok {

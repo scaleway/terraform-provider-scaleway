@@ -142,7 +142,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
-		req.VolumeID = scw.StringPtr(zonal.ExpandID(volumeID).ID)
+		req.VolumeID = new(zonal.ExpandID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
@@ -165,7 +165,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		SnapshotID:    res.Snapshot.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -216,13 +216,13 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 	req := &instanceSDK.UpdateSnapshotRequest{
 		SnapshotID: id,
 		Zone:       zone,
-		Name:       scw.StringPtr(d.Get("name").(string)),
-		Tags:       scw.StringsPtr([]string{}),
+		Name:       new(d.Get("name").(string)),
+		Tags:       new([]string{}),
 	}
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))

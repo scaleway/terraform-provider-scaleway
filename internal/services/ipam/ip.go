@@ -203,7 +203,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			}
 		}
 
-		req.Address = scw.IPPtr(parsedIP)
+		req.Address = new(parsedIP)
 	}
 
 	if source, ok := d.GetOk("source"); ok {

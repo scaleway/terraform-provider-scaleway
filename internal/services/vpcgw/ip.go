@@ -90,7 +90,7 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		updateRequest := &vpcgw.UpdateIPRequest{
 			IPID:    res.ID,
 			Zone:    zone,
-			Tags:    scw.StringsPtr(types.ExpandStrings(d.Get("tags"))),
+			Tags:    new(types.ExpandStrings(d.Get("tags"))),
 			Reverse: types.ExpandStringPtr(reverse.(string)),
 		}
 

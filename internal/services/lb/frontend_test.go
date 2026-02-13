@@ -390,7 +390,7 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
 								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
 								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
-								HTTPFilterOption: scw.StringPtr("host"),
+								HTTPFilterOption: new("host"),
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},

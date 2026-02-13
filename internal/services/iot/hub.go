@@ -146,11 +146,11 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if disableEvents, ok := d.GetOk("disable_events"); ok {
-		req.DisableEvents = scw.BoolPtr(disableEvents.(bool))
+		req.DisableEvents = new(disableEvents.(bool))
 	}
 
 	if eventsTopicPrefix, ok := d.GetOk("events_topic_prefix"); ok {
-		req.EventsTopicPrefix = scw.StringPtr(eventsTopicPrefix.(string))
+		req.EventsTopicPrefix = new(eventsTopicPrefix.(string))
 	}
 
 	res, err := iotAPI.CreateHub(req, scw.WithContext(ctx))
@@ -181,7 +181,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	// Now user CA is set, set device auto provisioning if needed.
 	if devProv, ok := d.GetOk("device_autoprovisioning"); ok {
 		_, err = iotAPI.UpdateHub(&iot.UpdateHubRequest{
-			EnableDeviceAutoProvisioning: scw.BoolPtr(devProv.(bool)),
+			EnableDeviceAutoProvisioning: new(devProv.(bool)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -325,7 +325,7 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("product_plan") {
@@ -333,15 +333,15 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("disable_events") {
-		updateRequest.DisableEvents = scw.BoolPtr(d.Get("disable_events").(bool))
+		updateRequest.DisableEvents = new(d.Get("disable_events").(bool))
 	}
 
 	if d.HasChange("events_topic_prefix") {
-		updateRequest.EventsTopicPrefix = scw.StringPtr(d.Get("events_topic_prefix").(string))
+		updateRequest.EventsTopicPrefix = new(d.Get("events_topic_prefix").(string))
 	}
 
 	if d.HasChange("device_auto_provisioning") {
-		updateRequest.EnableDeviceAutoProvisioning = scw.BoolPtr(d.Get("device_auto_provisioning").(bool))
+		updateRequest.EnableDeviceAutoProvisioning = new(d.Get("device_auto_provisioning").(bool))
 	}
 
 	////

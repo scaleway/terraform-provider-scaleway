@@ -5,7 +5,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +32,7 @@ func TestExpandObjectBucketTags(t *testing.T) {
 				"key1": "val1",
 			},
 			want: []s3Types.Tag{
-				{Key: scw.StringPtr("key1"), Value: types.ExpandStringPtr("val1")},
+				{Key: new("key1"), Value: types.ExpandStringPtr("val1")},
 			},
 		},
 		{
@@ -44,9 +43,9 @@ func TestExpandObjectBucketTags(t *testing.T) {
 				"key3": "val3",
 			},
 			want: []s3Types.Tag{
-				{Key: scw.StringPtr("key1"), Value: types.ExpandStringPtr("val1")},
-				{Key: scw.StringPtr("key2"), Value: types.ExpandStringPtr("val2")},
-				{Key: scw.StringPtr("key3"), Value: types.ExpandStringPtr("val3")},
+				{Key: new("key1"), Value: types.ExpandStringPtr("val1")},
+				{Key: new("key2"), Value: types.ExpandStringPtr("val2")},
+				{Key: new("key3"), Value: types.ExpandStringPtr("val3")},
 			},
 		},
 	}

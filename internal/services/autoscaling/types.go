@@ -114,7 +114,7 @@ func expandUpdatePolicyMetric(raw any) *autoscaling.UpdateInstancePolicyRequestM
 		Operator:          autoscaling.UpdateInstancePolicyRequestMetricOperator(rawMap["operator"].(string)),
 		Aggregate:         autoscaling.UpdateInstancePolicyRequestMetricAggregate(rawMap["aggregate"].(string)),
 		SamplingRangeMin:  types.ExpandUint32Ptr(rawMap["sampling_range_min"].(int)),
-		Threshold:         scw.Float32Ptr(float32(rawMap["sampling_threshold"].(int))),
+		Threshold:         new(float32(rawMap["sampling_threshold"].(int))),
 	}
 }
 
@@ -161,7 +161,7 @@ func expandVolumes(rawVols []any) map[string]*autoscaling.VolumeInstanceTemplate
 			}
 
 			if sz, ok := inner["size"].(int); ok && sz > 0 {
-				snapshot.Size = scw.SizePtr(scw.Size(uint64(sz) * uint64(scw.GB)))
+				snapshot.Size = new(scw.Size(uint64(sz) * uint64(scw.GB)))
 			}
 
 			vt.FromSnapshot = snapshot
