@@ -18,7 +18,7 @@ func DataSourceObject() *schema.Resource {
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "bucket", "key")
 
-	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "region", "project_id", "sse_customer_key")
 
 	return &schema.Resource{
 		ReadContext: DataSourceObjectRead,
@@ -51,10 +51,31 @@ func DataSourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	tflog.Debug(ctx, fmt.Sprintf("SCW object read for bucket=%s key=%s", bucket, key))
 
-	_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
+	req := &s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
-	})
+	}
+
+	// Add encryption headers if present (similar to resourceObjectRead)
+	// Only the regular (non Write Only) sse_customer_key can be set.
+	// Data sources cannot read objects encrypted with write-only keys
+	// since the actual key is not available in the data source configuration.
+	// Data sources cannot have WriteOnly attributes. Making it available would
+	// set the key in the state.
+	if encryptionKey, ok := d.GetOk("sse_customer_key"); ok {
+		encryptionKeyStr := encryptionKey.(string)
+
+		digestMD5, encryption, err := EncryptCustomerKey(encryptionKeyStr)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.SSECustomerAlgorithm = aws.String("AES256")
+		req.SSECustomerKeyMD5 = aws.String(digestMD5)
+		req.SSECustomerKey = encryption
+	}
+
+	_, err = s3Client.HeadObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read object %s/%s: %w", bucket, key, err))
 	}
