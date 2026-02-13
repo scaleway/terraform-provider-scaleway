@@ -1,0 +1,62 @@
+---
+subcategory: "S2S VPN"
+page_title: "Scaleway: scaleway_s2s_vpn_gateway"
+---
+
+# scaleway_s2s_vpn_gateway
+
+
+
+For further information refer to the Site-to-Site VPN [API documentation](https://www.scaleway.com/en/developers/api/site-to-site-vpn/).
+
+
+## Example Usage
+
+```terraform
+# Get info by gateway ID
+data "scaleway_s2s_vpn_gateway" "my_gateway" {
+  vpn_gateway_id = "11111111-1111-1111-1111-111111111111"
+}
+```
+
+```terraform
+# Get info by name
+data "scaleway_s2s_vpn_gateway" "my_gateway" {
+  name = "foobar"
+}
+```
+
+
+
+
+## Argument Reference
+
+- `name` - (Optional) The name of the VPN gateway.
+
+- `vpn_gateway_id` - (Optional) The VPN gateway ID.
+
+  -> **Note** You must specify at least one: `name` and/or `vpn_gateway_id`.
+
+- `region` - (Defaults to [provider](../index.md) `region`) The [region](../guides/regions_and_zones.md#regions) in which the VPN gateway exists.
+
+- `project_id` - (Optional) The ID of the project the VPN gateway is associated with.
+
+## Attributes Reference
+
+In addition to all above arguments, the following attributes are exported:
+
+- `id` - The ID of the VPN gateway.
+- `gateway_type` - The VPN gateway type (commercial offer type).
+- `private_network_id` - The ID of the Private Network attached to the VPN gateway.
+- `ipam_private_ipv4_id` - The ID of the IPAM private IPv4 address attached to the VPN gateway.
+- `ipam_private_ipv6_id` - The ID of the IPAM private IPv6 address attached to the VPN gateway.
+- `public_config` - The public endpoint configuration of the VPN gateway.
+- `asn` - The AS Number of the VPN gateway.
+- `status` - The status of the VPN gateway.
+- `zone` - The zone in which the VPN gateway is deployed.
+- `tags` - The tags associated with the VPN gateway.
+- `created_at` - The date and time of creation of the VPN gateway.
+- `updated_at` - The date and time of the last update of the VPN gateway.
+- `organization_id` - The Organization ID the VPN gateway is associated with.
+
+~> **Important:** VPN Gateways IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
