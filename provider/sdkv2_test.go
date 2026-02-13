@@ -290,7 +290,7 @@ func TestSDKProvider_ResourceImporterNotEmpty(t *testing.T) {
 	}
 }
 
-func TestSDKProvider_DataSourceExistForEachDataSource(t *testing.T) {
+func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 	exceptions := []string{
 		"scaleway_apple_silicon_runner",
 		"scaleway_apple_silicon_server",
