@@ -1,6 +1,7 @@
 package applesilicon_test
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -14,8 +15,10 @@ import (
 )
 
 var (
-	githubUrl   = os.Getenv("GITHUB_URL_AS")
-	githubToken = os.Getenv("GITHUB_TOKEN_AS")
+	githubUrl                   = os.Getenv("GITHUB_URL_AS")
+	githubToken                 = os.Getenv("GITHUB_TOKEN_AS")
+	ErrAppleSiliconServerNotFound = errors.New("resource not found")
+	ErrAppleSiliconServerStillExists = errors.New("server still exists")
 )
 
 func TestAccServer_Basic(t *testing.T) {
@@ -377,7 +380,7 @@ func isServerPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", n)
+			return fmt.Errorf("%w: %s", ErrAppleSiliconServerNotFound, n)
 		}
 
 		asAPI, zone, ID, err := applesilicon.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
@@ -416,7 +419,7 @@ func isServerDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			// If no error resource still exist
 			if err == nil {
-				return fmt.Errorf("server (%s) still exists", rs.Primary.ID)
+				return fmt.Errorf("%w (%s)", ErrAppleSiliconServerStillExists, rs.Primary.ID)
 			}
 
 			// Unexpected api error we return it

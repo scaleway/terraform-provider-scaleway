@@ -14,6 +14,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrOSNotFound          = errors.New("no OS found")
+	ErrOSNotFoundWithFilter = errors.New("no OS found with given filter")
+)
+
 func DataSourceOS() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceOSRead,
@@ -76,7 +81,7 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		}
 
 		if res.TotalCount == 0 {
-			return diag.FromErr(errors.New("no OS found: something went wrong when listing OS"))
+			return diag.FromErr(fmt.Errorf("%w: something went wrong when listing OS", ErrOSNotFound))
 		}
 
 		for _, os := range res.Os {
@@ -89,7 +94,8 @@ func DataSourceOSRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 		if osID == "" {
 			return diag.FromErr(fmt.Errorf(
-				"no OS found with name=%q and version=%q in zone %s",
+				"%w with name=%q and version=%q in zone %s",
+				ErrOSNotFoundWithFilter,
 				d.Get("name"),
 				d.Get("version"),
 				zone,

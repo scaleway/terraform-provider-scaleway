@@ -1,15 +1,20 @@
 package locality
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+)
+
+var (
+	ErrInvalidLocalizedID = errors.New("invalid localized ID format")
 )
 
 // ParseLocalizedID parses a localizedID and extracts the resource locality and id.
 func ParseLocalizedID(localizedID string) (locality, id string, err error) {
 	tab := strings.Split(localizedID, "/")
 	if len(tab) != 2 {
-		return "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
+		return "", localizedID, fmt.Errorf("%w: %s", ErrInvalidLocalizedID, localizedID)
 	}
 
 	return tab[0], tab[1], nil
@@ -19,7 +24,7 @@ func ParseLocalizedID(localizedID string) (locality, id string, err error) {
 func ParseLocalizedNestedID(localizedID string) (locality string, innerID, outerID string, err error) {
 	tab := strings.Split(localizedID, "/")
 	if len(tab) < 3 {
-		return "", "", localizedID, fmt.Errorf("cant parse localized id: %s", localizedID)
+		return "", "", localizedID, fmt.Errorf("%w: %s", ErrInvalidLocalizedID, localizedID)
 	}
 
 	return tab[0], tab[1], strings.Join(tab[2:], "/"), nil
@@ -37,7 +42,7 @@ func ParseLocalizedNestedOwnerID(localizedID string) (locality string, innerID, 
 	case 3:
 		locality, innerID, outerID, err = ParseLocalizedNestedID(localizedID)
 	default:
-		err = fmt.Errorf("cant parse localized id: %s", localizedID)
+		err = fmt.Errorf("%w: %s", ErrInvalidLocalizedID, localizedID)
 	}
 
 	if err != nil {

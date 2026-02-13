@@ -2,6 +2,7 @@ package account_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -13,6 +14,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+)
+
+var (
+	ErrResourceNotFound      = errors.New("resource not found")
+	ErrResourceStillExists    = errors.New("resource still exists")
 )
 
 var DestroyWaitTimeout = 3 * time.Minute
@@ -91,7 +97,7 @@ func isProjectPresent(tt *acctest.TestTools, name string) resource.TestCheckFunc
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", name)
+			return fmt.Errorf("%w: %s", ErrResourceNotFound, name)
 		}
 
 		accountAPI := account.NewProjectAPI(tt.Meta)
@@ -124,7 +130,7 @@ func isProjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 				switch {
 				case err == nil:
-					return retry.RetryableError(fmt.Errorf("resource %s(%s) still exists", rs.Type, rs.Primary.ID))
+					return retry.RetryableError(fmt.Errorf("%w %s(%s)", ErrResourceStillExists, rs.Type, rs.Primary.ID))
 				case httperrors.Is404(err):
 					continue
 				default:

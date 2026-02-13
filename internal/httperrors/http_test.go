@@ -10,11 +10,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	ErrNotAnHTTPError = errors.New("not an http error")
+)
+
 func TestIsHTTPCodeError(t *testing.T) {
 	assert.True(t, httperrors.IsHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusBadRequest))
 	assert.False(t, httperrors.IsHTTPCodeError(nil, http.StatusBadRequest))
 	assert.False(t, httperrors.IsHTTPCodeError(&scw.ResponseError{StatusCode: http.StatusBadRequest}, http.StatusNotFound))
-	assert.False(t, httperrors.IsHTTPCodeError(errors.New("not an http error"), http.StatusNotFound))
+	assert.False(t, httperrors.IsHTTPCodeError(ErrNotAnHTTPError, http.StatusNotFound))
 }
 
 func TestIs404Error(t *testing.T) {

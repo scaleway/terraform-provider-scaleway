@@ -17,6 +17,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+var (
+	ErrInvalidContactPointFormat = errors.New("invalid contact point format")
+	ErrInvalidEmailFormat         = errors.New("invalid email format")
+)
+
 func ResourceCockpitAlertManager() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: ResourceCockpitAlertManagerCreate,
@@ -140,12 +145,12 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		for _, cp := range contactPoints {
 			cpMap, ok := cp.(map[string]any)
 			if !ok {
-				return diag.FromErr(errors.New("invalid contact point format"))
+				return diag.FromErr(ErrInvalidContactPointFormat)
 			}
 
 			email, ok := cpMap["email"].(string)
 			if !ok {
-				return diag.FromErr(errors.New("invalid email format"))
+				return diag.FromErr(ErrInvalidEmailFormat)
 			}
 
 			emailCP := &cockpit.ContactPointEmail{

@@ -2,6 +2,7 @@ package az
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,6 +11,10 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+)
+
+var (
+	ErrNotSupportedRegion = errors.New("not a supported region")
 )
 
 func DataSourceAvailabilityZones() *schema.Resource {
@@ -47,7 +52,7 @@ func dataSourceAvailabilityZonesRead(_ context.Context, d *schema.ResourceData, 
 	regionStr := d.Get("region").(string)
 
 	if !validation.IsRegion(regionStr) {
-		return diag.FromErr(datasource.SingularDataSourceFindError("Availability Zone", fmt.Errorf("not a supported region %s", regionStr)))
+		return diag.FromErr(datasource.SingularDataSourceFindError("Availability Zone", fmt.Errorf("%w %s", ErrNotSupportedRegion, regionStr)))
 	}
 
 	region := scw.Region(regionStr)
