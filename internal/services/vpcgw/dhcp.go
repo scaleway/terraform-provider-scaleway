@@ -169,7 +169,7 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if address, ok := d.GetOk("address"); ok {
-		req.Address = scw.IPPtr(net.ParseIP(address.(string)))
+		req.Address = new(net.ParseIP(address.(string)))
 	}
 
 	if renewTimer, ok := d.GetOk("renew_timer"); ok {
@@ -185,11 +185,11 @@ func ResourceVPCPublicGatewayDHCPCreate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if poolLow, ok := d.GetOk("pool_low"); ok {
-		req.PoolLow = scw.IPPtr(net.ParseIP(poolLow.(string)))
+		req.PoolLow = new(net.ParseIP(poolLow.(string)))
 	}
 
 	if poolHigh, ok := d.GetOk("pool_high"); ok {
-		req.PoolHigh = scw.IPPtr(net.ParseIP(poolHigh.(string)))
+		req.PoolHigh = new(net.ParseIP(poolHigh.(string)))
 	}
 
 	res, err := api.CreateDHCP(req, scw.WithContext(ctx))
@@ -265,7 +265,7 @@ func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if ok := d.HasChange("address"); ok {
-		req.Address = scw.IPPtr(net.ParseIP(d.Get("address").(string)))
+		req.Address = new(net.ParseIP(d.Get("address").(string)))
 	}
 
 	if ok := d.HasChange("push_dns_server"); ok {
@@ -297,11 +297,11 @@ func ResourceVPCPublicGatewayDHCPUpdate(ctx context.Context, d *schema.ResourceD
 	}
 
 	if ok := d.HasChange("pool_low"); ok {
-		req.PoolLow = scw.IPPtr(net.ParseIP(d.Get("pool_low").(string)))
+		req.PoolLow = new(net.ParseIP(d.Get("pool_low").(string)))
 	}
 
 	if ok := d.HasChange("pool_high"); ok {
-		req.PoolHigh = scw.IPPtr(net.ParseIP(d.Get("pool_high").(string)))
+		req.PoolHigh = new(net.ParseIP(d.Get("pool_high").(string)))
 	}
 
 	if d.HasChanges("dns_servers_override") {

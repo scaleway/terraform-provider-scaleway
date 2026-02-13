@@ -376,7 +376,7 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		// List all job runs for this job definition
 		jobRuns, listErr := api.ListJobRuns(&jobs.ListJobRunsRequest{
 			Region:          region,
-			JobDefinitionID: scw.StringPtr(id),
+			JobDefinitionID: new(id),
 		}, scw.WithContext(ctx))
 		if listErr != nil {
 			return diag.FromErr(fmt.Errorf("failed to list job runs before cleanup: %w", listErr))

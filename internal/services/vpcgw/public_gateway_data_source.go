@@ -53,7 +53,7 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 				Name:          types.ExpandStringPtr(gwName),
 				Zone:          zone,
 				ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
-				IncludeLegacy: scw.BoolPtr(true),
+				IncludeLegacy: new(true),
 			}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

@@ -335,12 +335,12 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	changed := false
 
 	if d.HasChange("name") {
-		req.Name = scw.StringPtr(d.Get("name").(string))
+		req.Name = new(d.Get("name").(string))
 		changed = true
 	}
 
 	if d.HasChange("tags") {
-		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 		changed = true
 	}
 
@@ -350,7 +350,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Summary:  "cpu_min cannot be updated in private beta",
 			Detail:   "Modifying cpu_min has no effect until this feature is launched in general availability.",
 		})
-		req.CPUMin = scw.Uint32Ptr(uint32(d.Get("cpu_min").(int)))
+		req.CPUMin = new(uint32(d.Get("cpu_min").(int)))
 		changed = true
 	}
 
@@ -360,7 +360,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Summary:  "cpu_max cannot be updated in private beta",
 			Detail:   "Modifying cpu_max has no effect until this feature is launched in general availability.",
 		})
-		req.CPUMax = scw.Uint32Ptr(uint32(d.Get("cpu_max").(int)))
+		req.CPUMax = new(uint32(d.Get("cpu_max").(int)))
 		changed = true
 	}
 
@@ -370,7 +370,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Summary:  "replica_count cannot be updated in private beta",
 			Detail:   "Modifying replica_count has no effect until this feature is launched in general availability.",
 		})
-		req.ReplicaCount = scw.Uint32Ptr(uint32(d.Get("replica_count").(int)))
+		req.ReplicaCount = new(uint32(d.Get("replica_count").(int)))
 		changed = true
 	}
 

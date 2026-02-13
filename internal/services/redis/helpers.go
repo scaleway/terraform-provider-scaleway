@@ -55,7 +55,7 @@ func waitForCluster(ctx context.Context, api *redis.API, zone scw.Zone, id strin
 
 	return api.WaitForCluster(&redis.WaitForClusterRequest{
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		ClusterID:     id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))

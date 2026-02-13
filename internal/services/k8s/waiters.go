@@ -20,7 +20,7 @@ func waitCluster(ctx context.Context, k8sAPI *k8s.API, region scw.Region, cluste
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -36,7 +36,7 @@ func waitClusterPool(ctx context.Context, k8sAPI *k8s.API, region scw.Region, cl
 	return k8sAPI.WaitForClusterPool(&k8s.WaitForClusterRequest{
 		ClusterID:     clusterID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
@@ -50,7 +50,7 @@ func waitClusterStatus(ctx context.Context, k8sAPI *k8s.API, cluster *k8s.Cluste
 	cluster, err := k8sAPI.WaitForCluster(&k8s.WaitForClusterRequest{
 		ClusterID:     cluster.ID,
 		Region:        cluster.Region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -73,7 +73,7 @@ func waitPoolReady(ctx context.Context, k8sAPI *k8s.API, region scw.Region, pool
 	pool, err := k8sAPI.WaitForPool(&k8s.WaitForPoolRequest{
 		PoolID:        poolID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {

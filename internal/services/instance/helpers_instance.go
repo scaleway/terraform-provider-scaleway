@@ -209,7 +209,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout),
+			Timeout:       new(DefaultInstanceServerWaitTimeout),
 			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -527,9 +527,9 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+		rootVolumeSize = new(serverType.VolumesConstraint.MaxSize)
 	} else if sizeInput > 0 {
-		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
+		rootVolumeSize = new(scw.Size(uint64(sizeInput) * gb))
 	}
 
 	return &instancehelpers.UnknownVolume{
@@ -569,7 +569,7 @@ func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs
 				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
 			}
 
-			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *new(DefaultInstanceServerWaitTimeout))
 			if err != nil {
 				return err
 			}
@@ -591,7 +591,7 @@ func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs
 				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
 			}
 
-			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, *new(DefaultInstanceServerWaitTimeout))
 			if err != nil && !httperrors.Is404(err) {
 				return err
 			}
@@ -647,7 +647,7 @@ func DeleteASGServers(
 		_, err := api.WaitForServer(&instance.WaitForServerRequest{
 			Zone:     zone,
 			ServerID: srv.ID,
-			Timeout:  scw.TimeDurationPtr(timeout),
+			Timeout:  new(timeout),
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err

@@ -282,16 +282,16 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 	updateReq := &instanceSDK.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       ID,
-		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
+		Stateful:              new(d.Get("stateful").(bool)),
 		Description:           types.ExpandStringPtr(description),
 		InboundDefaultPolicy:  inboundDefaultPolicy,
 		OutboundDefaultPolicy: outboundDefaultPolicy,
-		Tags:                  scw.StringsPtr([]string{}),
+		Tags:                  new([]string{}),
 	}
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
-		updateReq.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		updateReq.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {

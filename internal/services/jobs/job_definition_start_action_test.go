@@ -28,7 +28,7 @@ func isJobRunCreated(tt *acctest.TestTools, resourceName string) resource.TestCh
 
 		jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
 			Region:          region,
-			JobDefinitionID: scw.StringPtr(id),
+			JobDefinitionID: new(id),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return fmt.Errorf("failed to list job runs: %w", err)
@@ -64,7 +64,7 @@ func testAccCheckJobDefinitionDestroyIgnoringRunningJobs(tt *acctest.TestTools) 
 			// List all job runs for this job definition
 			jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
 				Region:          region,
-				JobDefinitionID: scw.StringPtr(id),
+				JobDefinitionID: new(id),
 			}, scw.WithContext(context.Background()))
 			if err != nil {
 				return fmt.Errorf("failed to list job runs: %w", err)
@@ -129,7 +129,7 @@ func cleanupJobRuns(tt *acctest.TestTools, jobDefinitionID string) {
 
 	jobRuns, err := api.ListJobRuns(&jobsSDK.ListJobRunsRequest{
 		Region:          region,
-		JobDefinitionID: scw.StringPtr(id),
+		JobDefinitionID: new(id),
 	}, scw.WithContext(context.Background()))
 	if err != nil {
 		return

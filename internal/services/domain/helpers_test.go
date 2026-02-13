@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/stretchr/testify/assert"
 )
@@ -156,13 +155,13 @@ func TestExpandNewContact(t *testing.T) {
 				Zip:                       "10001",
 				City:                      "New York",
 				Country:                   "US",
-				CompanyName:               scw.StringPtr("Acme Inc."),
-				EmailAlt:                  scw.StringPtr("jane.alt@example.com"),
-				FaxNumber:                 scw.StringPtr("+123456789"),
-				AddressLine2:              scw.StringPtr("Suite 101"),
-				VatIDentificationCode:     scw.StringPtr("VAT123"),
-				CompanyIDentificationCode: scw.StringPtr("C123"),
-				State:                     scw.StringPtr("NY"),
+				CompanyName:               new("Acme Inc."),
+				EmailAlt:                  new("jane.alt@example.com"),
+				FaxNumber:                 new("+123456789"),
+				AddressLine2:              new("Suite 101"),
+				VatIDentificationCode:     new("VAT123"),
+				CompanyIDentificationCode: new("C123"),
+				State:                     new("NY"),
 				WhoisOptIn:                true,
 				Resale:                    true,
 			},

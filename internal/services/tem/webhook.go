@@ -144,7 +144,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("name") {
-		req.Name = scw.StringPtr(d.Get("name").(string))
+		req.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("event_types") {
@@ -159,7 +159,7 @@ func ResourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("sns_arn") {
-		req.SnsArn = scw.StringPtr(d.Get("sns_arn").(string))
+		req.SnsArn = new(d.Get("sns_arn").(string))
 	}
 
 	_, err = api.UpdateWebhook(req, scw.WithContext(ctx))

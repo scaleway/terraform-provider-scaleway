@@ -593,7 +593,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 			}
 
 			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Bucket: new(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
 				return err
@@ -672,14 +672,14 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 		}
 
 		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			return err
 		}
 
 		out, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			if !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
@@ -723,8 +723,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			req := s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("test-file"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("test-file"),
 				Body:   strings.NewReader("test content"),
 			}
 
@@ -734,8 +734,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("folder/test-file-in-folder"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("folder/test-file-in-folder"),
 				Body:   strings.NewReader("folder test content"), // Example body content
 			})
 			if err != nil {

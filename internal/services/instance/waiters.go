@@ -19,7 +19,7 @@ func waitForSnapshot(ctx context.Context, api *instance.API, zone scw.Zone, id s
 	snapshot, err := api.WaitForSnapshot(&instance.WaitForSnapshotRequest{
 		SnapshotID:    id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -35,7 +35,7 @@ func waitForServer(ctx context.Context, api *instance.API, zone scw.Zone, id str
 	server, err := api.WaitForServer(&instance.WaitForServerRequest{
 		Zone:          zone,
 		ServerID:      id,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -52,8 +52,8 @@ func waitForPrivateNIC(ctx context.Context, instanceAPI *instance.API, zone scw.
 		ServerID:      serverID,
 		PrivateNicID:  privateNICID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: scw.TimeDurationPtr(retryInterval),
+		Timeout:       new(timeout),
+		RetryInterval: new(retryInterval),
 	}, scw.WithContext(ctx))
 
 	return nic, err
@@ -69,8 +69,8 @@ func waitForMACAddress(ctx context.Context, instanceAPI *instance.API, zone scw.
 		ServerID:      serverID,
 		PrivateNicID:  privateNICID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: scw.TimeDurationPtr(retryInterval),
+		Timeout:       new(timeout),
+		RetryInterval: new(retryInterval),
 	}, scw.WithContext(ctx))
 
 	return nic, err
@@ -85,7 +85,7 @@ func waitForImage(ctx context.Context, api *instance.API, zone scw.Zone, id stri
 	image, err := api.WaitForImage(&instance.WaitForImageRequest{
 		ImageID:       id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -101,7 +101,7 @@ func waitForFilesystems(ctx context.Context, api *instance.API, zone scw.Zone, i
 	server, err := api.WaitForServerFileSystem(&instance.WaitForServerFileSystemRequest{
 		ServerID:      id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

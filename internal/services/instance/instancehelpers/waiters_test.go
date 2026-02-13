@@ -22,10 +22,10 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 				ID:                 "",
 				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
 				Size:               scw.SizePtr(20000000000),
-				Boot:               scw.BoolPtr(false),
+				Boot:               new(false),
 			},
 			want: &instance.VolumeServerTemplate{
-				Boot:       scw.BoolPtr(false),
+				Boot:       new(false),
 				Size:       scw.SizePtr(20000000000),
 				VolumeType: instance.VolumeVolumeTypeLSSD,
 			},
@@ -37,12 +37,12 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 				ID:                 "25152794-d15a-4dd5-abfc-b19ec276aa20",
 				InstanceVolumeType: instance.VolumeVolumeTypeLSSD,
 				Size:               scw.SizePtr(20000000000),
-				Boot:               scw.BoolPtr(true),
+				Boot:               new(true),
 			},
 			want: &instance.VolumeServerTemplate{
-				ID:   scw.StringPtr("25152794-d15a-4dd5-abfc-b19ec276aa20"),
-				Boot: scw.BoolPtr(true),
-				Name: scw.StringPtr("tf-vol-stoic-johnson"),
+				ID:   new("25152794-d15a-4dd5-abfc-b19ec276aa20"),
+				Boot: new(true),
+				Name: new("tf-vol-stoic-johnson"),
 			},
 		},
 		{
@@ -54,7 +54,7 @@ func TestUnknownVolume_VolumeTemplate(t *testing.T) {
 				Size:               scw.SizePtr(10000000000),
 			},
 			want: &instance.VolumeServerTemplate{
-				ID:         scw.StringPtr("cc380989-b71b-47f0-829f-062e329f4097"),
+				ID:         new("cc380989-b71b-47f0-829f-062e329f4097"),
 				VolumeType: instance.VolumeVolumeTypeSbsVolume,
 			},
 		},

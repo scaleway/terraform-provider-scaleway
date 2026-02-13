@@ -150,12 +150,12 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	changed := false
 
 	if d.HasChange("password") {
-		req.Password = scw.StringPtr(d.Get("password").(string))
+		req.Password = new(d.Get("password").(string))
 		changed = true
 	}
 
 	if d.HasChange("is_admin") {
-		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
+		req.IsAdmin = new(d.Get("is_admin").(bool))
 		changed = true
 	}
 

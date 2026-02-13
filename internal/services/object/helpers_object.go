@@ -228,7 +228,7 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]any)))
 	for key, value := range tags.(map[string]any) {
 		tagsSet = append(tagsSet, s3Types.Tag{
-			Key:   scw.StringPtr(key),
+			Key:   new(key),
 			Value: types.ExpandStringPtr(value),
 		})
 	}
@@ -356,7 +356,7 @@ func expandBucketCORS(ctx context.Context, rawCors []any, bucket string) []s3Typ
 				rule.ExposeHeaders = toStringSlice(ctx, value)
 			case "max_age_seconds":
 				if maxAge, ok := value.(int); ok {
-					rule.MaxAgeSeconds = scw.Int32Ptr(int32(maxAge))
+					rule.MaxAgeSeconds = new(int32(maxAge))
 				} else {
 					tflog.Warn(ctx, fmt.Sprintf("Invalid type for max_age_seconds in bucket %s: %T", bucket, value))
 				}
@@ -392,11 +392,11 @@ func toStringSlice(ctx context.Context, input any) []string {
 
 func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, _ bool) error {
 	input := &s3.DeleteObjectInput{
-		Bucket: scw.StringPtr(bucketName),
-		Key:    scw.StringPtr(key),
+		Bucket: new(bucketName),
+		Key:    new(key),
 	}
 	if versionID != "" {
-		input.VersionId = scw.StringPtr(versionID)
+		input.VersionId = new(versionID)
 	}
 
 	_, err := conn.DeleteObject(ctx, input)
@@ -408,7 +408,7 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 // returns true if legal hold was removed
 func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucketName string, objectVersion *s3Types.ObjectVersion) (bool, error) {
 	objectHead, err := conn.HeadObject(ctx, &s3.HeadObjectInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 	})
@@ -423,7 +423,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	}
 
 	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 		LegalHold: &s3Types.ObjectLockLegalHold{
@@ -469,7 +469,7 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 	deletionWorkers := findDeletionWorkerCapacity()
 	nObject := int64(0)
 	input := &s3.ListObjectVersionsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	}
 	pages := s3.NewListObjectVersionsPaginator(conn, input)
 	pool := workerpool.NewWorkerPool(deletionWorkers)

@@ -50,7 +50,7 @@ func waitFlexibleIP(ctx context.Context, api *flexibleip.API, zone scw.Zone, id 
 	return api.WaitForFlexibleIP(&flexibleip.WaitForFlexibleIPRequest{
 		FipID:         id,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

@@ -140,7 +140,7 @@ func ResourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 			Region:      region,
 			NamespaceID: id,
 			Description: types.ExpandUpdatedStringPtr(d.Get("description")),
-			IsPublic:    scw.BoolPtr(d.Get("is_public").(bool)),
+			IsPublic:    new(d.Get("is_public").(bool)),
 		}, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)
 		}

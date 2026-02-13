@@ -19,7 +19,7 @@ func waitForNamespace(ctx context.Context, containerAPI *container.API, region s
 		Region:        region,
 		NamespaceID:   namespaceID,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return ns, err
@@ -34,7 +34,7 @@ func waitForCron(ctx context.Context, api *container.API, cronID string, region 
 	request := container.WaitForCronRequest{
 		CronID:        cronID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}
 
@@ -50,7 +50,7 @@ func waitForContainer(ctx context.Context, api *container.API, containerID strin
 	request := container.WaitForContainerRequest{
 		ContainerID:   containerID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}
 
@@ -66,7 +66,7 @@ func waitForDomain(ctx context.Context, api *container.API, domainID string, reg
 	request := container.WaitForDomainRequest{
 		DomainID:      domainID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}
 
