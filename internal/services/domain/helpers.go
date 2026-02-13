@@ -236,31 +236,31 @@ func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 	}
 
 	if v, ok := contactMap["company_name"].(string); ok {
-		contact.CompanyName = scw.StringPtr(v)
+		contact.CompanyName = new(v)
 	}
 
 	if v, ok := contactMap["email_alt"].(string); ok {
-		contact.EmailAlt = scw.StringPtr(v)
+		contact.EmailAlt = new(v)
 	}
 
 	if v, ok := contactMap["fax_number"].(string); ok {
-		contact.FaxNumber = scw.StringPtr(v)
+		contact.FaxNumber = new(v)
 	}
 
 	if v, ok := contactMap["address_line_2"].(string); ok {
-		contact.AddressLine2 = scw.StringPtr(v)
+		contact.AddressLine2 = new(v)
 	}
 
 	if v, ok := contactMap["vat_identification_code"].(string); ok {
-		contact.VatIDentificationCode = scw.StringPtr(v)
+		contact.VatIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["company_identification_code"].(string); ok {
-		contact.CompanyIDentificationCode = scw.StringPtr(v)
+		contact.CompanyIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["state"].(string); ok {
-		contact.State = scw.StringPtr(v)
+		contact.State = new(v)
 	}
 
 	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {

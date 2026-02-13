@@ -432,7 +432,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		Project:           types.ExpandStringPtr(d.Get("project_id")),
 		CommercialType:    commercialType,
 		SecurityGroup:     types.ExpandStringPtr(zonal.ExpandID(d.Get("security_group_id")).ID),
-		DynamicIPRequired: scw.BoolPtr(d.Get("enable_dynamic_ip").(bool)),
+		DynamicIPRequired: new(d.Get("enable_dynamic_ip").(bool)),
 		Tags:              types.ExpandStrings(d.Get("tags")),
 		Protected:         d.Get("protected").(bool),
 	}
@@ -508,7 +508,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if imageUUID != "" {
-		req.Image = scw.StringPtr(imageUUID)
+		req.Image = new(imageUUID)
 	}
 
 	res, err := api.CreateServer(req, scw.WithContext(ctx))
@@ -600,7 +600,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *new(DefaultInstanceServerWaitTimeout))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -938,7 +938,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("enable_dynamic_ip") {
 		serverShouldUpdate = true
-		updateRequest.DynamicIPRequired = scw.BoolPtr(d.Get("enable_dynamic_ip").(bool))
+		updateRequest.DynamicIPRequired = new(d.Get("enable_dynamic_ip").(bool))
 	}
 
 	if d.HasChange("protected") {
@@ -1247,7 +1247,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, id, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, id, *new(DefaultInstanceServerWaitTimeout))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1636,7 +1636,7 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 		err := api.ResizeUnknownVolume(&instancehelpers.ResizeUnknownVolumeRequest{
 			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
 			Zone:     zone,
-			Size:     scw.SizePtr(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
+			Size:     new(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return nil, err
@@ -1644,8 +1644,8 @@ func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, ap
 	}
 
 	volumes["0"] = &instanceSDK.VolumeServerTemplate{
-		ID:   scw.StringPtr(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
-		Name: scw.StringPtr(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+		ID:   new(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
+		Name: new(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
 		Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
 	}
 
@@ -1708,7 +1708,7 @@ func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.Block
 			err := api.RenameUnknownVolume(&instancehelpers.RenameUnknownVolumeRequest{
 				Zone:     zone,
 				VolumeID: volumes["0"].ID,
-				Name:     scw.StringPtr(rootVolumeName.(string)),
+				Name:     new(rootVolumeName.(string)),
 			})
 			if err != nil {
 				return err

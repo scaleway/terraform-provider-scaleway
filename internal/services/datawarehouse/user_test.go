@@ -97,7 +97,7 @@ func isUserPresent(tt *acctest.TestTools, resourceName string) resource.TestChec
 		resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
-			Name:         scw.StringPtr(userName),
+			Name:         new(userName),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return err
@@ -132,7 +132,7 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			resp, err := api.ListUsers(&datawarehouseSDK.ListUsersRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
-				Name:         scw.StringPtr(userName),
+				Name:         new(userName),
 			}, scw.WithContext(context.Background()))
 
 			if err != nil && !httperrors.Is404(err) {

@@ -78,19 +78,19 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if minScale, ok := d.GetOk("min_scale"); ok {
-		req.MinScale = scw.Uint32Ptr(uint32(minScale.(int)))
+		req.MinScale = new(uint32(minScale.(int)))
 	}
 
 	if maxScale, ok := d.GetOk("max_scale"); ok {
-		req.MaxScale = scw.Uint32Ptr(uint32(maxScale.(int)))
+		req.MaxScale = new(uint32(maxScale.(int)))
 	}
 
 	if memoryLimit, ok := d.GetOk("memory_limit"); ok {
-		req.MemoryLimit = scw.Uint32Ptr(uint32(memoryLimit.(int)))
+		req.MemoryLimit = new(uint32(memoryLimit.(int)))
 	}
 
 	if cpuLimit, ok := d.GetOk("cpu_limit"); ok {
-		req.CPULimit = scw.Uint32Ptr(uint32(cpuLimit.(int)))
+		req.CPULimit = new(uint32(cpuLimit.(int)))
 	}
 
 	if timeout, ok := d.GetOk("timeout"); ok {
@@ -99,7 +99,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if port, ok := d.GetOk("port"); ok {
-		req.Port = scw.Uint32Ptr(uint32(port.(int)))
+		req.Port = new(uint32(port.(int)))
 	}
 
 	if description, ok := d.GetOk("description"); ok {
@@ -111,7 +111,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if maxConcurrency, ok := d.GetOk("max_concurrency"); ok {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(maxConcurrency.(int))) //nolint:staticcheck
+		req.MaxConcurrency = new(uint32(maxConcurrency.(int))) //nolint:staticcheck
 	}
 
 	if sandbox, ok := d.GetOk("sandbox"); ok {
@@ -137,7 +137,7 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 	}
 
 	if localStorageLimit, ok := d.GetOk("local_storage_limit"); ok {
-		req.LocalStorageLimit = scw.Uint32Ptr(uint32(localStorageLimit.(int)))
+		req.LocalStorageLimit = new(uint32(localStorageLimit.(int)))
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -180,19 +180,19 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("min_scale") {
-		req.MinScale = scw.Uint32Ptr(uint32(d.Get("min_scale").(int)))
+		req.MinScale = new(uint32(d.Get("min_scale").(int)))
 	}
 
 	if d.HasChanges("max_scale") {
-		req.MaxScale = scw.Uint32Ptr(uint32(d.Get("max_scale").(int)))
+		req.MaxScale = new(uint32(d.Get("max_scale").(int)))
 	}
 
 	if d.HasChanges("memory_limit") {
-		req.MemoryLimit = scw.Uint32Ptr(uint32(d.Get("memory_limit").(int)))
+		req.MemoryLimit = new(uint32(d.Get("memory_limit").(int)))
 	}
 
 	if d.HasChanges("cpu_limit") {
-		req.CPULimit = scw.Uint32Ptr(uint32(d.Get("cpu_limit").(int)))
+		req.CPULimit = new(uint32(d.Get("cpu_limit").(int)))
 	}
 
 	if d.HasChanges("timeout") {
@@ -212,7 +212,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("max_concurrency") {
-		req.MaxConcurrency = scw.Uint32Ptr(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
+		req.MaxConcurrency = new(uint32(d.Get("max_concurrency").(int))) //nolint:staticcheck
 	}
 
 	if d.HasChanges("protocol") {
@@ -220,7 +220,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("port") {
-		req.Port = scw.Uint32Ptr(uint32(d.Get("port").(int)))
+		req.Port = new(uint32(d.Get("port").(int)))
 	}
 
 	if d.HasChanges("http_option") {
@@ -263,7 +263,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("local_storage_limit") {
-		req.LocalStorageLimit = scw.Uint32Ptr(uint32(d.Get("local_storage_limit").(int)))
+		req.LocalStorageLimit = new(uint32(d.Get("local_storage_limit").(int)))
 	}
 
 	if d.HasChanges("command") {
@@ -390,17 +390,17 @@ func expandScalingOptions(scalingOptionSchema any) (*container.ContainerScalingO
 
 		cso := &container.ContainerScalingOption{}
 		if concurrentRequestThresold, ok := rawOption["concurrent_requests_threshold"].(int); ok && concurrentRequestThresold != 0 {
-			cso.ConcurrentRequestsThreshold = scw.Uint32Ptr(uint32(concurrentRequestThresold))
+			cso.ConcurrentRequestsThreshold = new(uint32(concurrentRequestThresold))
 			setFields++
 		}
 
 		if cpuUsageThreshold, ok := rawOption["cpu_usage_threshold"].(int); ok && cpuUsageThreshold != 0 {
-			cso.CPUUsageThreshold = scw.Uint32Ptr(uint32(cpuUsageThreshold))
+			cso.CPUUsageThreshold = new(uint32(cpuUsageThreshold))
 			setFields++
 		}
 
 		if memoryUsageThreshold, ok := rawOption["memory_usage_threshold"].(int); ok && memoryUsageThreshold != 0 {
-			cso.MemoryUsageThreshold = scw.Uint32Ptr(uint32(memoryUsageThreshold))
+			cso.MemoryUsageThreshold = new(uint32(memoryUsageThreshold))
 			setFields++
 		}
 

@@ -329,7 +329,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
-		createReq.ClusterSize = scw.Int32Ptr(int32(clusterSize.(int)))
+		createReq.ClusterSize = new(int32(clusterSize.(int)))
 	}
 
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
@@ -576,7 +576,7 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:        zone,
 			ClusterID:   ID,
-			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
+			ClusterSize: new(uint32(d.Get("cluster_size").(int))),
 		})
 	}
 

@@ -206,7 +206,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if description, ok := d.GetOk("description"); ok {
-		req.Description = scw.StringPtr(description.(string))
+		req.Description = new(description.(string))
 	}
 
 	if _, ok := d.GetOk("message_filters"); ok {
@@ -222,7 +222,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Publish = &mfSet
@@ -237,7 +237,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Subscribe = &mfSet
@@ -377,7 +377,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if d.HasChange("allow_insecure") {
-		updateRequest.AllowInsecure = scw.BoolPtr(d.Get("allow_insecure").(bool))
+		updateRequest.AllowInsecure = new(d.Get("allow_insecure").(bool))
 	}
 
 	if d.HasChange("message_filters") {
@@ -393,7 +393,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
 				d.Get(fqfnS + iotPolicySuffix).(string))
 
-			mfSet.Topics = scw.StringsPtr(
+			mfSet.Topics = new(
 				types.ExpandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
@@ -405,17 +405,17 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
 				d.Get(fqfnP + iotPolicySuffix).(string))
 
-			mfSet.Topics = scw.StringsPtr(
+			mfSet.Topics = new(
 				types.ExpandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 
 	if d.HasChange("hub_id") {
-		updateRequest.HubID = scw.StringPtr(d.Get("hub_id").(string))
+		updateRequest.HubID = new(d.Get("hub_id").(string))
 	}
 
 	if d.HasChange("allow_multiple_connections") {
-		updateRequest.AllowMultipleConnections = scw.BoolPtr(d.Get("allow_multiple_connections").(bool))
+		updateRequest.AllowMultipleConnections = new(d.Get("allow_multiple_connections").(bool))
 	}
 
 	if d.HasChange("description") {

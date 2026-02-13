@@ -260,7 +260,7 @@ func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 		}
 
 		if scwRangesRaw, ok := r["scaleway_ranges"]; ok && scwRangesRaw.(bool) {
-			expandedRule.ScalewayRanges = scw.BoolPtr(true)
+			expandedRule.ScalewayRanges = new(true)
 		}
 
 		if descriptionRaw, ok := r["description"]; ok && descriptionRaw.(string) != "" {
