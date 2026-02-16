@@ -264,15 +264,7 @@ func resourceClusterRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForKafkaCluster(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	cluster, err := api.GetCluster(&kafkaapi.GetClusterRequest{
-		Region:    region,
-		ClusterID: id,
-	}, scw.WithContext(ctx))
+	cluster, err := waitForKafkaCluster(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
