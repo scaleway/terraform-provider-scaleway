@@ -18,7 +18,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -50,7 +49,6 @@ func ResourceInstance() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    instanceSchema,
 		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
-		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -470,9 +468,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(regional.NewIDString(region, res.ID))
 		id = res.ID
 	} else {
 		var password string
@@ -533,9 +529,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
-			return diag.FromErr(err)
-		}
+		d.SetId(regional.NewIDString(region, res.ID))
 		id = res.ID
 	}
 
@@ -669,24 +663,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -770,12 +747,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -854,9 +833,29 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		_ = d.Set("load_balancer", lbI)
 	}
 
-	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
-		diags = append(diags, diag.FromErr(err)...)
+	return diags
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
 	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	diags := setInstanceState(ctx, d, m, rdbAPI, region, res)
+	d.SetId(regional.NewIDString(res.Region, res.ID))
 
 	return diags
 }
@@ -871,6 +870,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	// Upgrade instance
 	////////////////////
+	// NOTE: Engine upgrade (MajorUpgradeWorkflow) creates a new instance with a new ID.
+	// We keep it in the Update flow for now, but plan to move it to a dedicated Terraform
+	// action/resource in the future (e.g. scaleway_rdb_instance_upgrade) to preserve
+	// Identity on the instance resource. Identity forbids ID changes during Update.
 	upgradeInstanceRequests := []rdb.UpgradeInstanceRequest(nil)
 
 	rdbInstance, err := rdbAPI.GetInstance(&rdb.GetInstanceRequest{
@@ -1040,9 +1043,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
 			ID = upgradedInstance.ID
-			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
-				return diag.FromErr(err)
-			}
+			d.SetId(regional.NewIDString(region, ID))
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
