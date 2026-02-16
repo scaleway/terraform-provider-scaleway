@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -65,6 +66,7 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
+		Identity: identity.DefaultRegional(),
 	}
 }
 
@@ -420,7 +422,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -435,28 +439,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getReq := &mongodb.GetInstanceRequest{
-		Region:     region,
-		InstanceID: ID,
-	}
-
-	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongodbAPI *mongodb.API, region scw.Region, instance *mongodb.Instance) diag.Diagnostics {
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
 	_ = d.Set("node_number", int(instance.NodeAmount))
@@ -541,7 +524,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: instance.ID,
 	}, scw.WithContext(ctx))
 
 	if err == nil && cert != nil {
@@ -555,6 +538,36 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 				Detail:   readErr.Error(),
 			})
 		}
+	}
+
+	return diags
+}
+
+func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getReq := &mongodb.GetInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
+	}
+
+	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	diags := setInstanceState(ctx, d, m, mongodbAPI, region, instance)
+	if err := identity.SetRegionalIdentity(d, instance.Region, instance.ID); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
 	}
 
 	return diags
