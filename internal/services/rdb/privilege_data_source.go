@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
@@ -21,6 +22,7 @@ func DataSourcePrivilege() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRDBPrivilegeRead,
 		Schema:      dsSchema,
+		Identity:    identity.DefaultRegional(),
 	}
 }
 
