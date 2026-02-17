@@ -42,6 +42,7 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	var instanceID string
+
 	if id, ok := d.GetOk("instance_id"); ok {
 		parsedRegion, parsedID, parseErr := regional.ParseID(id.(string))
 		if parseErr != nil {
