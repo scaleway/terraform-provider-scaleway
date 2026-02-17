@@ -261,12 +261,15 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 					}
 
 					resource "scaleway_instance_snapshot" "local01" {
+						name = "snap01"
 						volume_id = scaleway_instance_server.server01.root_volume.0.volume_id
 					}
 					resource "scaleway_instance_snapshot" "local02" {
+						name = "snap02"
 						volume_id = scaleway_instance_server.server02.root_volume.0.volume_id
 					}
 					resource "scaleway_instance_snapshot" "local03" {
+						name = "snap03"
 						volume_id = scaleway_instance_server.server03.root_volume.0.volume_id
 					}
 				`,
