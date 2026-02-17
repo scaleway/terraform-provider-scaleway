@@ -14,10 +14,7 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
-func TestAccImage_BlockVolume(t *testing.T) {
-	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
-	// TestAccImage_ExternalBlockVolume should suffice to test the same logic with scaleway_block_volumes
-
+func TestAccImage_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -31,82 +28,95 @@ func TestAccImage_BlockVolume(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       	= "b_ssd"
-						size_in_gb 	= 20
-						zone 		= "nl-ams-1"
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 20
+						iops = 5000
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id 	= scaleway_instance_volume.main.id
-						zone 		= "nl-ams-1"
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						name 			= "test_image_basic"
-						root_volume_id 	= scaleway_instance_snapshot.main.id
-						tags 			= ["tag1", "tag2", "tag3"]
-						zone 			= "nl-ams-1"
+						root_volume_id 	= scaleway_block_snapshot.main.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_basic"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tag1"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.1", "tag2"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.2", "tag3"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "zone", "nl-ams-1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "creation_date"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "modification_date"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "modification_date", "scaleway_instance_image.main", "creation_date"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "state"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "organization_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "project_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "state", "available"),
 				),
 			},
 			{
 				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       	= "b_ssd"
-						size_in_gb 	= 20
-						zone 		= "nl-ams-1"
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 20
+						iops = 5000
 					}
 
-					resource "scaleway_instance_snapshot" "main" {
-						volume_id 	= scaleway_instance_volume.main.id
-						zone 		= "nl-ams-1"
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
 					}
 
 					resource "scaleway_instance_image" "main" {
-						name 			= "test_image_renamed"
-						root_volume_id 	= scaleway_instance_snapshot.main.id
-						tags 			= ["new tag"]
-						public 			= true
-						architecture	= "arm"
-						zone 			= "nl-ams-1"
+						name 			= "tf-test-image-basic"
+						root_volume_id 	= scaleway_block_snapshot.main.id
+						tags 			= [ "add", "tags", "to-be", "removed", "later" ]
+						architecture	= "arm64"
+						public			= true
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "test_image_renamed"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "new tag"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "tf-test-image-basic"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "arm64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "5"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "add"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.1", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.2", "to-be"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.3", "removed"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.4", "later"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "arm"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "zone", "nl-ams-1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "creation_date"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "modification_date"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "state"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "organization_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "project_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "state", "available"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 20
+						iops = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name 			= "tf-test-image-basic-renamed"
+						root_volume_id 	= scaleway_block_snapshot.main.id
+						tags 			= [ "tags", "removed" ]
+						architecture	= "x86_64"
+						public			= false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "name", "tf-test-image-basic-renamed"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "tags"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.1", "removed"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
+					resource.TestCheckResourceAttr("scaleway_instance_image.main", "state", "available"),
 				),
 			},
 		},
@@ -204,233 +214,6 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccImage_Server(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			isImageDestroyed(tt),
-			blocktestfuncs.IsSnapshotDestroyed(tt),
-			instancechecks.IsServerDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image 	= "ubuntu_focal"
-						type 	= "DEV1-S"
-					}
-
-					resource "scaleway_block_snapshot" "main" {
-						volume_id	= scaleway_instance_server.main.root_volume.0.volume_id
-						depends_on 	= [ scaleway_instance_server.main ]
-					}
-
-					resource "scaleway_instance_image" "main" {
-						root_volume_id 			= scaleway_block_snapshot.main.id
-						tags 					= ["test_remove_tags"]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
-					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.0", "test_remove_tags"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image 	= "ubuntu_focal"
-						type 	= "DEV1-S"
-					}
-
-					resource "scaleway_block_snapshot" "main" {
-						volume_id 	= scaleway_instance_server.main.root_volume.0.volume_id
-						depends_on	= [ scaleway_instance_server.main ]
-					}
-
-					resource "scaleway_instance_image" "main" {
-						root_volume_id 			= scaleway_block_snapshot.main.id
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.main"),
-					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "tags.#", "0"),
-					resource.TestCheckNoResourceAttr("scaleway_instance_image.main", "tags.0"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccImage_ServerWithBlockVolume(t *testing.T) {
-	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
-	// TestAccImage_ServerWithSBSVolume should suffice to test the same logic with block volumes
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			isImageDestroyed(tt),
-			instancechecks.IsSnapshotDestroyed(tt),
-			instancechecks.IsVolumeDestroyed(tt),
-			instancechecks.IsServerDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "block01" {
-						type       = "b_ssd"
-						size_in_gb = 21
-					}
-					resource "scaleway_instance_snapshot" "block01" {
-						volume_id	= scaleway_instance_volume.block01.id
-						depends_on 	= [ scaleway_instance_volume.block01 ]
-					}
-
-					resource "scaleway_instance_server" "server" {
-						image	= "ubuntu_focal"
-						type 	= "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
-				),
-			},
-
-			{
-				Config: `
-					resource "scaleway_instance_volume" "block01" {
-						type       = "b_ssd"
-						size_in_gb = 21
-					}
-					resource "scaleway_instance_snapshot" "block01" {
-						volume_id	= scaleway_instance_volume.block01.id
-						depends_on 	= [ scaleway_instance_volume.block01 ]
-					}
-
-					resource "scaleway_instance_server" "server" {
-						image	= "ubuntu_focal"
-						type 	= "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-						}
-					}
-					resource "scaleway_instance_snapshot" "server" {
-						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
-						depends_on 	= [ scaleway_instance_server.server ]
-					}
-
-					resource "scaleway_instance_image" "main" {
-						root_volume_id 	= scaleway_instance_snapshot.server.id
-						additional_volume_ids = [
-							scaleway_instance_snapshot.block01.id
-						]
-						depends_on = [
-							scaleway_instance_snapshot.block01,
-							scaleway_instance_snapshot.server,
-						]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.server"),
-					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.server", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.block01", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.volume_type", "b_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.size", "21000000000"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_volume" "block01" {
-						type       = "b_ssd"
-						size_in_gb = 21
-					}
-					resource "scaleway_instance_snapshot" "block01" {
-						volume_id	= scaleway_instance_volume.block01.id
-						depends_on 	= [ scaleway_instance_volume.block01 ]
-					}
-
-					resource "scaleway_instance_volume" "block02" {
-						type       = "b_ssd"
-						size_in_gb = 22
-					}
-					resource "scaleway_instance_snapshot" "block02" {
-						volume_id	= scaleway_instance_volume.block02.id
-						depends_on 	= [ scaleway_instance_volume.block02 ]
-					}
-
-					resource "scaleway_instance_server" "server" {
-						image	= "ubuntu_focal"
-						type 	= "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-						}
-					}
-					resource "scaleway_instance_snapshot" "server" {
-						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
-						depends_on 	= [ scaleway_instance_server.server ]
-					}
-
-					resource "scaleway_instance_image" "main" {
-						root_volume_id 	= scaleway_instance_snapshot.server.id
-						additional_volume_ids = [
-							scaleway_instance_snapshot.block02.id,
-						]
-						depends_on = [
-							scaleway_instance_snapshot.block02,
-							scaleway_instance_snapshot.server,
-						]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block01"),
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block02"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.block01"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.block02"),
-					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.server"),
-					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.server", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_instance_snapshot.block02", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.volume_type", "b_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.0.size", "22000000000"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
-					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 				),
 			},
 		},
@@ -602,7 +385,6 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block01"),
 				),
 			},
-
 			{
 				Config: `
 					resource "scaleway_block_volume" "block01" {
@@ -702,6 +484,119 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_image.main", "name"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccImage_MixedVolumes(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	imageID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isImageDestroyed(tt),
+			blocktestfuncs.IsSnapshotDestroyed(tt),
+			instancechecks.IsSnapshotDestroyed(tt),
+			instancechecks.IsServerDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_server" "local" {
+						image 	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
+					}
+					resource "scaleway_instance_server" "block_from_server" {
+						image 	= "ubuntu_focal"
+						type 	= "DEV1-S"
+					}
+					resource "scaleway_block_volume" "block_detached" {
+						size_in_gb = 20
+						iops = 5000
+					}
+
+					resource "scaleway_instance_snapshot" "local" {
+						volume_id	= scaleway_instance_server.local.root_volume.0.volume_id
+					}
+					resource "scaleway_block_snapshot" "block_from_server" {
+						volume_id	= scaleway_instance_server.block_from_server.root_volume.0.volume_id
+					}
+					resource "scaleway_block_snapshot" "block_detached" {
+						volume_id	= scaleway_block_volume.block_detached.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						root_volume_id 			= scaleway_block_snapshot.block_detached.id
+						additional_volume_ids	= [
+							scaleway_block_snapshot.block_from_server.id,
+							scaleway_instance_snapshot.local.id
+						]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_from_server"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_detached"),
+					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.local"),
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_block_snapshot.block_detached", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_block_snapshot.block_from_server", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.1.id", "scaleway_instance_snapshot.local", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_image.main", &imageID),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "local" {
+						image 	= "ubuntu_focal"
+						type 	= "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
+					}
+					resource "scaleway_instance_server" "block_from_server" {
+						image 	= "ubuntu_focal"
+						type 	= "DEV1-S"
+					}
+					resource "scaleway_block_volume" "block_detached" {
+						size_in_gb = 20
+						iops = 5000
+					}
+
+					resource "scaleway_instance_snapshot" "local" {
+						volume_id	= scaleway_instance_server.local.root_volume.0.volume_id
+					}
+					resource "scaleway_block_snapshot" "block_from_server" {
+						volume_id	= scaleway_instance_server.block_from_server.root_volume.0.volume_id
+					}
+					resource "scaleway_block_snapshot" "block_detached" {
+						volume_id	= scaleway_block_volume.block_detached.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						root_volume_id 			= scaleway_instance_snapshot.local.id
+						additional_volume_ids	= [
+							scaleway_block_snapshot.block_from_server.id,
+							scaleway_block_snapshot.block_detached.id
+						]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_from_server"),
+					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.block_detached"),
+					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.local"),
+					instancechecks.DoesImageExists(tt, "scaleway_instance_image.main"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "root_volume_id", "scaleway_instance_snapshot.local", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.0.id", "scaleway_block_snapshot.block_from_server", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.1.id", "scaleway_block_snapshot.block_detached", "id"),
+					acctest.CheckResourceIDChanged("scaleway_instance_image.main", &imageID),
 				),
 			},
 		},
