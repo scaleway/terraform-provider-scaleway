@@ -371,7 +371,6 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "block01" {
 						volume_id	= scaleway_block_volume.block01.id
-						depends_on 	= [ scaleway_block_volume.block01 ]
 					}
 
 					resource "scaleway_instance_server" "server" {
@@ -393,7 +392,6 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "block01" {
 						volume_id	= scaleway_block_volume.block01.id
-						depends_on 	= [ scaleway_block_volume.block01 ]
 					}
 
 					resource "scaleway_instance_server" "server" {
@@ -402,17 +400,12 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
-						depends_on 	= [ scaleway_instance_server.server ]
 					}
 
 					resource "scaleway_instance_image" "main" {
 						root_volume_id 	= scaleway_block_snapshot.server.id
 						additional_volume_ids = [
 							scaleway_block_snapshot.block01.id
-						]
-						depends_on = [
-							scaleway_block_snapshot.block01,
-							scaleway_block_snapshot.server,
 						]
 					}
 				`,
@@ -438,7 +431,6 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "block01" {
 						volume_id	= scaleway_block_volume.block01.id
-						depends_on 	= [ scaleway_block_volume.block01 ]
 					}
 
 					resource "scaleway_block_volume" "block02" {
@@ -447,7 +439,6 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "block02" {
 						volume_id	= scaleway_block_volume.block02.id
-						depends_on 	= [ scaleway_block_volume.block02 ]
 					}
 
 					resource "scaleway_instance_server" "server" {
@@ -456,17 +447,12 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					}
 					resource "scaleway_block_snapshot" "server" {
 						volume_id 	= scaleway_instance_server.server.root_volume.0.volume_id
-						depends_on 	= [ scaleway_instance_server.server ]
 					}
 
 					resource "scaleway_instance_image" "main" {
 						root_volume_id 	= scaleway_block_snapshot.server.id
 						additional_volume_ids = [
 							scaleway_block_snapshot.block02.id,
-						]
-						depends_on = [
-							scaleway_block_snapshot.block02,
-							scaleway_block_snapshot.server,
 						]
 					}
 				`,
