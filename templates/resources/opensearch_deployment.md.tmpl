@@ -13,61 +13,15 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ### Basic
 
-```terraform
-resource "scaleway_opensearch_deployment" "main" {
-  name        = "my-opensearch-cluster"
-  version     = "2.0"
-  node_amount = 1
-  node_type   = "SEARCHDB-SHARED-2C-8G"
-  password    = "ThisIsASecurePassword123!"
-  
-  volume {
-    type        = "sbs_5k"
-    size_in_gb = 5
-  }
-}
-```
+{{ tffile "examples/resources/scaleway_opensearch_deployment/resource.tf" }}
 
 ### Production Setup with High Availability
 
-```terraform
-resource "scaleway_opensearch_deployment" "prod" {
-  name        = "logs-prod-cluster"
-  version     = "2.0"
-  node_amount = 3  # High availability with 3 nodes
-  node_type   = "SEARCHDB-DEDICATED-2C-8G"
-  password    = var.opensearch_password
-  tags        = ["production", "logs"]
-  
-  volume {
-    type        = "sbs_15k"  # High IOPS for production
-    size_in_gb = 100  # 100 GB
-  }
-}
-
-output "opensearch_url" {
-  value     = scaleway_opensearch_deployment.prod.endpoints[0].services[0].url
-  sensitive = false
-}
-```
+{{ tffile "examples/resources/scaleway_opensearch_deployment/production.tf" }}
 
 ### With Tags for Organization
 
-```terraform
-resource "scaleway_opensearch_deployment" "analytics" {
-  name        = "analytics-cluster"
-  version     = "2.0"
-  node_amount = 1
-  node_type   = "SEARCHDB-SHARED-4C-16G"
-  password    = var.opensearch_password
-  tags        = ["analytics", "dev", "team-data"]
-  
-  volume {
-    type        = "sbs_5k"
-    size_in_gb = 10
-  }
-}
-```
+{{ tffile "examples/resources/scaleway_opensearch_deployment/with_tags.tf" }}
 
 ## Argument Reference
 
