@@ -124,12 +124,19 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	compositeID := locality.ExpandID(instanceID) + "/" + databaseName + "/" + userName
-	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+	if err := identity.SetCompositeRegionalIdentity(d, region, locality.ExpandID(instanceID), databaseName, userName); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return ResourceRdbPrivilegeRead(ctx, d, m)
+}
+
+func setPrivilegeState(d *schema.ResourceData, region scw.Region, instanceID string, privilege *rdb.Privilege) {
+	_ = d.Set("database_name", privilege.DatabaseName)
+	_ = d.Set("user_name", privilege.UserName)
+	_ = d.Set("permission", privilege.Permission)
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
+	_ = d.Set("region", string(region))
 }
 
 func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -192,15 +199,9 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, databaseName))
 	}
 
-	privilege := res.Privileges[0]
-	_ = d.Set("database_name", privilege.DatabaseName)
-	_ = d.Set("user_name", privilege.UserName)
-	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("region", string(region))
+	setPrivilegeState(d, region, instanceID, res.Privileges[0])
 
-	compositeID := instanceID + "/" + databaseName + "/" + userName
-	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+	if err := identity.SetCompositeRegionalIdentity(d, region, instanceID, databaseName, userName); err != nil {
 		return diag.FromErr(err)
 	}
 

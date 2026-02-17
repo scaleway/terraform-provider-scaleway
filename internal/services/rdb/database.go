@@ -133,7 +133,7 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, instanceID+"/"+db.Name); err != nil {
+	if err := identity.SetCompositeRegionalIdentity(d, region, instanceID, db.Name); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -159,6 +159,15 @@ func getDatabase(ctx context.Context, api *rdb.API, r scw.Region, instanceID, db
 	return res.Databases[0], nil
 }
 
+func setDatabaseState(d *schema.ResourceData, region scw.Region, instanceID string, database *rdb.Database) {
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
+	_ = d.Set("name", database.Name)
+	_ = d.Set("owner", database.Owner)
+	_ = d.Set("managed", database.Managed)
+	_ = d.Set("size", database.Size.String())
+	_ = d.Set("region", string(region))
+}
+
 func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
@@ -178,15 +187,11 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, instanceID+"/"+database.Name); err != nil {
+	setDatabaseState(d, region, instanceID, database)
+
+	if err := identity.SetCompositeRegionalIdentity(d, region, instanceID, database.Name); err != nil {
 		return diag.FromErr(err)
 	}
-	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("name", database.Name)
-	_ = d.Set("owner", database.Owner)
-	_ = d.Set("managed", database.Managed)
-	_ = d.Set("size", database.Size.String())
-	_ = d.Set("region", string(region))
 
 	return nil
 }
