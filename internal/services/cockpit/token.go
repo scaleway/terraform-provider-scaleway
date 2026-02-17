@@ -185,7 +185,7 @@ func ResourceCockpitTokenCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	_ = d.Set("secret_key", res.SecretKey)
 
-	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -212,7 +212,7 @@ func ResourceCockpitTokenRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
