@@ -250,7 +250,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_rdb_read_replica",
 		"scaleway_rdb_user",
 		"scaleway_rdb_snapshot",
-		"scaleway_redis_cluster",
 		"scaleway_registry_namespace",
 		"scaleway_s2s_vpn_gateway",
 		"scaleway_s2s_vpn_customer_gateway",

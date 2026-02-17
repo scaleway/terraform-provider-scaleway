@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -48,6 +49,7 @@ func ResourceCluster() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
@@ -367,7 +369,9 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	if err := identity.SetZonalIdentity(d, zone, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -396,6 +400,10 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetZonalIdentity(d, zone, cluster.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
