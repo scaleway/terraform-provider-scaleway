@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -42,6 +43,7 @@ func ResourceUser() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("instance_id"),
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
@@ -172,7 +174,10 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
+	compositeID := instanceID + "/" + user.Name
+	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Set user roles if provided
 	if rolesSet, ok := d.GetOk("roles"); ok && rolesSet.(*schema.Set).Len() > 0 {
@@ -235,6 +240,12 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	user := res.Users[0]
+
+	compositeID := instanceID + "/" + user.Name
+	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("region", string(region))
@@ -247,8 +258,6 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	if len(user.Roles) > 0 {
 		_ = d.Set("roles", flattenUserRoles(user.Roles))
 	}
-
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
 
 	return nil
 }
