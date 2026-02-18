@@ -51,30 +51,30 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any
 
 	id, ok := d.GetOk("id")
 
-	var ID string
+	var ipIdentifier string
 
 	if !ok {
-		res, err := instanceAPI.GetIP(&instance.GetIPRequest{
-			IP:   d.Get("address").(string),
-			Zone: zone,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			// We check for 403 because instance API returns 403 for a deleted IP
-			if httperrors.Is404(err) || httperrors.Is403(err) {
-				d.SetId("")
-
-				return nil
-			}
-
-			return diag.FromErr(err)
-		}
-
-		ID = res.IP.ID
+		ipIdentifier = d.Get("address").(string)
 	} else {
-		_, ID, _ = locality.ParseLocalizedID(id.(string))
+		_, ipIdentifier, _ = locality.ParseLocalizedID(id.(string))
 	}
 
-	d.SetId(zonal.NewIDString(zone, ID))
+	res, err := instanceAPI.GetIP(&instance.GetIPRequest{
+		IP:   ipIdentifier,
+		Zone: zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		// We check for 403 because instance API returns 403 for a deleted IP
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
 
-	return ResourceInstanceIPRead(ctx, d, m)
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+
+	return setIPState(d, res.IP)
 }
