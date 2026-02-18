@@ -369,7 +369,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetZonalIdentity(d, zone, res.ID); err != nil {
+	if err := identity.SetZonalIdentity(d, res.Zone, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -403,7 +403,7 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetZonalIdentity(d, zone, cluster.ID); err != nil {
+	if err := identity.SetZonalIdentity(d, cluster.Zone, cluster.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
