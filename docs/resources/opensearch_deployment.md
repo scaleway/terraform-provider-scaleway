@@ -19,9 +19,9 @@ resource "scaleway_opensearch_deployment" "main" {
   node_amount = 1
   node_type   = "SEARCHDB-SHARED-2C-8G"
   password    = "ThisIsASecurePassword123!"
-  
+
   volume {
-    type        = "sbs_5k"
+    type       = "sbs_5k"
     size_in_gb = 5
   }
 }
@@ -33,14 +33,14 @@ resource "scaleway_opensearch_deployment" "main" {
 resource "scaleway_opensearch_deployment" "prod" {
   name        = "logs-prod-cluster"
   version     = "2.0"
-  node_amount = 3  # High availability with 3 nodes
+  node_amount = 3 # High availability with 3 nodes
   node_type   = "SEARCHDB-DEDICATED-2C-8G"
   password    = var.opensearch_password
   tags        = ["production", "logs"]
-  
+
   volume {
-    type        = "sbs_15k"  # High IOPS for production
-    size_in_gb = 100  # 100 GB
+    type       = "sbs_15k" # High IOPS for production
+    size_in_gb = 100       # 100 GB
   }
 }
 
@@ -60,9 +60,9 @@ resource "scaleway_opensearch_deployment" "analytics" {
   node_type   = "SEARCHDB-SHARED-4C-16G"
   password    = var.opensearch_password
   tags        = ["analytics", "dev", "team-data"]
-  
+
   volume {
-    type        = "sbs_5k"
+    type       = "sbs_5k"
     size_in_gb = 10
   }
 }
