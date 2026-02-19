@@ -139,7 +139,9 @@ func setPrivilegeState(d *schema.ResourceData, region scw.Region, instanceID str
 	_ = d.Set("region", string(region))
 }
 
-func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readPrivilegeIntoState fetches the privilege and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
@@ -200,6 +202,24 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	setPrivilegeState(d, region, instanceID, res.Privileges[0])
+
+	return nil
+}
+
+func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readPrivilegeIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return nil
+	}
+
+	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, databaseName, userName)); err != nil {
 		return diag.FromErr(err)

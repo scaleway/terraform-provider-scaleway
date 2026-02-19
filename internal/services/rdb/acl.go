@@ -116,7 +116,9 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	return ResourceRdbACLRead(ctx, d, m)
 }
 
-func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readACLIntoState fetches the ACL rules and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readACLIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -138,10 +140,6 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 			return nil
 		}
 
-		return diag.FromErr(err)
-	}
-
-	if err := identity.SetRegionalIdentity(d, region, instanceID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -168,6 +166,28 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
+
+	return diags
+}
+
+func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readACLIntoState(ctx, d, m)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, instanceID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

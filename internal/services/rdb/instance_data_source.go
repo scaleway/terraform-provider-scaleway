@@ -8,7 +8,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -31,7 +30,6 @@ func DataSourceInstance() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRDBInstanceRead,
 		Schema:      dsSchema,
-		Identity:    identity.DefaultRegional(),
 	}
 }
 
@@ -74,5 +72,5 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbInstanceRead(ctx, d, m)
+	return readInstanceIntoState(ctx, d, m)
 }

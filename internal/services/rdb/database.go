@@ -168,7 +168,9 @@ func setDatabaseState(d *schema.ResourceData, region scw.Region, instanceID stri
 	_ = d.Set("region", string(region))
 }
 
-func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readDatabaseIntoState fetches the database and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readDatabaseIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI := newAPI(m)
 
 	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())
@@ -189,7 +191,25 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	setDatabaseState(d, region, instanceID, database)
 
-	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, database.Name)); err != nil {
+	return nil
+}
+
+func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readDatabaseIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return nil
+	}
+
+	region, instanceID, databaseName, err := ResourceRdbDatabaseParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, databaseName)); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -125,23 +125,7 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceRdbDatabaseBackupRead(ctx, d, m)
 }
 
-func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setDatabaseBackupState(d *schema.ResourceData, region scw.Region, dbBackup *rdb.DatabaseBackup) {
 	_ = d.Set("instance_id", regional.NewID(region, dbBackup.InstanceID).String())
 	_ = d.Set("name", dbBackup.Name)
 	_ = d.Set("database_name", dbBackup.DatabaseName)
@@ -151,6 +135,42 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("updated_at", types.FlattenTime(dbBackup.UpdatedAt))
 	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
 	_ = d.Set("region", string(dbBackup.Region))
+}
+
+// readDatabaseBackupIntoState fetches the backup and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+// Returns the backup or nil if not found (404).
+func readDatabaseBackupIntoState(ctx context.Context, d *schema.ResourceData, m any) (*rdb.DatabaseBackup, diag.Diagnostics) {
+	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil, nil
+		}
+
+		return nil, diag.FromErr(err)
+	}
+
+	setDatabaseBackupState(d, region, dbBackup)
+
+	return dbBackup, nil
+}
+
+func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	dbBackup, diags := readDatabaseBackupIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if dbBackup == nil {
+		return nil
+	}
 
 	if err := identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID); err != nil {
 		return diag.FromErr(err)

@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 )
 
@@ -23,7 +22,6 @@ func DataSourceACL() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRDBACLRead,
 		Schema:      dsSchema,
-		Identity:    identity.DefaultRegional(),
 	}
 }
 
@@ -49,5 +47,5 @@ func DataSourceRDBACLRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbACLRead(ctx, d, m)
+	return readACLIntoState(ctx, d, m)
 }
