@@ -109,6 +109,7 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 // Use this for resources whose identity schema is DefaultRegional but whose id is multi-part.
 func SetRegionalCompositeIdentity(d *schema.ResourceData, region scw.Region, idParts ...string) error {
 	compositeID := strings.Join(idParts, "/")
+
 	return SetRegionalIdentity(d, region, compositeID)
 }
 
