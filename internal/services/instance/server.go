@@ -600,7 +600,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, *new(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, res.Server.ID, DefaultInstanceServerWaitTimeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -1247,7 +1247,7 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForFilesystems(ctx, api.API, zone, id, *new(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api.API, zone, id, DefaultInstanceServerWaitTimeout)
 			if err != nil {
 				return diag.FromErr(err)
 			}
