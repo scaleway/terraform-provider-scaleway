@@ -529,25 +529,32 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 }
 
 func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	diags := readClusterIntoState(ctx, d, m)
-	if diags != nil {
-		return diags
-	}
-
-	if d.Id() == "" {
-		return nil
-	}
-
-	_, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetZonalIdentity(d, zone, ID); err != nil {
+	getReq := &redis.GetClusterRequest{
+		Zone:      zone,
+		ClusterID: ID,
+	}
+
+	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
-	return nil
+	if err := identity.SetZonalIdentity(d, zone, cluster.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(ctx, d, redisAPI, zone, cluster, m)
 }
 
 func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
