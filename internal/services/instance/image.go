@@ -224,7 +224,7 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, res.Image.ID)
+	err = identity.SetZonalIdentity(d, res.Image.Zone, res.Image.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -281,7 +281,7 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, image.Image.ID)
+	err = identity.SetZonalIdentity(d, image.Image.Zone, image.Image.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
