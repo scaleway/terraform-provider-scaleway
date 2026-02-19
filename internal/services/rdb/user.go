@@ -150,7 +150,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetCompositeRegionalIdentity(d, region, locality.ExpandID(instanceID), user.Name); err != nil {
+	if err := identity.SetRegionalIdentity(d, region, compositeID(locality.ExpandID(instanceID), user.Name)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -204,7 +204,7 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
 
-	if err := identity.SetCompositeRegionalIdentity(d, region, instanceID, user.Name); err != nil {
+	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, user.Name)); err != nil {
 		return diag.FromErr(err)
 	}
 

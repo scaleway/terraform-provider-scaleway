@@ -124,7 +124,7 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetCompositeRegionalIdentity(d, region, locality.ExpandID(instanceID), databaseName, userName); err != nil {
+	if err := identity.SetRegionalIdentity(d, region, compositeID(locality.ExpandID(instanceID), databaseName, userName)); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -201,7 +201,7 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 
 	setPrivilegeState(d, region, instanceID, res.Privileges[0])
 
-	if err := identity.SetCompositeRegionalIdentity(d, region, instanceID, databaseName, userName); err != nil {
+	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, databaseName, userName)); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -144,6 +144,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	if err := identity.SetRegionalIdentity(d, region, instanceID); err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 
 	diags := diag.Diagnostics{}

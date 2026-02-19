@@ -474,6 +474,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
 			return diag.FromErr(err)
 		}
+
 		id = res.ID
 	} else {
 		var password string
@@ -537,6 +538,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
 			return diag.FromErr(err)
 		}
+
 		id = res.ID
 	}
 
@@ -865,6 +867,7 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 	if diags.HasError() {
 		return diags
 	}
+
 	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
@@ -1050,6 +1053,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
+
 			ID = upgradedInstance.ID
 			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
 				return diag.FromErr(err)
