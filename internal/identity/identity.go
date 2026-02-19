@@ -104,6 +104,14 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 	return nil
 }
 
+// SetRegionalCompositeIdentity sets identity attributes for regional resources with a composite ID.
+// The composite ID is built from idParts joined by "/" (e.g., instanceID/databaseName or instanceID/databaseName/userName).
+// Use this for resources whose identity schema is DefaultRegional but whose id is multi-part.
+func SetRegionalCompositeIdentity(d *schema.ResourceData, region scw.Region, idParts ...string) error {
+	compositeID := strings.Join(idParts, "/")
+	return SetRegionalIdentity(d, region, compositeID)
+}
+
 func SetGlobalIdentity(d *schema.ResourceData, id string) error {
 	identity, err := d.Identity()
 	if err != nil {

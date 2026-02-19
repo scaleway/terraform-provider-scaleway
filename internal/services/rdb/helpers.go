@@ -21,11 +21,6 @@ const (
 	defaultWaitRetryInterval = 30 * time.Second
 )
 
-// compositeID joins parts with "/" to form a composite resource ID (e.g., instanceID/databaseName).
-func compositeID(parts ...string) string {
-	return strings.Join(parts, "/")
-}
-
 // newAPI returns a new RDB API
 func newAPI(m any) *rdb.API {
 	return rdb.NewAPI(meta.ExtractScwClient(m))

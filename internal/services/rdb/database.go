@@ -133,7 +133,7 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, db.Name)); err != nil {
+	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, db.Name); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -209,7 +209,7 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, compositeID(instanceID, databaseName)); err != nil {
+	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, databaseName); err != nil {
 		return diag.FromErr(err)
 	}
 
