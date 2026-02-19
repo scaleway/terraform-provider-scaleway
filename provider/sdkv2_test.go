@@ -168,7 +168,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_domain_registration",
 		"scaleway_domain_zone",
 		"scaleway_edge_services_backend_stage",
-		"scaleway_edge_services_dns_stage",
 		"scaleway_edge_services_head_stage",
 		"scaleway_edge_services_route_stage",
 		"scaleway_edge_services_tls_stage",
