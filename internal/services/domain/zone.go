@@ -10,6 +10,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -28,6 +29,7 @@ func ResourceZone() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    zoneSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -104,7 +106,9 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	for i := range zones.DNSZones {
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
-			d.SetId(BuildZoneName(subdomainName, domainName))
+			if err := identity.SetGlobalIdentity(d, zoneName); err != nil {
+				return diag.FromErr(err)
+			}
 
 			return resourceDomainZoneRead(ctx, d, m)
 		}
@@ -125,7 +129,10 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(BuildZoneName(dnsZone.Subdomain, dnsZone.Domain))
+	zoneName = BuildZoneName(dnsZone.Subdomain, dnsZone.Domain)
+	if err := identity.SetGlobalIdentity(d, zoneName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceDomainZoneRead(ctx, d, m)
 }
@@ -158,6 +165,11 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	zone = zones.DNSZones[0]
+
+	zoneName := BuildZoneName(zone.Subdomain, zone.Domain)
+	if err := identity.SetGlobalIdentity(d, zoneName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("subdomain", zone.Subdomain)
 	_ = d.Set("domain", zone.Domain)
