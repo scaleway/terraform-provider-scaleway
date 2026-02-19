@@ -191,7 +191,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	return nil
+	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
 func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
