@@ -38,6 +38,7 @@ var foldersUsingVCRv4 = []string{
 	"container",
 	"iam",
 	"instance",
+	"jobs",
 	"k8s",
 	"keymanager",
 	"marketplace",

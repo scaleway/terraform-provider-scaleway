@@ -1,6 +1,9 @@
 package identity
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -30,6 +33,18 @@ func DefaultRegional() *schema.ResourceIdentity {
 			RequiredForImport: true,
 		},
 		"region": DefaultRegionAttribute(),
+	})
+}
+
+// DefaultGlobal should be used as the default identity schema for global/flat resources.
+// For instance if you want an id with the form 11111111-1111-1111-1111-111111111111 (UUID only)
+func DefaultGlobal() *schema.ResourceIdentity {
+	return WrapSchemaMap(map[string]*schema.Schema{
+		"id": {
+			Type:              schema.TypeString,
+			Description:       "The id of the resource (UUID format)",
+			RequiredForImport: true,
+		},
 	})
 }
 
@@ -89,18 +104,65 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 	return nil
 }
 
-func SetFlatIdentity(d *schema.ResourceData, key string, value string) error {
+func SetGlobalIdentity(d *schema.ResourceData, id string) error {
 	identity, err := d.Identity()
 	if err != nil {
 		return err
 	}
 
-	err = identity.Set(key, value)
+	err = identity.Set("id", id)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(value)
+	d.SetId(id)
 
 	return nil
+}
+
+// SetMultiPartIdentity sets identity attributes and constructs a composite ID from multiple parts
+func SetMultiPartIdentity(d *schema.ResourceData, values map[string]string, keyOrder ...string) error {
+	if len(keyOrder) != len(values) {
+		return fmt.Errorf("keyOrder length (%d) does not match values length (%d)", len(keyOrder), len(values))
+	}
+
+	for _, key := range keyOrder {
+		if _, exists := values[key]; !exists {
+			return fmt.Errorf("key %q from keyOrder not found in values", key)
+		}
+	}
+
+	identity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	for key, value := range values {
+		err = identity.Set(key, value)
+		if err != nil {
+			return err
+		}
+	}
+
+	parts := make([]string, len(keyOrder))
+	for i, key := range keyOrder {
+		parts[i] = values[key]
+	}
+
+	d.SetId(strings.Join(parts, "/"))
+
+	return nil
+}
+
+func ParseMultiPartID(id string, keyOrder ...string) map[string]string {
+	parts := strings.SplitN(id, "/", len(keyOrder))
+	result := make(map[string]string, len(keyOrder))
+
+	for i, key := range keyOrder {
+		if i < len(parts) {
+			result[key] = parts[i]
+		}
+	}
+
+	return result
 }

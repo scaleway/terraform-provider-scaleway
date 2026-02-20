@@ -52,6 +52,7 @@ func imageSchema() map[string]*schema.Schema {
 		"root_volume_id": {
 			Type:             schema.TypeString,
 			Required:         true,
+			ForceNew:         true,
 			Description:      "UUID of the snapshot from which the image is to be created",
 			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		},

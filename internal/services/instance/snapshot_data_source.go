@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -40,6 +41,8 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	var snapshot *instance.Snapshot
+
 	snapshotID, ok := d.GetOk("snapshot_id")
 	if !ok {
 		snapshotName := d.Get("name").(string)
@@ -62,7 +65,23 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 
+		snapshot = foundSnapshot
 		snapshotID = foundSnapshot.ID
+	} else {
+		id, err := locality.ExtractUUID(snapshotID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		res, err := instanceAPI.GetSnapshot(&instance.GetSnapshotRequest{
+			Zone:       zone,
+			SnapshotID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		snapshot = res.Snapshot
 	}
 
 	zonedID := datasource.NewZonedID(snapshotID, zone)
@@ -74,14 +93,5 @@ func DataSourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceInstanceSnapshotRead(ctx, d, m)
-	if len(diags) > 0 {
-		return diags
-	}
-
-	if d.Id() == "" {
-		return diag.Errorf("instance snapshot (%s) not found", zonedID)
-	}
-
-	return nil
+	return setSnapshotState(d, snapshot)
 }

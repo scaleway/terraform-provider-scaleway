@@ -35,6 +35,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
@@ -149,6 +150,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_datawarehouse_deployment":            datawarehouse.ResourceDeployment(),
 				"scaleway_datawarehouse_user":                  datawarehouse.ResourceUser(),
 				"scaleway_datawarehouse_database":              datawarehouse.ResourceDatabase(),
+				"scaleway_kafka_cluster":                       kafka.ResourceCluster(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
@@ -346,6 +348,10 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_registry_image":                      registry.DataSourceImage(),
 				"scaleway_registry_namespace":                  registry.DataSourceNamespace(),
 				"scaleway_registry_image_tag":                  registry.DataSourceImageTag(),
+				"scaleway_s2s_vpn_connection":                  s2svpn.DataSourceConnection(),
+				"scaleway_s2s_vpn_customer_gateway":            s2svpn.DataSourceCustomerGateway(),
+				"scaleway_s2s_vpn_gateway":                     s2svpn.DataSourceVPNGateway(),
+				"scaleway_s2s_vpn_routing_policy":              s2svpn.DataSourceRoutingPolicy(),
 				"scaleway_secret":                              secret.DataSourceSecret(),
 				"scaleway_secret_version":                      secret.DataSourceVersion(),
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),

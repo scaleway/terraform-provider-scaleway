@@ -14,6 +14,7 @@ import (
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
@@ -62,6 +63,9 @@ var transientStates = map[string]bool{
 	k8s.PoolStatusDeleting.String():    true,
 	k8s.PoolStatusScaling.String():     true,
 	k8s.PoolStatusUpgrading.String():   true,
+
+	kafkaapi.ClusterStatusCreating.String(): true,
+	kafkaapi.ClusterStatusDeleting.String(): true,
 
 	mongodb.InstanceStatusDeleting.String():     true,
 	mongodb.InstanceStatusSnapshotting.String(): true,

@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceTLSStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    tlsStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -123,7 +125,9 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tlsStage.ID)
+	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceTLSStageRead(ctx, d, m)
 }
@@ -154,6 +158,10 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
+
+	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
