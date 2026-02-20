@@ -283,6 +283,31 @@ func resourceClusterRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	return diags
 }
 
+// readClusterIntoState fetches the cluster and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readClusterIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	cluster, err := api.GetCluster(&kafkaapi.GetClusterRequest{
+		Region:    region,
+		ClusterID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(d, cluster)
+}
+
 func setClusterState(d *schema.ResourceData, cluster *kafkaapi.Cluster) diag.Diagnostics {
 	_ = d.Set("region", string(cluster.Region))
 	_ = d.Set("project_id", cluster.ProjectID)

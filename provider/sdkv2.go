@@ -317,6 +317,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_iot_hub":                             iot.DataSourceHub(),
 				"scaleway_ipam_ip":                             ipam.DataSourceIP(),
 				"scaleway_ipam_ips":                            ipam.DataSourceIPs(),
+				"scaleway_kafka_cluster":                       kafka.DataSourceCluster(),
 				"scaleway_k8s_cluster":                         k8s.DataSourceCluster(),
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),
