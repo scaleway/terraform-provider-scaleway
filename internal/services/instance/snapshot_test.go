@@ -36,6 +36,11 @@ func TestAccSnapshot_Server(t *testing.T) {
 					instancechecks.IsSnapshotPresent(tt, "scaleway_instance_snapshot.main"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_snapshot.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -107,6 +112,12 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "name", "test-acc-snapshot-import-lssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_snapshot.qcow-instance-snapshot", "type", "l_ssd"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_snapshot.qcow-instance-snapshot",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"import"},
 			},
 		},
 	})

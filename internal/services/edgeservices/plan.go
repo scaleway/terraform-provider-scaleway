@@ -2,13 +2,13 @@ package edgeservices
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -24,7 +24,23 @@ func ResourcePlan() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    planSchema,
+		Identity:      planIdentity(),
 	}
+}
+
+func planIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": {
+			Type:              schema.TypeString,
+			Description:       "The project ID",
+			RequiredForImport: true,
+		},
+		"name": {
+			Type:              schema.TypeString,
+			Description:       "The plan name",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func planSchema() map[string]*schema.Schema {
@@ -43,15 +59,23 @@ func planSchema() map[string]*schema.Schema {
 func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
+	projectID := d.Get("project_id").(string)
+
 	plan, err := api.SelectPlan(&edgeservices.SelectPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		PlanName:  edgeservices.PlanName(d.Get("name").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", d.Get("project_id").(string), plan.PlanName.String()))
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"name":       plan.PlanName.String(),
+	}, "project_id", "name")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -59,8 +83,11 @@ func ResourcePlanCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewEdgeServicesAPI(m)
 
+	idParts := identity.ParseMultiPartID(d.Id(), "project_id", "name")
+	projectID := idParts["project_id"]
+
 	plan, err := api.GetCurrentPlan(&edgeservices.GetCurrentPlanRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -73,6 +100,15 @@ func ResourcePlanRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	_ = d.Set("name", plan.PlanName.String())
+	_ = d.Set("project_id", projectID)
+
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"name":       plan.PlanName.String(),
+	}, "project_id", "name")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

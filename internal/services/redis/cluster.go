@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -48,6 +49,7 @@ func ResourceCluster() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
@@ -367,7 +369,9 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	if err := identity.SetZonalIdentity(d, res.Zone, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -377,7 +381,9 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	return ResourceClusterRead(ctx, d, m)
 }
 
-func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readClusterIntoState fetches the cluster and sets state without calling identity.SetZonalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readClusterIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -399,9 +405,18 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
+	return setClusterState(ctx, d, redisAPI, zone, cluster, m)
+}
+
+func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, cluster *redis.Cluster, m any) diag.Diagnostics {
+	userName := cluster.UserName
+	if v, ok := d.GetOk("user_name"); ok {
+		userName = v.(string)
+	}
+
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("node_type", cluster.NodeType)
-	_ = d.Set("user_name", d.Get("user_name").(string))
+	_ = d.Set("user_name", userName)
 	// Only set password if password_wo is not being used
 	if _, ok := d.GetOk("password_wo_version"); !ok {
 		_ = d.Set("password", d.Get("password").(string))
@@ -511,6 +526,35 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	return diags
+}
+
+func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getReq := &redis.GetClusterRequest{
+		Zone:      zone,
+		ClusterID: ID,
+	}
+
+	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetZonalIdentity(d, zone, cluster.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(ctx, d, redisAPI, zone, cluster, m)
 }
 
 func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
