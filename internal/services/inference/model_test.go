@@ -1,6 +1,7 @@
 package inference_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -36,6 +37,51 @@ func TestAccModel_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckModelExists(tt, "scaleway_inference_model.test"),
 					resource.TestCheckResourceAttr("scaleway_inference_model.test", "name", modelName),
+				),
+			},
+		},
+	})
+}
+
+func TestAccModel_WithSecretWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	modelName := "TestAccModel_WithSecretWO"
+	secretValue := "test-secret-token"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             inferencetestfuncs.IsModelDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_inference_model" "test" {
+						name = "%s"
+						url = "%s"
+						secret_wo = "%s"
+						secret_wo_version = 1
+					}`, modelName, modelURLCompatible, secretValue),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckModelExists(tt, "scaleway_inference_model.test"),
+					resource.TestCheckResourceAttr("scaleway_inference_model.test", "name", modelName),
+					// Verify that secret_wo is not stored in state
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_inference_model.test"]
+						if !ok {
+							return errors.New("can't find model resource")
+						}
+
+						if _, ok := rs.Primary.Attributes["secret_wo"]; ok {
+							return errors.New("secret_wo should not be stored in state")
+						}
+
+						if _, ok := rs.Primary.Attributes["secret"]; ok {
+							return errors.New("secret should not be stored in state")
+						}
+
+						return nil
+					},
 				),
 			},
 		},
