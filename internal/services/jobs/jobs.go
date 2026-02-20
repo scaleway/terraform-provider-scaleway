@@ -193,7 +193,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
-		Command:              scw.StringPtr(d.Get("command").(string)),
+		Command:              new(d.Get("command").(string)),
 		StartupCommand:       types.ExpandStrings(d.Get("startup_command")),
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
