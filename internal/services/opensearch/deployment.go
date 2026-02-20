@@ -354,7 +354,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		if d.HasChange("tags") {
-			req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+			req.Tags = new(types.ExpandStrings(d.Get("tags")))
 			changed = true
 		}
 
