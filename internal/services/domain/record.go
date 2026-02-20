@@ -481,6 +481,65 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	return nil
 }
 
+// readRecordIntoState fetches record data and sets schema attributes without Identity (for data sources).
+func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: dnsZone,
+		ID:      &recordID,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if len(res.Records) == 0 {
+		d.SetId("")
+
+		return nil
+	}
+
+	record := res.Records[0]
+
+	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
+
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	projectID := dnsZones.DNSZones[0].ProjectID
+
+	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
+	_ = d.Set("dns_zone", dnsZone)
+	_ = d.Set("name", record.Name)
+	_ = d.Set("type", record.Type.String())
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
+	_ = d.Set("ttl", int(record.TTL))
+	_ = d.Set("priority", int(record.Priority))
+	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
+	_ = d.Set("http_service", flattenDomainHTTPService(record.HTTPServiceConfig))
+	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
+	_ = d.Set("view", flattenDomainView(record.ViewConfig))
+	_ = d.Set("project_id", projectID)
+
+	if record.Name == "" || record.Name == "@" {
+		_ = d.Set("fqdn", dnsZone)
+	} else {
+		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
+	}
+
+	return nil
+}
+
 func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	if !d.HasChanges(changeKeys...) {
 		return resourceDomainRecordRead(ctx, d, m)

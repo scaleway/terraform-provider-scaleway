@@ -3,6 +3,7 @@ package domain_test
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -765,9 +766,15 @@ func testAccCheckDomainRecordExists(tt *acctest.TestTools, n string) resource.Te
 			return err
 		}
 
-		for _, record := range listDNSZones.Records {
-			if record.ID == rs.Primary.ID {
-				// record found
+		// Resource ID can be composite (dns_zone/uuid) or plain UUID
+		recordIDToFind := rs.Primary.ID
+		if strings.Contains(rs.Primary.ID, "/") {
+			parts := strings.SplitN(rs.Primary.ID, "/", 2)
+			recordIDToFind = parts[1]
+		}
+
+		for _, rec := range listDNSZones.Records {
+			if rec.ID == recordIDToFind {
 				return nil
 			}
 		}

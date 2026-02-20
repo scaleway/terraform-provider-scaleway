@@ -184,6 +184,46 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 	return nil
 }
 
+// readZoneIntoState fetches zone data and sets schema attributes without Identity (for data sources).
+func readZoneIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, zoneName string) diag.Diagnostics {
+	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
+		DNSZones:  []string{zoneName},
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if len(zones.DNSZones) == 0 {
+		return diag.FromErr(fmt.Errorf("no zone found with the name %s", zoneName))
+	}
+
+	if len(zones.DNSZones) > 1 {
+		return diag.FromErr(fmt.Errorf("%d zone found with the same name %s", len(zones.DNSZones), zoneName))
+	}
+
+	zone := zones.DNSZones[0]
+
+	d.SetId(zoneName)
+	_ = d.Set("subdomain", zone.Subdomain)
+	_ = d.Set("domain", zone.Domain)
+	_ = d.Set("ns", zone.Ns)
+	_ = d.Set("ns_default", zone.NsDefault)
+	_ = d.Set("ns_master", zone.NsMaster)
+	_ = d.Set("status", zone.Status.String())
+	_ = d.Set("message", zone.Message)
+	_ = d.Set("updated_at", zone.UpdatedAt.String())
+	_ = d.Set("project_id", zone.ProjectID)
+
+	return nil
+}
+
 func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 

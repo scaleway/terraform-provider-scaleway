@@ -9,6 +9,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -26,8 +27,8 @@ func DataSourceRecord() *schema.Resource {
 	dsSchema["record_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "The ID of the record",
-		ValidateDiagFunc: verify.IsUUID(),
+		Description:      "The ID of the record (UUID or dns_zone/uuid format)",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith:    []string{"name", "type", "data"},
 	}
 
@@ -39,11 +40,12 @@ func DataSourceRecord() *schema.Resource {
 
 func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
+	dnsZone := d.Get("dns_zone").(string)
 
-	recordID, ok := d.GetOk("record_id")
+	recordIDRaw, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone:   d.Get("dns_zone").(string),
+			DNSZone:   dnsZone,
 			Name:      d.Get("name").(string),
 			Type:      domain.RecordType(d.Get("type").(string)),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -72,10 +74,18 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(fmt.Errorf("no record found with the type this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 		}
 
-		recordID = record.ID
+		return readRecordIntoState(ctx, d, domainAPI, dnsZone, record.ID)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
+	recordIDStr := recordIDRaw.(string)
+	var recordID string
 
-	return resourceDomainRecordRead(ctx, d, m)
+	if zone, id, err := locality.ParseLocalizedID(recordIDStr); err == nil {
+		dnsZone = zone
+		recordID = id
+	} else {
+		recordID = locality.ExpandID(recordIDStr)
+	}
+
+	return readRecordIntoState(ctx, d, domainAPI, dnsZone, recordID)
 }
