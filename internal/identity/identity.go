@@ -154,6 +154,7 @@ func SetMultiPartIdentity(d *schema.ResourceData, values map[string]string, keyO
 	return nil
 }
 
+// ParseMultiPartID extracts identity parts from a composite ID
 func ParseMultiPartID(id string, keyOrder ...string) map[string]string {
 	parts := strings.SplitN(id, "/", len(keyOrder))
 	result := make(map[string]string, len(keyOrder))

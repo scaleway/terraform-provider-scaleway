@@ -43,7 +43,7 @@ func ResourceUser() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
-		Identity:      identity.DefaultRegional(),
+		Identity:      userIdentity(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("instance_id"),
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
@@ -68,6 +68,16 @@ func ResourceUser() *schema.Resource {
 			},
 		),
 	}
+}
+
+// userIdentity returns the explicit multi-part regional identity for MongoDB user.
+// ID format: region/instance_id/name
+func userIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":      identity.DefaultRegionAttribute(),
+		"instance_id": {Type: schema.TypeString, Description: "The instance ID (UUID format)", RequiredForImport: true},
+		"name":        {Type: schema.TypeString, Description: "The user name", RequiredForImport: true},
+	})
 }
 
 func userSchema() map[string]*schema.Schema {
@@ -174,8 +184,11 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	compositeID := instanceID + "/" + user.Name
-	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      string(region),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -241,8 +254,11 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 	user := res.Users[0]
 
-	compositeID := instanceID + "/" + user.Name
-	if err := identity.SetRegionalIdentity(d, region, compositeID); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      string(region),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
