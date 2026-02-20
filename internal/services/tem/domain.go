@@ -258,6 +258,35 @@ func ResourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	return setDomainState(d, domain, region)
+}
+
+// readDomainIntoState fetches the domain and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readDomainIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	domain, err := api.GetDomain(&tem.GetDomainRequest{
+		Region:   region,
+		DomainID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setDomainState(d, domain, region)
+}
+
+func setDomainState(d *schema.ResourceData, domain *tem.Domain, region scw.Region) diag.Diagnostics {
 	_ = d.Set("name", domain.Name)
 	_ = d.Set("accept_tos", true)
 	_ = d.Set("autoconfig", domain.Autoconfig)
