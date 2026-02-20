@@ -180,7 +180,7 @@ func ResourceVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, d *schem
 		req := &vpcgw.UpdateDHCPEntryRequest{
 			DHCPEntryID: ID,
 			Zone:        zone,
-			IPAddress:   scw.IPPtr(ip),
+			IPAddress:   new(ip),
 		}
 
 		_, err = api.UpdateDHCPEntry(req, scw.WithContext(ctx))

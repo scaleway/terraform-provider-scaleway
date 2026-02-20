@@ -414,7 +414,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	autoscalerReq := &k8s.CreateClusterRequestAutoscalerConfig{}
 
 	if scaleDownDisabled, ok := d.GetOk("autoscaler_config.0.disable_scale_down"); ok {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(scaleDownDisabled.(bool))
+		autoscalerReq.ScaleDownDisabled = new(scaleDownDisabled.(bool))
 	}
 
 	if scaleDownDelayAfterAdd, ok := d.GetOk("autoscaler_config.0.scale_down_delay_after_add"); ok {
@@ -434,24 +434,24 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if ignoreDaemonsetsUtilization, ok := d.GetOk("autoscaler_config.0.ignore_daemonsets_utilization"); ok {
-		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(ignoreDaemonsetsUtilization.(bool))
+		autoscalerReq.IgnoreDaemonsetsUtilization = new(ignoreDaemonsetsUtilization.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(balanceSimilarNodeGroups.(bool))
 	}
 
 	if balanceSimilarNodeGroups, ok := d.GetOk("autoscaler_config.0.balance_similar_node_groups"); ok {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(balanceSimilarNodeGroups.(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(balanceSimilarNodeGroups.(bool))
 	}
 
-	autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+	autoscalerReq.ExpendablePodsPriorityCutoff = new(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 
 	if utilizationThreshold, ok := d.GetOk("autoscaler_config.0.scale_down_utilization_threshold"); ok {
-		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(utilizationThreshold.(float64)))
+		autoscalerReq.ScaleDownUtilizationThreshold = new(float32(utilizationThreshold.(float64)))
 	}
 
-	autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+	autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 
 	req.AutoscalerConfig = autoscalerReq
 
@@ -472,23 +472,23 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	// createClusterRequestOpenIDConnectConfig is always defined here
 
 	if usernameClaim, ok := d.GetOk("open_id_connect_config.0.username_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(usernameClaim.(string))
+		createClusterRequestOpenIDConnectConfig.UsernameClaim = new(usernameClaim.(string))
 	}
 
 	if usernamePrefix, ok := d.GetOk("open_id_connect_config.0.username_prefix"); ok {
-		createClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(usernamePrefix.(string))
+		createClusterRequestOpenIDConnectConfig.UsernamePrefix = new(usernamePrefix.(string))
 	}
 
 	if groupsClaim, ok := d.GetOk("open_id_connect_config.0.groups_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsClaim = scw.StringsPtr(types.ExpandStrings(groupsClaim))
+		createClusterRequestOpenIDConnectConfig.GroupsClaim = new(types.ExpandStrings(groupsClaim))
 	}
 
 	if groupsPrefix, ok := d.GetOk("open_id_connect_config.0.groups_prefix"); ok {
-		createClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(groupsPrefix.(string))
+		createClusterRequestOpenIDConnectConfig.GroupsPrefix = new(groupsPrefix.(string))
 	}
 
 	if requiredClaim, ok := d.GetOk("open_id_connect_config.0.required_claim"); ok {
-		createClusterRequestOpenIDConnectConfig.RequiredClaim = scw.StringsPtr(types.ExpandStrings(requiredClaim))
+		createClusterRequestOpenIDConnectConfig.RequiredClaim = new(types.ExpandStrings(requiredClaim))
 	}
 
 	// Auto-upgrade configuration
@@ -544,7 +544,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	// Private network configuration
 
 	if pnID, ok := d.GetOk("private_network_id"); ok {
-		req.PrivateNetworkID = scw.StringPtr(regional.ExpandID(pnID.(string)).ID)
+		req.PrivateNetworkID = new(regional.ExpandID(pnID.(string)).ID)
 	}
 
 	// Networking configuration
@@ -752,7 +752,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	autoupgradeEnabled := d.Get("auto_upgrade.0.enable").(bool)
 
 	if d.HasChange("auto_upgrade.0.enable") {
-		updateRequest.AutoUpgrade.Enable = scw.BoolPtr(d.Get("auto_upgrade.0.enable").(bool))
+		updateRequest.AutoUpgrade.Enable = new(d.Get("auto_upgrade.0.enable").(bool))
 	}
 
 	if d.HasChanges("auto_upgrade.0.maintenance_window_start_hour", "auto_upgrade.0.maintenance_window_day") {
@@ -808,7 +808,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	autoscalerReq := &k8s.UpdateClusterRequestAutoscalerConfig{}
 
 	if d.HasChange("autoscaler_config.0.disable_scale_down") {
-		autoscalerReq.ScaleDownDisabled = scw.BoolPtr(d.Get("autoscaler_config.0.disable_scale_down").(bool))
+		autoscalerReq.ScaleDownDisabled = new(d.Get("autoscaler_config.0.disable_scale_down").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_delay_after_add") {
@@ -828,23 +828,23 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if d.HasChange("autoscaler_config.0.ignore_daemonsets_utilization") {
-		autoscalerReq.IgnoreDaemonsetsUtilization = scw.BoolPtr(d.Get("autoscaler_config.0.ignore_daemonsets_utilization").(bool))
+		autoscalerReq.IgnoreDaemonsetsUtilization = new(d.Get("autoscaler_config.0.ignore_daemonsets_utilization").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.balance_similar_node_groups") {
-		autoscalerReq.BalanceSimilarNodeGroups = scw.BoolPtr(d.Get("autoscaler_config.0.balance_similar_node_groups").(bool))
+		autoscalerReq.BalanceSimilarNodeGroups = new(d.Get("autoscaler_config.0.balance_similar_node_groups").(bool))
 	}
 
 	if d.HasChange("autoscaler_config.0.expendable_pods_priority_cutoff") {
-		autoscalerReq.ExpendablePodsPriorityCutoff = scw.Int32Ptr(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
+		autoscalerReq.ExpendablePodsPriorityCutoff = new(int32(d.Get("autoscaler_config.0.expendable_pods_priority_cutoff").(int)))
 	}
 
 	if d.HasChange("autoscaler_config.0.scale_down_utilization_threshold") {
-		autoscalerReq.ScaleDownUtilizationThreshold = scw.Float32Ptr(float32(d.Get("autoscaler_config.0.scale_down_utilization_threshold").(float64)))
+		autoscalerReq.ScaleDownUtilizationThreshold = new(float32(d.Get("autoscaler_config.0.scale_down_utilization_threshold").(float64)))
 	}
 
 	if d.HasChange("autoscaler_config.0.max_graceful_termination_sec") {
-		autoscalerReq.MaxGracefulTerminationSec = scw.Uint32Ptr(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
+		autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 	}
 
 	updateRequest.AutoscalerConfig = autoscalerReq
@@ -855,19 +855,19 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	updateClusterRequestOpenIDConnectConfig := &k8s.UpdateClusterRequestOpenIDConnectConfig{}
 
 	if d.HasChange("open_id_connect_config.0.issuer_url") {
-		updateClusterRequestOpenIDConnectConfig.IssuerURL = scw.StringPtr(d.Get("open_id_connect_config.0.issuer_url").(string))
+		updateClusterRequestOpenIDConnectConfig.IssuerURL = new(d.Get("open_id_connect_config.0.issuer_url").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.client_id") {
-		updateClusterRequestOpenIDConnectConfig.ClientID = scw.StringPtr(d.Get("open_id_connect_config.0.client_id").(string))
+		updateClusterRequestOpenIDConnectConfig.ClientID = new(d.Get("open_id_connect_config.0.client_id").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_claim") {
-		updateClusterRequestOpenIDConnectConfig.UsernameClaim = scw.StringPtr(d.Get("open_id_connect_config.0.username_claim").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernameClaim = new(d.Get("open_id_connect_config.0.username_claim").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.username_prefix") {
-		updateClusterRequestOpenIDConnectConfig.UsernamePrefix = scw.StringPtr(d.Get("open_id_connect_config.0.username_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.UsernamePrefix = new(d.Get("open_id_connect_config.0.username_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_claim") {
@@ -875,7 +875,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if d.HasChange("open_id_connect_config.0.groups_prefix") {
-		updateClusterRequestOpenIDConnectConfig.GroupsPrefix = scw.StringPtr(d.Get("open_id_connect_config.0.groups_prefix").(string))
+		updateClusterRequestOpenIDConnectConfig.GroupsPrefix = new(d.Get("open_id_connect_config.0.groups_prefix").(string))
 	}
 
 	if d.HasChange("open_id_connect_config.0.required_claim") {

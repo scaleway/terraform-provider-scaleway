@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -37,6 +38,7 @@ func ResourceImage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    imageSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
 	}
 }
@@ -222,19 +224,41 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Image.ID))
+	err = identity.SetZonalIdentity(d, res.Image.Zone, res.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
+	image, err := api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceImageRead(ctx, d, m)
+	return setImageState(d, image)
+}
+
+func setImageState(d *schema.ResourceData, image *instanceSDK.Image) diag.Diagnostics {
+	_ = d.Set("name", image.Name)
+	_ = d.Set("root_volume_id", zonal.NewIDString(image.Zone, image.RootVolume.ID))
+	_ = d.Set("architecture", image.Arch)
+	_ = d.Set("root_volume", flattenImageRootVolume(image.RootVolume, image.Zone))
+	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.ExtraVolumes, image.Zone))
+	_ = d.Set("tags", image.Tags)
+	_ = d.Set("public", image.Public)
+	_ = d.Set("creation_date", types.FlattenTime(image.CreationDate))
+	_ = d.Set("modification_date", types.FlattenTime(image.ModificationDate))
+	_ = d.Set("from_server_id", image.FromServer)
+	_ = d.Set("state", image.State)
+	_ = d.Set("zone", image.Zone)
+	_ = d.Set("project_id", image.Project)
+	_ = d.Set("organization_id", image.Organization)
+
+	return nil
 }
 
 func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -257,22 +281,12 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", image.Image.Name)
-	_ = d.Set("root_volume_id", zonal.NewIDString(image.Image.Zone, image.Image.RootVolume.ID))
-	_ = d.Set("architecture", image.Image.Arch)
-	_ = d.Set("root_volume", flattenImageRootVolume(image.Image.RootVolume, zone))
-	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.Image.ExtraVolumes, zone))
-	_ = d.Set("tags", image.Image.Tags)
-	_ = d.Set("public", image.Image.Public)
-	_ = d.Set("creation_date", types.FlattenTime(image.Image.CreationDate))
-	_ = d.Set("modification_date", types.FlattenTime(image.Image.ModificationDate))
-	_ = d.Set("from_server_id", image.Image.FromServer)
-	_ = d.Set("state", image.Image.State)
-	_ = d.Set("zone", image.Image.Zone)
-	_ = d.Set("project_id", image.Image.Project)
-	_ = d.Set("organization_id", image.Image.Organization)
+	err = identity.SetZonalIdentity(d, image.Image.Zone, image.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return nil
+	return setImageState(d, image.Image)
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

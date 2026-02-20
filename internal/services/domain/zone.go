@@ -179,7 +179,7 @@ func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
 			ProjectID:  d.Get("project_id").(string),
 			DNSZone:    d.Id(),
-			NewDNSZone: scw.StringPtr(d.Get("subdomain").(string)),
+			NewDNSZone: new(d.Get("subdomain").(string)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)

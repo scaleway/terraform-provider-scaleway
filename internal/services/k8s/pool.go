@@ -308,13 +308,13 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
-		req.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+		req.MinSize = new(uint32(minSize.(int)))
 	}
 
 	if maxSize, ok := d.GetOk("max_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+		req.MaxSize = new(uint32(maxSize.(int)))
 	} else {
-		req.MaxSize = scw.Uint32Ptr(req.Size)
+		req.MaxSize = new(req.Size)
 	}
 
 	if containerRuntime, ok := d.GetOk("container_runtime"); ok {
@@ -325,12 +325,12 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	if maxSurge, ok := d.GetOk("upgrade_policy.0.max_surge"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(maxSurge.(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(maxSurge.(int)))
 	}
 
 	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(maxUnavailable.(int)))
 	}
 
 	if volumeType, ok := d.GetOk("root_volume_type"); ok {
@@ -525,23 +525,23 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("autoscaling") {
-		updateRequest.Autoscaling = scw.BoolPtr(d.Get("autoscaling").(bool))
+		updateRequest.Autoscaling = new(d.Get("autoscaling").(bool))
 	}
 
 	if d.HasChange("autohealing") {
-		updateRequest.Autohealing = scw.BoolPtr(d.Get("autohealing").(bool))
+		updateRequest.Autohealing = new(d.Get("autohealing").(bool))
 	}
 
 	if d.HasChange("min_size") {
-		updateRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("min_size").(int)))
+		updateRequest.MinSize = new(uint32(d.Get("min_size").(int)))
 	}
 
 	if d.HasChange("max_size") {
-		updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("max_size").(int)))
+		updateRequest.MaxSize = new(uint32(d.Get("max_size").(int)))
 	}
 
 	if !d.Get("autoscaling").(bool) && d.HasChange("size") {
-		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
+		updateRequest.Size = new(uint32(d.Get("size").(int)))
 	}
 
 	if d.HasChange("tags") {
@@ -556,11 +556,11 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	upgradePolicyReq := &k8s.UpdatePoolRequestUpgradePolicy{}
 
 	if d.HasChange("upgrade_policy.0.max_surge") {
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
 	}
 
 	if d.HasChange("upgrade_policy.0.max_unavailable") {
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
 	}
 
 	updateRequest.UpgradePolicy = upgradePolicyReq

@@ -53,7 +53,7 @@ func waitForInstance(ctx context.Context, api *mongodb.API, region scw.Region, i
 	}
 
 	return api.WaitForInstance(&mongodb.WaitForInstanceRequest{
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		InstanceID:    id,
 		Region:        region,
 		RetryInterval: &retryInterval,
@@ -67,7 +67,7 @@ func waitForSnapshot(ctx context.Context, api *mongodb.API, region scw.Region, i
 	}
 
 	return api.WaitForSnapshot(&mongodb.WaitForSnapshotRequest{
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		InstanceID:    instanceID,
 		SnapshotID:    snapshotID,
 		Region:        region,
@@ -93,7 +93,7 @@ func expandUserRoles(rolesSet *schema.Set) []*mongodb.UserRole {
 		if dbName, ok := roleMap["database_name"]; ok && dbName.(string) != "" {
 			userRole.DatabaseName = types.ExpandStringPtr(dbName)
 		} else if anyDB, ok := roleMap["any_database"]; ok && anyDB.(bool) {
-			userRole.AnyDatabase = scw.BoolPtr(true)
+			userRole.AnyDatabase = new(true)
 		}
 
 		roles = append(roles, userRole)
