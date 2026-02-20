@@ -7,24 +7,25 @@ page_title: "Scaleway: scaleway_inference_model"
 
 The scaleway_inference_model resource allows you to upload and manage inference models in the Scaleway Inference ecosystem. Once registered, a model can be used in any scaleway_inference_deployment resource.
 
+
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic creation of an inference model
+
 resource "scaleway_inference_model" "test" {
-  name = "my-awesome-model"
-  url = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
+  name   = "my-awesome-model"
+  url    = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
   secret = "my-secret-token"
 }
 ```
 
+```terraform
 ### Deploy your own model on your managed inference
 
-```terraform
 resource "scaleway_inference_model" "my_model" {
-  name = "my-awesome-model"
-  url = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
+  name   = "my-awesome-model"
+  url    = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
   secret = "my-secret-token"
 }
 
@@ -41,11 +42,30 @@ resource "scaleway_inference_deployment" "my_deployment" {
 }
 ```
 
+```terraform
+### Create a model using your model's secret token without storing it in the state
+
+resource "scaleway_inference_model" "my_model_wo" {
+  name              = "my-awesome-model-wo"
+  url               = "https://huggingface.co/agentica-org/DeepCoder-14B-Preview"
+  secret_wo         = "my-secret-token"
+  secret_wo_version = 1
+}
+```
+
+
+
+
+
 ## Argument Reference
 
+The following arguments are supported:
+
 - `name` - (Required) The name of the model. This must be unique within the project.
-- `url` - (Required) The HTTPS source URL from which the model will be downloaded. This is typically a Hugging Face repository URL (e.g., <https://huggingface.co/agentica-org/DeepCoder-14B-Preview>). The URL must be publicly accessible or require valid credentials via `secret`
-- `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission).
+- `url` - (Required) The HTTPS source URL from which the model will be downloaded. This is typically a Hugging Face repository URL (e.g., <https://huggingface.co/agentica-org/DeepCoder-14B-Preview>). The URL must be publicly accessible or require valid credentials via `secret` or `secret_wo`
+- `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission). Conflicts with `secret_wo`.
+- `secret_wo` - (Optional) Authentication token used to pull the model from a private or gated URL in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. `secret_wo` will not be stored in the Terraform state. Only one of `secret` or `secret_wo` should be specified. Requires `secret_wo_version` to be set.
+- `secret_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) secret. Required when using `secret_wo`.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
