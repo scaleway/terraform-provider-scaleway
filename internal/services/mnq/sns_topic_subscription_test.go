@@ -10,7 +10,6 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
@@ -102,7 +101,7 @@ func isSNSTopicSubscriptionPresent(ctx context.Context, tt *acctest.TestTools, n
 		}
 
 		_, err = snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
-			SubscriptionArn: scw.StringPtr(arn.String()),
+			SubscriptionArn: new(arn.String()),
 		})
 		if err != nil {
 			return err
@@ -130,7 +129,7 @@ func isSNSTopicSubscriptionDestroyed(ctx context.Context, tt *acctest.TestTools)
 			}
 
 			_, err = snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
-				SubscriptionArn: scw.StringPtr(arn.String()),
+				SubscriptionArn: new(arn.String()),
 			})
 			if err != nil {
 				var apiErr *smithy.GenericAPIError

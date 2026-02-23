@@ -87,7 +87,7 @@ func resourceDatabaseRead(ctx context.Context, d *schema.ResourceData, meta any)
 	resp, err := api.ListDatabases(&datawarehouseapi.ListDatabasesRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
-		Name:         scw.StringPtr(name),
+		Name:         new(name),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

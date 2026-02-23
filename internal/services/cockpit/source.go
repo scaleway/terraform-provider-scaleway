@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceCockpitSource() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: sourceSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -110,7 +112,9 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitSourceRead(ctx, d, meta)
 }
@@ -132,6 +136,10 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -183,7 +191,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	return nil
+	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
 func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

@@ -133,7 +133,7 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		VolumeID:      res.Volume.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -207,7 +207,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 	req := &instanceSDK.UpdateVolumeRequest{
 		VolumeID: id,
 		Zone:     zone,
-		Tags:     scw.StringsPtr([]string{}),
+		Tags:     new([]string{}),
 	}
 
 	if d.HasChange("name") {
@@ -217,7 +217,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("size_in_gb") {
@@ -269,7 +269,7 @@ func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m
 		Zone:          zone,
 		VolumeID:      id,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
+		Timeout:       new(d.Timeout(schema.TimeoutDelete)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

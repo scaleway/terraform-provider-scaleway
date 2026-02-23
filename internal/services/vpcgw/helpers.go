@@ -100,11 +100,11 @@ func expandUpdateIpamConfig(raw any) *vpcgw.UpdateGatewayNetworkRequestIpamConfi
 	rawMap := raw.([]any)[0].(map[string]any)
 
 	updateIpamConfig := &vpcgw.UpdateGatewayNetworkRequestIpamConfig{
-		PushDefaultRoute: scw.BoolPtr(rawMap["push_default_route"].(bool)),
+		PushDefaultRoute: new(rawMap["push_default_route"].(bool)),
 	}
 
 	if ipamIPID, ok := rawMap["ipam_ip_id"].(string); ok && ipamIPID != "" {
-		updateIpamConfig.IpamIPID = scw.StringPtr(regional.ExpandID(ipamIPID).ID)
+		updateIpamConfig.IpamIPID = new(regional.ExpandID(ipamIPID).ID)
 	}
 
 	return updateIpamConfig
@@ -122,7 +122,7 @@ func expandIpamConfigV2(raw any) (bool, *string) {
 	var ipamIPID *string
 
 	if IPID, ok := rawMap["ipam_ip_id"].(string); ok && IPID != "" {
-		ipamIPID = scw.StringPtr(regional.ExpandID(IPID).ID)
+		ipamIPID = new(regional.ExpandID(IPID).ID)
 	}
 
 	return pushDefaultRoute, ipamIPID
@@ -467,7 +467,7 @@ func updateGatewayV1(ctx context.Context, d *schema.ResourceData, apiV1 *vpcgw.A
 	}
 
 	if d.HasChange("name") {
-		v1UpdateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		v1UpdateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {
@@ -475,15 +475,15 @@ func updateGatewayV1(ctx context.Context, d *schema.ResourceData, apiV1 *vpcgw.A
 	}
 
 	if d.HasChange("bastion_port") {
-		v1UpdateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
+		v1UpdateRequest.BastionPort = new(uint32(d.Get("bastion_port").(int)))
 	}
 
 	if d.HasChange("bastion_enabled") {
-		v1UpdateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
+		v1UpdateRequest.EnableBastion = new(d.Get("bastion_enabled").(bool))
 	}
 
 	if d.HasChange("enable_smtp") {
-		v1UpdateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
+		v1UpdateRequest.EnableSMTP = new(d.Get("enable_smtp").(bool))
 	}
 
 	if _, err := apiV1.UpdateGateway(v1UpdateRequest, scw.WithContext(ctx)); err != nil {
@@ -535,7 +535,7 @@ func updateGatewayV2(ctx context.Context, d *schema.ResourceData, api *v2.API, z
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("tags") {
@@ -543,15 +543,15 @@ func updateGatewayV2(ctx context.Context, d *schema.ResourceData, api *v2.API, z
 	}
 
 	if d.HasChange("bastion_port") {
-		updateRequest.BastionPort = scw.Uint32Ptr(uint32(d.Get("bastion_port").(int)))
+		updateRequest.BastionPort = new(uint32(d.Get("bastion_port").(int)))
 	}
 
 	if d.HasChange("bastion_enabled") {
-		updateRequest.EnableBastion = scw.BoolPtr(d.Get("bastion_enabled").(bool))
+		updateRequest.EnableBastion = new(d.Get("bastion_enabled").(bool))
 	}
 
 	if d.HasChange("enable_smtp") {
-		updateRequest.EnableSMTP = scw.BoolPtr(d.Get("enable_smtp").(bool))
+		updateRequest.EnableSMTP = new(d.Get("enable_smtp").(bool))
 	}
 
 	if _, err := api.UpdateGateway(updateRequest, scw.WithContext(ctx)); err != nil {
@@ -641,7 +641,7 @@ func updateGWNetworkV2(ctx context.Context, d *schema.ResourceData, api *v2.API,
 	if d.HasChange("ipam_config") {
 		pushDefaultRoute, ipamIPID := expandIpamConfigV2(d.Get("ipam_config"))
 
-		updateRequest.PushDefaultRoute = scw.BoolPtr(pushDefaultRoute)
+		updateRequest.PushDefaultRoute = new(pushDefaultRoute)
 		updateRequest.IpamIPID = ipamIPID
 	}
 

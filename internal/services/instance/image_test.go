@@ -53,6 +53,11 @@ func TestAccImage_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_image.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource "scaleway_block_volume" "main" {
 						size_in_gb = 20
@@ -88,6 +93,11 @@ func TestAccImage_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_image.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource "scaleway_block_volume" "main" {
 						size_in_gb = 20
@@ -118,6 +128,11 @@ func TestAccImage_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "state", "available"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_image.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -179,6 +194,12 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
+			},
+			{
 				Config: `
 					resource "scaleway_block_volume" "main" {
 						size_in_gb = 20
@@ -215,6 +236,11 @@ func TestAccImage_ExternalBlockVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volume_ids.#", "0"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_image.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -349,6 +375,12 @@ func TestAccImage_ServerWithLocalVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "additional_volumes.1.size", "20000000000"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
+			},
 		},
 	})
 }
@@ -427,6 +459,12 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
+			},
+			{
 				Config: `
 					resource "scaleway_block_volume" "block01" {
 						iops       = 5000
@@ -474,6 +512,12 @@ func TestAccImage_ServerWithSBSVolume(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "architecture", "x86_64"),
 					resource.TestCheckResourceAttr("scaleway_instance_image.main", "public", "false"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
 			},
 		},
 	})
@@ -542,6 +586,12 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_server" "local" {
 						image 	= "ubuntu_focal"
@@ -587,6 +637,12 @@ func TestAccImage_MixedVolumes(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_image.main", "additional_volumes.1.id", "scaleway_block_snapshot.block_detached", "id"),
 					acctest.CheckResourceIDChanged("scaleway_instance_image.main", &imageID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_image.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"additional_volume_ids"},
 			},
 		},
 	})

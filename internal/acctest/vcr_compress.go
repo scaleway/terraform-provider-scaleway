@@ -124,7 +124,10 @@ func (report *CompressReport) Print() {
 	}
 }
 
-func CompressCassetteV3(path string) (CompressReport, error) {
+// CompressCassetteV3 reads the input go-vcr.v3 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV3(path string, saveCompressed bool) (CompressReport, error) {
 	inputCassette, err := cassetteV3.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
@@ -204,15 +207,20 @@ func CompressCassetteV3(path string) (CompressReport, error) {
 		}
 	}
 
-	err = outputCassette.Save()
-	if err != nil {
-		return report, fmt.Errorf("error while saving file: %w", err)
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
 	}
 
 	return report, nil
 }
 
-func CompressCassetteV4(path string) (CompressReport, error) {
+// CompressCassetteV4 reads the input go-vcr.v4 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV4(path string, saveCompressed bool) (CompressReport, error) {
 	inputCassette, err := cassetteV4.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
@@ -293,9 +301,11 @@ func CompressCassetteV4(path string) (CompressReport, error) {
 		}
 	}
 
-	err = outputCassette.Save()
-	if err != nil {
-		return report, fmt.Errorf("error while saving file: %w", err)
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
 	}
 
 	return report, nil

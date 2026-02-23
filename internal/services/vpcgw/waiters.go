@@ -17,7 +17,7 @@ func waitForVPCPublicGateway(ctx context.Context, api *vpcgw.API, zone scw.Zone,
 	}
 
 	gateway, err := api.WaitForGateway(&vpcgw.WaitForGatewayRequest{
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		GatewayID:     id,
 		RetryInterval: &retryInterval,
 		Zone:          zone,
@@ -33,7 +33,7 @@ func waitForVPCPublicGatewayV2(ctx context.Context, api *v2.API, zone scw.Zone, 
 	}
 
 	gateway, err := api.WaitForGateway(&v2.WaitForGatewayRequest{
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		GatewayID:     id,
 		RetryInterval: &retryInterval,
 		Zone:          zone,
@@ -50,7 +50,7 @@ func waitForVPCGatewayNetwork(ctx context.Context, api *vpcgw.API, zone scw.Zone
 
 	gatewayNetwork, err := api.WaitForGatewayNetwork(&vpcgw.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: id,
-		Timeout:          scw.TimeDurationPtr(timeout),
+		Timeout:          new(timeout),
 		RetryInterval:    &retryIntervalGWNetwork,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
@@ -66,7 +66,7 @@ func waitForVPCGatewayNetworkV2(ctx context.Context, api *v2.API, zone scw.Zone,
 
 	gatewayNetwork, err := api.WaitForGatewayNetwork(&v2.WaitForGatewayNetworkRequest{
 		GatewayNetworkID: id,
-		Timeout:          scw.TimeDurationPtr(timeout),
+		Timeout:          new(timeout),
 		RetryInterval:    &retryIntervalGWNetwork,
 		Zone:             zone,
 	}, scw.WithContext(ctx))
@@ -83,7 +83,7 @@ func waitForDHCPEntries(ctx context.Context, api *vpcgw.API, zone scw.Zone, gate
 	req := &vpcgw.WaitForDHCPEntriesRequest{
 		MacAddress:    macAddress,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryIntervalDHCPEntries,
 	}
 

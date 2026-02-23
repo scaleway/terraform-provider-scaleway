@@ -317,7 +317,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
+	nodeNumber := new(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
 
@@ -816,17 +816,17 @@ func configureSnapshotScheduleOnCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if snapshotFrequency, ok := d.GetOk("snapshot_schedule_frequency_hours"); ok {
-		updateReq.SnapshotScheduleFrequencyHours = scw.Uint32Ptr(uint32(snapshotFrequency.(int)))
+		updateReq.SnapshotScheduleFrequencyHours = new(uint32(snapshotFrequency.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotRetention, ok := d.GetOk("snapshot_schedule_retention_days"); ok {
-		updateReq.SnapshotScheduleRetentionDays = scw.Uint32Ptr(uint32(snapshotRetention.(int)))
+		updateReq.SnapshotScheduleRetentionDays = new(uint32(snapshotRetention.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotEnabled, ok := d.GetOk("is_snapshot_schedule_enabled"); ok {
-		updateReq.IsSnapshotScheduleEnabled = scw.BoolPtr(snapshotEnabled.(bool))
+		updateReq.IsSnapshotScheduleEnabled = new(snapshotEnabled.(bool))
 		mustUpdate = true
 	}
 
