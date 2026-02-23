@@ -52,22 +52,28 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "Name of the vpc to list for",
+				Optional:    true,
 			},
 			"organization_id": schema.StringAttribute{
 				Description: "Organization ID of the VPC to list for",
+				Optional:    true,
 			},
 			"project_id": schema.StringAttribute{
 				Description: "Project ID of the VPC to list for",
+				Optional:    true,
 			},
 			"routing_enabled": schema.BoolAttribute{
 				Description: "Whether routing is enabled for VPC",
+				Optional:    true,
 			},
 			"tags": schema.ListAttribute{
 				Description: "Tags associated with VPC",
 				ElementType: types.StringType,
+				Optional:    true,
 			},
 			"is_default": schema.BoolAttribute{
 				Description: "Whether the VPC is the default VPC",
+				Optional:    true,
 			},
 		},
 	}
@@ -81,13 +87,13 @@ func (r *ListResource) RawV5Schemas(ctx context.Context, req list.RawV5SchemaReq
 }
 
 type VPCListResourceModel struct {
-	IsDefault      types.Bool   `tfsdk:"is_default"`
+	Tags           types.List   `tfsdk:"tags"`
 	Name           types.String `tfsdk:"name"`
 	OrganizationID types.String `tfsdk:"organization_id"`
 	ProjectID      types.String `tfsdk:"project_id"`
 	Region         types.String `tfsdk:"region"`
 	RoutingEnabled types.Bool   `tfsdk:"routing_enabled"`
-	Tags           types.List   `tfsdk:"tags"`
+	IsDefault      types.Bool   `tfsdk:"is_default"`
 }
 
 func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -101,6 +107,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 	diags := req.Config.Get(ctx, &data)
 	if diags.HasError() {
 		stream.Results = list.ListResultsStreamDiagnostics(diags)
+
 		return
 	}
 
@@ -129,6 +136,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 			v := ResourceVPC()
 			d := v.Data(&terraformSDKv2.InstanceState{})
 			setVPCState(d, rawVPC)
+
 			err := identity.SetRegionalIdentity(d, rawVPC.Region, rawVPC.ID)
 			if err != nil {
 				return
