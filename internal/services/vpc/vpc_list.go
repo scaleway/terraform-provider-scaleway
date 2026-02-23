@@ -64,6 +64,7 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 			},
 			"tags": schema.ListAttribute{
 				Description: "Tags associated with VPC",
+				ElementType: types.StringType,
 			},
 			"is_default": schema.BoolAttribute{
 				Description: "Whether the VPC is the default VPC",
