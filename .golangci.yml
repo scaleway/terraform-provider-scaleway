@@ -134,6 +134,9 @@ linters:
     gosec:
       excludes:
         - G115
+        - G117
+        - G704
+        - G706
     revive:
       rules:
         - name: exported
@@ -156,6 +159,9 @@ linters:
       - path: internal/services/vpcgw
         linters:
           - staticcheck
+      - linters:
+          - staticcheck
+        text: "QF1012:"
 
 issues:
   max-issues-per-linter: 0

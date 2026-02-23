@@ -19,7 +19,7 @@ func waitForBlockVolume(ctx context.Context, blockAPI *block.API, zone scw.Zone,
 		Zone:          zone,
 		VolumeID:      id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return volume, err
@@ -36,7 +36,7 @@ func waitForBlockVolumeToBeAvailable(ctx context.Context, blockAPI *block.API, z
 		Zone:          zone,
 		VolumeID:      id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 
 		VolumeTerminalStatus: &terminalStatus,
 	}, scw.WithContext(ctx))
@@ -54,7 +54,7 @@ func waitForBlockSnapshot(ctx context.Context, blockAPI *block.API, zone scw.Zon
 		Zone:          zone,
 		SnapshotID:    id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return snapshot, err
@@ -71,7 +71,7 @@ func waitForBlockSnapshotToBeAvailable(ctx context.Context, blockAPI *block.API,
 		Zone:          zone,
 		SnapshotID:    id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 
 		TerminalStatus: &terminalStatus,
 	}, scw.WithContext(ctx))

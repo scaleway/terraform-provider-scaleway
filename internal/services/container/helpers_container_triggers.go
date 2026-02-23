@@ -24,7 +24,7 @@ func waitForContainerTrigger(ctx context.Context, containerAPI *container.API, r
 		Region:        region,
 		TriggerID:     id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return trigger, err

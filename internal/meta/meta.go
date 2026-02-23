@@ -66,24 +66,24 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 			return nil, err
 		}
 
-		profile.DefaultRegion = scw.StringPtr(region.String())
-		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
+		profile.DefaultRegion = new(region.String())
+		profile.DefaultZone = new(config.ForceZone.String())
 	}
 
 	if config.ForceProjectID != "" {
-		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
+		profile.DefaultProjectID = new(config.ForceProjectID)
 	}
 
 	if config.ForceOrganizationID != "" {
-		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
+		profile.DefaultOrganizationID = new(config.ForceOrganizationID)
 	}
 
 	if config.ForceAccessKey != "" {
-		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
+		profile.AccessKey = new(config.ForceAccessKey)
 	}
 
 	if config.ForceSecretKey != "" {
-		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
+		profile.SecretKey = new(config.ForceSecretKey)
 	}
 
 	// TODO validated profile
@@ -222,8 +222,8 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 
 	// By default we set default zone and region to fr-par
 	defaultZoneProfile := &scw.Profile{
-		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
-		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
+		DefaultRegion: new(scw.RegionFrPar.String()),
+		DefaultZone:   new(scw.ZoneFrPar1.String()),
 	}
 
 	activeProfile, err := config.GetActiveProfile()
@@ -244,31 +244,31 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 		}
 
 		if accessKey, exist := d.GetOk("access_key"); exist {
-			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
+			providerProfile.AccessKey = new(accessKey.(string))
 		}
 
 		if secretKey, exist := d.GetOk("secret_key"); exist {
-			providerProfile.SecretKey = scw.StringPtr(secretKey.(string))
+			providerProfile.SecretKey = new(secretKey.(string))
 		}
 
 		if projectID, exist := d.GetOk("project_id"); exist {
-			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
+			providerProfile.DefaultProjectID = new(projectID.(string))
 		}
 
 		if orgID, exist := d.GetOk("organization_id"); exist {
-			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
+			providerProfile.DefaultOrganizationID = new(orgID.(string))
 		}
 
 		if region, exist := d.GetOk("region"); exist {
-			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
+			providerProfile.DefaultRegion = new(region.(string))
 		}
 
 		if zone, exist := d.GetOk("zone"); exist {
-			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
+			providerProfile.DefaultZone = new(zone.(string))
 		}
 
 		if apiURL, exist := d.GetOk("api_url"); exist {
-			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
+			providerProfile.APIURL = new(apiURL.(string))
 		}
 	}
 
@@ -284,7 +284,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 
 		region, err := zone.Region()
 		if err == nil {
-			profile.DefaultRegion = scw.StringPtr(region.String())
+			profile.DefaultRegion = new(region.String())
 			credentialsSource.DefaultRegion = CredentialsSourceInferred
 		} else {
 			tflog.Debug(ctx, "cannot guess region: "+err.Error())

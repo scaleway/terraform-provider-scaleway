@@ -245,23 +245,23 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("email") {
-		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.Email = new(d.Get("email").(string))
 	}
 
 	if d.HasChange("first_name") {
-		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+		req.FirstName = new(d.Get("first_name").(string))
 	}
 
 	if d.HasChanges("last_name") {
-		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.LastName = new(d.Get("last_name").(string))
 	}
 
 	if d.HasChange("phone_number") {
-		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.PhoneNumber = new(d.Get("phone_number").(string))
 	}
 
 	if d.HasChange("locale") {
-		req.Locale = scw.StringPtr(d.Get("locale").(string))
+		req.Locale = new(d.Get("locale").(string))
 	}
 
 	_, err = api.UpdateUser(req, scw.WithContext(ctx))

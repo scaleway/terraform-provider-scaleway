@@ -46,7 +46,7 @@ func DataSourceServerRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 		res, err := api.ListServers(&baremetal.ListServersRequest{
 			Zone:      zone,
-			Name:      scw.StringPtr(serverName),
+			Name:      new(serverName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {

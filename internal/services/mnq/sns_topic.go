@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -125,7 +124,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 	topicName := resourceMNQSNSTopicName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
 	input := &sns.CreateTopicInput{
-		Name:       scw.StringPtr(topicName),
+		Name:       new(topicName),
 		Attributes: attributes,
 	}
 
@@ -155,7 +154,7 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
+		TopicArn: new(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -211,7 +210,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if len(updatedAttributes) > 0 {
 		for attributeName, attributeValue := range updatedAttributes {
 			_, err := snsClient.SetTopicAttributes(ctx, &sns.SetTopicAttributesInput{
-				AttributeName:  scw.StringPtr(attributeName),
+				AttributeName:  new(attributeName),
 				AttributeValue: &attributeValue,
 				TopicArn:       &topicARN,
 			})
@@ -236,7 +235,7 @@ func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	_, err = snsClient.DeleteTopic(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
+		TopicArn: new(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
