@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
@@ -59,10 +58,10 @@ func aclSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ip": {
-						Type:         schema.TypeString,
-						ValidateFunc: validation.IsCIDR,
-						Required:     true,
-						Description:  "Target IP of the rules",
+						Type:             schema.TypeString,
+						ValidateDiagFunc: verify.IsIPv4CIDR(),
+						Required:         true,
+						Description:      "IPv4 address or range in CIDR notation (IPv6 is not supported by the Scaleway API)",
 					},
 					"description": {
 						Type:        schema.TypeString,
