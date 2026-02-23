@@ -109,5 +109,5 @@ func DataSourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	return setVPCState(d, res, region)
+	return setVPCState(d, res)
 }
