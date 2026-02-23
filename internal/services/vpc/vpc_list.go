@@ -75,6 +75,10 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 				Description: "Whether the VPC is the default VPC",
 				Optional:    true,
 			},
+			"region": schema.StringAttribute{
+				Description: "Region of the VPC",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -86,7 +90,7 @@ func (r *ListResource) RawV5Schemas(ctx context.Context, req list.RawV5SchemaReq
 	resp.ProtoV5IdentitySchema = thingResource.ProtoIdentitySchema(ctx)()
 }
 
-type VPCListResourceModel struct {
+type ListResourceModel struct {
 	Tags           types.List   `tfsdk:"tags"`
 	Name           types.String `tfsdk:"name"`
 	OrganizationID types.String `tfsdk:"organization_id"`
@@ -101,7 +105,7 @@ func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataReques
 }
 
 func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
-	var data VPCListResourceModel
+	var data ListResourceModel
 
 	// Read list config data into the model
 	diags := req.Config.Get(ctx, &data)
