@@ -30,8 +30,8 @@ func IsStandaloneIPorCIDR() schema.SchemaValidateDiagFunc {
 		if err != nil {
 			return diag.Diagnostics{diag.Diagnostic{
 				Severity:      diag.Error,
-				AttributePath: path,
 				Summary:       "neither a valid IP address or CIDR notation: " + ip,
+				AttributePath: path,
 			}}
 		}
 
