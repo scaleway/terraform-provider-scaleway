@@ -2,6 +2,7 @@ package inference
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,8 +15,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/model.md
+var modelDescription string
+
 func ResourceModel() *schema.Resource {
 	return &schema.Resource{
+		Description:   modelDescription,
 		CreateContext: ResourceModelCreate,
 		ReadContext:   ResourceModelRead,
 		DeleteContext: ResourceModelDelete,
@@ -53,6 +58,30 @@ func modelSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			ForceNew:    true,
 			Description: "A token or credential used to authenticate when pulling the model from a private or gated source. For example, a Hugging Face access token with read permissions.",
+			ConflictsWith: []string{
+				"secret_wo",
+			},
+		},
+		"secret_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "A token or credential used to authenticate when pulling the model from a private or gated source in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. For example, a Hugging Face access token with read permissions. `secret_wo` will not be set in the Terraform state. Only one of `secret` or `secret_wo` should be specified.",
+			WriteOnly:   true,
+			ConflictsWith: []string{
+				"secret",
+			},
+			RequiredWith: []string{
+				"secret_wo_version",
+			},
+		},
+		"secret_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) secret. To update the `secret_wo`, you must also update the `secret_wo_version`.",
+			RequiredWith: []string{
+				"secret_wo",
+			},
 		},
 		"tags": {
 			Type:        schema.TypeList,
@@ -148,7 +177,17 @@ func ResourceModelCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		URL: d.Get("url").(string),
 	}
 
-	if secret, ok := d.GetOk("secret"); ok {
+	var secret string
+	if _, ok := d.GetOk("secret_wo_version"); ok {
+		secret = d.GetRawConfig().GetAttr("secret_wo").AsString()
+	} else {
+		// If `secret` is not set, it will be set as the default empty string
+		if s, ok := d.GetOk("secret"); ok {
+			secret = s.(string)
+		}
+	}
+
+	if secret != "" {
 		modelSource.Secret = types.ExpandStringPtr(secret)
 	}
 

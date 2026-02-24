@@ -18,7 +18,7 @@ func waitForFileSystem(ctx context.Context, fileAPI *file.API, region scw.Region
 	fileSystem, err := fileAPI.WaitForFileSystem(&file.WaitForFileSystemRequest{
 		FilesystemID:  id,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 

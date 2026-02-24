@@ -102,7 +102,7 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	blocklists, err := api.ListBlocklists(&tem.ListBlocklistsRequest{
 		Region:   region,
-		Email:    scw.StringPtr(d.Get("email").(string)),
+		Email:    new(d.Get("email").(string)),
 		DomainID: domainID,
 	}, scw.WithContext(ctx))
 	if err != nil {

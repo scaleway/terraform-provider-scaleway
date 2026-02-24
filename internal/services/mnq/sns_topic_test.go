@@ -11,7 +11,6 @@ import (
 	"github.com/aws/smithy-go"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 )
@@ -160,7 +159,7 @@ func isSNSTopicPresent(ctx context.Context, tt *acctest.TestTools, n string) res
 		}
 
 		_, err = snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
-			TopicArn: scw.StringPtr(mnq.ComposeSNSARN(region, projectID, topicName)),
+			TopicArn: new(mnq.ComposeSNSARN(region, projectID, topicName)),
 		})
 		if err != nil {
 			return err
@@ -188,7 +187,7 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 			}
 
 			_, err = snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
-				TopicArn: scw.StringPtr(mnq.ComposeSNSARN(region, projectID, topicName)),
+				TopicArn: new(mnq.ComposeSNSARN(region, projectID, topicName)),
 			})
 			if err != nil {
 				var apiErr *smithy.GenericAPIError

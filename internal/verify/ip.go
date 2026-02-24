@@ -1,6 +1,7 @@
 package verify
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -31,6 +32,40 @@ func IsStandaloneIPorCIDR() schema.SchemaValidateDiagFunc {
 				Severity:      diag.Error,
 				AttributePath: path,
 				Summary:       "neither a valid IP address or CIDR notation: " + ip,
+			}}
+		}
+
+		return nil
+	}
+}
+
+// IsIPv4CIDR validates that the value is a valid IPv4 address or range in CIDR notation.
+// IPv6 is not supported by some Scaleway APIs (e.g. RDB ACL, Redis ACL).
+func IsIPv4CIDR() schema.SchemaValidateDiagFunc {
+	return func(i any, path cty.Path) diag.Diagnostics {
+		v, ok := i.(string)
+		if !ok {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "expected type to be string",
+				AttributePath: path,
+			}}
+		}
+
+		ip, _, err := net.ParseCIDR(v)
+		if err != nil {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       fmt.Sprintf("expected a valid CIDR, got %v", v),
+				AttributePath: path,
+			}}
+		}
+
+		if ip.To4() == nil {
+			return diag.Diagnostics{diag.Diagnostic{
+				Severity:      diag.Error,
+				Summary:       "must be an IPv4 address or range in CIDR notation (IPv6 is not supported by the Scaleway API)",
+				AttributePath: path,
 			}}
 		}
 

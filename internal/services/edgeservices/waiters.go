@@ -22,7 +22,7 @@ func waitForPurge(ctx context.Context, edgeServicesapi *edgeservices.API, id str
 	purgeRequest, err := edgeServicesapi.WaitForPurgeRequest(&edgeservices.WaitForPurgeRequestRequest{
 		PurgeRequestID: id,
 		RetryInterval:  &retryInterval,
-		Timeout:        scw.TimeDurationPtr(timeout),
+		Timeout:        new(timeout),
 	}, scw.WithContext(ctx))
 
 	return purgeRequest, err

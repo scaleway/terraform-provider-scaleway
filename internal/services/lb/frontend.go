@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,6 +26,7 @@ func ResourceFrontend() *schema.Resource {
 		ReadContext:   resourceLbFrontendRead,
 		UpdateContext: resourceLbFrontendUpdate,
 		DeleteContext: resourceLbFrontendDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -316,7 +318,10 @@ func resourceLbFrontendCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, frontend.ID))
+	err = identity.SetZonalIdentity(d, frontend.LB.Zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("external_acls").(bool) {
 		return resourceLbFrontendRead(ctx, d, m)
@@ -345,6 +350,32 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	var acls []*lbSDK.ACL
+
+	if !d.Get("external_acls").(bool) {
+		// read related acls.
+		resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
+			Zone:       zone,
+			FrontendID: ID,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		acls = resACL.ACLs
+	}
+
+	diags := setFrontendState(d, frontend, zone, acls, d.Get("external_acls").(bool))
+
+	err = identity.SetZonalIdentity(d, frontend.LB.Zone, frontend.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setFrontendState(d *schema.ResourceData, frontend *lbSDK.Frontend, zone scw.Zone, acls []*lbSDK.ACL, externalACLs bool) diag.Diagnostics {
 	_ = d.Set("lb_id", zonal.NewIDString(zone, frontend.LB.ID))
 	_ = d.Set("backend_id", zonal.NewIDString(zone, frontend.Backend.ID))
 	_ = d.Set("name", frontend.Name)
@@ -366,17 +397,8 @@ func resourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any) 
 		_ = d.Set("certificate_ids", types.FlattenSliceIDs(frontend.CertificateIDs, zone))
 	}
 
-	if !d.Get("external_acls").(bool) {
-		// read related acls.
-		resACL, err := lbAPI.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
-			Zone:       zone,
-			FrontendID: ID,
-		}, scw.WithAllPages(), scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_ = d.Set("acl", flattenLBACLs(resACL.ACLs))
+	if !externalACLs && len(acls) > 0 {
+		_ = d.Set("acl", flattenLBACLs(acls))
 	}
 
 	return nil

@@ -42,6 +42,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
@@ -224,6 +225,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mongodb_snapshot":                    mongodb.ResourceSnapshot(),
 				"scaleway_mongodb_user":                        mongodb.ResourceUser(),
 				"scaleway_object":                              object.ResourceObject(),
+				"scaleway_opensearch_deployment":               opensearch.ResourceDeployment(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":    object.ResourceLockConfiguration(),
@@ -315,6 +317,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_iot_hub":                             iot.DataSourceHub(),
 				"scaleway_ipam_ip":                             ipam.DataSourceIP(),
 				"scaleway_ipam_ips":                            ipam.DataSourceIPs(),
+				"scaleway_kafka_cluster":                       kafka.DataSourceCluster(),
 				"scaleway_k8s_cluster":                         k8s.DataSourceCluster(),
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),

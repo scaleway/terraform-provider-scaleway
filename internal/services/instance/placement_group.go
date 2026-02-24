@@ -136,7 +136,7 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 	req := &instanceSDK.UpdatePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-		Tags:             scw.StringsPtr([]string{}),
+		Tags:             new([]string{}),
 	}
 
 	hasChanged := false

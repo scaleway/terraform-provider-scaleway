@@ -236,7 +236,7 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	if d.HasChange("is_admin") {
-		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
+		req.IsAdmin = new(d.Get("is_admin").(bool))
 	}
 
 	_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))

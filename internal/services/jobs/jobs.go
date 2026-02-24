@@ -193,7 +193,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
-		Command:              scw.StringPtr(d.Get("command").(string)),
+		Command:              new(d.Get("command").(string)),
 		StartupCommand:       types.ExpandStrings(d.Get("startup_command")),
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
@@ -403,7 +403,7 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		// List all job runs for this job definition
 		jobRuns, listErr := api.ListJobRuns(&jobs.ListJobRunsRequest{
 			Region:          region,
-			JobDefinitionID: scw.StringPtr(id),
+			JobDefinitionID: new(id),
 		}, scw.WithContext(ctx))
 		if listErr != nil {
 			return diag.FromErr(fmt.Errorf("failed to list job runs before cleanup: %w", listErr))

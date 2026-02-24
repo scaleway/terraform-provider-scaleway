@@ -174,9 +174,9 @@ func DataSourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) di
 		if ipTypeExist {
 			switch ipType.(string) {
 			case "ipv4":
-				req.IsIPv6 = scw.BoolPtr(false)
+				req.IsIPv6 = new(false)
 			case "ipv6":
-				req.IsIPv6 = scw.BoolPtr(true)
+				req.IsIPv6 = new(true)
 			default:
 				return diag.Diagnostics{{
 					Severity:      diag.Error,
