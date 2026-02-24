@@ -220,9 +220,12 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 		ClusterID: clusterID,
 		ACLs: []*k8s.ACLRuleRequest{
 			{
-				IP:               &allowedIPs,
-				ScalewayRanges:   new(true),
-				Description:      "Automatically generated after scaleway_k8s_acl resource deletion",
+				IP:          &allowedIPs,
+				Description: "Automatically generated after scaleway_k8s_acl resource deletion",
+			},
+			{
+				ScalewayRanges: new(true),
+				Description:    "Automatically generated after scaleway_k8s_acl resource deletion",
 			},
 		},
 	}
