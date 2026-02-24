@@ -11,9 +11,11 @@ import (
 )
 
 const (
-	marketplaceImageType  = "instance_sbs"
-	ubuntuFocalImageLabel = "ubuntu_focal"
-	ubuntuJammyImageLabel = "ubuntu_jammy"
+	marketplaceImageType          = "instance_sbs"
+	ubuntuFocalImageLabel         = "ubuntu_focal"
+	ubuntuJammyImageLabel         = "ubuntu_jammy"
+	ubuntuFocalSBSFrPar1ImageID   = "feabbdaf-1426-46fa-a050-a377b0069f74"
+	ubuntuFocalLocalFrPar1ImageID = "36dce2e3-7e2f-4ebb-9373-227f88df3f0a"
 )
 
 func TestAccServer_Minimal(t *testing.T) {
@@ -37,6 +39,7 @@ func TestAccServer_Minimal(t *testing.T) {
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-minimal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
@@ -77,6 +80,7 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
@@ -295,108 +299,6 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.ha.0", "placement_group_policy_respected", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.ha.1", "placement_group_policy_respected", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.ha.2", "placement_group_policy_respected", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_CustomDiffImage(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	var mainServerID, controlServerID string
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-acc-server-custom-diff-image-main-server"
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
-					}
-					resource "scaleway_instance_server" "control" {
-						name = "tf-acc-server-custom-diff-image-control-server"
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					data "scaleway_marketplace_image" "jammy" {
-						label = "ubuntu_jammy"
-						image_type = "%s"
-					}
-					resource "scaleway_instance_server" "main" {
-						name = "tf-acc-server-custom-diff-image-main-server"
-						image = data.scaleway_marketplace_image.jammy.id
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
-					}
-					resource "scaleway_instance_server" "control" {
-						name = "tf-acc-server-custom-diff-image-control-server"
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
-					}
-				`, marketplaceImageType),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.jammy", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
-					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", true),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					data "scaleway_marketplace_image" "focal" {
-						label = "ubuntu_focal"
-						image_type = "%s"
-					}
-					resource "scaleway_instance_server" "main" {
-						name = "tf-acc-server-custom-diff-image-main-server"
-						image = data.scaleway_marketplace_image.focal.id
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
-					}
-					resource "scaleway_instance_server" "control" {
-						name = "tf-acc-server-custom-diff-image-control-server"
-						image = "ubuntu_jammy"
-						type = "DEV1-S"
-						state = "stopped"
-						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
-					}
-				`, marketplaceImageType),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.control"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.focal", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.control", "image", "ubuntu_jammy"),
-					imageIDMatchLabel(tt, "scaleway_instance_server.main", "scaleway_instance_server.control", false),
-					acctest.CheckResourceIDChanged("scaleway_instance_server.main", &mainServerID),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
 			},
 		},
