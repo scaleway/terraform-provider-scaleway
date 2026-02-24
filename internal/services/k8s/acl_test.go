@@ -359,6 +359,7 @@ func testAccCheckK8SClusterAllowedIPs(tt *acctest.TestTools, n string, expected 
 					rule.Description == "Automatically generated after scaleway_k8s_acl resource deletion" {
 					hasIPRule = true
 				}
+
 				if rule.ScalewayRanges != nil && *rule.ScalewayRanges &&
 					rule.Description == "Automatically generated after scaleway_k8s_acl resource deletion" {
 					hasScalewayRangesRule = true
@@ -368,6 +369,7 @@ func testAccCheckK8SClusterAllowedIPs(tt *acctest.TestTools, n string, expected 
 			if !hasIPRule {
 				return fmt.Errorf("expected rule with IP=0.0.0.0/0 after ACL deletion, but not found in: %+v", acls.Rules)
 			}
+
 			if !hasScalewayRangesRule {
 				return fmt.Errorf("expected rule with ScalewayRanges=true after ACL deletion, but not found in: %+v", acls.Rules)
 			}
