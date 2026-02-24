@@ -11,9 +11,11 @@ import (
 )
 
 const (
-	marketplaceImageType  = "instance_sbs"
-	ubuntuFocalImageLabel = "ubuntu_focal"
-	ubuntuJammyImageLabel = "ubuntu_jammy"
+	marketplaceImageType          = "instance_sbs"
+	ubuntuFocalImageLabel         = "ubuntu_focal"
+	ubuntuJammyImageLabel         = "ubuntu_jammy"
+	ubuntuFocalSBSFrPar1ImageID   = "8ac1fe52-01dc-4dc1-8578-73ec5d126648"
+	ubuntuFocalLocalFrPar1ImageID = "a02f91b9-de8a-4bd5-8f95-d79cb7d39806"
 )
 
 func TestAccServer_Minimal(t *testing.T) {
@@ -37,6 +39,7 @@ func TestAccServer_Minimal(t *testing.T) {
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-minimal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
@@ -77,6 +80,7 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
@@ -98,6 +102,7 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic-renamed"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "5"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),

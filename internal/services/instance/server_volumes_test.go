@@ -95,6 +95,8 @@ func TestAccServer_RootVolumeFromImage_Block(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-root-volume-from-image-block"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", ubuntuFocalImageLabel),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.sbs_iops", "5000"),
@@ -119,6 +121,8 @@ func TestAccServer_RootVolumeFromImage_Block(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-root-volume-from-image-block"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", ubuntuFocalImageLabel),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.sbs_iops", "15000"),
@@ -156,6 +160,8 @@ func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-root-volume-from-image-local"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", ubuntuFocalImageLabel),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
@@ -178,8 +184,10 @@ func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-root-volume-from-image-local"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", ubuntuFocalImageLabel),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
 				),
@@ -201,7 +209,10 @@ func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuFocalImageLabel),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-root-volume-from-image-local"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", ubuntuFocalImageLabel),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
 					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
 				),

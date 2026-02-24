@@ -86,6 +86,11 @@ func serverSchema() map[string]*schema.Schema {
 			DiffSuppressFunc: dsf.Locality,
 			ExactlyOneOf:     []string{"image", "root_volume.0.volume_id"},
 		},
+		"computed_image_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The computed UUID of the base image used by the server",
+		},
 		"type": {
 			Type:             schema.TypeString,
 			Required:         true,
@@ -701,6 +706,8 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	if server.Image != nil && (image.ID == "" || scwvalidation.IsUUID(image.ID)) {
 		_ = d.Set("image", zonal.NewID(zone, server.Image.ID).String())
 	}
+
+	_ = d.Set("computed_image_id", server.Image.ID)
 
 	if server.PlacementGroup != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(zone, server.PlacementGroup.ID).String())
