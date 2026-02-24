@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -135,10 +134,10 @@ func clusterSchema() map[string]*schema.Schema {
 						Computed:    true,
 					},
 					"ip": {
-						Type:         schema.TypeString,
-						Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
-						Required:     true,
-						ValidateFunc: validation.IsCIDR,
+						Type:             schema.TypeString,
+						Description:      "IPv4 network address of the rule in CIDR notation (IPv6 is not supported by the Scaleway API).",
+						Required:         true,
+						ValidateDiagFunc: verify.IsIPv4CIDR(),
 					},
 					"description": {
 						Type:        schema.TypeString,
@@ -184,10 +183,10 @@ func clusterSchema() map[string]*schema.Schema {
 						Optional: true,
 						Computed: true,
 						Elem: &schema.Schema{
-							Type:         schema.TypeString,
-							ValidateFunc: validation.IsCIDR,
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsIPv4CIDR(),
 						},
-						Description: "List of IPv4 addresses of the private network with a CIDR notation",
+						Description: "List of IPv4 addresses of the private network in CIDR notation (IPv6 is not supported by the Scaleway API)",
 					},
 					// computed
 					"endpoint_id": {

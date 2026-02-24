@@ -99,6 +99,11 @@ func TestAccIP_IPv6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ipv6", "is_ipv6", "true"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_ip.ipv6",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
