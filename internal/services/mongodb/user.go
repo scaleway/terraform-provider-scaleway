@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
@@ -25,9 +26,9 @@ var userDescription string
 
 func mongodbUserIdentity() *schema.ResourceIdentity {
 	return identity.WrapSchemaMap(map[string]*schema.Schema{
-		"region":       identity.DefaultRegionAttribute(),
-		"instance_id":  {Type: schema.TypeString, Description: "The MongoDB instance ID", RequiredForImport: true},
-		"name":         {Type: schema.TypeString, Description: "The MongoDB user name", RequiredForImport: true},
+		"region":      identity.DefaultRegionAttribute(),
+		"instance_id": {Type: schema.TypeString, Description: "The MongoDB instance ID", RequiredForImport: true},
+		"name":        {Type: schema.TypeString, Description: "The MongoDB user name", RequiredForImport: true},
 	})
 }
 
