@@ -1,29 +1,22 @@
 package instance_test
 
 import (
-	"errors"
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
-	"github.com/stretchr/testify/assert"
 )
 
 const (
-	marketplaceImageType = "instance_sbs"
-	ubuntuImage          = "ubuntu_focal"
+	marketplaceImageType  = "instance_sbs"
+	ubuntuFocalImageLabel = "ubuntu_focal"
+	ubuntuJammyImageLabel = "ubuntu_jammy"
 )
 
-func TestAccServer_Minimal1(t *testing.T) {
+func TestAccServer_Minimal(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -34,6 +27,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-minimal"
 					  image = "ubuntu_focal"
 					  type  = "DEV1-S"
 					
@@ -41,6 +35,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-minimal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
@@ -51,341 +46,7 @@ func TestAccServer_Minimal1(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
-				),
-			},
-			{
-				// Image label such as ubuntu_focal
-				Config: `
-					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					
-					  tags = [ "terraform-test", "scaleway_instance_server", "minimal" ]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "minimal"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_Minimal2(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "base" {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "enable_dynamic_ip", "false"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" main {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					  root_volume {
-						volume_type = "l_ssd"
-					  }
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "20"), // It resizes to 20GB as terraform will take max space available for l_ssd.
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "enable_dynamic_ip", "false"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" main2 {
-					  image = "ubuntu_focal"
-					  type  = "DEV1-S"
-					  root_volume {
-						volume_type = "l_ssd"
-						size_in_gb  = 20
-					  }
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main2"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "image", "ubuntu_focal"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.delete_on_termination", "true"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.size_in_gb", "20"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main2", "root_volume.0.volume_id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main2", "enable_dynamic_ip", "false"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolumeFromImage_Block(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	serverID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 10
-							name = "named-volume"
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, ubuntuImage),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 10
-							name = "renamed"
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, ubuntuImage),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "sbs_volume"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolumeFromImage_Local(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	serverID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-							size_in_gb = 10
-							name = "named-volume"
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, ubuntuImage),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-							size_in_gb = 10
-							name = "renamed"
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, ubuntuImage),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "renamed"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-							size_in_gb = 20
-							delete_on_termination = true
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_image" ]
-					}`, ubuntuImage),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuImage),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "20"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
-					acctest.CheckResourceIDChanged("scaleway_instance_server.base", &serverID), // Server should have been re-created as l_ssd cannot be resized.
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolumeFromID(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	serverID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "local" {
-						type = "l_ssd"
-						size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-S"
-						root_volume {
-							volume_id = scaleway_instance_volume.local.id
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_id" ]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "root_volume.0.name"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.local", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_volume" "local" {
-						type = "l_ssd"
-						size_in_gb = 10
-						name = "named-volume"
-					}
-
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-S"
-						root_volume {
-							volume_id = scaleway_instance_volume.local.id
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume_from_id" ]
-					}`,
-			},
-			{
-				RefreshState: true,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.name", "named-volume"), // New volume name should be readable from root_volume attribute after refreshing the state
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.name", "scaleway_instance_volume.local", "name"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "root_volume.0.volume_id", "scaleway_instance_volume.local", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", &serverID),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolume_Boot(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	image := "ubuntu_focal"
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						state = "stopped"
-						root_volume {
-							boot = true
-							delete_on_termination = true
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-					}`, image),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "true"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "base" {
-						image = "%s"
-						type  = "DEV1-S"
-						state = "stopped"
-						root_volume {
-							boot = false
-							delete_on_termination = true
-						}
-						tags = [ "terraform-test", "scaleway_instance_server", "root_volume" ]
-					}`, image),
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.boot", "false"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", "ubuntu_focal"),
 				),
 			},
 		},
@@ -396,64 +57,97 @@ func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	serverID := new("")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				// DEV1-M
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type   = "DEV1-M"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  name  = "test"
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
-					  type  = "DEV1-M"
-					
+					  name  = "tf-acc-server-basic"
+					  image = "ubuntu_focal"
+					  type  = "DEV1-S"
 					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "test"),
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "3"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "basic"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", serverID),
 				),
 			},
 			{
-				// DEV1-S
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type   = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  name  = "test"
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
-					  type  = "DEV1-S"
-					  replace_on_type_change  = true
-					
-					  tags = [ "terraform-test", "scaleway_instance_server", "basic" ]
+					  name  = "tf-acc-server-basic-renamed"
+					  image = "ubuntu_focal"
+					  type  = "DEV1-M"
+					  tags = [ "terraform-test", "scaleway_instance_server", "basic", "more", "tags" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "test"),
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic-renamed"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "5"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "basic"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.3", "more"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.4", "tags"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", serverID),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-basic-renamed"
+					  image = "ubuntu_focal"
+					  type  = "DEV1-M"
+					  tags = []
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic-renamed"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_focal"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "0"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_server.base", serverID),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-basic-replaced"
+					  image = "ubuntu_jammy"
+					  type  = "DEV1-M"
+					  tags = []
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "name", "tf-acc-server-basic-replaced"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "image", "ubuntu_jammy"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-M"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.#", "0"),
+					acctest.CheckResourceIDChanged("scaleway_instance_server.base", serverID), // changing image forces replacement
 				),
 			},
 		},
 	})
 }
 
-func TestAccServer_State1(t *testing.T) {
+func TestAccServer_State_Stop(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -464,16 +158,12 @@ func TestAccServer_State1(t *testing.T) {
 			{
 				// started
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  name  = "tf-acc-server-state-stop"
+					  image = "ubuntu_jammy"
 					  type  = "DEV1-S"
 					  state = "started"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_stop" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
@@ -483,16 +173,12 @@ func TestAccServer_State1(t *testing.T) {
 			{
 				// standby
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  name  = "tf-acc-server-state-stop"
+					  image = "ubuntu_jammy"
 					  type  = "DEV1-S"
 					  state = "standby"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_stop" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
@@ -502,16 +188,12 @@ func TestAccServer_State1(t *testing.T) {
 			{
 				// stopped
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  name  = "tf-acc-server-state-stop"
+					  image = "ubuntu_jammy"
 					  type  = "DEV1-S"
 					  state = "stopped"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_stop" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
@@ -522,7 +204,7 @@ func TestAccServer_State1(t *testing.T) {
 	})
 }
 
-func TestAccServer_State2(t *testing.T) {
+func TestAccServer_State_Start(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -533,16 +215,12 @@ func TestAccServer_State2(t *testing.T) {
 			{
 				// stopped
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  name  = "tf-acc-server-state-start"
+					  image = "ubuntu_jammy"
 					  type  = "DEV1-S"
 					  state = "stopped"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_start" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
@@ -552,251 +230,31 @@ func TestAccServer_State2(t *testing.T) {
 			{
 				// standby
 				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type = "DEV1-S"
-					  label         = "ubuntu_focal"
-					}
-					
 					resource "scaleway_instance_server" "base" {
-					  image = "${data.scaleway_marketplace_image.ubuntu.id}"
+					  name  = "tf-acc-server-state-start"
+					  image = "ubuntu_jammy"
 					  type  = "DEV1-S"
 					  state = "standby"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_start" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "standby"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccServer_UserData_WithCloudInitAtStart(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "scaleway_instance_server" "base" {
-					image = "ubuntu_focal"
-					type  = "DEV1-S"
-
-					user_data = {
-				   		foo   = "bar"
-						cloud-init =  <<EOF
-#cloud-config
-apt_update: true
-apt_upgrade: true
-EOF 
-				 	}
-				}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.foo", "bar"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_UserData_WithoutCloudInitAtStart(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				// Without cloud-init
+				// started
 				Config: `
 					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						root_volume {
-							size_in_gb = 20
-						}
-						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
+					  name  = "tf-acc-server-state-start"
+					  image = "ubuntu_jammy"
+					  type  = "DEV1-S"
+					  state = "started"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "state_start" ]
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.%", "0"),
-				),
-			},
-			{
-				// With cloud-init
-				Config: `
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						tags  = [ "terraform-test", "scaleway_instance_server", "user_data" ]
-						root_volume {
-							size_in_gb = 20
-						}
-						user_data = {
-							cloud-init = <<EOF
-#cloud-config
-apt_update: true
-apt_upgrade: true
-EOF
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "user_data.cloud-init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_AdditionalVolumes(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				// With additional local
-				Config: `
-					resource "scaleway_instance_volume" "local" {
-						size_in_gb = 10
-						type = "l_ssd"
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type = "DEV1-S"
-						
-						root_volume {
-							size_in_gb = 10
-						}
-
-						tags = [ "terraform-test", "scaleway_instance_server", "additional_volume_ids" ]
-
-						additional_volume_ids = [
-							scaleway_instance_volume.local.id
-						]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-				),
-			},
-			{
-				// With additional local and block
-				Config: `
-					resource "scaleway_instance_volume" "local" {
-						size_in_gb = 10
-						type = "l_ssd"
-					}
-
-					resource "scaleway_instance_volume" "block" {
-						size_in_gb = 10
-						type = "b_ssd"
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type = "DEV1-S"
-						
-						root_volume {
-							size_in_gb = 10
-						}
-
-						tags = [ "terraform-test", "scaleway_instance_server", "additional_volume_ids" ]
-
-						additional_volume_ids = [
-							scaleway_instance_volume.local.id,
-							scaleway_instance_volume.block.id
-						]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.block"),
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.block", "size_in_gb", "10"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "root_volume.0.size_in_gb", "10"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_AdditionalVolumesDetach(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsVolumeDestroyed(tt),
-			instancechecks.IsServerDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					variable "zone" {
-						type    = string
-						default = "fr-par-1"
-					}
-
-					resource "scaleway_instance_volume" "main" {
-  						type       = "b_ssd"
-  						name       = "foobar"
-  						size_in_gb = 1
-					}
-
-					resource "scaleway_instance_server" "main" {
-						type  = "DEV1-S"
-  						image = "ubuntu_focal"
-  						name  = "foobar"
-
-						enable_dynamic_ip = true
-
-						additional_volume_ids = [scaleway_instance_volume.main.id]
-					}
-				`,
-			},
-			{
-				Config: `
-					variable "zone" {
-						type    = string
-						default = "fr-par-1"
-					}
-
-					resource "scaleway_instance_volume" "main" {
-  						type       = "b_ssd"
-  						name       = "foobar"
-  						size_in_gb = 1
-					}
-
-					resource "scaleway_instance_server" "main" {
-						type  = "DEV1-S"
-  						image = "ubuntu_focal"
-  						name  = "foobar"
-
-						enable_dynamic_ip = true
-
-						additional_volume_ids = []
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
 				),
 			},
 		},
@@ -817,10 +275,10 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 						policy_mode = "enforced"
 						policy_type = "max_availability"
 					}
-					
+
 					resource "scaleway_instance_server" "ha" {
 						count = 3
-						name = "tf-tests-server-${count.index}-with-placement-group"
+						name = "tf-acc-server-${count.index}-with-placement-group"
 						image = "ubuntu_focal"
 						type  = "PLAY2-PICO"
 						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
@@ -843,548 +301,6 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 	})
 }
 
-func TestAccServer_Ipv6(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip" {
-						type = "routed_ipv6"
-					}
-
-					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu_focal"
-		  				type  = "PLAY2-PICO"
-						ip_ids = [scaleway_instance_ip.ip.id]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
-					acctest.CheckResourceAttrIPv6("scaleway_instance_server.server01", "public_ips.0.address"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "server01" {
-						image = "ubuntu_focal"
-		  				type  = "PLAY2-PICO"
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.server01"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.server01", "public_ips.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_Basic2(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					data "scaleway_marketplace_image" "ubuntu" {
-					  instance_type   = "DEV1-M"
-					  label         = "ubuntu_focal"
-					}
-
-					resource "scaleway_instance_server" "server01" {
-						type  = "DEV1-S"
-						image = data.scaleway_marketplace_image.ubuntu.id
-						state = "stopped"
-					}
-				`,
-			},
-			{
-				ResourceName: "scaleway_instance_server.server01",
-				ImportState:  true,
-			},
-		},
-	})
-}
-
-func TestAccServer_WithReservedIP(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						ip_id = scaleway_instance_ip.first.id
-						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "address", "scaleway_instance_server.base", "public_ips.0.address"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.first", "id", "scaleway_instance_server.base", "ip_id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_ip" "second" {}
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						ip_id = scaleway_instance_ip.second.id
-						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					isIPAttachedToServer(tt, "scaleway_instance_ip.second", "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "address", "scaleway_instance_server.base", "public_ips.0.address"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_ip.second", "id", "scaleway_instance_server.base", "ip_id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_ip" "second" {}
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "public_ips.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "first" {}
-					resource "scaleway_instance_ip" "second" {}
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						enable_dynamic_ip = true
-						tags  = [ "terraform-test", "scaleway_instance_server", "reserved_ip" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					serverHasNoIPAssigned(tt, "scaleway_instance_server.base"),
-					acctest.CheckResourceAttrIPv4("scaleway_instance_server.base", "public_ips.0.address"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "ip_id", ""),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_AlterTags(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-L"
-						image = "ubuntu_focal"
-						state = "stopped"
-						tags = [ "front", "web" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "web"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "base" {
-						type  = "DEV1-L"
-						state = "stopped"
-						image = "ubuntu_focal"
-						tags = [ "front" ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "front"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_WithDefaultRootVolumeAndAdditionalVolume(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "data" {
-						size_in_gb = 100
-						type = "b_ssd"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						type = "DEV1-S"
-						image = "ubuntu-jammy"
-						root_volume {
-							delete_on_termination = false
-					  	}
-						additional_volume_ids = [ scaleway_instance_volume.data.id ]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_ServerWithBlockNonDefaultZone(t *testing.T) {
-	t.Skip("Resource \"scaleway_instance_volume\" is deprecated")
-
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						type       = "b_ssd"
-						name       = "main"
-						size_in_gb = 1
-						zone       = "nl-ams-1"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						zone              = "nl-ams-1"
-						image             = "ubuntu_focal"
-						type              = "DEV1-S"
-						root_volume {
-							delete_on_termination = true
-							size_in_gb            = 20
-						}
-						additional_volume_ids = [scaleway_instance_volume.main.id]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_PrivateNetwork(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetwork"
-						region = "fr-par"
-					}
-
-					resource scaleway_vpc_private_network internal {
-						name = "private_network_instance"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						zone = "fr-par-2"
-
-						private_network {
-							pn_id = scaleway_vpc_private_network.internal.id
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.internal", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_ips.0.id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_ips.0.address"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetwork"
-						region = "fr-par"
-					}
-
-					resource scaleway_vpc_private_network pn01 {
-						name = "private_network_instance"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-						zone  = "fr-par-1"
-
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn01.id
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn01", "id"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetwork"
-						region = "fr-par"
-					}
-
-					resource scaleway_vpc_private_network pn01 {
-						name = "private_network_instance"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource scaleway_vpc_private_network pn02 {
-						name = "private_network_instance_02"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn02.id
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn02", "id"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetwork"
-						region = "fr-par"
-					}
-
-					resource scaleway_vpc_private_network pn01 {
-						name = "private_network_instance"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource scaleway_vpc_private_network pn02 {
-						name = "private_network_instance_02"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"
-
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn02.id
-						}
-
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn01.id
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base",
-						"private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn02", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "2"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.0.zone"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.1.pn_id",
-						"scaleway_vpc_private_network.pn01", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "private_network.1.zone"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetwork"
-						region = "fr-par"
-					}
-
-					resource scaleway_vpc_private_network pn01 {
-						name = "private_network_instance"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource scaleway_vpc_private_network pn02 {
-						name = "private_network_instance_02"
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "base" {
-						image = "ubuntu_focal"
-						type  = "DEV1-S"	
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_Migrate(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PRO2-XS"
-						
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XS"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_MigrateInvalidLocalVolumeSize(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "DEV1-L"
-						root_volume {
-							volume_type = "l_ssd"
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-L"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "DEV1-S"
-						root_volume {
-							volume_type = "l_ssd"
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "DEV1-S"),
-				),
-				ExpectError: regexp.MustCompile("cannot change server type"),
-				PlanOnly:    true,
-			},
-		},
-	})
-}
-
 func TestAccServer_CustomDiffImage(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1398,18 +314,18 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
-						name = "main-server"
+						name = "tf-acc-server-custom-diff-image-main-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "main" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
-						name = "control-server"
+						name = "tf-acc-server-custom-diff-image-control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "control" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -1428,18 +344,18 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image_type = "%s"
 					}
 					resource "scaleway_instance_server" "main" {
-						name = "main-server"
+						name = "tf-acc-server-custom-diff-image-main-server"
 						image = data.scaleway_marketplace_image.jammy.id
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "main" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
-						name = "control-server"
+						name = "tf-acc-server-custom-diff-image-control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "conntrol" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
@@ -1459,18 +375,18 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 						image_type = "%s"
 					}
 					resource "scaleway_instance_server" "main" {
-						name = "main-server"
+						name = "tf-acc-server-custom-diff-image-main-server"
 						image = data.scaleway_marketplace_image.focal.id
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "main" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "main" ]
 					}
 					resource "scaleway_instance_server" "control" {
-						name = "control-server"
+						name = "tf-acc-server-custom-diff-image-control-server"
 						image = "ubuntu_jammy"
 						type = "DEV1-S"
 						state = "stopped"
-						tags = [ "conntrol" ]
+						tags = [ "terraform-test", "scaleway_instance_server", "custom_diff_image", "control" ]
 					}
 				`, marketplaceImageType),
 				Check: resource.ComposeTestCheckFunc(
@@ -1487,756 +403,114 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 	})
 }
 
-func TestAccServer_IPs(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip1" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ips"
-						ip_ids = [scaleway_instance_ip.ip1.id]
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "public_ips.0.address"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.gateway", "62.210.0.1"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.netmask", "32"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.family", "inet"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.dynamic", "false"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.0.provisioning_mode", "dhcp"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip1" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_ip" "ip2" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ips"
-						ip_ids = [scaleway_instance_ip.ip1.id, scaleway_instance_ip.ip2.id]
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "2"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.1.id", "scaleway_instance_ip.ip2", "id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "ip1" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_ip" "ip2" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ips"
-						ip_ids = [scaleway_instance_ip.ip2.id]
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.ip2", "id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_IPRemoved(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "main" {}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ip-removed"
-						ip_id = scaleway_instance_ip.main.id
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "main" {}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ip-removed"
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					serverHasNoIPAssigned(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_IPsRemoved(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_ip" "main" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ips-removed"
-						ip_ids = [scaleway_instance_ip.main.id]
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "public_ips.0.id", "scaleway_instance_ip.main", "id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_ip" "main" {
-						type = "routed_ipv4"
-					}
-
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-server-ips-removed"
-						image = "ubuntu_jammy"
-						type  = "PRO2-XXS"
-						state = "stopped"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					arePrivateNICsPresent(tt, "scaleway_instance_server.main"),
-					serverHasNoIPAssigned(tt, "scaleway_instance_server.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "public_ips.#", "0"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_BlockExternal(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_block_volume" "volume" {
-						iops = 5000
-						size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						additional_volume_ids = [scaleway_block_volume.volume.id]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_block_volume" "volume" {
-						iops = 5000
-						size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_block_volume" "volume" {
-						iops = 5000
-						size_in_gb = 10
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						additional_volume_ids = [scaleway_block_volume.volume.id]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_block_volume" "volume" {
-						iops = 5000
-						size_in_gb = 10
-					}
-
-					resource "scaleway_block_volume" "bigger-volume" {
-						iops = 15000
-						size_in_gb = 15
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						additional_volume_ids = [scaleway_block_volume.volume.id, scaleway_block_volume.bigger-volume.id]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "2"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_block_volume.volume", "id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.1", "scaleway_block_volume.bigger-volume", "id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_BlockExternalRootVolume(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	serverID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsServerDestroyed(tt),
-			instancechecks.IsServerRootVolumeDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-block-external-root-volume"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 50
-							sbs_iops = 15000
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &serverID),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-block-external-root-volume"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 60
-							sbs_iops = 15000
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "60"),
-					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &serverID),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_BlockExternalRootVolumeUpdate(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-block-external-root-volume-iops-update"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 50
-							sbs_iops = 5000
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-block-external-root-volume-iops-update"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 50
-							sbs_iops = 15000
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "15000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_RootVolumeFromExternalSnapshot(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-root-volume-from-external-snapshot"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 50
-							sbs_iops = 5000
-						}
-					}
-
-					resource "scaleway_block_snapshot" "snapshot" {
-						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "tf-tests-instance-root-volume-from-external-snapshot"
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							size_in_gb = 50
-							sbs_iops = 5000
-						}
-					}
-
-					resource "scaleway_block_snapshot" "snapshot" {
-						volume_id = scaleway_instance_server.main.root_volume.0.volume_id
-					}
-
-					resource "scaleway_block_volume" "volume" {
-						snapshot_id = scaleway_block_snapshot.snapshot.id
-						iops = 5000
-					}
-
-					resource "scaleway_instance_server" "from_snapshot" {
-						name = "tf-tests-instance-root-volume-from-external-snapshot-2"
-						type  = "PLAY2-PICO"
-						root_volume {
-							volume_type = "sbs_volume"
-							volume_id = scaleway_block_volume.volume.id
-						}
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "additional_volume_ids.#", "0"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", string(instanceSDK.VolumeVolumeTypeSbsVolume)),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.sbs_iops", "5000"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.size_in_gb", "50"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.from_snapshot", "root_volume.0.volume_id", "scaleway_block_volume.volume", "id"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_PrivateNetworkMissingPNIC(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetworkMissingPNIC"
-					}
-
-					resource scaleway_vpc_private_network pn {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn.id
-						}
-					}
-`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn", "id"),
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetworkMissingPNIC"
-					}
-
-					resource scaleway_vpc_private_network pn {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn.id
-						}
-					}
-
-					resource scaleway_instance_private_nic pnic {
-						private_network_id = scaleway_vpc_private_network.pn.id
-						server_id = scaleway_instance_server.main.id
-					}
-`,
-				ResourceName: "scaleway_instance_private_nic.pnic",
-				ImportState:  true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
-					serverID := state.RootModule().Resources["scaleway_instance_server.main"].Primary.ID
-
-					pnicID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
-					if !exists {
-						return "", errors.New("private_network.0.pnic_id not found")
-					}
-
-					id := serverID + "/" + pnicID
-
-					return id, nil
-				},
-				ImportStatePersist: true,
-			},
-			{ // We import private nic as a separate resource to trigger its deletion.
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetworkMissingPNIC"
-					}
-
-					resource scaleway_vpc_private_network pn {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn.id
-						}
-					}
-
-					resource scaleway_instance_private_nic pnic {
-						private_network_id = scaleway_vpc_private_network.pn.id
-						server_id = scaleway_instance_server.main.id
-					}
-`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn", "id"),
-					func(state *terraform.State) error {
-						serverPNICID, exists := state.RootModule().Resources["scaleway_instance_server.main"].Primary.Attributes["private_network.0.pnic_id"]
-						if !exists {
-							return errors.New("private_network.0.pnic_id not found")
-						}
-
-						localizedPNICID := state.RootModule().Resources["scaleway_instance_private_nic.pnic"].Primary.ID
-
-						_, pnicID, _, err := zonal.ParseNestedID(localizedPNICID)
-						if err != nil {
-							return err
-						}
-
-						if serverPNICID != pnicID {
-							return fmt.Errorf("expected server pnic (%s) to equal standalone pnic id (%s)", serverPNICID, pnicID)
-						}
-
-						return nil
-					},
-				),
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetworkMissingPNIC"
-					}
-
-					resource scaleway_vpc_private_network pn {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn.id
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn", "id"),
-				),
-				ExpectNonEmptyPlan: true, // pnic get deleted and the plan is not empty after the apply as private_network is now missing
-			},
-			{
-				Config: `
-					resource scaleway_vpc main {
-						name = "TestAccServer_PrivateNetworkMissingPNIC"
-					}
-
-					resource scaleway_vpc_private_network pn {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource "scaleway_instance_server" "main" {
-						image = "ubuntu_jammy"
-						type  = "PLAY2-PICO"
-						private_network {
-							pn_id = scaleway_vpc_private_network.pn.id
-						}
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PLAY2-PICO"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "private_network.#", "1"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pn_id"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.mac_address"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.status"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.zone"),
-					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "private_network.0.pnic_id"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "private_network.0.pn_id",
-						"scaleway_vpc_private_network.pn", "id"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	image := "ubuntu_jammy"
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
-						name="filesystem-instance-terraform-test"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
-                      image = "%s"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					image = "%s"
+					  tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system" ]
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`, image),
+					}`, ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuJammyImageLabel),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "attach_detach_file_system"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
-						name="filesystem-instance-terraform-test"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
-						name="filesystem-instance-terraform-test-2"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
+						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
 					  image = "%s"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system" ]
 
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`, image),
+					}`, ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuJammyImageLabel),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "attach_detach_file_system"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
-						name="filesystem-instance-terraform-test"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
-						name="filesystem-instance-terraform-test-2"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
+						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
  					  image = "%s"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
-					filesystems {
+					  tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system" ]
+					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
 					  filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem.id
 					  }
-					}`, image),
+					}`, ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuJammyImageLabel),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "attach_detach_file_system"),
 				),
 			},
 			{
@@ -2246,77 +520,38 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 						size_in_gb = 15
 					}
 
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem"{
-						name="filesystem-instance-terraform-test"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+						name = "filesystem-instance-terraform-test"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs01" ]
 					}
 
-					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2"{
-						name="filesystem-instance-terraform-test-2"
+					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
+						name = "filesystem-instance-terraform-test-2"
 						size_in_gb = 100
+						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
 					resource "scaleway_instance_server" "base" {
+					  name  = "tf-acc-server-attach-detach-file-system"
 					  type  = "POP2-HM-2C-16G"
 					  state = "started"
 					  image = "%s"
-					  tags  = [ "terraform-test", "scaleway_instance_server", "state" ]
+					  tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system" ]
 
 					   filesystems {
 						filesystem_id = scaleway_file_filesystem.terraform_instance_filesystem_2.id
 					  }
-					}`, image),
+					}`, ubuntuJammyImageLabel),
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "POP2-HM-2C-16G"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_server.base", "filesystems.0.filesystem_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_server.base", "filesystems.1.filesystem_id"),
-					serverHasNewVolume(tt, "scaleway_instance_server.base", image),
+					serverHasNewVolume(tt, "scaleway_instance_server.base", ubuntuJammyImageLabel),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.0", "terraform-test"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "state"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccServer_ScratchStorage(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			instancechecks.IsServerDestroyed(tt),
-			instancechecks.IsVolumeDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_instance_volume" "main" {
-						size_in_gb = 1600
-						type = "scratch"
-						zone = "fr-par-2"
-					}
-			
-					resource "scaleway_instance_server" "main" {
-						name = "test-acc-server-scratch"
-						type = "L40S-1-48G"
-						image = "ubuntu_jammy_gpu_os_12"
-						state = "stopped"
-						zone = "fr-par-2"
-					    tags  = [ "terraform-test", "scaleway_instance_server", "scratch" ]
-			
-						additional_volume_ids = [scaleway_instance_volume.main.id]
-					}`,
-				Check: resource.ComposeTestCheckFunc(
-					instancechecks.IsServerPresent(tt, "scaleway_instance_server.main"),
-					instancechecks.IsVolumePresent(tt, "scaleway_instance_volume.main"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "L40S-1-48G"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "ubuntu_jammy_gpu_os_12"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "additional_volume_ids.0", "scaleway_instance_volume.main", "id"),
-					resource.TestCheckResourceAttr("scaleway_instance_volume.main", "size_in_gb", "1600"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "attach_detach_file_system"),
 				),
 			},
 		},
@@ -2344,8 +579,10 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-acc-server-admin-password-encryption-ssh-key-id"
 						type = "POP2-2C-8G-WIN"
 						image = "windows_server_2022"
+						tags  = [ "terraform-test", "scaleway_instance_server", "admin_password_encryption_ssh_key_id" ]
 						admin_password_encryption_ssh_key_id = scaleway_iam_ssh_key.main.id
 					}
 					`, sshKey),
@@ -2364,8 +601,10 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-acc-server-admin-password-encryption-ssh-key-id"
 						type = "POP2-2C-8G-WIN"
 						image = "windows_server_2022"
+						tags  = [ "terraform-test", "scaleway_instance_server", "admin_password_encryption_ssh_key_id" ]
 						admin_password_encryption_ssh_key_id = ""
 					}
 					`, sshKey),
@@ -2381,8 +620,10 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 					}
 
 					resource "scaleway_instance_server" "main" {
+						name = "tf-acc-server-admin-password-encryption-ssh-key-id"
 						type = "POP2-2C-8G-WIN"
 						image = "windows_server_2022"
+						tags  = [ "terraform-test", "scaleway_instance_server", "admin_password_encryption_ssh_key_id" ]
 						admin_password_encryption_ssh_key_id = scaleway_iam_ssh_key.main.id
 					}
 					`, sshKey),
@@ -2392,19 +633,4 @@ func TestAccServer_AdminPasswordEncryptionSSHKeyID(t *testing.T) {
 			},
 		},
 	})
-}
-
-func TestGetEndOfServiceDate(t *testing.T) {
-	t.Skip("There are currently no Instance type scheduled for EndOfService")
-	tt := acctest.NewTestTools(t)
-
-	client := meta.ExtractScwClient(tt.Meta)
-	defer tt.Cleanup()
-
-	eosDate, err := instance.GetEndOfServiceDate(t.Context(), client, "fr-par-1", "ENT1-S")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, "2025-09-01", eosDate)
 }
