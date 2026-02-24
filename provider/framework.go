@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	_ provider.Provider                  = &ScalewayProvider{}
+	_ provider.Provider                  = (*ScalewayProvider)(nil)
 	_ provider.ProviderWithActions       = (*ScalewayProvider)(nil)
 	_ provider.ProviderWithListResources = (*ScalewayProvider)(nil)
 )
