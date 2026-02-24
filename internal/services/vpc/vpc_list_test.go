@@ -19,11 +19,7 @@ func TestAccListVPCs_Basic(t *testing.T) {
 			{
 				Query: true,
 				Config: `
-				provider "scaleway" {}
-
 				list "scaleway_vpc" "fr-par" {
-					provider = scaleway
-
 					config {
 						region = "fr-par"
  					}
