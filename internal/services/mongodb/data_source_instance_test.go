@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
