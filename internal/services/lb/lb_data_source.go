@@ -8,6 +8,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -84,5 +85,25 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	return resourceLbRead(ctx, d, m)
+	lb, err := waitForInstances(ctx, api, zone, locality.ExpandID(lbID.(string)), d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	region, err := zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	privateNetworks, err := waitForPrivateNetworks(ctx, api, zone, lb.ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setLBState(d, lb, zone, region, privateNetworks, allPrivateIPs, false)
 }
