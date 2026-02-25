@@ -52,6 +52,12 @@ func TestAccServer_Minimal(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "state", "started"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
 		},
 	})
 }
@@ -302,6 +308,30 @@ func TestAccServer_WithPlacementGroup(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.ha.2", "placement_group_policy_respected", "false"),
 				),
 			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "ha" {
+						policy_mode = "enforced"
+						policy_type = "max_availability"
+					}
+
+					resource "scaleway_instance_server" "ha" {
+						name = "tf-acc-server-with-placement-group"
+						image = "ubuntu_focal"
+						type  = "PLAY2-PICO"
+						placement_group_id = "${scaleway_instance_placement_group.ha.id}"
+						tags  = [ "terraform-test", "scaleway_instance_server", "placement_group" ]
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.IsServerPresent(tt, "scaleway_instance_server.ha"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.ha",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
 		},
 	})
 }
@@ -343,6 +373,12 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
+			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
 						name = "filesystem-instance-terraform-test"
@@ -377,6 +413,11 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.1", "scaleway_instance_server"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "tags.2", "attach_detach_file_system"),
 				),
+			}, {
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
 			},
 			{
 				Config: fmt.Sprintf(`

@@ -28,6 +28,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -58,6 +59,7 @@ func ResourceServer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    serverSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck(
 				"placement_group_id",
@@ -521,7 +523,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(zone, res.Server.ID).String())
+	err = identity.SetZonalIdentity(d, res.Server.Zone, res.Server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -651,16 +656,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
+	return append(diags, setServerState(ctx, d, m, api, res.Server.Zone, res.Server.ID)...)
 }
 
-//gocyclo:ignore
-func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) diag.Diagnostics {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
@@ -673,9 +672,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Server
-	////
 	state, err := serverStateFlatten(server.State)
 	if err != nil {
 		return diag.FromErr(err)
@@ -898,6 +894,21 @@ You can check the full list of compatible server types:
 	_ = d.Set("private_ips", allPrivateIPs)
 
 	return diags
+}
+
+//gocyclo:ignore
+func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, zone, id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setServerState(ctx, d, m, api, zone, id)
 }
 
 //gocyclo:ignore
@@ -1178,7 +1189,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
+	return append(warnings, setServerState(ctx, d, m, api, zone, id)...)
 }
 
 func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
