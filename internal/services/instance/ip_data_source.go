@@ -74,7 +74,7 @@ func DataSourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	d.SetId(zonal.NewIDString(res.IP.Zone, res.IP.ID))
 
 	return setIPState(d, res.IP)
 }
