@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
@@ -31,6 +32,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    ipReverseDNSSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: cdf.LocalityCheck("ip_id"),
 	}
 }
@@ -65,7 +67,10 @@ func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
@@ -87,17 +92,12 @@ func ResourceInstanceIPReverseDNSCreate(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	return ResourceInstanceIPReverseDNSRead(ctx, d, m)
+	return setIPReverseDNSState(ctx, instanceAPI, d, res.IP.Zone, res.IP.ID)
 }
 
-func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	res, err := instanceAPI.GetIP(&instanceSDK.GetIPRequest{
-		IP:   ID,
+func setIPReverseDNSState(ctx context.Context, api *instanceSDK.API, d *schema.ResourceData, zone scw.Zone, id string) diag.Diagnostics {
+	res, err := api.GetIP(&instanceSDK.GetIPRequest{
+		IP:   id,
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -111,10 +111,25 @@ func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("zone", string(zone))
+	_ = d.Set("zone", zone.String())
 	_ = d.Set("reverse", res.IP.Reverse)
+	_ = d.Set("ip_id", zonal.NewIDString(res.IP.Zone, res.IP.ID))
 
 	return nil
+}
+
+func ResourceInstanceIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, zone, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setIPReverseDNSState(ctx, instanceAPI, d, zone, ID)
 }
 
 func ResourceInstanceIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
