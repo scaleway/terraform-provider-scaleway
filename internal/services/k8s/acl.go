@@ -223,6 +223,10 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 				IP:          &allowedIPs,
 				Description: "Automatically generated after scaleway_k8s_acl resource deletion",
 			},
+			{
+				ScalewayRanges: new(true),
+				Description:    "Automatically generated after scaleway_k8s_acl resource deletion",
+			},
 		},
 	}
 

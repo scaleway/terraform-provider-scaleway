@@ -5,7 +5,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -22,6 +22,14 @@ import (
 
 //go:embed descriptions/user.md
 var userDescription string
+
+func mongodbUserIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":      identity.DefaultRegionAttribute(),
+		"instance_id": {Type: schema.TypeString, Description: "The MongoDB instance ID", RequiredForImport: true},
+		"name":        {Type: schema.TypeString, Description: "The MongoDB user name", RequiredForImport: true},
+	})
+}
 
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
@@ -42,6 +50,7 @@ func ResourceUser() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
+		Identity:      mongodbUserIdentity(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("instance_id"),
 			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
@@ -172,7 +181,13 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      string(region),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// Set user roles if provided
 	if rolesSet, ok := d.GetOk("roles"); ok && rolesSet.(*schema.Set).Len() > 0 {
@@ -196,12 +211,12 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI := newAPI(m)
 
-	region, instanceID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	idParts := identity.ParseMultiPartID(d.Id(), "region", "instance_id", "name")
+	region := scw.Region(idParts["region"])
+	instanceID := idParts["instance_id"]
+	userName := idParts["name"]
 
-	_, err = waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
+	_, err := waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -235,6 +250,15 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	user := res.Users[0]
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      string(region),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
 	_ = d.Set("name", user.Name)
 	_ = d.Set("region", string(region))
@@ -248,20 +272,18 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		_ = d.Set("roles", flattenUserRoles(user.Roles))
 	}
 
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
-
 	return nil
 }
 
 func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI := newAPI(m)
 
-	region, instanceID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	idParts := identity.ParseMultiPartID(d.Id(), "region", "instance_id", "name")
+	region := scw.Region(idParts["region"])
+	instanceID := idParts["instance_id"]
+	userName := idParts["name"]
 
-	_, err = waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
+	_, err := waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -320,12 +342,12 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI := newAPI(m)
 
-	region, instanceID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	idParts := identity.ParseMultiPartID(d.Id(), "region", "instance_id", "name")
+	region := scw.Region(idParts["region"])
+	instanceID := idParts["instance_id"]
+	userName := idParts["name"]
 
-	_, err = waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
+	_, err := waitForInstance(ctx, mongodbAPI, region, instanceID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -343,19 +365,13 @@ func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 	return nil
 }
 
-// ResourceUserID builds the resource identifier
-// The resource identifier format is "Region/InstanceId/UserName"
-func ResourceUserID(region scw.Region, instanceID string, userName string) (resourceID string) {
-	return fmt.Sprintf("%s/%s/%s", region, instanceID, userName)
-}
-
-// ResourceUserParseID extracts instance ID and username from the resource identifier.
-// The resource identifier format is "Region/InstanceId/UserName"
+// ResourceUserParseID extracts region, instance ID and username from the resource identifier.
+// The resource identifier format is "region/instance_id/name"
 func ResourceUserParseID(resourceID string) (region scw.Region, instanceID string, userName string, err error) {
-	idParts := strings.Split(resourceID, "/")
-	if len(idParts) != 3 {
+	idParts := identity.ParseMultiPartID(resourceID, "region", "instance_id", "name")
+	if idParts["region"] == "" || idParts["instance_id"] == "" || idParts["name"] == "" {
 		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
 	}
 
-	return scw.Region(idParts[0]), idParts[1], idParts[2], nil
+	return scw.Region(idParts["region"]), idParts["instance_id"], idParts["name"], nil
 }
