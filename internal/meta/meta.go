@@ -55,7 +55,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	////
 	// Load Profile
 	////
-	profile, credentialsSource, err := loadProfile(ctx, config.ProviderSchema)
+	profile, credentialsSource, err := LoadProfile(ctx, config.ProviderSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -242,7 +242,7 @@ type FrameworkProviderConfig struct {
 	APIURL         string
 }
 
-// Equivalent to SDKv2 loadProfile for the Framework provider
+// Equivalent to SDKv2 LoadProfile for the Framework provider
 func LoadProfileForFramework(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
 	scwConfig, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
@@ -329,7 +329,7 @@ func LoadProfileForFramework(ctx context.Context, config *FrameworkProviderConfi
 }
 
 //gocyclo:ignore
-func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
+func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	var configFileNotFoundError *scw.ConfigFileNotFoundError
