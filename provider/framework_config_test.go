@@ -42,7 +42,7 @@ func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 		t.Setenv("SCW_CONFIG_PATH", configFile)
 
 		// Test with an empty provider config
-		profile, credentialsSource, err := meta.LoadProfileForFramework(
+		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
 			context.Background(),
 			&meta.FrameworkProviderConfig{},
 		)
@@ -94,7 +94,7 @@ func TestFrameworkProviderConfigSources_ProviderConfig(t *testing.T) {
 		t.Setenv("SCW_CONFIG_PATH", configFile)
 
 		// Test with provider config that should override config file
-		profile, credentialsSource, err := meta.LoadProfileForFramework(
+		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
 			context.Background(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "override-access-key",
@@ -152,7 +152,7 @@ func TestFrameworkProviderConfigSources_EnvConfig(t *testing.T) {
 		t.Setenv("SCW_CONFIG_PATH", configFile)
 
 		// Test with provider config and config file, but env vars should take precedence
-		profile, credentialsSource, err := meta.LoadProfileForFramework(
+		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
 			context.Background(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "config-access-key",
@@ -202,7 +202,7 @@ func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 		_ = os.Unsetenv("SCW_CONFIG_PATH")
 
 		// Test with no config - should get defaults
-		profile, _, err := meta.LoadProfileForFramework(
+		profile, _, err := meta.LoadProfileFromFrameworkConfig(
 			context.Background(),
 			&meta.FrameworkProviderConfig{},
 		)

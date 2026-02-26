@@ -89,33 +89,22 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// TODO validated profile
 
 	////
-	// Create scaleway SDK client
+	// Return scaleway client
 	////
 
-	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
-	if config.HTTPClient != nil {
-		httpClient = config.HTTPClient
-	}
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.TerraformVersion)
+}
 
-	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
-		scw.WithProfile(profile),
-		scw.WithHTTPClient(httpClient),
-	}
-
-	scwClient, err := scw.NewClient(opts...)
+// NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
+func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig, terraformVersion string) (*Meta, error) {
+	profile, credentialsSource, err := LoadProfileFromFrameworkConfig(ctx, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Meta{
-		scwClient:         scwClient,
-		httpClient:        httpClient,
-		credentialsSource: credentialsSource,
-	}, nil
+	return NewMetaFromProfile(ctx, profile, credentialsSource, terraformVersion)
 }
 
-// NewMetaFromProfile creates a Meta object with a pre-built profile for the Framework provider
 func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, terraformVersion string) (*Meta, error) {
 	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 
@@ -242,8 +231,7 @@ type FrameworkProviderConfig struct {
 	APIURL         string
 }
 
-// Equivalent to SDKv2 LoadProfile for the Framework provider
-func LoadProfileForFramework(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
+func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
 	scwConfig, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	var configFileNotFoundError *scw.ConfigFileNotFoundError
@@ -252,8 +240,6 @@ func LoadProfileForFramework(ctx context.Context, config *FrameworkProviderConfi
 	} else if err != nil {
 		return nil, nil, err
 	}
-
-	// By default we set default zone and region to fr-par
 
 	defaultZoneProfile := &scw.Profile{
 		DefaultRegion: new(scw.RegionFrPar.String()),
@@ -268,15 +254,12 @@ func LoadProfileForFramework(ctx context.Context, config *FrameworkProviderConfi
 	envProfile := scw.LoadEnvProfile()
 	providerProfile := &scw.Profile{}
 
-	// Handle profile from config file
 	if config.ProfileName != "" {
 		profileFromConfig, err := scwConfig.GetProfile(config.ProfileName)
 		if err == nil {
 			providerProfile = profileFromConfig
 		}
 	}
-
-	// Override with explicit provider configuration values
 
 	if config.AccessKey != "" {
 		providerProfile.AccessKey = &config.AccessKey

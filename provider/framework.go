@@ -158,14 +158,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	} else {
 		frameworkConfig := modelToFrameworkConfig(&data)
 
-		profile, credentialsSource, err := meta.LoadProfileForFramework(ctx, frameworkConfig)
-		if err != nil {
-			resp.Diagnostics.AddError("error building profile", err.Error())
-
-			return
-		}
-
-		m, err = meta.NewMetaFromProfile(ctx, profile, credentialsSource, req.TerraformVersion)
+		m, err := meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
 			resp.Diagnostics.AddError("error creating meta", err.Error())
 

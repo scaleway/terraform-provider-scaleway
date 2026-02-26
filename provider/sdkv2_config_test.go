@@ -61,7 +61,7 @@ func TestSDKv2ProviderConfigSources_ActiveProfile(t *testing.T) {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-		}, map[string]interface{}{})
+		}, map[string]any{})
 
 		// Test with an empty provider config
 		profile, credentialsSource, err := meta.LoadProfile(
@@ -145,7 +145,7 @@ func TestSDKv2ProviderConfigSources_ProviderConfig(t *testing.T) {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-		}, map[string]interface{}{
+		}, map[string]any{
 			"access_key": "override-access-key",
 			"secret_key": "override-secret-key",
 			"project_id": "override-project-id",
@@ -234,7 +234,7 @@ func TestSDKv2ProviderConfigSources_EnvConfig(t *testing.T) {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-		}, map[string]interface{}{
+		}, map[string]any{
 			"access_key": "config-access-key",
 			"secret_key": "config-secret-key",
 			"project_id": "config-project-id",
@@ -315,7 +315,7 @@ func TestSDKv2ProviderConfigSources_NoConfig(t *testing.T) {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-		}, map[string]interface{}{})
+		}, map[string]any{})
 
 		profile, _, err := meta.LoadProfile(
 			context.Background(),
