@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -64,11 +65,12 @@ func waitForExporter(
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
 	retryInterval := defaultCockpitRetryInterval
+	timeoutVal := timeout
 
 	return api.WaitForExporter(&cockpit.WaitForExporterRequest{
 		Region:        region,
 		ExporterID:    exporterID,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       &timeoutVal,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

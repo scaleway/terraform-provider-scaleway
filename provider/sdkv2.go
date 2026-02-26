@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -142,7 +143,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_cockpit_grafana_user":                cockpit.ResourceCockpitGrafanaUser(),
 				"scaleway_cockpit_token":                       cockpit.ResourceToken(),
 				"scaleway_cockpit_alert_manager":               cockpit.ResourceCockpitAlertManager(),
-				"scaleway_cockpit_exporter":                     cockpit.ResourceCockpitExporter(),
+				"scaleway_cockpit_exporter":                    cockpit.ResourceCockpitExporter(),
 				"scaleway_container":                           container.ResourceContainer(),
 				"scaleway_container_cron":                      container.ResourceCron(),
 				"scaleway_container_domain":                    container.ResourceDomain(),
