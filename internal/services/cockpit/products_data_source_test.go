@@ -1,7 +1,3 @@
-// Tests use VCR cassettes to record/replay HTTP interactions.
-// To record new cassettes (requires SCW_ACCESS_KEY and SCW_SECRET_KEY):
-//
-//	TF_ACC=1 TF_UPDATE_CASSETTES=true go test ./internal/services/cockpit/... -run TestAccCockpitProducts -v -count=1
 package cockpit_test
 
 import (
