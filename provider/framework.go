@@ -100,6 +100,44 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 	}
 }
 
+func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+	config := &meta.FrameworkProviderConfig{}
+
+	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
+		config.AccessKey = model.AccessKey.ValueString()
+	}
+
+	if !model.SecretKey.IsNull() && !model.SecretKey.IsUnknown() {
+		config.SecretKey = model.SecretKey.ValueString()
+	}
+
+	if !model.Profile.IsNull() && !model.Profile.IsUnknown() {
+		config.ProfileName = model.Profile.ValueString()
+	}
+
+	if !model.ProjectID.IsNull() && !model.ProjectID.IsUnknown() {
+		config.ProjectID = model.ProjectID.ValueString()
+	}
+
+	if !model.OrganizationID.IsNull() && !model.OrganizationID.IsUnknown() {
+		config.OrganizationID = model.OrganizationID.ValueString()
+	}
+
+	if !model.Region.IsNull() && !model.Region.IsUnknown() {
+		config.Region = model.Region.ValueString()
+	}
+
+	if !model.Zone.IsNull() && !model.Zone.IsUnknown() {
+		config.Zone = model.Zone.ValueString()
+	}
+
+	if !model.APIURL.IsNull() && !model.APIURL.IsUnknown() {
+		config.APIURL = model.APIURL.ValueString()
+	}
+
+	return config
+}
+
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data ScalewayProviderModel
 
@@ -118,15 +156,18 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		m = p.providerMeta
 	} else {
-		config := &meta.Config{
-			TerraformVersion: req.TerraformVersion,
+		frameworkConfig := modelToFrameworkConfig(&data)
+
+		profile, credentialsSource, err := meta.LoadProfileForFramework(ctx, frameworkConfig)
+		if err != nil {
+			resp.Diagnostics.AddError("error building profile", err.Error())
+
+			return
 		}
 
-		var err error
-
-		m, err = meta.NewMeta(ctx, config)
+		m, err = meta.NewMetaFromProfile(ctx, profile, credentialsSource, req.TerraformVersion)
 		if err != nil {
-			resp.Diagnostics.AddError("error while configuring the provider", err.Error())
+			resp.Diagnostics.AddError("error creating meta", err.Error())
 
 			return
 		}
