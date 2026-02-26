@@ -49,6 +49,8 @@ var BodyMatcherIgnore = []string{
 	"mnq_region",
 	"mnq_nats_account_id",
 	"mnq_nats_subject",
+	// cockpit exporter datadog destination
+	"api_key",
 }
 
 // removeKeyRecursive removes a key from a map and all its nested maps
