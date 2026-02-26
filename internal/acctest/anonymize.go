@@ -72,10 +72,12 @@ func AnonymizeCassetteFile(path string) error {
 		if inter == nil {
 			continue
 		}
+
 		if req, ok := inter["request"].(map[string]any); ok {
 			anonymizeBodyInMap(req, "body")
 			anonymizeHeadersInMap(req, "headers")
 		}
+
 		if resp, ok := inter["response"].(map[string]any); ok {
 			anonymizeBodyInMap(resp, "body")
 			anonymizeHeadersInMap(resp, "headers")
@@ -95,10 +97,12 @@ func anonymizeBodyInMap(m map[string]any, key string) {
 	if !ok || body == "" {
 		return
 	}
+
 	trimmed := strings.TrimSpace(body)
 	if !strings.HasPrefix(trimmed, "{") && !strings.HasPrefix(trimmed, "[") {
 		return
 	}
+
 	var v any
 	if err := json.Unmarshal([]byte(body), &v); err != nil {
 		return
