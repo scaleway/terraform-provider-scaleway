@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
@@ -193,9 +192,11 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		otlpList := otlpDest.([]any)
 		if len(otlpList) > 0 {
 			otlpMap := otlpList[0].(map[string]any)
+
 			req.OtlpDestination = &cockpit.ExporterOTLPDestination{
 				Endpoint: otlpMap["endpoint"].(string),
 			}
+
 			if headers, ok := otlpMap["headers"]; ok {
 				headersMap := types.ExpandMapPtrStringString(headers)
 				if headersMap != nil {
@@ -354,9 +355,11 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 		otlpList := otlpDest.([]any)
 		if len(otlpList) > 0 {
 			otlpMap := otlpList[0].(map[string]any)
+
 			req.OtlpDestination = &cockpit.ExporterOTLPDestination{
 				Endpoint: otlpMap["endpoint"].(string),
 			}
+
 			if headers, ok := otlpMap["headers"]; ok {
 				headersMap := types.ExpandMapPtrStringString(headers)
 				if headersMap != nil {
