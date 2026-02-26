@@ -171,6 +171,23 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 			return
 		}
+
+		ok, message, err := m.HasMultipleVariableSources()
+		if err != nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Error checking multiple variable sources",
+				err.Error(),
+			))
+
+			return
+		}
+
+		if ok && err == nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Multiple variable sources detected",
+				"Please make sure the right credentials are used: "+message,
+			))
+		}
 	}
 
 	resp.ResourceData = m
