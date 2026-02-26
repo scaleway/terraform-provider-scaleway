@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
@@ -37,13 +38,15 @@ func ResourceCockpitExporter() *schema.Resource {
 	}
 }
 
-func suppressExportedProductsDefault(k, old, new string, d *schema.ResourceData) bool {
+func suppressExportedProductsDefault(k, old, newVal string, d *schema.ResourceData) bool {
 	if k != "exported_products" && k != "exported_products.0" {
 		return false
 	}
-	if old == "all" && new == "" {
+
+	if old == "all" && newVal == "" {
 		return true
 	}
+
 	return false
 }
 
@@ -115,7 +118,7 @@ func exporterSchema() map[string]*schema.Schema {
 			},
 			DiffSuppressFunc: suppressExportedProductsDefault,
 			Elem:             &schema.Schema{Type: schema.TypeString},
-			Description:     "List of Scaleway products to export. Use [\"all\"] to export all products. Use scaleway_cockpit_products data source for valid product names.",
+			Description:      "List of Scaleway products to export. Use [\"all\"] to export all products. Use scaleway_cockpit_products data source for valid product names.",
 		},
 		"status": {
 			Type:        schema.TypeString,
@@ -177,10 +180,11 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		if len(datadogList) > 0 {
 			datadogMap := datadogList[0].(map[string]any)
 			req.DatadogDestination = &cockpit.ExporterDatadogDestination{
-				APIKey: scw.StringPtr(datadogMap["api_key"].(string)),
+				APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
 			}
+
 			if endpoint, ok := datadogMap["endpoint"]; ok && endpoint != "" {
-				req.DatadogDestination.Endpoint = scw.StringPtr(endpoint.(string))
+				req.DatadogDestination.Endpoint = types.ExpandStringPtr(endpoint)
 			}
 		}
 	}
@@ -231,8 +235,10 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -261,12 +267,15 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 		datadogDest := map[string]any{
 			"endpoint": "",
 		}
+
 		if res.DatadogDestination.Endpoint != nil {
 			datadogDest["endpoint"] = *res.DatadogDestination.Endpoint
 		}
+
 		if apiKey, ok := d.GetOk("datadog_destination.0.api_key"); ok {
 			datadogDest["api_key"] = apiKey.(string)
 		}
+
 		_ = d.Set("datadog_destination", []map[string]any{datadogDest})
 	}
 
@@ -332,10 +341,11 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 		if len(datadogList) > 0 {
 			datadogMap := datadogList[0].(map[string]any)
 			req.DatadogDestination = &cockpit.ExporterDatadogDestination{
-				APIKey: scw.StringPtr(datadogMap["api_key"].(string)),
+				APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
 			}
+
 			if endpoint, ok := datadogMap["endpoint"]; ok && endpoint != "" {
-				req.DatadogDestination.Endpoint = scw.StringPtr(endpoint.(string))
+				req.DatadogDestination.Endpoint = types.ExpandStringPtr(endpoint)
 			}
 		}
 	}

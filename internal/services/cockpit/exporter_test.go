@@ -10,25 +10,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	cockpitSDK "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 )
 
+const defaultOrgIDPlaceholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
 func TestAccCockpitExporter_Basic_Datadog(t *testing.T) {
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = defaultOrgIDPlaceholder
 	}
 
 	exporterName := "my-datadog-exporter"
 	datadogAPIKey := "00000000000000000000000000000000"
+
 	if k := os.Getenv("TF_TEST_DATADOG_API_KEY"); k != "" {
 		datadogAPIKey = k
 	}
@@ -79,12 +84,13 @@ func TestAccCockpitExporter_Basic_OTLP(t *testing.T) {
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = defaultOrgIDPlaceholder
 	}
 
 	exporterName := "my-exporter"
@@ -141,12 +147,13 @@ func TestAccCockpitExporter_Update(t *testing.T) {
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
-		orgID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+		orgID = defaultOrgIDPlaceholder
 	}
 
 	resource.ParallelTest(t, resource.TestCase{

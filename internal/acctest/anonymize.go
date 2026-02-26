@@ -2,7 +2,7 @@ package acctest
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -14,16 +14,17 @@ import (
 
 // sensitiveKeys lists JSON keys whose values should be anonymized.
 var sensitiveKeys = map[string]string{
-	"api_key":      "00000000000000000000000000000000",
-	"secret_key":   "00000000-0000-0000-0000-000000000000",
-	"secret":       "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-	"token":        "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
-	"password":     "xxxxxxxx",
+	"api_key":       "00000000000000000000000000000000",
+	"secret_key":    "00000000-0000-0000-0000-000000000000",
+	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
+	"password":      "xxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
 // headerKeys lists HTTP header names to anonymize (case-insensitive).
-var headerKeys = map[string]string{
+// Placeholder values used for cassette anonymization, not real credentials.
+var headerKeys = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
 	"x-auth-token":  "2b8d6113-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
@@ -38,18 +39,20 @@ func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 	if pkgFolder == "" {
 		_, f, _, ok := runtime.Caller(1)
 		if !ok {
-			return fmt.Errorf("cannot get caller for cassette path")
+			return errors.New("cannot get caller for cassette path")
 		}
+
 		pkgFolder = filepath.Dir(f)
 	}
 
 	path := BuildCassetteName(t.Name(), pkgFolder, ".cassette") + ".yaml"
+
 	return AnonymizeCassetteFile(path)
 }
 
 // AnonymizeCassetteFile anonymizes sensitive values in a cassette YAML file.
 func AnonymizeCassetteFile(path string) error {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint: gosec // G304: path is from BuildCassetteName, not user input
 	if err != nil {
 		return err
 	}
@@ -69,10 +72,12 @@ func AnonymizeCassetteFile(path string) error {
 		if inter == nil {
 			continue
 		}
+
 		if req, ok := inter["request"].(map[string]any); ok {
 			anonymizeBodyInMap(req, "body")
 			anonymizeHeadersInMap(req, "headers")
 		}
+
 		if resp, ok := inter["response"].(map[string]any); ok {
 			anonymizeBodyInMap(resp, "body")
 			anonymizeHeadersInMap(resp, "headers")
@@ -84,7 +89,7 @@ func AnonymizeCassetteFile(path string) error {
 		return err
 	}
 
-	return os.WriteFile(path, out, 0o644)
+	return os.WriteFile(path, out, 0o600)
 }
 
 func anonymizeBodyInMap(m map[string]any, key string) {
@@ -92,16 +97,23 @@ func anonymizeBodyInMap(m map[string]any, key string) {
 	if !ok || body == "" {
 		return
 	}
+
 	trimmed := strings.TrimSpace(body)
 	if !strings.HasPrefix(trimmed, "{") && !strings.HasPrefix(trimmed, "[") {
 		return
 	}
+
 	var v any
 	if err := json.Unmarshal([]byte(body), &v); err != nil {
 		return
 	}
+
 	if anonymizeJSON(v) {
-		b, _ := json.Marshal(v)
+		b, err := json.Marshal(v)
+		if err != nil {
+			return
+		}
+
 		m[key] = string(b)
 	}
 }
@@ -111,6 +123,7 @@ func anonymizeHeadersInMap(m map[string]any, key string) {
 	if !ok {
 		return
 	}
+
 	for name, val := range headers {
 		nameLower := strings.ToLower(name)
 		if placeholder, ok := headerKeys[nameLower]; ok {
@@ -125,6 +138,7 @@ func anonymizeHeadersInMap(m map[string]any, key string) {
 
 func anonymizeJSON(v any) bool {
 	modified := false
+
 	switch x := v.(type) {
 	case map[string]any:
 		for key, val := range x {
@@ -147,5 +161,6 @@ func anonymizeJSON(v any) bool {
 			}
 		}
 	}
+
 	return modified
 }

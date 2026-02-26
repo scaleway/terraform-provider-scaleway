@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
 
@@ -11,6 +12,7 @@ func TestAccCockpitProducts_DataSource_Basic(t *testing.T) {
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
