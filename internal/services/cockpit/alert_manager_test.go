@@ -470,7 +470,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 			Region:          region,
 			ProjectID:       projectID,
-			IsPreconfigured: scw.BoolPtr(true),
+			IsPreconfigured: new(true),
 		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %w", err)

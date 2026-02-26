@@ -57,6 +57,11 @@ func TestAccPlacementGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "policy_type", "max_availability"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_placement_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -86,6 +91,11 @@ func TestAccPlacementGroup_Rename(t *testing.T) {
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "foo"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_placement_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: `
@@ -131,6 +141,11 @@ func TestAccPlacementGroup_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.0", "foo"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.main", "tags.1", "bar"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_placement_group.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: `

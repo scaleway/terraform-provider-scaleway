@@ -9,6 +9,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -20,6 +21,7 @@ func ResourceACL() *schema.Resource {
 		ReadContext:   resourceLbACLRead,
 		UpdateContext: resourceLbACLUpdate,
 		DeleteContext: resourceLbACLDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -188,7 +190,10 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, res.ID))
+	err = identity.SetZonalIdentity(d, frontZone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbACLRead(ctx, d, m)
 }
@@ -223,6 +228,11 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	if acl.Match != nil {
 		_ = d.Set("match", flattenLbACLMatch(acl.Match))
+	}
+
+	err = identity.SetZonalIdentity(d, zone, acl.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

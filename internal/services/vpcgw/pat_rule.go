@@ -194,17 +194,17 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 	hasChange := false
 
 	if d.HasChange("private_ip") {
-		req.PrivateIP = scw.IPPtr(net.ParseIP(d.Get("private_ip").(string)))
+		req.PrivateIP = new(net.ParseIP(d.Get("private_ip").(string)))
 		hasChange = true
 	}
 
 	if d.HasChange("private_port") {
-		req.PrivatePort = scw.Uint32Ptr(uint32(d.Get("private_port").(int)))
+		req.PrivatePort = new(uint32(d.Get("private_port").(int)))
 		hasChange = true
 	}
 
 	if d.HasChange("public_port") {
-		req.PublicPort = scw.Uint32Ptr(uint32(d.Get("public_port").(int)))
+		req.PublicPort = new(uint32(d.Get("public_port").(int)))
 		hasChange = true
 	}
 

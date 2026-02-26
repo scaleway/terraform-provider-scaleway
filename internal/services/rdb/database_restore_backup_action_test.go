@@ -103,7 +103,7 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 		databases, err := api.ListDatabases(&rdbSDK.ListDatabasesRequest{
 			Region:     region,
 			InstanceID: id,
-			Name:       scw.StringPtr(databaseName),
+			Name:       new(databaseName),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return fmt.Errorf("failed to list databases: %w", err)

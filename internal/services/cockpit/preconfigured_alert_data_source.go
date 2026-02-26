@@ -123,11 +123,11 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 	req := &cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
 		ProjectID:       projectID,
-		IsPreconfigured: scw.BoolPtr(true),
+		IsPreconfigured: new(true),
 	}
 
 	if dataSourceID, ok := d.GetOk("data_source_id"); ok {
-		req.DataSourceID = scw.StringPtr(dataSourceID.(string))
+		req.DataSourceID = new(dataSourceID.(string))
 	}
 
 	if ruleStatus, ok := d.GetOk("rule_status"); ok {

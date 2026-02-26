@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -25,6 +26,7 @@ func ResourceBackendStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    backendStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -146,7 +148,9 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(backendStage.ID)
+	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBackendStageRead(ctx, d, m)
 }
@@ -180,6 +184,10 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 
 	if backendStage.ScalewayLB != nil {
 		_ = d.Set("lb_backend_config", flattenLBBackendConfig(zone, backendStage.ScalewayLB))
+	}
+
+	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

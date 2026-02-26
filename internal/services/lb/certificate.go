@@ -10,6 +10,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -20,6 +21,7 @@ func ResourceCertificate() *schema.Resource {
 		ReadContext:   resourceLbCertificateRead,
 		UpdateContext: resourceLbCertificateUpdate,
 		DeleteContext: resourceLbCertificateDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -175,7 +177,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, certificate.ID))
+	err = identity.SetZonalIdentity(d, certificate.LB.Zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -191,26 +196,7 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceLbCertificateRead(ctx, d, m)
 }
 
-func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
-		CertificateID: ID,
-		Zone:          zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setCertificateState(d *schema.ResourceData, certificate *lbSDK.Certificate, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("lb_id", zonal.NewIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
@@ -238,6 +224,36 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m an
 	return diags
 }
 
+func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+		CertificateID: ID,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	diags := setCertificateState(d, certificate, zone)
+
+	err = identity.SetZonalIdentity(d, certificate.LB.Zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
 func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -257,10 +273,6 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		_, err = waitForCertificate(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")
