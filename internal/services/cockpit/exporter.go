@@ -356,7 +356,7 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
-	if d.HasChanges("name", "description", "exported_products", "datadog_destination", "otlp_destination") {
+	if d.HasChangesExcept("datasource_id", "status", "created_at", "updated_at", "project_id", "region") {
 		_, err = api.UpdateExporter(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
