@@ -92,7 +92,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// Return scaleway client
 	////
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.TerraformVersion)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.TerraformVersion, config.HTTPClient)
 }
 
 // NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
@@ -102,11 +102,13 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 		return nil, err
 	}
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, terraformVersion)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, terraformVersion, nil)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, terraformVersion string) (*Meta, error) {
-	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+	if httpClient == nil {
+		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
+	}
 
 	opts := []scw.ClientOption{
 		scw.WithUserAgent(customizeUserAgent(version.Version, terraformVersion)),

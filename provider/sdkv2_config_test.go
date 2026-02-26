@@ -34,32 +34,39 @@ func TestSDKv2ProviderConfigSources_ActiveProfile(t *testing.T) {
 		// Create a minimal provider schema with no provider config overrides
 		providerSchema := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 			"access_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway access key for testing",
 			},
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway secret key for testing",
 			},
 			"profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway profile for testing",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway project ID for testing",
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway region for testing",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway zone for testing",
 			},
 			"api_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway API URL for testing",
 			},
 		}, map[string]any{})
 
@@ -118,32 +125,39 @@ func TestSDKv2ProviderConfigSources_ProviderConfig(t *testing.T) {
 		// Create provider schema with provider config that should override config file
 		providerSchema := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 			"access_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway access key for testing",
 			},
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway secret key for testing",
 			},
 			"profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway profile for testing",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway project ID for testing",
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway region for testing",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway zone for testing",
 			},
 			"api_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway API URL for testing",
 			},
 		}, map[string]any{
 			"access_key": "override-access-key",
@@ -207,32 +221,39 @@ func TestSDKv2ProviderConfigSources_EnvConfig(t *testing.T) {
 		// Create provider schema with provider config and config file, but env vars should take precedence
 		providerSchema := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 			"access_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway access key for testing",
 			},
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway secret key for testing",
 			},
 			"profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway profile for testing",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway project ID for testing",
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway region for testing",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway zone for testing",
 			},
 			"api_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway API URL for testing",
 			},
 		}, map[string]any{
 			"access_key": "config-access-key",
@@ -288,32 +309,39 @@ func TestSDKv2ProviderConfigSources_NoConfig(t *testing.T) {
 		// Test with no config - should get defaults
 		providerSchema := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 			"access_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway access key for testing",
 			},
 			"secret_key": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway secret key for testing",
 			},
 			"profile": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway profile for testing",
 			},
 			"project_id": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway project ID for testing",
 			},
 			"region": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway region for testing",
 			},
 			"zone": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway zone for testing",
 			},
 			"api_url": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The Scaleway API URL for testing",
 			},
 		}, map[string]any{})
 
