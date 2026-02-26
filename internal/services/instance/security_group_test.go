@@ -39,7 +39,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
 						inbound_default_policy = "drop"
-						
+
 						inbound_rule {
 							action = "accept"
 							port = 80
@@ -85,6 +85,15 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.1.ip_range",
+				},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
@@ -94,7 +103,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 						inbound_rule {
 							action = "drop"
 							port = 80
-							ip = "8.8.8.8"
+							ip_range = "8.8.8.8/32"
 						}
 			
 						inbound_rule {
@@ -120,7 +129,8 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.action", "drop"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.protocol", "TCP"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port", "80"),
-					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.ip", "8.8.8.8"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.ip_range", "8.8.8.8/32"),
+					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.ip", ""),
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 0, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetTest,
@@ -156,6 +166,16 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.0.ip",
+					"inbound_rule.2.ip_range",
+				},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
 						name = "sg-name"
@@ -166,6 +186,12 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.#", "0"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_security_group.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_rules"},
 			},
 		},
 	})
@@ -235,6 +261,15 @@ func TestAccSecurityGroup_ICMP(t *testing.T) {
 					}),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.0.ip_range",
+				},
+			},
 		},
 	})
 }
@@ -280,6 +315,17 @@ func TestAccSecurityGroup_ANY(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.ban_ips", "inbound_rule.2.ip", "3.3.3.3"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_security_group.ban_ips",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.0.ip_range",
+					"inbound_rule.1.ip_range",
+					"inbound_rule.2.ip_range",
+				},
+			},
 		},
 	})
 }
@@ -314,6 +360,12 @@ func TestAccSecurityGroup_WithNoPort(t *testing.T) {
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
 					}),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_security_group.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_rules"},
 			},
 		},
 	})
@@ -374,6 +426,12 @@ func TestAccSecurityGroup_RemovePort(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_security_group.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_rules"},
+			},
 		},
 	})
 }
@@ -402,6 +460,15 @@ func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.0.ip_range",
+				},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_security_group" "base" {
 						tags = [ "test-terraform" ]
@@ -415,6 +482,15 @@ func TestAccSecurityGroup_WithPortRange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.base", "inbound_rule.0.port", "22"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_security_group.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"external_rules",
+					"inbound_rule.0.ip_range",
+				},
 			},
 			{
 				Config: `
@@ -455,6 +531,12 @@ func TestAccSecurityGroup_Tags(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_security_group.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_rules"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_security_group" "main" {
 						tags = [ "foo", "buzz" ]
@@ -474,6 +556,12 @@ func TestAccSecurityGroup_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_security_group.main", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_security_group.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_rules"},
+			},
 		},
 	})
 }
@@ -481,7 +569,7 @@ func TestAccSecurityGroup_Tags(t *testing.T) {
 func isSecurityGroupRuleMatching(tt *acctest.TestTools, name string, index int, expected *instanceSDK.SecurityGroupRule) resource.TestCheckFunc {
 	return securityGroupRuleIs(tt, name, expected.Direction, index, func(actual *instanceSDK.SecurityGroupRule) error {
 		if ok, _ := instance.SecurityGroupRuleEquals(expected, actual); !ok {
-			return fmt.Errorf("security group does not match %v, %v", actual, expected)
+			return fmt.Errorf("security group does not match %+v, %+v", actual, expected)
 		}
 
 		return nil
