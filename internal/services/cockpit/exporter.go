@@ -35,6 +35,16 @@ func ResourceCockpitExporter() *schema.Resource {
 	}
 }
 
+func suppressExportedProductsDefault(k, old, new string, d *schema.ResourceData) bool {
+	if k != "exported_products" && k != "exported_products.0" {
+		return false
+	}
+	if old == "all" && new == "" {
+		return true
+	}
+	return false
+}
+
 func exporterSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
@@ -96,10 +106,14 @@ func exporterSchema() map[string]*schema.Schema {
 			},
 		},
 		"exported_products": {
-			Type:        schema.TypeList,
-			Optional:    true,
-			Elem:        &schema.Schema{Type: schema.TypeString},
-			Description: "List of Scaleway products available for metrics/logs data exports",
+			Type:     schema.TypeList,
+			Optional: true,
+			DefaultFunc: func() (any, error) {
+				return []any{"all"}, nil
+			},
+			DiffSuppressFunc: suppressExportedProductsDefault,
+			Elem:             &schema.Schema{Type: schema.TypeString},
+			Description:     "List of Scaleway products to export. Use [\"all\"] to export all products. Use scaleway_cockpit_products data source for valid product names.",
 		},
 		"status": {
 			Type:        schema.TypeString,
@@ -141,6 +155,11 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 
 	if v, ok := d.GetOk("exported_products"); ok {
 		req.ExportedProducts = types.ExpandStrings(v)
+<<<<<<< HEAD
+=======
+	} else {
+		req.ExportedProducts = []string{"all"}
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 	}
 
 	datadogDest, hasDatadog := d.GetOk("datadog_destination")
@@ -193,7 +212,13 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
 	d.SetId(regional.NewIDString(region, exporter.ID))
+=======
+	if err := identity.SetRegionalIdentity(d, region, exporter.ID); err != nil {
+		return diag.FromErr(err)
+	}
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 
 	return ResourceCockpitExporterRead(ctx, d, meta)
 }
@@ -211,19 +236,45 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+<<<<<<< HEAD
 			return nil
 		}
+=======
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", res.Name)
 	_ = d.Set("description", res.Description)
+<<<<<<< HEAD
+=======
+	_ = d.Set("datasource_id", regional.NewIDString(region, res.DatasourceID))
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 	_ = d.Set("status", res.Status.String())
 	_ = d.Set("region", string(region))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("exported_products", types.FlattenSliceString(res.ExportedProducts))
 
+<<<<<<< HEAD
+=======
+	ds, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+		Region:       region,
+		DataSourceID: res.DatasourceID,
+	}, scw.WithContext(ctx))
+	if err == nil {
+		_ = d.Set("project_id", ds.ProjectID)
+	}
+
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 	if res.DatadogDestination != nil {
 		datadogDest := map[string]any{
 			"endpoint": "",
@@ -276,12 +327,21 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("exported_products") {
+<<<<<<< HEAD
 		req.ExportedProducts = types.ExpandStringsPtr(d.Get("exported_products"))
+=======
+		if v, ok := d.GetOk("exported_products"); ok {
+			req.ExportedProducts = types.ExpandStringsPtr(v)
+		} else {
+			req.ExportedProducts = &[]string{"all"}
+		}
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 	}
 
 	datadogDest, hasDatadog := d.GetOk("datadog_destination")
 	otlpDest, hasOTLP := d.GetOk("otlp_destination")
 
+<<<<<<< HEAD
 	if d.HasChange("datadog_destination") || d.HasChange("otlp_destination") {
 		if hasDatadog && hasOTLP {
 			return diag.Errorf("cannot specify both datadog_destination and otlp_destination")
@@ -316,13 +376,51 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 					if headersMap != nil {
 						req.OtlpDestination.Headers = *headersMap
 					}
+=======
+	if hasDatadog && hasOTLP {
+		return diag.Errorf("cannot specify both datadog_destination and otlp_destination")
+	}
+
+	if !hasDatadog && !hasOTLP {
+		return diag.Errorf("must specify either datadog_destination or otlp_destination")
+	}
+
+	if hasDatadog {
+		datadogList := datadogDest.([]any)
+		if len(datadogList) > 0 {
+			datadogMap := datadogList[0].(map[string]any)
+			req.DatadogDestination = &cockpit.ExporterDatadogDestination{
+				APIKey: scw.StringPtr(datadogMap["api_key"].(string)),
+			}
+			if endpoint, ok := datadogMap["endpoint"]; ok && endpoint != "" {
+				req.DatadogDestination.Endpoint = scw.StringPtr(endpoint.(string))
+			}
+		}
+	}
+
+	if hasOTLP {
+		otlpList := otlpDest.([]any)
+		if len(otlpList) > 0 {
+			otlpMap := otlpList[0].(map[string]any)
+			req.OtlpDestination = &cockpit.ExporterOTLPDestination{
+				Endpoint: otlpMap["endpoint"].(string),
+			}
+			if headers, ok := otlpMap["headers"]; ok {
+				headersMap := types.ExpandMapPtrStringString(headers)
+				if headersMap != nil {
+					req.OtlpDestination.Headers = *headersMap
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 				}
 			}
 		}
 	}
 
 	if d.HasChanges("name", "description", "exported_products", "datadog_destination", "otlp_destination") {
+<<<<<<< HEAD
 		_, err := api.UpdateExporter(req, scw.WithContext(ctx))
+=======
+		_, err = api.UpdateExporter(req, scw.WithContext(ctx))
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -333,7 +431,11 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+<<<<<<< HEAD
 	return nil
+=======
+	return ResourceCockpitExporterRead(ctx, d, meta)
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 }
 
 func ResourceCockpitExporterDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -355,10 +457,13 @@ func ResourceCockpitExporterDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+<<<<<<< HEAD
 	_, err = waitForExporter(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
 
+=======
+>>>>>>> dbaf966e (Add scaleway_cockpit_products data source and cockpit exporter with acceptance tests)
 	return nil
 }
