@@ -148,8 +148,8 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		Tags:              types.ExpandStrings(d.Get("tags")),
 		GatewayType:       d.Get("gateway_type").(string),
 		PrivateNetworkID:  regional.ExpandID(d.Get("private_network_id").(string)).ID,
-		IpamPrivateIPv4ID: types.ExpandStringPtr(d.Get("ipam_private_ipv4_id").(string)),
-		IpamPrivateIPv6ID: types.ExpandStringPtr(d.Get("ipam_private_ipv6_id").(string)),
+		IpamPrivateIPv4ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv4_id").(string))),
+		IpamPrivateIPv6ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv6_id").(string))),
 		Zone:              zonePtr,
 		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")),
 	}
