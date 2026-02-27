@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	validator "github.com/scaleway/scaleway-sdk-go/validation"
@@ -19,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -234,4 +236,28 @@ func ResourceLBPrivateNetworkParseID(resourceID string) (zone scw.Zone, lbID str
 	}
 
 	return scw.Zone(idParts[0]), idParts[1], idParts[2], nil
+}
+
+func getLBPrivateIPs(ctx context.Context, m any, region scw.Region, lbID string, privateNetworks []*lbSDK.PrivateNetwork) ([]map[string]any, error) {
+	allPrivateIPs := []map[string]any(nil)
+	resourceType := ipamAPI.ResourceTypeLBServer
+
+	for _, pn := range privateNetworks {
+		opts := &ipam.GetResourcePrivateIPsOptions{
+			ResourceType:     &resourceType,
+			PrivateNetworkID: &pn.PrivateNetworkID,
+			ResourceID:       &lbID,
+		}
+
+		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		if privateIPs != nil {
+			allPrivateIPs = append(allPrivateIPs, privateIPs...)
+		}
+	}
+
+	return allPrivateIPs, nil
 }

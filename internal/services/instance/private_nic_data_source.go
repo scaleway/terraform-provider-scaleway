@@ -45,12 +45,13 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	var privateNICID string
+
+	var pNIC *instance.PrivateNIC
+
 	serverID := locality.ExpandID(d.Get("server_id"))
 
 	id, ok := d.GetOk("private_nic_id")
-
-	var privateNICID string
-
 	if !ok {
 		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
 			Zone:     zone,
@@ -66,9 +67,25 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
+		pNIC = privateNic
 		privateNICID = privateNic.ID
 	} else {
-		_, privateNICID, _ = locality.ParseLocalizedID(id.(string))
+		pNICID, err := locality.ExtractUUID(id.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		res, err := instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
+			Zone:         zone,
+			PrivateNicID: pNICID,
+			ServerID:     serverID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		pNIC = res.PrivateNic
+		privateNICID = res.PrivateNic.ID
 	}
 
 	zonedID := zonal.NewNestedIDString(
@@ -83,16 +100,7 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceInstancePrivateNICRead(ctx, d, m)
-	if len(diags) > 0 {
-		return append(diags, diag.Errorf("failed to read private nic state")...)
-	}
-
-	if d.Id() == "" {
-		return diag.Errorf("instance private nic (%s) not found", zonedID)
-	}
-
-	return nil
+	return setPrivateNICState(ctx, instanceAPI, d, pNIC, m)
 }
 
 func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.ResourceData) (*instance.PrivateNIC, error) {

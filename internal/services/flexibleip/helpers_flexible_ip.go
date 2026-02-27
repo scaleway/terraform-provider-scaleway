@@ -54,3 +54,28 @@ func waitFlexibleIP(ctx context.Context, api *flexibleip.API, zone scw.Zone, id 
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
+
+func findFlexibleIPByMACID(ctx context.Context, api *flexibleip.API, zone scw.Zone, macID string) (*flexibleip.FlexibleIP, error) {
+	listResp, err := api.ListFlexibleIPs(&flexibleip.ListFlexibleIPsRequest{
+		Zone: zone,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	for _, fip := range listResp.FlexibleIPs {
+		res, err := api.GetFlexibleIP(&flexibleip.GetFlexibleIPRequest{
+			Zone:  zone,
+			FipID: fip.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			continue
+		}
+
+		if res.MacAddress != nil && res.MacAddress.ID == macID {
+			return fip, nil
+		}
+	}
+
+	return nil, nil
+}

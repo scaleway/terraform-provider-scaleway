@@ -70,6 +70,12 @@ func TestAccLB_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb.main", "ssl_compatibility_level", lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String()),
 				),
 			},
+			{
+				ResourceName:            "scaleway_lb.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_private_networks"},
+			},
 		},
 	})
 }
