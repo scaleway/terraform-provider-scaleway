@@ -17,12 +17,22 @@ import (
 )
 
 var (
-	_ list.ListResource              = (*ListResource)(nil)
-	_ list.ListResourceWithConfigure = (*ListResource)(nil)
+	_ list.ListResource                     = (*ListResource)(nil)
+	_ list.ListResourceWithConfigure        = (*ListResource)(nil)
+	_ list.ListResourceWithRawV6Schemas     = (*ListResource)(nil)
+	_ list.ListResourceWithConfigValidators = (*ListResource)(nil)
+	_ list.ListResourceWithValidateConfig   = (*ListResource)(nil)
 )
 
 type ListResource struct {
 	vpcAPI *vpc.API
+}
+
+func (r *ListResource) ValidateListResourceConfig(ctx context.Context, request list.ValidateConfigRequest, response *list.ValidateConfigResponse) {
+}
+
+func (r *ListResource) ListResourceConfigValidators(ctx context.Context) []list.ConfigValidator {
+	return []list.ConfigValidator{}
 }
 
 func (r *ListResource) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
