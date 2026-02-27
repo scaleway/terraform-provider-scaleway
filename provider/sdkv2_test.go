@@ -188,7 +188,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_instance_security_group",
 		"scaleway_instance_security_group_rules",
 		"scaleway_instance_server",
-		"scaleway_instance_volume",
 		"scaleway_iot_device",
 		"scaleway_iot_hub",
 		"scaleway_iot_network",
