@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
 	terraformSDKv2 "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -83,11 +84,11 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 	}
 }
 
-func (r *ListResource) RawV5Schemas(ctx context.Context, req list.RawV5SchemaRequest, resp *list.RawV5SchemaResponse) {
-	thingResource := ResourceVPC()
+func (r *ListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
+	resourceVPC := ResourceVPC()
 
-	resp.ProtoV5Schema = thingResource.ProtoSchema(ctx)()
-	resp.ProtoV5IdentitySchema = thingResource.ProtoIdentitySchema(ctx)()
+	resp.ProtoV6Schema = translate.Schema(resourceVPC.ProtoSchema(ctx)())
+	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceVPC.ProtoIdentitySchema(ctx)())
 }
 
 type ListResourceModel struct {
