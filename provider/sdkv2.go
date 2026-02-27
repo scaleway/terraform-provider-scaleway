@@ -272,6 +272,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
 				"scaleway_apple_silicon_os":                    applesilicon.DataSourceOS(),
 				"scaleway_audit_trail_event":                   audittrail.DataSourceEvent(),
+				"scaleway_autoscaling_instance_group":          autoscaling.DataSourceInstanceGroup(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
 				"scaleway_baremetal_partition_schema":          baremetal.DataPartitionSchema(),
