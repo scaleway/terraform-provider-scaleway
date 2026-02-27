@@ -349,6 +349,44 @@ func TestAccPool_Zone(t *testing.T) {
 	})
 }
 
+func TestAccPool_SecurityGroup(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.security_group"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckK8SPoolConfigSecurityGroup(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.security_group"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.security_group"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.security_group", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.security_group", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.security_group", "security_group_id"),
+				),
+			},
+			{
+				Config: testAccCheckK8SPoolConfigSecurityGroupUpdate(latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.security_group"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.security_group"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.security_group", "version", latestK8SVersion),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.security_group", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_pool.security_group", "security_group_id"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPool_Size(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1029,6 +1067,103 @@ resource "scaleway_k8s_cluster" "zone" {
 	delete_additional_resources = false
 	private_network_id = scaleway_vpc_private_network.zone.id
 }`, zone, version)
+}
+
+func testAccCheckK8SPoolConfigSecurityGroup(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_security_group" "group" {
+	name = "test-pool-security-group"
+	inbound_default_policy = "drop"
+	outbound_default_policy = "accept"
+	inbound_rule {
+		action = "accept"
+		port = 80
+		ip_range = "0.0.0.0/0"
+	}
+}
+
+resource "scaleway_k8s_pool" "security_group" {
+	name = "test-pool-security-group"
+	cluster_id = scaleway_k8s_cluster.security_group.id
+	node_type = "pro2_xxs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = ["terraform-test", "scaleway_k8s_cluster", "security_group"]
+	security_group_id = scaleway_instance_security_group.group.id
+}
+
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigSecurityGroup"
+}
+
+resource "scaleway_vpc_private_network" "security_group" {
+	name = "test-pool-security-group"
+	vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_k8s_cluster" "security_group" {
+	name = "test-pool-security-group"
+	cni = "cilium"
+	version = "%s"
+	tags = ["terraform-test", "scaleway_k8s_cluster", "security_group"]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.security_group.id
+}`, version)
+}
+
+func testAccCheckK8SPoolConfigSecurityGroupUpdate(version string) string {
+	return fmt.Sprintf(`
+resource "scaleway_instance_security_group" "group" {
+	name = "test-pool-security-group"
+	inbound_default_policy = "drop"
+	outbound_default_policy = "accept"
+	inbound_rule {
+		action = "accept"
+		port = 80
+		ip_range = "0.0.0.0/0"
+	}
+}
+
+resource "scaleway_instance_security_group" "group_updated" {
+	name = "test-pool-security-group-updated"
+	inbound_default_policy = "accept"
+	outbound_default_policy = "accept"
+	inbound_rule {
+		action = "accept"
+		port = 443
+		ip_range = "0.0.0.0/0"
+	}
+}
+
+resource "scaleway_k8s_pool" "security_group" {
+	name = "test-pool-security-group"
+	cluster_id = scaleway_k8s_cluster.security_group.id
+	node_type = "pro2_xxs"
+	autohealing = true
+	autoscaling = true
+	size = 1
+	tags = ["terraform-test", "scaleway_k8s_cluster", "security_group"]
+	security_group_id = scaleway_instance_security_group.group_updated.id
+}
+
+resource "scaleway_vpc" "main" {
+	name = "testAccCheckK8SPoolConfigSecurityGroup"
+}
+
+resource "scaleway_vpc_private_network" "security_group" {
+	name = "test-pool-security-group"
+	vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_k8s_cluster" "security_group" {
+	name = "test-pool-security-group"
+	cni = "cilium"
+	version = "%s"
+	tags = ["terraform-test", "scaleway_k8s_cluster", "security_group"]
+	delete_additional_resources = false
+	private_network_id = scaleway_vpc_private_network.security_group.id
+}`, version)
 }
 
 func testAccCheckK8SPoolNodesOneOfIsDeleting(name string) resource.TestCheckFunc {
