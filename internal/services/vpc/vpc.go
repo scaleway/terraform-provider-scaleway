@@ -143,7 +143,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	diags := setVPCState(d, res, region)
+	diags := setVPCState(d, res)
 
 	err = identity.SetRegionalIdentity(d, region, ID)
 	if err != nil {
@@ -153,7 +153,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	return diags
 }
 
-func setVPCState(d *schema.ResourceData, res *vpc.VPC, region scw.Region) diag.Diagnostics {
+func setVPCState(d *schema.ResourceData, res *vpc.VPC) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
@@ -162,7 +162,7 @@ func setVPCState(d *schema.ResourceData, res *vpc.VPC, region scw.Region) diag.D
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
 	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
