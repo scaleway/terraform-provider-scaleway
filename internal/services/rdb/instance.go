@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -46,9 +47,11 @@ func ResourceInstance() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
-		SchemaFunc:    instanceSchema,
-		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		SchemaVersion:    0,
+		SchemaFunc:       instanceSchema,
+		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -468,7 +471,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	} else {
 		var password string
@@ -529,7 +535,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	}
 
@@ -663,24 +672,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -764,12 +756,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -846,6 +840,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
+	}
+
+	return diags
+}
+
+// readInstanceIntoState fetches the instance and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setInstanceState(ctx, d, m, rdbAPI, region, res)
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readInstanceIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags
@@ -1029,8 +1068,11 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
+
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {

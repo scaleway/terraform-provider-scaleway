@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -39,6 +40,7 @@ func ResourceACL() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    aclSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -106,12 +108,16 @@ func ResourceACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
-	d.SetId(instanceID)
+	if err := identity.SetRegionalIdentity(d, region, locality.ExpandID(instanceID)); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbACLRead(ctx, d, m)
 }
 
-func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readACLIntoState fetches the ACL rules and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readACLIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -136,9 +142,7 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	id := regional.NewID(region, instanceID).String()
-	d.SetId(id)
-	_ = d.Set("instance_id", id)
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 
 	diags := diag.Diagnostics{}
 
@@ -161,6 +165,28 @@ func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	}
 
 	_ = d.Set("region", region)
+
+	return diags
+}
+
+func ResourceRdbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readACLIntoState(ctx, d, m)
+	if diags != nil && diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, instanceID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, instanceID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }
