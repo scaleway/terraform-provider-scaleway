@@ -399,6 +399,32 @@ func SplitDomains(input *string) []string {
 	return result
 }
 
+// FindTaskByDomain finds a domain registration task by domain name.
+// Returns the task for use in terraform import (project_id/task_id).
+func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, projectID *string) (*domain.Task, error) {
+	req := &domain.RegistrarAPIListTasksRequest{
+		Domain:    &domainName,
+		ProjectID: projectID,
+	}
+
+	listTasksResponse, err := registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("error listing tasks: %w", err)
+	}
+
+	domainNameLower := strings.ToLower(domainName)
+	for _, task := range listTasksResponse.Tasks {
+		domains := SplitDomains(task.Domain)
+		for _, d := range domains {
+			if strings.ToLower(d) == domainNameLower {
+				return task, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("no domain registration task found for domain %q", domainName)
+}
+
 func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 2 {
