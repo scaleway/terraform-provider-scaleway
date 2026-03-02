@@ -70,5 +70,13 @@ func DataSourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m
 	zonedID := datasource.NewZonedID(policyID, zone)
 	d.SetId(zonedID)
 
-	return ResourceInstancePolicyRead(ctx, d, m)
+	policy, err := api.GetInstancePolicy(&autoscaling.GetInstancePolicyRequest{
+		Zone:     zone,
+		PolicyID: locality.ExpandID(policyID),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setInstancePolicyState(d, policy, zone)
 }
