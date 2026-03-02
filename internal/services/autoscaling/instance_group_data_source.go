@@ -8,6 +8,7 @@ import (
 	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -65,5 +66,13 @@ func DataSourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m 
 	zonedID := datasource.NewZonedID(instanceGroupID, zone)
 	d.SetId(zonedID)
 
-	return ResourceInstanceGroupRead(ctx, d, m)
+	group, err := api.GetInstanceGroup(&autoscaling.GetInstanceGroupRequest{
+		Zone:            zone,
+		InstanceGroupID: locality.ExpandID(instanceGroupID),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setInstanceGroupState(d, group, zone)
 }
