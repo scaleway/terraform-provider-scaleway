@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,6 +27,7 @@ func ResourceInstancePolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		SchemaFunc:    instancePolicySchema,
 	}
@@ -142,7 +144,10 @@ func ResourceInstancePolicyCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, policy.ID))
+	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstancePolicyRead(ctx, d, m)
 }
@@ -167,6 +172,17 @@ func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
+	diags := setInstancePolicyState(d, policy, zone)
+
+	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setInstancePolicyState(d *schema.ResourceData, policy *autoscaling.InstancePolicy, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("name", policy.Name)
 	_ = d.Set("action", policy.Action.String())
 	_ = d.Set("type", policy.Type.String())
