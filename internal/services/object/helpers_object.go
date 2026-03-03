@@ -11,12 +11,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
+	"github.com/aws/smithy-go/middleware"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
@@ -29,6 +31,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
+	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const (
@@ -62,6 +65,9 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
+		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+			return awsmiddleware.AddUserAgentKeyValue("terraform-provider-scaleway", version.Version)(stack)
+		})
 	})
 
 	return client, nil
