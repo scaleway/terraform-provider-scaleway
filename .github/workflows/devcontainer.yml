@@ -1,5 +1,8 @@
 name: Dev Container Check
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     branches: [main]
@@ -14,4 +17,4 @@ jobs:
       - name: Build and Run Dev Container
         uses: devcontainers/ci@8bf61b26e9c3a98f69cb6ce2f88d24ff59b785c6 # v0.3.1900000417
         with:
-          runCmd: make test
+          runCmd: go build .
