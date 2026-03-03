@@ -13,6 +13,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -49,6 +50,22 @@ func ResourceRecord() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    recordSchema,
+		Identity:      identity.WrapSchemaMap(recordIdentitySchema()),
+	}
+}
+
+func recordIdentitySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"dns_zone": {
+			Type:              schema.TypeString,
+			Description:       "The DNS zone of the record",
+			RequiredForImport: true,
+		},
+		"id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the record (UUID format)",
+			RequiredForImport: true,
+		},
 	}
 }
 
@@ -328,10 +345,14 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	recordID := fmt.Sprintf("%s/%s", dnsZone, currentRecord.ID)
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       currentRecord.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(recordID)
-	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
+	tflog.Debug(ctx, fmt.Sprintf("record ID[%s/%s]", dnsZone, currentRecord.ID))
 
 	return resourceDomainRecordRead(ctx, d, m)
 }
@@ -431,8 +452,73 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	// get the default first record
 	projectID = dnsZones.DNSZones[0].ProjectID
 
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       record.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
-	d.SetId(record.ID)
+	_ = d.Set("dns_zone", dnsZone)
+	_ = d.Set("name", record.Name)
+	_ = d.Set("type", record.Type.String())
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
+	_ = d.Set("ttl", int(record.TTL))
+	_ = d.Set("priority", int(record.Priority))
+	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
+	_ = d.Set("http_service", flattenDomainHTTPService(record.HTTPServiceConfig))
+	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
+	_ = d.Set("view", flattenDomainView(record.ViewConfig))
+	_ = d.Set("project_id", projectID)
+
+	if record.Name == "" || record.Name == "@" {
+		_ = d.Set("fqdn", dnsZone)
+	} else {
+		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
+	}
+
+	return nil
+}
+
+// readRecordIntoState fetches record data and sets schema attributes without Identity (for data sources).
+func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: dnsZone,
+		ID:      &recordID,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if len(res.Records) == 0 {
+		d.SetId("")
+
+		return nil
+	}
+
+	record := res.Records[0]
+
+	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
+
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	projectID := dnsZones.DNSZones[0].ProjectID
+
+	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
@@ -525,8 +611,6 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return nil
 }
