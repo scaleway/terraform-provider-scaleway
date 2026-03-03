@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -28,6 +29,7 @@ func ResourceInstanceGroup() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		SchemaFunc:    instanceGroupSchema,
 	}
@@ -153,7 +155,10 @@ func ResourceInstanceGroupCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, group.ID))
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceInstanceGroupRead(ctx, d, m)
 }
@@ -178,6 +183,17 @@ func ResourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	diags := setInstanceGroupState(d, group, group.Zone)
+
+	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setInstanceGroupState(d *schema.ResourceData, group *autoscaling.InstanceGroup, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("name", group.Name)
 	_ = d.Set("template_id", zonal.NewIDString(zone, group.InstanceTemplateID))
 	_ = d.Set("tags", group.Tags)
