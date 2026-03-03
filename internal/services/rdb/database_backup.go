@@ -87,6 +87,26 @@ func databaseBackupSchema() map[string]*schema.Schema {
 			Description: "Updated date (Format ISO 8601).",
 			Computed:    true,
 		},
+		"same_region": {
+			Type:        schema.TypeBool,
+			Description: "Whether the backup is stored in the same region as the source instance.",
+			Computed:    true,
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Description: "Status of the backup (creating, ready, restoring, deleting, error, exporting, locked).",
+			Computed:    true,
+		},
+		"download_url": {
+			Type:        schema.TypeString,
+			Description: "URL you can download the backup from (when exporting).",
+			Computed:    true,
+		},
+		"download_url_expires_at": {
+			Type:        schema.TypeString,
+			Description: "Expiration date of the download link (Format ISO 8601).",
+			Computed:    true,
+		},
 		// Common
 		"region": regional.Schema(),
 	}
@@ -134,6 +154,10 @@ func setDatabaseBackupState(d *schema.ResourceData, region scw.Region, dbBackup 
 	_ = d.Set("created_at", types.FlattenTime(dbBackup.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(dbBackup.UpdatedAt))
 	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
+	_ = d.Set("same_region", dbBackup.SameRegion)
+	_ = d.Set("status", dbBackup.Status.String())
+	_ = d.Set("download_url", types.FlattenStringPtr(dbBackup.DownloadURL))
+	_ = d.Set("download_url_expires_at", types.FlattenTime(dbBackup.DownloadURLExpiresAt))
 	_ = d.Set("region", string(dbBackup.Region))
 }
 
@@ -224,6 +248,10 @@ func ResourceRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
