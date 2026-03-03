@@ -399,8 +399,6 @@ func SplitDomains(input *string) []string {
 	return result
 }
 
-// FindTaskByDomain finds a domain registration task by domain name.
-// Returns the task for use in terraform import (project_id/task_id).
 func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, projectID *string) (*domain.Task, error) {
 	req := &domain.RegistrarAPIListTasksRequest{
 		Domain:    &domainName,
