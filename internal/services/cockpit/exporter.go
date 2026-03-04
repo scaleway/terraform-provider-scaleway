@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -35,6 +36,47 @@ func ResourceCockpitExporter() *schema.Resource {
 		SchemaFunc: exporterSchema,
 		Identity:   identity.DefaultRegional(),
 	}
+}
+
+func expandDatadogDestination(raw any) *cockpit.ExporterDatadogDestination {
+	datadogList, ok := raw.([]any)
+	if !ok || len(datadogList) == 0 {
+		return nil
+	}
+	datadogMap, ok := datadogList[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+	dest := &cockpit.ExporterDatadogDestination{
+		APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
+	}
+	if endpoint, ok := datadogMap["endpoint"].(string); ok && endpoint != "" {
+		dest.Endpoint = types.ExpandStringPtr(endpoint)
+	}
+	return dest
+}
+
+func expandOtlpDestination(raw any) (*cockpit.ExporterOTLPDestination, error) {
+	otlpList, ok := raw.([]any)
+	if !ok || len(otlpList) == 0 {
+		return nil, fmt.Errorf("otlp_destination is required")
+	}
+	otlpMap, ok := otlpList[0].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid otlp_destination structure")
+	}
+	endpoint, ok := otlpMap["endpoint"].(string)
+	if !ok || endpoint == "" {
+		return nil, fmt.Errorf("otlp_destination.endpoint is required")
+	}
+	dest := &cockpit.ExporterOTLPDestination{Endpoint: endpoint}
+	if headers, ok := otlpMap["headers"]; ok {
+		headersMap := types.ExpandMapPtrStringString(headers)
+		if headersMap != nil {
+			dest.Headers = *headersMap
+		}
+	}
+	return dest, nil
 }
 
 func suppressExportedProductsDefault(k, old, newVal string, d *schema.ResourceData) bool {
@@ -175,35 +217,15 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if hasDatadog {
-		datadogList := datadogDest.([]any)
-		if len(datadogList) > 0 {
-			datadogMap := datadogList[0].(map[string]any)
-			req.DatadogDestination = &cockpit.ExporterDatadogDestination{
-				APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
-			}
-
-			if endpoint, ok := datadogMap["endpoint"]; ok && endpoint != "" {
-				req.DatadogDestination.Endpoint = types.ExpandStringPtr(endpoint)
-			}
-		}
+		req.DatadogDestination = expandDatadogDestination(datadogDest)
 	}
 
 	if hasOTLP {
-		otlpList := otlpDest.([]any)
-		if len(otlpList) > 0 {
-			otlpMap := otlpList[0].(map[string]any)
-
-			req.OtlpDestination = &cockpit.ExporterOTLPDestination{
-				Endpoint: otlpMap["endpoint"].(string),
-			}
-
-			if headers, ok := otlpMap["headers"]; ok {
-				headersMap := types.ExpandMapPtrStringString(headers)
-				if headersMap != nil {
-					req.OtlpDestination.Headers = *headersMap
-				}
-			}
+		dest, err := expandOtlpDestination(otlpDest)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		req.OtlpDestination = dest
 	}
 
 	res, err := api.CreateExporter(req, scw.WithContext(ctx))
@@ -338,35 +360,15 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if hasDatadog {
-		datadogList := datadogDest.([]any)
-		if len(datadogList) > 0 {
-			datadogMap := datadogList[0].(map[string]any)
-			req.DatadogDestination = &cockpit.ExporterDatadogDestination{
-				APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
-			}
-
-			if endpoint, ok := datadogMap["endpoint"]; ok && endpoint != "" {
-				req.DatadogDestination.Endpoint = types.ExpandStringPtr(endpoint)
-			}
-		}
+		req.DatadogDestination = expandDatadogDestination(datadogDest)
 	}
 
 	if hasOTLP {
-		otlpList := otlpDest.([]any)
-		if len(otlpList) > 0 {
-			otlpMap := otlpList[0].(map[string]any)
-
-			req.OtlpDestination = &cockpit.ExporterOTLPDestination{
-				Endpoint: otlpMap["endpoint"].(string),
-			}
-
-			if headers, ok := otlpMap["headers"]; ok {
-				headersMap := types.ExpandMapPtrStringString(headers)
-				if headersMap != nil {
-					req.OtlpDestination.Headers = *headersMap
-				}
-			}
+		dest, err := expandOtlpDestination(otlpDest)
+		if err != nil {
+			return diag.FromErr(err)
 		}
+		req.OtlpDestination = dest
 	}
 
 	if d.HasChangesExcept("datasource_id", "status", "created_at", "updated_at", "project_id", "region") {

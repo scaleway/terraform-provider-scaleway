@@ -9,7 +9,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// SensitiveFields maps JSON keys to anonymize in cassette bodies.
+// SensitiveFields is the canonical map of JSON keys to anonymize in cassette bodies.
+// Used by both the VCR before-save hook (vcr.go) and AnonymizeCassetteFile.
 var SensitiveFields = map[string]any{
 	"api_key":       "00000000000000000000000000000000",
 	"secret_key":    "00000000-0000-0000-0000-000000000000",
@@ -33,7 +34,11 @@ var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
-// AnonymizeCassetteForTest anonymizes the cassette after recording. Call via t.Cleanup().
+// AnonymizeCassetteForTest anonymizes the cassette file for the given test when
+// recording. Call via t.Cleanup() at the start of tests that record sensitive
+// data (e.g. API keys). Runs after the test completes and the cassette is saved.
+// If pkgFolder is empty, uses os.Getwd() to match the path used by the recorder
+// (NewTestTools), ensuring both read/write the same cassette file.
 func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 	t.Helper()
 
