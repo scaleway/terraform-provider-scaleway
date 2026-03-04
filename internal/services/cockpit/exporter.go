@@ -2,7 +2,7 @@ package cockpit
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,39 +43,48 @@ func expandDatadogDestination(raw any) *cockpit.ExporterDatadogDestination {
 	if !ok || len(datadogList) == 0 {
 		return nil
 	}
+
 	datadogMap, ok := datadogList[0].(map[string]any)
 	if !ok {
 		return nil
 	}
+
 	dest := &cockpit.ExporterDatadogDestination{
 		APIKey: types.ExpandStringPtr(datadogMap["api_key"]),
 	}
+
 	if endpoint, ok := datadogMap["endpoint"].(string); ok && endpoint != "" {
 		dest.Endpoint = types.ExpandStringPtr(endpoint)
 	}
+
 	return dest
 }
 
 func expandOtlpDestination(raw any) (*cockpit.ExporterOTLPDestination, error) {
 	otlpList, ok := raw.([]any)
 	if !ok || len(otlpList) == 0 {
-		return nil, fmt.Errorf("otlp_destination is required")
+		return nil, errors.New("otlp_destination is required")
 	}
+
 	otlpMap, ok := otlpList[0].(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("invalid otlp_destination structure")
+		return nil, errors.New("invalid otlp_destination structure")
 	}
+
 	endpoint, ok := otlpMap["endpoint"].(string)
 	if !ok || endpoint == "" {
-		return nil, fmt.Errorf("otlp_destination.endpoint is required")
+		return nil, errors.New("otlp_destination.endpoint is required")
 	}
+
 	dest := &cockpit.ExporterOTLPDestination{Endpoint: endpoint}
+
 	if headers, ok := otlpMap["headers"]; ok {
 		headersMap := types.ExpandMapPtrStringString(headers)
 		if headersMap != nil {
 			dest.Headers = *headersMap
 		}
 	}
+
 	return dest, nil
 }
 
@@ -225,6 +234,7 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.OtlpDestination = dest
 	}
 
@@ -368,6 +378,7 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		req.OtlpDestination = dest
 	}
 
