@@ -5,9 +5,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	iamSDK "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -35,6 +37,10 @@ func AddTestSweepers() {
 	resource.AddTestSweepers("scaleway_iam_user", &resource.Sweeper{
 		Name: "scaleway_iam_user",
 		F:    testSweepUser,
+	})
+	resource.AddTestSweepers("scaleway_iam_saml", &resource.Sweeper{
+		Name: "scaleway_iam_saml",
+		F:    testSweepSaml,
 	})
 }
 
@@ -227,6 +233,40 @@ func testSweepIamAPIKey(_ string) error {
 			if err != nil {
 				return fmt.Errorf("failed to delete api key: %w", err)
 			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepSaml(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		api := iamSDK.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: deleting SAML")
+
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return errors.New("missing organizationID")
+		}
+
+		existingSaml, err := api.GetOrganizationSaml(&iam.GetOrganizationSamlRequest{
+			OrganizationID: orgID,
+		})
+
+		if err != nil {
+			if httperrors.Is404(err) {
+				return nil
+			} else {
+				logging.L.Warningf("Failed to check SAML status", err.Error())
+			}
+		}
+
+		err = api.DeleteSaml(&iam.DeleteSamlRequest{
+			SamlID: existingSaml.ID,
+		})
+		if err != nil {
+			logging.L.Warningf("Failed to delete SAML", err.Error())
 		}
 
 		return nil

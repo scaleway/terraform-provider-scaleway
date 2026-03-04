@@ -139,7 +139,10 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		iam.NewSamlResource,
+		// iam.NewSamlCertificateResource,
+	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
@@ -155,7 +158,10 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		iam.NewSamlDataSource,
+		// iam.NewSamlCertificateDataSource,
+	}
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
