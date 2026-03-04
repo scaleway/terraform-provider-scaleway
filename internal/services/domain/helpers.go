@@ -411,6 +411,7 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 	}
 
 	domainNameLower := strings.ToLower(domainName)
+
 	for _, task := range listTasksResponse.Tasks {
 		domains := SplitDomains(task.Domain)
 		for _, d := range domains {
