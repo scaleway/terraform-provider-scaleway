@@ -37,6 +37,7 @@ func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 
 	if pkgFolder == "" {
 		var err error
+
 		pkgFolder, err = os.Getwd()
 		if err != nil {
 			return err
@@ -147,10 +148,8 @@ func anonymizeJSON(v any) bool {
 					x[key] = placeholder
 					modified = true
 				}
-			} else {
-				if anonymizeJSON(val) {
-					modified = true
-				}
+			} else if anonymizeJSON(val) {
+				modified = true
 			}
 		}
 	case []any:
