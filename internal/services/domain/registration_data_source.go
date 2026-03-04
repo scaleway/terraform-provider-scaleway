@@ -6,11 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func DataSourceRegistration() *schema.Resource {
 	dsSchema := datasource.SchemaFromResourceSchema(registrationSchema())
-	datasource.FixDatasourceSchemaFlags(dsSchema, true, "domain_name")
+
 	datasource.AddOptionalFieldsToSchema(dsSchema, "project_id")
 
 	dsSchema["domain_name"] = &schema.Schema{
@@ -36,12 +37,7 @@ func DataSourceRegistration() *schema.Resource {
 func dataSourceRegistrationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	domainName := d.Get("domain_name").(string)
-
-	var projectID *string
-	if v, ok := d.GetOk("project_id"); ok && v.(string) != "" {
-		s := v.(string)
-		projectID = &s
-	}
+	projectID := types.ExpandStringPtr(d.Get("project_id"))
 
 	task, err := FindTaskByDomain(ctx, registrarAPI, domainName, projectID)
 	if err != nil {
