@@ -39,6 +39,7 @@ func versionSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			Description:      "The secret ID associated with this version",
+			ForceNew:         true,
 			DiffSuppressFunc: dsf.Locality,
 		},
 		"data": {
