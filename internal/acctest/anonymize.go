@@ -2,18 +2,16 @@ package acctest
 
 import (
 	"encoding/json"
-	"errors"
 	"os"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v3"
 )
 
-// sensitiveKeys lists JSON keys whose values should be anonymized.
-var sensitiveKeys = map[string]string{
+// SensitiveFields is the canonical map of JSON keys to anonymize in cassette bodies.
+// Used by both the VCR before-save hook (vcr.go) and AnonymizeCassetteFile.
+var SensitiveFields = map[string]any{
 	"api_key":       "00000000000000000000000000000000",
 	"secret_key":    "00000000-0000-0000-0000-000000000000",
 	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
@@ -32,17 +30,17 @@ var headerKeys = map[string]string{ //nolint: gosec // G101: placeholder values 
 // AnonymizeCassetteForTest anonymizes the cassette file for the given test when
 // recording. Call via t.Cleanup() at the start of tests that record sensitive
 // data (e.g. API keys). Runs after the test completes and the cassette is saved.
-// If pkgFolder is empty, derives it from the caller's file location.
+// If pkgFolder is empty, uses os.Getwd() to match the path used by the recorder
+// (NewTestTools), ensuring both read/write the same cassette file.
 func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 	t.Helper()
 
 	if pkgFolder == "" {
-		_, f, _, ok := runtime.Caller(1)
-		if !ok {
-			return errors.New("cannot get caller for cassette path")
+		var err error
+		pkgFolder, err = os.Getwd()
+		if err != nil {
+			return err
 		}
-
-		pkgFolder = filepath.Dir(f)
 	}
 
 	path := BuildCassetteName(t.Name(), pkgFolder, ".cassette") + ".yaml"
@@ -143,8 +141,9 @@ func anonymizeJSON(v any) bool {
 	case map[string]any:
 		for key, val := range x {
 			keyLower := strings.ToLower(key)
-			if placeholder, ok := sensitiveKeys[keyLower]; ok {
-				if s, ok := val.(string); ok && s != "" && s != placeholder {
+			if placeholder, ok := SensitiveFields[keyLower]; ok {
+				placeholderStr, _ := placeholder.(string)
+				if s, ok := val.(string); ok && s != "" && s != placeholderStr {
 					x[key] = placeholder
 					modified = true
 				}
