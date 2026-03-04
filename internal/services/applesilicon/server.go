@@ -452,7 +452,16 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("runner_ids") {
-		req.AppliedRunnerConfigurations.RunnerConfigurationIDs = d.Get("runner_ids").([]string)
+		if req.AppliedRunnerConfigurations == nil {
+			req.AppliedRunnerConfigurations = &applesilicon.AppliedRunnerConfigurations{}
+		}
+
+		runnerIDs := d.Get("runner_ids")
+		if runnerIDs != nil {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = locality.ExpandIDs(runnerIDs)
+		} else {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = []string{}
+		}
 	}
 
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
@@ -494,6 +503,11 @@ func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	err = detachAllPrivateNetworkFromServer(ctx, d, m, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
