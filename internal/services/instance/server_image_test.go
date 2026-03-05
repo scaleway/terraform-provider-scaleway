@@ -46,6 +46,12 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				Config: fmt.Sprintf(`
 					data "scaleway_marketplace_image" "jammy" {
 						label = "ubuntu_jammy"
@@ -75,6 +81,12 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", &mainServerID),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -107,6 +119,12 @@ func TestAccServer_CustomDiffImage(t *testing.T) {
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.control", &controlServerID),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
+			},
 		},
 	})
 }
@@ -137,9 +155,14 @@ func TestAccServer_ImageFromMarketplaceDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_marketplace_image.local", "instance_type", "DEV1-S"),
 					resource.TestCheckResourceAttrPair("data.scaleway_marketplace_image.local", "id", "scaleway_instance_server.main", "image"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", "l_ssd"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "fr-par-1/"+ubuntuFocalLocalFrPar1ImageID),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "computed_image_id", ubuntuFocalLocalFrPar1ImageID),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.local", "id"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
 			},
 			{
 				Config: `
@@ -161,9 +184,14 @@ func TestAccServer_ImageFromMarketplaceDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_marketplace_image.sbs", "instance_type", "DEV1-S"),
 					resource.TestCheckResourceAttrPair("data.scaleway_marketplace_image.sbs", "id", "scaleway_instance_server.main", "image"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "root_volume.0.volume_type", "sbs_volume"),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "image", "fr-par-1/"+ubuntuFocalSBSFrPar1ImageID),
-					resource.TestCheckResourceAttr("scaleway_instance_server.main", "computed_image_id", ubuntuFocalSBSFrPar1ImageID),
+					resource.TestCheckResourceAttrPair("scaleway_instance_server.main", "image", "data.scaleway_marketplace_image.sbs", "id"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change"},
 			},
 		},
 	})
