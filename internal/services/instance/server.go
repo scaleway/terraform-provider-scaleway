@@ -65,6 +65,7 @@ func ResourceServer() *schema.Resource {
 				"placement_group_id",
 				"additional_volume_ids.#",
 				"ip_id",
+				"ip_ids.#",
 			),
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
@@ -705,32 +706,46 @@ func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *ins
 	////
 	// Read server's public IPs
 	////
-	if ipID, hasIPID := d.GetOk("ip_id"); hasIPID {
-		publicIP := FindIPInList(ipID.(string), server.PublicIPs)
-		if publicIP != nil && !publicIP.Dynamic {
-			_ = d.Set("ip_id", zonal.NewID(zone, publicIP.ID).String())
-		} else {
-			_ = d.Set("ip_id", "")
-		}
-	} else {
-		_ = d.Set("ip_id", "")
-	}
-
 	if len(server.PublicIPs) > 0 {
 		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+
+		var ipIDToSet string
+
+		var ipIDsToSet []any
+
+		ipID, hasIPID := d.GetOk("ip_id")
+		_, hasIPIDs := d.GetOk("ip_ids")
+
+		switch {
+		case hasIPID:
+			publicIP := FindIPInList(ipID.(string), server.PublicIPs)
+			if publicIP != nil && !publicIP.Dynamic {
+				ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+			}
+		case hasIPIDs:
+			ipIDsToSet = flattenServerIPIDs(server.PublicIPs, server.Zone)
+		default:
+			// In import context, we don't know if the field that was used is 'ip_id' or 'ip_ids', so we set them both
+			for _, publicIP := range server.PublicIPs {
+				if !publicIP.Dynamic {
+					ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+					ipIDsToSet = append(ipIDsToSet, zonal.NewID(zone, publicIP.ID).String())
+				}
+			}
+		}
+
+		_ = d.Set("ip_id", ipIDToSet)
+		_ = d.Set("ip_ids", ipIDsToSet)
+
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
 			"host": server.PublicIPs[0].Address.String(),
 		})
 	} else {
 		_ = d.Set("public_ips", []any{})
-		d.SetConnInfo(nil)
-	}
-
-	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
-		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
-	} else {
 		_ = d.Set("ip_ids", []any{})
+		_ = d.Set("ip_id", "")
+		d.SetConnInfo(nil)
 	}
 
 	if server.AdminPasswordEncryptionSSHKeyID != nil {
