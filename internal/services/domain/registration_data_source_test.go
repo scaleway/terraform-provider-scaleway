@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -12,6 +13,16 @@ import (
 func TestAccDataSourceDomainRegistration_Basic(t *testing.T) {
 	if shouldBeSkipped() {
 		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("cannot get working directory: %v", err)
+	}
+
+	cassettePath := acctest.BuildCassetteName(t.Name(), wd, ".cassette") + ".yaml"
+	if _, err := os.Stat(cassettePath); os.IsNotExist(err) {
+		t.Skip("Cassette not found, run with TF_UPDATE_CASSETTES=true and TF_ACC_DOMAIN_REGISTRATION=true to record")
 	}
 
 	tt := acctest.NewTestTools(t)
@@ -71,6 +82,16 @@ func TestAccDataSourceDomainRegistration_Basic(t *testing.T) {
 func TestAccDataSourceDomainRegistration_WithProjectID(t *testing.T) {
 	if shouldBeSkipped() {
 		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("cannot get working directory: %v", err)
+	}
+
+	cassettePath := acctest.BuildCassetteName(t.Name(), wd, ".cassette") + ".yaml"
+	if _, err := os.Stat(cassettePath); os.IsNotExist(err) {
+		t.Skip("Cassette not found, run with TF_UPDATE_CASSETTES=true and TF_ACC_DOMAIN_REGISTRATION=true to record")
 	}
 
 	tt := acctest.NewTestTools(t)
