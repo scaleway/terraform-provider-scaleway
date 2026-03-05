@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -37,10 +38,12 @@ func DataSourceServer() *schema.Resource {
 }
 
 func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
+	api, zone, err := instancehelpers.InstanceAndBlockAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	var uuid string
 
 	serverID, ok := d.GetOk("server_id")
 	if !ok {
@@ -64,12 +67,17 @@ func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		serverID = foundServer.ID
+		uuid = foundServer.ID
+	} else {
+		uuid, err = locality.ExtractUUID(serverID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	zonedID := datasource.NewZonedID(serverID, zone)
+	zonedID := datasource.NewZonedID(uuid, zone)
 	d.SetId(zonedID)
 	_ = d.Set("server_id", zonedID)
 
-	return setServerState(ctx, d, m, api, zone, id)
+	return setServerState(ctx, d, m, api, zone, uuid)
 }
