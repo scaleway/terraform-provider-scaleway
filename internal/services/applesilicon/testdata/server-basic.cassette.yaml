@@ -6,19 +6,19 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 181
+        content_length: 201
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"name":"TestAccServerBasic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","type":"M4-M","enable_vpc":false,"commitment_type":"duration_24h","public_bandwidth_bps":1000000000}'
+        body: '{"name":"TestAccServerBasic","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","type":"M4-M","enable_vpc":false,"commitment_type":"duration_24h","public_bandwidth_bps":1000000000,"enable_kext":false}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers
         method: POST
       response:
@@ -27,20 +27,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1176
+        content_length: 1165
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":false,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"\u003csealed\u003e","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:50:44.118873Z","vnc_port":59010,"vnc_url":"\u003csealed\u003e","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"\u003csealed\u003e","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:25:47.808092Z","vnc_port":59010,"vnc_url":"\u003csealed\u003e","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1176"
+                - "1165"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:50:44 GMT
+                - Thu, 05 Mar 2026 08:25:47 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -48,10 +48,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - dd3ffc98-2b6b-4115-aea5-a833ca632d87
+                - ba9fce1d-1226-4deb-ac96-cc8b967144fe
         status: 200 OK
         code: 200
-        duration: 488.440209ms
+        duration: 1.464521958s
     - id: 1
       request:
         proto: HTTP/1.1
@@ -67,8 +67,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -76,20 +76,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1214
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":false,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:50:44.118873Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:25:47.808092Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1214"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:50:44 GMT
+                - Thu, 05 Mar 2026 08:25:48 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -97,10 +97,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 54e16928-4ba5-47c8-b17f-7c5d7d0aa223
+                - dade68bc-b6a9-4185-b2d8-af6241e5d8c5
         status: 200 OK
         code: 200
-        duration: 104.233708ms
+        duration: 574.038625ms
     - id: 2
       request:
         proto: HTTP/1.1
@@ -116,8 +116,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -125,20 +125,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:43.704507Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:25:47.808092Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:47 GMT
+                - Thu, 05 Mar 2026 08:25:53 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -146,10 +146,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - d5181175-fa5a-482d-8da0-4a0ade7f7d12
+                - c433f55f-f80e-431c-93b2-03f48dd2ffe6
         status: 200 OK
         code: 200
-        duration: 135.730167ms
+        duration: 150.599292ms
     - id: 3
       request:
         proto: HTTP/1.1
@@ -165,8 +165,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -174,20 +174,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:43.704507Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:25:55.625068Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:47 GMT
+                - Thu, 05 Mar 2026 08:25:59 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -195,10 +195,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 10d64e00-f887-4690-92ce-c4f43d084a6f
+                - 9ca7398c-9212-4deb-a9ec-7edd05936e6a
         status: 200 OK
         code: 200
-        duration: 101.228375ms
+        duration: 516.2ms
     - id: 4
       request:
         proto: HTTP/1.1
@@ -214,8 +214,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -223,20 +223,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
+        content_length: 1203
         uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:25:55.625068Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "47"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:47 GMT
+                - Thu, 05 Mar 2026 08:26:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -244,10 +244,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 024a532f-dd41-45ff-883e-1f099172ff25
+                - 2cc8eaf7-fd48-49cb-9f2a-282d07673cf0
         status: 200 OK
         code: 200
-        duration: 136.102125ms
+        duration: 186.872208ms
     - id: 5
       request:
         proto: HTTP/1.1
@@ -263,8 +263,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -272,20 +272,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:43.704507Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:05.651181Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:47 GMT
+                - Thu, 05 Mar 2026 08:26:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -293,10 +293,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - b20b2f7b-4adc-4634-8c46-f5d96ba89a42
+                - c3e85f62-5769-4b65-a768-dd6a20102e63
         status: 200 OK
         code: 200
-        duration: 47.692167ms
+        duration: 232.511542ms
     - id: 6
       request:
         proto: HTTP/1.1
@@ -312,8 +312,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -321,20 +321,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:43.704507Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:05.651181Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:48 GMT
+                - Thu, 05 Mar 2026 08:26:14 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -342,10 +342,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 596ffd8b-6a5d-423c-b519-0608a26ed751
+                - 1ed6bb4f-2c77-45f0-bf14-f651c266ad84
         status: 200 OK
         code: 200
-        duration: 58.952375ms
+        duration: 244.406708ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -361,8 +361,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -370,20 +370,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
+        content_length: 1203
         uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:15.676449Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "47"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:48 GMT
+                - Thu, 05 Mar 2026 08:26:19 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -391,10 +391,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 84130a4e-31b7-414a-9d30-b0673b0923ee
+                - 36ba720a-70d4-4742-a160-917ef1f6add9
         status: 200 OK
         code: 200
-        duration: 87.827542ms
+        duration: 124.338ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -410,8 +410,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -419,20 +419,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1203
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:43.704507Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:15.676449Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:48 GMT
+                - Thu, 05 Mar 2026 08:26:25 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -440,10 +440,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - dace23c2-afee-4789-9971-26467a70d8e5
+                - 630dff09-017a-4b72-9f21-825bae94b8de
         status: 200 OK
         code: 200
-        duration: 111.349417ms
+        duration: 155.906708ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -459,8 +459,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -468,20 +468,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
+        content_length: 1203
         uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:15.676449Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "47"
+                - "1203"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
+                - Thu, 05 Mar 2026 08:26:30 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -489,11 +489,1285 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 945dc240-e715-4da1-b2d0-26fe1cf4a266
+                - a2f7ef1b-8560-4524-82f7-eff25927c076
         status: 200 OK
         code: 200
-        duration: 108.962084ms
+        duration: 162.145833ms
     - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:15.676449Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:26:35 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 90a63731-e431-43ea-a047-92333fe2fb87
+        status: 200 OK
+        code: 200
+        duration: 139.426208ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:38.359830Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:26:40 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 7537f3c1-3645-4ff0-be5f-255373ca1a58
+        status: 200 OK
+        code: 200
+        duration: 177.750834ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:38.359830Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:26:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 19f3f01e-364b-4a2f-b02d-227fb0c10a53
+        status: 200 OK
+        code: 200
+        duration: 161.655584ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:48.461665Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:26:50 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 7e48481e-80ff-4cfc-a535-9711b993bc66
+        status: 200 OK
+        code: 200
+        duration: 241.601833ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:48.461665Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:26:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 10780072-0df1-43d7-991c-239b8f8f6f3f
+        status: 200 OK
+        code: 200
+        duration: 241.099542ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:58.483234Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:01 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - cd23840b-ca91-4328-a948-f905bf11b1e4
+        status: 200 OK
+        code: 200
+        duration: 241.99525ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:26:58.483234Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - ebfa6af2-8e25-4c6c-be5d-0e7db4c667e7
+        status: 200 OK
+        code: 200
+        duration: 146.878791ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:08.505750Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:11 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6e28108e-08d0-40ff-966c-06e32ca54bcf
+        status: 200 OK
+        code: 200
+        duration: 180.614917ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:08.505750Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:16 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - dbd1f22e-430b-4190-be15-70dd0acb8f53
+        status: 200 OK
+        code: 200
+        duration: 179.711125ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:18.528765Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4043417b-af9a-4aad-9165-379516c527ee
+        status: 200 OK
+        code: 200
+        duration: 174.951709ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:18.528765Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:27 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 7404a842-d166-4e56-bdf5-00ace51e9559
+        status: 200 OK
+        code: 200
+        duration: 161.792667ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:28.552214Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:32 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 614aebad-a0e5-40ad-85f1-c5b3115b3aae
+        status: 200 OK
+        code: 200
+        duration: 272.922583ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:28.552214Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:37 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 01312fe3-7afc-4139-9f02-2fd4a2b5ff18
+        status: 200 OK
+        code: 200
+        duration: 181.582042ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:38.580116Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:42 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9e0be2a1-38ab-41a0-9351-2366920c48a9
+        status: 200 OK
+        code: 200
+        duration: 153.558958ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:38.580116Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:48 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 0bcedcfb-8769-4ec4-bc59-0ef3d22d7cdf
+        status: 200 OK
+        code: 200
+        duration: 195.27925ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:48.603035Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:53 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3bd56ef0-2353-43ea-ad6c-f078e5fca191
+        status: 200 OK
+        code: 200
+        duration: 241.854333ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:48.603035Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:27:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6263a43e-de4f-4290-a0d8-8ce08bb6f910
+        status: 200 OK
+        code: 200
+        duration: 145.8395ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1203
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":false,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"starting","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:27:48.603035Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1203"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 7086b353-fb5c-44c6-b713-49b353916882
+        status: 200 OK
+        code: 200
+        duration: 239.679833ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:04.424683Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c8e5e162-a495-4781-9ede-cf3c5ef515e4
+        status: 200 OK
+        code: 200
+        duration: 179.939333ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:04.424683Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 1b0b0c3e-feca-4a7c-a839-b713b7852d55
+        status: 200 OK
+        code: 200
+        duration: 226.902625ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4157665c-6b33-48ef-b8f3-ed9852072055
+        status: 200 OK
+        code: 200
+        duration: 242.176916ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:04.424683Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 0bb4f636-02a3-4c64-a988-150fdc94d669
+        status: 200 OK
+        code: 200
+        duration: 245.094625ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:04.424683Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 2c385d9c-c3fb-4252-948e-ef254582265c
+        status: 200 OK
+        code: 200
+        duration: 186.220708ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 62ab48b3-208f-468d-b1ef-0acaa399cd0d
+        status: 200 OK
+        code: 200
+        duration: 157.510834ms
+    - id: 34
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":1000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:04.424683Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 07523d56-8884-451c-bc67-47445e3e59b5
+        status: 200 OK
+        code: 200
+        duration: 240.45375ms
+    - id: 35
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4f01340c-c4ba-46af-a46b-1dcd9842c98d
+        status: 200 OK
+        code: 200
+        duration: 169.494291ms
+    - id: 36
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -510,8 +1784,8 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: PATCH
       response:
         proto: HTTP/2.0
@@ -519,20 +1793,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1172
+        content_length: 1161
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"\u003csealed\u003e","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"\u003csealed\u003e","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"\u003csealed\u003e","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"\u003csealed\u003e","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1172"
+                - "1161"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -540,11 +1814,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - d7b3373f-e43a-40c3-a9ce-7381393fe3c1
+                - 42b4bf0b-7b31-46b0-a8f9-6f34b217bf67
         status: 200 OK
         code: 200
-        duration: 209.179792ms
-    - id: 11
+        duration: 256.1725ms
+    - id: 37
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -559,8 +1833,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -568,20 +1842,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1199
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1199"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -589,11 +1863,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 2a884a3d-791c-43e1-9e2e-24229fe6e1e6
+                - 3179ddd3-9b4d-4dcd-8b4e-3f5dd3e2e575
         status: 200 OK
         code: 200
-        duration: 116.141334ms
-    - id: 12
+        duration: 181.8755ms
+    - id: 38
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -608,8 +1882,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -617,20 +1891,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
+        content_length: 46
         uncompressed: false
         body: '{"server_private_networks":[],"total_count":0}'
         headers:
             Content-Length:
-                - "47"
+                - "46"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -638,11 +1912,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - b68cc0ea-e4b8-402a-ab5e-c086818e08e2
+                - 707b7d2b-fe8d-490a-b40c-884dbe8fb8b7
         status: 200 OK
         code: 200
-        duration: 109.299833ms
-    - id: 13
+        duration: 164.498291ms
+    - id: 39
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -657,8 +1931,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -666,20 +1940,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1199
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1199"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -687,11 +1961,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 5107879f-b900-4ae5-8a87-4f11bc2e3f0d
+                - 1d6dee5c-f5a9-431e-8b3e-17cd75bd3937
         status: 200 OK
         code: 200
-        duration: 94.126791ms
-    - id: 14
+        duration: 38.519958ms
+    - id: 40
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -706,8 +1980,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -715,167 +1989,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
-        uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
-        headers:
-            Content-Length:
-                - "47"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 07 Jan 2026 13:52:49 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - f0022c35-e373-4599-be56-73ac8623efd8
-        status: 200 OK
-        code: 200
-        duration: 128.119ms
-    - id: 15
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 1210
-        uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
-        headers:
-            Content-Length:
-                - "1210"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 07 Jan 2026 13:52:50 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - e6f23f7b-251e-42ca-a7ca-2695d2c2d63a
-        status: 200 OK
-        code: 200
-        duration: 58.8955ms
-    - id: 16
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 1210
-        uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
-        headers:
-            Content-Length:
-                - "1210"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 07 Jan 2026 13:52:50 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - f995a57b-eb58-40e7-9771-0a9858a859ab
-        status: 200 OK
-        code: 200
-        duration: 48.123375ms
-    - id: 17
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 47
+        content_length: 46
         uncompressed: false
         body: '{"server_private_networks":[],"total_count":0}'
         headers:
             Content-Length:
-                - "47"
+                - "46"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:50 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -883,11 +2010,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - f688be88-13a0-4809-9c53-881709e25101
+                - f160072b-e52c-4ec9-b14b-7f3d9181d790
         status: 200 OK
         code: 200
-        duration: 114.6815ms
-    - id: 18
+        duration: 134.160166ms
+    - id: 41
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -902,8 +2029,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -911,20 +2038,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 1210
+        content_length: 1199
         uncompressed: false
-        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-01-07T13:50:44.118873Z","deletable_at":"2026-01-07T13:50:44.118873Z","deletion_scheduled":false,"delivered":true,"id":"4edcf4bf-5b6c-4734-ab45-409f522e4156","ip":"62.210.193.131","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":[],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"GepTYiNbVVEi","tags":[],"type":"M4-M","updated_at":"2026-01-07T13:52:49.426675Z","vnc_port":59010,"vnc_url":"vnc://m1:GepTYiNbVVEi@62.210.193.131:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "1210"
+                - "1199"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:51 GMT
+                - Thu, 05 Mar 2026 08:28:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -932,11 +2059,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - d738f36a-0bf2-4e27-a8ca-ff5b0ef344b0
+                - 9bf284c7-273d-44d6-9cbb-ab6017753a33
         status: 200 OK
         code: 200
-        duration: 44.73075ms
-    - id: 19
+        duration: 153.76725ms
+    - id: 42
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -951,8 +2078,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -960,20 +2087,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
+        content_length: 1199
         uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "47"
+                - "1199"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:51 GMT
+                - Thu, 05 Mar 2026 08:28:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -981,11 +2108,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 8567c1e6-6ec8-4d35-a2fc-bbee7519dd73
+                - d2ab21a1-b741-4197-8411-2cf826cd2660
         status: 200 OK
         code: 200
-        duration: 102.184166ms
-    - id: 20
+        duration: 99.610375ms
+    - id: 43
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1000,8 +2127,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -1009,69 +2136,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 47
-        uncompressed: false
-        body: '{"server_private_networks":[],"total_count":0}'
-        headers:
-            Content-Length:
-                - "47"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 07 Jan 2026 13:52:51 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - c2936edb-2a06-4975-9af5-9a7a54ff3533
-        status: 200 OK
-        code: 200
-        duration: 143.310208ms
-    - id: 21
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=4edcf4bf-5b6c-4734-ab45-409f522e4156
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 47
+        content_length: 46
         uncompressed: false
         body: '{"server_private_networks":[],"total_count":0}'
         headers:
             Content-Length:
-                - "47"
+                - "46"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:51 GMT
+                - Thu, 05 Mar 2026 08:28:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1079,11 +2157,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - d774b0e0-e919-4f46-be8a-3623947dc70a
+                - 3de54a13-3442-44a8-a4a1-7df823c4b114
         status: 200 OK
         code: 200
-        duration: 51.075541ms
-    - id: 22
+        duration: 177.983708ms
+    - id: 44
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1098,8 +2176,253 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6b0f26ae-b07d-4ee6-a7ca-650e67429108
+        status: 200 OK
+        code: 200
+        duration: 125.109458ms
+    - id: 45
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - cbab0bd8-91f7-4987-a04d-df1f823629ca
+        status: 200 OK
+        code: 200
+        duration: 175.027209ms
+    - id: 46
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 853ff026-5b69-4018-b2c8-7f4bfa765dc2
+        status: 200 OK
+        code: 200
+        duration: 160.296541ms
+    - id: 47
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/server-private-networks?order_by=created_at_asc&server_id=26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 46
+        uncompressed: false
+        body: '{"server_private_networks":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "46"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 344876fa-c647-476d-ad2c-ae1ccab00b8f
+        status: 200 OK
+        code: 200
+        duration: 196.125ms
+    - id: 48
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 1199
+        uncompressed: false
+        body: '{"applied_runner_configuration_ids":[],"commitment":{"cancelled":false,"type":"none"},"created_at":"2026-03-05T08:25:47.808092Z","deletable_at":"2026-03-05T08:25:47.808092Z","deletion_scheduled":false,"delivered":true,"id":"26326b0c-817a-4f6f-abd8-64d00137f4e0","ip":"62.210.193.228","name":"TestAccServerBasic","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","os":{"compatible_server_types":["M2-M","M2-L","M4-S","M4-M","M4-L","M4-XL","M1-M"],"description":"","family":"Sequoia","id":"61b842ab-b655-4d3c-a065-f7db5e9fb971","image_url":"https://scw-apple-silicon.s3.fr-par.scw.cloud/scw-console/os/macos-sequoia.png","is_beta":false,"label":"macOS Sequoia 15.6","name":"macos-sequoia-15.6","release_notes_url":"","supported_server_types":[],"tags":["macos","apple","apple-license"],"version":"15.6.1","xcode_version":"16"},"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","public_bandwidth_bps":2000000000,"runner_configuration":null,"ssh_username":"m1","status":"ready","sudo_password":"1XNX2RehFP2t","tags":[],"type":"M4-M","updated_at":"2026-03-05T08:28:11.168416Z","vnc_port":59010,"vnc_url":"vnc://m1:1XNX2RehFP2t@62.210.193.228:59010","vpc_status":"vpc_disabled","zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "1199"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 05 Mar 2026 08:28:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 83fb9b66-8f15-48a9-839f-a05e758f9a90
+        status: 200 OK
+        code: 200
+        duration: 45.337166ms
+    - id: 49
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: DELETE
       response:
         proto: HTTP/2.0
@@ -1116,9 +2439,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:52 GMT
+                - Thu, 05 Mar 2026 08:28:13 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1126,11 +2449,11 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - e4d8fa1b-2968-4b0f-90b2-376dc79ba9dd
+                - 1465f1e5-f13c-4856-b0f4-1ea6840b0c76
         status: 204 No Content
         code: 204
-        duration: 184.039791ms
-    - id: 23
+        duration: 267.673667ms
+    - id: 50
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1145,8 +2468,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.5; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/4edcf4bf-5b6c-4734-ab45-409f522e4156
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/apple-silicon/v1alpha1/zones/fr-par-1/servers/26326b0c-817a-4f6f-abd8-64d00137f4e0
         method: GET
       response:
         proto: HTTP/2.0
@@ -1165,9 +2488,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Wed, 07 Jan 2026 13:52:52 GMT
+                - Thu, 05 Mar 2026 08:28:13 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge02)
+                - Scaleway API Gateway (fr-par-2;edge03)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1175,7 +2498,7 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - cfba88ef-ed4b-49e0-9683-40f4b7bef3db
+                - a88832a6-2071-4cad-8acc-d149f06f279d
         status: 403 Forbidden
         code: 403
-        duration: 55.264792ms
+        duration: 20.844709ms
