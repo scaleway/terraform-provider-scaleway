@@ -566,7 +566,7 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	updateRequest.UpgradePolicy = upgradePolicyReq
 
 	if d.HasChange("security_group_id") {
-		updateRequest.SecurityGroupID = types.ExpandStringPtr(d.Get("security_group_id"))
+		updateRequest.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(d.Get("security_group_id").(string)))
 	}
 
 	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
