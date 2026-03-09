@@ -77,6 +77,29 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	return setSNSState(d, sns)
+}
+
+// readSNSIntoState fetches the SNS info and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readSNSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	sns, err := api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+		Region:    region,
+		ProjectID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setSNSState(d, sns)
+}
+
+func setSNSState(d *schema.ResourceData, sns *mnq.SnsInfo) diag.Diagnostics {
 	_ = d.Set("endpoint", sns.SnsEndpointURL)
 	_ = d.Set("region", sns.Region)
 	_ = d.Set("project_id", sns.ProjectID)
