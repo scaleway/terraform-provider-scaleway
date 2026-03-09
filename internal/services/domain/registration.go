@@ -488,6 +488,7 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 	if apiProjectID == "" {
 		apiProjectID = projectID
 	}
+
 	d.SetId(apiProjectID + "/" + resp.TaskID)
 
 	return resourceRegistrationsRead(ctx, d, m)
@@ -562,6 +563,7 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 	if projectID == "" {
 		projectID = parts[0]
 	}
+
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
 
