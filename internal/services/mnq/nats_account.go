@@ -62,7 +62,7 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, account.ID); err != nil {
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
