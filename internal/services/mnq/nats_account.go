@@ -89,7 +89,7 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
