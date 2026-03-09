@@ -172,7 +172,7 @@ func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	diags := setInstancePolicyState(d, policy, zone)
+	diags := setInstancePolicyState(d, policy)
 
 	err = identity.SetZonalIdentity(d, policy.Zone, policy.ID)
 	if err != nil {
@@ -182,15 +182,15 @@ func ResourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m a
 	return diags
 }
 
-func setInstancePolicyState(d *schema.ResourceData, policy *autoscaling.InstancePolicy, zone scw.Zone) diag.Diagnostics {
+func setInstancePolicyState(d *schema.ResourceData, policy *autoscaling.InstancePolicy) diag.Diagnostics {
 	_ = d.Set("name", policy.Name)
 	_ = d.Set("action", policy.Action.String())
 	_ = d.Set("type", policy.Type.String())
 	_ = d.Set("value", int(policy.Value))
 	_ = d.Set("priority", int(policy.Priority))
 	_ = d.Set("metric", flattenPolicyMetric(policy.Metric))
-	_ = d.Set("instance_group_id", zonal.NewIDString(zone, policy.InstanceGroupID))
-	_ = d.Set("zone", zone)
+	_ = d.Set("instance_group_id", zonal.NewIDString(policy.Zone, policy.InstanceGroupID))
+	_ = d.Set("zone", policy.Zone)
 
 	return nil
 }

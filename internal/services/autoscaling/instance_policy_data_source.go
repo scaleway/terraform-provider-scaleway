@@ -78,5 +78,5 @@ func DataSourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setInstancePolicyState(d, policy, zone)
+	return setInstancePolicyState(d, policy)
 }
