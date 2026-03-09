@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -21,6 +22,7 @@ func ResourceSNS() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    snsSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -50,7 +52,9 @@ func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, sns.ProjectID))
+	if err := identity.SetRegionalIdentity(d, region, sns.ProjectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSRead(ctx, d, m)
 }
@@ -66,6 +70,10 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		ProjectID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
 		return diag.FromErr(err)
 	}
 
