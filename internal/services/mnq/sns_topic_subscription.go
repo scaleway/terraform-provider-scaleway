@@ -176,8 +176,8 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 
 	if err := identity.SetMultiPartIdentity(d, map[string]string{
 		"region":          string(arn.Region),
-		"project_id":     arn.ProjectID,
-		"topic_name":     arn.ResourceName,
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
 		"subscription_id": arn.ExtraResourceID,
 	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
 		return diag.FromErr(err)
@@ -211,8 +211,8 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 
 	if err := identity.SetMultiPartIdentity(d, map[string]string{
 		"region":          string(arn.Region),
-		"project_id":     arn.ProjectID,
-		"topic_name":     arn.ResourceName,
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
 		"subscription_id": arn.ExtraResourceID,
 	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
 		return diag.FromErr(err)
