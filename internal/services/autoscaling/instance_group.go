@@ -183,7 +183,7 @@ func ResourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	diags := setInstanceGroupState(d, group, group.Zone)
+	diags := setInstanceGroupState(d, group)
 
 	err = identity.SetZonalIdentity(d, group.Zone, group.ID)
 	if err != nil {
@@ -193,15 +193,15 @@ func ResourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m an
 	return diags
 }
 
-func setInstanceGroupState(d *schema.ResourceData, group *autoscaling.InstanceGroup, zone scw.Zone) diag.Diagnostics {
+func setInstanceGroupState(d *schema.ResourceData, group *autoscaling.InstanceGroup) diag.Diagnostics {
 	_ = d.Set("name", group.Name)
-	_ = d.Set("template_id", zonal.NewIDString(zone, group.InstanceTemplateID))
+	_ = d.Set("template_id", zonal.NewIDString(group.Zone, group.InstanceTemplateID))
 	_ = d.Set("tags", group.Tags)
 	_ = d.Set("capacity", flattenInstanceCapacity(group.Capacity))
-	_ = d.Set("load_balancer", flattenInstanceLoadBalancer(group.Loadbalancer, zone))
+	_ = d.Set("load_balancer", flattenInstanceLoadBalancer(group.Loadbalancer, group.Zone))
 	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", group.Zone)
 	_ = d.Set("project_id", group.ProjectID)
 
 	return nil

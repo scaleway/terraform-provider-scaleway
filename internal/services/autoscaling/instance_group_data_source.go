@@ -74,5 +74,5 @@ func DataSourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	return setInstanceGroupState(d, group, zone)
+	return setInstanceGroupState(d, group)
 }
