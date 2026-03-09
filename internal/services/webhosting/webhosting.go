@@ -292,11 +292,6 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	dnsAPI, _, err := newDNSAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	webhostingResponse, err := waitForHosting(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
@@ -312,6 +307,37 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	return setWebhostingState(ctx, d, m, webhostingResponse)
+}
+
+// readWebhostingIntoState fetches the webhosting and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readWebhostingIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	webhostingResponse, err := waitForHosting(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setWebhostingState(ctx, d, m, webhostingResponse)
+}
+
+func setWebhostingState(ctx context.Context, d *schema.ResourceData, m any, webhostingResponse *webhosting.Hosting) diag.Diagnostics {
+	dnsAPI, _, err := newDNSAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	dnsRecordsResponse, err := dnsAPI.GetDomainDNSRecords(&webhosting.DNSAPIGetDomainDNSRecordsRequest{
 		Domain: *webhostingResponse.Domain, //nolint:staticcheck // deprecated in SDK, kept until domain_info fully propagated
 	}, scw.WithContext(ctx))
@@ -319,9 +345,10 @@ func resourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	region := webhostingResponse.Region
+
 	_ = d.Set("records", flattenDNSRecords(dnsRecordsResponse.Records))
 	_ = d.Set("name_servers", flattenNameServers(dnsRecordsResponse.NameServers))
-
 	_ = d.Set("tags", webhostingResponse.Tags)
 	_ = d.Set("offer_id", regional.NewIDString(region, webhostingResponse.Offer.ID))
 	_ = d.Set("domain", webhostingResponse.Domain) //nolint:staticcheck // deprecated in SDK, exported for backward compatibility
