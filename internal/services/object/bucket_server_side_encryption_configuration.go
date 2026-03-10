@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -26,6 +26,7 @@ func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: bucketServerSideEncryptionConfigurationSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -85,7 +86,10 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 		return diag.FromErr(fmt.Errorf("creating S3 Bucket (%s) Server-side Encryption Configuration: %w", bucketName, err))
 	}
 
-	d.SetId(regional.NewIDString(region, bucketName))
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = findServerSideEncryptionConfiguration(ctx, conn, bucketName)
 	if err != nil {
@@ -98,7 +102,7 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, meta, d.Id())
+	s3Client, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,6 +117,11 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 		}
 
 		return diag.FromErr(fmt.Errorf("reading S3 Bucket Server-side Encryption Configuration (%s): %w", d.Id(), err))
+	}
+
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("bucket", bucketName)
