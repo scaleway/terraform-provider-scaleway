@@ -232,7 +232,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_vpc_public_gateway_ip",
 		"scaleway_vpc_public_gateway_ip_reverse_dns",
 		"scaleway_vpc_public_gateway_pat_rule",
-		"scaleway_webhosting",
 	}
 
 	p := provider.SDKProvider(nil)()
