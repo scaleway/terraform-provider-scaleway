@@ -25,7 +25,7 @@ func ResourceDHCP() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
+		SchemaVersion:      0,
 		SchemaFunc:         dhcpSchema,
 		DeprecationMessage: dhcpDeprecationMessage,
 	}
