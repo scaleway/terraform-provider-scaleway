@@ -249,7 +249,7 @@ func expandServerSideEncryptionRules(l []any) []awstypes.ServerSideEncryptionRul
 }
 
 func flattenServerSideEncryptionRules(rules []awstypes.ServerSideEncryptionRule) []any {
-	results := make([]any, len(rules))
+	results := make([]any, 0, len(rules))
 
 	for _, rule := range rules {
 		m := make(map[string]any)
