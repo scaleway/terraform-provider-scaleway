@@ -483,7 +483,6 @@ func TestAccPool_PublicIPDisabled(t *testing.T) {
 			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.public_ip"),
 			testAccCheckK8SClusterDestroy(tt),
 			vpcgwchecks.IsGatewayNetworkDestroyed(tt),
-			vpcgwchecks.IsDHCPDestroyed(tt),
 			vpcgwchecks.IsGatewayDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
 		),

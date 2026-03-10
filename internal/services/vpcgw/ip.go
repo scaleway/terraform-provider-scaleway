@@ -67,7 +67,7 @@ func ipSchema() map[string]*schema.Schema {
 }
 
 func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -104,7 +104,7 @@ func ResourceIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 }
 
 func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -136,7 +136,7 @@ func ResourceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 }
 
 func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,7 +169,7 @@ func ResourceVPCPublicGatewayIPUpdate(ctx context.Context, d *schema.ResourceDat
 }
 
 func ResourceVPCPublicGatewayIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
