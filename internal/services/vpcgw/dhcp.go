@@ -18,11 +18,14 @@ const dhcpDeprecationMessage = "The 'dhcp' resource is deprecated and no longer 
 
 func ResourceDHCP() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:      resourceVPCPublicGatewayDHCPCreate,
-		ReadContext:        resourceVPCPublicGatewayDHCPRead,
-		UpdateContext:      resourceVPCPublicGatewayDHCPUpdate,
-		DeleteContext:      resourceVPCPublicGatewayDHCPDelete,
-		SchemaVersion:      0,
+		CreateContext: resourceVPCPublicGatewayDHCPCreate,
+		ReadContext:   resourceVPCPublicGatewayDHCPRead,
+		UpdateContext: resourceVPCPublicGatewayDHCPUpdate,
+		DeleteContext: resourceVPCPublicGatewayDHCPDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 0,
 		SchemaFunc:         dhcpSchema,
 		DeprecationMessage: dhcpDeprecationMessage,
 	}

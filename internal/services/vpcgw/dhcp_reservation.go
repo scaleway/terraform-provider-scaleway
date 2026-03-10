@@ -16,6 +16,9 @@ func ResourceDHCPReservation() *schema.Resource {
 		ReadContext:   resourceVPCPublicGatewayDHCPReservationRead,
 		UpdateContext: resourceVPCPublicGatewayDHCPReservationUpdate,
 		DeleteContext: resourceVPCPublicGatewayDHCPReservationDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultTimeout),
 			Update:  schema.DefaultTimeout(defaultTimeout),
