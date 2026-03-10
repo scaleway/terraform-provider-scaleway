@@ -25,33 +25,36 @@ func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		SchemaFunc: bucketServerSideEncryptionConfigurationSchema,
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The bucket's name or regional ID.",
-			},
-			"rule": {
-				Type:        schema.TypeSet,
-				Required:    true,
-				Description: "Set of server-side encryption configuration rules",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"apply_server_side_encryption_by_default": {
-							Type:        schema.TypeList,
-							MaxItems:    1,
-							Optional:    true,
-							Description: "Single object for setting server-side encryption by default.",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"sse_algorithm": {
-										Type:         schema.TypeString,
-										Required:     true,
-										Description:  "Server-side encryption algorithm to use. Valid values are AES256",
-										ValidateFunc: validation.StringInSlice([]string{string(awstypes.ServerSideEncryptionAes256)}, true),
-									},
+func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The bucket's name or regional ID.",
+		},
+		"rule": {
+			Type:        schema.TypeSet,
+			Required:    true,
+			Description: "Set of server-side encryption configuration rules",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"apply_server_side_encryption_by_default": {
+						Type:        schema.TypeList,
+						MaxItems:    1,
+						Optional:    true,
+						Description: "Single object for setting server-side encryption by default.",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"sse_algorithm": {
+									Type:         schema.TypeString,
+									Required:     true,
+									Description:  "Server-side encryption algorithm to use. Valid values are AES256",
+									ValidateFunc: validation.StringInSlice([]string{string(awstypes.ServerSideEncryptionAes256)}, true),
 								},
 							},
 						},
