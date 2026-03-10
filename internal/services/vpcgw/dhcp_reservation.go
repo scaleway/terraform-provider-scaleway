@@ -12,10 +12,10 @@ import (
 
 func ResourceDHCPReservation() *schema.Resource {
 	return &schema.Resource{
-		CreateContext:      resourceVPCPublicGatewayDHCPReservationCreate, //nolint:gci
-		ReadContext:        resourceVPCPublicGatewayDHCPReservationRead,
-		UpdateContext:      resourceVPCPublicGatewayDHCPReservationUpdate,
-		DeleteContext:      resourceVPCPublicGatewayDHCPReservationDelete,
+		CreateContext: resourceVPCPublicGatewayDHCPReservationCreate,
+		ReadContext:   resourceVPCPublicGatewayDHCPReservationRead,
+		UpdateContext: resourceVPCPublicGatewayDHCPReservationUpdate,
+		DeleteContext: resourceVPCPublicGatewayDHCPReservationDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultTimeout),
 			Update:  schema.DefaultTimeout(defaultTimeout),
