@@ -35,7 +35,7 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 }
 
 func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
