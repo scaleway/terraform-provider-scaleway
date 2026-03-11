@@ -24,7 +24,7 @@ func ResourceIP() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Identity:    identity.DefaultZonal(),
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		SchemaFunc:    ipSchema,
 	}
