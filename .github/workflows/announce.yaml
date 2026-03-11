@@ -9,7 +9,7 @@ on:
       - published
 jobs:
   slack:
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - name: Get tag
         id: get_tag

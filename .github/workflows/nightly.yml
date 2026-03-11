@@ -53,7 +53,7 @@ jobs:
           - vpc
           - vpcgw
           - webhosting
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
@@ -107,7 +107,7 @@ jobs:
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
   sweeper:
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     needs: nightly
     if: always()
     steps:

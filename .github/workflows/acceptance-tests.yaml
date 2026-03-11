@@ -50,7 +50,7 @@ jobs:
           - vpc
           - vpcgw
           - webhosting
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
@@ -147,7 +147,7 @@ jobs:
   test-scwconfig:
     strategy:
       fail-fast: false
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
@@ -210,7 +210,7 @@ jobs:
           - vpc
           - vpcgw
           - webhosting
-    runs-on: "${{ vars.RUNS_ON }}"
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
