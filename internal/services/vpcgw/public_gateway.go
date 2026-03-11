@@ -184,9 +184,9 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gateway.ID))
+	d.SetId(zonal.NewIDString(gateway.Zone, gateway.ID))
 
-	err = identity.SetZonalIdentity(d, zone, gateway.ID)
+	err = identity.SetZonalIdentity(d, gateway.Zone, gateway.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
