@@ -197,6 +197,10 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_key_manager_key",
 		"scaleway_mnq_nats_account",
 		"scaleway_mnq_nats_credentials",
+		"scaleway_mnq_sns",
+		"scaleway_mnq_sns_credentials",
+		"scaleway_mnq_sns_topic",
+		"scaleway_mnq_sns_topic_subscription",
 		"scaleway_mnq_sqs",
 		"scaleway_mnq_sqs_credentials",
 		"scaleway_mnq_sqs_queue",
@@ -230,7 +234,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_vpc_public_gateway_ip",
 		"scaleway_vpc_public_gateway_ip_reverse_dns",
 		"scaleway_vpc_public_gateway_pat_rule",
-		"scaleway_webhosting",
 	}
 
 	p := provider.SDKProvider(nil)()
