@@ -3,6 +3,7 @@ package baremetal
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"slices"
@@ -113,6 +114,16 @@ func detachAllPrivateNetworkFromServer(ctx context.Context, d *schema.ResourceDa
 func installServer(ctx context.Context, d *schema.ResourceData, api *baremetal.API, installServerRequest *baremetal.InstallServerRequest) error {
 	installServerRequest.OsID = locality.ExpandID(d.Get("os"))
 	installServerRequest.SSHKeyIDs = types.ExpandStrings(d.Get("ssh_key_ids"))
+
+	if rawPartitioning, ok := d.GetOk("partitioning"); ok {
+		partitioningSchema := baremetal.Schema{}
+
+		if err := json.Unmarshal([]byte(rawPartitioning.(string)), &partitioningSchema); err != nil {
+			return fmt.Errorf("failed to parse partitioning schema: %w", err)
+		}
+
+		installServerRequest.PartitioningSchema = &partitioningSchema
+	}
 
 	_, err := api.InstallServer(installServerRequest, scw.WithContext(ctx))
 	if err != nil {

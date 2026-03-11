@@ -588,6 +588,15 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
 		_ = d.Set("user", server.Install.User)
 		_ = d.Set("service_user", server.Install.ServiceUser)
+
+		if server.Install.PartitioningSchema != nil {
+			partitioningJSON, err := json.Marshal(server.Install.PartitioningSchema)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to marshal partitioning schema: %w", err))
+			}
+
+			_ = d.Set("partitioning", string(partitioningJSON))
+		}
 	}
 
 	_ = d.Set("description", server.Description)
@@ -840,7 +849,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var diags diag.Diagnostics
 
-	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "reinstall_on_config_changes") {
+	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "reinstall_on_config_changes", "partitioning") {
 		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
