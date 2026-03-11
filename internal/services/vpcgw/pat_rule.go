@@ -28,7 +28,7 @@ func ResourcePATRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Identity:    identity.DefaultZonal(),
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultTimeout),
