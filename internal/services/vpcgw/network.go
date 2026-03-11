@@ -206,9 +206,9 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
+	d.SetId(zonal.NewIDString(gatewayNetwork.Zone, gatewayNetwork.ID))
 
-	err = identity.SetZonalIdentity(d, zone, gatewayNetwork.ID)
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
