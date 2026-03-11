@@ -66,9 +66,9 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	d.SetId(zonal.NewIDString(res.Zone, res.ID))
 
-	err = identity.SetZonalIdentity(d, zone, res.ID)
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
