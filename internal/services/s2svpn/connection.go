@@ -8,6 +8,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +24,7 @@ func ResourceConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    connectionSchema,
 	}
@@ -287,6 +289,11 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	d.SetId(regional.NewIDString(region, res.Connection.ID))
 
+	err = identity.SetRegionalIdentity(d, region, res.Connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceConnectionRead(ctx, d, m)
 }
 
@@ -310,6 +317,17 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setConnectionState(d, connection, region)
+
+	err = identity.SetRegionalIdentity(d, region, connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection, region scw.Region) diag.Diagnostics {
 	_ = d.Set("name", connection.Name)
 	_ = d.Set("region", connection.Region)
 	_ = d.Set("project_id", connection.ProjectID)
