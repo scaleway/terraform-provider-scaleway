@@ -2,13 +2,13 @@ package s2svpn
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +23,7 @@ func ResourceCustomerGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    customerGatewaySchema,
 	}
@@ -120,6 +121,11 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceCustomerGatewayRead(ctx, d, m)
 }
 
@@ -143,6 +149,17 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	diags := setCustomerGatewayState(d, gateway)
+
+	err = identity.SetRegionalIdentity(d, region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setCustomerGatewayState(d *schema.ResourceData, gateway *s2s_vpn.CustomerGateway) diag.Diagnostics {
 	_ = d.Set("name", gateway.Name)
 	_ = d.Set("project_id", gateway.ProjectID)
 	_ = d.Set("organization_id", gateway.OrganizationID)
