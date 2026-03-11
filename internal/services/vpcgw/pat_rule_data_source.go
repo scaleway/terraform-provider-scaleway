@@ -50,5 +50,5 @@ func DataSourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	return setPATRuleState(d, patRule, zone)
+	return setPATRuleState(d, patRule)
 }

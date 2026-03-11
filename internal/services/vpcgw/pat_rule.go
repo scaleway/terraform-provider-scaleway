@@ -125,9 +125,9 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, patRule.ID))
+	d.SetId(zonal.NewIDString(patRule.Zone, patRule.ID))
 
-	err = identity.SetZonalIdentity(d, zone, patRule.ID)
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,9 +160,9 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	diags := setPATRuleState(d, patRule, zone)
+	diags := setPATRuleState(d, patRule)
 
-	err = identity.SetZonalIdentity(d, zone, patRule.ID)
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,15 +170,15 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 	return diags
 }
 
-func setPATRuleState(d *schema.ResourceData, patRule *vpcgw.PatRule, zone scw.Zone) diag.Diagnostics {
+func setPATRuleState(d *schema.ResourceData, patRule *vpcgw.PatRule) diag.Diagnostics {
 	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("gateway_id", zonal.NewID(zone, patRule.GatewayID).String())
+	_ = d.Set("gateway_id", zonal.NewID(patRule.Zone, patRule.GatewayID).String())
 	_ = d.Set("private_ip", patRule.PrivateIP.String())
 	_ = d.Set("private_port", int(patRule.PrivatePort))
 	_ = d.Set("public_port", int(patRule.PublicPort))
 	_ = d.Set("protocol", patRule.Protocol.String())
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", patRule.Zone.String())
 
 	return nil
 }
