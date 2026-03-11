@@ -2,7 +2,6 @@ package s2svpn
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +9,7 @@ import (
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -33,6 +33,7 @@ func ResourceVPNGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    vpnGatewaySchema,
 	}
@@ -166,7 +167,32 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceVPNGatewayRead(ctx, d, m)
+}
+
+func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway, region scw.Region) diag.Diagnostics {
+	_ = d.Set("name", gateway.Name)
+	_ = d.Set("region", gateway.Region)
+	_ = d.Set("project_id", gateway.ProjectID)
+	_ = d.Set("organization_id", gateway.OrganizationID)
+	_ = d.Set("tags", gateway.Tags)
+	_ = d.Set("created_at", types.FlattenTime(gateway.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(gateway.UpdatedAt))
+	_ = d.Set("asn", int(gateway.Asn))
+	_ = d.Set("status", gateway.Status.String())
+	_ = d.Set("gateway_type", gateway.GatewayType)
+	_ = d.Set("private_network_id", regional.NewIDString(region, gateway.PrivateNetworkID))
+	_ = d.Set("ipam_private_ipv4_id", regional.NewIDString(region, gateway.IpamPrivateIPv4ID))
+	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(region, gateway.IpamPrivateIPv6ID))
+	_ = d.Set("zone", gateway.Zone)
+	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(region, gateway.PublicConfig))
+
+	return nil
 }
 
 func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -186,23 +212,14 @@ func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", gateway.Name)
-	_ = d.Set("region", gateway.Region)
-	_ = d.Set("project_id", gateway.ProjectID)
-	_ = d.Set("organization_id", gateway.OrganizationID)
-	_ = d.Set("tags", gateway.Tags)
-	_ = d.Set("created_at", types.FlattenTime(gateway.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(gateway.UpdatedAt))
-	_ = d.Set("asn", int(gateway.Asn))
-	_ = d.Set("status", gateway.Status.String())
-	_ = d.Set("gateway_type", gateway.GatewayType)
-	_ = d.Set("private_network_id", regional.NewIDString(region, gateway.PrivateNetworkID))
-	_ = d.Set("ipam_private_ipv4_id", regional.NewIDString(region, gateway.IpamPrivateIPv4ID))
-	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(region, gateway.IpamPrivateIPv6ID))
-	_ = d.Set("zone", gateway.Zone)
-	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(region, gateway.PublicConfig))
+	diags := setVPNGatewayState(d, gateway, region)
 
-	return nil
+	err = identity.SetRegionalIdentity(d, region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
 }
 
 func ResourceVPNGatewayUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

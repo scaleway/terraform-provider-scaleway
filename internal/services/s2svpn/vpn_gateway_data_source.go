@@ -8,6 +8,7 @@ import (
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -67,14 +68,13 @@ func DataSourceS2SVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 	d.SetId(regionalID)
 	_ = d.Set("vpn_gateway_id", regionalID)
 
-	diags := ResourceVPNGatewayRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read VPN gateway state")...)
+	gateway, err := api.GetVpnGateway(&s2svpn.GetVpnGatewayRequest{
+		GatewayID: locality.ExpandID(vpnGatewayID),
+		Region:    region,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("VPN gateway (%s) not found", regionalID)
-	}
-
-	return nil
+	return setVPNGatewayState(d, gateway, region)
 }
