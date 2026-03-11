@@ -208,7 +208,9 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		iam.NewSamlDataSource,
+	}
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
