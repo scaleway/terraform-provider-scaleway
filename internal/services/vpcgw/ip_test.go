@@ -31,6 +31,11 @@ func TestAccVPCPublicGatewayIP_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc_public_gateway_ip.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
