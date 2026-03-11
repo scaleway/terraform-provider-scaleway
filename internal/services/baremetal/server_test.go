@@ -399,7 +399,69 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.1", "scaleway_baremetal_server"),
 					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.2", "minimal"),
 					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.base", "partitioning"),
 					acctest.CheckResourceAttrUUID("scaleway_baremetal_server.base", "ssh_key_ids.0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_PartitioningPreservedOnReinstall(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_PartitioningPreservedOnReinstall"
+	name := "TestAccServer_PartitioningPreservedOnReinstall"
+
+	serverConfig := func(sshKeyName string) string {
+		return fmt.Sprintf(`
+			data "scaleway_baremetal_os" "my_os" {
+			  zone    = "%s"
+			  name    = "Ubuntu"
+			  version = "22.04 LTS (Jammy Jellyfish)"
+			}
+
+			resource "scaleway_iam_ssh_key" "main" {
+				name 	   = "%s"
+				public_key = "%s"
+			}
+
+			resource "scaleway_baremetal_server" "base" {
+				name        = "%s"
+				zone        = "%s"
+				offer       = "%s"
+				os          = data.scaleway_baremetal_os.my_os.os_id
+				partitioning = "%s"
+				ssh_key_ids  = [scaleway_iam_ssh_key.main.id]
+				reinstall_on_config_changes = true
+			}
+		`, Zone, sshKeyName, SSHKeyBaremetal, name, Zone, OfferName, strings.ReplaceAll(jsonConfigPartitioning, "\"", "\\\""))
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: serverConfig(SSHKeyName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.base", "partitioning"),
+					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
+				),
+			},
+			{
+				// Trigger a reinstall by changing the SSH key name, verifying partitioning is preserved
+				Config: serverConfig(SSHKeyName + "-updated"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttrSet("scaleway_baremetal_server.base", "partitioning"),
+					testAccCheckPartitioning(tt, "scaleway_baremetal_server.base", jsonConfigPartitioning),
 				),
 			},
 		},
