@@ -78,10 +78,7 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 
 	parsedID := zonal.ExpandID(zonedID)
 
-	gateway, err := api.GetGateway(&vpcgw.GetGatewayRequest{
-		GatewayID: parsedID.ID,
-		Zone:      parsedID.Zone,
-	}, scw.WithContext(ctx))
+	gateway, err := waitForVPCPublicGateway(ctx, api, parsedID.Zone, parsedID.ID, defaultTimeout)
 	if err != nil {
 		return diag.FromErr(err)
 	}
