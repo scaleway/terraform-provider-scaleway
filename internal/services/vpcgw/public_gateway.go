@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -22,6 +23,7 @@ func ResourcePublicGateway() *schema.Resource {
 		ReadContext:   ResourceVPCPublicGatewayRead,
 		UpdateContext: ResourceVPCPublicGatewayUpdate,
 		DeleteContext: ResourceVPCPublicGatewayDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -184,6 +186,11 @@ func ResourceVPCPublicGatewayCreate(ctx context.Context, d *schema.ResourceData,
 
 	d.SetId(zonal.NewIDString(zone, gateway.ID))
 
+	err = identity.SetZonalIdentity(d, zone, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if allowedIps, ok := d.GetOk("allowed_ip_ranges"); ok {
 		listIPs := allowedIps.(*schema.Set).List()
 
@@ -217,6 +224,17 @@ func ResourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	diags := setPublicGatewayState(d, gateway)
+
+	err = identity.SetZonalIdentity(d, gateway.Zone, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPublicGatewayState(d *schema.ResourceData, gateway *vpcgw.Gateway) diag.Diagnostics {
 	_ = d.Set("name", gateway.Name)
 	_ = d.Set("type", gateway.Type)
 	_ = d.Set("status", gateway.Status.String())

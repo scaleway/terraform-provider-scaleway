@@ -85,6 +85,11 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
