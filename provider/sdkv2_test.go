@@ -195,6 +195,8 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_k8s_cluster",
 		"scaleway_k8s_pool",
 		"scaleway_key_manager_key",
+		"scaleway_mnq_nats_account",
+		"scaleway_mnq_nats_credentials",
 		"scaleway_mnq_sns",
 		"scaleway_mnq_sns_credentials",
 		"scaleway_mnq_sns_topic",

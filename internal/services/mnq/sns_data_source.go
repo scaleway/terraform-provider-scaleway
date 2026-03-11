@@ -45,7 +45,7 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 	regionID := datasource.NewRegionalID(sns.ProjectID, region)
 	d.SetId(regionID)
 
-	diags := ResourceMNQSNSRead(ctx, d, m)
+	diags := readSNSIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read sns state")...)
 	}
