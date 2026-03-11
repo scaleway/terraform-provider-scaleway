@@ -95,14 +95,6 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 	return ResourceVPCPublicGatewayIPReverseDNSRead(ctx, d, m)
 }
 
-func setIPReverseDNSState(d *schema.ResourceData, ip *vpcgw.IP) diag.Diagnostics {
-	_ = d.Set("zone", ip.Zone.String())
-	_ = d.Set("reverse", ip.Reverse)
-	_ = d.Set("gateway_ip_id", zonal.NewID(ip.Zone, ip.ID).String())
-
-	return nil
-}
-
 func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -116,8 +108,10 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -129,6 +123,14 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 	}
 
 	return diags
+}
+
+func setIPReverseDNSState(d *schema.ResourceData, ip *vpcgw.IP) diag.Diagnostics {
+	_ = d.Set("zone", ip.Zone.String())
+	_ = d.Set("reverse", ip.Reverse)
+	_ = d.Set("gateway_ip_id", zonal.NewID(ip.Zone, ip.ID).String())
+
+	return nil
 }
 
 func ResourceVPCPublicGatewayIPReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
