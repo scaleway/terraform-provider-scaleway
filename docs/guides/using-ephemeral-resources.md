@@ -5,7 +5,7 @@ page_title: "Using Ephemeral Resources Guide"
 
 Ephemeral resources in Terraform allow you to access sensitive data during Terraform operations without storing that data in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use ephemeral resources in the Scaleway Terraform Provider.
 
-For more information, see the [official HashiCorp documentation for Ephemeral Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources/ephemeral).
+For more information, see the [official Terraform documentation for Ephemeral Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources/ephemeral).
 
 ## What are Ephemeral Resources?
 
@@ -16,9 +16,11 @@ Ephemeral resources are special Terraform resources that are used during Terrafo
 The Scaleway Terraform Provider supports ephemeral resources for several services:
 
 ### Secret Manager Resources
+
 - [**`scaleway_secret_version`**](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/secret_version)
 
 ### Key Manager Resources
+
 - [**`scaleway_key_manager_sign`**](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/key_manager_sign)
 - [**`scaleway_key_manager_encrypt`**](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/key_manager_encrypt)
 - [**`scaleway_key_manager_decrypt`**](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/key_manager_decrypt)
@@ -67,6 +69,7 @@ resource "scaleway_mongodb_instance" "example" {
 ```
 
 ### Example: Encrypting a plaintext with key_manager_encrypt ephemeral resource
+
 ```terraform
 # Create an encryption key that will be used to encrypt a plaintext
 resource "scaleway_key_manager_key" "main" {

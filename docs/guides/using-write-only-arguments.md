@@ -4,9 +4,9 @@ page_title: "Using Write-Only Arguments Guide"
 # Using Write-Only Arguments with the Terraform Scaleway Provider
 
 Write-only arguments in Terraform allow you to handle sensitive data that should not be stored in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use write-only arguments in the Scaleway Terraform Provider.
-Write-Only arguments are supported in HashiCorp Terraform 1.11.0 and later.
+Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-For more information, see the [official HashiCorp documentation for Write-only Arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only).
+For more information, see the [official Terraform documentation for Write-only Arguments](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only).
 
 ## What are Write-Only Arguments?
 
@@ -17,12 +17,15 @@ Write-only arguments are special attributes that are used during resource creati
 The Scaleway Terraform Provider supports write-only arguments in several resources:
 
 ### IAM Resources
+
 - [**`scaleway_iam_user`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/iam_user#password_wo-1)
 
 ### Secret Manager Resources
+
 - [**`scaleway_secret_version`**: `data_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-1)
 
 ### Database Resources
+
 - [**`scaleway_rdb_instance`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_instance#password_wo-2)
 - [**`scaleway_rdb_user`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_user#password_wo-3)
 - [**`scaleway_redis_cluster`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/redis_cluster#password_wo-4)
@@ -30,9 +33,11 @@ The Scaleway Terraform Provider supports write-only arguments in several resourc
 - [**`scaleway_mongodb_user`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/mongodb_user#password_wo-6)
 
 ### Inference Resources
+
 - [**`scaleway_inference_model`**: `secret_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/inference_model#secret_wo-1)
 
 ### Baremetal Resources
+
 - [**`scaleway_baremetal_server`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/baremetal_server#password_wo-5) and [`service_password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/baremetal_server#service_password_wo-1)
 
 ## How to use Write-Only Arguments in Scaleway Provider
@@ -79,14 +84,15 @@ resource "scaleway_secret_version" "sensitive_data" {
 
 ## Retrieving a value set with a Write-Only argument
 
-Write-only attributes are not directly readable and cannot be referenced in Terraform HCL.
-To safely store and retrieve the data, it needs to be stored in a readable manager, such as a [Scaleway Secret Manager](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret). To ensure the sensitive data is never stored in the state, create a [scaleway_secret_version Resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version) with the [data_wo argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-1), and retrieve the data with the [scaleway_secret_version Ephemeral resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/secret_version).
+Write-only attributes cannot be read or referenced directly in Terraform.
+To work with these values, you must use a secure storage system like [Scaleway Secret Manager](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret) that allows both writing and reading sensitive data.
+To prevent sensitive data from being stored in state, use the [scaleway_secret_version resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version) with the [data_wo argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-1)to write the secret, then use the [scaleway_secret_version ephemeral resource](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resources/secret_version) to read it back when needed.
 
 For more information about Ephemeral Resources, see our [guide to using Ephemeral Resources with Terraform Scaleway Provider](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-ephemeral-resources).
 
-### Example:
+### Example: Using an ephemeral resource to retrieve a value set with a write-only argument
 
-```
+```terraform
 # Create a secret
 resource "scaleway_secret" "main" {
   name        = "my-secret"
@@ -138,7 +144,7 @@ resource "scaleway_secret_version" "sensitive_data" {
 
 ### Write-Only Attributes (Not Stored in State)
 
-Write-only attributes' values are never stored in Terraform state nor visible in plans or outputs. They are therefore more secure for highly sensitive information, but their values cannot be referenced by other resources. 
+Write-only attributes' values are never stored in Terraform state nor visible in plans or outputs. They are therefore more secure for highly sensitive information, but their values cannot be referenced by other resources.
 
 ```terraform
 resource "scaleway_secret_version" "sensitive_data" {
