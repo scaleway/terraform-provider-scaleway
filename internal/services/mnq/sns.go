@@ -52,7 +52,7 @@ func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalIdentity(d, region, sns.ProjectID); err != nil {
+	if err := identity.SetRegionalIdentity(d, sns.Region, sns.ProjectID); err != nil {
 		return diag.FromErr(err)
 	}
 
