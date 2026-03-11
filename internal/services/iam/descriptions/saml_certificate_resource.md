@@ -1,0 +1,1 @@
+Manages SAML certificates for an organization. SAML certificates are used to establish trust between your organization and identity providers. This resource allows you to manage SAML certificates in your Scaleway organization.
