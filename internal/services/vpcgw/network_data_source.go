@@ -43,7 +43,7 @@ func DataSourceNetwork() *schema.Resource {
 }
 
 func DataSourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcgwAPI, zone, err := newAPIWithZoneV2(d, m)
+	vpcgwAPI, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

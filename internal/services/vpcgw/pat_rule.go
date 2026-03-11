@@ -92,14 +92,14 @@ func patRuleSchema() map[string]*schema.Schema {
 }
 
 func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gatewayID := zonal.ExpandID(d.Get("gateway_id").(string)).ID
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -113,7 +113,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 		Protocol:    vpcgw.PatRuleProtocol(d.Get("protocol").(string)),
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,7 +125,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 
 	d.SetId(zonal.NewIDString(zone, patRule.ID))
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,7 +134,7 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 }
 
 func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -167,7 +167,7 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 }
 
 func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -180,7 +180,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -214,7 +214,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 	}
 
 	if hasChange {
-		_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -231,7 +231,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 		}
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -240,7 +240,7 @@ func ResourceVPCPublicGatewayPATRuleUpdate(ctx context.Context, d *schema.Resour
 }
 
 func ResourceVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndIDv2(m, d.Id())
+	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -259,7 +259,7 @@ func ResourceVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
@@ -273,7 +273,7 @@ func ResourceVPCPublicGatewayPATRuleDelete(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForVPCPublicGatewayV2(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
