@@ -76,5 +76,5 @@ func DataSourceS2SVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	return setVPNGatewayState(d, gateway, region)
+	return setVPNGatewayState(d, gateway)
 }

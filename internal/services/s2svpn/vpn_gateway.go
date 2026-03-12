@@ -165,9 +165,9 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	d.SetId(regional.NewIDString(res.Region, res.ID))
 
-	err = identity.SetRegionalIdentity(d, region, res.ID)
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -175,7 +175,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 	return ResourceVPNGatewayRead(ctx, d, m)
 }
 
-func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway, region scw.Region) diag.Diagnostics {
+func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway) diag.Diagnostics {
 	_ = d.Set("name", gateway.Name)
 	_ = d.Set("region", gateway.Region)
 	_ = d.Set("project_id", gateway.ProjectID)
@@ -186,11 +186,11 @@ func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway, regi
 	_ = d.Set("asn", int(gateway.Asn))
 	_ = d.Set("status", gateway.Status.String())
 	_ = d.Set("gateway_type", gateway.GatewayType)
-	_ = d.Set("private_network_id", regional.NewIDString(region, gateway.PrivateNetworkID))
-	_ = d.Set("ipam_private_ipv4_id", regional.NewIDString(region, gateway.IpamPrivateIPv4ID))
-	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(region, gateway.IpamPrivateIPv6ID))
+	_ = d.Set("private_network_id", regional.NewIDString(gateway.Region, gateway.PrivateNetworkID))
+	_ = d.Set("ipam_private_ipv4_id", regional.NewIDString(gateway.Region, gateway.IpamPrivateIPv4ID))
+	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(gateway.Region, gateway.IpamPrivateIPv6ID))
 	_ = d.Set("zone", gateway.Zone)
-	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(region, gateway.PublicConfig))
+	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(gateway.Region, gateway.PublicConfig))
 
 	return nil
 }
@@ -212,9 +212,9 @@ func ResourceVPNGatewayRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	diags := setVPNGatewayState(d, gateway, region)
+	diags := setVPNGatewayState(d, gateway)
 
-	err = identity.SetRegionalIdentity(d, region, gateway.ID)
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
