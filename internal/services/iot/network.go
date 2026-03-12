@@ -32,6 +32,7 @@ func ResourceNetwork() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 

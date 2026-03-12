@@ -32,6 +32,7 @@ func ResourceRoute() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
 	}
 }
