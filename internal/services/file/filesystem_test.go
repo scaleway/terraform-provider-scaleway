@@ -51,6 +51,11 @@ func TestAccFileSystem_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 				),
 			},
+			{
+				ResourceName:      "scaleway_file_filesystem.fs",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
