@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -298,10 +297,22 @@ func serverSchema() map[string]*schema.Schema {
 			},
 		},
 		"private_network": {
-			Type:        schema.TypeList,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			MaxItems:    8,
 			Description: "List of private network to connect with your instance",
+			Set: func(value any) int {
+				// To ensure that the hash key does not change even when computed attributes are read, we only use the
+				// plain private network UUID (not the localized ID) for hash calculation.
+				if value == nil {
+					return 0
+				}
+				pn := value.(map[string]any)
+				pnID := pn["pn_id"].(string)
+				hashKey, _ := locality.ExtractUUID(pnID)
+
+				return schema.HashString(hashKey)
+			},
 			Elem: &schema.Resource{
 				Timeouts: &schema.ResourceTimeout{
 					Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
@@ -1084,49 +1095,119 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 			diag.FromErr(err)
 		}
 
-		if raw, ok := d.GetOk("private_network"); ok {
-			// retrieve all current private network interfaces
-			for index := range raw.([]any) {
-				pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-				if d.HasChange(pnKey) {
-					o, n := d.GetChange(pnKey)
-					if !cmp.Equal(n, o) {
-						_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
-						if err != nil {
-							return diag.FromErr(err)
-						}
+		oldPNsRaw, newPNsRaw := d.GetChange("private_network")
 
-						err = ph.detach(ctx, o, d.Timeout(schema.TimeoutUpdate))
-						if err != nil {
-							return diag.FromErr(err)
-						}
+		oldPNsSet := oldPNsRaw.(*schema.Set)
+		newPNsSet := newPNsRaw.(*schema.Set)
 
-						err = ph.attach(ctx, n, d.Timeout(schema.TimeoutUpdate))
-						if err != nil {
-							return diag.FromErr(err)
-						}
-					}
-				}
-			}
-		} else {
-			// retrieve old private network config
-			o, _ := d.GetChange("private_network")
-			for _, raw := range o.([]any) {
-				pn, pnExist := raw.(map[string]any)
-				if pnExist {
-					_, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
-					if err != nil {
-						return diag.FromErr(err)
-					}
-
-					err = ph.detach(ctx, pn["pn_id"], d.Timeout(schema.TimeoutUpdate))
-					if err != nil {
-						return diag.FromErr(err)
-					}
-				}
+		for _, pn := range newPNsSet.List() {
+			pnID := pn.(map[string]any)["pn_id"]
+			if pnID == "" {
+				newPNsSet.Remove(pn)
 			}
 		}
+
+		pnsToRemove := oldPNsSet.Difference(newPNsSet)
+		pnsToAdd := newPNsSet.Difference(oldPNsSet)
+
+		for _, pn := range pnsToRemove.List() {
+			pNicToDelete := pn.(map[string]any)
+			err = ph.detach(ctx, pNicToDelete["pnic_id"].(string), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		for _, pn := range pnsToAdd.List() {
+			pnToAdd := pn.(map[string]any)["pn_id"]
+			err = ph.attach(ctx, pnToAdd.(string), d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		err = d.Set("private_network", newPNsSet.List()) // map[string]any{})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		//oldPNsList := oldPNsRaw.(*schema.Set).List()
+		//newPNsList := newPNsRaw.(*schema.Set).List()
+		//
+		//pNicIDsToDelete := []string(nil)
+		//
+		//// Look for old private networks to detach
+		//for _, oldPN := range oldPNsList {
+		//	oldPNID := oldPN.(map[string]any)["pn_id"].(string)
+		//	found := false
+		//
+		//	for _, newPN := range newPNsList {
+		//		newPNID := newPN.(map[string]any)["pn_id"].(string)
+		//		if newPNID == "" {
+		//			// This PN was removed from the config, it needs to be detached, then the element will be cleaned up
+		//			// from the state when reading the resource again.
+		//			pNicIDToDelete := newPN.(map[string]any)["pnic_id"].(string)
+		//			pNicIDsToDelete = append(pNicIDsToDelete, pNicIDToDelete)
+		//			// slices.Delete(newPNsList, index, index+1)
+		//			continue
+		//		}
+		//
+		//		newPNHashKey, _ := locality.ExtractUUID(newPNID)
+		//		oldPNHashKey, _ := locality.ExtractUUID(oldPNID)
+		//		if newPNHashKey == oldPNHashKey {
+		//			found = true
+		//			break
+		//		}
+		//	}
+		//
+		//	if !found {
+		//		pNicIDToDelete := oldPN.(map[string]any)["pnic_id"].(string)
+		//		pNicIDsToDelete = append(pNicIDsToDelete, pNicIDToDelete)
+		//	}
+		//}
+		//
+		//alreadyDetached := []string(nil)
+		//for _, pNicIDToDelete := range pNicIDsToDelete {
+		//	if slices.Contains(alreadyDetached, pNicIDToDelete) {
+		//		continue
+		//	}
+		//	err = ph.detach(ctx, pNicIDToDelete, d.Timeout(schema.TimeoutUpdate))
+		//	if err != nil {
+		//		return diag.FromErr(err)
+		//	}
+		//	alreadyDetached = append(alreadyDetached, pNicIDToDelete)
+		//}
+		//
+		//for _, newPN := range newPNsList {
+		//	newPNID := newPN.(map[string]any)["pn_id"].(string)
+		//	if newPNID == "" {
+		//		continue
+		//	}
+		//
+		//	// We look for the private network in the
+		//	found := false
+		//	for _, oldPN := range oldPNsList {
+		//		oldPNID := oldPN.(map[string]any)["pn_id"].(string)
+		//		oldPNHashKey, _ := locality.ExtractUUID(oldPNID)
+		//		newPNHashKey, _ := locality.ExtractUUID(newPNID)
+		//		if newPNHashKey == oldPNHashKey {
+		//			found = true
+		//			break
+		//		}
+		//	}
+		//
+		//	if !found {
+		//		pnToAdd := newPN.(map[string]any)["pn_id"]
+		//		// if pnToAdd != "" {
+		//		err = ph.attach(ctx, pnToAdd.(string), d.Timeout(schema.TimeoutUpdate))
+		//		if err != nil {
+		//			return diag.FromErr(err)
+		//		}
+		//		//}
+		//	}
+		//}
 	}
+
 	////
 	// Apply changes
 	////
@@ -1202,24 +1283,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Delete private-nic if managed by instance_server resource
-	if raw, ok := d.GetOk("private_network"); ok {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		for index := range raw.([]any) {
-			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-			pn := d.Get(pnKey)
-
-			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	// Detach filesystem
 	if filesystems, ok := d.GetOk("filesystems"); ok {
 		fsList := filesystems.([]any)
@@ -1261,11 +1324,9 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		for index := range raw.([]any) {
-			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-			pn := d.Get(pnKey)
-
-			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+		for _, pn := range raw.(*schema.Set).List() {
+			pnID := pn.(map[string]any)["pn_id"]
+			err := ph.detach(ctx, pnID.(string), d.Timeout(schema.TimeoutDelete))
 			if err != nil {
 				return diag.FromErr(err)
 			}

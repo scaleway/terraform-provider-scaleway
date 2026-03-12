@@ -57,6 +57,12 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				Config: `
 					resource scaleway_vpc main {
 						name = "tf-acc-server-private-network"
@@ -89,6 +95,12 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_instance_server.base", "private_network.0.pn_id",
 						"scaleway_vpc_private_network.pn01", "id"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 			{
 				Config: `
@@ -178,6 +190,12 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				Config: `
 					resource scaleway_vpc main {
 						name = "tf-acc-server-private-network"
@@ -203,6 +221,239 @@ func TestAccServer_PrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsServerPresent(tt, "scaleway_instance_server.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "0"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+		},
+	})
+}
+
+func TestAccServer_PrivateNetwork_Multiple(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			//{  // STEP 1
+			//	Config: `
+			//		resource scaleway_vpc main {
+			//			name = "tf-acc-server-private-network"
+			//			region = "fr-par"
+			//		}
+			//
+			//		resource scaleway_vpc_private_network pn01 {
+			//			name = "tf-acc-server-private-network-01"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "01" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn02 {
+			//			name = "tf-acc-server-private-network-02"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "02" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn03 {
+			//			name = "tf-acc-server-private-network-03"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "03" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn04 {
+			//			name = "tf-acc-server-private-network-04"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "04" ]
+			//		}
+			//
+			//		resource "scaleway_instance_server" "base" {
+			//			name = "tf-acc-server-private-network"
+			//			image = "ubuntu_focal"
+			//			type  = "DEV1-S"
+			//			tags  = [ "terraform-test", "scaleway_instance_server", "private_network" ]
+			//
+			//			private_network {
+			//				pn_id = scaleway_vpc_private_network.pn02.id
+			//			}
+			//			private_network {
+			//				pn_id = scaleway_vpc_private_network.pn01.id
+			//			}
+			//		}`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "2"),
+			//		resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+			//			"scaleway_vpc_private_network.pn02", "id"),
+			//		resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+			//			"scaleway_vpc_private_network.pn01", "id"),
+			//	),
+			//},
+			//{   // STEP 2
+			//	Config: `
+			//		resource scaleway_vpc main {
+			//			name = "tf-acc-server-private-network"
+			//			region = "fr-par"
+			//		}
+			//
+			//		resource scaleway_vpc_private_network pn01 {
+			//			name = "tf-acc-server-private-network-01"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "01" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn02 {
+			//			name = "tf-acc-server-private-network-02"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "02" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn03 {
+			//			name = "tf-acc-server-private-network-03"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "03" ]
+			//		}
+			//		resource scaleway_vpc_private_network pn04 {
+			//			name = "tf-acc-server-private-network-04"
+			//			vpc_id = scaleway_vpc.main.id
+			//			tags = [ "04" ]
+			//		}
+			//
+			//		resource "scaleway_instance_server" "base" {
+			//			name = "tf-acc-server-private-network"
+			//			image = "ubuntu_focal"
+			//			type  = "DEV1-S"
+			//			tags  = [ "terraform-test", "scaleway_instance_server", "private_network" ]
+			//
+			//			private_network {
+			//				pn_id = scaleway_vpc_private_network.pn01.id
+			//			}
+			//			private_network {
+			//				pn_id = scaleway_vpc_private_network.pn02.id
+			//			}
+			//			private_network {
+			//				pn_id = scaleway_vpc_private_network.pn03.id
+			//			}
+			//		}`,
+			//	Check: resource.ComposeTestCheckFunc(
+			//		arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+			//		resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "3"),
+			//		resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+			//			"scaleway_vpc_private_network.pn02", "id"),
+			//		resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+			//			"scaleway_vpc_private_network.pn01", "id"),
+			//		resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+			//			"scaleway_vpc_private_network.pn03", "id"),
+			//	),
+			//},
+			{ // STEP 3
+				Config: `
+					resource scaleway_vpc main {
+						name = "tf-acc-server-private-network"
+						region = "fr-par"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						name = "tf-acc-server-private-network-01"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "01" ]
+					}
+					resource scaleway_vpc_private_network pn02 {
+						name = "tf-acc-server-private-network-02"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "02" ]
+					}
+					resource scaleway_vpc_private_network pn03 {
+						name = "tf-acc-server-private-network-03"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "03" ]
+					}
+					resource scaleway_vpc_private_network pn04 {
+						name = "tf-acc-server-private-network-04"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "04" ]
+					}
+
+					resource "scaleway_instance_server" "base" {
+						name = "tf-acc-server-private-network"
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server", "private_network" ]
+
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn01.id
+						}
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn02.id
+						}
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn03.id
+						}
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn04.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "4"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn02", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn01", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn03", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn04", "id"),
+				),
+			},
+			{ // STEP 4
+				Config: `
+					resource scaleway_vpc main {
+						name = "tf-acc-server-private-network"
+						region = "fr-par"
+					}
+
+					resource scaleway_vpc_private_network pn01 {
+						name = "tf-acc-server-private-network-01"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "01" ]
+					}
+					resource scaleway_vpc_private_network pn02 {
+						name = "tf-acc-server-private-network-02"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "02" ]
+					}
+					resource scaleway_vpc_private_network pn03 {
+						name = "tf-acc-server-private-network-03"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "03" ]
+					}
+					resource scaleway_vpc_private_network pn04 {
+						name = "tf-acc-server-private-network-04"
+						vpc_id = scaleway_vpc.main.id
+						tags = [ "04" ]
+					}
+
+					resource "scaleway_instance_server" "base" {
+						name = "tf-acc-server-private-network"
+						image = "ubuntu_focal"
+						type  = "DEV1-S"
+						tags  = [ "terraform-test", "scaleway_instance_server", "private_network" ]
+
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn02.id
+						}
+						private_network {
+							pn_id = scaleway_vpc_private_network.pn04.id
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					arePrivateNICsPresent(tt, "scaleway_instance_server.base"),
+					resource.TestCheckResourceAttr("scaleway_instance_server.base", "private_network.#", "2"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn02", "id"),
+					resource.TestCheckTypeSetElemAttrPair("scaleway_instance_server.base", "private_network.*.pn_id",
+						"scaleway_vpc_private_network.pn04", "id"),
 				),
 			},
 		},

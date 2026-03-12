@@ -17,6 +17,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
@@ -259,7 +260,7 @@ func preparePrivateNIC(
 
 	var res []*instance.CreatePrivateNICRequest
 
-	for _, pn := range data.([]any) {
+	for _, pn := range data.(*schema.Set).List() {
 		r := pn.(map[string]any)
 		zonedID, pnExist := r["pn_id"]
 		privateNetworkID := locality.ExpandID(zonedID.(string))
@@ -294,123 +295,127 @@ type privateNICsHandler struct {
 	instanceAPI    *instance.API
 	serverID       string
 	privateNICsMap map[string]*instance.PrivateNIC
-	zone           scw.Zone
+	//privateNICs []*instance.PrivateNIC
+	zone scw.Zone
 }
 
-func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
+func newPrivateNICHandler(api *instance.API, serverID string, zone scw.Zone) (*privateNICsHandler, error) {
 	handler := &privateNICsHandler{
 		instanceAPI: api,
-		serverID:    server,
+		serverID:    serverID,
 		zone:        zone,
 	}
 
 	return handler, handler.flatPrivateNICs()
 }
 
-func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Duration) error {
-	oPtr := types.ExpandStringPtr(o)
-	if oPtr != nil && len(*oPtr) > 0 {
-		idPN := locality.ExpandID(*oPtr)
-		// check if old private network still exist on instance server
-		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, locality.ExpandID(p.ID), timeout)
-			if err != nil {
-				return err
-			}
-			// detach private NIC
-			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-				PrivateNicID: locality.ExpandID(p.ID),
-				Zone:         ph.zone,
-				ServerID:     ph.serverID,
-			},
-				scw.WithContext(ctx))
-			if err != nil {
-				return err
-			}
+func (ph *privateNICsHandler) detach(ctx context.Context, pNicIDToDelete string, timeout time.Duration) error {
+	// oPtr := types.ExpandStringPtr(pnIDToDelete)
+	// if oPtr != nil && len(*oPtr) > 0 {
+	pNicID := locality.ExpandID(pNicIDToDelete)
+	// check if old private network still exist on instance server
+	// if p, ok := ph.privateNICsMap[pnID]; ok {
+	//	pNicID := locality.ExpandID(p.ID)
 
-			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-				ServerID:      ph.serverID,
-				PrivateNicID:  p.ID,
-				Zone:          ph.zone,
-				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
-			})
-			if err != nil && !httperrors.Is404(err) {
-				return err
-			}
-		}
+	_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pNicID, timeout)
+	if err != nil {
+		return err
 	}
+	// detach private NIC
+	err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
+		PrivateNicID: pNicID,
+		Zone:         ph.zone,
+		ServerID:     ph.serverID,
+	},
+		scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
+		ServerID:      ph.serverID,
+		PrivateNicID:  pNicID,
+		Zone:          ph.zone,
+		Timeout:       &timeout,
+		RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
+	})
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+	//}
 
 	return nil
 }
 
-func (ph *privateNICsHandler) attach(ctx context.Context, n any, timeout time.Duration) error {
-	if nPtr := types.ExpandStringPtr(n); nPtr != nil {
-		// check if new private network was already attached on instance server
-		privateNetworkID := locality.ExpandID(*nPtr)
-		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
-			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
-				Zone:             ph.zone,
-				ServerID:         ph.serverID,
-				PrivateNetworkID: privateNetworkID,
-			})
-			if err != nil {
-				return err
-			}
-
-			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
-			if err != nil {
-				return err
-			}
-
-			_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
-			if err != nil {
-				return err
-			}
-		}
+func (ph *privateNICsHandler) attach(ctx context.Context, pnIDToAdd string, timeout time.Duration) error {
+	// if nPtr := types.ExpandStringPtr(pnIDToAdd); nPtr != nil {
+	// check if new private network was already attached on instance server
+	privateNetworkID := locality.ExpandID(pnIDToAdd)
+	// if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
+	pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+		Zone:             ph.zone,
+		ServerID:         ph.serverID,
+		PrivateNetworkID: privateNetworkID,
+	})
+	if err != nil {
+		return err
 	}
+
+	_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+	if err != nil {
+		return err
+	}
+
+	_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+	if err != nil {
+		return err
+	}
+	//}
+	//}
 
 	return nil
 }
 
 func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
-	raw := d.Get("private_network")
-	privateNetworks := []map[string]any(nil)
+	privateNetworks := make([]map[string]any, 0, len(ph.privateNICsMap))
 
-	for index := range raw.([]any) {
-		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-		keyValue := d.Get(pnKey)
-
-		keyRaw, err := ph.get(keyValue.(string))
+	for _, privateNic := range ph.privateNICsMap {
+		region, err := privateNic.Zone.Region()
 		if err != nil {
-			continue
+			return fmt.Errorf("could not infer region from zone %q", privateNic.Zone)
 		}
 
-		privateNetworks = append(privateNetworks, keyRaw.(map[string]any))
+		privateNetworks = append(privateNetworks, map[string]any{
+			"pn_id":       regional.NewID(region, privateNic.PrivateNetworkID).String(),
+			"mac_address": privateNic.MacAddress,
+			"status":      privateNic.State.String(),
+			"zone":        privateNic.Zone,
+			"pnic_id":     zonal.NewID(privateNic.Zone, privateNic.ID).String(),
+		})
 	}
 
 	return d.Set("private_network", privateNetworks)
 }
 
-func (ph *privateNICsHandler) get(key string) (any, error) {
-	loc, id, _ := locality.ParseLocalizedID(key)
-	if loc == "" {
-		loc = ph.zone.String()
-	}
-
-	pn, ok := ph.privateNICsMap[id]
-	if !ok {
-		return nil, fmt.Errorf("could not find private network ID %s on locality %s", key, loc)
-	}
-
-	return map[string]any{
-		"pn_id":       key,
-		"mac_address": pn.MacAddress,
-		"status":      pn.State.String(),
-		"zone":        loc,
-		"pnic_id":     pn.ID,
-	}, nil
-}
+//func (ph *privateNICsHandler) get(pnID string) (any, error) {
+//	loc, id, _ := locality.ParseLocalizedID(pnID)
+//	if loc == "" {
+//		loc = ph.zone.String()
+//	}
+//
+//	privateNic, ok := ph.privateNICsMap[id]
+//	if !ok {
+//		return nil, fmt.Errorf("could not find private network ID %s on locality %s", pnID, loc)
+//	}
+//
+//	return map[string]any{
+//		"pn_id":       pnID,
+//		"mac_address": privateNic.MacAddress,
+//		"status":      privateNic.State.String(),
+//		"zone":        loc,
+//		"pnic_id":     privateNic.ID,
+//	}, nil
+//}
 
 func formatImageLabel(imageUUID string) string {
 	return strings.ReplaceAll(imageUUID, "-", "_")
