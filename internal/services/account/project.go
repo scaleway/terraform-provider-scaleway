@@ -10,6 +10,7 @@ import (
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -29,6 +30,7 @@ func ResourceProject() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    projectSchema,
+		Identity:      identity.DefaultProjectID(),
 	}
 }
 
@@ -83,7 +85,10 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetFlatIdentity(d, "project_id", res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceAccountProjectRead(ctx, d, m)
 }
@@ -104,13 +109,22 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
+	err = identity.SetFlatIdentity(d, "project_id", res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	setProjectState(d, res)
+
+	return nil
+}
+
+func setProjectState(d *schema.ResourceData, res *accountSDK.Project) {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("description", res.Description)
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("organization_id", res.OrganizationID)
-
-	return nil
 }
 
 func resourceAccountProjectUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
