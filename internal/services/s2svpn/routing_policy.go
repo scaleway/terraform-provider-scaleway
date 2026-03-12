@@ -122,9 +122,7 @@ func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
-
-	err = identity.SetRegionalIdentity(d, region, res.ID)
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -154,7 +152,7 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m an
 
 	diags := setRoutingPolicyState(d, policy)
 
-	err = identity.SetRegionalIdentity(d, region, policy.ID)
+	err = identity.SetRegionalIdentity(d, policy.Region, policy.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
