@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,6 +27,7 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   ResourceIPAMIPRead,
 		UpdateContext: ResourceIPAMIPUpdate,
 		DeleteContext: ResourceIPAMIPDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -221,6 +223,11 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	d.SetId(regional.NewIDString(region, res.ID))
 
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceIPAMIPRead(ctx, d, m)
 }
 
@@ -278,31 +285,42 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		}
 	}
 
-	addressCidr, err := types.FlattenIPNet(res.Address)
+	diags := setIPAMIPState(d, res, privateNetworkID)
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	address := res.Address.IP.String()
+	return diags
+}
+
+func setIPAMIPState(d *schema.ResourceData, ip *ipam.IP, privateNetworkID string) diag.Diagnostics {
+	addressCidr, err := types.FlattenIPNet(ip.Address)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	address := ip.Address.IP.String()
 	_ = d.Set("address", address)
 	_ = d.Set("address_cidr", addressCidr)
-	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
-	_ = d.Set("resource", flattenIPResource(res.Resource))
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("is_ipv6", res.IsIPv6)
-	_ = d.Set("region", region)
+	_ = d.Set("source", flattenIPSource(ip.Source, privateNetworkID))
+	_ = d.Set("resource", flattenIPResource(ip.Resource))
+	_ = d.Set("project_id", ip.ProjectID)
+	_ = d.Set("created_at", types.FlattenTime(ip.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(ip.UpdatedAt))
+	_ = d.Set("is_ipv6", ip.IsIPv6)
+	_ = d.Set("region", ip.Region)
 
-	if res.Zone != nil {
-		_ = d.Set("zone", res.Zone.String())
+	if ip.Zone != nil {
+		_ = d.Set("zone", ip.Zone.String())
 	}
 
-	if len(res.Tags) > 0 {
-		_ = d.Set("tags", res.Tags)
+	if len(ip.Tags) > 0 {
+		_ = d.Set("tags", ip.Tags)
 	}
 
-	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
+	_ = d.Set("reverses", flattenIPReverses(ip.Reverses))
 
 	return nil
 }
