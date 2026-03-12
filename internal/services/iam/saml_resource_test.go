@@ -43,6 +43,45 @@ func TestAccSamlResource_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_iam_saml.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccSamlResource_WithUpdate(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             checkSamlDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_saml" "main" {
+						organization_id = "%s"
+					}
+				`, orgID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSamlResourceExists(tt, "scaleway_iam_saml.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "organization_id", orgID),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "entity_id", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "single_sign_on_url", ""),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "status", "missing_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.entity_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url"),
+				),
+			},
+			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_iam_saml" "main" {
 						organization_id = "%s"
@@ -57,10 +96,41 @@ func TestAccSamlResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "status", "missing_certificate"),
 				),
 			},
+		},
+	})
+}
+
+func TestAccSamlResource_CreateWithConfig(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	if !orgIDExists {
+		t.Skip("No default organization ID found, skipping test")
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             checkSamlDestroyed(tt),
+		Steps: []resource.TestStep{
 			{
-				ResourceName:      "scaleway_iam_saml.main",
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_saml" "main" {
+						organization_id = "%s"
+						entity_id = "https://example.com/saml/metadata"
+						single_sign_on_url = "https://example.com/saml/sso"
+					}
+				`, orgID),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSamlResourceExists(tt, "scaleway_iam_saml.main"),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "organization_id", orgID),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "entity_id", "https://example.com/saml/metadata"),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "single_sign_on_url", "https://example.com/saml/sso"),
+					resource.TestCheckResourceAttr("scaleway_iam_saml.main", "status", "missing_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.entity_id"),
+					resource.TestCheckResourceAttrSet("scaleway_iam_saml.main", "service_provider.assertion_consumer_service_url"),
+				),
 			},
 		},
 	})

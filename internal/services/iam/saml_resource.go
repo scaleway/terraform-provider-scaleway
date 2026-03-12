@@ -176,6 +176,9 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 	_, err := r.iamAPI.GetOrganizationSaml(&iam.GetOrganizationSamlRequest{
 		OrganizationID: orgID,
 	}, scw.WithContext(ctx))
+
+	var state samlResourceModel
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			res, err := r.iamAPI.EnableOrganizationSaml(&iam.EnableOrganizationSamlRequest{
@@ -190,21 +193,55 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 				return
 			}
 
-			state := r.convertToState(res, orgID, &resp.Diagnostics)
+			state = r.convertToState(res, orgID, &resp.Diagnostics)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		} else {
 			resp.Diagnostics.AddError(
 				"Failed to check SAML status",
 				err.Error(),
 			)
+
+			return
 		}
 	} else {
 		resp.Diagnostics.AddError(
 			"SAML already enabled",
 			"SAML configuration is already enabled for this organization.",
 		)
+
+		return
 	}
-	// The read is deliberately skipped since all computed attributes have been set in the create.
+
+	// If parameters were provided in the plan, update the SAML configuration directly
+	if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() || !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() {
+		reqUpdate := &iam.UpdateSamlRequest{
+			SamlID: state.ID.ValueString(),
+		}
+
+		if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() {
+			entityID := data.EntityID.ValueString()
+			reqUpdate.EntityID = &entityID
+		}
+
+		if !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() {
+			ssoURL := data.SingleSignOnURL.ValueString()
+			reqUpdate.SingleSignOnURL = &ssoURL
+		}
+
+		updatedSaml, err := r.iamAPI.UpdateSaml(reqUpdate, scw.WithContext(ctx))
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to update SAML",
+				err.Error(),
+			)
+
+			return
+		}
+
+		state = r.convertToState(updatedSaml, orgID, &resp.Diagnostics)
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
