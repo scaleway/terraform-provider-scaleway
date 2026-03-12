@@ -86,6 +86,11 @@ func TestAccVPCPublicGatewayPATRule_Basic(t *testing.T) {
 						"scaleway_vpc_public_gateway.main", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway_pat_rule.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
