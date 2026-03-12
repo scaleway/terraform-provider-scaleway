@@ -33,84 +33,88 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The snapshot name",
-			},
-			"volume_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "ID of the volume from which creates a snapshot",
-				DiffSuppressFunc: dsf.Locality,
-				ConflictsWith:    []string{"import"},
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the snapshot",
-			},
-			"import": {
-				Type:     schema.TypeList,
-				ForceNew: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							Description:      "Bucket containing qcow",
-							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i any) string {
-								return regional.ExpandID(i.(string)).ID
-							},
-						},
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Key of the qcow file in the specified bucket",
-						},
-					},
-				},
-				Optional:      true,
-				Description:   "Import snapshot from a qcow",
-				ConflictsWith: []string{"volume_id"},
-			},
-			"export": {
-				Type:     schema.TypeList,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Description:      "Bucket containing qcow",
-							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i any) string {
-								return regional.ExpandID(i.(string)).ID
-							},
-						},
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "Key of the qcow file in the specified bucket",
-						},
-					},
-				},
-				Optional:    true,
-				Description: "Export snapshot to a qcow",
-			},
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    snapshotSchema,
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The snapshot name",
 		},
+		"volume_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "ID of the volume from which creates a snapshot",
+			DiffSuppressFunc: dsf.Locality,
+			ConflictsWith:    []string{"import"},
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the snapshot",
+		},
+		"import": {
+			Type:     schema.TypeList,
+			ForceNew: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						Description:      "Bucket containing qcow",
+						DiffSuppressFunc: dsf.Locality,
+						StateFunc: func(i any) string {
+							return regional.ExpandID(i.(string)).ID
+						},
+					},
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "Key of the qcow file in the specified bucket",
+					},
+				},
+			},
+			Optional:      true,
+			Description:   "Import snapshot from a qcow",
+			ConflictsWith: []string{"volume_id"},
+		},
+		"export": {
+			Type:     schema.TypeList,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket": {
+						Type:             schema.TypeString,
+						Required:         true,
+						Description:      "Bucket containing qcow",
+						DiffSuppressFunc: dsf.Locality,
+						StateFunc: func(i any) string {
+							return regional.ExpandID(i.(string)).ID
+						},
+					},
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						Description: "Key of the qcow file in the specified bucket",
+					},
+				},
+			},
+			Optional:    true,
+			Description: "Export snapshot to a qcow",
+		},
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 

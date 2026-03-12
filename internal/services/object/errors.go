@@ -2,6 +2,7 @@ package object
 
 import (
 	"errors"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -78,10 +79,8 @@ func TimedOut(err error) bool {
 func ErrCodeEquals(err error, codes ...string) bool {
 	var scwErr scw.SdkError
 	if errors.As(err, &scwErr) {
-		for _, code := range codes {
-			if scwErr.Error() == code {
-				return true
-			}
+		if slices.Contains(codes, scwErr.Error()) {
+			return true
 		}
 	}
 

@@ -2,6 +2,7 @@ package applesilicon
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -11,7 +12,9 @@ import (
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -21,8 +24,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/server.md
+var serverDescription string
+
 func ResourceServer() *schema.Resource {
 	return &schema.Resource{
+		Description:   serverDescription,
 		CreateContext: ResourceAppleSiliconServerCreate,
 		ReadContext:   ResourceAppleSiliconServerRead,
 		UpdateContext: ResourceAppleSiliconServerUpdate,
@@ -35,160 +42,183 @@ func ResourceServer() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the server",
-				Computed:    true,
-				Optional:    true,
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Description: "Type of the server",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"enable_vpc": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Whether or not to enable VPC access",
-			},
-			"commitment": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "duration_24h",
-				Description:      "The commitment period of the server",
-				ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
-			},
-			"public_bandwidth": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "The public bandwidth of the server in bits per second",
-			},
-			"private_network": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "The private networks to attach to the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Description:      "The private network ID",
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							StateFunc: func(i any) string {
-								return locality.ExpandID(i.(string))
-							},
-						},
-						"ipam_ip_ids": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:             schema.TypeString,
-								ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							},
-							Description: "List of IPAM IP IDs to attach to the server",
-						},
-						// computed
-						"vlan": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The VLAN ID associated to the private network",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network status",
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the private network",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the private network",
-						},
-					},
-				},
-			},
-			// Computed
-			"ip": {
-				Type:        schema.TypeString,
-				Description: "IPv4 address of the server",
-				Computed:    true,
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the server",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
-					},
-				},
-			},
-			"vnc_url": {
-				Type:        schema.TypeString,
-				Description: "VNC url use to connect remotely to the desktop GUI",
-				Computed:    true,
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the server",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the server",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the server",
-			},
-			"deletable_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The minimal date and time on which you can delete this server due to Apple licence",
-			},
-			"vpc_status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The VPC status of the server",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The password of the server",
-			},
-			"username": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The username of the server",
-			},
+		SchemaFunc:    serverSchema,
+		Identity:      identity.DefaultZonal(),
+	}
+}
 
-			// Common
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+func serverSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Name of the server",
+			Computed:    true,
+			Optional:    true,
 		},
+		"type": {
+			Type:        schema.TypeString,
+			Description: "Type of the server",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"enable_vpc": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Whether or not to enable VPC access",
+		},
+		"commitment": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "duration_24h",
+			Description:      "The commitment period of the server",
+			ValidateDiagFunc: verify.ValidateEnum[applesilicon.CommitmentType](),
+		},
+		"runner_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type:             schema.TypeString,
+				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+				DiffSuppressFunc: dsf.Locality,
+			},
+			Description: "List of runner ids attach to the server",
+		},
+		"os_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The OS ID of the server",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"public_bandwidth": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "The public bandwidth of the server in bits per second",
+		},
+		"private_network": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "The private networks to attach to the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Description:      "The private network ID",
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						StateFunc: func(i any) string {
+							return locality.ExpandID(i.(string))
+						},
+					},
+					"ipam_ip_ids": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						},
+						Description: "List of IPAM IP IDs to attach to the server",
+					},
+					// computed
+					"vlan": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The VLAN ID associated to the private network",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private network status",
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the creation of the private network",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the last update of the private network",
+					},
+				},
+			},
+		},
+		// Computed
+		"ip": {
+			Type:        schema.TypeString,
+			Description: "IPv4 address of the server",
+			Computed:    true,
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the server",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
+					},
+				},
+			},
+		},
+		"vnc_url": {
+			Type:        schema.TypeString,
+			Description: "VNC url use to connect remotely to the desktop GUI",
+			Computed:    true,
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The state of the server",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the server",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the server",
+		},
+		"deletable_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The minimal date and time on which you can delete this server due to Apple licence",
+		},
+		"vpc_status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The VPC status of the server",
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "The password of the server",
+		},
+		"username": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The username of the server",
+		},
+
+		// Common
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -207,6 +237,17 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		Zone:           zone,
 	}
 
+	if OsID, ok := d.GetOk("os_id"); ok {
+		id := zonal.ExpandID(OsID).ID
+		createReq.OsID = &id
+	}
+
+	if runnerIDs, ok := d.GetOk("runner_ids"); ok {
+		createReq.AppliedRunnerConfigurations = &applesilicon.AppliedRunnerConfigurations{
+			RunnerConfigurationIDs: locality.ExpandIDs(runnerIDs),
+		}
+	}
+
 	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
 		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
 	}
@@ -216,7 +257,10 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -267,6 +311,11 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("name", res.Name)
 	_ = d.Set("type", res.Type)
 	_ = d.Set("state", res.Status.String())
@@ -283,6 +332,23 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("username", res.SSHUsername)
 	_ = d.Set("public_bandwidth", int(res.PublicBandwidthBps))
 	_ = d.Set("zone", res.Zone)
+	_ = d.Set("runner_ids", res.AppliedRunnerConfigurationIDs)
+
+	switch res.VpcStatus {
+	case applesilicon.ServerPrivateNetworkStatusVpcDisabled:
+		_ = d.Set("enable_vpc", false)
+	case applesilicon.ServerPrivateNetworkStatusVpcEnabled:
+		_ = d.Set("enable_vpc", true)
+	}
+
+	if res.Commitment != nil {
+		switch res.Commitment.Type {
+		case applesilicon.CommitmentTypeNone, applesilicon.CommitmentTypeDuration24h:
+			_ = d.Set("commitment", applesilicon.CommitmentTypeDuration24h.String())
+		case applesilicon.CommitmentTypeRenewedMonthly:
+			_ = d.Set("commitment", applesilicon.CommitmentTypeRenewedMonthly.String())
+		}
+	}
 
 	listPrivateNetworks, err := privateNetworkAPI.ListServerPrivateNetworks(&applesilicon.PrivateNetworkAPIListServerPrivateNetworksRequest{
 		Zone:     res.Zone,
@@ -385,6 +451,19 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 		req.PublicBandwidthBps = publicBandwidth
 	}
 
+	if d.HasChange("runner_ids") {
+		if req.AppliedRunnerConfigurations == nil {
+			req.AppliedRunnerConfigurations = &applesilicon.AppliedRunnerConfigurations{}
+		}
+
+		runnerIDs := d.Get("runner_ids")
+		if runnerIDs != nil {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = locality.ExpandIDs(runnerIDs)
+		} else {
+			req.AppliedRunnerConfigurations.RunnerConfigurationIDs = []string{}
+		}
+	}
+
 	_, err = asAPI.UpdateServer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -424,6 +503,11 @@ func ResourceAppleSiliconServerDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	err = detachAllPrivateNetworkFromServer(ctx, d, m, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForAppleSiliconServer(ctx, asAPI, zone, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}

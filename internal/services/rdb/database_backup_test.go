@@ -59,7 +59,6 @@ func TestAccDatabaseBackup_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -107,7 +106,19 @@ func TestAccDatabaseBackup_Basic(t *testing.T) {
 
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "database_name", "foo"),
 					resource.TestCheckResourceAttr("scaleway_rdb_database_backup.main", "name", "test_backup"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "same_region"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "status"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "instance_name"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_database_backup.main", "size"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_rdb_database_backup.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"download_url", "download_url_expires_at",
+				},
 			},
 		},
 	})

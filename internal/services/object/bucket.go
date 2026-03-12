@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -31,193 +30,7 @@ func ResourceBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the bucket",
-			},
-			"object_lock_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Enable object lock",
-			},
-			"acl": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "private",
-				Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
-				ValidateFunc: validation.StringInSlice([]string{
-					string(s3Types.BucketCannedACLPrivate),
-					string(s3Types.BucketCannedACLPublicRead),
-					string(s3Types.BucketCannedACLPublicReadWrite),
-					string(s3Types.BucketCannedACLAuthenticatedRead),
-				}, false),
-				Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
-			},
-			"tags": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with this bucket",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Description: "Endpoint of the bucket",
-				Computed:    true,
-			},
-			"api_endpoint": {
-				Type:        schema.TypeString,
-				Description: "API URL of the bucket",
-				Computed:    true,
-			},
-			"cors_rule": {
-				Type:        schema.TypeList,
-				Description: "List of CORS rules",
-				Optional:    true,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"allowed_headers": {
-							Type:        schema.TypeList,
-							Description: "Allowed headers in the CORS rule",
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"allowed_methods": {
-							Type:        schema.TypeList,
-							Description: "Allowed HTTP methods allowed in the CORS rule",
-							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"allowed_origins": {
-							Type:        schema.TypeList,
-							Description: "Allowed origins allowed in the CORS rule",
-							Required:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"expose_headers": {
-							Type:        schema.TypeList,
-							Description: "Exposed headers in the CORS rule",
-							Optional:    true,
-							Elem:        &schema.Schema{Type: schema.TypeString},
-						},
-						"max_age_seconds": {
-							Type:        schema.TypeInt,
-							Description: "Max age of the CORS rule",
-							Optional:    true,
-						},
-					},
-				},
-			},
-			"force_destroy": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Delete objects in bucket",
-			},
-			"lifecycle_rule": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Lifecycle configuration is a set of rules that define actions that Scaleway Object Storage applies to a group of objects",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.StringLenBetween(0, 255),
-							Description:  "Unique identifier for the rule",
-						},
-						"prefix": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The prefix identifying one or more objects to which the rule applies",
-						},
-						"tags": {
-							Type: schema.TypeMap,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							Description: "The tags associated with the bucket lifecycle",
-						},
-						"enabled": {
-							Type:        schema.TypeBool,
-							Required:    true,
-							Description: "Specifies if the configuration rule is Enabled or Disabled",
-						},
-						"abort_incomplete_multipart_upload_days": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed",
-						},
-						"expiration": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							MaxItems:    1,
-							Description: "Specifies a period in the object's expire",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"days": {
-										Type:         schema.TypeInt,
-										Required:     true,
-										ValidateFunc: validation.IntAtLeast(0),
-										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									},
-								},
-							},
-						},
-						"transition": {
-							Type:        schema.TypeSet,
-							Optional:    true,
-							Set:         transitionHash,
-							Description: "Define when objects transition to another storage class",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"days": {
-										Type:         schema.TypeInt,
-										Optional:     true,
-										ValidateFunc: validation.IntAtLeast(0),
-										Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									},
-									"storage_class": {
-										Type:         schema.TypeString,
-										Required:     true,
-										ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
-										Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"versioning": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Allow multiple versions of an object in the same bucket",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"enabled": {
-							Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
-		},
+		SchemaFunc: bucketSchema,
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			if diff.Get("object_lock_enabled").(bool) {
 				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
@@ -226,6 +39,196 @@ func ResourceBucket() *schema.Resource {
 			}
 
 			return nil
+		},
+	}
+}
+
+func bucketSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the bucket",
+		},
+		"object_lock_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Enable object lock",
+		},
+		"acl": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "private",
+			Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
+			ValidateFunc: validation.StringInSlice([]string{
+				string(s3Types.BucketCannedACLPrivate),
+				string(s3Types.BucketCannedACLPublicRead),
+				string(s3Types.BucketCannedACLPublicReadWrite),
+				string(s3Types.BucketCannedACLAuthenticatedRead),
+			}, false),
+			Deprecated: "ACL attribute is deprecated. Please use the resource scaleway_object_bucket_acl instead.",
+		},
+		"tags": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with this bucket",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Description: "Endpoint of the bucket",
+			Computed:    true,
+		},
+		"api_endpoint": {
+			Type:        schema.TypeString,
+			Description: "API URL of the bucket",
+			Computed:    true,
+		},
+		"cors_rule": {
+			Type:        schema.TypeList,
+			Description: "List of CORS rules",
+			Optional:    true,
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"allowed_headers": {
+						Type:        schema.TypeList,
+						Description: "Allowed headers in the CORS rule",
+						Optional:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"allowed_methods": {
+						Type:        schema.TypeList,
+						Description: "Allowed HTTP methods allowed in the CORS rule",
+						Required:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"allowed_origins": {
+						Type:        schema.TypeList,
+						Description: "Allowed origins allowed in the CORS rule",
+						Required:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"expose_headers": {
+						Type:        schema.TypeList,
+						Description: "Exposed headers in the CORS rule",
+						Optional:    true,
+						Elem:        &schema.Schema{Type: schema.TypeString},
+					},
+					"max_age_seconds": {
+						Type:        schema.TypeInt,
+						Description: "Max age of the CORS rule",
+						Optional:    true,
+					},
+				},
+			},
+		},
+		"force_destroy": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Delete objects in bucket",
+		},
+		"lifecycle_rule": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Lifecycle configuration is a set of rules that define actions that Scaleway Object Storage applies to a group of objects",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.StringLenBetween(0, 255),
+						Description:  "Unique identifier for the rule",
+					},
+					"prefix": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The prefix identifying one or more objects to which the rule applies",
+					},
+					"tags": {
+						Type: schema.TypeMap,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional:    true,
+						Description: "The tags associated with the bucket lifecycle",
+					},
+					"enabled": {
+						Type:        schema.TypeBool,
+						Required:    true,
+						Description: "Specifies if the configuration rule is Enabled or Disabled",
+					},
+					"abort_incomplete_multipart_upload_days": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "Specifies the number of days after initiating a multipart upload when the multipart upload must be completed",
+					},
+					"expiration": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "Specifies a period in the object's expire",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"days": {
+									Type:         schema.TypeInt,
+									Required:     true,
+									ValidateFunc: validation.IntAtLeast(0),
+									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+								},
+							},
+						},
+					},
+					"transition": {
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Set:         transitionHash,
+						Description: "Define when objects transition to another storage class",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"days": {
+									Type:         schema.TypeInt,
+									Optional:     true,
+									ValidateFunc: validation.IntAtLeast(0),
+									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+								},
+								"storage_class": {
+									Type:         schema.TypeString,
+									Required:     true,
+									ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+									Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"versioning": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Allow multiple versions of an object in the same bucket",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"enabled": {
+						Description: "Enable versioning. Once you version-enable a bucket, it can never return to an unversioned state",
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -239,11 +242,11 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	req := &s3.CreateBucketInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	}
 
 	if v, ok := d.GetOk("object_lock_enabled"); ok {
-		req.ObjectLockEnabledForBucket = scw.BoolPtr(v.(bool))
+		req.ObjectLockEnabledForBucket = new(v.(bool))
 	}
 
 	_, err = s3Client.CreateBucket(ctx, req)
@@ -266,7 +269,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	if len(tagsSet) > 0 {
 		_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			Tagging: &s3Types.Tagging{
 				TagSet: tagsSet,
 			},
@@ -289,7 +292,7 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m a
 		acl := d.Get("acl").(string)
 
 		_, err := s3Client.PutBucketAcl(ctx, &s3.PutBucketAclInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			ACL:    s3Types.BucketCannedACL(acl),
 		})
 		if err != nil {
@@ -312,14 +315,14 @@ func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 		if len(tagsSet) > 0 {
 			_, err = s3Client.PutBucketTagging(ctx, &s3.PutBucketTaggingInput{
-				Bucket: scw.StringPtr(bucketName),
+				Bucket: new(bucketName),
 				Tagging: &s3Types.Tagging{
 					TagSet: tagsSet,
 				},
 			})
 		} else {
 			_, err = s3Client.DeleteBucketTagging(ctx, &s3.DeleteBucketTaggingInput{
-				Bucket: scw.StringPtr(bucketName),
+				Bucket: new(bucketName),
 			})
 		}
 
@@ -524,7 +527,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	// AWS has the same issue: https://github.com/terraform-providers/terraform-provider-aws/issues/6193
 
 	_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "objects", ""); !bucketFound {
@@ -537,7 +540,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	var tagsSet []s3Types.Tag
 
 	tagsResponse, err := s3Client.GetBucketTagging(ctx, &s3.GetBucketTaggingInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "tags", ErrCodeNoSuchTagSet); !bucketFound {
@@ -556,7 +559,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 
 	if err != nil && !IsS3Err(err, ErrCodeNoSuchCORSConfiguration, "The CORS configuration does not exist") {
@@ -567,7 +570,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	// Read the versioning configuration
 	versioningResponse, err := s3Client.GetBucketVersioning(ctx, &s3.GetBucketVersioningInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "versioning", ""); !bucketFound {
@@ -577,11 +580,11 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	_ = d.Set("versioning", flattenObjectBucketVersioning(versioningResponse))
+	_ = d.Set("versioning", FlattenObjectBucketVersioning(versioningResponse))
 
 	// Read the lifecycle configuration
 	lifecycle, err := s3Client.GetBucketLifecycleConfiguration(ctx, &s3.GetBucketLifecycleConfigurationInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "lifecycle configuration", ErrCodeNoSuchLifecycleConfiguration); !bucketFound {
@@ -699,7 +702,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	_, err = s3Client.DeleteBucket(ctx, &s3.DeleteBucketInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	})
 	if err != nil {
 		var noSuchBucket *s3Types.NoSuchBucket
@@ -734,7 +737,7 @@ func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client
 	vc := expandObjectBucketVersioning(v)
 
 	i := &s3.PutBucketVersioningInput{
-		Bucket:                  scw.StringPtr(bucketName),
+		Bucket:                  new(bucketName),
 		VersioningConfiguration: vc,
 	}
 	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
@@ -756,7 +759,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
 
 		_, err := s3conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			return fmt.Errorf("error deleting S3 CORS: %w", err)
@@ -765,7 +768,7 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 		// Put CORS
 		rules := expandBucketCORS(ctx, rawCors, bucketName)
 		corsInput := &s3.PutBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 			CORSConfiguration: &s3Types.CORSConfiguration{
 				CORSRules: rules,
 			},

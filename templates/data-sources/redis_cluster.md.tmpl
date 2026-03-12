@@ -58,5 +58,4 @@ In addition to all above arguments, the following attributes are exported:
 - `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true.
 - `tags` - The tags associated with the Redis Cluster.
 
-
 ~> **Important:** Redis™ cluster IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`

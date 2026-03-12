@@ -30,97 +30,101 @@ func ResourceHub() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether to enable the hub or not",
-				Default:     true,
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the hub",
-			},
-			"product_plan": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The product plan of the hub",
-				ValidateDiagFunc: verify.ValidateEnum[iot.HubProductPlan](),
-			},
-			"disable_events": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether to enable the hub events or not",
-			},
-			"events_topic_prefix": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Topic prefix for the hub events",
-				Default:     "$SCW/events",
-			},
-			"hub_ca": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Custom user provided certificate authority",
-			},
-			"hub_ca_challenge": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "Challenge certificate for the user provided hub CA",
-				RequiredWith: []string{"hub_ca"},
-			},
-			"device_auto_provisioning": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Wether to enable the device auto provisioning or not",
-			},
+		SchemaFunc:    hubSchema,
+	}
+}
 
-			// Computed elements
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the IoT Hub",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the IoT Hub",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the hub",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint to connect the devices to",
-			},
-			"mqtt_ca_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The url of the MQTT ca",
-			},
-			"mqtt_ca": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The MQTT certificat content",
-			},
-			"device_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of registered devices in the Hub",
-			},
-			"connected_device_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The current number of connected devices in the Hub",
-			},
+func hubSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable the hub or not",
+			Default:     true,
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the hub",
+		},
+		"product_plan": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The product plan of the hub",
+			ValidateDiagFunc: verify.ValidateEnum[iot.HubProductPlan](),
+		},
+		"disable_events": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether to enable the hub events or not",
+		},
+		"events_topic_prefix": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Topic prefix for the hub events",
+			Default:     "$SCW/events",
+		},
+		"hub_ca": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Custom user provided certificate authority",
+		},
+		"hub_ca_challenge": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Challenge certificate for the user provided hub CA",
+			RequiredWith: []string{"hub_ca"},
+		},
+		"device_auto_provisioning": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Wether to enable the device auto provisioning or not",
+		},
+
+		// Computed elements
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the IoT Hub",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the IoT Hub",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the hub",
+		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint to connect the devices to",
+		},
+		"mqtt_ca_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The url of the MQTT ca",
+		},
+		"mqtt_ca": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The MQTT certificat content",
+		},
+		"device_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of registered devices in the Hub",
+		},
+		"connected_device_count": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The current number of connected devices in the Hub",
 		},
 	}
 }
@@ -142,11 +146,11 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if disableEvents, ok := d.GetOk("disable_events"); ok {
-		req.DisableEvents = scw.BoolPtr(disableEvents.(bool))
+		req.DisableEvents = new(disableEvents.(bool))
 	}
 
 	if eventsTopicPrefix, ok := d.GetOk("events_topic_prefix"); ok {
-		req.EventsTopicPrefix = scw.StringPtr(eventsTopicPrefix.(string))
+		req.EventsTopicPrefix = new(eventsTopicPrefix.(string))
 	}
 
 	res, err := iotAPI.CreateHub(req, scw.WithContext(ctx))
@@ -177,7 +181,7 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	// Now user CA is set, set device auto provisioning if needed.
 	if devProv, ok := d.GetOk("device_autoprovisioning"); ok {
 		_, err = iotAPI.UpdateHub(&iot.UpdateHubRequest{
-			EnableDeviceAutoProvisioning: scw.BoolPtr(devProv.(bool)),
+			EnableDeviceAutoProvisioning: new(devProv.(bool)),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -321,7 +325,7 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("name") {
-		updateRequest.Name = scw.StringPtr(d.Get("name").(string))
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("product_plan") {
@@ -329,15 +333,15 @@ func ResourceIotHubUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("disable_events") {
-		updateRequest.DisableEvents = scw.BoolPtr(d.Get("disable_events").(bool))
+		updateRequest.DisableEvents = new(d.Get("disable_events").(bool))
 	}
 
 	if d.HasChange("events_topic_prefix") {
-		updateRequest.EventsTopicPrefix = scw.StringPtr(d.Get("events_topic_prefix").(string))
+		updateRequest.EventsTopicPrefix = new(d.Get("events_topic_prefix").(string))
 	}
 
 	if d.HasChange("device_auto_provisioning") {
-		updateRequest.EnableDeviceAutoProvisioning = scw.BoolPtr(d.Get("device_auto_provisioning").(bool))
+		updateRequest.EnableDeviceAutoProvisioning = new(d.Get("device_auto_provisioning").(bool))
 	}
 
 	////

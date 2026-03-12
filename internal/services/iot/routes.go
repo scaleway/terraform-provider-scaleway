@@ -30,159 +30,163 @@ func ResourceRoute() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultIoTHubTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the route",
-			},
-			"hub_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The ID of the route's hub",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"topic": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The Topic the route subscribes to (wildcards allowed)",
-			},
-			"database": {
-				Type:          schema.TypeList,
-				MinItems:      1,
-				MaxItems:      1,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Database Route parameters",
-				ConflictsWith: []string{"rest", "s3"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"query": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "SQL query to be executed ($TOPIC and $PAYLOAD variables are available, see documentation)",
-						},
-						"host": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The database hostname",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The database port",
-						},
-						"dbname": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The database name",
-						},
-						"username": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The database username",
-						},
-						"password": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The database password",
-							Sensitive:   true,
-						},
+		SchemaFunc:    routeSchema,
+		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+	}
+}
+
+func routeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the route",
+		},
+		"hub_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The ID of the route's hub",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"topic": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The Topic the route subscribes to (wildcards allowed)",
+		},
+		"database": {
+			Type:          schema.TypeList,
+			MinItems:      1,
+			MaxItems:      1,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Database Route parameters",
+			ConflictsWith: []string{"rest", "s3"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"query": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "SQL query to be executed ($TOPIC and $PAYLOAD variables are available, see documentation)",
+					},
+					"host": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The database hostname",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The database port",
+					},
+					"dbname": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The database name",
+					},
+					"username": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The database username",
+					},
+					"password": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The database password",
+						Sensitive:   true,
 					},
 				},
-			},
-			"rest": {
-				Type:          schema.TypeList,
-				MinItems:      1,
-				MaxItems:      1,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Rest Route parameters",
-				ConflictsWith: []string{"database", "s3"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"verb": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							Description:      "The HTTP Verb used to call REST URI",
-							ValidateDiagFunc: verify.ValidateEnum[iot.RouteRestConfigHTTPVerb](),
-						},
-						"uri": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The URI of the REST endpoint",
-						},
-						"headers": {
-							Type:        schema.TypeMap,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The HTTP call extra headers",
-							Elem: &schema.Schema{
-								Type:     schema.TypeString,
-								ForceNew: true,
-							},
-						},
-					},
-				},
-			},
-			"s3": {
-				Type:          schema.TypeList,
-				MinItems:      1,
-				MaxItems:      1,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "S3 Route parameters",
-				ConflictsWith: []string{"database", "rest"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket_region": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The region of the S3 route's destination bucket",
-						},
-						"bucket_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The name of the S3 route's destination bucket",
-						},
-						"object_prefix": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The string to prefix object names with",
-						},
-						"strategy": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							Description:      "How the S3 route's objects will be created: one per topic or one per message",
-							ValidateDiagFunc: verify.ValidateEnum[iot.RouteS3ConfigS3Strategy](),
-						},
-					},
-				},
-			},
-			// Computed elements
-			"region": regional.Schema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the IoT Route",
 			},
 		},
-		CustomizeDiff: cdf.LocalityCheck("hub_id"),
+		"rest": {
+			Type:          schema.TypeList,
+			MinItems:      1,
+			MaxItems:      1,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Rest Route parameters",
+			ConflictsWith: []string{"database", "s3"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"verb": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						Description:      "The HTTP Verb used to call REST URI",
+						ValidateDiagFunc: verify.ValidateEnum[iot.RouteRestConfigHTTPVerb](),
+					},
+					"uri": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The URI of the REST endpoint",
+					},
+					"headers": {
+						Type:        schema.TypeMap,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The HTTP call extra headers",
+						Elem: &schema.Schema{
+							Type:     schema.TypeString,
+							ForceNew: true,
+						},
+					},
+				},
+			},
+		},
+		"s3": {
+			Type:          schema.TypeList,
+			MinItems:      1,
+			MaxItems:      1,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "S3 Route parameters",
+			ConflictsWith: []string{"database", "rest"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket_region": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The region of the S3 route's destination bucket",
+					},
+					"bucket_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The name of the S3 route's destination bucket",
+					},
+					"object_prefix": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						ForceNew:    true,
+						Description: "The string to prefix object names with",
+					},
+					"strategy": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						Description:      "How the S3 route's objects will be created: one per topic or one per message",
+						ValidateDiagFunc: verify.ValidateEnum[iot.RouteS3ConfigS3Strategy](),
+					},
+				},
+			},
+		},
+		// Computed elements
+		"region": regional.Schema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the IoT Route",
+		},
 	}
 }
 

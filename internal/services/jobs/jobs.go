@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobs "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -29,123 +30,150 @@ func ResourceDefinition() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The job name",
+		SchemaFunc:    definitionSchema,
+	}
+}
+
+func definitionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The job name",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Description: "The job description",
+			Optional:    true,
+		},
+		"cpu_limit": {
+			Type:        schema.TypeInt,
+			Description: "CPU limit of the job",
+			Required:    true,
+		},
+		"memory_limit": {
+			Type:        schema.TypeInt,
+			Description: "Memory limit of the job",
+			Required:    true,
+		},
+		"image_uri": {
+			Type:        schema.TypeString,
+			Description: "Image URI to use for the job",
+			Required:    true,
+		},
+		"command": {
+			Type:          schema.TypeString,
+			Description:   "Command to use for the job (in string format)",
+			Optional:      true,
+			Deprecated:    "Please use startup_command instead",
+			ConflictsWith: []string{"startup_command"},
+		},
+		"startup_command": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"description": {
-				Type:        schema.TypeString,
-				Description: "The job description",
-				Optional:    true,
+			Optional:      true,
+			ConflictsWith: []string{"command"},
+			Description:   "Command to use for the job (in list format). Overrides the default command defined in the job image.",
+		},
+		"args": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"cpu_limit": {
-				Type:        schema.TypeInt,
-				Description: "CPU limit of the job",
-				Required:    true,
+			Optional:    true,
+			Description: "Job arguments in list format. Overrides the default arguments defined in the job image.",
+		},
+		"timeout": {
+			Type:             schema.TypeString,
+			Description:      "Timeout for the job in seconds",
+			Optional:         true,
+			Computed:         true,
+			DiffSuppressFunc: dsf.Duration,
+		},
+		"env": {
+			Type:        schema.TypeMap,
+			Description: "Environment variables to pass to the job",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringLenBetween(0, 1000),
 			},
-			"memory_limit": {
-				Type:        schema.TypeInt,
-				Description: "Memory limit of the job",
-				Required:    true,
-			},
-			"image_uri": {
-				Type:        schema.TypeString,
-				Description: "Image URI to use for the job",
-				Optional:    true,
-			},
-			"command": {
-				Type:        schema.TypeString,
-				Description: "Command to use for the job",
-				Optional:    true,
-			},
-			"timeout": {
-				Type:             schema.TypeString,
-				Description:      "Timeout for the job in seconds",
-				Optional:         true,
-				Computed:         true,
-				DiffSuppressFunc: dsf.Duration,
-			},
-			"env": {
-				Type:        schema.TypeMap,
-				Description: "Environment variables to pass to the job",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.StringLenBetween(0, 1000),
-				},
-				ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
-			},
-			"cron": {
-				Type:        schema.TypeList,
-				Description: "Cron expression",
-				Optional:    true,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"schedule": {
-							Type:         schema.TypeString,
-							Description:  "UNIX cron schedule to run job",
-							Required:     true,
-							RequiredWith: []string{"cron.0"},
-						},
-						"timezone": {
-							Type:         schema.TypeString,
-							Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
-							Required:     true,
-							RequiredWith: []string{"cron.0"},
-						},
+			ValidateDiagFunc: validation.MapKeyLenBetween(0, 100),
+		},
+		"local_storage_capacity": {
+			Type:        schema.TypeInt,
+			Description: "Local storage capacity of the job in MiB",
+			Required:    true,
+		},
+		"cron": {
+			Type:        schema.TypeList,
+			Description: "Cron expression",
+			Optional:    true,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"schedule": {
+						Type:         schema.TypeString,
+						Description:  "UNIX cron schedule to run job",
+						Required:     true,
+						RequiredWith: []string{"cron.0"},
+					},
+					"timezone": {
+						Type:         schema.TypeString,
+						Description:  "Timezone for the cron schedule, in tz database format (e.g., 'Europe/Paris').",
+						Required:     true,
+						RequiredWith: []string{"cron.0"},
 					},
 				},
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"secret_reference": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "A reference to a Secret Manager secret.",
-				Set: func(v any) int {
-					secret := v.(map[string]any)
-					if secret["environment"] != "" {
-						return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
-					}
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"secret_reference": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "A reference to a Secret Manager secret.",
+			Set: func(v any) int {
+				secret := v.(map[string]any)
+				if secret["environment"] != "" {
+					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["environment"].(string))
+				}
 
-					return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"secret_id": {
-							Type:                  schema.TypeString,
-							Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
-							Required:              true,
-							DiffSuppressOnRefresh: true,
-							DiffSuppressFunc:      dsf.Locality,
-						},
-						"secret_reference_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The secret reference UUID",
-						},
-						"secret_version": {
-							Type:        schema.TypeString,
-							Description: "The secret version.",
-							Default:     "latest",
-							Optional:    true,
-						},
-						"file": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "The absolute file path where the secret will be mounted.",
-							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
-						},
-						"environment": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "An environment variable containing the secret value.",
-							ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Z|0-9]+(_[A-Z|0-9]+)*$`), "environment variable must be composed of uppercase letters separated by an underscore"),
-						},
+				return schema.HashString(locality.ExpandID(secret["secret_id"].(string)) + secret["secret_version"].(string) + secret["file"].(string))
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"secret_id": {
+						Type:                  schema.TypeString,
+						Description:           "The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition.",
+						Required:              true,
+						DiffSuppressOnRefresh: true,
+						DiffSuppressFunc:      dsf.Locality,
+					},
+					"secret_reference_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The secret reference UUID",
+					},
+					"secret_version": {
+						Type:        schema.TypeString,
+						Description: "The secret version.",
+						Default:     "latest",
+						Optional:    true,
+					},
+					"file": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "The absolute file path where the secret will be mounted.",
+						ValidateFunc: validation.StringMatch(regexp.MustCompile(`^(/[^/]+)+$`), "must be an absolute path to the file"),
+					},
+					"environment": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "An environment variable containing the secret value.",
 					},
 				},
 			},
@@ -165,11 +193,14 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CPULimit:             uint32(d.Get("cpu_limit").(int)),
 		MemoryLimit:          uint32(d.Get("memory_limit").(int)),
 		ImageURI:             d.Get("image_uri").(string),
-		Command:              d.Get("command").(string),
+		Command:              new(d.Get("command").(string)),
+		StartupCommand:       types.ExpandStrings(d.Get("startup_command")),
 		ProjectID:            d.Get("project_id").(string),
 		EnvironmentVariables: types.ExpandMapStringString(d.Get("env")),
 		Description:          d.Get("description").(string),
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
+		Args:                 types.ExpandStrings(d.Get("args")),
+		LocalStorageCapacity: uint32(d.Get("local_storage_capacity").(int)),
 	}
 
 	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
@@ -222,7 +253,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	rawSecretRefs, err := api.ListJobDefinitionSecrets(&jobs.ListJobDefinitionSecretsRequest{
+	rawSecretRefs, err := api.ListSecrets(&jobs.ListSecretsRequest{
 		Region:          region,
 		JobDefinitionID: id,
 	})
@@ -233,8 +264,11 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("name", definition.Name)
 	_ = d.Set("cpu_limit", int(definition.CPULimit))
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
+	_ = d.Set("local_storage_capacity", int(definition.LocalStorageCapacity))
 	_ = d.Set("image_uri", definition.ImageURI)
 	_ = d.Set("command", definition.Command)
+	_ = d.Set("startup_command", types.FlattenSliceString(definition.StartupCommand))
+	_ = d.Set("args", types.FlattenSliceString(definition.Args))
 	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
 	_ = d.Set("description", definition.Description)
 	_ = d.Set("timeout", definition.JobTimeout.ToTimeDuration().String())
@@ -269,12 +303,24 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 		req.MemoryLimit = types.ExpandUint32Ptr(d.Get("memory_limit"))
 	}
 
+	if d.HasChange("local_storage_capacity") {
+		req.LocalStorageCapacity = types.ExpandUint32Ptr(d.Get("local_storage_capacity"))
+	}
+
 	if d.HasChange("image_uri") {
 		req.ImageURI = types.ExpandUpdatedStringPtr(d.Get("image_uri"))
 	}
 
 	if d.HasChange("command") {
-		req.Command = types.ExpandUpdatedStringPtr(d.Get("command"))
+		req.Command = types.ExpandUpdatedStringPtr(d.Get("command")) //nolint: staticcheck
+	}
+
+	if d.HasChange("startup_command") {
+		req.StartupCommand = types.ExpandUpdatedStringsPtr(d.Get("startup_command"))
+	}
+
+	if d.HasChange("args") {
+		req.Args = types.ExpandUpdatedStringsPtr(d.Get("args"))
 	}
 
 	if d.HasChange("env") {
@@ -317,12 +363,11 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		for _, secret := range toDelete {
-			deleteReq := &jobs.DeleteJobDefinitionSecretRequest{
-				Region:          region,
-				JobDefinitionID: id,
-				SecretID:        secret.SecretReferenceID,
+			deleteReq := &jobs.DeleteSecretRequest{
+				Region:   region,
+				SecretID: secret.SecretReferenceID,
 			}
-			if err := api.DeleteJobDefinitionSecret(deleteReq, scw.WithContext(ctx)); err != nil {
+			if err := api.DeleteSecret(deleteReq, scw.WithContext(ctx)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -347,10 +392,58 @@ func ResourceJobDefinitionDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	// Try to delete the job definition first
 	err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
 		Region:          region,
 		JobDefinitionID: id,
 	}, scw.WithContext(ctx))
+
+	// If deletion fails with 403 (job runs still running), clean them up first
+	if err != nil && httperrors.Is403(err) {
+		// List all job runs for this job definition
+		jobRuns, listErr := api.ListJobRuns(&jobs.ListJobRunsRequest{
+			Region:          region,
+			JobDefinitionID: new(id),
+		}, scw.WithContext(ctx))
+		if listErr != nil {
+			return diag.FromErr(fmt.Errorf("failed to list job runs before cleanup: %w", listErr))
+		}
+
+		// Stop all running or queued job runs
+		var jobRunIDsToWait []string
+
+		for _, jobRun := range jobRuns.JobRuns {
+			if jobRun.State == jobs.JobRunStateQueued || jobRun.State == jobs.JobRunStateRunning {
+				_, stopErr := api.StopJobRun(&jobs.StopJobRunRequest{
+					JobRunID: jobRun.ID,
+					Region:   region,
+				}, scw.WithContext(ctx))
+				if stopErr != nil && !httperrors.Is404(stopErr) {
+					return diag.FromErr(fmt.Errorf("failed to stop job run %s: %w", jobRun.ID, stopErr))
+				}
+
+				jobRunIDsToWait = append(jobRunIDsToWait, jobRun.ID)
+			}
+		}
+
+		// Wait for all stopped job runs to terminate
+		for _, jobRunID := range jobRunIDsToWait {
+			_, waitErr := api.WaitForJobRun(&jobs.WaitForJobRunRequest{
+				JobRunID: jobRunID,
+				Region:   region,
+			}, scw.WithContext(ctx))
+			if waitErr != nil && !httperrors.Is404(waitErr) {
+				return diag.FromErr(fmt.Errorf("failed to wait for job run %s: %w", jobRunID, waitErr))
+			}
+		}
+
+		// Retry deletion after cleanup
+		err = api.DeleteJobDefinition(&jobs.DeleteJobDefinitionRequest{
+			Region:          region,
+			JobDefinitionID: id,
+		}, scw.WithContext(ctx))
+	}
+
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

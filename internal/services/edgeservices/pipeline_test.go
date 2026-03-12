@@ -13,7 +13,6 @@ func TestAccEdgeServicesPipeline_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesCacheDestroy(tt),
 		Steps: []resource.TestStep{
@@ -31,6 +30,11 @@ func TestAccEdgeServicesPipeline_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_pipeline.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_pipeline.main", "updated_at"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_pipeline.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

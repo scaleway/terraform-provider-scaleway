@@ -109,15 +109,15 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 }
 ```
 
-**Grafana User:**
+**Grafana Access:**
 
-To retrieve the deprecated `grafana_url`, you must create a Grafana user. Creating the user will trigger the creation of the Grafana instance:
+~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated and will be removed on January 1st, 2026. Grafana authentication is now managed through Scaleway IAM.
+
+To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source. Authentication is handled via your Scaleway IAM credentials:
 
 ```hcl
-resource "scaleway_cockpit_grafana_user" "main" {
+data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
-  login      = "my-awesome-user"
-  role       = "editor"
 }
 ```
 
@@ -172,10 +172,8 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
   enable_managed_alerts = true
 }
 
-resource "scaleway_cockpit_grafana_user" "main" {
+data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
-  login      = "my-awesome-user"
-  role       = "editor"
 }
 
 output "endpoints" {
@@ -184,8 +182,9 @@ output "endpoints" {
     logs          = scaleway_cockpit_source.logs.url
     traces        = scaleway_cockpit_source.traces.url
     alert_manager = scaleway_cockpit_alert_manager.alert_manager.alert_manager_url
-    grafana       = scaleway_cockpit_grafana_user.main.grafana_url
+    grafana       = data.scaleway_cockpit_grafana.main.grafana_url
   }
+  description = "Use your Scaleway IAM credentials to authenticate to Grafana"
 }
 ```
 
@@ -199,15 +198,18 @@ To import an existing `scaleway_cockpit_source` resource:
 terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111111111111
 ```
 
-### Import a Grafana User
+### Grafana Data Source
 
-To import an existing Grafana user:
+~> **Note:** The `scaleway_cockpit_grafana_user` resource is deprecated. Grafana authentication is now handled via Scaleway IAM, and no import is needed for the data source.
 
-```bash
-terraform import scaleway_cockpit_grafana_user.main 11111111-1111-1111-1111-111111111111
+The `scaleway_cockpit_grafana` data source automatically retrieves Grafana information. No import is required:
+
+```hcl
+data "scaleway_cockpit_grafana" "main" {
+  project_id = scaleway_account_project.project.id
+}
 ```
 
 ## Conclusion
 
 By following this guide, you can successfully transition from the deprecated `scaleway_cockpit` resource to the new set of specialized resources. This ensures compatibility with the latest Terraform provider and Scaleway's updated infrastructure.
-

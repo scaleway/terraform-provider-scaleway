@@ -13,7 +13,7 @@ import (
 )
 
 func DataSourceHub() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceHub().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceHub().SchemaFunc())
 
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "project_id")
 

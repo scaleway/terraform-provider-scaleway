@@ -12,7 +12,7 @@ import (
 
 func DataSourceDatabase() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabase().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDatabase().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "name")
 
@@ -46,5 +46,5 @@ func DataSourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbDatabaseRead(ctx, d, m)
+	return readDatabaseIntoState(ctx, d, m)
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -30,60 +31,65 @@ func ResourceCockpitSource() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Name of the datasource",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The type of the datasource",
-				ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
-			},
-			"retention_days": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntBetween(1, 365),
-				Description:  "The number of days to retain data, must be between 1 and 365.",
-			},
-			// computed
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL of the datasource",
-			},
-			"origin": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The origin of the datasource",
-			},
-			"synchronized_with_grafana": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indicates whether the data source is synchronized with Grafana",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the cockpit datasource",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the cockpit datasource",
-			},
-			"push_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL endpoint used for pushing data to the cockpit data source.",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
+		SchemaFunc: sourceSchema,
+		Identity:   identity.DefaultRegional(),
+	}
+}
+
+func sourceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Name of the datasource",
 		},
+		"type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The type of the datasource",
+			ValidateDiagFunc: verify.ValidateEnum[cockpit.DataSourceType](),
+		},
+		"retention_days": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntBetween(1, 365),
+			Description:  "The number of days to retain data, must be between 1 and 365.",
+		},
+		// computed
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL of the datasource",
+		},
+		"origin": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The origin of the datasource",
+		},
+		"synchronized_with_grafana": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indicates whether the data source is synchronized with Grafana",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the cockpit datasource",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the cockpit datasource",
+		},
+		"push_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL endpoint used for pushing data to the cockpit data source.",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
 	}
 }
 
@@ -106,7 +112,9 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitSourceRead(ctx, d, meta)
 }
@@ -128,6 +136,10 @@ func ResourceCockpitSourceRead(ctx context.Context, d *schema.ResourceData, meta
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -179,7 +191,7 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	return nil
+	return ResourceCockpitSourceRead(ctx, d, meta)
 }
 
 func ResourceCockpitSourceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

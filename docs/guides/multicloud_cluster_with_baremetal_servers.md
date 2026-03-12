@@ -154,7 +154,7 @@ You check that everything went well by :
 
 * In the CLI : by listing the nodes of the cluster|pool with the CLI
 
-    ```
+    ```shell
     scw k8s node list cluster-id=<cluster_id> [pool-id=<pool_id>]
     ```
 
@@ -162,7 +162,7 @@ You check that everything went well by :
 * On the server : by connecting via SSH and checking the `log` file located in `/home/ubuntu`. It should display the
 following lines :
 
-```
+```json lines
 [...]
 {"time":"2023-05-24T16:47:38.750041045Z","level":"DEBUG","msg":"writing kubelet config and CA"}
 {"time":"2023-05-24T16:47:38.750272845Z","level":"DEBUG","msg":"writing kubelet env file and systemd service"}

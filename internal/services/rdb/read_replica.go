@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -36,127 +37,132 @@ func ResourceReadReplica() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "Id of the rdb instance to replicate",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"same_zone": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				ForceNew:    true,
-				Description: "Defines whether to create the replica in the same availability zone as the main instance nodes or not.",
-			},
-			"direct_access": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Endpoints common
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the endpoint (UUID format).",
-							Optional:    true,
-							Computed:    true,
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Description: "TCP port of the endpoint.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the endpoint.",
-							Optional:    true,
-							Computed:    true,
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Private network endpoints",
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Private network specific
-						"private_network_id": {
-							Type:             schema.TypeString,
-							Description:      "UUID of the private network to be connected to the read replica (UUID format)",
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-							Required:         true,
-						},
-						"service_ip": {
-							Type:         schema.TypeString,
-							Description:  "The IP network address within the private subnet",
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsCIDR,
-						},
-						"enable_ipam": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Whether or not the private network endpoint should be configured with IPAM",
-						},
-						"zone": {
-							Type:        schema.TypeString,
-							Description: "Private network zone",
-							Computed:    true,
-						},
-						// Endpoints common
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the endpoint (UUID format).",
-							Computed:    true,
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set",
-							Computed:    true,
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Description: "TCP port of the endpoint",
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the endpoints",
-							Computed:    true,
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Description: "Hostname of the endpoint. Only one of ip and hostname may be set",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    readReplicaSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id", "private_network.#.private_network_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func readReplicaSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Id of the rdb instance to replicate",
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"same_zone": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			ForceNew:    true,
+			Description: "Defines whether to create the replica in the same availability zone as the main instance nodes or not.",
+		},
+		"direct_access": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Direct access endpoint, it gives you an IP and a port to access your read-replica",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Endpoints common
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the endpoint (UUID format).",
+						Optional:    true,
+						Computed:    true,
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Description: "TCP port of the endpoint.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the endpoint.",
+						Optional:    true,
+						Computed:    true,
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Description: "Hostname of the endpoint. Only one of ip and hostname may be set.",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Private network endpoints",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Private network specific
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Description:      "UUID of the private network to be connected to the read replica (UUID format)",
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Required:         true,
+					},
+					"service_ip": {
+						Type:         schema.TypeString,
+						Description:  "The IP network address within the private subnet",
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.IsCIDR,
+					},
+					"enable_ipam": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether or not the private network endpoint should be configured with IPAM",
+					},
+					"zone": {
+						Type:        schema.TypeString,
+						Description: "Private network zone",
+						Computed:    true,
+					},
+					// Endpoints common
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the endpoint (UUID format).",
+						Computed:    true,
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Description: "IPv4 address of the endpoint (IP address). Only one of ip and hostname may be set",
+						Computed:    true,
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Description: "TCP port of the endpoint",
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the endpoints",
+						Computed:    true,
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Description: "Hostname of the endpoint. Only one of ip and hostname may be set",
+						Computed:    true,
+					},
+				},
+			},
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 
@@ -194,7 +200,9 @@ func ResourceRdbReadReplicaCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("failed to create read-replica: %w", err))
 	}
 
-	d.SetId(regional.NewIDString(region, rr.ID))
+	if err := identity.SetRegionalIdentity(d, region, rr.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBReadReplica(ctx, rdbAPI, region, rr.ID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -225,10 +233,13 @@ func ResourceRdbReadReplicaRead(ctx context.Context, d *schema.ResourceData, m a
 	_ = d.Set("direct_access", directAccess)
 	_ = d.Set("private_network", privateNetwork)
 
-	regionStr := region.String()
 	_ = d.Set("same_zone", rr.SameZone)
-	_ = d.Set("region", regionStr)
+	_ = d.Set("region", region.String())
 	_ = d.Set("instance_id", regional.NewIDString(region, rr.InstanceID))
+
+	if err := identity.SetRegionalIdentity(d, region, rr.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

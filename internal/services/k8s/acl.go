@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -17,8 +18,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/acl.md
+var aclDescription string
+
 func ResourceACL() *schema.Resource {
 	return &schema.Resource{
+		Description:   aclDescription,
 		CreateContext: ResourceACLCreate,
 		ReadContext:   ResourceACLRead,
 		UpdateContext: ResourceACLUpdate,
@@ -34,57 +39,61 @@ func ResourceACL() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SClusterTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"cluster_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-				Description:      "Cluster on which the ACL should be applied",
-			},
-			"no_ip_allowed": {
-				Type:         schema.TypeBool,
-				Optional:     true,
-				Default:      false,
-				Description:  "If true, no IP will be allowed and the cluster will be fully isolated",
-				ExactlyOneOf: []string{"acl_rules"},
-			},
-			"acl_rules": {
-				Type:         schema.TypeSet,
-				Optional:     true,
-				Description:  "The list of network rules that manage inbound traffic",
-				ExactlyOneOf: []string{"no_ip_allowed"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Description:  "The IP subnet to be allowed",
-							ValidateFunc: validation.IsCIDR,
-						},
-						"scaleway_ranges": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Allow access to cluster from all Scaleway ranges",
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The description of the ACL rule",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the ACL rule",
-						},
+		SchemaFunc:    aclSchema,
+		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+	}
+}
+
+func aclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"cluster_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "Cluster on which the ACL should be applied",
+		},
+		"no_ip_allowed": {
+			Type:         schema.TypeBool,
+			Optional:     true,
+			Default:      false,
+			Description:  "If true, no IP will be allowed and the cluster will be fully isolated",
+			ExactlyOneOf: []string{"acl_rules"},
+		},
+		"acl_rules": {
+			Type:         schema.TypeSet,
+			Optional:     true,
+			Description:  "The list of network rules that manage inbound traffic",
+			ExactlyOneOf: []string{"no_ip_allowed"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Description:  "The IP subnet to be allowed",
+						ValidateFunc: validation.IsCIDR,
+					},
+					"scaleway_ranges": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Allow access to cluster from all Scaleway ranges",
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The description of the ACL rule",
+					},
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the ACL rule",
 					},
 				},
 			},
-			// Common
-			"region": regional.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("cluster_id"),
+		// Common
+		"region": regional.Schema(),
 	}
 }
 
@@ -214,6 +223,10 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 				IP:          &allowedIPs,
 				Description: "Automatically generated after scaleway_k8s_acl resource deletion",
 			},
+			{
+				ScalewayRanges: new(true),
+				Description:    "Automatically generated after scaleway_k8s_acl resource deletion",
+			},
 		},
 	}
 
@@ -251,7 +264,7 @@ func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 		}
 
 		if scwRangesRaw, ok := r["scaleway_ranges"]; ok && scwRangesRaw.(bool) {
-			expandedRule.ScalewayRanges = scw.BoolPtr(true)
+			expandedRule.ScalewayRanges = new(true)
 		}
 
 		if descriptionRaw, ok := r["description"]; ok && descriptionRaw.(string) != "" {

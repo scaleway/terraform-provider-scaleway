@@ -22,7 +22,6 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 	name := "TestAccScalewayDataSourceBaremetalServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{

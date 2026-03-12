@@ -20,54 +20,59 @@ import (
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceFunctionTokenCreate,
-		ReadContext:   ResourceFunctionTokenRead,
-		DeleteContext: ResourceFunctionTokenDelete,
+		CreateContext:      ResourceFunctionTokenCreate,
+		ReadContext:        ResourceFunctionTokenRead,
+		DeleteContext:      ResourceFunctionTokenDelete,
+		DeprecationMessage: "The \"scaleway_function_token\" resource is deprecated in favor of IAM authentication",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"function_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the function",
-				ForceNew:         true,
-				Optional:         true,
-				ExactlyOneOf:     []string{"namespace_id"},
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"namespace_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the namespace",
-				ForceNew:         true,
-				Optional:         true,
-				ExactlyOneOf:     []string{"function_id"},
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Description: "The description of the function",
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "The date after which the token expires RFC3339",
-				Optional:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsDate(),
-				DiffSuppressFunc: dsf.TimeRFC3339,
-			},
-			"token": {
-				Type:        schema.TypeString,
-				Description: "Token generated",
-				Computed:    true,
-				Sensitive:   true,
-			},
-
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    tokenSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id", "namespace_id"),
+	}
+}
+
+func tokenSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"function_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the function",
+			ForceNew:         true,
+			Optional:         true,
+			ExactlyOneOf:     []string{"namespace_id"},
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"namespace_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the namespace",
+			ForceNew:         true,
+			Optional:         true,
+			ExactlyOneOf:     []string{"function_id"},
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Description: "The description of the function",
+			Optional:    true,
+			ForceNew:    true,
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "The date after which the token expires RFC3339",
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsDate(),
+			DiffSuppressFunc: dsf.TimeRFC3339,
+		},
+		"token": {
+			Type:        schema.TypeString,
+			Description: "Token generated",
+			Computed:    true,
+			Sensitive:   true,
+		},
+
+		"region": regional.Schema(),
 	}
 }
 
@@ -77,7 +82,7 @@ func ResourceFunctionTokenCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	token, err := api.CreateToken(&function.CreateTokenRequest{
+	token, err := api.CreateToken(&function.CreateTokenRequest{ //nolint:staticcheck
 		Region:      region,
 		FunctionID:  types.ExpandStringPtr(locality.ExpandID(d.Get("function_id"))),
 		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),

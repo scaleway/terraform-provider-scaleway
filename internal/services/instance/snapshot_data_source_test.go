@@ -10,43 +10,46 @@ import (
 )
 
 func TestAccDataSourceSnapshot_Basic(t *testing.T) {
-	t.Skip("Resources \"scaleway_instance_volume\" and \"scaleway_instance_snapshot\" are depracated")
-
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	snapshotName := "tf-snapshot-ds-basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancetestfuncs.IsVolumeDestroyed(tt),
-			isSnapshotDestroyed(tt),
+			instancetestfuncs.IsSnapshotDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_volume" "test" {
-						size_in_gb = 2
-						type = "b_ssd"
+					resource "scaleway_instance_server" "test" {
+						image = "ubuntu_noble"
+						type = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
 						name = "%s"
-						volume_id = scaleway_instance_volume.test.id
+						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}`, snapshotName),
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_volume" "test" {
-						size_in_gb = 2
-						type = "b_ssd"
+					resource "scaleway_instance_server" "test" {
+						image = "ubuntu_noble"
+						type = "DEV1-S"
+						root_volume {
+							volume_type = "l_ssd"
+						}
 					}
 
 					resource "scaleway_instance_snapshot" "from_volume" {
 						name = "%s"
-						volume_id = scaleway_instance_volume.test.id
+						volume_id = scaleway_instance_server.test.root_volume.0.volume_id
 					}
 
 					data "scaleway_instance_snapshot" "by_id" {
@@ -57,8 +60,8 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 						name = scaleway_instance_snapshot.from_volume.name
 					}`, snapshotName),
 				Check: resource.ComposeTestCheckFunc(
-					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
-					isSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
+					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_id"),
+					instancetestfuncs.IsSnapshotPresent(tt, "data.scaleway_instance_snapshot.by_name"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "id", "scaleway_instance_snapshot.from_volume", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_instance_snapshot.by_id", "name", "scaleway_instance_snapshot.from_volume", "name"),
 

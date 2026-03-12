@@ -6,13 +6,18 @@ page_title: "Scaleway: scaleway_redis_cluster"
 # Resource: scaleway_redis_cluster
 
 Creates and manages Scaleway Redis™ clusters.
-For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-redis).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-redis).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
+
 
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic Redis cluster creation
+
 resource "scaleway_redis_cluster" "main" {
   name         = "test_redis_basic"
   version      = "6.2.7"
@@ -30,9 +35,65 @@ resource "scaleway_redis_cluster" "main" {
 }
 ```
 
-### With settings
+```terraform
+### Creating a Redis cluster using a Write Only password (not stored in state)
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "db_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_redis_cluster" "password_wo_cluster" {
+  name                = "test_redis_password_wo"
+  version             = "6.2.7"
+  node_type           = "RED1-MICRO"
+  user_name           = "my_initial_user"
+  password_wo         = ephemeral.random_password.db_password.result
+  password_wo_version = 1
+  cluster_size        = 1
+  tls_enabled         = "true"
+}
+```
 
 ```terraform
+### Redis cluster with a Private Network
+
+resource "scaleway_vpc_private_network" "pn" {
+  name = "private-network"
+}
+
+resource "scaleway_redis_cluster" "main" {
+  name         = "test_redis_endpoints"
+  version      = "6.2.7"
+  node_type    = "RED1-MICRO"
+  user_name    = "my_initial_user"
+  password     = "thiZ_is_v&ry_s3cret"
+  cluster_size = 1
+  private_network {
+    id = scaleway_vpc_private_network.pn.id
+    service_ips = [
+      "10.12.1.1/20",
+    ]
+  }
+  depends_on = [
+    scaleway_vpc_private_network.pn
+  ]
+}
+```
+
+```terraform
+### Redis cluster with settings
+
 resource "scaleway_redis_cluster" "main" {
   name      = "test_redis_basic"
   version   = "6.2.7"
@@ -47,31 +108,8 @@ resource "scaleway_redis_cluster" "main" {
 }
 ```
 
-### With a Private Network
 
-```terraform
-resource "scaleway_vpc_private_network" "pn" {
-  name = "private-network"
-}
 
-resource "scaleway_redis_cluster" "main" {
-  name         = "test_redis_endpoints"
-  version      = "6.2.7"
-  node_type    = "RED1-MICRO"
-  user_name    = "my_initial_user"
-  password     = "thiZ_is_v&ry_s3cret"
-  cluster_size = 1
-  private_network {
-    id = "${scaleway_vpc_private_network.pn.id}"
-    service_ips = [
-      "10.12.1.1/20",
-    ]
-  }
-  depends_on = [
-    scaleway_vpc_private_network.pn
-  ]
-}
-```
 
 ## Argument Reference
 
@@ -89,7 +127,11 @@ you cannot downgrade a Redis™ cluster.
 
 - `user_name` - (Required) Identifier for the first user of the Redis™ cluster.
 
-- `password` - (Required) Password for the first user of the Redis™ cluster.
+- `password` - (Optional) Password for the first user of the Redis™ cluster. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) Password for the first user of the Redis™ cluster in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `name` - (Optional) The name of the Redis™ cluster.
 
@@ -134,8 +176,7 @@ recreate your cluster as you will be switching to the cluster mode.
 
 The `acl` block supports:
 
-- `ip` - (Required) The IP range to whitelist
-  in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
+- `ip` - (Required) The IPv4 address or range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). IPv6 is not supported by the Scaleway API.
 - `description` - (Optional) A text describing this rule. Default description: `Allow IP`
 
   ~> The `acl` conflict with `private_network`. Only one should be specified.
@@ -145,7 +186,7 @@ The `acl` block supports:
 The `private_network` block supports :
 
 - `id` - (Required) The UUID of the Private Network resource.
-- `service_ips` - (Optional) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). You must provide at least one IP per node.
+- `service_ips` - (Optional) Endpoint IPv4 addresses in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation) (IPv6 is not supported by the Scaleway API). You must provide at least one IP per node.
   Keep in mind that in cluster mode you cannot edit your Private Network after its creation so if you want to be able to
   scale your cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.

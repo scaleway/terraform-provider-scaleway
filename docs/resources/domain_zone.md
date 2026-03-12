@@ -15,7 +15,6 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 The following command allows you to create a DNS zone for the `test.scaleway-terraform.com` subdomain.
 
-
 ```terraform
 resource "scaleway_domain_zone" "test" {
   domain    = "scaleway-terraform.com"
@@ -32,7 +31,6 @@ The following arguments are supported:
 - `subdomain` - (Required) The name of the subdomain (zone name) to create within the domain.
 
 - `project_id` - (Defaults to Project ID specified in the [provider configuration](../index.md#project_id) `project_id`) The ID of the Project associated with the domain.
-
 
 ## Attributes Reference
 

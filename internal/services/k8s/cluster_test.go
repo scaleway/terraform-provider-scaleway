@@ -98,9 +98,6 @@ func TestAccCluster_Basic(t *testing.T) {
 	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -142,6 +139,9 @@ resource "scaleway_k8s_cluster" "minimal" {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", "terraform basic test cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "pod_cidr", k8s.NetworkingDefaultValues["pod_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_cidr", k8s.NetworkingDefaultValues["service_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_dns_ip", k8s.NetworkingDefaultValues["service_dns_ip"]),
 				),
 			},
 			{
@@ -178,6 +178,9 @@ resource "scaleway_k8s_cluster" "minimal" {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "tags.2", "minimal"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "description", ""),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "pod_cidr", k8s.NetworkingDefaultValues["pod_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_cidr", k8s.NetworkingDefaultValues["service_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_dns_ip", k8s.NetworkingDefaultValues["service_dns_ip"]),
 				),
 			},
 		},
@@ -191,9 +194,6 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -267,9 +267,6 @@ func TestAccCluster_OIDC(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -337,9 +334,6 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 	previousK8SVersionMinor := testAccK8SClusterGetPreviousK8SVersionMinor(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -347,7 +341,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, previousK8SVersion),
+				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, fmt.Sprintf("%q", previousK8SVersion)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", previousK8SVersion),
@@ -357,7 +351,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, previousK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", previousK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", previousK8SVersionMinor),
@@ -367,7 +361,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -377,7 +371,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, latestK8SVersion),
+				Config: testAccCheckK8SClusterAutoUpgrade(false, "any", 0, fmt.Sprintf("%q", latestK8SVersion)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersion),
@@ -387,7 +381,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "tuesday", 3, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "tuesday", 3, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -397,7 +391,7 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, latestK8SVersionMinor),
+				Config: testAccCheckK8SClusterAutoUpgrade(true, "any", 0, fmt.Sprintf("%q", latestK8SVersionMinor)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.auto_upgrade"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "version", latestK8SVersionMinor),
@@ -419,9 +413,6 @@ func TestAccCluster_PrivateNetwork(t *testing.T) {
 	clusterID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -458,9 +449,6 @@ func TestAccCluster_Multicloud(t *testing.T) {
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckK8SClusterDestroy(tt),
 		Steps: []resource.TestStep{
@@ -484,9 +472,6 @@ func TestAccCluster_TypeChange(t *testing.T) {
 	clusterID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.PreCheck(t)
-		},
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckK8SClusterDestroy(tt),
@@ -804,7 +789,7 @@ resource "scaleway_vpc_private_network" "auto_upgrade" {
 
 resource "scaleway_k8s_cluster" "auto_upgrade" {
 	cni = "calico"
-	version = "%s"
+	version = %s
 	name = "test-auto-upgrade"
 	auto_upgrade {
 	    enable = %t
@@ -915,4 +900,132 @@ resource "scaleway_k8s_cluster" "type-change" {
 	}
 
 	return config
+}
+
+func TestAccCluster_Networking(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	clusterID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "networking" {
+						name = "vpc-networking"
+					}
+					resource "scaleway_vpc_private_network" "networking" {
+					    name = "pn-networking"
+						vpc_id = scaleway_vpc.networking.id
+					}
+					resource "scaleway_k8s_cluster" "networking" {
+						cni = "cilium"
+						version = "%s"
+						name = "test-networking"
+						tags = [ "terraform-test", "scaleway_k8s_cluster", "networking" ]
+						delete_additional_resources = false
+						private_network_id = scaleway_vpc_private_network.networking.id
+					}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.networking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "pod_cidr", k8s.NetworkingDefaultValues["pod_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_cidr", k8s.NetworkingDefaultValues["service_cidr"]),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_dns_ip", k8s.NetworkingDefaultValues["service_dns_ip"]),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.networking", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "networking" {
+						name = "vpc-networking"
+					}
+					resource "scaleway_vpc_private_network" "networking" {
+					    name = "pn-networking"
+						vpc_id = scaleway_vpc.networking.id
+					}
+					resource "scaleway_k8s_cluster" "networking" {
+						cni = "cilium"
+						version = "%s"
+						name = "test-networking"
+						tags = [ "terraform-test", "scaleway_k8s_cluster", "networking" ]
+						delete_additional_resources = false
+						private_network_id = scaleway_vpc_private_network.networking.id
+						pod_cidr = "10.11.0.0/16"
+						service_cidr = "10.12.0.0/16"
+					}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.networking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "pod_cidr", "10.11.0.0/16"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_cidr", "10.12.0.0/16"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_dns_ip", "10.12.0.10"),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.networking", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "networking" {
+						name = "vpc-networking"
+					}
+					resource "scaleway_vpc_private_network" "networking" {
+					    name = "pn-networking"
+						vpc_id = scaleway_vpc.networking.id
+					}
+					resource "scaleway_k8s_cluster" "networking" {
+						cni = "cilium"
+						version = "%s"
+						name = "test-networking"
+						tags = [ "terraform-test", "scaleway_k8s_cluster", "networking" ]
+						delete_additional_resources = false
+						private_network_id = scaleway_vpc_private_network.networking.id
+						pod_cidr = "10.16.0.0/16"
+						service_cidr = "10.12.0.0/16"
+						service_dns_ip = "10.12.0.53"
+					}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.networking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "pod_cidr", "10.16.0.0/16"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_cidr", "10.12.0.0/16"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "service_dns_ip", "10.12.0.53"),
+					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.networking", &clusterID),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "networking" {
+						name = "vpc-networking"
+					}
+					resource "scaleway_vpc_private_network" "networking" {
+					    name = "pn-networking"
+						vpc_id = scaleway_vpc.networking.id
+					}
+					resource "scaleway_k8s_cluster" "networking" {
+						cni = "cilium"
+						version = "%s"
+						name = "test-networking"
+						tags = [ "terraform-test", "scaleway_k8s_cluster", "networking" ]
+						delete_additional_resources = true
+						private_network_id = scaleway_vpc_private_network.networking.id
+					}`, latestK8SVersion),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.networking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.networking", "cni", "cilium"),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.networking", &clusterID),
+				),
+			},
+		},
+	})
 }

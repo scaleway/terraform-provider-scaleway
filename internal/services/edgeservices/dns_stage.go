@@ -2,12 +2,14 @@ package edgeservices
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -22,59 +24,69 @@ func ResourceDNSStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The backend stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "tls_stage_id"},
-			},
-			"tls_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The TLS stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "backend_stage_id"},
-			},
-			"cache_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The cache stage ID the DNS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "tls_stage_id"},
-			},
-			"fqdns": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the stage",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the DNS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the DNS stage",
-			},
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    dnsStageSchema,
+		Identity:      identity.DefaultGlobal(),
+	}
+}
+
+func dnsStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
 		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The backend stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "tls_stage_id"},
+		},
+		"tls_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The TLS stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "backend_stage_id"},
+		},
+		"cache_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The cache stage ID the DNS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "tls_stage_id"},
+		},
+		"fqdns": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the stage",
+		},
+		"default_fqdn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Default Fully Qualified Domain Name attached to the stage",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the DNS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the DNS stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -92,7 +104,9 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(dnsStage.ID)
+	if err = identity.SetGlobalIdentity(d, dnsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceDNSStageRead(ctx, d, m)
 }
@@ -120,6 +134,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("created_at", types.FlattenTime(dnsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
 	_ = d.Set("type", dnsStage.Type.String())
+	_ = d.Set("default_fqdn", dnsStage.DefaultFqdn)
 
 	oldFQDNs := d.Get("fqdns").([]any)
 	oldFQDNsSet := make(map[string]bool)
@@ -138,15 +153,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
-		found := false
-
-		for _, newFQDN := range newFQDNs {
-			if oldFQDN.(string) == newFQDN {
-				found = true
-
-				break
-			}
-		}
+		found := slices.Contains(newFQDNs, oldFQDN.(string))
 
 		if !found {
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
@@ -154,6 +161,10 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if err = d.Set("fqdns", newFQDNs); err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err = identity.SetGlobalIdentity(d, dnsStage.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -15,7 +15,6 @@ func TestAccIPReverseDns_Basic(t *testing.T) {
 
 	testDNSZone := "tf-reverse-instance." + acctest.TestDomain
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -55,6 +54,11 @@ func TestAccIPReverseDns_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_ip_reverse_dns.base", "reverse", testDNSZone),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_ip_reverse_dns.base",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: `

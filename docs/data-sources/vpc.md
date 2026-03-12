@@ -37,4 +37,3 @@ data "scaleway_vpc" "default" {
 ## Attributes Reference
 
 Exported attributes are the ones from `scaleway_vpc` [resource](../resources/vpc.md)
-

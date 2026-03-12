@@ -22,7 +22,6 @@ func TestAccDeployment_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -57,7 +56,6 @@ func TestAccDeployment_Endpoint(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             inferencetestfuncs.IsDeploymentDestroyed(tt),
 		Steps: []resource.TestStep{

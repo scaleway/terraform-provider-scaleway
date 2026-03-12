@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,21 +24,28 @@ func ResourceSQSCredentials() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The credentials name",
-			},
-			"permissions": {
-				Type:        schema.TypeList,
-				Description: "The permissions attached to the credentials",
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
+		SchemaFunc:    sqsCredentialsSchema,
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func sqsCredentialsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The credentials name",
+		},
+		"permissions": {
+			Type:        schema.TypeList,
+			Description: "The permissions attached to the credentials",
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Elem: &schema.Resource{
+				SchemaFunc: func() map[string]*schema.Schema {
+					return map[string]*schema.Schema{
 						"can_publish": {
 							Type:        schema.TypeBool,
 							Computed:    true,
@@ -56,25 +64,25 @@ func ResourceSQSCredentials() *schema.Resource {
 							Optional:    true,
 							Description: "Allow manage the associated resource",
 						},
-					},
+					}
 				},
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 
-			// Computed
-			"access_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "SQS credentials access key",
-				Sensitive:   true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "SQS credentials secret key",
-				Sensitive:   true,
-			},
+		// Computed
+		"access_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "SQS credentials access key",
+			Sensitive:   true,
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "SQS credentials secret key",
+			Sensitive:   true,
 		},
 	}
 }
@@ -99,7 +107,9 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, credentials.ID))
+	if err := identity.SetRegionalIdentity(d, region, credentials.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_ = d.Set("access_key", credentials.AccessKey)
 	_ = d.Set("secret_key", credentials.SecretKey)
@@ -124,6 +134,10 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
 		return diag.FromErr(err)
 	}
 

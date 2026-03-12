@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -24,27 +25,31 @@ func ResourceGroupMembership() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"application_id"},
-				ForceNew:     true,
-			},
-			"application_id": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "The ID of the user",
-				ExactlyOneOf: []string{"user_id"},
-				ForceNew:     true,
-			},
-			"group_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the group to add the user to",
-				ForceNew:    true,
-			},
+		SchemaFunc:    groupMemberShipSchema,
+	}
+}
+
+func groupMemberShipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"user_id": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The ID of the user",
+			ExactlyOneOf: []string{"application_id"},
+			ForceNew:     true,
+		},
+		"application_id": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "The ID of the user",
+			ExactlyOneOf: []string{"user_id"},
+			ForceNew:     true,
+		},
+		"group_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the group to add the user to",
+			ForceNew:    true,
 		},
 	}
 }
@@ -93,20 +98,12 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 	foundInGroup := false
 
 	if userID != "" {
-		for _, groupUserID := range group.UserIDs {
-			if groupUserID == userID {
-				foundInGroup = true
-
-				break
-			}
+		if slices.Contains(group.UserIDs, userID) {
+			foundInGroup = true
 		}
 	} else if applicationID != "" {
-		for _, groupApplicationID := range group.ApplicationIDs {
-			if groupApplicationID == applicationID {
-				foundInGroup = true
-
-				break
-			}
+		if slices.Contains(group.ApplicationIDs, applicationID) {
+			foundInGroup = true
 		}
 	}
 

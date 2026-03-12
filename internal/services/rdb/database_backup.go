@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -33,56 +34,81 @@ func ResourceDatabaseBackup() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the user is created",
-			},
-			"database_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Name of the database of this backup.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the backup.",
-				Optional:    true,
-				Computed:    true,
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Description: "Size of the backup (in bytes).",
-				Computed:    true,
-			},
-			"instance_name": {
-				Type:        schema.TypeString,
-				Description: "Name of the instance of the backup.",
-				Computed:    true,
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
-				Optional:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Description: "Creation date (Format ISO 8601).",
-				Computed:    true,
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Description: "Updated date (Format ISO 8601).",
-				Computed:    true,
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    databaseBackupSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func databaseBackupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the user is created",
+		},
+		"database_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Name of the database of this backup.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Name of the backup.",
+			Optional:    true,
+			Computed:    true,
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Description: "Size of the backup (in bytes).",
+			Computed:    true,
+		},
+		"instance_name": {
+			Type:        schema.TypeString,
+			Description: "Name of the instance of the backup.",
+			Computed:    true,
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
+			Optional:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Description: "Creation date (Format ISO 8601).",
+			Computed:    true,
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Description: "Updated date (Format ISO 8601).",
+			Computed:    true,
+		},
+		"same_region": {
+			Type:        schema.TypeBool,
+			Description: "Whether the backup is stored in the same region as the source instance.",
+			Computed:    true,
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Description: "Status of the backup (creating, ready, restoring, deleting, error, exporting, locked).",
+			Computed:    true,
+		},
+		"download_url": {
+			Type:        schema.TypeString,
+			Description: "URL you can download the backup from (when exporting).",
+			Computed:    true,
+		},
+		"download_url_expires_at": {
+			Type:        schema.TypeString,
+			Description: "Expiration date of the download link (Format ISO 8601).",
+			Computed:    true,
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 
@@ -107,7 +133,9 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+	if err := identity.SetRegionalIdentity(d, region, dbBackup.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, dbBackup.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -117,23 +145,7 @@ func ResourceRdbDatabaseBackupCreate(ctx context.Context, d *schema.ResourceData
 	return ResourceRdbDatabaseBackupRead(ctx, d, m)
 }
 
-func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setDatabaseBackupState(d *schema.ResourceData, region scw.Region, dbBackup *rdb.DatabaseBackup) {
 	_ = d.Set("instance_id", regional.NewID(region, dbBackup.InstanceID).String())
 	_ = d.Set("name", dbBackup.Name)
 	_ = d.Set("database_name", dbBackup.DatabaseName)
@@ -142,9 +154,51 @@ func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("created_at", types.FlattenTime(dbBackup.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(dbBackup.UpdatedAt))
 	_ = d.Set("size", types.FlattenSize(dbBackup.Size))
-	_ = d.Set("region", dbBackup.Region)
+	_ = d.Set("same_region", dbBackup.SameRegion)
+	_ = d.Set("status", dbBackup.Status.String())
+	_ = d.Set("download_url", types.FlattenStringPtr(dbBackup.DownloadURL))
+	_ = d.Set("download_url_expires_at", types.FlattenTime(dbBackup.DownloadURLExpiresAt))
+	_ = d.Set("region", string(dbBackup.Region))
+}
 
-	d.SetId(regional.NewIDString(region, dbBackup.ID))
+// readDatabaseBackupIntoState fetches the backup and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+// Returns the backup or nil if not found (404).
+func readDatabaseBackupIntoState(ctx context.Context, d *schema.ResourceData, m any) (*rdb.DatabaseBackup, diag.Diagnostics) {
+	rdbAPI, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	dbBackup, err := waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil, nil
+		}
+
+		return nil, diag.FromErr(err)
+	}
+
+	setDatabaseBackupState(d, region, dbBackup)
+
+	return dbBackup, nil
+}
+
+func ResourceRdbDatabaseBackupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	dbBackup, diags := readDatabaseBackupIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if dbBackup == nil {
+		return nil
+	}
+
+	if err := identity.SetRegionalIdentity(d, dbBackup.Region, dbBackup.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -194,6 +248,10 @@ func ResourceRdbDatabaseBackupDelete(ctx context.Context, d *schema.ResourceData
 
 	_, err = waitForRDBDatabaseBackup(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 

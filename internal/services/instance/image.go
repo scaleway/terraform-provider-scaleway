@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -36,150 +37,156 @@ func ResourceImage() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceImageTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the image",
-			},
-			"root_volume_id": {
+		SchemaFunc:    imageSchema,
+		Identity:      identity.DefaultZonal(),
+		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
+	}
+}
+
+func imageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the image",
+		},
+		"root_volume_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "UUID of the snapshot from which the image is to be created",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+		},
+		"architecture": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          instanceSDK.ArchX86_64.String(),
+			Description:      "Architecture of the image (default = x86_64)",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
+		},
+		"additional_volume_ids": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "UUID of the snapshot from which the image is to be created",
 				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 			},
-			"architecture": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          instanceSDK.ArchX86_64.String(),
-				Description:      "Architecture of the image (default = x86_64)",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.Arch](),
-			},
-			"additional_volume_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				},
-				Description: "The IDs of the additional volumes attached to the image",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the image",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"public": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, the image will be public",
-			},
-			// Computed
-			"creation_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the image",
-			},
-			"modification_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last modification of the Redis cluster",
-			},
-			"from_server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the backed-up server from which the snapshot was taken",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The state of the image [ available | creating | error ]",
-			},
-			"root_volume": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Specs of the additional volumes attached to the image",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the additional volume",
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the additional volume",
-							Computed:    true,
-						},
-						"size": {
-							Type:        schema.TypeInt,
-							Description: "Size of the additional volume",
-							Computed:    true,
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Description: "Type of the additional volume",
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"additional_volumes": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Specs of the additional volumes attached to the image",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "UUID of the additional volume",
-							Computed:    true,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Description: "Name of the additional volume",
-							Computed:    true,
-						},
-						"size": {
-							Type:        schema.TypeInt,
-							Description: "Size of the additional volume",
-							Computed:    true,
-						},
-						"volume_type": {
-							Type:        schema.TypeString,
-							Description: "Type of the additional volume",
-							Computed:    true,
-						},
-						"tags": {
-							Type:        schema.TypeList,
-							Description: "List of tags attached to the additional volume",
-							Computed:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"server": {
-							Type:        schema.TypeMap,
-							Description: "Server containing the volume (in case the image is a backup from a server)",
-							Computed:    true,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
-			// Common
-			"zone":            zonal.Schema(),
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
+			Description: "The IDs of the additional volumes attached to the image",
 		},
-		CustomizeDiff: cdf.LocalityCheck("root_volume_id", "additional_volume_ids.#"),
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to the image",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"public": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, the image will be public",
+		},
+		// Computed
+		"creation_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the image",
+		},
+		"modification_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last modification of the Redis cluster",
+		},
+		"from_server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the backed-up server from which the snapshot was taken",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The state of the image [ available | creating | error ]",
+		},
+		"root_volume": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Specs of the additional volumes attached to the image",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the additional volume",
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the additional volume",
+						Computed:    true,
+					},
+					"size": {
+						Type:        schema.TypeInt,
+						Description: "Size of the additional volume",
+						Computed:    true,
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Description: "Type of the additional volume",
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"additional_volumes": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Specs of the additional volumes attached to the image",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "UUID of the additional volume",
+						Computed:    true,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Description: "Name of the additional volume",
+						Computed:    true,
+					},
+					"size": {
+						Type:        schema.TypeInt,
+						Description: "Size of the additional volume",
+						Computed:    true,
+					},
+					"volume_type": {
+						Type:        schema.TypeString,
+						Description: "Type of the additional volume",
+						Computed:    true,
+					},
+					"tags": {
+						Type:        schema.TypeList,
+						Description: "List of tags attached to the additional volume",
+						Computed:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"server": {
+						Type:        schema.TypeMap,
+						Description: "Server containing the volume (in case the image is a backup from a server)",
+						Computed:    true,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		// Common
+		"zone":            zonal.Schema(),
+		"project_id":      account.ProjectIDSchema(),
+		"organization_id": account.OrganizationIDSchema(),
 	}
 }
 
@@ -217,19 +224,41 @@ func ResourceInstanceImageCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Image.ID))
+	err = identity.SetZonalIdentity(d, res.Image.Zone, res.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = api.WaitForImage(&instanceSDK.WaitForImageRequest{
+	image, err := api.WaitForImage(&instanceSDK.WaitForImageRequest{
 		ImageID:       res.Image.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceImageRead(ctx, d, m)
+	return setImageState(d, image)
+}
+
+func setImageState(d *schema.ResourceData, image *instanceSDK.Image) diag.Diagnostics {
+	_ = d.Set("name", image.Name)
+	_ = d.Set("root_volume_id", zonal.NewIDString(image.Zone, image.RootVolume.ID))
+	_ = d.Set("architecture", image.Arch)
+	_ = d.Set("root_volume", flattenImageRootVolume(image.RootVolume, image.Zone))
+	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.ExtraVolumes, image.Zone))
+	_ = d.Set("tags", image.Tags)
+	_ = d.Set("public", image.Public)
+	_ = d.Set("creation_date", types.FlattenTime(image.CreationDate))
+	_ = d.Set("modification_date", types.FlattenTime(image.ModificationDate))
+	_ = d.Set("from_server_id", image.FromServer)
+	_ = d.Set("state", image.State)
+	_ = d.Set("zone", image.Zone)
+	_ = d.Set("project_id", image.Project)
+	_ = d.Set("organization_id", image.Organization)
+
+	return nil
 }
 
 func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -252,22 +281,12 @@ func ResourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", image.Image.Name)
-	_ = d.Set("root_volume_id", zonal.NewIDString(image.Image.Zone, image.Image.RootVolume.ID))
-	_ = d.Set("architecture", image.Image.Arch)
-	_ = d.Set("root_volume", flattenImageRootVolume(image.Image.RootVolume, zone))
-	_ = d.Set("additional_volumes", flattenImageExtraVolumes(image.Image.ExtraVolumes, zone))
-	_ = d.Set("tags", image.Image.Tags)
-	_ = d.Set("public", image.Image.Public)
-	_ = d.Set("creation_date", types.FlattenTime(image.Image.CreationDate))
-	_ = d.Set("modification_date", types.FlattenTime(image.Image.ModificationDate))
-	_ = d.Set("from_server_id", image.Image.FromServer)
-	_ = d.Set("state", image.Image.State)
-	_ = d.Set("zone", image.Image.Zone)
-	_ = d.Set("project_id", image.Image.Project)
-	_ = d.Set("organization_id", image.Image.Organization)
+	err = identity.SetZonalIdentity(d, image.Image.Zone, image.Image.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return nil
+	return setImageState(d, image.Image)
 }
 
 func ResourceInstanceImageUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

@@ -8,6 +8,7 @@ import (
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -27,47 +28,52 @@ func ResourceIP() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address",
-			},
-			"prefix": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP prefix",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The type of instance IP",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.IPType](),
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The reverse DNS for this IP",
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this IP",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the ip",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:    ipSchema,
+		Identity:      identity.DefaultZonal(),
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address",
 		},
+		"prefix": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP prefix",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "The type of instance IP",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.IPType](),
+		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The reverse DNS for this IP",
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The server associated with this IP",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the ip",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -108,9 +114,12 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.IP.ID))
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceInstanceIPRead(ctx, d, m)
+	return setIPState(d, res.IP)
 }
 
 func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -136,6 +145,41 @@ func ResourceInstanceIPUpdate(ctx context.Context, d *schema.ResourceData, m any
 	return ResourceInstanceIPRead(ctx, d, m)
 }
 
+func setIPState(d *schema.ResourceData, ip *instanceSDK.IP) diag.Diagnostics {
+	address := ip.Address.String()
+
+	prefix := ip.Prefix.String()
+	if prefix == types.NetIPNil {
+		ipnet := scw.IPNet{}
+		_ = (&ipnet).UnmarshalJSON([]byte("\"" + ip.Address.String() + "\""))
+		prefix = ipnet.String()
+	}
+
+	if address == types.NetIPNil {
+		address = ip.Prefix.IP.String()
+	}
+
+	_ = d.Set("address", address)
+	_ = d.Set("prefix", prefix)
+	_ = d.Set("zone", ip.Zone)
+	_ = d.Set("organization_id", ip.Organization)
+	_ = d.Set("project_id", ip.Project)
+	_ = d.Set("reverse", ip.Reverse)
+	_ = d.Set("type", ip.Type)
+
+	if len(ip.Tags) > 0 {
+		_ = d.Set("tags", types.FlattenSliceString(ip.Tags))
+	}
+
+	if ip.Server != nil {
+		_ = d.Set("server_id", zonal.NewIDString(ip.Zone, ip.Server.ID))
+	} else {
+		_ = d.Set("server_id", "")
+	}
+
+	return nil
+}
+
 func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -147,7 +191,7 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		// We check for 403 because instanceSDK API returns 403 for a deleted IP
+		// We check for 403 because instance API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 
@@ -157,38 +201,12 @@ func ResourceInstanceIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	address := res.IP.Address.String()
-
-	prefix := res.IP.Prefix.String()
-	if prefix == types.NetIPNil {
-		ipnet := scw.IPNet{}
-		_ = (&ipnet).UnmarshalJSON([]byte("\"" + res.IP.Address.String() + "\""))
-		prefix = ipnet.String()
+	err = identity.SetZonalIdentity(d, res.IP.Zone, res.IP.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if address == types.NetIPNil {
-		address = res.IP.Prefix.IP.String()
-	}
-
-	_ = d.Set("address", address)
-	_ = d.Set("prefix", prefix)
-	_ = d.Set("zone", zone)
-	_ = d.Set("organization_id", res.IP.Organization)
-	_ = d.Set("project_id", res.IP.Project)
-	_ = d.Set("reverse", res.IP.Reverse)
-	_ = d.Set("type", res.IP.Type)
-
-	if len(res.IP.Tags) > 0 {
-		_ = d.Set("tags", types.FlattenSliceString(res.IP.Tags))
-	}
-
-	if res.IP.Server != nil {
-		_ = d.Set("server_id", zonal.NewIDString(res.IP.Zone, res.IP.Server.ID))
-	} else {
-		_ = d.Set("server_id", "")
-	}
-
-	return nil
+	return setIPState(d, res.IP)
 }
 
 func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -202,7 +220,7 @@ func ResourceInstanceIPDelete(ctx context.Context, d *schema.ResourceData, m any
 		Zone: zone,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		// We check for 403 because instanceSDK API returns 403 for a deleted IP
+		// We check for 403 because instance API returns 403 for a deleted IP
 		if httperrors.Is404(err) || httperrors.Is403(err) {
 			d.SetId("")
 

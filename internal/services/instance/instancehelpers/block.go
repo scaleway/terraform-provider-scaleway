@@ -57,6 +57,12 @@ type ResizeUnknownVolumeRequest struct {
 	Zone     scw.Zone
 }
 
+type RenameUnknownVolumeRequest struct {
+	Name     *string
+	VolumeID string
+	Zone     scw.Zone
+}
+
 type DeleteUnknownVolumeRequest struct {
 	VolumeID string
 	Zone     scw.Zone
@@ -198,6 +204,32 @@ func (api *BlockAndInstanceAPI) ResizeUnknownVolume(req *ResizeUnknownVolumeRequ
 			Zone:     req.Zone,
 			VolumeID: req.VolumeID,
 			Size:     req.Size,
+		}, opts...)
+	}
+
+	return err
+}
+
+func (api *BlockAndInstanceAPI) RenameUnknownVolume(req *RenameUnknownVolumeRequest, opts ...scw.RequestOption) error {
+	unknownVolume, err := api.GetUnknownVolume(&GetUnknownVolumeRequest{
+		VolumeID: req.VolumeID,
+		Zone:     req.Zone,
+	}, opts...)
+	if err != nil {
+		return err
+	}
+
+	if unknownVolume.IsBlockVolume() {
+		_, err = api.BlockAPI.UpdateVolume(&block.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Name:     req.Name,
+		}, opts...)
+	} else {
+		_, err = api.UpdateVolume(&instance.UpdateVolumeRequest{
+			Zone:     req.Zone,
+			VolumeID: req.VolumeID,
+			Name:     req.Name,
 		}, opts...)
 	}
 

@@ -13,7 +13,6 @@ func TestAccEdgeServicesPlan_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
 		Steps: []resource.TestStep{
@@ -31,6 +30,11 @@ func TestAccEdgeServicesPlan_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_edge_services_plan.main", "name", "starter"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_plan.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

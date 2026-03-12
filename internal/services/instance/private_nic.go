@@ -13,12 +13,21 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+func privateNICIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"zone":           identity.DefaultZoneAttribute(),
+		"server_id":      {Type: schema.TypeString, Description: "The ID of the server", RequiredForImport: true},
+		"private_nic_id": {Type: schema.TypeString, Description: "The ID of the Private NIC", RequiredForImport: true},
+	})
+}
 
 func ResourcePrivateNIC() *schema.Resource {
 	return &schema.Resource{
@@ -36,74 +45,79 @@ func ResourcePrivateNIC() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 			Default: schema.DefaultTimeout(defaultInstancePrivateNICWaitTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"server_id": {
-				Type:        schema.TypeString,
-				Description: "The server ID",
-				Required:    true,
-				ForceNew:    true,
+		SchemaFunc:    privateNicSchema,
+		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+		Identity:      privateNICIdentity(),
+	}
+}
+
+func privateNicSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"server_id": {
+			Type:        schema.TypeString,
+			Description: "The server ID",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"private_network_id": {
+			Type:             schema.TypeString,
+			Description:      "The private network ID",
+			Required:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"mac_address": {
+			Type:        schema.TypeString,
+			Description: "MAC address of the NIC",
+			Computed:    true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"private_network_id": {
-				Type:             schema.TypeString,
-				Description:      "The private network ID",
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: dsf.Locality,
+			Optional:    true,
+			Description: "The tags associated with the private-nic",
+		},
+		"ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"mac_address": {
-				Type:        schema.TypeString,
-				Description: "MAC address of the NIC",
-				Computed:    true,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the private-nic",
-			},
-			"ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "IPAM ip list, should be for internal use only",
-				ForceNew:    true,
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 and IPv6 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IP address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IP address",
-						},
+			Optional:    true,
+			Description: "IPAM ip list, should be for internal use only",
+			ForceNew:    true,
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 and IPv6 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IP address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IP address",
 					},
 				},
 			},
-			"ipam_ip_ids": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				ForceNew:    true,
-				Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
-			},
-			"zone": zonal.Schema(),
 		},
-		CustomizeDiff: cdf.LocalityCheck("server_id", "private_network_id"),
+		"ipam_ip_ids": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			ForceNew:    true,
+			Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 
@@ -140,47 +154,27 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	d.SetId(
-		zonal.NewNestedIDString(
-			zone,
-			privateNIC.PrivateNic.ServerID,
-			privateNIC.PrivateNic.ID,
-		),
-	)
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"zone":           zone.String(),
+		"server_id":      privateNIC.PrivateNic.ServerID,
+		"private_nic_id": privateNIC.PrivateNic.ID,
+	}, "zone", "server_id", "private_nic_id")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceInstancePrivateNICRead(ctx, d, m)
+	return setPrivateNICState(ctx, instanceAPI, d, privateNIC.PrivateNic, m)
 }
 
-func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, _, err := newAPIWithZone(d, m)
+func setPrivateNICState(ctx context.Context, instanceAPI *instance.API, d *schema.ResourceData, privateNIC *instance.PrivateNIC, m any) diag.Diagnostics {
+	region, err := privateNIC.Zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	privateNIC, err := waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	fetchRegion, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("zone", zone)
-	_ = d.Set("server_id", zonal.NewID(zone, privateNIC.ServerID).String())
-	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, privateNIC.PrivateNetworkID))
+	_ = d.Set("zone", privateNIC.Zone)
+	_ = d.Set("server_id", zonal.NewID(privateNIC.Zone, privateNIC.ServerID).String())
+	_ = d.Set("private_network_id", regional.NewIDString(region, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)
 
 	if len(privateNIC.Tags) > 0 {
@@ -190,16 +184,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	// Get private NIC's private IPs if possible
 	diags := diag.Diagnostics{}
 
-	region, err := zone.Region()
-	if err != nil {
-		return append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unable to get private NIC's private IPs",
-			Detail:   err.Error(),
-		})
-	}
-
-	projectID, err := getServerProjectID(ctx, instanceAPI, zone, privateNIC.ServerID)
+	projectID, err := getServerProjectID(ctx, instanceAPI, privateNIC.Zone, privateNIC.ServerID)
 	if err != nil {
 		return append(diags, diag.Diagnostic{
 			Severity: diag.Warning,
@@ -211,7 +196,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
 	opts := &ipam.GetResourcePrivateIPsOptions{
 		ResourceID:       &privateNIC.ID,
-		ResourceType:     &resourceType,
+		ResourceType:     new(resourceType),
 		PrivateNetworkID: &privateNIC.PrivateNetworkID,
 		ProjectID:        &projectID,
 	}
@@ -238,6 +223,40 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return diags
+}
+
+func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	instanceAPI, _, err := newAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	privateNIC, err := waitForPrivateNIC(ctx, instanceAPI, zone, serverID, privateNICID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"zone":           zone.String(),
+		"server_id":      privateNIC.ServerID,
+		"private_nic_id": privateNIC.ID,
+	}, "zone", "server_id", "private_nic_id")
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPrivateNICState(ctx, instanceAPI, d, privateNIC, m)
 }
 
 func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

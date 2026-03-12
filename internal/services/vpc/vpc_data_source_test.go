@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDataSourceVPC_Basic(t *testing.T) {
@@ -14,9 +15,8 @@ func TestAccDataSourceVPC_Basic(t *testing.T) {
 
 	vpcName := "DataSourceVPC_Basic"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckVPCDestroy(tt),
+		CheckDestroy:             vpcchecks.CheckVPCDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -39,7 +39,7 @@ func TestAccDataSourceVPC_Basic(t *testing.T) {
 					}
 				`, vpcName),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckVPCExists(tt, "scaleway_vpc.vpc01"),
+					vpcchecks.IsVPCPresent(tt, "scaleway_vpc.vpc01"),
 					resource.TestCheckResourceAttrPair("data.scaleway_vpc.by_name", "vpc_id", "scaleway_vpc.vpc01", "id"),
 					resource.TestCheckResourceAttrPair("data.scaleway_vpc.by_id", "name", "scaleway_vpc.vpc01", "name"),
 				),
@@ -53,7 +53,6 @@ func TestAccDataSourceVPC_Default(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{

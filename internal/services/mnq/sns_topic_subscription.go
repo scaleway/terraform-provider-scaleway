@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,69 +25,83 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"protocol": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Protocol of the SNS Topic Subscription.", // TODO: add argument list
-				ForceNew:    true,
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Endpoint of the subscription",
-				ForceNew:    true,
-			},
-			"sns_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sns.mnq.{region}.scaleway.com",
-				Description: "SNS endpoint",
-				ForceNew:    true,
-			},
-			"topic_arn": {
-				Type:         schema.TypeString,
-				Description:  "ARN of the topic",
-				Optional:     true,
-				AtLeastOneOf: []string{"topic_id"},
-				ForceNew:     true,
-			},
-			"topic_id": {
-				Type:         schema.TypeString,
-				Description:  "ID of the topic",
-				Optional:     true,
-				AtLeastOneOf: []string{"topic_arn"},
-				ForceNew:     true,
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS access key",
-				ForceNew:    true,
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS secret key",
-				ForceNew:    true,
-			},
-			"redrive_policy": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "JSON Redrive policy",
-				ForceNew:    true,
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    snsTopicSubscriptionSchema,
+		Identity:      snsTopicSubscriptionIdentity(),
+	}
+}
+
+func snsTopicSubscriptionIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":          identity.DefaultRegionAttribute(),
+		"project_id":      identity.DefaultProjectIDAttribute(),
+		"topic_name":      {Type: schema.TypeString, Description: "The topic name", RequiredForImport: true},
+		"subscription_id": {Type: schema.TypeString, Description: "The subscription ID", RequiredForImport: true},
+	})
+}
+
+func snsTopicSubscriptionSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"protocol": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Protocol of the SNS Topic Subscription.", // TODO: add argument list
+			ForceNew:    true,
 		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Endpoint of the subscription",
+			ForceNew:    true,
+		},
+		"sns_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sns.mnq.{region}.scaleway.com",
+			Description: "SNS endpoint",
+			ForceNew:    true,
+		},
+		"topic_arn": {
+			Type:         schema.TypeString,
+			Description:  "ARN of the topic",
+			Optional:     true,
+			AtLeastOneOf: []string{"topic_id"},
+			ForceNew:     true,
+		},
+		"topic_id": {
+			Type:         schema.TypeString,
+			Description:  "ID of the topic",
+			Optional:     true,
+			AtLeastOneOf: []string{"topic_arn"},
+			ForceNew:     true,
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS access key",
+			ForceNew:    true,
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS secret key",
+			ForceNew:    true,
+		},
+		"redrive_policy": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "JSON Redrive policy",
+			ForceNew:    true,
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}:${subscription_id}'",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -115,7 +129,7 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -160,7 +174,14 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("failed to parse arn: %w", err))
 	}
 
-	d.SetId(composeMNQSubscriptionID(arn.Region, arn.ProjectID, arn.ResourceName, arn.ExtraResourceID))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":          string(arn.Region),
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
+		"subscription_id": arn.ExtraResourceID,
+	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSTopicSubscriptionRead(ctx, d, m)
 }
@@ -177,14 +198,23 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 	}
 
 	subAttributes, err := snsClient.GetSubscriptionAttributes(ctx, &sns.GetSubscriptionAttributesInput{
-		SubscriptionArn: scw.StringPtr(arn.String()),
+		SubscriptionArn: new(arn.String()),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceSNSTopic().Schema, SNSTopicSubscriptionAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":          string(arn.Region),
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
+		"subscription_id": arn.ExtraResourceID,
+	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -210,7 +240,7 @@ func ResourceMNQSNSTopicSubscriptionDelete(ctx context.Context, d *schema.Resour
 	}
 
 	_, err = snsClient.Unsubscribe(ctx, &sns.UnsubscribeInput{
-		SubscriptionArn: scw.StringPtr(arn.String()),
+		SubscriptionArn: new(arn.String()),
 	})
 	if err != nil {
 		return diag.FromErr(err)

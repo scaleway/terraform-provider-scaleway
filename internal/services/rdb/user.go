@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
 
@@ -13,14 +14,19 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/user.md
+var userDescription string
+
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDescription,
 		CreateContext: ResourceUserCreate,
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
@@ -36,35 +42,55 @@ func ResourceUser() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the user is created",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "Database user name",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "Database user password",
-			},
-			"is_admin": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Grant admin permissions to database user",
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    userSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func userSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the user is created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "Database user name",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"password": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			Description:  "Database user password",
+			ExactlyOneOf: []string{"password", "password_wo"},
+		},
+		"password_wo": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Description:  "Database user password in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:    true,
+			ExactlyOneOf: []string{"password", "password_wo"},
+			RequiredWith: []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
+		},
+		"is_admin": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Grant admin permissions to database user",
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 
@@ -75,7 +101,7 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
-		diag.FromErr(err)
+		return diag.FromErr(err)
 	}
 
 	ins, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, d.Timeout(schema.TimeoutCreate))
@@ -83,11 +109,19 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	var password string
+
+	if p, exists := d.GetOk("password"); exists {
+		password = p.(string)
+	} else {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	}
+
 	createReq := &rdb.CreateUserRequest{
 		Region:     region,
 		InstanceID: ins.ID,
 		Name:       d.Get("name").(string),
-		Password:   d.Get("password").(string),
+		Password:   password,
 		IsAdmin:    d.Get("is_admin").(bool),
 	}
 
@@ -116,7 +150,9 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceUserID(region, locality.ExpandID(instanceID), user.Name))
+	if err := identity.SetRegionalCompositeIdentity(d, region, locality.ExpandID(instanceID), user.Name); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceUserRead(ctx, d, m)
 }
@@ -156,19 +192,21 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	if len(res.Users) == 0 {
-		tflog.Warn(ctx, fmt.Sprintf("couldn'd find user with name: [%s]", userName))
+		tflog.Warn(ctx, fmt.Sprintf("couldn't find user with name: [%s]", userName))
 		d.SetId("")
 
 		return nil
 	}
 
 	user := res.Users[0]
-	_ = d.Set("instance_id", regional.NewID(region, instanceID).String())
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 	_ = d.Set("name", user.Name)
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
 
-	d.SetId(ResourceUserID(region, instanceID, user.Name))
+	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, user.Name); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -192,12 +230,19 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		Name:       userName,
 	}
 
-	if d.HasChange("password") {
-		req.Password = types.ExpandStringPtr(d.Get("password"))
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			req.Password = types.ExpandStringPtr(password)
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+		}
 	}
 
 	if d.HasChange("is_admin") {
-		req.IsAdmin = scw.BoolPtr(d.Get("is_admin").(bool))
+		req.IsAdmin = new(d.Get("is_admin").(bool))
 	}
 
 	_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))

@@ -102,7 +102,6 @@ The following arguments are supported:
 - `region` - (Defaults to provider region). The region in which the webhook should be created.
 - `project_id` - (Defaults to provider project_id) The ID of the project the webhook is associated with.
 
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

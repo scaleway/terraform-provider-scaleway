@@ -3,6 +3,7 @@ package lb_test
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -22,7 +23,6 @@ func TestAccFrontend_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -90,6 +90,12 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "true"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_lb_frontend.frt01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_acls"},
+			},
 		},
 	})
 }
@@ -108,7 +114,6 @@ func TestAccFrontend_Certificate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -180,10 +185,8 @@ func isFrontendCertificatePresent(tt *acctest.TestTools, f, c string) resource.T
 			return err
 		}
 
-		for _, id := range frEnd.CertificateIDs {
-			if locality.ExpandID(cs.Primary.ID) == id {
-				return nil
-			}
+		if slices.Contains(frEnd.CertificateIDs, locality.ExpandID(cs.Primary.ID)) {
+			return nil
 		}
 
 		return fmt.Errorf("certificate not found: %s", c)
@@ -251,7 +254,6 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -394,7 +396,7 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
 								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
 								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
-								HTTPFilterOption: scw.StringPtr("host"),
+								HTTPFilterOption: new("host"),
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},
@@ -464,7 +466,6 @@ func TestAccFrontend_ACLRedirectAction(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isFrontendDestroyed(tt),
 		Steps: []resource.TestStep{

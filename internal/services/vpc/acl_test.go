@@ -17,7 +17,6 @@ func TestAccACL_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -58,6 +57,12 @@ func TestAccACL_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_acl.acl01", "default_policy", "drop"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_vpc_acl.acl01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"vpc_id", "is_ipv6"},
+			},
 		},
 	})
 }
@@ -67,7 +72,6 @@ func TestAccACL_WithRules(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{

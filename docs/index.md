@@ -146,9 +146,9 @@ provider "scaleway" {}
 Usage:
 
 ```bash
-$ export SCW_ACCESS_KEY="my-access-key"
-$ export SCW_SECRET_KEY="my-secret-key"
-$ terraform plan
+export SCW_ACCESS_KEY="my-access-key"
+export SCW_SECRET_KEY="my-secret-key"
+terraform plan
 ```
 
 ### Static credentials
@@ -187,7 +187,7 @@ profiles:
   myProfile:
     access_key: xxxxxxxxxxxxxxxxxxxx
     secret_key: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
-    default_organization_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx 
+    default_organization_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
     default_project_id: xxxxxxxx-xxx-xxxx-xxxx-xxxxxxxxxxx
     default_zone: fr-par-2
     default_region: fr-par
@@ -212,14 +212,14 @@ resource "scaleway_instance_ip" "server_ip" {
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html) (e.g. `alias` and `version`), the following arguments are supported in the Scaleway provider block:
 
-| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                                      | Mandatory |
-| ----------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
-| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                          | ✅         |
-| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                          | ✅         |
-| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for project-scoped resources.                | ✅         |
+| Provider Argument | [Environment Variables](#environment-variables) | Description                                                                                                                                     | Mandatory |
+| ----------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `access_key`      | `SCW_ACCESS_KEY`                                | [Scaleway access key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
+| `secret_key`      | `SCW_SECRET_KEY`                                | [Scaleway secret key](https://console.scaleway.com/project/credentials)                                                                         | ✅        |
+| `project_id`      | `SCW_DEFAULT_PROJECT_ID`                        | The [project ID](https://console.scaleway.com/project/settings) that will be used as default value for project-scoped resources.                | ✅        |
 | `organization_id` | `SCW_DEFAULT_ORGANIZATION_ID`                   | The [organization ID](https://console.scaleway.com/organization/settings) that will be used as default value for organization-scoped resources. |           |
-| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)          |           |
-| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)             |           |
+| `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)         |           |
+| `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)            |           |
 
 ## Store terraform state
 
@@ -234,7 +234,7 @@ To append custom information to the User-Agent header, you can use the `TF_APPEN
 For example, to add custom information indicating the request is coming from a specific CI/CD job or system, you could set the environment variable as follows:
 
 ```bash
-$ export TF_APPEND_USER_AGENT="CI/CD System XYZ Job #1234"
+export TF_APPEND_USER_AGENT="CI/CD System XYZ Job #1234"
 ```
 
 ## Debugging a deployment

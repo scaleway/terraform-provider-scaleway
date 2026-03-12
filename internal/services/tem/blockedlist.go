@@ -10,6 +10,7 @@ import (
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -22,36 +23,41 @@ func ResourceBlockedList() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"domain_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the domain affected by the blocklist.",
-			},
-			"email": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "Email address to block.",
-			},
-			"type": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "Type of the blocked list. (mailbox_full or mailbox_not_found)",
-				ValidateFunc: validation.StringInSlice([]string{"mailbox_full", "mailbox_not_found"}, false),
-			},
-			"reason": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "manual_block",
-				ForceNew:    true,
-				Description: "Reason for blocking the emails.",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: blockedListSchema,
+		Identity:   identity.DefaultRegional(),
+	}
+}
+
+func blockedListSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"domain_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The ID of the domain affected by the blocklist.",
 		},
+		"email": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "Email address to block.",
+		},
+		"type": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "Type of the blocked list. (mailbox_full or mailbox_not_found)",
+			ValidateFunc: validation.StringInSlice([]string{"mailbox_full", "mailbox_not_found"}, false),
+		},
+		"reason": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "manual_block",
+			ForceNew:    true,
+			Description: "Reason for blocking the emails.",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -81,7 +87,9 @@ func ResourceBlockedListCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", region, resp.Blocklists[0].ID))
+	if err := identity.SetRegionalIdentity(d, region, resp.Blocklists[0].ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBlockedListRead(ctx, d, m)
 }
@@ -94,7 +102,7 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	blocklists, err := api.ListBlocklists(&tem.ListBlocklistsRequest{
 		Region:   region,
-		Email:    scw.StringPtr(d.Get("email").(string)),
+		Email:    new(d.Get("email").(string)),
 		DomainID: domainID,
 	}, scw.WithContext(ctx))
 	if err != nil {
@@ -111,6 +119,10 @@ func ResourceBlockedListRead(ctx context.Context, d *schema.ResourceData, m any)
 		d.SetId("")
 
 		return nil
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, blocklists.Blocklists[0].ID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	_ = d.Set("email", blocklists.Blocklists[0].Email)
@@ -134,8 +146,6 @@ func ResourceBlockedListDelete(ctx context.Context, d *schema.ResourceData, m an
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
-
-	d.SetId("")
 
 	return nil
 }

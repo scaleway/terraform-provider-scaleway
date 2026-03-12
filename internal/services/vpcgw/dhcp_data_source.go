@@ -10,8 +10,7 @@ import (
 )
 
 func DataSourceDHCP() *schema.Resource {
-	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceDHCP().SchemaFunc())
 
 	dsSchema["dhcp_id"] = &schema.Schema{
 		Type:             schema.TypeString,
@@ -21,22 +20,16 @@ func DataSourceDHCP() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		Schema:      dsSchema,
-		ReadContext: DataSourceVPCPublicGatewayDHCPRead,
+		Schema:             dsSchema,
+		ReadContext:        dataSourceVPCPublicGatewayDHCPRead,
+		DeprecationMessage: dhcpDeprecationMessage,
 	}
 }
 
-func DataSourceVPCPublicGatewayDHCPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	_, zone, err := newAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	dhcpID, _ := d.GetOk("dhcp_id")
-
-	zonedID := datasource.NewZonedID(dhcpID, zone)
-	d.SetId(zonedID)
-	_ = d.Set("dhcp_id", zonedID)
-
-	return ResourceVPCPublicGatewayDHCPRead(ctx, d, m)
+func dataSourceVPCPublicGatewayDHCPRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_vpc_public_gateway_dhcp data source is no longer supported",
+		Detail:   dhcpDeprecationMessage,
+	}}
 }

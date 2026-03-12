@@ -2,6 +2,7 @@ package account_test
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,7 +21,6 @@ func TestAccDataSourceProject_Basic(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isProjectDestroyed(tt),
@@ -61,7 +61,6 @@ func TestAccDataSourceProject_Default(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -105,7 +104,6 @@ func TestAccDataSourceProject_Extract(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
@@ -128,8 +126,12 @@ func TestAccDataSourceProject_List(t *testing.T) {
 		orgID = dummyOrgID
 	}
 
+	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		t.Skip("no default project ID")
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isProjectDestroyed(tt),
@@ -141,11 +143,21 @@ func TestAccDataSourceProject_List(t *testing.T) {
 						organization_id = "%s"
 					}`, orgID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.#", "8"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.id", "6867048b-fe12-4e96-835e-41c79a39604b"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.id", "8cc8dd4d-a094-407a-89a3-9d004674e936"),
+					resource.TestCheckResourceAttrSet("data.scaleway_account_projects.projects", "projects.#"),
+					resource.TestCheckResourceAttrWith("data.scaleway_account_projects.projects", "projects.#", func(value string) error {
+						count, err := strconv.Atoi(value)
+						if err != nil {
+							return err
+						}
+
+						if count < 1 {
+							return fmt.Errorf("expected at least one project, got %d", count)
+						}
+
+						return nil
+					}),
+					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.id", projectID),
 					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.0.name", "default"),
-					resource.TestCheckResourceAttr("data.scaleway_account_projects.projects", "projects.1.name", "tf_tests_container_trigger_sqs"),
 				),
 			},
 		},

@@ -15,65 +15,69 @@ import (
 func DataSourceRoutes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceLbRoutesRead,
-		Schema: map[string]*schema.Schema{
-			"frontend_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Routes with a frontend id like it are listed.",
-			},
-			"routes": {
-				Type:        schema.TypeList,
-				Description: "List of routes.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "UUID of the route.",
-							Type:        schema.TypeString,
-						},
-						"frontend_id": {
-							Computed:    true,
-							Description: "UUID of the frontend to use for this route.",
-							Type:        schema.TypeString,
-						},
-						"backend_id": {
-							Computed:    true,
-							Description: "UUID of the backend to use for this route.",
-							Type:        schema.TypeString,
-						},
-						"match_sni": {
-							Computed:    true,
-							Description: "Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer. This field should be set for routes on TCP Load Balancers. ",
-							Type:        schema.TypeString,
-						},
-						"match_host_header": {
-							Computed:    true,
-							Description: "HTTP host header to match. Value to match in the HTTP Host request header from an incoming request. This field should be set for routes on HTTP Load Balancers.",
-							Type:        schema.TypeString,
-						},
-						"match_subdomains": {
-							Computed:    true,
-							Description: "If true, all subdomains of this route will be matched for this route.",
-							Type:        schema.TypeBool,
-						},
-						"created_at": {
-							Computed:    true,
-							Description: "Date on which the route was created (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
-						"update_at": {
-							Computed:    true,
-							Description: "Date at which the route was last updated (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
+		SchemaFunc:  routesSchema,
+	}
+}
+
+func routesSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"frontend_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Routes with a frontend id like it are listed.",
+		},
+		"routes": {
+			Type:        schema.TypeList,
+			Description: "List of routes.",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "UUID of the route.",
+						Type:        schema.TypeString,
+					},
+					"frontend_id": {
+						Computed:    true,
+						Description: "UUID of the frontend to use for this route.",
+						Type:        schema.TypeString,
+					},
+					"backend_id": {
+						Computed:    true,
+						Description: "UUID of the backend to use for this route.",
+						Type:        schema.TypeString,
+					},
+					"match_sni": {
+						Computed:    true,
+						Description: "Server Name Indication (SNI) value to match. Value to match in the Server Name Indication TLS extension (SNI) field from an incoming connection made via an SSL/TLS transport layer. This field should be set for routes on TCP Load Balancers. ",
+						Type:        schema.TypeString,
+					},
+					"match_host_header": {
+						Computed:    true,
+						Description: "HTTP host header to match. Value to match in the HTTP Host request header from an incoming request. This field should be set for routes on HTTP Load Balancers.",
+						Type:        schema.TypeString,
+					},
+					"match_subdomains": {
+						Computed:    true,
+						Description: "If true, all subdomains of this route will be matched for this route.",
+						Type:        schema.TypeBool,
+					},
+					"created_at": {
+						Computed:    true,
+						Description: "Date on which the route was created (RFC 3339 format)",
+						Type:        schema.TypeString,
+					},
+					"update_at": {
+						Computed:    true,
+						Description: "Date at which the route was last updated (RFC 3339 format)",
+						Type:        schema.TypeString,
 					},
 				},
 			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
 		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

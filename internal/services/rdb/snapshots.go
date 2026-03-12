@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -29,58 +30,63 @@ func ResourceSnapshot() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "UUID of the Database Instance on which the snapshot is applied.",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the snapshot.",
-			},
-			"expires_at": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
-			},
-			"node_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The type of the database instance for which the snapshot was created.",
-			},
-			"volume_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of volume where data are stored",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Status of the snapshot.",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the snapshot in bytes.",
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "UUID of the Database Instance on which the snapshot is applied.",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the snapshot.",
+		},
+		"expires_at": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Expiration date of the snapshot in ISO 8601 format (RFC 3339).",
+		},
+		"node_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The type of the database instance for which the snapshot was created.",
+		},
+		"volume_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of volume where data are stored",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Status of the snapshot.",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the snapshot in bytes.",
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -117,7 +123,9 @@ func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbSnapshotRead(ctx, d, meta)
 }
@@ -160,7 +168,11 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		_ = d.Set("size", int(*res.Size))
 	}
 
-	_ = d.Set("region", region)
+	_ = d.Set("region", string(region))
+
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

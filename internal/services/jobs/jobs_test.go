@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	jobsSDK "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha1"
+	jobsSDK "github.com/scaleway/scaleway-sdk-go/api/jobs/v1alpha2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -22,7 +22,6 @@ func TestAccJobDefinition_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -32,6 +31,7 @@ func TestAccJobDefinition_Basic(t *testing.T) {
 						name = "test-jobs-job-definition-basic"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 					}
 				`,
@@ -39,6 +39,30 @@ func TestAccJobDefinition_Basic(t *testing.T) {
 					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
 					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-basic"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cpu_limit", "120"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "memory_limit", "256"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "local_storage_capacity", "5120"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "image_uri", "docker.io/alpine:latest"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-basic-renamed"
+						cpu_limit = 240
+						memory_limit = 128
+						local_storage_capacity = 1024
+						image_uri = "docker.io/nginx:latest"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-basic-renamed"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "cpu_limit", "240"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "memory_limit", "128"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "local_storage_capacity", "1024"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "image_uri", "docker.io/nginx:latest"),
 				),
 			},
 		},
@@ -50,7 +74,6 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -60,6 +83,7 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 						name = "test-jobs-job-definition-timeout"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						timeout = "20m"
 					}
@@ -77,6 +101,7 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 						name = "test-jobs-job-definition-timeout"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						timeout = "1h30m"
 					}
@@ -92,12 +117,57 @@ func TestAccJobDefinition_Timeout(t *testing.T) {
 	})
 }
 
+func TestAccJobDefinition_LocalStorageCapacity(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-local-storage"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						local_storage_capacity = 1000
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-local-storage"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "local_storage_capacity", "1000"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-local-storage"
+						cpu_limit = 120
+						memory_limit = 256
+						image_uri = "docker.io/alpine:latest"
+						local_storage_capacity = 2000
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "name", "test-jobs-job-definition-local-storage"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "local_storage_capacity", "2000"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccJobDefinition_Cron(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -107,6 +177,7 @@ func TestAccJobDefinition_Cron(t *testing.T) {
 						name = "test-jobs-job-definition-cron"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						cron {
 							schedule = "5 4 1 * *"
@@ -129,6 +200,7 @@ func TestAccJobDefinition_Cron(t *testing.T) {
 						name = "test-jobs-job-definition-cron"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						cron {
 							schedule = "5 5 * * *"
@@ -151,6 +223,7 @@ func TestAccJobDefinition_Cron(t *testing.T) {
 						name = "test-jobs-job-definition-cron"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 					}
 				`,
@@ -170,7 +243,6 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -189,6 +261,7 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 						name = "test-jobs-job-definition-secret"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
 							secret_id = scaleway_secret.main.id
@@ -226,6 +299,7 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 						name = "test-jobs-job-definition-secret"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
 							secret_id = split("/", scaleway_secret.main.id)[1]
@@ -264,6 +338,7 @@ func TestAccJobDefinition_SecretReference(t *testing.T) {
 						name = "test-jobs-job-definition-secret"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
 							secret_id = scaleway_secret.main.id
@@ -289,7 +364,6 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
 		Steps: []resource.TestStep{
@@ -307,6 +381,7 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 						name = "test-jobs-job-definition-secret"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
 							secret_id = scaleway_secret.main.id
@@ -324,11 +399,12 @@ func TestAccJobDefinition_WrongSecretReference(t *testing.T) {
 		  			  secret_id   = scaleway_secret.main.id
 					  data        = "your_secret"
 					}
-		
+
 					resource scaleway_job_definition main {
 						name = "test-jobs-job-definition-secret"
 						cpu_limit = 120
 						memory_limit = 256
+						local_storage_capacity = 5120
 						image_uri = "docker.io/alpine:latest"
 						secret_reference {
 							secret_id = scaleway_secret.main.id
@@ -526,4 +602,80 @@ func TestDiffJobDefinitionSecrets(t *testing.T) {
 			assert.Equal(t, testCase.expectedToDelete, toDelete)
 		})
 	}
+}
+
+func TestAccJobDefinition_CommandAndArgs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckJobDefinitionDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cmd-args"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+						startup_command = [ "mysql" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.0", "mysql"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.#", "0"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cmd-args"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+						startup_command = [ "mysql", "other-cmd" ]
+						args = [ "override", "default", "image", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.0", "mysql"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.1", "other-cmd"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.#", "4"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.0", "override"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.1", "default"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.2", "image"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.3", "args"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_job_definition main {
+						name = "test-jobs-job-definition-cmd-args"
+						cpu_limit = 120
+						memory_limit = 256
+						local_storage_capacity = 5120
+						image_uri = "docker.io/alpine:latest"
+						args = [ "new", "args" ]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckJobDefinitionExists(tt, "scaleway_job_definition.main"),
+					acctest.CheckResourceAttrUUID("scaleway_job_definition.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "startup_command.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.0", "new"),
+					resource.TestCheckResourceAttr("scaleway_job_definition.main", "args.1", "args"),
+				),
+			},
+		},
+	})
 }

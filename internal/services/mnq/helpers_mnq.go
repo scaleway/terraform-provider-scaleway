@@ -92,10 +92,6 @@ func NewSNSAPIWithRegionAndID(m any, regionalID string) (*mnq.SnsAPI, scw.Region
 	return api, region, ID, nil
 }
 
-func composeMNQID(region scw.Region, projectID string, queueName string) string {
-	return fmt.Sprintf("%s/%s/%s", region, projectID, queueName)
-}
-
 func DecomposeMNQID(id string) (region scw.Region, projectID string, name string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
@@ -186,7 +182,7 @@ func setResourceValue(values map[string]any, resourcePath string, value any, res
 			values[parts[0]] = []any{make(map[string]any)}
 		}
 
-		setResourceValue(values[parts[0]].([]any)[0].(map[string]any), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+		setResourceValue(values[parts[0]].([]any)[0].(map[string]any), strings.Join(parts[2:], "."), value, resourceSchemas[parts[0]].Elem.(*schema.Resource).SchemaFunc())
 
 		return
 	}
@@ -202,7 +198,7 @@ func resolveSchemaPath(resourcePath string, resourceSchemas map[string]*schema.S
 
 	parts := strings.Split(resourcePath, ".")
 	if len(parts) > 1 {
-		return resolveSchemaPath(strings.Join(parts[2:], "."), resourceSchemas[parts[0]].Elem.(*schema.Resource).Schema)
+		return resolveSchemaPath(strings.Join(parts[2:], "."), resourceSchemas[parts[0]].Elem.(*schema.Resource).SchemaFunc())
 	}
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	redisSDK "github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
@@ -36,7 +37,9 @@ func testSweepRedisCluster(_ string) error {
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting redis cluster in sweeper: %w", err)
+				if !httperrors.Is404(err) {
+					logging.L.Warningf("error deleting redis cluster %s in sweeper: %w", cluster.ID, err)
+				}
 			}
 		}
 

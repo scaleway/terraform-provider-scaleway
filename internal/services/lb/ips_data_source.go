@@ -16,76 +16,80 @@ import (
 func DataSourceIPs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceLbIPsRead,
-		Schema: map[string]*schema.Schema{
-			"ip_cidr_range": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.IsCIDR,
-				Description:  "IPs within a CIDR block like it are listed.",
-			},
-			"ip_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  lb.ListIPsRequestIPTypeAll.String(),
-				ValidateFunc: validation.StringInSlice([]string{
-					lb.ListIPsRequestIPTypeIPv4.String(),
-					lb.ListIPsRequestIPTypeIPv6.String(),
-					lb.ListIPsRequestIPTypeAll.String(),
-				}, false),
-				Description: "IP type to filter for",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "IPs with these exact tags are listed",
-			},
-			"ips": {
-				Type:        schema.TypeList,
-				Description: "List of IPs",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "UUID of the IP",
-							Type:        schema.TypeString,
-						},
-						"ip_address": {
-							Computed:    true,
-							Description: "IP address of this IP",
-							Type:        schema.TypeString,
-						},
-						"lb_id": {
-							Computed:    true,
-							Description: "Load balancer ID associated with this IP",
-							Type:        schema.TypeString,
-						},
-						"reverse": {
-							Computed:    true,
-							Description: "Reverse DNS associated with this IP address",
-							Type:        schema.TypeString,
-						},
-						"tags": {
-							Computed:    true,
-							Description: "List of tags associated with this IP",
-							Type:        schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"zone":            zonal.Schema(),
-						"organization_id": account.OrganizationIDSchema(),
-						"project_id":      account.ProjectIDSchema(),
-					},
-				},
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:  ipsSchema,
+	}
+}
+
+func ipsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"ip_cidr_range": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.IsCIDR,
+			Description:  "IPs within a CIDR block like it are listed.",
 		},
+		"ip_type": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Default:  lb.ListIPsRequestIPTypeAll.String(),
+			ValidateFunc: validation.StringInSlice([]string{
+				lb.ListIPsRequestIPTypeIPv4.String(),
+				lb.ListIPsRequestIPTypeIPv6.String(),
+				lb.ListIPsRequestIPTypeAll.String(),
+			}, false),
+			Description: "IP type to filter for",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "IPs with these exact tags are listed",
+		},
+		"ips": {
+			Type:        schema.TypeList,
+			Description: "List of IPs",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "UUID of the IP",
+						Type:        schema.TypeString,
+					},
+					"ip_address": {
+						Computed:    true,
+						Description: "IP address of this IP",
+						Type:        schema.TypeString,
+					},
+					"lb_id": {
+						Computed:    true,
+						Description: "Load balancer ID associated with this IP",
+						Type:        schema.TypeString,
+					},
+					"reverse": {
+						Computed:    true,
+						Description: "Reverse DNS associated with this IP address",
+						Type:        schema.TypeString,
+					},
+					"tags": {
+						Computed:    true,
+						Description: "List of tags associated with this IP",
+						Type:        schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"zone":            zonal.Schema(),
+					"organization_id": account.OrganizationIDSchema(),
+					"project_id":      account.ProjectIDSchema(),
+				},
+			},
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

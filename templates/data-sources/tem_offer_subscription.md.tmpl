@@ -36,4 +36,3 @@ The following attributes are exported:
 ## Import
 
 This data source is read-only and cannot be imported.
-

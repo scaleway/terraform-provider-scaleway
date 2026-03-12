@@ -1,13 +1,16 @@
 package rdb_test
 
 import (
+	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
@@ -25,7 +28,6 @@ func TestAccInstance_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -106,7 +108,6 @@ func TestAccInstance_WithCluster(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -147,7 +148,6 @@ func TestAccInstance_LogsPolicy(t *testing.T) {
 
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -208,7 +208,6 @@ func TestAccInstance_Settings(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -252,7 +251,6 @@ func TestAccInstance_InitSettings(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, mySQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -290,7 +288,6 @@ func TestAccInstance_Capitalize(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -321,7 +318,6 @@ func TestAccInstance_PrivateNetworkUpdate(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -548,7 +544,6 @@ func TestAccInstance_PrivateNetwork(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -674,7 +669,6 @@ func TestAccInstance_BackupSchedule(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -714,7 +708,6 @@ func TestAccInstance_Volume(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -789,7 +782,6 @@ func TestAccInstance_SBSVolume(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -870,7 +862,6 @@ func TestAccInstance_ChangeVolumeType(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -929,8 +920,6 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
-
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -987,7 +976,6 @@ func TestAccInstance_Endpoints(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1094,7 +1082,6 @@ func TestAccInstance_EncryptionAtRest(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1138,7 +1125,6 @@ func TestAccInstance_EncryptionAtRestFalse(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1182,7 +1168,6 @@ func TestAccInstance_UpdateEncryptionAtRest(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1237,7 +1222,6 @@ func TestAccInstance_CompleteWorkflow(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1334,7 +1318,6 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -1416,7 +1399,6 @@ func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -1459,6 +1441,68 @@ func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
 	})
 }
 
+func TestAccInstance_PrivateNetworkWithIPAMCIDR(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "main" {
+						name = "test-rdb-ipam-cidr"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						vpc_id = scaleway_vpc.main.id
+						name   = "test-rdb-ipam-cidr"
+						ipv4_subnet {
+							subnet = "10.213.254.0/24"
+						}
+					}
+
+					resource "scaleway_ipam_ip" "db_ip" {
+						source {
+							private_network_id = scaleway_vpc_private_network.pn.id
+						}
+						address = "10.213.254.10"
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-ipam-cidr"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "rdb-ipam-cidr"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+						
+						private_network {
+							pn_id  = scaleway_vpc_private_network.pn.id
+							ip_net = scaleway_ipam_ip.db_ip.address_cidr
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.db_ip", "address_cidr"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.main", "private_network.0.ip_net", "scaleway_ipam_ip.db_ip", "address_cidr"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "private_network.0.enable_ipam", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1466,7 +1510,6 @@ func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -1542,6 +1585,164 @@ func TestAccInstance_EndpointErrorHandling(t *testing.T) {
 	})
 }
 
+func TestAccInstance_EngineUpgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	var oldInstanceID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Step 1: Create instance with old version and verify upgradable_versions
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+
+					output "upgradable_versions" {
+						value = scaleway_rdb_instance.main.upgradable_versions
+					}
+				`, oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "upgradable_versions.#"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						_, _, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						oldInstanceID = ID
+
+						upgradableVersionsCount := rs.Primary.Attributes["upgradable_versions.#"]
+						if upgradableVersionsCount == "" || upgradableVersionsCount == "0" {
+							return fmt.Errorf("expected at least one upgradable version, got %s", upgradableVersionsCount)
+						}
+
+						for i := 0; ; i++ {
+							idKey := fmt.Sprintf("upgradable_versions.%d.id", i)
+							if _, ok := rs.Primary.Attributes[idKey]; !ok {
+								break
+							}
+
+							nameKey := fmt.Sprintf("upgradable_versions.%d.name", i)
+							versionKey := fmt.Sprintf("upgradable_versions.%d.version", i)
+							minorKey := fmt.Sprintf("upgradable_versions.%d.minor_version", i)
+
+							if rs.Primary.Attributes[nameKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].name is empty", i)
+							}
+
+							if rs.Primary.Attributes[versionKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].version is empty", i)
+							}
+
+							if rs.Primary.Attributes[minorKey] == "" {
+								return fmt.Errorf("upgradable_versions[%d].minor_version is empty", i)
+							}
+						}
+
+						return nil
+					},
+				),
+			},
+			// Step 2: Attempt upgrade to invalid version (should fail)
+			{
+				Config: `
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = "PostgreSQL-99.99"
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`,
+				ExpectError: regexp.MustCompile(`engine version PostgreSQL-99\.99 is not available for upgrade`),
+			},
+			// Step 3: Upgrade to valid new version and verify old instance destroyed
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-engine-upgrade"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "test_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "engine-upgrade"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-engine-upgrade"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						rdbAPI, region, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						if newInstanceID == oldInstanceID {
+							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
+						}
+
+						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+							Region:     region,
+							InstanceID: oldInstanceID,
+						})
+						if err == nil {
+							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
+						}
+
+						if !httperrors.Is404(err) {
+							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -1564,4 +1765,113 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestAccInstance_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Create instance with password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_v&ry_s3cret_WO"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-password-wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO"
+						password_wo_version = 2
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "2"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance from password_wo to password should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_@n0th3r_s3cret_not_WO"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "password"),
+				),
+			},
+			// Update instance from password to password_wo should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO_AGAIN"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+		},
+	})
 }

@@ -25,7 +25,6 @@ func TestAccCertificate_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isLbDestroyed(tt),
@@ -225,6 +224,12 @@ EOF
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "name", "test-custom-cert"),
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "custom_certificate.#", "1"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_lb_certificate.cert01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"custom_certificate.#", "custom_certificate.0.%", "custom_certificate.0.certificate_chain"},
 			},
 		},
 	})

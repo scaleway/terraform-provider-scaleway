@@ -10,6 +10,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -20,6 +21,10 @@ func ResourceCertificate() *schema.Resource {
 		ReadContext:   resourceLbCertificateRead,
 		UpdateContext: resourceLbCertificateUpdate,
 		DeleteContext: resourceLbCertificateDelete,
+		Identity:      identity.DefaultZonal(),
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultLbLbTimeout),
@@ -31,101 +36,105 @@ func ResourceCertificate() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"lb_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The load-balancer ID",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the load-balancer certificate",
-				Optional:    true,
-				Computed:    true,
-			},
-			"letsencrypt": {
-				ConflictsWith: []string{"custom_certificate"},
-				MaxItems:      1,
-				Description:   "The Let's Encrypt type certificate configuration",
-				Type:          schema.TypeList,
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"common_name": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "The main domain name of the certificate",
-						},
-						"subject_alternative_name": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:    true,
-							ForceNew:    true,
-							Description: "The alternative domain names of the certificate",
-						},
-					},
-				},
-			},
-			"custom_certificate": {
-				ConflictsWith: []string{"letsencrypt"},
-				MaxItems:      1,
-				Type:          schema.TypeList,
-				Description:   "The custom type certificate type configuration",
-				Optional:      true,
-				ForceNew:      true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"certificate_chain": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Sensitive:   true,
-							Description: "The full PEM-formatted certificate chain",
-						},
-					},
-				},
-			},
+		SchemaFunc: certificateSchema,
+	}
+}
 
-			// Readonly attributes
-			"common_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The main domain name of the certificate",
-			},
-			"subject_alternative_name": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The alternative domain names of the certificate",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "The domain name",
+func certificateSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"lb_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The load-balancer ID",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Description: "The name of the load-balancer certificate",
+			Optional:    true,
+			Computed:    true,
+		},
+		"letsencrypt": {
+			ConflictsWith: []string{"custom_certificate"},
+			MaxItems:      1,
+			Description:   "The Let's Encrypt type certificate configuration",
+			Type:          schema.TypeList,
+			Optional:      true,
+			ForceNew:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"common_name": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "The main domain name of the certificate",
+					},
+					"subject_alternative_name": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional:    true,
+						ForceNew:    true,
+						Description: "The alternative domain names of the certificate",
+					},
 				},
 			},
-			"fingerprint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The identifier (SHA-1) of the certificate",
+		},
+		"custom_certificate": {
+			ConflictsWith: []string{"letsencrypt"},
+			MaxItems:      1,
+			Type:          schema.TypeList,
+			Description:   "The custom type certificate type configuration",
+			Optional:      true,
+			ForceNew:      true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"certificate_chain": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Sensitive:   true,
+						Description: "The full PEM-formatted certificate chain",
+					},
+				},
 			},
-			"not_valid_before": {
+		},
+
+		// Readonly attributes
+		"common_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The main domain name of the certificate",
+		},
+		"subject_alternative_name": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The alternative domain names of the certificate",
+			Elem: &schema.Schema{
 				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid before validity bound timestamp",
+				Description: "The domain name",
 			},
-			"not_valid_after": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The not valid after validity bound timestamp",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of certificate",
-			},
+		},
+		"fingerprint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The identifier (SHA-1) of the certificate",
+		},
+		"not_valid_before": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The not valid before validity bound timestamp",
+		},
+		"not_valid_after": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The not valid after validity bound timestamp",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of certificate",
 		},
 	}
 }
@@ -168,7 +177,10 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, certificate.ID))
+	err = identity.SetZonalIdentity(d, certificate.LB.Zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCertificate(ctx, lbAPI, zone, certificate.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -184,26 +196,7 @@ func resourceLbCertificateCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceLbCertificateRead(ctx, d, m)
 }
 
-func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
-		CertificateID: ID,
-		Zone:          zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setCertificateState(d *schema.ResourceData, certificate *lbSDK.Certificate, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("lb_id", zonal.NewIDString(zone, certificate.LB.ID))
 	_ = d.Set("name", certificate.Name)
 	_ = d.Set("common_name", certificate.CommonName)
@@ -231,6 +224,36 @@ func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m an
 	return diags
 }
 
+func resourceLbCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	certificate, err := lbAPI.GetCertificate(&lbSDK.ZonedAPIGetCertificateRequest{
+		CertificateID: ID,
+		Zone:          zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	diags := setCertificateState(d, certificate, zone)
+
+	err = identity.SetZonalIdentity(d, certificate.LB.Zone, certificate.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
 func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	lbAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -250,10 +273,6 @@ func resourceLbCertificateUpdate(ctx context.Context, d *schema.ResourceData, m 
 		}
 
 		_, err = waitForCertificate(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err != nil {
 			if httperrors.Is403(err) {
 				d.SetId("")

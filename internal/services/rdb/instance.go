@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,8 +27,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceRdbInstanceCreate,
 		ReadContext:   ResourceRdbInstanceRead,
 		UpdateContext: ResourceRdbInstanceUpdate,
@@ -41,318 +47,367 @@ func ResourceInstance() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the database instance",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The type of database instance you want to create",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"engine": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Description:      "Database's engine version id",
-				DiffSuppressFunc: dsf.IgnoreCase,
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"snapshot_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
-				ConflictsWith: []string{
-					"engine",
-				},
-			},
-			"is_ha_cluster": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable or disable high availability for the database instance",
-			},
-			"disable_backup": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Disable automated backup for the database instance",
-			},
-			"backup_schedule_frequency": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Backup schedule frequency in hours",
-			},
-			"backup_schedule_retention": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Backup schedule retention in days",
-			},
-			"backup_same_region": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Boolean to store logical backups in the same region as the database instance",
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				ForceNew:    true,
-				Optional:    true,
-				Computed:    true,
-				Description: "Identifier for the first user of the database instance",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Optional:    true,
-				Description: "Password for the first user of the database instance",
-			},
-			"settings": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Map of engine settings to be set on a running instance.",
-				Computed:    true,
-				Optional:    true,
-			},
-			"init_settings": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "Map of engine settings to be set at database initialisation.",
-				ForceNew:    true,
-				Optional:    true,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
-			},
-			"volume_type": {
-				Type:             schema.TypeString,
-				Default:          rdb.VolumeTypeLssd,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
-				Description:      "Type of volume where data are stored",
-			},
-			"volume_size_in_gb": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				Description:  "Volume size (in GB) when volume_type is not lssd",
-				ValidateFunc: validation.IntDivisibleBy(5),
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "List of private network to expose your database instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-							Description:      "The private network ID",
-						},
-						// Computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The endpoint ID",
-						},
-						"ip_net": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsCIDR,
-							Description:  "The IP with the given mask within the private subnet",
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP of your Instance within the private service",
-						},
-						"port": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Computed:     true,
-							ValidateFunc: validation.IsPortNumber,
-							Description:  "The port of your private service",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of your private service",
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The hostname of your endpoint",
-						},
-						"enable_ipam": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Computed:    true,
-							Description: "Whether or not the private network endpoint should be configured with IPAM",
-						},
-						"zone": zonal.Schema(),
-					},
-				},
-			},
-			// Computed
-			"endpoint_ip": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Endpoint IP of the database instance",
-				Deprecated:  "Please use the private_network or the load_balancer attribute",
-			},
-			"endpoint_port": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Endpoint port of the database instance",
-				Deprecated:  "Please use the private_network or the load_balancer attribute",
-			},
-			"read_replicas": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Read replicas of the database instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "IP of the replica",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Port of the replica",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the replica",
-						},
-					},
-				},
-			},
-			"certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Certificate of the database instance",
-			},
-			"load_balancer": {
-				Type:             schema.TypeList,
-				Optional:         true,
-				Computed:         true,
-				MaxItems:         1,
-				Description:      "Load balancer of the database instance",
-				DiffSuppressFunc: LoadBalancerDiffSuppressFunc,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The endpoint ID",
-						},
-						"ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP of your load balancer service",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The port of your load balancer service",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of your load balancer service",
-						},
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The hostname of your endpoint",
-						},
-					},
-				},
-			},
-			"logs_policy": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "Logs policy configuration",
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						// Computed
-						"max_age_retention": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The max age (in days) of remote logs to keep on the Database Instance",
-						},
-						"total_disk_retention": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "The max disk size of remote logs to keep on the Database Instance.",
-						},
-					},
-				},
-			},
-			"encryption_at_rest": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Enable or disable encryption at rest for the database instance",
-			},
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			// Common
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaVersion:    0,
+		SchemaFunc:       instanceSchema,
+		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
+	}
+}
+
+func instanceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the database instance",
 		},
-		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The type of database instance you want to create",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"engine": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			Description:      "Database's engine version name (e.g., 'PostgreSQL-16', 'MySQL-8'). Changing this value triggers a blue/green upgrade using MajorUpgradeWorkflow with automatic endpoint migration",
+			DiffSuppressFunc: dsf.IgnoreCase,
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"snapshot_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "ID of an existing snapshot to create a new instance from. This allows restoring a database instance to the state captured in the specified snapshot. Conflicts with the `engine` attribute.",
+			ConflictsWith: []string{
+				"engine",
+			},
+		},
+		"is_ha_cluster": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable or disable high availability for the database instance",
+		},
+		"disable_backup": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Disable automated backup for the database instance",
+		},
+		"backup_schedule_frequency": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Backup schedule frequency in hours",
+		},
+		"backup_schedule_retention": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Backup schedule retention in days",
+		},
+		"backup_same_region": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Boolean to store logical backups in the same region as the database instance",
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			ForceNew:    true,
+			Optional:    true,
+			Computed:    true,
+			Description: "Identifier for the first user of the database instance",
+		},
+		"password": {
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
+		},
+		"settings": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "Map of engine settings to be set on a running instance.",
+			Computed:    true,
+			Optional:    true,
+		},
+		"init_settings": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "Map of engine settings to be set at database initialisation.",
+			ForceNew:    true,
+			Optional:    true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a database instance",
+		},
+		"volume_type": {
+			Type:             schema.TypeString,
+			Default:          rdb.VolumeTypeLssd,
+			Optional:         true,
+			ValidateDiagFunc: verify.ValidateEnum[rdb.VolumeType](),
+			Description:      "Type of volume where data are stored",
+		},
+		"volume_size_in_gb": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			Description:  "Volume size (in GB) when volume_type is not lssd",
+			ValidateFunc: validation.IntDivisibleBy(5),
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "List of private network to expose your database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Description:      "The private network ID",
+					},
+					// Computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The endpoint ID",
+					},
+					"ip_net": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.IsCIDR,
+						Description:  "The IP with the given mask within the private subnet",
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP of your Instance within the private service",
+					},
+					"port": {
+						Type:         schema.TypeInt,
+						Optional:     true,
+						Computed:     true,
+						ValidateFunc: validation.IsPortNumber,
+						Description:  "The port of your private service",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of your private service",
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The hostname of your endpoint",
+					},
+					"enable_ipam": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether or not the private network endpoint should be configured with IPAM",
+					},
+					"zone": zonal.Schema(),
+				},
+			},
+		},
+		// Computed
+		"endpoint_ip": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Endpoint IP of the database instance",
+			Deprecated:  "Please use the private_network or the load_balancer attribute",
+		},
+		"endpoint_port": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Endpoint port of the database instance",
+			Deprecated:  "Please use the private_network or the load_balancer attribute",
+		},
+		"read_replicas": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Read replicas of the database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "IP of the replica",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Port of the replica",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the replica",
+					},
+				},
+			},
+		},
+		"certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Certificate of the database instance",
+		},
+		"load_balancer": {
+			Type:             schema.TypeList,
+			Optional:         true,
+			Computed:         true,
+			MaxItems:         1,
+			Description:      "Load balancer of the database instance",
+			DiffSuppressFunc: LoadBalancerDiffSuppressFunc,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The endpoint ID",
+					},
+					"ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP of your load balancer service",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The port of your load balancer service",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of your load balancer service",
+					},
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The hostname of your endpoint",
+					},
+				},
+			},
+		},
+		"logs_policy": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "Logs policy configuration",
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					// Computed
+					"max_age_retention": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "The max age (in days) of remote logs to keep on the Database Instance",
+					},
+					"total_disk_retention": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "The max disk size of remote logs to keep on the Database Instance.",
+					},
+				},
+			},
+		},
+		"encryption_at_rest": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Enable or disable encryption at rest for the database instance",
+		},
+		"upgradable_versions": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of available engine versions for upgrade",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Version ID for upgrade requests",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Engine name",
+					},
+					"version": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Version string",
+					},
+					"minor_version": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Minor version string",
+					},
+				},
+			},
+		},
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		// Common
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -416,9 +471,20 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	} else {
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &rdb.CreateInstanceRequest{
 			Region:        region,
 			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
@@ -428,7 +494,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			IsHaCluster:   d.Get("is_ha_cluster").(bool),
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
-			Password:      d.Get("password").(string),
+			Password:      password,
 			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 			Encryption: &rdb.EncryptionAtRest{
 				Enabled: d.Get("encryption_at_rest").(bool),
@@ -469,7 +535,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	}
 
@@ -482,14 +551,14 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
-		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
-			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+			updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
 		}
 
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
-			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+			updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
 		}
 
 		mustUpdate = true
@@ -603,24 +672,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -671,6 +723,18 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		_ = d.Set("encryption_at_rest", res.Encryption.Enabled)
 	}
 
+	upgradableVersions := make([]map[string]any, len(res.UpgradableVersion))
+	for i, version := range res.UpgradableVersion {
+		upgradableVersions[i] = map[string]any{
+			"id":            version.ID,
+			"name":          version.Name,
+			"version":       version.Version,
+			"minor_version": version.MinorVersion,
+		}
+	}
+
+	_ = d.Set("upgradable_versions", upgradableVersions)
+
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
 		_ = d.Set("user_name", user.(string))
@@ -692,12 +756,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -779,6 +845,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 	return diags
 }
 
+// readInstanceIntoState fetches the instance and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setInstanceState(ctx, d, m, rdbAPI, region, res)
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readInstanceIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
 //gocyclo:ignore
 func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
@@ -832,7 +943,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					rdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
-						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
+						VolumeSize: new(newSize * uint64(scw.GB)),
 					})
 			}
 		case rdb.VolumeTypeLssd:
@@ -880,7 +991,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
 			})
 	}
 
@@ -907,25 +1018,93 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:           region,
 				InstanceID:       ID,
-				EnableEncryption: scw.BoolPtr(newValue.(bool)),
+				EnableEncryption: new(newValue.(bool)),
 			})
 	}
 
-	// Carry out the upgrades
+	if d.HasChange("engine") {
+		oldEngine, newEngine := d.GetChange("engine")
+		newEngineStr := newEngine.(string)
+
+		targetVersionID := ""
+
+		var availableVersions []string
+		for _, version := range rdbInstance.UpgradableVersion {
+			availableVersions = append(availableVersions, version.Name)
+			if version.Name == newEngineStr {
+				targetVersionID = version.ID
+
+				break
+			}
+		}
+
+		if targetVersionID == "" {
+			return diag.FromErr(fmt.Errorf("engine version %s is not available for upgrade from %s. Available versions: %v",
+				newEngineStr, oldEngine.(string), availableVersions))
+		}
+
+		upgradeInstanceRequests = append(upgradeInstanceRequests,
+			rdb.UpgradeInstanceRequest{
+				Region:     region,
+				InstanceID: ID,
+				MajorUpgradeWorkflow: &rdb.UpgradeInstanceRequestMajorUpgradeWorkflow{
+					UpgradableVersionID: targetVersionID,
+					WithEndpoints:       true,
+				},
+			})
+	}
+
 	for i := range upgradeInstanceRequests {
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil && !httperrors.Is404(err) {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
+		upgradedInstance, err := rdbAPI.UpgradeInstance(&upgradeInstanceRequests[i], scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
+		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
+			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
+			oldInstanceID := ID
+
+			ID = upgradedInstance.ID
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))
+			} else {
+				_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil && !httperrors.Is404(err) {
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
+				} else {
+					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+						Region:     region,
+						InstanceID: oldInstanceID,
+						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
+					}, scw.WithContext(ctx))
+					if err != nil && !httperrors.Is404(err) {
+						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
+					}
+				}
+			}
+		} else {
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -942,15 +1121,15 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("disable_backup") {
-		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		req.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 	}
 
 	if d.HasChange("backup_schedule_frequency") {
-		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+		req.BackupScheduleFrequency = new(uint32(d.Get("backup_schedule_frequency").(int)))
 	}
 
 	if d.HasChange("backup_schedule_retention") {
-		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+		req.BackupScheduleRetention = new(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 
 	if d.HasChange("backup_same_region") {
@@ -1000,7 +1179,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	// Update user
 	////////////////////
-	if d.HasChange("password") {
+	if d.HasChange("password") || (d.HasChange("password_wo_version") && d.Get("password_wo_version").(int) > 0) {
 		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -1010,7 +1189,17 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   types.ExpandStringPtr(d.Get("password")),
+		}
+
+		if password, ok := d.GetOk("password"); ok {
+			if d.HasChange("password") {
+				// Check password field is being set (not just removed)
+				req.Password = types.ExpandStringPtr(password)
+			}
+		} else if _, ok := d.GetOk("password_wo_version"); ok {
+			if d.HasChange("password_wo_version") {
+				req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			}
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))

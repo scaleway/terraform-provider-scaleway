@@ -2,6 +2,7 @@ package mongodb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +19,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,8 +28,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceInstanceCreate,
 		ReadContext:   ResourceInstanceRead,
 		UpdateContext: ResourceInstanceUpdate,
@@ -42,224 +48,7 @@ func ResourceInstance() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the MongoDB cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "MongoDB version of the instance",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"node_number": {
-				Type:         schema.TypeInt,
-				Required:     true,
-				ValidateFunc: validation.IntAtLeast(1),
-				Description:  "Number of nodes in the instance",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "Type of node to use for the instance",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Name of the user created when the cluster is created",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Optional:    true,
-				Description: "Password of the user",
-				ConflictsWith: []string{
-					"snapshot_id",
-				},
-			},
-			// volume
-			"volume_type": {
-				Type:        schema.TypeString,
-				Default:     mongodb.VolumeTypeSbs5k,
-				Optional:    true,
-				Description: "Volume type of the instance",
-			},
-			"volume_size_in_gb": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Computed:     true,
-				Description:  "Volume size (in GB)",
-				ValidateFunc: validation.IntDivisibleBy(5),
-			},
-			"snapshot_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Description: "Snapshot ID to restore the MongoDB instance from",
-				ConflictsWith: []string{
-					"user_name",
-					"password",
-					"version",
-				},
-			},
-			"private_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Private network to expose your mongodb instance",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"pn_id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							DiffSuppressFunc: dsf.Locality,
-							Description:      "The private network ID",
-						},
-						// Computed
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private network ID",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"dns_records": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of DNS records for your endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-
-						"ips": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "List of IP addresses for your endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-					},
-				},
-			},
-			// Computed
-			"private_ip": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "The private IPv4 address associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Public network specs details",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "ID of the public network",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"dns_record": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The DNS record of your endpoint",
-						},
-					},
-				},
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
-			},
-			"snapshot_schedule_frequency_hours": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Snapshot schedule frequency in hours",
-			},
-			"snapshot_schedule_retention_days": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Snapshot schedule retention in days",
-			},
-			"is_snapshot_schedule_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Enable or disable automatic snapshot scheduling",
-			},
-			"settings": {
-				Type:        schema.TypeMap,
-				Description: "Map of settings to define for the instance.",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the MongoDB instance",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the MongoDB instance",
-			},
-			// Common
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"tls_certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "PEM-encoded TLS certificate for MongoDB",
-			},
-		},
+		SchemaFunc:    instanceSchema,
 		CustomizeDiff: customdiff.All(
 			func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 				if d.HasChange("version") {
@@ -277,6 +66,250 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
+		Identity: identity.DefaultRegional(),
+	}
+}
+
+func instanceSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the MongoDB cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "MongoDB version of the instance",
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"node_number": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntAtLeast(1),
+			Description:  "Number of nodes in the instance",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Type of node to use for the instance",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Name of the user created when the cluster is created",
+			ConflictsWith: []string{
+				"snapshot_id",
+			},
+		},
+		"password": {
+			Type:        schema.TypeString,
+			Sensitive:   true,
+			Optional:    true,
+			Description: "Password of the user. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{
+				"snapshot_id",
+				"password_wo",
+			},
+		},
+		"password_wo": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:   true,
+			ConflictsWith: []string{
+				"snapshot_id",
+				"password",
+			},
+			RequiredWith: []string{
+				"password_wo_version",
+			},
+		},
+		"password_wo_version": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{
+				"password_wo",
+			},
+		},
+		// volume
+		"volume_type": {
+			Type:        schema.TypeString,
+			Default:     mongodb.VolumeTypeSbs5k,
+			Optional:    true,
+			Description: "Volume type of the instance",
+		},
+		"volume_size_in_gb": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			Description:  "Volume size (in GB)",
+			ValidateFunc: validation.IntDivisibleBy(5),
+		},
+		"snapshot_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "Snapshot ID to restore the MongoDB instance from",
+			ConflictsWith: []string{
+				"user_name",
+				"password",
+				"version",
+			},
+		},
+		"private_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Private network to expose your mongodb instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"pn_id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						DiffSuppressFunc: dsf.Locality,
+						Description:      "The private network ID",
+					},
+					// Computed
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private network ID",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"dns_records": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of DNS records for your endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+
+					"ips": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "List of IP addresses for your endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+				},
+			},
+		},
+		// Computed
+		"private_ip": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "The private IPv4 address associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		"public_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Public network specs details",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "ID of the public network",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"dns_record": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The DNS record of your endpoint",
+					},
+				},
+			},
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a MongoDB instance",
+		},
+		"snapshot_schedule_frequency_hours": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Snapshot schedule frequency in hours",
+		},
+		"snapshot_schedule_retention_days": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Snapshot schedule retention in days",
+		},
+		"is_snapshot_schedule_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Enable or disable automatic snapshot scheduling",
+		},
+		"settings": {
+			Type:        schema.TypeMap,
+			Description: "Map of settings to define for the instance.",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the MongoDB instance",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the MongoDB instance",
+		},
+		// Common
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"tls_certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "PEM-encoded TLS certificate for MongoDB",
+		},
 	}
 }
 
@@ -286,7 +319,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	nodeNumber := scw.Uint32Ptr(uint32(d.Get("node_number").(int)))
+	nodeNumber := new(uint32(d.Get("node_number").(int)))
 
 	snapshotID, exist := d.GetOk("snapshot_id")
 
@@ -294,6 +327,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if exist {
 		restoreSnapshotRequest := &mongodb.RestoreSnapshotRequest{
+			Region:       region,
 			SnapshotID:   regional.ExpandID(snapshotID.(string)).ID,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
 			NodeAmount:   *nodeNumber,
@@ -309,14 +343,23 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		version := d.Get("version").(string)
 		normalizeVersion := NormalizeMongoDBVersion(version)
 
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &mongodb.CreateInstanceRequest{
+			Region:     region,
 			ProjectID:  d.Get("project_id").(string),
 			Name:       types.ExpandOrGenerateString(d.Get("name"), "mongodb"),
 			Version:    normalizeVersion,
 			NodeType:   d.Get("node_type").(string),
 			NodeAmount: *nodeNumber,
 			UserName:   d.Get("user_name").(string),
-			Password:   d.Get("password").(string),
+			Password:   password,
 		}
 
 		volumeRequestDetails := &mongodb.Volume{
@@ -379,7 +422,9 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, res.Region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForInstance(ctx, mongodbAPI, res.Region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -394,28 +439,7 @@ func ResourceInstanceCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	return ResourceInstanceRead(ctx, d, m)
 }
 
-func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getReq := &mongodb.GetInstanceRequest{
-		Region:     region,
-		InstanceID: ID,
-	}
-
-	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongodbAPI *mongodb.API, region scw.Region, instance *mongodb.Instance) diag.Diagnostics {
 	_ = d.Set("name", instance.Name)
 	_ = d.Set("version", instance.Version)
 	_ = d.Set("node_number", int(instance.NodeAmount))
@@ -500,7 +524,7 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	cert, err := mongodbAPI.GetInstanceCertificate(&mongodb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: instance.ID,
 	}, scw.WithContext(ctx))
 
 	if err == nil && cert != nil {
@@ -519,56 +543,75 @@ func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) di
 	return diags
 }
 
-func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func ResourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	////////////////////
-	// Upgrade instance
-	////////////////////
-
-	if d.HasChange("volume_size_in_gb") {
-		oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
-		oldSize := uint64(oldSizeInterface.(int))
-		newSize := uint64(newSizeInterface.(int))
-
-		if newSize < oldSize {
-			return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
-		}
-
-		if newSize%5 != 0 {
-			return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
-		}
-
-		size := scw.Size(newSize * uint64(scw.GB))
-
-		upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
-			InstanceID:      ID,
-			Region:          region,
-			VolumeSizeBytes: &size,
-		}
-
-		_, err = mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForInstance(ctx, mongodbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	getReq := &mongodb.GetInstanceRequest{
+		Region:     region,
+		InstanceID: ID,
 	}
 
-	////////////////////
-	// Update instance
-	////////////////////
+	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
 
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	diags := setInstanceState(ctx, d, m, mongodbAPI, region, instance)
+	if err := identity.SetRegionalIdentity(d, instance.Region, instance.ID); err != nil {
+		diags = append(diags, diag.FromErr(err)...)
+	}
+
+	return diags
+}
+
+func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
+	oldSizeInterface, newSizeInterface := d.GetChange("volume_size_in_gb")
+	oldSize := uint64(oldSizeInterface.(int))
+	newSize := uint64(newSizeInterface.(int))
+
+	if newSize < oldSize {
+		return diag.FromErr(errors.New("volume_size_in_gb cannot be decreased"))
+	}
+
+	if newSize%5 != 0 {
+		return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
+	}
+
+	size := scw.Size(newSize * uint64(scw.GB))
+
+	upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
+		InstanceID:      id,
+		Region:          region,
+		VolumeSizeBytes: &size,
+	}
+
+	_, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func handleInstanceUpdate(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
 	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: id,
 	}
 
 	if d.HasChange("name") {
@@ -588,10 +631,35 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if shouldUpdateInstance {
-		_, err = mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
+		_, err := mongodbAPI.UpdateInstance(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
+	}
+
+	return nil
+}
+
+func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	mongodbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	////////////////////
+	// Upgrade instance
+	////////////////////
+	if d.HasChange("volume_size_in_gb") {
+		if diag := handleVolumeSizeUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
+			return diag
+		}
+	}
+
+	////////////////////
+	// Update instance
+	////////////////////
+	if diag := handleInstanceUpdate(ctx, mongodbAPI, region, ID, d); diag != nil {
+		return diag
 	}
 
 	////////////////////
@@ -617,10 +685,17 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		})
 	}
 
-	if d.HasChange("password") {
-		password := d.Get("password").(string)
-		updateUserRequest.Password = &password
-		shouldUpdateUser = true
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			updateUserRequest.Password = types.ExpandStringPtr(password.(string))
+			shouldUpdateUser = true
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			updateUserRequest.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			shouldUpdateUser = true
+		}
 	}
 
 	if shouldUpdateUser {
@@ -754,17 +829,17 @@ func configureSnapshotScheduleOnCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if snapshotFrequency, ok := d.GetOk("snapshot_schedule_frequency_hours"); ok {
-		updateReq.SnapshotScheduleFrequencyHours = scw.Uint32Ptr(uint32(snapshotFrequency.(int)))
+		updateReq.SnapshotScheduleFrequencyHours = new(uint32(snapshotFrequency.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotRetention, ok := d.GetOk("snapshot_schedule_retention_days"); ok {
-		updateReq.SnapshotScheduleRetentionDays = scw.Uint32Ptr(uint32(snapshotRetention.(int)))
+		updateReq.SnapshotScheduleRetentionDays = new(uint32(snapshotRetention.(int)))
 		mustUpdate = true
 	}
 
 	if snapshotEnabled, ok := d.GetOk("is_snapshot_schedule_enabled"); ok {
-		updateReq.IsSnapshotScheduleEnabled = scw.BoolPtr(snapshotEnabled.(bool))
+		updateReq.IsSnapshotScheduleEnabled = new(snapshotEnabled.(bool))
 		mustUpdate = true
 	}
 

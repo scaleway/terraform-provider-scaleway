@@ -21,7 +21,6 @@ func TestAccGrafanaUser_Basic(t *testing.T) {
 	grafanaTestUsername := "testuserbasic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isGrafanaUserDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -65,7 +64,6 @@ func TestAccGrafanaUser_Update(t *testing.T) {
 	grafanaTestUsername := "testuserupdate"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isGrafanaUserDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -134,7 +132,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{
+		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 			ProjectID: projectID,
 		}, scw.WithAllPages())
 		if err != nil {
@@ -171,7 +169,7 @@ func isGrafanaUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = api.DeleteGrafanaUser(&cockpitSDK.GlobalAPIDeleteGrafanaUserRequest{
+			err = api.DeleteGrafanaUser(&cockpitSDK.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 				ProjectID:     projectID,
 				GrafanaUserID: grafanaUserID,
 			})

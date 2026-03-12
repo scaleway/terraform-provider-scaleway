@@ -10,7 +10,7 @@ import (
 )
 
 func DataSourceCockpit() *schema.Resource {
-	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpit().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourceCockpit().SchemaFunc())
 	dsSchema["project_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The project_id you want to attach the resource to",

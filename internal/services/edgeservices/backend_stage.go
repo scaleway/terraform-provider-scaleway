@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,91 +25,103 @@ func ResourceBackendStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"s3_backend_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"lb_backend_config"},
-				MaxItems:      1,
-				Description:   "The Scaleway Object Storage origin bucket (S3) linked to the backend stage",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket_name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The name of the Bucket",
-						},
-						"bucket_region": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "The region of the Bucket",
-						},
-						"is_website": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "Defines whether the bucket website feature is enabled.",
-						},
+		SchemaFunc:    backendStageSchema,
+		Identity:      identity.DefaultGlobal(),
+	}
+}
+
+func backendStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"s3_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			ConflictsWith: []string{"lb_backend_config"},
+			MaxItems:      1,
+			Description:   "The Scaleway Object Storage origin bucket (S3) linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket_name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The name of the Bucket",
+					},
+					"bucket_region": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "The region of the Bucket",
+					},
+					"is_website": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: "Defines whether the bucket website feature is enabled.",
 					},
 				},
 			},
-			"lb_backend_config": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				ConflictsWith: []string{"s3_backend_config"},
-				Description:   "The Scaleway Load Balancer origin linked to the backend stage",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"lb_config": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							MaxItems:    1,
-							Description: "The Load Balancer configuration",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "ID of the Load Balancer",
-									},
-									"frontend_id": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "ID of the frontend linked to the Load Balancer",
-									},
-									"is_ssl": {
-										Type:        schema.TypeBool,
-										Optional:    true,
-										Description: "Defines whether the Load Balancer's frontend handles SSL connections",
-									},
-									"domain_name": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
-									},
-									"zone": zonal.Schema(),
+		},
+		"lb_backend_config": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			ConflictsWith: []string{"s3_backend_config"},
+			Description:   "The Scaleway Load Balancer origin linked to the backend stage",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"lb_config": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						MaxItems:    1,
+						Description: "The Load Balancer configuration",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
 								},
+								"frontend_id": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the frontend linked to the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
+								},
+								"is_ssl": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Defines whether the Load Balancer's frontend handles SSL connections",
+								},
+								"domain_name": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
+								},
+								"has_websocket": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Defines whether to forward websocket requests to the load balancer",
+								},
+								"zone": zonal.Schema(),
 							},
 						},
 					},
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the backend stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the backend stage",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the backend stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the backend stage",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -126,7 +140,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if lbConfig, ok := d.GetOk("lb_backend_config"); ok {
-		req.ScalewayLB = expandLBBackendConfig(zone, lbConfig)
+		req.ScalewayLB = expandLBBackendConfig(d, zone, lbConfig)
 	}
 
 	backendStage, err := api.CreateBackendStage(req, scw.WithContext(ctx))
@@ -134,7 +148,9 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(backendStage.ID)
+	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBackendStageRead(ctx, d, m)
 }
@@ -170,6 +186,10 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 		_ = d.Set("lb_backend_config", flattenLBBackendConfig(zone, backendStage.ScalewayLB))
 	}
 
+	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
@@ -191,7 +211,7 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if d.HasChange("lb_backend_config") {
-		updateRequest.ScalewayLB = expandLBBackendConfig(zone, d.Get("lb_backend_config"))
+		updateRequest.ScalewayLB = expandLBBackendConfig(d, zone, d.Get("lb_backend_config"))
 		hasChanged = true
 	}
 

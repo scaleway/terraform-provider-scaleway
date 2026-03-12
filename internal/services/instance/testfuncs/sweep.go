@@ -102,7 +102,7 @@ func testSweepServer(_ string) error {
 	return acctest.SweepZones(scw.AllZones, func(scwClient *scw.Client, zone scw.Zone) error {
 		instanceAPI := instanceSDK.NewAPI(scwClient)
 
-		logging.L.Debugf("sweeper: destroying the instanceSDK server in (%s)", zone)
+		logging.L.Debugf("sweeper: destroying the instance server in (%s)", zone)
 
 		listServers, err := instanceAPI.ListServers(&instanceSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
@@ -233,7 +233,7 @@ func testSweepImage(_ string) error {
 
 		listImagesResponse, err := api.ListImages(&instanceSDK.ListImagesRequest{
 			Zone:   zone,
-			Public: scw.BoolPtr(false),
+			Public: new(false),
 		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing instance images in sweeper: %w", err)

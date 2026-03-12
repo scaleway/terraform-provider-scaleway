@@ -85,7 +85,6 @@ resource "scaleway_object_bucket" "main" {
 
   # This lifecycle configuration rule specifies a tag-based filter (tag1/value1).
   # This rule directs Scaleway S3 to transition objects S3 Glacier class soon after creation.
-  # It is also disable temporaly.
   lifecycle_rule {
     id      = "id4"
     enabled = true
@@ -197,4 +196,3 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket@11111111-1111-1111-1111-111111111111
 ```
-

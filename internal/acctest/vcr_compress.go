@@ -14,11 +14,15 @@ import (
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
-	"gopkg.in/dnaeon/go-vcr.v3/cassette"
+	"go.yaml.in/yaml/v4"
+	cassetteV3 "gopkg.in/dnaeon/go-vcr.v3/cassette"
+	cassetteV4 "gopkg.in/dnaeon/go-vcr.v4/pkg/cassette"
 )
 
 var transientStates = map[string]bool{
@@ -61,6 +65,9 @@ var transientStates = map[string]bool{
 	k8s.PoolStatusScaling.String():     true,
 	k8s.PoolStatusUpgrading.String():   true,
 
+	kafkaapi.ClusterStatusCreating.String(): true,
+	kafkaapi.ClusterStatusDeleting.String(): true,
+
 	mongodb.InstanceStatusDeleting.String():     true,
 	mongodb.InstanceStatusSnapshotting.String(): true,
 	mongodb.InstanceStatusConfiguring.String():  true,
@@ -85,6 +92,10 @@ var transientStates = map[string]bool{
 	redis.ClusterStatusProvisioning.String(): true,
 	redis.ClusterStatusDeleting.String():     true,
 	redis.ClusterStatusInitializing.String(): true,
+
+	searchdbapi.DeploymentStatusCreating.String():  true,
+	searchdbapi.DeploymentStatusDeleting.String():  true,
+	searchdbapi.DeploymentStatusUpgrading.String(): true,
 
 	tem.DomainStatusPending.String(): true,
 }
@@ -113,13 +124,16 @@ func (report *CompressReport) Print() {
 	}
 }
 
-func CompressCassette(path string) (CompressReport, error) {
-	inputCassette, err := cassette.Load(path)
+// CompressCassetteV3 reads the input go-vcr.v3 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV3(path string, saveCompressed bool) (CompressReport, error) {
+	inputCassette, err := cassetteV3.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
 	}
 
-	outputCassette := cassette.New(path)
+	outputCassette := cassetteV3.New(path)
 	transitioning := false
 
 	report := CompressReport{
@@ -193,9 +207,105 @@ func CompressCassette(path string) (CompressReport, error) {
 		}
 	}
 
-	err = outputCassette.Save()
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
+	}
+
+	return report, nil
+}
+
+// CompressCassetteV4 reads the input go-vcr.v4 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV4(path string, saveCompressed bool) (CompressReport, error) {
+	inputCassette, err := cassetteV4.Load(path)
 	if err != nil {
-		return report, fmt.Errorf("error while saving file: %w", err)
+		log.Fatalf("Error while reading file : %v\n", err)
+	}
+
+	outputCassette := cassetteV4.New(path)
+	outputCassette.MarshalFunc = yaml.Marshal
+	transitioning := false
+
+	report := CompressReport{
+		SkippedInteraction: 0,
+		Path:               path,
+		ErrorLogs:          []string{},
+		Logs:               []string{},
+	}
+
+	for i := range len(inputCassette.Interactions) {
+		interaction := inputCassette.Interactions[i]
+		responseBody := interaction.Response.Body
+		requestMethod := interaction.Request.Method
+
+		if requestMethod != "GET" {
+			transitioning = false
+
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s is not a GET request. Recording it\n", i, path))
+			outputCassette.AddInteraction(interaction)
+
+			continue
+		}
+
+		if responseBody == "" {
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s got an empty response body. Recording it\n", i, path))
+			outputCassette.AddInteraction(interaction)
+
+			continue
+		}
+
+		var m map[string]any
+
+		err := json.Unmarshal([]byte(responseBody), &m)
+		if err != nil {
+			report.AddErrorLog(fmt.Sprintf("Interaction %d in test %s have an error with unmarshalling response body: %v. Recording it\n", i, path, err))
+			outputCassette.AddInteraction(interaction)
+
+			continue
+		}
+
+		if m["status"] == nil {
+			report.AddLog(fmt.Sprintf("Interaction %d in test %s does not contain a status field. Recording it\n", i, path))
+			outputCassette.AddInteraction(interaction)
+
+			continue
+		}
+
+		status := m["status"].(string)
+		// We test if the state is transient
+		if _, ok := transientStates[status]; ok {
+			if transitioning {
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is in a transient state while we are already in transitient state. No need to record it: %s\n", i, path, status))
+				report.SkippedInteraction++
+			} else {
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is in a transient state: %s, Recording it\n", i, path, status))
+
+				transitioning = true
+
+				outputCassette.AddInteraction(interaction)
+			}
+		} else {
+			if transitioning {
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is not in a transient state anymore: %s, Recording it\n", i, path, status))
+				outputCassette.AddInteraction(interaction)
+
+				transitioning = false
+			} else {
+				report.AddLog(fmt.Sprintf("Interaction %d in test %s is not in a transient state: %s, Recording it\n", i, path, status))
+				outputCassette.AddInteraction(interaction)
+			}
+		}
+	}
+
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
 	}
 
 	return report, nil

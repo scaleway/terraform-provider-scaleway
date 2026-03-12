@@ -10,6 +10,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -22,6 +23,7 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   resourceLbIPRead,
 		UpdateContext: resourceLbIPUpdate,
 		DeleteContext: resourceLbIPDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -35,44 +37,48 @@ func ResourceIP() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: lbUpgradeV1SchemaType(), Upgrade: UpgradeStateV1Func},
 		},
-		Schema: map[string]*schema.Schema{
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The reverse domain name for this IP",
-			},
-			"zone": zonal.Schema(),
-			// Computed
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The load-balancer public IP address",
-			},
-			"lb_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ID of the load balancer attached to this IP, if any",
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "If true, creates a Flexible IP with an IPv6 address",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the flexible IP",
-			},
-			"region": regional.ComputedSchema(),
+		SchemaFunc: ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"reverse": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The reverse domain name for this IP",
 		},
+		"zone": zonal.Schema(),
+		// Computed
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"ip_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The load-balancer public IP address",
+		},
+		"lb_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ID of the load balancer attached to this IP, if any",
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "If true, creates a Flexible IP with an IPv6 address",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the flexible IP",
+		},
+		"region": regional.ComputedSchema(),
 	}
 }
 
@@ -100,7 +106,10 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbIPRead(ctx, d, m)
 }
@@ -139,12 +148,18 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		}
 	}
 
-	// set the region from zone
-	region, err := zone.Region()
+	diags := setIPState(d, ip, zone)
+
+	err = identity.SetZonalIdentity(d, ip.Zone, ip.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	return diags
+}
+
+func setIPState(d *schema.ResourceData, ip *lbSDK.IP, zone scw.Zone) diag.Diagnostics {
+	region, _ := zone.Region()
 	_ = d.Set("region", string(region))
 	_ = d.Set("zone", ip.Zone.String())
 	_ = d.Set("organization_id", ip.OrganizationID)

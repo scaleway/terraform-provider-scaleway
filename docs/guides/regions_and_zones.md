@@ -6,14 +6,13 @@ page_title: "Scaleway Zones and Regions"
 
 Scaleway's products are deployed across multiple datacenter in the world.
 
-For technical and legal reasons, some products are splitted by Region or by Availability Zones.
+For technical and legal reasons, some products are split by Region or by Availability Zones.
 When using such product, you can choose the location that better fits your need (country, latency, ...).
 
 ## Regions
 
 A Region is represented as a Geographical area such as France (Paris: `fr-par`) or the Netherlands (Amsterdam: `nl-ams`).
 It can contain multiple Availability Zones.
-
 
 ## Zones
 
@@ -55,4 +54,4 @@ If you need to retrieve the raw ID of the resource, you can either :
 
 ---
 
-More information regarding zones and regions can be found [here](https://www.scaleway.com/en/developers/api/#regions-and-zones).
+More information regarding zones and regions can be found [on the reference website](https://www.scaleway.com/en/developers/api/#regions-and-zones).

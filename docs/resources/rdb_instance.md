@@ -6,13 +6,18 @@ page_title: "Scaleway: scaleway_rdb_instance"
 # Resource: scaleway_rdb_instance
 
 Creates and manages Scaleway Database Instances.
-For more information, see refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
+
 
 ## Example Usage
 
+```terraform
 ### Example Basic
 
-```terraform
 resource "scaleway_rdb_instance" "main" {
   name               = "test-rdb"
   node_type          = "DB-DEV-S"
@@ -25,65 +30,93 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-### Example Block Storage Low Latency
-
 ```terraform
-resource "scaleway_rdb_instance" "main" {
-  name              = "test-rdb-sbs"
-  node_type         = "db-play2-pico"
-  engine            = "PostgreSQL-15"
-  is_ha_cluster     = true
-  disable_backup    = true
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  volume_type       = "sbs_15k"
-  volume_size_in_gb = 10
-}
-```
+### Example Engine Upgrade
 
-### Example with Settings
-
-```terraform
+# Initial creation with PostgreSQL 14
 resource "scaleway_rdb_instance" "main" {
-  name           = "test-rdb"
-  node_type      = "db-dev-s"
+  name           = "my-database"
+  node_type      = "DB-DEV-S"
+  engine         = "PostgreSQL-14"
+  is_ha_cluster  = false
   disable_backup = true
-  engine         = "MySQL-8"
-  user_name      = "my_initial_user"
+  user_name      = "my_user"
   password       = "thiZ_is_v&ry_s3cret"
-  init_settings = {
-    "lower_case_table_names" = 1
-  }
-  settings = {
-    "max_connections" = "350"
-  }
 }
-```
 
-### Example with backup schedule
+# Check available versions for upgrade
+output "upgradable_versions" {
+  value = scaleway_rdb_instance.main.upgradable_versions
+}
+
+# To upgrade to PostgreSQL 15, simply change the engine value
+# This will trigger a blue/green upgrade with automatic endpoint migration
+# resource "scaleway_rdb_instance" "main" {
+#   name           = "my-database"
+#   node_type      = "DB-DEV-S"
+#   engine         = "PostgreSQL-15"  # Changed from PostgreSQL-14
+#   is_ha_cluster  = false
+#   disable_backup = true
+#   user_name      = "my_user"
+#   password       = "thiZ_is_v&ry_s3cret"
+# }
+```
 
 ```terraform
-resource "scaleway_rdb_instance" "main" {
-  name          = "test-rdb"
-  node_type     = "DB-DEV-S"
-  engine        = "PostgreSQL-15"
-  is_ha_cluster = true
-  user_name     = "my_initial_user"
-  password      = "thiZ_is_v&ry_s3cret"
+### Usage of ephemeral random_password for instance password without storing it in state
 
-  disable_backup            = false
-  backup_schedule_frequency = 24 # every day
-  backup_schedule_retention = 7  # keep it one week
+// Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "db_password" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+// Pass the ephemeral password with password_wo (not stored in the state)
+resource "scaleway_rdb_instance" "main" {
+  name                = "test-rdb"
+  node_type           = "DB-DEV-S"
+  engine              = "PostgreSQL-15"
+  is_ha_cluster       = true
+  disable_backup      = true
+  user_name           = "my_initial_user"
+  password_wo         = ephemeral.random_password.db_password.result
+  password_wo_version = 1
+  encryption_at_rest  = true
 }
 ```
 
+```terraform
+#### 1 IPAM Private Network endpoint + 1 public endpoint
+
+resource "scaleway_vpc_private_network" "pn" {}
+
+resource "scaleway_rdb_instance" "main" {
+  node_type = "DB-DEV-S"
+  engine    = "PostgreSQL-15"
+  private_network {
+    pn_id       = scaleway_vpc_private_network.pn.id
+    enable_ipam = true
+  }
+  load_balancer {}
+}
+```
+
+```terraform
 ### Examples of endpoint configuration
 
-Database Instances can have a maximum of 1 public endpoint and 1 private endpoint. They can have both, or none.
+##### Database Instances can have a maximum of 1 public endpoint and 1 private endpoint. They can have both, or none.
 
 #### 1 static Private Network endpoint
 
-```terraform
 resource "scaleway_vpc_private_network" "pn" {
   ipv4_subnet {
     subnet = "172.16.20.0/22"
@@ -101,30 +134,69 @@ resource "scaleway_rdb_instance" "main" {
 }
 ```
 
-#### 1 IPAM Private Network endpoint + 1 public endpoint
-
 ```terraform
-resource "scaleway_vpc_private_network" "pn" {}
-
-resource "scaleway_rdb_instance" "main" {
-  node_type = "DB-DEV-S"
-  engine    = "PostgreSQL-15"
-  private_network {
-    pn_id       = scaleway_vpc_private_network.pn.id
-    enable_ipam = true
-  }
-  load_balancer {}
-}
-```
-
 #### Default: 1 public endpoint
 
-```terraform
 resource "scaleway_rdb_instance" "main" {
   node_type = "db-dev-s"
   engine    = "PostgreSQL-15"
 }
 ```
+
+```terraform
+### Example Block Storage Low Latency
+
+resource "scaleway_rdb_instance" "main" {
+  name              = "test-rdb-sbs"
+  node_type         = "db-play2-pico"
+  engine            = "PostgreSQL-15"
+  is_ha_cluster     = true
+  disable_backup    = true
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_type       = "sbs_15k"
+  volume_size_in_gb = 10
+}
+```
+
+```terraform
+### Example with backup schedule
+
+resource "scaleway_rdb_instance" "main" {
+  name          = "test-rdb"
+  node_type     = "DB-DEV-S"
+  engine        = "PostgreSQL-15"
+  is_ha_cluster = true
+  user_name     = "my_initial_user"
+  password      = "thiZ_is_v&ry_s3cret"
+
+  disable_backup            = false
+  backup_schedule_frequency = 24 # every day
+  backup_schedule_retention = 7  # keep it one week
+}
+```
+
+```terraform
+### Example with Settings
+
+resource "scaleway_rdb_instance" "main" {
+  name           = "test-rdb"
+  node_type      = "db-dev-s"
+  disable_backup = true
+  engine         = "MySQL-8"
+  user_name      = "my_initial_user"
+  password       = "thiZ_is_v&ry_s3cret"
+  init_settings = {
+    "lower_case_table_names" = 1
+  }
+  settings = {
+    "max_connections" = "350"
+  }
+}
+```
+
+
+
 
 -> **Note** If nothing is defined, your Database Instance will have a default public load-balancer endpoint.
 
@@ -141,9 +213,11 @@ interruption.
 
 ~> **Important** Once your Database Instance reaches `disk_full` status, if you are using `lssd` storage, you should upgrade the `node_type`, and if you are using `bssd` storage, you should increase the volume size before making any other changes to your Database Instance.
 
-- `engine` - (Required) Database Instance's engine version (e.g. `PostgreSQL-11`).
+- `engine` - (Required) Database Instance's engine version name (e.g. `PostgreSQL-16`, `MySQL-8`).
 
-~> **Important** Updates to `engine` will recreate the Database Instance.
+~> **Warning** Provider versions prior to `2.61.0` did not support engine upgrades. Changing the `engine` value in these versions would recreate the Database Instance **empty**, resulting in **data loss**. Ensure you are using provider version `>= 2.61.0` before upgrading your Database Instance engine version.
+
+~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
@@ -155,7 +229,11 @@ interruption.
 
 ~> **Important** Updates to `user_name` will recreate the Database Instance.
 
-- `password` - (Optional) Password for the first user of the Database Instance.
+- `password` - (Optional) Password for the first user of the Database Instance. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) Password for the first user of the Database Instance in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `is_ha_cluster` - (Optional) Enable or disable high availability for the Database Instance.
 
@@ -245,6 +323,11 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `address` - The private IPv4 address.
 - `certificate` - Certificate of the Database Instance.
 - `organization_id` - The organization ID the Database Instance is associated with.
+- `upgradable_versions` - List of available engine versions for upgrade. Each version contains:
+    - `id` - Version ID to use in upgrade requests.
+    - `name` - Engine version name (e.g., `PostgreSQL-15`).
+    - `version` - Version string (e.g., `15.5`).
+    - `minor_version` - Minor version string (e.g., `15.5.0`).
 
 ## Limitations
 

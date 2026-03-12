@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"time"
 
@@ -20,8 +21,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/pool.md
+var poolDescription string
+
 func ResourcePool() *schema.Resource {
 	return &schema.Resource{
+		Description:   poolDescription,
 		CreateContext: ResourceK8SPoolCreate,
 		ReadContext:   ResourceK8SPoolRead,
 		UpdateContext: ResourceK8SPoolUpdate,
@@ -36,229 +41,232 @@ func ResourcePool() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultK8SPoolTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"cluster_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The ID of the cluster on which this pool will be created",
+		SchemaFunc:    poolSchema,
+	}
+}
+
+func poolSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"cluster_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The ID of the cluster on which this pool will be created",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "The name of the cluster",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "Server type of the pool servers",
+			DiffSuppressFunc: dsf.IgnoreCaseAndHyphen,
+		},
+		"autoscaling": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable the autoscaling on the pool",
+		},
+		"autohealing": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Enable the autohealing on the pool",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "Size of the pool",
+		},
+		"min_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     1,
+			Description: "Minimum size of the pool",
+		},
+		"max_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Maximum size of the pool",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "The name of the cluster",
+			Optional:    true,
+			Description: "The tags associated with the pool",
+		},
+		"container_runtime": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          k8s.RuntimeContainerd.String(),
+			ForceNew:         true,
+			Description:      "Container runtime for the pool",
+			ValidateDiagFunc: verify.ValidateEnum[k8s.Runtime](),
+		},
+		"wait_for_pool_ready": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Whether to wait for the pool to be ready",
+		},
+		"placement_group_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     nil,
+			Description: "ID of the placement group",
+		},
+		"kubelet_args": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "Server type of the pool servers",
-				DiffSuppressFunc: dsf.IgnoreCaseAndHyphen,
-			},
-			"autoscaling": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the autoscaling on the pool",
-			},
-			"autohealing": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Enable the autohealing on the pool",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "Size of the pool",
-			},
-			"min_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     1,
-				Description: "Minimum size of the pool",
-			},
-			"max_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Maximum size of the pool",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the pool",
-			},
-			"container_runtime": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          k8s.RuntimeContainerd.String(),
-				ForceNew:         true,
-				Description:      "Container runtime for the pool",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.Runtime](),
-			},
-			"wait_for_pool_ready": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Whether to wait for the pool to be ready",
-			},
-			"placement_group_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     nil,
-				Description: "ID of the placement group",
-			},
-			"kubelet_args": {
-				Type: schema.TypeMap,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The Kubelet arguments to be used by this pool",
-			},
-			"upgrade_policy": {
-				Type:        schema.TypeList,
-				MaxItems:    1,
-				Optional:    true,
-				Computed:    true,
-				Description: "The Pool upgrade policy",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"max_unavailable": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     1,
-							Description: "The maximum number of nodes that can be not ready at the same time",
-						},
-						"max_surge": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     0,
-							Description: "The maximum number of nodes to be created during the upgrade",
-						},
+			Optional:    true,
+			Description: "The Kubelet arguments to be used by this pool",
+		},
+		"upgrade_policy": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "The Pool upgrade policy",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_unavailable": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     1,
+						Description: "The maximum number of nodes that can be not ready at the same time",
+					},
+					"max_surge": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Default:     0,
+						Description: "The maximum number of nodes to be created during the upgrade",
 					},
 				},
 			},
-			"root_volume_type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Computed:         true,
-				Description:      "System volume type of the nodes composing the pool",
-				ValidateDiagFunc: verify.ValidateEnum[k8s.PoolVolumeType](),
-			},
-			"root_volume_size_in_gb": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-				Computed:    true,
-				Description: "The size of the system volume of the nodes in gigabyte",
-			},
-			"public_ip_disabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				ForceNew:    true,
-				Description: "Defines if the public IP should be removed from the nodes.",
-			},
-			"zone":   zonal.Schema(),
-			"region": regional.Schema(),
-			// Computed elements
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the pool",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the pool",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Kubernetes version of the pool",
-			},
-			"current_size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The actual size of the pool",
-			},
-			"nodes": {
-				Type:        schema.TypeList,
-				Description: "List of nodes in the pool",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the node",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The name of the node",
-						},
-						"status": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The status of the node",
-						},
-						"public_ip": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The public IPv4 address of the node",
-							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
-						},
-						"public_ip_v6": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The public IPv6 address of the node",
-							Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
-						},
-						"private_ips": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Optional:    true,
-							Description: "List of private IPv4 and IPv6 addresses associated with the node",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"id": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The ID of the IP address resource",
-									},
-									"address": {
-										Type:        schema.TypeString,
-										Computed:    true,
-										Description: "The private IP address",
-									},
+		},
+		"root_volume_type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Computed:         true,
+			Description:      "System volume type of the nodes composing the pool",
+			ValidateDiagFunc: verify.ValidateEnum[k8s.PoolVolumeType](),
+		},
+		"root_volume_size_in_gb": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			ForceNew:    true,
+			Computed:    true,
+			Description: "The size of the system volume of the nodes in gigabyte",
+		},
+		"public_ip_disabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+			Description: "Defines if the public IP should be removed from the nodes.",
+		},
+		"zone":   zonal.Schema(),
+		"region": regional.Schema(),
+		// Computed elements
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the pool",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the pool",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Kubernetes version of the pool",
+		},
+		"current_size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The actual size of the pool",
+		},
+		"nodes": {
+			Type:        schema.TypeList,
+			Description: "List of nodes in the pool",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the node",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The name of the node",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The status of the node",
+					},
+					"public_ip": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The public IPv4 address of the node",
+						Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
+					},
+					"public_ip_v6": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The public IPv6 address of the node",
+						Deprecated:  "Please use the official Kubernetes provider and the kubernetes_nodes data source",
+					},
+					"private_ips": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Optional:    true,
+						Description: "List of private IPv4 and IPv6 addresses associated with the node",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"id": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The ID of the IP address resource",
+								},
+								"address": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "The private IP address",
 								},
 							},
 						},
 					},
 				},
 			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the pool",
-			},
-			"security_group_id": {
-				Type:             schema.TypeString,
-				Computed:         true,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "The ID of the security group",
-				DiffSuppressFunc: dsf.Locality,
-			},
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the pool",
+		},
+		"security_group_id": {
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			Description:      "The ID of the security group",
+			DiffSuppressFunc: dsf.Locality,
 		},
 	}
 }
@@ -300,13 +308,13 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if minSize, ok := d.GetOk("min_size"); ok {
-		req.MinSize = scw.Uint32Ptr(uint32(minSize.(int)))
+		req.MinSize = new(uint32(minSize.(int)))
 	}
 
 	if maxSize, ok := d.GetOk("max_size"); ok {
-		req.MaxSize = scw.Uint32Ptr(uint32(maxSize.(int)))
+		req.MaxSize = new(uint32(maxSize.(int)))
 	} else {
-		req.MaxSize = scw.Uint32Ptr(req.Size)
+		req.MaxSize = new(req.Size)
 	}
 
 	if containerRuntime, ok := d.GetOk("container_runtime"); ok {
@@ -317,12 +325,12 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	if maxSurge, ok := d.GetOk("upgrade_policy.0.max_surge"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(maxSurge.(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(maxSurge.(int)))
 	}
 
 	if maxUnavailable, ok := d.GetOk("upgrade_policy.0.max_unavailable"); ok {
 		req.UpgradePolicy = upgradePolicyReq
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(maxUnavailable.(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(maxUnavailable.(int)))
 	}
 
 	if volumeType, ok := d.GetOk("root_volume_type"); ok {
@@ -517,23 +525,23 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("autoscaling") {
-		updateRequest.Autoscaling = scw.BoolPtr(d.Get("autoscaling").(bool))
+		updateRequest.Autoscaling = new(d.Get("autoscaling").(bool))
 	}
 
 	if d.HasChange("autohealing") {
-		updateRequest.Autohealing = scw.BoolPtr(d.Get("autohealing").(bool))
+		updateRequest.Autohealing = new(d.Get("autohealing").(bool))
 	}
 
 	if d.HasChange("min_size") {
-		updateRequest.MinSize = scw.Uint32Ptr(uint32(d.Get("min_size").(int)))
+		updateRequest.MinSize = new(uint32(d.Get("min_size").(int)))
 	}
 
 	if d.HasChange("max_size") {
-		updateRequest.MaxSize = scw.Uint32Ptr(uint32(d.Get("max_size").(int)))
+		updateRequest.MaxSize = new(uint32(d.Get("max_size").(int)))
 	}
 
 	if !d.Get("autoscaling").(bool) && d.HasChange("size") {
-		updateRequest.Size = scw.Uint32Ptr(uint32(d.Get("size").(int)))
+		updateRequest.Size = new(uint32(d.Get("size").(int)))
 	}
 
 	if d.HasChange("tags") {
@@ -548,14 +556,18 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	upgradePolicyReq := &k8s.UpdatePoolRequestUpgradePolicy{}
 
 	if d.HasChange("upgrade_policy.0.max_surge") {
-		upgradePolicyReq.MaxSurge = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
+		upgradePolicyReq.MaxSurge = new(uint32(d.Get("upgrade_policy.0.max_surge").(int)))
 	}
 
 	if d.HasChange("upgrade_policy.0.max_unavailable") {
-		upgradePolicyReq.MaxUnavailable = scw.Uint32Ptr(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
+		upgradePolicyReq.MaxUnavailable = new(uint32(d.Get("upgrade_policy.0.max_unavailable").(int)))
 	}
 
 	updateRequest.UpgradePolicy = upgradePolicyReq
+
+	if d.HasChange("security_group_id") {
+		updateRequest.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(d.Get("security_group_id").(string)))
+	}
 
 	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 	if err != nil {

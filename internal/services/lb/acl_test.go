@@ -17,7 +17,6 @@ func TestAccAcl_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isACLDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -237,6 +236,11 @@ func TestAccAcl_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.invert", "false"),
 					resource.TestCheckResourceAttr("scaleway_lb_acl.acl01", "match.0.ips_edge_services", "false"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_lb_acl.acl01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: `

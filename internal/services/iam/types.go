@@ -3,13 +3,12 @@ package iam
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 func expandPermissionSetNames(rawPermissions any) *[]string {
-	permissions := []string{}
 	permissionSet := rawPermissions.(*schema.Set)
+	permissions := make([]string, 0, permissionSet.Len())
 
 	for _, rawPermission := range permissionSet.List() {
 		permissions = append(permissions, rawPermission.(string))
@@ -19,7 +18,7 @@ func expandPermissionSetNames(rawPermissions any) *[]string {
 }
 
 func flattenPermissionSetNames(permissions []string) *schema.Set {
-	rawPermissions := []any(nil)
+	rawPermissions := make([]any, 0, len(permissions))
 	for _, perm := range permissions {
 		rawPermissions = append(rawPermissions, perm)
 	}
@@ -30,9 +29,9 @@ func flattenPermissionSetNames(permissions []string) *schema.Set {
 }
 
 func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
-	rules := []*iam.RuleSpecs(nil)
-
 	rawRules := d.([]any)
+	rules := make([]*iam.RuleSpecs, 0, len(rawRules))
+
 	for _, rawRule := range rawRules {
 		mapRule := rawRule.(map[string]any)
 		rule := &iam.RuleSpecs{
@@ -41,7 +40,7 @@ func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
 		}
 
 		if orgID, orgIDExists := mapRule["organization_id"]; orgIDExists && orgID.(string) != "" {
-			rule.OrganizationID = scw.StringPtr(orgID.(string))
+			rule.OrganizationID = new(orgID.(string))
 		}
 
 		if projIDs, projIDsExists := mapRule["project_ids"]; projIDsExists {
@@ -55,7 +54,7 @@ func expandPolicyRuleSpecs(d any) []*iam.RuleSpecs {
 }
 
 func flattenPolicyRules(rules []*iam.Rule) any {
-	rawRules := []any(nil)
+	rawRules := make([]any, 0, len(rules))
 
 	for _, rule := range rules {
 		rawRule := map[string]any{}

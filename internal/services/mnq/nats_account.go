@@ -8,6 +8,7 @@ import (
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,21 +24,26 @@ func ResourceNatsAccount() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The nats account name",
-			},
-			"endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The endpoint for interact with Nats",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc:    natsAccountSchema,
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func natsAccountSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The nats account name",
 		},
+		"endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The endpoint for interact with Nats",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -56,7 +62,9 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, account.ID))
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
@@ -78,6 +86,10 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 			return nil
 		}
 
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, account.Region, account.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

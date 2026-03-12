@@ -29,29 +29,33 @@ func ResourceDomain() *schema.Resource {
 			Create:  schema.DefaultTimeout(DefaultFunctionTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"function_id": {
-				Type:             schema.TypeString,
-				Description:      "The ID of the function",
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"hostname": {
-				Type:        schema.TypeString,
-				Description: "The hostname that should be redirected to the function",
-				Required:    true,
-				ForceNew:    true,
-			},
-			"url": {
-				Type:        schema.TypeString,
-				Description: "URL to use to trigger the function",
-				Computed:    true,
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    domainSchema,
 		CustomizeDiff: cdf.LocalityCheck("function_id"),
+	}
+}
+
+func domainSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"function_id": {
+			Type:             schema.TypeString,
+			Description:      "The ID of the function",
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"hostname": {
+			Type:        schema.TypeString,
+			Description: "The hostname that should be redirected to the function",
+			Required:    true,
+			ForceNew:    true,
+		},
+		"url": {
+			Type:        schema.TypeString,
+			Description: "URL to use to trigger the function",
+			Computed:    true,
+		},
+		"region": regional.Schema(),
 	}
 }
 

@@ -11,6 +11,7 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 
 For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
+
 ## Example Usage
 
 ```terraform
@@ -26,8 +27,8 @@ resource "scaleway_container" "main" {
   namespace_id    = scaleway_container_namespace.main.id
   registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
   port            = 9997
-  cpu_limit       = 140
-  memory_limit    = 256
+  cpu_limit       = 1024
+  memory_limit    = 2048
   min_scale       = 3
   max_scale       = 5
   timeout         = 600
@@ -36,8 +37,8 @@ resource "scaleway_container" "main" {
   protocol        = "http1"
   deploy          = true
 
-  command = [ "bash", "-c", "script.sh" ]
-  args =    [ "some", "args" ]
+  command = ["bash", "-c", "script.sh"]
+  args    = ["some", "args"]
 
   environment_variables = {
     "foo" = "var"
@@ -47,6 +48,94 @@ resource "scaleway_container" "main" {
   }
 }
 ```
+
+```terraform
+# Project to be referenced in the IAM policy
+data "scaleway_account_project" "default" {
+  name = "default"
+}
+
+# IAM resources
+resource "scaleway_iam_application" "container_auth" {
+  name = "container-auth"
+}
+resource "scaleway_iam_policy" "access_private_containers" {
+  application_id = scaleway_iam_application.container_auth.id
+  rule {
+    project_ids          = [data.scaleway_account_project.default.id]
+    permission_set_names = ["ContainersPrivateAccess"]
+  }
+}
+resource "scaleway_iam_api_key" "api_key" {
+  application_id = scaleway_iam_application.container_auth.id
+}
+
+# Container resources
+resource "scaleway_container_namespace" "private" {
+  name = "private-container-namespace"
+}
+resource "scaleway_container" "private" {
+  namespace_id   = scaleway_container_namespace.private.id
+  registry_image = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
+  privacy        = "private"
+  deploy         = true
+}
+
+# Output the secret key and the container's endpoint for the curl command
+output "secret_key" {
+  value     = scaleway_iam_api_key.api_key.secret_key
+  sensitive = true
+}
+output "container_endpoint" {
+  value = scaleway_container.private.domain_name
+}
+
+# Then you can access your private container using the API key:
+# $ curl -H "X-Auth-Token: $(terraform output -raw secret_key)" \
+#   "https://$(terraform output -raw container_endpoint)/"
+
+# Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
+```
+
+```terraform
+# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along 
+# with the `registry_sha256` argument to trigger container redeployments when the image is updated.
+
+# Ideally, you would create the namespace separately.
+# For demonstration purposes, this example assumes the "nginx:latest" image is already available
+# in the referenced namespace.
+resource "scaleway_registry_namespace" "main" {
+  name = "some-unique-name"
+}
+
+data "scaleway_registry_image" "nginx" {
+  namespace_id = scaleway_registry_namespace.main.id
+  name         = "nginx"
+}
+
+data "scaleway_registry_image_tag" "nginx_latest" {
+  image_id = data.scaleway_registry_image.nginx.id
+  name     = "latest"
+}
+
+resource "scaleway_container_namespace" "main" {
+  name = "my-container-namespace"
+}
+
+resource "scaleway_container" "main" {
+  name            = "nginx-latest"
+  namespace_id    = scaleway_container_namespace.main.id
+  registry_image  = "${scaleway_registry_namespace.main.endpoint}/nginx:latest"
+  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
+  port            = 80
+  deploy          = true
+}
+
+# Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
+```
+
+
+
 
 ## Argument Reference
 

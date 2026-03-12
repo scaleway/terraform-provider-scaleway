@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -27,59 +26,63 @@ func ResourceBucketWebsiteConfiguration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateFunc:     validation.StringLenBetween(1, 63),
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"index_document": {
-				Type:     schema.TypeList,
-				Required: true,
-				MinItems: 1,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"suffix": {
-							Type:        schema.TypeString,
-							Description: "Suffix that will be added to the index.",
-							Required:    true,
-						},
-					},
-				},
-				Description: "The name of the index document for the website.",
-			},
-			"error_document": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"key": {
-							Type:        schema.TypeString,
-							Description: "Key for the object to use as an error document.",
-							Required:    true,
-						},
-					},
-				},
-				Description: "The name of the error document for the website.",
-			},
-			"website_endpoint": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The domain of the website endpoint.",
-			},
-			"website_domain": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The website endpoint.",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: bucketWebsiteConfigurationSchema,
+	}
+}
+
+func bucketWebsiteConfigurationSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringLenBetween(1, 63),
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"index_document": {
+			Type:     schema.TypeList,
+			Required: true,
+			MinItems: 1,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"suffix": {
+						Type:        schema.TypeString,
+						Description: "Suffix that will be added to the index.",
+						Required:    true,
+					},
+				},
+			},
+			Description: "The name of the index document for the website.",
+		},
+		"error_document": {
+			Type:     schema.TypeList,
+			Optional: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key for the object to use as an error document.",
+						Required:    true,
+					},
+				},
+			},
+			Description: "The name of the error document for the website.",
+		},
+		"website_endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The domain of the website endpoint.",
+		},
+		"website_domain": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The website endpoint.",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -111,7 +114,7 @@ func resourceBucketWebsiteConfigurationCreate(ctx context.Context, d *schema.Res
 	}
 
 	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
+		Bucket: new(bucket),
 	})
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("couldn't read bucket: %w", err))
@@ -145,7 +148,7 @@ func resourceBucketWebsiteConfigurationRead(ctx context.Context, d *schema.Resou
 	// expectedBucketOwner and routing not supported
 
 	_, err = conn.ListObjects(ctx, &s3.ListObjectsInput{
-		Bucket: scw.StringPtr(bucket),
+		Bucket: new(bucket),
 	})
 	if err != nil {
 		if IsS3Err(err, ErrCodeNoSuchBucket, "") {

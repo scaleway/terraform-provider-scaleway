@@ -37,7 +37,6 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -127,7 +126,6 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -413,7 +411,6 @@ func TestAccObjectBucket_ObjectLock(t *testing.T) {
 
 	bucketObjectLock := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lock")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -479,7 +476,6 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 	resourceName := "scaleway_object_bucket.bucket-cors-update"
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-cors-update")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -597,7 +593,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 			}
 
 			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Bucket: new(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
 				return err
@@ -608,7 +604,6 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -641,7 +636,6 @@ func TestAccObjectBucket_Cors_EmptyOrigin(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-cors-empty-origin")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -678,14 +672,14 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 		}
 
 		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			return err
 		}
 
 		out, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			if !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
@@ -729,8 +723,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			req := s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("test-file"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("test-file"),
 				Body:   strings.NewReader("test content"),
 			}
 
@@ -740,8 +734,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("folder/test-file-in-folder"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("folder/test-file-in-folder"),
 				Body:   strings.NewReader("folder test content"), // Example body content
 			})
 			if err != nil {
@@ -753,7 +747,6 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{

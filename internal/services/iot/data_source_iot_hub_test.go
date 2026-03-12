@@ -12,7 +12,6 @@ func TestAccDataSourceHub_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isHubDestroyed(tt),
 		Steps: []resource.TestStep{

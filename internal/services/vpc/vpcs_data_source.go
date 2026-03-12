@@ -15,69 +15,73 @@ import (
 func DataSourceVPCs() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceVPCsRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "VPCs with a name like it are listed.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "VPCs with these exact tags are listed.",
-			},
-			"vpcs": {
-				Type:        schema.TypeList,
-				Description: "List of VPCs.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Computed:    true,
-							Description: "ID of the VPC.",
-							Type:        schema.TypeString,
-						},
-						"name": {
-							Computed:    true,
-							Description: "Name of the VPC.",
-							Type:        schema.TypeString,
-						},
-						"tags": {
-							Computed:    true,
-							Description: "List of tags.",
-							Type:        schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"created_at": {
-							Computed:    true,
-							Description: "Date on which the VPC was created (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
-						"update_at": {
-							Computed:    true,
-							Description: "Date on which the VPC was last updated (RFC 3339 format)",
-							Type:        schema.TypeString,
-						},
-						"is_default": {
-							Computed:    true,
-							Description: "Whether this VPC is the default one for its project.",
-							Type:        schema.TypeBool,
-						},
-						"region":          regional.Schema(),
-						"organization_id": account.OrganizationIDSchema(),
-						"project_id":      account.ProjectIDSchema(),
-					},
-				},
-			},
-			"region":          regional.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc:  vpcsSchema,
+	}
+}
+
+func vpcsSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "VPCs with a name like it are listed.",
 		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "VPCs with these exact tags are listed.",
+		},
+		"vpcs": {
+			Type:        schema.TypeList,
+			Description: "List of VPCs.",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Computed:    true,
+						Description: "ID of the VPC.",
+						Type:        schema.TypeString,
+					},
+					"name": {
+						Computed:    true,
+						Description: "Name of the VPC.",
+						Type:        schema.TypeString,
+					},
+					"tags": {
+						Computed:    true,
+						Description: "List of tags.",
+						Type:        schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"created_at": {
+						Computed:    true,
+						Description: "Date on which the VPC was created (RFC 3339 format)",
+						Type:        schema.TypeString,
+					},
+					"update_at": {
+						Computed:    true,
+						Description: "Date on which the VPC was last updated (RFC 3339 format)",
+						Type:        schema.TypeString,
+					},
+					"is_default": {
+						Computed:    true,
+						Description: "Whether this VPC is the default one for its project.",
+						Type:        schema.TypeBool,
+					},
+					"region":          regional.Schema(),
+					"organization_id": account.OrganizationIDSchema(),
+					"project_id":      account.ProjectIDSchema(),
+				},
+			},
+		},
+		"region":          regional.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 

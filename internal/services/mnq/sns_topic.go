@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -24,67 +24,84 @@ func ResourceSNSTopic() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Computed:      true,
-				Optional:      true,
-				ForceNew:      true,
-				Description:   "Name of the SNS Topic.",
-				ConflictsWith: []string{"name_prefix"},
-			},
-			"name_prefix": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "Creates a unique name beginning with the specified prefix.",
-				ConflictsWith: []string{"name"},
-			},
-			"sns_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sns.mnq.{region}.scaleway.com",
-				Description: "SNS endpoint",
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS access key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SNS secret key",
-			},
-			"content_based_deduplication": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Specifies whether to enable content-based deduplication.",
-			},
-			"fifo_topic": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Whether the topic is a FIFO topic. If true, the topic name must end with .fifo",
-			},
-			"owner": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Owner of the SNS topic, should have format 'project-${project_id}'",
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    snsTopicSchema,
 		CustomizeDiff: resourceMNQSSNSTopicCustomizeDiff,
+		Identity:      snsTopicIdentity(),
+	}
+}
+
+func snsTopicIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"name": {
+			Type:              schema.TypeString,
+			Description:       "The topic name",
+			RequiredForImport: true,
+		},
+	})
+}
+
+func snsTopicSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Computed:      true,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Name of the SNS Topic.",
+			ConflictsWith: []string{"name_prefix"},
+		},
+		"name_prefix": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "Creates a unique name beginning with the specified prefix.",
+			ConflictsWith: []string{"name"},
+		},
+		"sns_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sns.mnq.{region}.scaleway.com",
+			Description: "SNS endpoint",
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS access key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SNS secret key",
+		},
+		"content_based_deduplication": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Specifies whether to enable content-based deduplication.",
+		},
+		"fifo_topic": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Whether the topic is a FIFO topic. If true, the topic name must end with .fifo",
+		},
+		"owner": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Owner of the SNS topic, should have format 'project-${project_id}'",
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ARN of the topic, should have format 'arn:scw:sns:project-${project_id}:${topic_name}'",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -112,7 +129,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -121,7 +138,7 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 	topicName := resourceMNQSNSTopicName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
 	input := &sns.CreateTopicInput{
-		Name:       scw.StringPtr(topicName),
+		Name:       new(topicName),
 		Attributes: attributes,
 	}
 
@@ -134,7 +151,13 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("topic id is nil on creation")
 	}
 
-	d.SetId(composeMNQID(region, projectID, topicName))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       topicName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSTopicRead(ctx, d, m)
 }
@@ -151,14 +174,22 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	topicAttributes, err := snsClient.GetTopicAttributes(ctx, &sns.GetTopicAttributesInput{
-		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
+		TopicArn: new(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       topicName,
+	}, "region", "project_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -193,7 +224,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().Schema, SNSTopicAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("failed to get attributes from schema: %w", err))
 	}
@@ -207,7 +238,7 @@ func ResourceMNQSNSTopicUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if len(updatedAttributes) > 0 {
 		for attributeName, attributeValue := range updatedAttributes {
 			_, err := snsClient.SetTopicAttributes(ctx, &sns.SetTopicAttributesInput{
-				AttributeName:  scw.StringPtr(attributeName),
+				AttributeName:  new(attributeName),
 				AttributeValue: &attributeValue,
 				TopicArn:       &topicARN,
 			})
@@ -232,7 +263,7 @@ func ResourceMNQSNSTopicDelete(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	_, err = snsClient.DeleteTopic(ctx, &sns.DeleteTopicInput{
-		TopicArn: scw.StringPtr(ComposeSNSARN(region, projectID, topicName)),
+		TopicArn: new(ComposeSNSARN(region, projectID, topicName)),
 	})
 	if err != nil {
 		return diag.FromErr(err)

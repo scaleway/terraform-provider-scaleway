@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -31,162 +32,167 @@ func ResourcePrivateNetwork() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the private network",
-				Computed:    true,
-			},
-			"ipv4_subnet": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The IPv4 subnet associated with the private network",
-				Computed:    true,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"subnet": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ForceNew:     true,
-							Description:  "The subnet CIDR",
-							ValidateFunc: validation.IsCIDRNetwork(0, 32),
-						},
-						// computed
-						"id": {
-							Type:        schema.TypeString,
-							Description: "The subnet ID",
-							Computed:    true,
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the subnet",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the subnet",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
-						},
-						"subnet_mask": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
-						},
-						"prefix_length": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
-						},
+		SchemaFunc: privateNetworkSchema,
+		Identity:   identity.DefaultRegional(),
+	}
+}
+
+func privateNetworkSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The name of the private network",
+			Computed:    true,
+		},
+		"ipv4_subnet": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The IPv4 subnet associated with the private network",
+			Computed:    true,
+			MaxItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"subnet": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ForceNew:     true,
+						Description:  "The subnet CIDR",
+						ValidateFunc: validation.IsCIDRNetwork(0, 32),
+					},
+					// computed
+					"id": {
+						Type:        schema.TypeString,
+						Description: "The subnet ID",
+						Computed:    true,
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the creation of the subnet",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the last update of the subnet",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+					},
+					"subnet_mask": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+					},
+					"prefix_length": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 					},
 				},
 			},
-			"ipv6_subnets": {
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Description: "The IPv6 subnet associated with the private network",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"subnet": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							Computed:     true,
-							ForceNew:     true,
-							Description:  "The subnet CIDR",
-							ValidateFunc: validation.IsCIDRNetwork(0, 128),
-						},
-						// computed
-						"id": {
-							Type:        schema.TypeString,
-							Description: "The subnet ID",
-							Computed:    true,
-						},
-						"created_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the creation of the subnet",
-						},
-						"updated_at": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The date and time of the last update of the subnet",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
-						},
-						"subnet_mask": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
-						},
-						"prefix_length": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
-						},
+		},
+		"ipv6_subnets": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "The IPv6 subnet associated with the private network",
+			Computed:    true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"subnet": {
+						Type:         schema.TypeString,
+						Optional:     true,
+						Computed:     true,
+						ForceNew:     true,
+						Description:  "The subnet CIDR",
+						ValidateFunc: validation.IsCIDRNetwork(0, 128),
+					},
+					// computed
+					"id": {
+						Type:        schema.TypeString,
+						Description: "The subnet ID",
+						Computed:    true,
+					},
+					"created_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the creation of the subnet",
+					},
+					"updated_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The date and time of the last update of the subnet",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The network address of the subnet in dotted decimal notation, e.g., '192.168.0.0' for a '192.168.0.0/24' subnet",
+					},
+					"subnet_mask": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The subnet mask expressed in dotted decimal notation, e.g., '255.255.255.0' for a /24 subnet",
+					},
+					"prefix_length": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 					},
 				},
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with private network",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with private network",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"is_regional": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Deprecated:  "This field is deprecated and will be removed in the next major version",
-				Description: "Defines whether the private network is Regional. By default, it will be Zonal",
-			},
-			"vpc_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				ForceNew:    true,
-				Description: "The VPC in which to create the private network",
-			},
-			"enable_default_route_propagation": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Defines whether default v4 and v6 routes are propagated for this Private Network",
-			},
-			"project_id": account.ProjectIDSchema(),
-			"zone": {
-				Type:             schema.TypeString,
-				Description:      "The zone you want to attach the resource to",
-				Optional:         true,
-				Computed:         true,
-				Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
-				ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
-			},
-			"region": regional.Schema(),
-			// Computed elements
-			"organization_id": account.OrganizationIDSchema(),
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the private network",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the private network",
-			},
+		},
+		"is_regional": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Deprecated:  "This field is deprecated and will be removed in the next major version",
+			Description: "Defines whether the private network is Regional. By default, it will be Zonal",
+		},
+		"vpc_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "The VPC in which to create the private network",
+		},
+		"enable_default_route_propagation": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Defines whether default v4 and v6 routes are propagated for this Private Network",
+		},
+		"project_id": account.ProjectIDSchema(),
+		"zone": {
+			Type:             schema.TypeString,
+			Description:      "The zone you want to attach the resource to",
+			Optional:         true,
+			Computed:         true,
+			Deprecated:       "This field is deprecated and will be removed in the next major version, please use `region` instead",
+			ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
+		},
+		"region": regional.Schema(),
+		// Computed elements
+		"organization_id": account.OrganizationIDSchema(),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the private network",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the private network",
 		},
 	}
 }
@@ -228,7 +234,10 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
@@ -253,6 +262,17 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	diags := setPrivateNetworkState(d, m, pn, region)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork, region scw.Region) diag.Diagnostics {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -286,7 +306,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
 		PrivateNetworkID:               ID,
 		Region:                         region,
-		Name:                           scw.StringPtr(d.Get("name").(string)),
+		Name:                           new(d.Get("name").(string)),
 		Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
 		DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 	}, scw.WithContext(ctx))

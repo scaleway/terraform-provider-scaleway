@@ -21,7 +21,6 @@ func TestAccLB_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -71,6 +70,12 @@ func TestAccLB_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb.main", "ssl_compatibility_level", lbSDK.SSLCompatibilityLevelSslCompatibilityLevelModern.String()),
 				),
 			},
+			{
+				ResourceName:            "scaleway_lb.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_private_networks"},
+			},
 		},
 	})
 }
@@ -80,7 +85,6 @@ func TestAccLB_Private(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -136,7 +140,6 @@ func TestAccLB_AssignedIPs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -168,7 +171,6 @@ func TestAccLB_WithIPv6(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -208,7 +210,6 @@ func TestAccLB_UpdateToIPv6(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -257,7 +258,6 @@ func TestAccLB_Migrate(t *testing.T) {
 	lbID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -370,7 +370,6 @@ func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isLbDestroyed(tt),
@@ -424,7 +423,7 @@ func TestAccLB_WithPrivateNetworksIPAMIDs(t *testing.T) {
 						"scaleway_lb.lb01", "private_network.0.ipam_ids.0",
 						"scaleway_ipam_ip.ip01", "id"),
 					resource.TestCheckResourceAttrPair(
-						"scaleway_ipam_ip.ip01", "address",
+						"scaleway_ipam_ip.ip01", "address_cidr",
 						"data.scaleway_ipam_ip.by_name", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_lb.lb01", "private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_lb.lb01", "private_ips.0.address"),
@@ -439,7 +438,6 @@ func TestAccLB_WithoutPNConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -481,7 +479,6 @@ func TestAccLB_DifferentLocalityIPID(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isLbDestroyed(tt),
 		Steps: []resource.TestStep{

@@ -21,7 +21,6 @@ func TestAccReadReplica_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -64,7 +63,6 @@ func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -87,7 +85,7 @@ func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 					resource "scaleway_vpc_private_network" "pn" {}
 
 					resource "scaleway_rdb_read_replica" "replica" {
-  						instance_id = scaleway_rdb_instance.instance.id
+ 						instance_id = scaleway_rdb_instance.instance.id
 						private_network {
 							private_network_id = scaleway_vpc_private_network.pn.id
 							service_ip         = "10.12.1.0/20"
@@ -99,6 +97,7 @@ func TestAccReadReplica_PrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.ip"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_read_replica.replica", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_read_replica.replica", "private_network.0.service_ip", "10.12.1.0/20"),
 				),
 			},
 		},
@@ -112,7 +111,6 @@ func TestAccReadReplica_Update(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -329,7 +327,6 @@ func TestAccReadReplica_MultipleEndpoints(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -381,7 +378,6 @@ func TestAccReadReplica_DifferentZone(t *testing.T) {
 	readReplicaID := ""
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),
@@ -498,7 +494,6 @@ func TestAccReadReplica_WithInstanceAlsoInPrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			rdbchecks.IsInstanceDestroyed(tt),

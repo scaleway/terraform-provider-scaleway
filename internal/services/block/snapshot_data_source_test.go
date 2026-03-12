@@ -13,7 +13,6 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			blocktestfuncs.IsSnapshotDestroyed(tt),
@@ -27,7 +26,7 @@ func TestAccDataSourceSnapshot_Basic(t *testing.T) {
 					}
 
 					resource scaleway_block_snapshot main {
-						name = "test-ds-block-snapshot-basic"
+						name = "test-ds-block-snapshot-basic-tf"
 						volume_id = scaleway_block_volume.main.id
 					}
 

@@ -58,11 +58,11 @@ func TestAccTrigger_SQS(t *testing.T) {
 							project_id = scaleway_mnq_sqs.main.project_id
 							region = scaleway_mnq_sqs.main.region
 						}
+						depends_on = [ "scaleway_mnq_sqs_credentials.main" ]
 					}
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isTriggerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -109,7 +109,6 @@ func TestAccTrigger_Nats(t *testing.T) {
 				`
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isTriggerDestroyed(tt),
 		Steps: []resource.TestStep{

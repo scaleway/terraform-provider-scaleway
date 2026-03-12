@@ -17,9 +17,10 @@ import (
 
 func ResourceCockpitGrafanaUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceCockpitGrafanaUserCreate,
-		ReadContext:   ResourceCockpitGrafanaUserRead,
-		DeleteContext: ResourceCockpitGrafanaUserDelete,
+		CreateContext:      ResourceCockpitGrafanaUserCreate,
+		ReadContext:        ResourceCockpitGrafanaUserRead,
+		DeleteContext:      ResourceCockpitGrafanaUserDelete,
+		DeprecationMessage: "This resource is deprecated and will be removed on January 1st, 2026. Grafana authentication is now managed through Scaleway IAM (Identity and Access Management). Use the 'scaleway_cockpit_grafana' data source to retrieve Grafana connection details. See https://www.scaleway.com/en/docs/observability/cockpit/",
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultCockpitTimeout),
 			Read:    schema.DefaultTimeout(DefaultCockpitTimeout),
@@ -29,35 +30,38 @@ func ResourceCockpitGrafanaUser() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"login": {
-				Type:         schema.TypeString,
-				Required:     true,
-				ForceNew:     true,
-				Description:  "The login of the Grafana user",
-				ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_-]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The password of the Grafana user",
-				Sensitive:   true,
-			},
-			"role": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The role of the Grafana user",
-				ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
-			},
-			"grafana_url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The grafana URL",
-			},
+		SchemaFunc: cockpitGrafanaUserSchema,
+	}
+}
 
-			"project_id": account.ProjectIDSchema(),
+func cockpitGrafanaUserSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"login": {
+			Type:         schema.TypeString,
+			Required:     true,
+			ForceNew:     true,
+			Description:  "The login of the Grafana user",
+			ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[a-zA-Z0-9_-]{2,24}$`), "must have between 2 and 24 alphanumeric characters"),
 		},
+		"password": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The password of the Grafana user",
+			Sensitive:   true,
+		},
+		"role": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The role of the Grafana user",
+			ValidateDiagFunc: verify.ValidateEnum[cockpit.GrafanaUserRole](),
+		},
+		"grafana_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The grafana URL",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -71,7 +75,7 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 	login := d.Get("login").(string)
 	role := cockpit.GrafanaUserRole(d.Get("role").(string))
 
-	grafanaUser, err := api.CreateGrafanaUser(&cockpit.GlobalAPICreateGrafanaUserRequest{
+	grafanaUser, err := api.CreateGrafanaUser(&cockpit.GlobalAPICreateGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 		ProjectID: projectID,
 		Login:     login,
 		Role:      role,
@@ -92,7 +96,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{
+	res, err := api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 		ProjectID: projectID,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
@@ -148,7 +152,7 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{
+	err = api.DeleteGrafanaUser(&cockpit.GlobalAPIDeleteGrafanaUserRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 		ProjectID:     projectID,
 		GrafanaUserID: grafanaUserID,
 	}, scw.WithContext(ctx))

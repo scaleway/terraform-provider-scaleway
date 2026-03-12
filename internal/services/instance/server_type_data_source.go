@@ -15,134 +15,138 @@ import (
 func DataSourceServerType() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceInstanceServerTypeRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The name of the server type",
-			},
-			"arch": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The architecture of the server type",
-			},
-			"cpu": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of CPU cores of the server type",
-			},
-			"ram": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of bytes of RAM of the server type",
-			},
-			"gpu": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The number of GPUs of the server type",
-			},
-			"volumes": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The specifications of volumes allowed for the server type",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"min_size_total": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The minimum total size in bytes of volumes allowed on the server type",
-						},
-						"max_size_total": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The maximum total size in bytes of volumes allowed on the server type",
-						},
-						"min_size_per_local_volume": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The minimum size in bytes per local volume allowed on the server type",
-						},
-						"max_size_per_local_volume": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The maximum size in bytes per local volume allowed on the server type",
-						},
-						"scratch_storage_max_size": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The maximum size in bytes of the scratch volume allowed on the server type",
-						},
-						"block_storage": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Whether block storage is allowed on the server type",
-						},
-					},
-				},
-			},
-			"capabilities": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The specific capabilities of the server type",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"boot_types": {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "The list of boot types allowed for the server type",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"max_file_systems": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The maximum number of file systems that can be attached to the server type",
-						},
-					},
-				},
-			},
-			"network": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The network specifications of the server type",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"internal_bandwidth": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The internal bandwidth of the server type",
-						},
-						"public_bandwidth": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The public bandwidth of the server type",
-						},
-						"block_bandwidth": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "The block bandwidth of the server type",
-						},
-					},
-				},
-			},
-			"hourly_price": {
-				Type:        schema.TypeFloat,
-				Computed:    true,
-				Description: "The hourly price of the server type in euro",
-			},
-			"end_of_service": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the server type will soon reach End Of Service",
-			},
-			"availability": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Whether the server type is available in the zone",
-			},
-			"zone": zonal.Schema(),
+		SchemaFunc:  serverTypeSchema,
+	}
+}
+
+func serverTypeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The name of the server type",
 		},
+		"arch": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The architecture of the server type",
+		},
+		"cpu": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of CPU cores of the server type",
+		},
+		"ram": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of bytes of RAM of the server type",
+		},
+		"gpu": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The number of GPUs of the server type",
+		},
+		"volumes": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The specifications of volumes allowed for the server type",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"min_size_total": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The minimum total size in bytes of volumes allowed on the server type",
+					},
+					"max_size_total": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The maximum total size in bytes of volumes allowed on the server type",
+					},
+					"min_size_per_local_volume": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The minimum size in bytes per local volume allowed on the server type",
+					},
+					"max_size_per_local_volume": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The maximum size in bytes per local volume allowed on the server type",
+					},
+					"scratch_storage_max_size": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The maximum size in bytes of the scratch volume allowed on the server type",
+					},
+					"block_storage": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether block storage is allowed on the server type",
+					},
+				},
+			},
+		},
+		"capabilities": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The specific capabilities of the server type",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"boot_types": {
+						Type:        schema.TypeList,
+						Computed:    true,
+						Description: "The list of boot types allowed for the server type",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+					},
+					"max_file_systems": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The maximum number of file systems that can be attached to the server type",
+					},
+				},
+			},
+		},
+		"network": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The network specifications of the server type",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"internal_bandwidth": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The internal bandwidth of the server type",
+					},
+					"public_bandwidth": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The public bandwidth of the server type",
+					},
+					"block_bandwidth": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The block bandwidth of the server type",
+					},
+				},
+			},
+		},
+		"hourly_price": {
+			Type:        schema.TypeFloat,
+			Computed:    true,
+			Description: "The hourly price of the server type in euro",
+		},
+		"end_of_service": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Whether the server type will soon reach End Of Service",
+		},
+		"availability": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Whether the server type is available in the zone",
+		},
+		"zone": zonal.Schema(),
 	}
 }
 

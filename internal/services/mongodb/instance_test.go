@@ -23,7 +23,6 @@ func TestAccMongoDBInstance_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -58,7 +57,6 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -105,7 +103,6 @@ func TestAccMongoDBInstance_SnapshotSchedule(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -160,7 +157,6 @@ func TestAccMongoDBInstance_UpdateNameTagsUser(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -217,7 +213,6 @@ func TestAccMongoDBInstance_FromSnapshot(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -265,7 +260,6 @@ func TestAccMongoDBInstance_WithPrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -333,7 +327,6 @@ func TestAccMongoDBInstance_UpdatePrivateNetwork(t *testing.T) {
 	var previousPrivateNetworkID string
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -485,7 +478,6 @@ func TestAccMongoDBInstance_WithPublicNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsInstanceDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -632,4 +624,90 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			return nil
 		})
 	}
+}
+
+func TestAccMongoDBInstance_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_mongodb_instance" "main" {
+						name              = "test-mongodb-password-wo"
+						version           = "7.0.12"
+						node_type         = "MGDB-PLAY2-NANO"
+						node_number       = 1
+						user_name         = "my_initial_user"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_1"
+						password_wo_version = 1
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "name", "test-mongodb-password-wo"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_type", "mgdb-play2-nano"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "node_number", "1"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "user_name", "my_initial_user"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_mongodb_instance.main", "password_wo"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password_wo_version", "1"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_mongodb_instance" "main" {
+						name              = "test-mongodb-password-wo"
+						version           = "7.0.12"
+						node_type         = "MGDB-PLAY2-NANO"
+						node_number       = 1
+						user_name         = "my_initial_user"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_2"
+						password_wo_version = 2
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password_wo_version", "2"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_mongodb_instance" "main" {
+						name              = "test-mongodb-password-wo"
+						version           = "7.0.12"
+						node_type         = "MGDB-PLAY2-NANO"
+						node_number       = 1
+						user_name         = "my_initial_user"
+						password          = "thiZ_is_v&ry_s3cret_regular"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password", "thiZ_is_v&ry_s3cret_regular"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_mongodb_instance" "main" {
+						name              = "test-mongodb-password-wo"
+						version           = "7.0.12"
+						node_type         = "MGDB-PLAY2-NANO"
+						node_number       = 1
+						user_name         = "my_initial_user"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_final"
+						password_wo_version = 3
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "password_wo_version", "3"),
+				),
+			},
+		},
+	})
 }

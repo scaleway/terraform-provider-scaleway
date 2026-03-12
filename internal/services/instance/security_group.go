@@ -30,77 +30,81 @@ func ResourceSecurityGroup() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the security group",
-			},
-			"stateful": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "The stateful value of the security group",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The description of the security group",
-			},
-			"inbound_default_policy": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "accept",
-				Description:      "Default inbound traffic policy for this security group",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
-			},
-			"outbound_default_policy": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Default:          "accept",
-				Description:      "Default outbound traffic policy for this security group",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
-			},
-			"inbound_rule": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Description:   "Inbound rules for this security group",
-				Elem:          securityGroupRuleSchema(),
-				ConflictsWith: []string{"external_rules"},
-			},
-			"outbound_rule": {
-				Type:          schema.TypeList,
-				Optional:      true,
-				Description:   "Outbound rules for this security group",
-				Elem:          securityGroupRuleSchema(),
-				ConflictsWith: []string{"external_rules"},
-			},
-			"external_rules": {
-				Type:          schema.TypeBool,
-				Description:   "External rules for this security group",
-				Optional:      true,
-				Default:       false,
-				ConflictsWith: []string{"inbound_rule", "outbound_rule"},
-			},
-			"enable_default_security": {
-				Type:        schema.TypeBool,
-				Description: "Enable blocking of SMTP on IPv4 and IPv6",
-				Optional:    true,
-				Default:     true,
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the security group",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+		SchemaFunc: securityGroupSchema,
+	}
+}
+
+func securityGroupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the security group",
 		},
+		"stateful": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "The stateful value of the security group",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The description of the security group",
+		},
+		"inbound_default_policy": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "accept",
+			Description:      "Default inbound traffic policy for this security group",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
+		},
+		"outbound_default_policy": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Default:          "accept",
+			Description:      "Default outbound traffic policy for this security group",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SecurityGroupPolicy](),
+		},
+		"inbound_rule": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "Inbound rules for this security group",
+			Elem:          securityGroupRuleSchema(),
+			ConflictsWith: []string{"external_rules"},
+		},
+		"outbound_rule": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "Outbound rules for this security group",
+			Elem:          securityGroupRuleSchema(),
+			ConflictsWith: []string{"external_rules"},
+		},
+		"external_rules": {
+			Type:          schema.TypeBool,
+			Description:   "External rules for this security group",
+			Optional:      true,
+			Default:       false,
+			ConflictsWith: []string{"inbound_rule", "outbound_rule"},
+		},
+		"enable_default_security": {
+			Type:        schema.TypeBool,
+			Description: "Enable blocking of SMTP on IPv4 and IPv6",
+			Optional:    true,
+			Default:     true,
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the security group",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -278,16 +282,16 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 	updateReq := &instanceSDK.UpdateSecurityGroupRequest{
 		Zone:                  zone,
 		SecurityGroupID:       ID,
-		Stateful:              scw.BoolPtr(d.Get("stateful").(bool)),
+		Stateful:              new(d.Get("stateful").(bool)),
 		Description:           types.ExpandStringPtr(description),
 		InboundDefaultPolicy:  inboundDefaultPolicy,
 		OutboundDefaultPolicy: outboundDefaultPolicy,
-		Tags:                  scw.StringsPtr([]string{}),
+		Tags:                  new([]string{}),
 	}
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if len(tags) > 0 {
-		updateReq.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		updateReq.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("enable_default_security") {

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/structure"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -31,22 +30,26 @@ func ResourceBucketPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"policy": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The text of the policy.",
-				DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: bucketPolicySchema,
+	}
+}
+
+func bucketPolicySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"policy": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The text of the policy.",
+			DiffSuppressFunc: SuppressEquivalentPolicyDiffs,
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -79,8 +82,8 @@ func resourceObjectBucketPolicyCreate(ctx context.Context, d *schema.ResourceDat
 	tflog.Debug(ctx, fmt.Sprintf("[DEBUG] SCW bucket: %s, put policy: %s", bucket, policy))
 
 	params := &s3.PutBucketPolicyInput{
-		Bucket: scw.StringPtr(bucket),
-		Policy: scw.StringPtr(policy),
+		Bucket: new(bucket),
+		Policy: new(policy),
 	}
 
 	err = retry.RetryContext(ctx, 1*time.Minute, func() *retry.RetryError {

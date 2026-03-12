@@ -18,7 +18,6 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			vpcgwchecks.IsGatewayNetworkDestroyed(tt),
@@ -112,6 +111,11 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					acctest.CheckResourceRawIDMatches("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_gateway_network.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -123,7 +127,7 @@ func testAccCheckVPCGatewayNetworkExists(tt *acctest.TestTools, n string) resour
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

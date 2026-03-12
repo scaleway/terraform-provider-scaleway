@@ -25,28 +25,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-const (
-	// InstanceServerStateStopped transient state of the instance event stop
-	InstanceServerStateStopped = "stopped"
-	// InstanceServerStateStarted transient state of the instance event start
-	InstanceServerStateStarted = "started"
-	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
-	InstanceServerStateStandby = "standby"
-
-	DefaultInstanceServerWaitTimeout        = 10 * time.Minute
-	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
-	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
-	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
-	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
-	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
-	defaultInstanceIPTimeout                = 1 * time.Minute
-	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
-
-	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
-
-	defaultInstanceImageTimeout = 1 * time.Hour
-)
-
 // newAPIWithZone returns a new instance API and the zone for a Create request
 func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
@@ -135,6 +113,10 @@ func serverStateFlatten(fromState instance.ServerState) (string, error) {
 
 // serverStateExpand converts terraform state to an API state or return an error.
 func serverStateExpand(rawState string) (instance.ServerState, error) {
+	if rawState == "" {
+		return instance.ServerStateRunning, nil
+	}
+
 	apiState, exist := map[string]instance.ServerState{
 		InstanceServerStateStopped: instance.ServerStateStopped,
 		InstanceServerStateStandby: instance.ServerStateStoppedInPlace,
@@ -205,7 +187,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout),
+			Timeout:       new(DefaultInstanceServerWaitTimeout),
 			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -411,9 +393,9 @@ func (ph *privateNICsHandler) set(d *schema.ResourceData) error {
 }
 
 func (ph *privateNICsHandler) get(key string) (any, error) {
-	loc, id, err := locality.ParseLocalizedID(key)
-	if err != nil {
-		return nil, err
+	loc, id, _ := locality.ParseLocalizedID(key)
+	if loc == "" {
+		loc = ph.zone.String()
 	}
 
 	pn, ok := ph.privateNICsMap[id]
@@ -523,9 +505,9 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+		rootVolumeSize = new(serverType.VolumesConstraint.MaxSize)
 	} else if sizeInput > 0 {
-		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
+		rootVolumeSize = new(scw.Size(uint64(sizeInput) * gb))
 	}
 
 	return &instancehelpers.UnknownVolume{
@@ -551,6 +533,59 @@ func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, s
 	}
 
 	return server.Server.Project, nil
+}
+
+func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
+	for id := range newIDs {
+		if _, alreadyAttached := oldIDs[id]; !alreadyAttached {
+			_, err := api.AttachServerFileSystem(&instance.AttachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
+			}
+
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, DefaultInstanceServerWaitTimeout)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {
+	for id := range oldIDs {
+		if _, stillPresent := newIDs[id]; !stillPresent {
+			_, err := api.DetachServerFileSystem(&instance.DetachServerFileSystemRequest{
+				Zone:         zone,
+				ServerID:     server.ID,
+				FilesystemID: locality.ExpandID(id),
+			})
+			if err != nil {
+				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
+			}
+
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, DefaultInstanceServerWaitTimeout)
+			if err != nil && !httperrors.Is404(err) {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func collectFilesystemIDs(fsList []any, target map[string]struct{}) {
+	for _, fs := range fsList {
+		if fsMap, ok := fs.(map[string]any); ok {
+			id := fsMap["filesystem_id"].(string)
+			target[id] = struct{}{}
+		}
+	}
 }
 
 func DeleteASGServers(
@@ -590,10 +625,22 @@ func DeleteASGServers(
 		_, err := api.WaitForServer(&instance.WaitForServerRequest{
 			Zone:     zone,
 			ServerID: srv.ID,
-			Timeout:  scw.TimeDurationPtr(timeout),
+			Timeout:  new(timeout),
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err
+		}
+	}
+
+	return nil
+}
+
+// FindIPInList looks for an IP in a list to avoid using the deprecated server.PublicIP field
+func FindIPInList(ipID string, ips []*instance.ServerIP) *instance.ServerIP {
+	id := zonal.ExpandID(ipID).ID
+	for _, ip := range ips {
+		if ip.ID == id {
+			return ip
 		}
 	}
 

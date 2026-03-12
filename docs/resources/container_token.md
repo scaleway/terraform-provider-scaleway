@@ -5,6 +5,9 @@ page_title: "Scaleway: scaleway_container_token"
 
 # Resource: scaleway_container_token
 
+> **Important:** The resource `scaleway_container_token` has been deprecated and will no longer be supported in v1 of the API.
+Please use IAM authentication instead. You will find an implementation example in the [IAM authentication](container.md#managing-authentication-of-private-containers-with-iam) section of the Container documentation.
+
 The `scaleway_container_token` resource allows you to create and manage authentication tokens for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
 Refer to the Containers tokens [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-auth-token-from-console/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-tokens-list-all-tokens) for more information.

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -30,57 +31,62 @@ func ResourceSnapshot() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the snapshot",
-			},
-			"instance_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the instance from which the snapshot was created",
-			},
-			"instance_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the instance from which the snapshot was created",
-			},
-			"size": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Size of the snapshot in bytes",
-			},
-			"node_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of node associated with the snapshot",
-			},
-			"volume_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Type of volume used for the snapshot (e.g., SSD, HDD)",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time when the snapshot was created",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the snapshot",
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
-				Required:         true,
-				ValidateDiagFunc: verify.IsDate(),
-			},
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    snapshotSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the snapshot",
+		},
+		"instance_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the instance from which the snapshot was created",
+		},
+		"instance_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Name of the instance from which the snapshot was created",
+		},
+		"size": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Size of the snapshot in bytes",
+		},
+		"node_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of node associated with the snapshot",
+		},
+		"volume_type": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Type of volume used for the snapshot (e.g., SSD, HDD)",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time when the snapshot was created",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the snapshot",
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "Expiration date (Format ISO 8601). Cannot be removed.",
+			Required:         true,
+			ValidateDiagFunc: verify.IsDate(),
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -104,7 +110,9 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if snapshot != nil {
-		d.SetId(regional.NewIDString(region, snapshot.ID))
+		if err := identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID); err != nil {
+			return diag.FromErr(err)
+		}
 
 		_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -130,6 +138,10 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	snapshot, err := waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshotID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

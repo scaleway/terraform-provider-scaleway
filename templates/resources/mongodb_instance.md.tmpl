@@ -1,120 +1,37 @@
 {{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "MongoDB®"
-page_title: "Scaleway: scaleway_mongodb_instance"
+page_title: "Scaleway: {{ .Name }}"
 ---
 
-# Resource: scaleway_mongodb_instance
+# Resource: {{ .Name }}
 
-Creates and manages Scaleway MongoDB® instance.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+{{ .Description }}
 
+{{ if .HasExamples }}
 ## Example Usage
 
-### Basic
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-```terraform
-resource "scaleway_mongodb_instance" "main" {
-  name              = "test-mongodb-basic1"
-  version           = "7.0.12"
-  node_type         = "MGDB-PLAY2-NANO"
-  node_number       = 1
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  volume_size_in_gb = 5
+{{ end }}
 
-}
-```
 
-### Private Network
 
-```terraform
-resource "scaleway_vpc_private_network" "pn01" {
-  name   = "my_private_network"
-  region = "fr-par"
-}
-
-resource "scaleway_mongodb_instance" "main" {
-  name              = "test-mongodb-basic1"
-  version           = "7.0.12"
-  node_type         = "MGDB-PLAY2-NANO"
-  node_number       = 1
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  volume_size_in_gb = 5
-
-  private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
-  }
-
-}
-```
-
-### Private Network and Public Network
-
-```terraform
-resource "scaleway_vpc_private_network" "pn01" {
-  name   = "my_private_network"
-  region = "fr-par"
-}
-
-resource "scaleway_mongodb_instance" "main" {
-  name              = "test-mongodb-basic1"
-  version           = "7.0.12"
-  node_type         = "MGDB-PLAY2-NANO"
-  node_number       = 1
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  volume_size_in_gb = 5
-
-  private_network {
-    pn_id = "${scaleway_vpc_private_network.pn02.id}"
-  }
-
-  public_network {}
-
-}
-```
-
-### With Snapshot Scheduling
-
-```terraform
-resource "scaleway_mongodb_instance" "main" {
-  name              = "test-mongodb-with-snapshots"
-  version           = "7.0.12"
-  node_type         = "MGDB-PLAY2-NANO"
-  node_number       = 1
-  user_name         = "my_initial_user"
-  password          = "thiZ_is_v&ry_s3cret"
-  volume_size_in_gb = 5
-
-  # Snapshot scheduling configuration
-  snapshot_schedule_frequency_hours = 24
-  snapshot_schedule_retention_days  = 7
-  is_snapshot_schedule_enabled      = true
-}
-```
-
-### Restore From Snapshot
-
-```terraform
-
-resource "scaleway_mongodb_instance" "restored_instance" {
-  snapshot_id = "${scaleway_vpc_private_network.pn.idscaleway_mongodb_snapshot.main_snapshot.id}"
-  name        = "restored-mongodb-from-snapshot"
-  node_type   = "MGDB-PLAY2-NANO"
-  node_number = 1
-}
-```
+{{ end -}}
 
 ## Argument Reference
 
 The following arguments are supported:
 
 - `version` - (Optional) MongoDB® version of the instance.
-- `node_type` - (Required) The type of MongoDB® intance to create.
-- `user_name` - (Optional) Name of the user created when the intance is created.
-- `password` - (Optional) Password of the user.
+- `node_type` - (Required) The type of MongoDB® instance to create.
+- `user_name` - (Optional) Name of the user created when the instance is created.
+- `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 - `name` - (Optional) Name of the MongoDB® instance.
 - `tags` - (Optional) List of tags attached to the MongoDB® instance.
 - `volume_type` - (Optional) Volume type of the instance.
@@ -133,7 +50,6 @@ The following arguments are supported:
 - `is_snapshot_schedule_enabled` - (Optional) Enable or disable automatic snapshot scheduling.
 
 ~> **Important** If neither private_network nor public_network is specified, a public network endpoint is created by default.
-
 
 ## Attributes Reference
 

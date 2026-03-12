@@ -1,0 +1,40 @@
+name: Build
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  build:
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
+
+    steps:
+      # Checkout should always be before setup-go to ensure caching is working
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Install Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: stable
+
+      - name: Verify go.mod is tidy
+        run: |
+          go mod tidy
+          git diff --exit-code
+
+      - name: Build the provider
+        run: go build ./
+
+      - name: Test cross-platform builds with GoReleaser
+        uses: goreleaser/goreleaser-action@ec59f474b9834571250b370d4735c50f8e2d1e29 # v7.0.0
+        with:
+          version: 2.13.3
+          args: release --snapshot --clean --skip sign --skip archive
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

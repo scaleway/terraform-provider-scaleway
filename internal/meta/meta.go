@@ -27,12 +27,13 @@ const (
 )
 
 type CredentialsSource struct {
-	Variables     map[string][]string
-	AccessKey     string
-	SecretKey     string
-	ProjectID     string
-	DefaultZone   string
-	DefaultRegion string
+	Variables      map[string][]string
+	AccessKey      string
+	SecretKey      string
+	ProjectID      string
+	OrganizationID string
+	DefaultZone    string
+	DefaultRegion  string
 }
 
 // Meta contains config and SDK clients used by resources.
@@ -54,7 +55,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	////
 	// Load Profile
 	////
-	profile, credentialsSource, err := loadProfile(ctx, config.ProviderSchema)
+	profile, credentialsSource, err := LoadProfile(ctx, config.ProviderSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -65,42 +66,55 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 			return nil, err
 		}
 
-		profile.DefaultRegion = scw.StringPtr(region.String())
-		profile.DefaultZone = scw.StringPtr(config.ForceZone.String())
+		profile.DefaultRegion = new(region.String())
+		profile.DefaultZone = new(config.ForceZone.String())
 	}
 
 	if config.ForceProjectID != "" {
-		profile.DefaultProjectID = scw.StringPtr(config.ForceProjectID)
+		profile.DefaultProjectID = new(config.ForceProjectID)
 	}
 
 	if config.ForceOrganizationID != "" {
-		profile.DefaultOrganizationID = scw.StringPtr(config.ForceOrganizationID)
+		profile.DefaultOrganizationID = new(config.ForceOrganizationID)
 	}
 
 	if config.ForceAccessKey != "" {
-		profile.AccessKey = scw.StringPtr(config.ForceAccessKey)
+		profile.AccessKey = new(config.ForceAccessKey)
 	}
 
 	if config.ForceSecretKey != "" {
-		profile.SecretKey = scw.StringPtr(config.ForceSecretKey)
+		profile.SecretKey = new(config.ForceSecretKey)
 	}
 
 	// TODO validated profile
 
 	////
-	// Create scaleway SDK client
+	// Return scaleway client
 	////
+
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.TerraformVersion, config.HTTPClient)
+}
+
+// NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
+func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig, terraformVersion string) (*Meta, error) {
+	profile, credentialsSource, err := LoadProfileFromFrameworkConfig(ctx, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewMetaFromProfile(ctx, profile, credentialsSource, terraformVersion, nil)
+}
+
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+	if httpClient == nil {
+		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
+	}
+
 	opts := []scw.ClientOption{
-		scw.WithUserAgent(customizeUserAgent(version.Version, config.TerraformVersion)),
+		scw.WithUserAgent(customizeUserAgent(version.Version, terraformVersion)),
 		scw.WithProfile(profile),
+		scw.WithHTTPClient(httpClient),
 	}
-
-	httpClient := &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
-	if config.HTTPClient != nil {
-		httpClient = config.HTTPClient
-	}
-
-	opts = append(opts, scw.WithHTTPClient(httpClient))
 
 	scwClient, err := scw.NewClient(opts...)
 	if err != nil {
@@ -142,6 +156,10 @@ func (m Meta) ZoneSource() string {
 	return m.credentialsSource.DefaultZone
 }
 
+func (m Meta) OrganizationIDSource() string {
+	return m.credentialsSource.OrganizationID
+}
+
 // HasMultipleVariableSources return an informative message during the Provider initialization
 // if there are multiple sources of configuration that could confuse the user
 //
@@ -151,7 +169,7 @@ func (m Meta) ZoneSource() string {
 func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 	multiple := false
 
-	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
+	variables := []string{scw.ScwAccessKeyEnv, scw.ScwSecretKeyEnv, scw.ScwDefaultProjectIDEnv, scw.ScwDefaultOrganizationIDEnv, scw.ScwDefaultRegionEnv, scw.ScwDefaultZoneEnv}
 
 	w := new(tabwriter.Writer)
 	buf := &bytes.Buffer{}
@@ -204,8 +222,99 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 	return userAgent
 }
 
+type FrameworkProviderConfig struct {
+	AccessKey      string
+	SecretKey      string
+	ProfileName    string
+	ProjectID      string
+	OrganizationID string
+	Region         string
+	Zone           string
+	APIURL         string
+}
+
+func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
+	scwConfig, err := scw.LoadConfig()
+	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
+	var configFileNotFoundError *scw.ConfigFileNotFoundError
+	if errors.As(err, &configFileNotFoundError) {
+		scwConfig = &scw.Config{}
+	} else if err != nil {
+		return nil, nil, err
+	}
+
+	defaultZoneProfile := &scw.Profile{
+		DefaultRegion: new(scw.RegionFrPar.String()),
+		DefaultZone:   new(scw.ZoneFrPar1.String()),
+	}
+
+	activeProfile, err := scwConfig.GetActiveProfile()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	envProfile := scw.LoadEnvProfile()
+	providerProfile := &scw.Profile{}
+
+	if config.ProfileName != "" {
+		profileFromConfig, err := scwConfig.GetProfile(config.ProfileName)
+		if err == nil {
+			providerProfile = profileFromConfig
+		}
+	}
+
+	if config.AccessKey != "" {
+		providerProfile.AccessKey = &config.AccessKey
+	}
+
+	if config.SecretKey != "" {
+		providerProfile.SecretKey = &config.SecretKey
+	}
+
+	if config.ProjectID != "" {
+		providerProfile.DefaultProjectID = &config.ProjectID
+	}
+
+	if config.OrganizationID != "" {
+		providerProfile.DefaultOrganizationID = &config.OrganizationID
+	}
+
+	if config.Region != "" {
+		providerProfile.DefaultRegion = &config.Region
+	}
+
+	if config.Zone != "" {
+		providerProfile.DefaultZone = &config.Zone
+	}
+
+	if config.APIURL != "" {
+		providerProfile.APIURL = &config.APIURL
+	}
+
+	profile := scw.MergeProfiles(defaultZoneProfile, activeProfile, providerProfile, envProfile)
+	credentialsSource := GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, envProfile)
+
+	// If profile have a defaultZone but no defaultRegion we set the defaultRegion
+	// to the one of the defaultZone
+	if profile.DefaultZone != nil && *profile.DefaultZone != "" &&
+		(profile.DefaultRegion == nil || *profile.DefaultRegion == "") {
+		zone := scw.Zone(*profile.DefaultZone)
+		tflog.Debug(ctx, fmt.Sprintf("guess region from %s zone", zone))
+
+		region, err := zone.Region()
+		if err == nil {
+			profile.DefaultRegion = new(region.String())
+			credentialsSource.DefaultRegion = CredentialsSourceInferred
+		} else {
+			tflog.Debug(ctx, "cannot guess region: "+err.Error())
+		}
+	}
+
+	return profile, credentialsSource, nil
+}
+
 //gocyclo:ignore
-func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
+func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
 	var configFileNotFoundError *scw.ConfigFileNotFoundError
@@ -217,8 +326,8 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 
 	// By default we set default zone and region to fr-par
 	defaultZoneProfile := &scw.Profile{
-		DefaultRegion: scw.StringPtr(scw.RegionFrPar.String()),
-		DefaultZone:   scw.StringPtr(scw.ZoneFrPar1.String()),
+		DefaultRegion: new(scw.RegionFrPar.String()),
+		DefaultZone:   new(scw.ZoneFrPar1.String()),
 	}
 
 	activeProfile, err := config.GetActiveProfile()
@@ -239,31 +348,31 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 		}
 
 		if accessKey, exist := d.GetOk("access_key"); exist {
-			providerProfile.AccessKey = scw.StringPtr(accessKey.(string))
+			providerProfile.AccessKey = new(accessKey.(string))
 		}
 
 		if secretKey, exist := d.GetOk("secret_key"); exist {
-			providerProfile.SecretKey = scw.StringPtr(secretKey.(string))
+			providerProfile.SecretKey = new(secretKey.(string))
 		}
 
 		if projectID, exist := d.GetOk("project_id"); exist {
-			providerProfile.DefaultProjectID = scw.StringPtr(projectID.(string))
+			providerProfile.DefaultProjectID = new(projectID.(string))
 		}
 
 		if orgID, exist := d.GetOk("organization_id"); exist {
-			providerProfile.DefaultOrganizationID = scw.StringPtr(orgID.(string))
+			providerProfile.DefaultOrganizationID = new(orgID.(string))
 		}
 
 		if region, exist := d.GetOk("region"); exist {
-			providerProfile.DefaultRegion = scw.StringPtr(region.(string))
+			providerProfile.DefaultRegion = new(region.(string))
 		}
 
 		if zone, exist := d.GetOk("zone"); exist {
-			providerProfile.DefaultZone = scw.StringPtr(zone.(string))
+			providerProfile.DefaultZone = new(zone.(string))
 		}
 
 		if apiURL, exist := d.GetOk("api_url"); exist {
-			providerProfile.APIURL = scw.StringPtr(apiURL.(string))
+			providerProfile.APIURL = new(apiURL.(string))
 		}
 	}
 
@@ -279,7 +388,7 @@ func loadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *Cr
 
 		region, err := zone.Region()
 		if err == nil {
-			profile.DefaultRegion = scw.StringPtr(region.String())
+			profile.DefaultRegion = new(region.String())
 			credentialsSource.DefaultRegion = CredentialsSourceInferred
 		} else {
 			tflog.Debug(ctx, "cannot guess region: "+err.Error())
@@ -334,6 +443,11 @@ func GetCredentialsSource(defaultZoneProfile, activeProfile, providerProfile, en
 		if profile.DefaultProjectID != nil {
 			credentialsSource.ProjectID = source
 			credentialsSource.Variables[scw.ScwDefaultProjectIDEnv] = append(credentialsSource.Variables[scw.ScwDefaultProjectIDEnv], source)
+		}
+
+		if profile.DefaultOrganizationID != nil {
+			credentialsSource.OrganizationID = source
+			credentialsSource.Variables[scw.ScwDefaultOrganizationIDEnv] = append(credentialsSource.Variables[scw.ScwDefaultOrganizationIDEnv], source)
 		}
 
 		if profile.DefaultRegion != nil {

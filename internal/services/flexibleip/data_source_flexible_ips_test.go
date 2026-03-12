@@ -13,7 +13,6 @@ func TestAccDataSourceFlexibleIPs_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -63,7 +62,6 @@ func TestAccDataSourceFlexibleIPs_WithBaremetalIDs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{

@@ -1,6 +1,7 @@
 package acctest_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -8,7 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func TestAccCassettes_Compressed(t *testing.T) {
+func TestAccCassettes_IsCompressed(t *testing.T) {
 	paths, err := getTestFiles(false)
 	require.NoError(t, err)
 
@@ -16,7 +17,50 @@ func TestAccCassettes_Compressed(t *testing.T) {
 
 	for path := range paths {
 		g.Go(func() error {
-			report, errCompression := acctest.CompressCassette(path)
+			var (
+				report         acctest.CompressReport
+				errCompression error
+			)
+
+			folder := strings.Split(path, "/")[2]
+			if acctest.FolderUsesVCRv4(folder) {
+				report, errCompression = acctest.CompressCassetteV4(path, false)
+			} else {
+				report, errCompression = acctest.CompressCassetteV3(path, false)
+			}
+
+			require.NoError(t, errCompression)
+			require.Zero(t, report.SkippedInteraction, "Issue with cassette: %s", report.Path)
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		t.Errorf("error: %s", err)
+	}
+}
+
+func TestAccCassettes_Compress(t *testing.T) {
+	paths, err := getTestFiles(false)
+	require.NoError(t, err)
+
+	var g errgroup.Group
+
+	for path := range paths {
+		g.Go(func() error {
+			var (
+				report         acctest.CompressReport
+				errCompression error
+			)
+
+			folder := strings.Split(path, "/")[2]
+			if acctest.FolderUsesVCRv4(folder) {
+				report, errCompression = acctest.CompressCassetteV4(path, true)
+			} else {
+				report, errCompression = acctest.CompressCassetteV3(path, true)
+			}
+
 			require.NoError(t, errCompression)
 			require.Zero(t, report.SkippedInteraction, "Issue with cassette: %s", report.Path)
 

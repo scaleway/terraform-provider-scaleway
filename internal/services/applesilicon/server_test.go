@@ -2,6 +2,7 @@ package applesilicon_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,12 +13,18 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 )
 
+var (
+	githubUrl          = os.Getenv("GITHUB_URL_AS")
+	githubToken        = os.Getenv("GITHUB_TOKEN_AS")
+	githubUrlUpdated   = os.Getenv("GITHUB_URL_UPDATED_AS")
+	githubTokenUpdated = os.Getenv("GITHUB_TOKEN_UPDATED_AS")
+)
+
 func TestAccServer_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -61,6 +68,98 @@ func TestAccServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "deletable_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_apple_silicon_server.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccServer_Runner(t *testing.T) {
+	t.Skip("can not register this cassette for security issue")
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_apple_silicon_os" "devos" {
+						name = "devos-sequoia-15.6"
+					}
+
+					resource "scaleway_apple_silicon_runner" "main" {
+						name       = "TestAccRunnerGithub"
+						ci_provider   = "github"
+						url        = "%s"
+						token      = "%s"
+					}
+
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerRunner"
+						type = "M2-L"
+						public_bandwidth = 1000000000
+						os_id = data.scaleway_apple_silicon_os.devos.id
+						runner_ids = [scaleway_apple_silicon_runner.main.id]
+					}
+				`, githubUrl, githubToken),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerRunner"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "os_id"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "runner_ids.0"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_apple_silicon_os" "devos" {
+						name = "devos-sequoia-15.6"
+					}
+
+					resource "scaleway_apple_silicon_runner" "main" {
+						name       = "TestAccRunnerGithub"
+						ci_provider   = "github"
+						url        = "%s"
+						token      = "%s"
+					}
+
+					resource "scaleway_apple_silicon_runner" "main-bis" {
+						name       = "TestAccRunnerGithub"
+						ci_provider   = "github"
+						url        = "%s"
+						token      = "%s"
+					}
+
+					resource scaleway_apple_silicon_server main {
+						name = "TestAccServerRunner"
+						type = "M2-L"
+						public_bandwidth = 1000000000
+						os_id = data.scaleway_apple_silicon_os.devos.id
+						runner_ids = [scaleway_apple_silicon_runner.main.id, scaleway_apple_silicon_runner.main-bis.id]
+					}
+				`, githubUrl, githubToken, githubUrlUpdated, githubTokenUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					isServerPresent(tt, "scaleway_apple_silicon_server.main"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "name", "TestAccServerRunner"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "type", "M2-L"),
+					resource.TestCheckResourceAttr("scaleway_apple_silicon_server.main", "public_bandwidth", "1000000000"),
+					// Computed
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "ip"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "vnc_url"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "os_id"),
+					resource.TestCheckResourceAttrSet("scaleway_apple_silicon_server.main", "runner_ids.0"),
+				),
+			},
 		},
 	})
 }
@@ -70,7 +169,6 @@ func TestAccServer_EnableDisabledVPC(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -125,7 +223,6 @@ func TestAccServer_EnableVPC(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -270,7 +367,6 @@ func TestAccServer_Commitment(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isServerDestroyed(tt),
 		Steps: []resource.TestStep{

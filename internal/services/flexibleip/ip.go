@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -21,6 +22,7 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   ResourceFlexibleIPRead,
 		UpdateContext: ResourceFlexibleIPUpdate,
 		DeleteContext: ResourceFlexibleIPDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -32,63 +34,67 @@ func ResourceIP() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFlexibleIPTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the flexible IP",
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Defines whether the flexible IP has an IPv6 address",
-			},
-			"reverse": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The reverse DNS for this flexible IP",
-				Computed:    true,
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The baremetal server associated with this flexible IP",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the flexible IP",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"ip_address": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The IP address of the flexible IP",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The status of the flexible IP",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Flexible IP (Format ISO 8601)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
-			},
-		},
+		SchemaFunc:    ipSchema,
 		CustomizeDiff: cdf.LocalityCheck("server_id"),
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the flexible IP",
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Defines whether the flexible IP has an IPv6 address",
+		},
+		"reverse": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The reverse DNS for this flexible IP",
+			Computed:    true,
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "The baremetal server associated with this flexible IP",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the flexible IP",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"ip_address": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address of the flexible IP",
+		},
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The status of the flexible IP",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Flexible IP (Format ISO 8601)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
+		},
 	}
 }
 
@@ -111,7 +117,10 @@ func ResourceFlexibleIPCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, flexibleIP.ID))
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitFlexibleIP(ctx, fipAPI, zone, flexibleIP.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -148,6 +157,17 @@ func ResourceFlexibleIPRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setFlexibleIPState(d, flexibleIP, zone)
+
+	err = identity.SetZonalIdentity(d, flexibleIP.Zone, flexibleIP.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setFlexibleIPState(d *schema.ResourceData, flexibleIP *flexibleip.FlexibleIP, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("ip_address", flexibleIP.IPAddress.String())
 	_ = d.Set("zone", flexibleIP.Zone)
 	_ = d.Set("organization_id", flexibleIP.OrganizationID)

@@ -17,7 +17,6 @@ func TestAccIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -85,7 +84,6 @@ func TestAccIP_IPv6(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -101,6 +99,11 @@ func TestAccIP_IPv6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_ip.ipv6", "is_ipv6", "true"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_ip.ipv6",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -110,7 +113,6 @@ func TestAccIP_WithTags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             lbchecks.IsIPDestroyed(tt),
 		Steps: []resource.TestStep{

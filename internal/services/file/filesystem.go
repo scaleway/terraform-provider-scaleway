@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -30,49 +31,54 @@ func ResourceFileSystem() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultFileSystemTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the filesystem",
+		SchemaFunc:    fileSystemSchema,
+	}
+}
+
+func fileSystemSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the filesystem",
+		},
+		"size_in_gb": {
+			Type:         schema.TypeInt,
+			Required:     true,
+			ValidateFunc: validation.IntBetween(1, 1000),
+			Description:  "The Filesystem size_in_gb in bytes, with a granularity of 100 GB (10^11 bytes). Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size_in_gb.",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"size": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The Filesystem size in bytes, with a granularity of 100 GB (10^11 bytes). Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size.",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The list of tags assigned to the filesystem",
-			},
-			"project_id":      account.ProjectIDSchema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"region":          regional.Schema(),
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The Current status of the filesystem (e.g. creating, available, ...)",
-			},
-			"number_of_attachments": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The current number of attachments (mounts) that the filesystem has",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The creation date of the filesystem",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The last update date of the properties of the filesystem",
-			},
+			Optional:    true,
+			Description: "The list of tags assigned to the filesystem",
+		},
+		"project_id":      account.ProjectIDSchema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"region":          regional.Schema(),
+		"status": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Current status of the filesystem (e.g. creating, available, ...)",
+		},
+		"number_of_attachments": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The current number of attachments (mounts) that the filesystem has",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The creation date of the filesystem",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The last update date of the properties of the filesystem",
 		},
 	}
 }
@@ -87,8 +93,14 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any
 		Region:    region,
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "file"),
 		ProjectID: d.Get("project_id").(string),
-		Size:      *types.ExpandUint64Ptr(d.Get("size")),
+		Size:      *types.ExpandUint64Ptr(d.Get("size_in_gb")),
 		Tags:      types.ExpandStrings(d.Get("tags")),
+	}
+
+	if size, ok := d.GetOk("size_in_gb"); ok {
+		sizeInGB := size.(int)
+		sizeInBytes := uint64(sizeInGB) * uint64(scw.GB)
+		req.Size = sizeInBytes
 	}
 
 	file, err := api.CreateFileSystem(req, scw.WithContext(ctx))
@@ -128,7 +140,7 @@ func ResourceFileSystemRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("region", fileSystem.Region)
 	_ = d.Set("organization_id", fileSystem.OrganizationID)
 	_ = d.Set("status", fileSystem.Status)
-	_ = d.Set("size", int64(fileSystem.Size))
+	_ = d.Set("size_in_gb", int(fileSystem.Size/scw.GB))
 	_ = d.Set("tags", fileSystem.Tags)
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
@@ -163,8 +175,9 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any
 		req.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
 	}
 
-	if d.HasChange("size") {
-		req.Size = types.ExpandUint64Ptr(d.Get("size"))
+	if d.HasChange("size_in_gb") {
+		sizeInGB := uint64(d.Get("size_in_gb").(int)) * uint64(scw.GB)
+		req.Size = types.ExpandUint64Ptr(sizeInGB)
 	}
 
 	if d.HasChange("tags") {

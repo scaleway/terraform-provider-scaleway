@@ -13,7 +13,6 @@ func TestAccEdgeServicesDNS_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
 		Steps: []resource.TestStep{
@@ -39,6 +38,11 @@ func TestAccEdgeServicesDNS_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_dns_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_dns_stage.main", "updated_at"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_dns_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

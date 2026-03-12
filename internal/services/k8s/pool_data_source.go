@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,9 +14,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/pool_datasource.md
+var poolDataSourceDescription string
+
 func DataSourcePool() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePool().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePool().SchemaFunc())
 
 	// Set 'Optional' schema elements
 	datasource.AddOptionalFieldsToSchema(dsSchema, "name", "region", "cluster_id", "size")
@@ -33,8 +37,8 @@ func DataSourcePool() *schema.Resource {
 
 	return &schema.Resource{
 		ReadContext: DataSourceK8SPoolRead,
-
-		Schema: dsSchema,
+		Description: poolDataSourceDescription,
+		Schema:      dsSchema,
 	}
 }
 

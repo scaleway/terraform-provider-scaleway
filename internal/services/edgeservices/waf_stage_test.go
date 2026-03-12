@@ -13,7 +13,6 @@ func TestAccEdgeServicesWAF_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesWAFDestroy(tt),
 		Steps: []resource.TestStep{
@@ -40,6 +39,11 @@ func TestAccEdgeServicesWAF_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_waf_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_waf_stage.main", "updated_at"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_waf_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

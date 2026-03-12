@@ -19,7 +19,6 @@ func TestAccBackend_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -128,6 +127,11 @@ func TestAccBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_backend.bkd01", "health_check_send_proxy", "true"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_backend.bkd01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -137,7 +141,6 @@ func TestAccBackend_HealthCheck(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -243,7 +246,6 @@ func TestAccBackend_WithFailoverHost(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isBackendDestroyed(tt),
@@ -390,7 +392,6 @@ func TestAccBackend_HealthCheck_Port(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isBackendDestroyed(tt),
 		Steps: []resource.TestStep{

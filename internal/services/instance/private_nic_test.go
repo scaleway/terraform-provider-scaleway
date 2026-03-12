@@ -20,7 +20,6 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isPrivateNICDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -54,6 +53,12 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_ips.0.address"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_instance_private_nic.nic01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ipam_ip_ids"},
+			},
 		},
 	})
 }
@@ -63,7 +68,6 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isPrivateNICDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -129,6 +133,12 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_private_nic.nic01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ipam_ip_ids"},
+			},
+			{
 				Config: `
 					resource scaleway_vpc main {
 						name = "TestAccPrivateNIC_Tags"
@@ -167,7 +177,6 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isPrivateNICDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -221,9 +230,15 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 						"scaleway_instance_private_nic.pnic01", "ipam_ip_ids.0",
 						"scaleway_ipam_ip.ip01", "id"),
 					resource.TestCheckResourceAttrPair(
-						"scaleway_ipam_ip.ip01", "address",
+						"scaleway_ipam_ip.ip01", "address_cidr",
 						"data.scaleway_ipam_ip.by_id", "address_cidr"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_private_nic.pnic01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ipam_ip_ids"},
 			},
 		},
 	})

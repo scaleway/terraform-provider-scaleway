@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,80 +24,85 @@ func ResourceTLSStage() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"pipeline_id": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The ID of the pipeline",
-			},
-			"backend_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The backend stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"cache_stage_id", "route_stage_id", "waf_stage_id"},
-			},
-			"cache_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The cache stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "route_stage_id", "waf_stage_id"},
-			},
-			"waf_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The WAF stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "route_stage_id"},
-			},
-			"route_stage_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				Description:   "The route stage ID the TLS stage will be linked to",
-				ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "waf_stage_id"},
-			},
-			"managed_certificate": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint",
-			},
-			"secrets": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				Description: "The TLS secrets",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"secret_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "The ID of the Secret",
-						},
-						"region": regional.Schema(),
+		SchemaFunc:    tlsStageSchema,
+		Identity:      identity.DefaultGlobal(),
+	}
+}
+
+func tlsStageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"pipeline_id": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "The ID of the pipeline",
+		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The backend stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"cache_stage_id", "route_stage_id", "waf_stage_id"},
+		},
+		"cache_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The cache stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "route_stage_id", "waf_stage_id"},
+		},
+		"waf_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The WAF stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "route_stage_id"},
+		},
+		"route_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			Description:   "The route stage ID the TLS stage will be linked to",
+			ConflictsWith: []string{"backend_stage_id", "cache_stage_id", "waf_stage_id"},
+		},
+		"managed_certificate": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint",
+		},
+		"secrets": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			Description: "The TLS secrets",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"secret_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "The ID of the Secret",
 					},
+					"region": regional.Schema(),
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the TLS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the TLS stage",
-			},
-			"certificate_expires_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "TThe expiration date of the certificate",
-			},
-			"project_id": account.ProjectIDSchema(),
 		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the TLS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the TLS stage",
+		},
+		"certificate_expires_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "TThe expiration date of the certificate",
+		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -119,7 +125,9 @@ func ResourceTLSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(tlsStage.ID)
+	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceTLSStageRead(ctx, d, m)
 }
@@ -150,6 +158,10 @@ func ResourceTLSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("certificate_expires_at", types.FlattenTime(tlsStage.CertificateExpiresAt))
 	_ = d.Set("created_at", types.FlattenTime(tlsStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(tlsStage.UpdatedAt))
+
+	if err = identity.SetGlobalIdentity(d, tlsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

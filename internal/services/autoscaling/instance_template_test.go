@@ -17,7 +17,6 @@ func TestAccInstanceTemplate_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckInstanceTemplateDestroy(tt),
 		Steps: []resource.TestStep{
@@ -65,6 +64,11 @@ func TestAccInstanceTemplate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_template.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_autoscaling_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -74,7 +78,6 @@ func TestAccInstanceTemplate_PrivateNetwork(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckInstanceTemplateDestroy(tt),
 		Steps: []resource.TestStep{

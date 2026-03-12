@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"strings"
@@ -11,13 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,8 +27,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/cluster.md
+var clusterDescription string
+
 func ResourceCluster() *schema.Resource {
 	return &schema.Resource{
+		Description:   clusterDescription,
 		CreateContext: ResourceClusterCreate,
 		ReadContext:   ResourceClusterRead,
 		UpdateContext: ResourceClusterUpdate,
@@ -42,221 +47,241 @@ func ResourceCluster() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Name of the redis cluster",
-			},
-			"version": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Redis version of the cluster",
-			},
-			"node_type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "Type of node to use for the cluster",
-				DiffSuppressFunc: dsf.IgnoreCase,
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Name of the user created when the cluster is created",
-			},
-			"password": {
-				Type:        schema.TypeString,
-				Sensitive:   true,
-				Required:    true,
-				Description: "Password of the user",
-			},
-			"tags": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
-			},
-			"cluster_size": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Computed:    true,
-				Description: "Number of nodes for the cluster.",
-			},
-			"tls_enabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Description: "Whether or not TLS is enabled.",
-				ForceNew:    true,
-			},
-			"acl": {
-				Type:          schema.TypeSet,
-				Description:   "List of acl rules.",
-				Optional:      true,
-				ConflictsWith: []string{"private_network"},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "ID of the rule (UUID format).",
-							Computed:    true,
-						},
-						"ip": {
-							Type:         schema.TypeString,
-							Description:  "IPv4 network address of the rule (IP network in a CIDR format).",
-							Required:     true,
-							ValidateFunc: validation.IsCIDR,
-						},
-						"description": {
-							Type:        schema.TypeString,
-							Description: "Description of the rule.",
-							Optional:    true,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"settings": {
-				Type:        schema.TypeMap,
-				Description: "Map of settings to define for the cluster.",
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"private_network": {
-				Type:          schema.TypeSet,
-				Optional:      true,
-				Description:   "Private network specs details",
-				ConflictsWith: []string{"acl"},
-				Set:           privateNetworkSetHash,
-				DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
-					// Check if the key is for the 'id' attribute
-					if strings.HasSuffix(k, "id") {
-						return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
-					}
-					// For all other attributes, don't suppress the diff
-					return false
-				},
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-							Description:      "UUID of the private network to be connected to the cluster",
-						},
-						"service_ips": {
-							Type:     schema.TypeList,
-							Optional: true,
-							Computed: true,
-							Elem: &schema.Schema{
-								Type:         schema.TypeString,
-								ValidateFunc: validation.IsCIDR,
-							},
-							Description: "List of IPv4 addresses of the private network with a CIDR notation",
-						},
-						// computed
-						"endpoint_id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "UUID of the endpoint to be connected to the cluster",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"ips": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Computed:    true,
-							Description: "List of IPv4 addresses of the endpoint",
-						},
-						"zone": zonal.ComputedSchema(),
-					},
-				},
-			},
-			// Computed
-			"public_network": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Computed:    true,
-				MaxItems:    1,
-				Description: "Public network specs details",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Optional:    true,
-							Description: "UUID of the public network to be connected to the cluster",
-						},
-						"port": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Computed:    true,
-							Description: "TCP port of the endpoint",
-						},
-						"ips": {
-							Type:        schema.TypeList,
-							Description: "List of IPv4 addresses of the endpoint",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-							Computed: true,
-						},
-					},
-				},
-			},
-			"private_ips": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Optional:    true,
-				Description: "List of private IPv4 addresses associated with the resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The ID of the IPv4 address resource",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The private IPv4 address",
-						},
-					},
-				},
-			},
-			"certificate": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the Redis cluster",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the Redis cluster",
-			},
-			// Common
-			"zone":       zonal.Schema(),
-			"project_id": account.ProjectIDSchema(),
-		},
+		SchemaFunc:    clusterSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck("private_network.#.id"),
 			customizeDiffMigrateClusterSize(),
 		),
+	}
+}
+
+func clusterSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Name of the redis cluster",
+		},
+		"version": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Redis version of the cluster",
+		},
+		"node_type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "Type of node to use for the cluster",
+			DiffSuppressFunc: dsf.IgnoreCase,
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Name of the user created when the cluster is created",
+		},
+		"password": {
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password of the user. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
+		},
+		"tags": {
+			Type:     schema.TypeList,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "List of tags [\"tag1\", \"tag2\", ...] attached to a redis cluster",
+		},
+		"cluster_size": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			Description: "Number of nodes for the cluster.",
+		},
+		"tls_enabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Whether or not TLS is enabled.",
+			ForceNew:    true,
+		},
+		"acl": {
+			Type:          schema.TypeSet,
+			Description:   "List of acl rules.",
+			Optional:      true,
+			ConflictsWith: []string{"private_network"},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Description: "ID of the rule (UUID format).",
+						Computed:    true,
+					},
+					"ip": {
+						Type:             schema.TypeString,
+						Description:      "IPv4 network address of the rule in CIDR notation (IPv6 is not supported by the Scaleway API).",
+						Required:         true,
+						ValidateDiagFunc: verify.IsIPv4CIDR(),
+					},
+					"description": {
+						Type:        schema.TypeString,
+						Description: "Description of the rule.",
+						Optional:    true,
+						Computed:    true,
+					},
+				},
+			},
+		},
+		"settings": {
+			Type:        schema.TypeMap,
+			Description: "Map of settings to define for the cluster.",
+			Optional:    true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"private_network": {
+			Type:          schema.TypeSet,
+			Optional:      true,
+			Description:   "Private network specs details",
+			ConflictsWith: []string{"acl"},
+			Set:           privateNetworkSetHash,
+			DiffSuppressFunc: func(k, oldValue, newValue string, _ *schema.ResourceData) bool {
+				// Check if the key is for the 'id' attribute
+				if strings.HasSuffix(k, "id") {
+					return locality.ExpandID(oldValue) == locality.ExpandID(newValue)
+				}
+				// For all other attributes, don't suppress the diff
+				return false
+			},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "UUID of the private network to be connected to the cluster",
+					},
+					"service_ips": {
+						Type:     schema.TypeList,
+						Optional: true,
+						Computed: true,
+						Elem: &schema.Schema{
+							Type:             schema.TypeString,
+							ValidateDiagFunc: verify.IsIPv4CIDR(),
+						},
+						Description: "List of IPv4 addresses of the private network in CIDR notation (IPv6 is not supported by the Scaleway API)",
+					},
+					// computed
+					"endpoint_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "UUID of the endpoint to be connected to the cluster",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"ips": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Computed:    true,
+						Description: "List of IPv4 addresses of the endpoint",
+					},
+					"zone": zonal.ComputedSchema(),
+				},
+			},
+		},
+		// Computed
+		"public_network": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Computed:    true,
+			MaxItems:    1,
+			Description: "Public network specs details",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Optional:    true,
+						Description: "UUID of the public network to be connected to the cluster",
+					},
+					"port": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Computed:    true,
+						Description: "TCP port of the endpoint",
+					},
+					"ips": {
+						Type:        schema.TypeList,
+						Description: "List of IPv4 addresses of the endpoint",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional: true,
+						Computed: true,
+					},
+				},
+			},
+		},
+		"private_ips": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Optional:    true,
+			Description: "List of private IPv4 addresses associated with the resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The ID of the IPv4 address resource",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The private IPv4 address",
+					},
+				},
+			},
+		},
+		"certificate": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the Redis cluster",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the Redis cluster",
+		},
+		// Common
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -280,6 +305,14 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		// If `password` is not set, it will be set as the default empty string
+		password = d.Get("password").(string)
+	}
+
 	createReq := &redis.CreateClusterRequest{
 		Zone:      zone,
 		ProjectID: d.Get("project_id").(string),
@@ -287,7 +320,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		Version:   d.Get("version").(string),
 		NodeType:  d.Get("node_type").(string),
 		UserName:  d.Get("user_name").(string),
-		Password:  d.Get("password").(string),
+		Password:  password,
 	}
 
 	tags, tagsExist := d.GetOk("tags")
@@ -297,7 +330,7 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	clusterSize, clusterSizeExist := d.GetOk("cluster_size")
 	if clusterSizeExist {
-		createReq.ClusterSize = scw.Int32Ptr(int32(clusterSize.(int)))
+		createReq.ClusterSize = new(int32(clusterSize.(int)))
 	}
 
 	tlsEnabled, tlsEnabledExist := d.GetOk("tls_enabled")
@@ -335,7 +368,9 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	if err := identity.SetZonalIdentity(d, res.Zone, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForCluster(ctx, redisAPI, zone, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -345,7 +380,9 @@ func ResourceClusterCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	return ResourceClusterRead(ctx, d, m)
 }
 
-func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+// readClusterIntoState fetches the cluster and sets state without calling identity.SetZonalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readClusterIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -367,10 +404,23 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
+	return setClusterState(ctx, d, redisAPI, zone, cluster, m)
+}
+
+func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redis.API, zone scw.Zone, cluster *redis.Cluster, m any) diag.Diagnostics {
+	userName := cluster.UserName
+	if v, ok := d.GetOk("user_name"); ok {
+		userName = v.(string)
+	}
+
 	_ = d.Set("name", cluster.Name)
 	_ = d.Set("node_type", cluster.NodeType)
-	_ = d.Set("user_name", d.Get("user_name").(string))
-	_ = d.Set("password", d.Get("password").(string))
+	_ = d.Set("user_name", userName)
+	// Only set password if password_wo is not being used
+	if _, ok := d.GetOk("password_wo_version"); !ok {
+		_ = d.Set("password", d.Get("password").(string))
+	}
+
 	_ = d.Set("zone", cluster.Zone.String())
 	_ = d.Set("project_id", cluster.ProjectID)
 	_ = d.Set("version", cluster.Version)
@@ -477,6 +527,35 @@ func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	return diags
 }
 
+func ResourceClusterRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	getReq := &redis.GetClusterRequest{
+		Zone:      zone,
+		ClusterID: ID,
+	}
+
+	cluster, err := redisAPI.GetCluster(getReq, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetZonalIdentity(d, zone, cluster.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(ctx, d, redisAPI, zone, cluster, m)
+}
+
 func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	redisAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
 	if err != nil {
@@ -496,8 +575,15 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.UserName = types.ExpandStringPtr(d.Get("user_name"))
 	}
 
-	if d.HasChange("password") {
-		req.Password = types.ExpandStringPtr(d.Get("password"))
+	if password, ok := d.GetOk("password"); ok {
+		if d.HasChange("password") {
+			// Check password field is being set (not just removed)
+			req.Password = types.ExpandStringPtr(password)
+		}
+	} else if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+		}
 	}
 
 	if d.HasChange("tags") {
@@ -533,7 +619,7 @@ func ResourceClusterUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		migrateClusterRequests = append(migrateClusterRequests, redis.MigrateClusterRequest{
 			Zone:        zone,
 			ClusterID:   ID,
-			ClusterSize: scw.Uint32Ptr(uint32(d.Get("cluster_size").(int))),
+			ClusterSize: new(uint32(d.Get("cluster_size").(int))),
 		})
 	}
 

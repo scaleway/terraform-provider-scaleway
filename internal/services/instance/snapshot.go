@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -36,80 +37,85 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultInstanceSnapshotWaitTimeout),
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the snapshot",
+		SchemaFunc:    snapshotSchema,
+		Identity:      identity.DefaultZonal(),
+		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+	}
+}
+
+func snapshotSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the snapshot",
+		},
+		"volume_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "ID of the volume to take a snapshot from",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"import"},
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "The snapshot's volume type",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SnapshotVolumeType](),
+		},
+		"size_in_gb": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "The size of the snapshot in gigabyte",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"volume_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "ID of the volume to take a snapshot from",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"import"},
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Description:      "The snapshot's volume type",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.SnapshotVolumeType](),
-			},
-			"size_in_gb": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The size of the snapshot in gigabyte",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the snapshot",
-			},
-			"import": {
-				Type:     schema.TypeList,
-				ForceNew: true,
-				MaxItems: 1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"bucket": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ForceNew:         true,
-							Description:      "Bucket containing qcow",
-							DiffSuppressFunc: dsf.Locality,
-							StateFunc: func(i any) string {
-								return regional.ExpandID(i.(string)).ID
-							},
-						},
-						"key": {
-							Type:        schema.TypeString,
-							Required:    true,
-							ForceNew:    true,
-							Description: "Key of the qcow file in the specified bucket",
+			Optional:    true,
+			Description: "The tags associated with the snapshot",
+		},
+		"import": {
+			Type:     schema.TypeList,
+			ForceNew: true,
+			MaxItems: 1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"bucket": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ForceNew:         true,
+						Description:      "Bucket containing qcow",
+						DiffSuppressFunc: dsf.Locality,
+						StateFunc: func(i any) string {
+							return regional.ExpandID(i.(string)).ID
 						},
 					},
+					"key": {
+						Type:        schema.TypeString,
+						Required:    true,
+						ForceNew:    true,
+						Description: "Key of the qcow file in the specified bucket",
+					},
 				},
-				Optional:      true,
-				Description:   "Import snapshot from a qcow",
-				ConflictsWith: []string{"volume_id"},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the snapshot",
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+			Optional:      true,
+			Description:   "Import snapshot from a qcow",
+			ConflictsWith: []string{"volume_id"},
 		},
-		CustomizeDiff: cdf.LocalityCheck("volume_id"),
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the snapshot",
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 	}
 }
 
@@ -138,7 +144,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 	req.Tags = types.ExpandStringsPtr(d.Get("tags"))
 
 	if volumeID, volumeIDExist := d.GetOk("volume_id"); volumeIDExist {
-		req.VolumeID = scw.StringPtr(zonal.ExpandID(volumeID).ID)
+		req.VolumeID = new(zonal.ExpandID(volumeID).ID)
 	}
 
 	if _, isImported := d.GetOk("import"); isImported {
@@ -155,19 +161,40 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Snapshot.ID))
+	err = identity.SetZonalIdentity(d, zone, res.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = instanceAPI.WaitForSnapshot(&instanceSDK.WaitForSnapshotRequest{
+	snapshot, err := instanceAPI.WaitForSnapshot(&instanceSDK.WaitForSnapshotRequest{
 		SnapshotID:    res.Snapshot.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceSnapshotRead(ctx, d, m)
+	return setSnapshotState(d, snapshot)
+}
+
+func setSnapshotState(d *schema.ResourceData, snapshot *instanceSDK.Snapshot) diag.Diagnostics {
+	diags := handleDeprecatedSnapshotVolumeType(d)
+	if diags.HasError() {
+		return diags
+	}
+
+	_ = d.Set("name", snapshot.Name)
+	_ = d.Set("created_at", snapshot.CreationDate.Format(time.RFC3339))
+	_ = d.Set("type", snapshot.VolumeType.String())
+	_ = d.Set("tags", snapshot.Tags)
+
+	if snapshot.BaseVolume != nil {
+		_ = d.Set("volume_id", zonal.NewIDString(snapshot.Zone, snapshot.BaseVolume.ID))
+	}
+
+	return nil
 }
 
 func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -190,17 +217,12 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	diags := handleDeprecatedSnapshotVolumeType(d)
-	if diags.HasError() {
-		return diags
+	err = identity.SetZonalIdentity(d, zone, snapshot.Snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", snapshot.Snapshot.Name)
-	_ = d.Set("created_at", snapshot.Snapshot.CreationDate.Format(time.RFC3339))
-	_ = d.Set("type", snapshot.Snapshot.VolumeType.String())
-	_ = d.Set("tags", snapshot.Snapshot.Tags)
-
-	return nil
+	return setSnapshotState(d, snapshot.Snapshot)
 }
 
 func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -212,13 +234,13 @@ func ResourceInstanceSnapshotUpdate(ctx context.Context, d *schema.ResourceData,
 	req := &instanceSDK.UpdateSnapshotRequest{
 		SnapshotID: id,
 		Zone:       zone,
-		Name:       scw.StringPtr(d.Get("name").(string)),
-		Tags:       scw.StringsPtr([]string{}),
+		Name:       new(d.Get("name").(string)),
+		Tags:       new([]string{}),
 	}
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	_, err = instanceAPI.UpdateSnapshot(req, scw.WithContext(ctx))

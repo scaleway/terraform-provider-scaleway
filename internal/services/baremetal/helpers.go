@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"time"
 
@@ -276,11 +277,5 @@ func customDiffOffer() func(ctx context.Context, diff *schema.ResourceDiff, i an
 }
 
 func isOSCompatible(offer *baremetal.Offer, os *baremetal.OS) bool {
-	for _, incompatible := range offer.IncompatibleOsIDs {
-		if os.ID == incompatible {
-			return false
-		}
-	}
-
-	return true
+	return !slices.Contains(offer.IncompatibleOsIDs, os.ID)
 }

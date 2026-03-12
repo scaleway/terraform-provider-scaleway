@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -36,58 +37,63 @@ func ResourceVolume() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceVolumeDeleteTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The name of the volume",
-			},
-			"type": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				Description:      "The volume type",
-				ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
-			},
-			"size_in_gb": {
-				Type:          schema.TypeInt,
-				Optional:      true,
-				Description:   "The size of the volume in gigabyte",
-				ConflictsWith: []string{"from_snapshot_id"},
-			},
-			"from_snapshot_id": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ForceNew:         true,
-				Description:      "Create a volume based on a image",
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				ConflictsWith:    []string{"size_in_gb"},
-			},
-			"server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The server associated with this volume",
-			},
-			"tags": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional:    true,
-				Description: "The tags associated with the volume",
-			},
-			"migrate_to_sbs": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "If true, consider that this volume may have been migrated and no longer exists.",
-			},
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
-			"zone":            zonal.Schema(),
-		},
+		SchemaFunc:    volumeSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: cdf.LocalityCheck("from_snapshot_id"),
+	}
+}
+
+func volumeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The name of the volume",
+		},
+		"type": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      "The volume type",
+			ValidateDiagFunc: verify.ValidateEnum[instanceSDK.VolumeVolumeType](),
+		},
+		"size_in_gb": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			Description:   "The size of the volume in gigabyte",
+			ConflictsWith: []string{"from_snapshot_id"},
+		},
+		"from_snapshot_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			Description:      "Create a volume based on a image",
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			ConflictsWith:    []string{"size_in_gb"},
+		},
+		"server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The server associated with this volume",
+		},
+		"tags": {
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "The tags associated with the volume",
+		},
+		"migrate_to_sbs": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "If true, consider that this volume may have been migrated and no longer exists.",
+		},
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
+		"zone":            zonal.Schema(),
 	}
 }
 
@@ -123,19 +129,55 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(fmt.Errorf("couldn't create volume: %w", err))
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.Volume.ID))
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err = instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
+	volume, err := instanceAPI.WaitForVolume(&instanceSDK.WaitForVolumeRequest{
 		VolumeID:      res.Volume.ID,
 		Zone:          zone,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutCreate)),
+		Timeout:       new(d.Timeout(schema.TimeoutCreate)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceVolumeRead(ctx, d, m)
+	return setVolumeState(d, volume)
+}
+
+func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume) diag.Diagnostics {
+	_ = d.Set("name", volume.Name)
+	_ = d.Set("organization_id", volume.Organization)
+	_ = d.Set("project_id", volume.Project)
+	_ = d.Set("zone", volume.Zone)
+	_ = d.Set("type", volume.VolumeType.String())
+	_ = d.Set("tags", volume.Tags)
+
+	_, fromSnapshot := d.GetOk("from_snapshot_id")
+	if !fromSnapshot {
+		_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
+	}
+
+	if volume.Server != nil {
+		_ = d.Set("server_id", volume.Server.ID)
+	} else {
+		_ = d.Set("server_id", nil)
+	}
+
+	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
+		return diag.Diagnostics{
+			{
+				Severity:      diag.Warning,
+				Summary:       "Volume type `b_ssd` is deprecated",
+				Detail:        "If you want to migrate existing volumes, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
+				AttributePath: cty.GetAttrPath("type"),
+			},
+		}
+	}
+
+	return nil
 }
 
 func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -162,36 +204,12 @@ func ResourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(fmt.Errorf("couldn't read volume: %w", err))
 	}
 
-	_ = d.Set("name", res.Volume.Name)
-	_ = d.Set("organization_id", res.Volume.Organization)
-	_ = d.Set("project_id", res.Volume.Project)
-	_ = d.Set("zone", string(zone))
-	_ = d.Set("type", res.Volume.VolumeType.String())
-	_ = d.Set("tags", res.Volume.Tags)
-
-	_, fromSnapshot := d.GetOk("from_snapshot_id")
-	if !fromSnapshot {
-		_ = d.Set("size_in_gb", int(res.Volume.Size/scw.GB))
+	err = identity.SetZonalIdentity(d, res.Volume.Zone, res.Volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if res.Volume.Server != nil {
-		_ = d.Set("server_id", res.Volume.Server.ID)
-	} else {
-		_ = d.Set("server_id", nil)
-	}
-
-	if d.Get("type").(string) == instanceSDK.VolumeVolumeTypeBSSD.String() {
-		return diag.Diagnostics{
-			{
-				Severity:      diag.Warning,
-				Summary:       "Volume type `b_ssd` is deprecated",
-				Detail:        "If you want to migrate existing volumes, you can visit `https://www.scaleway.com/en/docs/instances/how-to/migrate-volumes-snapshots-to-sbs/` for more information.",
-				AttributePath: cty.GetAttrPath("type"),
-			},
-		}
-	}
-
-	return nil
+	return setVolumeState(d, res.Volume)
 }
 
 func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -203,7 +221,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 	req := &instanceSDK.UpdateVolumeRequest{
 		VolumeID: id,
 		Zone:     zone,
-		Tags:     scw.StringsPtr([]string{}),
+		Tags:     new([]string{}),
 	}
 
 	if d.HasChange("name") {
@@ -213,7 +231,7 @@ func ResourceInstanceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	tags := types.ExpandStrings(d.Get("tags"))
 	if d.HasChange("tags") && len(tags) > 0 {
-		req.Tags = scw.StringsPtr(types.ExpandStrings(d.Get("tags")))
+		req.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("size_in_gb") {
@@ -265,7 +283,7 @@ func ResourceInstanceVolumeDelete(ctx context.Context, d *schema.ResourceData, m
 		Zone:          zone,
 		VolumeID:      id,
 		RetryInterval: transport.DefaultWaitRetryInterval,
-		Timeout:       scw.TimeDurationPtr(d.Timeout(schema.TimeoutDelete)),
+		Timeout:       new(d.Timeout(schema.TimeoutDelete)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

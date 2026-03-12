@@ -18,81 +18,84 @@ import (
 func DataSourceImage() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceInstanceImageRead,
+		SchemaFunc:  dataSourceImageSchema,
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Exact name of the desired image",
-				ConflictsWith: []string{"image_id"},
-			},
-			"image_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "ID of the desired image",
-				ConflictsWith: []string{"name", "architecture"},
-			},
-			"architecture": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Default:       instance.ArchX86_64.String(),
-				Description:   "Architecture of the desired image",
-				ConflictsWith: []string{"image_id"},
-			},
-			"latest": {
-				Type:          schema.TypeBool,
-				Optional:      true,
-				Default:       true,
-				Description:   "Select most recent image if multiple match",
-				ConflictsWith: []string{"image_id"},
-			},
-			"zone":            zonal.Schema(),
-			"organization_id": account.OrganizationIDSchema(),
-			"project_id":      account.ProjectIDSchema(),
+func dataSourceImageSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Exact name of the desired image",
+			ConflictsWith: []string{"image_id"},
+		},
+		"image_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "ID of the desired image",
+			ConflictsWith: []string{"name", "architecture"},
+		},
+		"architecture": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Default:       instance.ArchX86_64.String(),
+			Description:   "Architecture of the desired image",
+			ConflictsWith: []string{"image_id"},
+		},
+		"latest": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Default:       true,
+			Description:   "Select most recent image if multiple match",
+			ConflictsWith: []string{"image_id"},
+		},
+		"zone":            zonal.Schema(),
+		"organization_id": account.OrganizationIDSchema(),
+		"project_id":      account.ProjectIDSchema(),
 
-			"public": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Indication if the image is public",
+		"public": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Description: "Indication if the image is public",
+		},
+		"default_bootscript_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the bootscript associated with this image",
+		},
+		"root_volume_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the root volume associated with this image",
+		},
+		"additional_volume_ids": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"default_bootscript_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the bootscript associated with this image",
-			},
-			"root_volume_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the root volume associated with this image",
-			},
-			"additional_volume_ids": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Description: "The additional volume IDs attached to the image",
-			},
-			"from_server_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "ID of the server the image is originated from",
-			},
-			"creation_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date when the image was created",
-			},
-			"modification_date": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Date when the image was updated",
-			},
-			"state": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "State of the image",
-			},
+			Description: "The additional volume IDs attached to the image",
+		},
+		"from_server_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the server the image is originated from",
+		},
+		"creation_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date when the image was created",
+		},
+		"modification_date": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Date when the image was updated",
+		},
+		"state": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "State of the image",
 		},
 	}
 }

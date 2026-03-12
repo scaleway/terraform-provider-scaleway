@@ -17,7 +17,6 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -46,9 +45,16 @@ func TestAccIPAMIP_Basic(t *testing.T) {
 					acctest.CheckResourceRawIDMatches("scaleway_ipam_ip.ip01", "source.0.private_network_id", "scaleway_vpc_private_network.pn01", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "source.0.subnet_id"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "address_cidr"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_ipam_ip.ip01", "updated_at"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_ipam_ip.ip01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"source.0.private_network_id"},
 			},
 		},
 	})
@@ -59,7 +65,6 @@ func TestAccIPAMIP_WithStandaloneAddress(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -85,7 +90,8 @@ func TestAccIPAMIP_WithStandaloneAddress(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckIPAMIPExists(tt, "scaleway_ipam_ip.ip01"),
-					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "address", "172.16.32.7/22"),
+					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "address", "172.16.32.7"),
+					resource.TestCheckResourceAttr("scaleway_ipam_ip.ip01", "address_cidr", "172.16.32.7/22"),
 				),
 			},
 		},
@@ -97,7 +103,6 @@ func TestAccIPAMIP_WithTags(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{
@@ -165,7 +170,6 @@ func TestAccIPAMIP_WithCustomResource(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             ipamchecks.CheckIPDestroy(tt),
 		Steps: []resource.TestStep{

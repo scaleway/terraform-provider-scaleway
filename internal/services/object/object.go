@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -39,90 +38,94 @@ func ResourceObject() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Schema: map[string]*schema.Schema{
-			"bucket": {
-				Type:             schema.TypeString,
-				Required:         true,
-				Description:      "The bucket's name or regional ID.",
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "Key of the object",
-			},
-			"file": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Path of the file to upload, defaults to an empty file",
-				ConflictsWith: []string{"content", "content_base64"},
-			},
-			"content": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Content of the file to upload",
-				ConflictsWith: []string{"file", "content_base64"},
-			},
-			"content_base64": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Content of the file to upload, should be base64 encoded",
-				ConflictsWith: []string{"file", "content"},
-			},
-			"hash": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "File hash to trigger upload",
-			},
-			"storage_class": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
-				Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
-			},
-			"metadata": {
-				Type:        schema.TypeMap,
-				Optional:    true,
-				Description: "Map of object's metadata, only lower case keys are allowed",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				ValidateDiagFunc: validateMapKeyLowerCase(),
-			},
-			"content_type": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
-			},
-			"tags": {
-				Optional:    true,
-				Type:        schema.TypeMap,
-				Description: "Map of object's tags",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"visibility": {
-				Optional:    true,
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Visibility of the object, public-read or private",
-				ValidateFunc: validation.StringInSlice([]string{
-					string(s3Types.ObjectCannedACLPrivate),
-					string(s3Types.ObjectCannedACLPublicRead),
-				}, false),
-			},
-			"sse_customer_key": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Sensitive:    true,
-				Description:  "Customer's encryption keys to encrypt data (SSE-C)",
-				ValidateFunc: validation.StringLenBetween(32, 32),
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
+		SchemaFunc: objectSchema,
+	}
+}
+
+func objectSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"bucket": {
+			Type:             schema.TypeString,
+			Required:         true,
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
+		"key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "Key of the object",
+		},
+		"file": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Path of the file to upload, defaults to an empty file",
+			ConflictsWith: []string{"content", "content_base64"},
+		},
+		"content": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Content of the file to upload",
+			ConflictsWith: []string{"file", "content_base64"},
+		},
+		"content_base64": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Content of the file to upload, should be base64 encoded",
+			ConflictsWith: []string{"file", "content"},
+		},
+		"hash": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "File hash to trigger upload",
+		},
+		"storage_class": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+			Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
+		},
+		"metadata": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "Map of object's metadata, only lower case keys are allowed",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			ValidateDiagFunc: validateMapKeyLowerCase(),
+		},
+		"content_type": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The standard MIME type of the object's content (e.g., 'application/json', 'text/plain'). This specifies how the object should be interpreted by clients. See RFC 9110: https://www.rfc-editor.org/rfc/rfc9110.html#name-content-type",
+		},
+		"tags": {
+			Optional:    true,
+			Type:        schema.TypeMap,
+			Description: "Map of object's tags",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"visibility": {
+			Optional:    true,
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Visibility of the object, public-read or private",
+			ValidateFunc: validation.StringInSlice([]string{
+				string(s3Types.ObjectCannedACLPrivate),
+				string(s3Types.ObjectCannedACLPublicRead),
+			}, false),
+		},
+		"sse_customer_key": {
+			Type:         schema.TypeString,
+			Optional:     true,
+			Sensitive:    true,
+			Description:  "Customer's encryption keys to encrypt data (SSE-C)",
+			ValidateFunc: validation.StringLenBetween(32, 32),
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -174,7 +177,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(err)
 		}
 
-		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerAlgorithm = new("AES256")
 		req.SSECustomerKeyMD5 = &digestMD5
 		req.SSECustomerKey = encryption
 	}
@@ -273,7 +276,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 				return diag.FromErr(err)
 			}
 
-			req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.SSECustomerAlgorithm = new("AES256")
 			req.SSECustomerKeyMD5 = &digestMD5
 			req.SSECustomerKey = encryption
 		}
@@ -295,7 +298,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
 			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
-			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
+			CopySource:   new(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
 		}
@@ -310,7 +313,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 				return diag.FromErr(err)
 			}
 
-			req.CopySourceSSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.CopySourceSSECustomerAlgorithm = new("AES256")
 			req.CopySourceSSECustomerKeyMD5 = &digestMD5
 			req.CopySourceSSECustomerKey = encryption
 		}
@@ -324,8 +327,8 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChanges("key", "bucket") {
 		_, err := s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
-			Key:    scw.StringPtr(key),
-			Bucket: scw.StringPtr(bucket),
+			Key:    new(key),
+			Bucket: new(bucket),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -366,7 +369,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	if encryption, ok := d.GetOk("sse_customer_key"); ok {
 		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))
-		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerAlgorithm = new("AES256")
 	}
 
 	obj, err := s3Client.HeadObject(ctx, req)

@@ -26,7 +26,6 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 
@@ -58,6 +57,8 @@ func TestAccDataSourceConfig_ActiveProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "secret_key_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "project_id", "11111111-2222-3333-4444-555555555555"),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "project_id_source", meta.CredentialsSourceActiveProfile),
+					resource.TestCheckResourceAttr("data.scaleway_config.main", "organization_id", "11111111-2222-3333-4444-555555555555"),
+					resource.TestCheckResourceAttr("data.scaleway_config.main", "organization_id_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "region", "nl-ams"),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "region_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "zone", "nl-ams-1"),
@@ -80,7 +81,6 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 
@@ -113,6 +113,8 @@ func TestAccDataSourceConfig_OtherProfile(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "secret_key_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "project_id", "99999999-9999-9999-9999-999999999999"),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "project_id_source", meta.CredentialsSourceActiveProfile),
+					resource.TestCheckResourceAttr("data.scaleway_config.main", "organization_id", "99999999-9999-9999-9999-999999999999"),
+					resource.TestCheckResourceAttr("data.scaleway_config.main", "organization_id_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "region", "fr-par"),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "region_source", meta.CredentialsSourceActiveProfile),
 					resource.TestCheckResourceAttr("data.scaleway_config.main", "zone", "fr-par-1"),
@@ -135,7 +137,6 @@ func TestAccDataSourceConfig_MixedProfile(t *testing.T) {
 	ctx := t.Context()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.PreCheck(t) },
 		ProviderFactories: func() map[string]func() (*schema.Provider, error) {
 			_ = os.Unsetenv("SCW_PROFILE")
 

@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,146 +27,156 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   ResourceIPAMIPRead,
 		UpdateContext: ResourceIPAMIPUpdate,
 		DeleteContext: ResourceIPAMIPDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"address": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				Description:      "Request a specific IP in the requested source pool",
-				ValidateFunc:     validation.IsIPAddress,
-				DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
-			},
-			"source": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "The source in which to book the IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"zonal": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Zone the IP lives in if the IP is a public zoned one",
-						},
-						"private_network_id": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Computed:         true,
-							Description:      "Private Network the IP lives in if the IP is a private IP",
-							DiffSuppressFunc: dsf.Locality,
-						},
-						"subnet_id": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Computed:    true,
-							Description: "Private Network subnet the IP lives in if the IP is a private IP in a Private Network",
-						},
-					},
-				},
-			},
-			"custom_resource": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The custom resource in which to book the IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"mac_address": {
-							Type:         schema.TypeString,
-							Required:     true,
-							Description:  "MAC address of the custom resource",
-							ValidateFunc: validation.IsMACAddress,
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
-						},
-					},
-				},
-			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-				Description: "Request an IPv6 instead of an IPv4",
-			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The tags associated with the IP",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"project_id": account.ProjectIDSchema(),
-			"region":     regional.Schema(),
-			// Computed elements
-			"resource": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The IP resource",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of resource the IP is attached to",
-						},
-						"id": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "ID of the resource the IP is attached to",
-						},
-						"mac_address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "MAC of the resource the IP is attached to",
-						},
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Name of the resource the IP is attached to",
-						},
-					},
-				},
-			},
-			"reverses": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "The reverses DNS for this IP",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"hostname": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The reverse domain name",
-						},
-						"address": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "The IP corresponding to the hostname",
-						},
-					},
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the IP",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the IP",
-			},
-			"zone": zonal.ComputedSchema(),
+		SchemaFunc:    ipSchema,
+	}
+}
+
+func ipSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"address": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "Request a specific IP in the requested source pool",
+			ValidateFunc:     validation.IsIPAddress,
+			DiffSuppressFunc: dsf.DiffSuppressFuncStandaloneIPandCIDR,
 		},
+		"address_cidr": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The IP address with a CIDR notation",
+		},
+		"source": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "The source in which to book the IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"zonal": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Zone the IP lives in if the IP is a public zoned one",
+					},
+					"private_network_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						Description:      "Private Network the IP lives in if the IP is a private IP",
+						DiffSuppressFunc: dsf.Locality,
+					},
+					"subnet_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Computed:    true,
+						Description: "Private Network subnet the IP lives in if the IP is a private IP in a Private Network",
+					},
+				},
+			},
+		},
+		"custom_resource": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The custom resource in which to book the IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"mac_address": {
+						Type:         schema.TypeString,
+						Required:     true,
+						Description:  "MAC address of the custom resource",
+						ValidateFunc: validation.IsMACAddress,
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "When the resource is in a Private Network, a DNS record is available to resolve the resource name",
+					},
+				},
+			},
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			ForceNew:    true,
+			Default:     false,
+			Description: "Request an IPv6 instead of an IPv4",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The tags associated with the IP",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+		},
+		"project_id": account.ProjectIDSchema(),
+		"region":     regional.Schema(),
+		// Computed elements
+		"resource": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The IP resource",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Type of resource the IP is attached to",
+					},
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "ID of the resource the IP is attached to",
+					},
+					"mac_address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "MAC of the resource the IP is attached to",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the resource the IP is attached to",
+					},
+				},
+			},
+		},
+		"reverses": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "The reverses DNS for this IP",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"hostname": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The reverse domain name",
+					},
+					"address": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The IP corresponding to the hostname",
+					},
+				},
+			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the IP",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the IP",
+		},
+		"zone": zonal.ComputedSchema(),
 	}
 }
 
@@ -194,7 +205,7 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			}
 		}
 
-		req.Address = scw.IPPtr(parsedIP)
+		req.Address = new(parsedIP)
 	}
 
 	if source, ok := d.GetOk("source"); ok {
@@ -210,7 +221,10 @@ func ResourceIPAMIPCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceIPAMIPRead(ctx, d, m)
 }
@@ -269,29 +283,42 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		}
 	}
 
-	address, err := types.FlattenIPNet(res.Address)
+	diags := setIPAMIPState(d, res, privateNetworkID)
+
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	return diags
+}
+
+func setIPAMIPState(d *schema.ResourceData, ip *ipam.IP, privateNetworkID string) diag.Diagnostics {
+	addressCidr, err := types.FlattenIPNet(ip.Address)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	address := ip.Address.IP.String()
 	_ = d.Set("address", address)
-	_ = d.Set("source", flattenIPSource(res.Source, privateNetworkID))
-	_ = d.Set("resource", flattenIPResource(res.Resource))
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("is_ipv6", res.IsIPv6)
-	_ = d.Set("region", region)
+	_ = d.Set("address_cidr", addressCidr)
+	_ = d.Set("source", flattenIPSource(ip.Source, privateNetworkID))
+	_ = d.Set("resource", flattenIPResource(ip.Resource))
+	_ = d.Set("project_id", ip.ProjectID)
+	_ = d.Set("created_at", types.FlattenTime(ip.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(ip.UpdatedAt))
+	_ = d.Set("is_ipv6", ip.IsIPv6)
+	_ = d.Set("region", ip.Region)
 
-	if res.Zone != nil {
-		_ = d.Set("zone", res.Zone.String())
+	if ip.Zone != nil {
+		_ = d.Set("zone", ip.Zone.String())
 	}
 
-	if len(res.Tags) > 0 {
-		_ = d.Set("tags", res.Tags)
+	if len(ip.Tags) > 0 {
+		_ = d.Set("tags", ip.Tags)
 	}
 
-	_ = d.Set("reverses", flattenIPReverses(res.Reverses))
+	_ = d.Set("reverses", flattenIPReverses(ip.Reverses))
 
 	return nil
 }

@@ -31,7 +31,6 @@ func TestAccDomainRecord_Basic(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -176,7 +175,6 @@ func TestAccDomainRecord_Basic2(t *testing.T) {
 	priority := 0
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -250,7 +248,6 @@ func TestAccDomainRecord_Arobase(t *testing.T) {
 	logging.L.Debugf("TestAccScalewayDomainRecord_Arobase: test dns zone: %s", testDNSZone)
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -297,7 +294,6 @@ func TestAccDomainRecord_GeoIP(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -393,7 +389,6 @@ func TestAccDomainRecord_HTTPService(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -480,7 +475,6 @@ func TestAccDomainRecord_View(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -572,7 +566,6 @@ func TestAccDomainRecord_Weighted(t *testing.T) {
 	priority := 0 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -664,7 +657,6 @@ func TestAccDomainRecord_SRVZone(t *testing.T) {
 	priority := 100 // default value
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -706,7 +698,6 @@ func TestAccDomainRecord_SRVWithDomainDuplication(t *testing.T) {
 	priority := 0
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -802,7 +793,6 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 	priorityUpdated := 10
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
 		Steps: []resource.TestStep{
@@ -870,6 +860,139 @@ func TestAccDomainRecord_CNAME(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "ttl", strconv.Itoa(ttlUpdated)),
 					resource.TestCheckResourceAttr("scaleway_domain_record.tf_CNAME", "priority", strconv.Itoa(priorityUpdated)),
 					acctest.CheckResourceAttrUUID("scaleway_domain_record.tf_CNAME", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDomainRecord_NameDiffSuppress(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-name-diff." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_NameDiffSuppress: test dns zone: %s", testDNSZone)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc"
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+				`, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "data", "v=DMARC1; p=none"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+				`, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDomainRecord_TEMIntegration(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testDNSZone := "test-tem-integration." + acctest.TestDomain
+	logging.L.Debugf("TestAccDomainRecord_TEMIntegration: test dns zone: %s", testDNSZone)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainRecordDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "test-dkim-record"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "type", "TXT"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "type", "TXT"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc.%s."
+						type     = "TXT"
+						data     = "v=DMARC1; p=none"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "test-dkim-record"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_domain_record" "dmarc" {
+						dns_zone = "%s"
+						name     = "_dmarc"
+						type     = "TXT"
+						data     = "v=DMARC1; p=quarantine"
+					}
+
+					resource "scaleway_domain_record" "dkim" {
+						dns_zone = "%s"
+						name     = "scw1._domainkey.%s."
+						type     = "TXT"
+						data     = "test-dkim-record"
+					}
+				`, testDNSZone, testDNSZone, testDNSZone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dmarc"),
+					testAccCheckDomainRecordExists(tt, "scaleway_domain_record.dkim"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "name", "_dmarc"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dmarc", "data", "v=DMARC1; p=quarantine"),
+					resource.TestCheckResourceAttr("scaleway_domain_record.dkim", "name", "scw1._domainkey"),
 				),
 			},
 		},

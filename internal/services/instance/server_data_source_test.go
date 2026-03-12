@@ -15,7 +15,6 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 
 	serverName := "tf-server"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -47,9 +46,9 @@ func TestAccDataSourceServer_Basic(t *testing.T) {
 						server_id = "${scaleway_instance_server.main.id}"
 					}`, serverName),
 				Check: resource.ComposeTestCheckFunc(
-					isServerPresent(tt, "data.scaleway_instance_server.prod"),
+					instancechecks.IsServerPresent(tt, "data.scaleway_instance_server.prod"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.prod", "name", serverName),
-					isServerPresent(tt, "data.scaleway_instance_server.stg"),
+					instancechecks.IsServerPresent(tt, "data.scaleway_instance_server.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_instance_server.stg", "name", serverName),
 				),
 			},

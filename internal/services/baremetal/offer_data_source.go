@@ -3,6 +3,7 @@ package baremetal
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,127 +17,130 @@ import (
 func DataSourceOffer() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceOfferRead,
+		SchemaFunc:  offerSchema,
+	}
+}
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "Exact name of the desired offer",
-				ConflictsWith: []string{"offer_id"},
-			},
-			"subscription_period": {
-				Type:             schema.TypeString,
-				Optional:         true,
-				ValidateDiagFunc: verify.ValidateEnum[baremetal.OfferSubscriptionPeriod](),
-				Description:      "Period of subscription the desired offer",
-				ConflictsWith:    []string{"offer_id"},
-			},
-			"offer_id": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Description:   "ID of the desired offer",
-				ConflictsWith: []string{"name"},
-			},
-			"include_disabled": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Include disabled offers",
-			},
-			"zone": zonal.Schema(),
+func offerSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Exact name of the desired offer",
+			ConflictsWith: []string{"offer_id"},
+		},
+		"subscription_period": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ValidateDiagFunc: verify.ValidateEnum[baremetal.OfferSubscriptionPeriod](),
+			Description:      "Period of subscription the desired offer",
+			ConflictsWith:    []string{"offer_id"},
+		},
+		"offer_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "ID of the desired offer",
+			ConflictsWith: []string{"name"},
+		},
+		"include_disabled": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Include disabled offers",
+		},
+		"zone": zonal.Schema(),
 
-			"bandwidth": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Available Bandwidth with the offer",
-			},
-			"commercial_range": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Commercial range of the offer",
-			},
-			"cpu": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "CPU specifications of the offer",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "CPU name",
-						},
-						"core_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of cores",
-						},
-						"frequency": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Frequency of the CPU",
-						},
-						"thread_count": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Number of threads",
-						},
+		"bandwidth": {
+			Type:        schema.TypeInt,
+			Computed:    true,
+			Description: "Available Bandwidth with the offer",
+		},
+		"commercial_range": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Commercial range of the offer",
+		},
+		"cpu": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "CPU specifications of the offer",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "CPU name",
+					},
+					"core_count": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Number of cores",
+					},
+					"frequency": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Frequency of the CPU",
+					},
+					"thread_count": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Number of threads",
 					},
 				},
 			},
-			"disk": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Disk specifications of the offer",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of disk",
-						},
-						"capacity": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Capacity of the disk in byte",
-						},
+		},
+		"disk": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Disk specifications of the offer",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Type of disk",
+					},
+					"capacity": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Capacity of the disk in byte",
 					},
 				},
 			},
-			"memory": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Memory specifications of the offer",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Type of memory",
-						},
-						"capacity": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Capacity of the memory in byte",
-						},
-						"frequency": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Frequency of the memory",
-						},
-						"is_ecc": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "True if error-correcting code is available on this memory",
-						},
+		},
+		"memory": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Memory specifications of the offer",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Type of memory",
+					},
+					"capacity": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Capacity of the memory in byte",
+					},
+					"frequency": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "Frequency of the memory",
+					},
+					"is_ecc": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "True if error-correcting code is available on this memory",
 					},
 				},
 			},
-			"stock": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Stock status for this offer",
-			},
+		},
+		"stock": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Stock status for this offer",
 		},
 	}
 }
@@ -172,10 +176,13 @@ func dataSourceOfferRead(ctx context.Context, d *schema.ResourceData, m any) dia
 
 		var matches []*baremetal.Offer
 
+		name := d.Get("name").(string)
+		nameToUpper := strings.ToUpper(name)
+
 		for _, offer := range res.Offers {
-			if offer.Name == d.Get("name") {
+			if offer.Name == nameToUpper {
 				if !offer.Enable && !d.Get("include_disabled").(bool) {
-					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add allow_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
+					return diag.FromErr(fmt.Errorf("%s offer %s (%s) found in zone %s but is disabled. Add include_disabled=true in your terraform config to use it", offer.SubscriptionPeriod, offer.Name, offer.ID, zone))
 				}
 
 				matches = append(matches, offer)

@@ -17,7 +17,6 @@ func TestAccInstanceGroup_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckInstanceGroupDestroy(tt),
 		Steps: []resource.TestStep{
@@ -109,6 +108,12 @@ func TestAccInstanceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_group.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_group.main", "updated_at"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_autoscaling_instance_group.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_servers_on_destroy"},
 			},
 		},
 	})

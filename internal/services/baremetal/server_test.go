@@ -34,7 +34,6 @@ func TestAccServer_Basic(t *testing.T) {
 	name := "TestAccServer_Basic"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -117,6 +116,179 @@ func TestAccServer_Basic(t *testing.T) {
 	})
 }
 
+func TestAccServer_CloudInit(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_CloudInit"
+	name := "TestAccServer_CloudInit"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+					EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "name", name),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "offer_name", OfferName),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "cloud_init", "#cloud-config\napt_update: true\napt_upgrade: true\n"),
+				),
+			},
+
+			{
+				// Update cloud-init + reinstall
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+
+packages:
+ - curl
+EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit", "edited"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferName),
+
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckResourceAttr(
+						"scaleway_baremetal_server.base",
+						"cloud_init",
+						"#cloud-config\napt_update: true\napt_upgrade: true\n\npackages:\n - curl\n",
+					),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.base", "tags.#", "4"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_CloudInitNotCompatibleOffer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	if !IsOfferAvailable(OfferName, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_CloudInitIncompatibleOffer"
+	name := "TestAccServer_CloudInitIncompatibleOffer"
+	OfferNameNotCompatible := "EM-L110X-SATA"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					variable "cloud_init" {
+					  type = string
+					  default = <<EOF
+#cloud-config
+apt_update: true
+apt_upgrade: true
+					EOF
+					}
+
+					data "scaleway_baremetal_os" "my_os" {
+					zone    = "%s"
+					name    = "Ubuntu"
+					version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+					name       = "%s"
+					public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "base" {
+					name        = "%s"
+					zone        = "%s"
+					description = "test a description"
+					offer       = "%s"
+					os          = data.scaleway_baremetal_os.my_os.os_id
+
+					cloud_init = var.cloud_init
+
+					tags        = ["terraform-test", "scaleway_baremetal_server", "cloudinit"]
+					ssh_key_ids = [scaleway_iam_ssh_key.main.id]
+					}
+					`, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone, OfferNameNotCompatible),
+
+				ExpectError: regexp.MustCompile("cloud-init is not supported on this offer"),
+			},
+		},
+	})
+}
+
 func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -126,7 +298,6 @@ func TestAccServer_RequiredInstallConfig(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -151,7 +322,6 @@ func TestAccServer_WithoutInstallConfig(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -191,7 +361,6 @@ func TestAccServer_CreateServerWithCustomInstallConfig(t *testing.T) {
 	name := "TestAccServer_CreateServerWithCustomInstallConfig"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -245,7 +414,6 @@ func TestAccServer_CreateServerWithServicePassword(t *testing.T) {
 	password := "HelloWorld678!"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -302,7 +470,6 @@ func TestAccServer_CreateServerWithOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_CreateServerWithOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -368,7 +535,6 @@ func TestAccServer_AddOption(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddOption"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -460,7 +626,6 @@ func TestAccServer_AddTwoOptionsThenDeleteOne(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddTwoOptionsThenDeleteOne"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
 		Steps: []resource.TestStep{
@@ -615,7 +780,6 @@ func TestAccServer_CreateServerWithPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_CreateServerWithPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -687,7 +851,6 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -698,34 +861,34 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					data "scaleway_baremetal_os" "my_os" {
 						zone = "%s"
 						name = "Ubuntu"
-						version = "22.04 LTS (Jammy Jellyfish)"						
+						version = "22.04 LTS (Jammy Jellyfish)"
 					}
-
+			
 					data "scaleway_baremetal_offer" "my_offer" {
 						zone = "%s"
 						name = "%s"
 					}
-
+			
 					data "scaleway_baremetal_option" "private_network" {
 						zone = "%s"
 						name = "Private Network"
 					}
-
+			
 					resource "scaleway_vpc_private_network" "pn" {
 						name = "baremetal_private_network"
-					} 
-
+					}
+			
 					resource "scaleway_iam_ssh_key" "base" {
 						name 	   = "%s"
 						public_key = "%s"
 					}
-					
+			
 					resource "scaleway_baremetal_server" "base" {
 						name        = "%s"
 						zone        = "%s"
 						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
 						os          = data.scaleway_baremetal_os.my_os.os_id
-					
+			
 						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
 						options {
 						  id = data.scaleway_baremetal_option.private_network.option_id
@@ -784,6 +947,50 @@ func TestAccServer_AddPrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_baremetal_server.base", "private_network.0.id", "scaleway_vpc_private_network.pn", "id"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+						zone = "%s"
+						name = "Ubuntu"
+						version = "22.04 LTS (Jammy Jellyfish)"						
+					}
+
+					data "scaleway_baremetal_offer" "my_offer" {
+						zone = "%s"
+						name = "%s"
+					}
+
+					data "scaleway_baremetal_option" "private_network" {
+						zone = "%s"
+						name = "Private Network"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						name = "baremetal_private_network"
+					} 
+
+					resource "scaleway_iam_ssh_key" "base" {
+						name 	   = "%s"
+						public_key = "%s"
+					}
+					
+					resource "scaleway_baremetal_server" "base" {
+						name        = "%s"
+						zone        = "%s"
+						offer       = data.scaleway_baremetal_offer.my_offer.offer_id
+						os          = data.scaleway_baremetal_os.my_os.os_id
+					
+						ssh_key_ids = [ scaleway_iam_ssh_key.base.id ]
+						options {
+						  id = data.scaleway_baremetal_option.private_network.option_id
+						}
+					}
+				`, Zone, Zone, OfferName, Zone, SSHKeyName, SSHKeyBaremetal, name, Zone),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
+					resource.TestCheckNoResourceAttr("scaleway_baremetal_server.base", "private_network.0"),
+				),
+			},
 		},
 	})
 }
@@ -800,7 +1007,6 @@ func TestAccServer_AddAnotherPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_AddAnotherPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -926,7 +1132,6 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 	name := "TestAccScalewayBaremetalServer_WithIPAMPrivateNetwork"
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -1008,7 +1213,7 @@ func TestAccServer_WithIPAMPrivateNetwork(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.base"),
 					testAccCheckBaremetalServerHasPrivateNetwork(tt, "scaleway_baremetal_server.base"),
-					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address", "data.scaleway_ipam_ip.base", "address_cidr"),
+					resource.TestCheckResourceAttrPair("scaleway_ipam_ip.ip01", "address_cidr", "data.scaleway_ipam_ip.base", "address_cidr"),
 				),
 			},
 			{
@@ -1105,7 +1310,6 @@ func TestAccServer_UpdateSubscriptionPeriod(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			baremetalchecks.CheckServerDestroy(tt),
@@ -1341,7 +1545,7 @@ func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string
 				break
 			}
 
-			ip := rs.Primary.Attributes["address"]
+			ip := rs.Primary.Attributes["address_cidr"]
 			if !expectedIPs[ip] {
 				return fmt.Errorf("IP %q from resource %s not found in data source %s", ip, resourceName, ipamDataSource)
 			}
@@ -1349,4 +1553,325 @@ func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string
 
 		return nil
 	}
+}
+
+func TestAccServer_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	offer := "EM-I120E-NVME"
+
+	if !IsOfferAvailable(offer, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_PasswordWO"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			// Create server with password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_1"
+						password_wo_version = 1
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "name", "test_bm_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "user", "ubuntu"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "1"),
+				),
+			},
+			// Update server password_wo with new version
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo updated"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_2"
+						password_wo_version = 2
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "2"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo updated"),
+				),
+			},
+			// Update server from password_wo to regular password
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test regular password"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password          = "thiZ_is_v&ry_s3cret_regular"
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password", "thiZ_is_v&ry_s3cret_regular"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test regular password"),
+				),
+			},
+			// Update server from regular password back to password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo again"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_3"
+						password_wo_version = 3
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "3"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo again"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_ServicePasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	offer := "EM-I120E-NVME"
+
+	if !IsOfferAvailable(offer, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_ServicePasswordWO"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			// Create server with service_password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_1"
+						service_password_wo_version = 1
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "name", "test_bm_service_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "1"),
+				),
+			},
+			// Update server service_password_wo with new version
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo updated"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_2"
+						service_password_wo_version = 2
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "2"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo updated"),
+				),
+			},
+			// Update server from service_password_wo to regular service_password
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test regular service_password"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password  = "thiZ_is_v&ry_s3cret_SERVICE_regular"
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password", "thiZ_is_v&ry_s3cret_SERVICE_regular"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test regular service_password"),
+				),
+			},
+			// Update server from regular service_password back to service_password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo again"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_3"
+						service_password_wo_version = 3
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "3"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo again"),
+				),
+			},
+		},
+	})
 }

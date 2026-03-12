@@ -137,14 +137,19 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 		case value.Type().IsListType():
 			// If it's a list and the second element of the key is an index, we look for the value in the list at the given index
 			if index, err := strconv.Atoi(keys[1]); err == nil {
-				return getKeyInRawConfigMap(value.AsValueSlice()[index].AsValueMap(), strings.Join(keys[2:], ""), ty)
+				if value.Length().Equals(cty.NumberIntVal(0)).True() {
+					// If the list is empty, then the value is not set
+					return nil, false
+				}
+
+				return getKeyInRawConfigMap(value.AsValueSlice()[index].AsValueMap(), strings.Join(keys[2:], "."), ty)
 			}
 			// If it's a list and the second element of the key is '#', we look for the value in the list's first element
-			return getKeyInRawConfigMap(value.AsValueSlice()[0].AsValueMap(), strings.Join(keys[2:], ""), ty)
+			return getKeyInRawConfigMap(value.AsValueSlice()[0].AsValueMap(), strings.Join(keys[2:], "."), ty)
 
-		case value.Type().IsMapType():
-			// If it's a map, we look for the value in the map
-			return getKeyInRawConfigMap(value.AsValueMap(), strings.Join(keys[1:], ""), ty)
+		case value.Type().IsMapType(), value.Type().IsObjectType():
+			// If it's a map or object, we look for the value in it
+			return getKeyInRawConfigMap(value.AsValueMap(), strings.Join(keys[1:], "."), ty)
 
 		case value.Type().IsPrimitiveType():
 			// If it's a primitive type (bool, string, number), we convert the value to the expected type given as parameter before returning it

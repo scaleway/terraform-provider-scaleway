@@ -13,7 +13,6 @@ func TestAccServerUserData_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -37,6 +36,11 @@ EOF
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_instance_user_data.main", "key", "cloud-init"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_user_data.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

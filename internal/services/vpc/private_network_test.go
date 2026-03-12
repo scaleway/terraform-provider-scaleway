@@ -15,7 +15,6 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 
 	privateNetworkName := "private-network-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -85,6 +84,11 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 					),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_private_network.pn01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -94,7 +98,6 @@ func TestAccVPCPrivateNetwork_DefaultName(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -123,7 +126,6 @@ func TestAccVPCPrivateNetwork_Subnets(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{
@@ -229,7 +231,6 @@ func TestAccVPCPrivateNetwork_OneSubnet(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcchecks.CheckPrivateNetworkDestroy(tt),
 		Steps: []resource.TestStep{

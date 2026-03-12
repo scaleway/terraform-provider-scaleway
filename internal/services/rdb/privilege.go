@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -37,34 +38,39 @@ func ResourcePrivilege() *schema.Resource {
 		StateUpgraders: []schema.StateUpgrader{
 			{Version: 0, Type: rdbPrivilegeUpgradeV1SchemaType(), Upgrade: PrivilegeV1SchemaUpgradeFunc},
 		},
-		Schema: map[string]*schema.Schema{
-			"instance_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "Instance on which the database is created",
-			},
-			"user_name": {
-				Type:        schema.TypeString,
-				Description: "User name",
-				Required:    true,
-			},
-			"database_name": {
-				Type:        schema.TypeString,
-				Description: "Database name",
-				Required:    true,
-			},
-			"permission": {
-				Type:             schema.TypeString,
-				Description:      "Privilege",
-				ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
-				Required:         true,
-			},
-			// Common
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    privilegeSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
+	}
+}
+
+func privilegeSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"instance_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "Instance on which the database is created",
+		},
+		"user_name": {
+			Type:        schema.TypeString,
+			Description: "User name",
+			Required:    true,
+		},
+		"database_name": {
+			Type:        schema.TypeString,
+			Description: "Database name",
+			Required:    true,
+		},
+		"permission": {
+			Type:             schema.TypeString,
+			Description:      "Privilege",
+			ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
+			Required:         true,
+		},
+		// Common
+		"region": regional.Schema(),
 	}
 }
 
@@ -118,12 +124,24 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
+	if err := identity.SetRegionalCompositeIdentity(d, region, locality.ExpandID(instanceID), databaseName, userName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
 
-func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func setPrivilegeState(d *schema.ResourceData, region scw.Region, instanceID string, privilege *rdb.Privilege) {
+	_ = d.Set("database_name", privilege.DatabaseName)
+	_ = d.Set("user_name", privilege.UserName)
+	_ = d.Set("permission", privilege.Permission)
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
+	_ = d.Set("region", string(region))
+}
+
+// readPrivilegeIntoState fetches the privilege and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
@@ -183,12 +201,29 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(fmt.Errorf("couldn't retrieve privileges for user[%s] on database [%s]", userName, databaseName))
 	}
 
-	privilege := res.Privileges[0]
-	_ = d.Set("database_name", privilege.DatabaseName)
-	_ = d.Set("user_name", privilege.UserName)
-	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("region", region)
+	setPrivilegeState(d, region, instanceID, res.Privileges[0])
+
+	return nil
+}
+
+func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readPrivilegeIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return nil
+	}
+
+	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, databaseName, userName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

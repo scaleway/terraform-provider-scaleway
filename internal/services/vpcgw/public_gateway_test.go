@@ -2,6 +2,7 @@ package vpcgw_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,7 +19,6 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 
 	publicGatewayName := "public-gateway-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsGatewayDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -85,6 +85,11 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -95,7 +100,6 @@ func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 
 	publicGatewayName := "public-gateway-bastion-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsGatewayDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -118,6 +122,7 @@ func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 						publicGatewayName,
 					),
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_port", "61000"),
 				),
 			},
 			{
@@ -134,6 +139,44 @@ func TestAccVPCPublicGateway_Bastion(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "false"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_vpc_public_gateway main {
+						name = "%s"
+						type = "VPC-GW-S"
+						bastion_enabled = true
+						bastion_port = 59999
+					}
+				`, publicGatewayName),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckVPCPublicGatewayExists(tt, "scaleway_vpc_public_gateway.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "name", publicGatewayName),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "bastion_port", "59999"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccVPCPublicGateway_BastionInvalidPort(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc_public_gateway" "main" {
+						name           = "public-gateway-bastion-invalid"
+						type           = "VPC-GW-S"
+						bastion_enabled = true
+						bastion_port    = 61001
+					}
+				`,
+				ExpectError: regexp.MustCompile(`expected bastion_port to be in the range \(1024 - 59999\) or default 61000, got 61001`),
+			},
 		},
 	})
 }
@@ -143,7 +186,6 @@ func TestAccVPCPublicGateway_AttachToIP(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			vpcgwchecks.IsIPDestroyed(tt),
@@ -179,7 +221,6 @@ func TestAccVPCPublicGateway_Upgrade(t *testing.T) {
 
 	publicGatewayName := "public-gateway-upgrade-test"
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             vpcgwchecks.IsGatewayDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -218,7 +259,7 @@ func testAccCheckVPCPublicGatewayExists(tt *acctest.TestTools, n string) resourc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

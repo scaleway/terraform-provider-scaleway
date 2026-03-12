@@ -20,7 +20,10 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/flexibleip"
 )
 
-const SSHKeyFlexibleIP = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
+const (
+	SSHKeyFlexibleIP = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM7HUxRyQtB2rnlhQUcbDGCZcTJg7OvoznOiyC9W6IxH opensource@scaleway.com"
+	BaremetalOffer   = "EM-B220E-NVME"
+)
 
 var DestroyWaitTimeout = 3 * time.Minute
 
@@ -140,7 +143,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							name = "EM-A115X-SSD"
+							name = "%s"
 					  		zone = "fr-par-1"
 						}				
 
@@ -157,7 +160,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 
 							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
-					`, SSHKeyName, SSHKeyFlexibleIP, name),
+					`, BaremetalOffer, SSHKeyName, SSHKeyFlexibleIP, name),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -168,7 +171,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							name = "EM-A115X-SSD"
+							name = "%s"
 					  		zone = "fr-par-1"
 						}				
 
@@ -190,7 +193,7 @@ func TestAccFlexibleIP_CreateAndAttachToBaremetalServer(t *testing.T) {
 							server_id = scaleway_baremetal_server.base.id
 							zone = "fr-par-1"
 						}
-					`, SSHKeyName, SSHKeyFlexibleIP, name),
+					`, BaremetalOffer, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),
@@ -234,7 +237,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							name = "EM-A115X-SSD"
+							name = "%s"
 					  		zone = "fr-par-1"
 						}		
 
@@ -251,7 +254,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 
 							ssh_key_ids = [ scaleway_iam_ssh_key.main.id ]
 						}
-					`, SSHKeyName, SSHKeyFlexibleIP, name),
+					`, BaremetalOffer, SSHKeyName, SSHKeyFlexibleIP, name),
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -262,7 +265,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 						}
 
 						data "scaleway_baremetal_offer" "my_offer" {
-							name = "EM-A115X-SSD"
+							name = "%s"
 					  		zone = "fr-par-1"
 						}		
 
@@ -284,7 +287,7 @@ func TestAccFlexibleIP_AttachAndDetachFromBaremetalServer(t *testing.T) {
 							server_id = scaleway_baremetal_server.base.id
 							zone = "fr-par-1"
 						}
-					`, SSHKeyName, SSHKeyFlexibleIP, name),
+					`, BaremetalOffer, SSHKeyName, SSHKeyFlexibleIP, name),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFlexibleIPExists(tt, "scaleway_flexible_ip.base"),
 					testAccCheckFlexibleIPAttachedToBaremetalServer(tt, "scaleway_flexible_ip.base", "scaleway_baremetal_server.base"),

@@ -20,27 +20,31 @@ func ResourceSecurityGroupRules() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultInstanceSecurityGroupRuleTimeout),
 		},
-		Schema: map[string]*schema.Schema{
-			"security_group_id": {
-				Type:     schema.TypeString,
-				Required: true,
-				// Ensure SecurityGroupRules.ID and SecurityGroupRules.security_group_id stay in sync.
-				// If security_group_id is changed, a new SecurityGroupRules is created, with a new ID.
-				ForceNew:    true,
-				Description: "The security group associated with this volume",
-			},
-			"inbound_rule": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Inbound rules for this set of security group rules",
-				Elem:        securityGroupRuleSchema(),
-			},
-			"outbound_rule": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "Outbound rules for this set of security group rules",
-				Elem:        securityGroupRuleSchema(),
-			},
+		SchemaFunc: securityGroupRulesSchema,
+	}
+}
+
+func securityGroupRulesSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"security_group_id": {
+			Type:     schema.TypeString,
+			Required: true,
+			// Ensure SecurityGroupRules.ID and SecurityGroupRules.security_group_id stay in sync.
+			// If security_group_id is changed, a new SecurityGroupRules is created, with a new ID.
+			ForceNew:    true,
+			Description: "The security group associated with this volume",
+		},
+		"inbound_rule": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Inbound rules for this set of security group rules",
+			Elem:        securityGroupRuleSchema(),
+		},
+		"outbound_rule": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "Outbound rules for this set of security group rules",
+			Elem:        securityGroupRuleSchema(),
 		},
 	}
 }

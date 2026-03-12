@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -31,88 +31,116 @@ func ResourceSQSQueue() *schema.Resource {
 			Update:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Delete:  schema.DefaultTimeout(defaultMNQQueueTimeout),
 			Default: schema.DefaultTimeout(defaultMNQQueueTimeout),
-		}, SchemaVersion: 1,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "The name of the queue. Conflicts with name_prefix.",
-				ConflictsWith: []string{"name_prefix"},
+		},
+		SchemaVersion: 1,
+		SchemaFunc:    sqsQueueSchema,
+		CustomizeDiff: resourceMNQQueueCustomizeDiff,
+		Identity:      sqsQueueIdentity(),
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceMNQSQSQueueResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
 			},
-			"name_prefix": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Computed:      true,
-				ForceNew:      true,
-				Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
-				ConflictsWith: []string{"name"},
-			},
-			"sqs_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "https://sqs.mnq.{region}.scaleway.com",
-				Description: "The sqs endpoint",
-			},
-			"access_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SQS access key",
-			},
-			"secret_key": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "SQS secret key",
-			},
-			"fifo_queue": {
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Computed:    true,
-				Description: "Whether the queue is a FIFO queue. If true, the queue name must end with .fifo",
-			},
-			"content_based_deduplication": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "Specifies whether to enable content-based deduplication. Allows omitting the deduplication ID",
-			},
-			"receive_wait_time_seconds": {
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     DefaultQueueReceiveMessageWaitTimeSeconds,
-				Description: "The number of seconds to wait for a message to arrive in the queue before returning.",
-			},
-			"visibility_timeout_seconds": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueVisibilityTimeout,
-				ValidateFunc: validation.IntBetween(0, 43_200),
-				Description:  "The number of seconds a message is hidden from other consumers.",
-			},
-			"message_max_age": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueMessageRetentionPeriod,
-				ValidateFunc: validation.IntBetween(60, 1_209_600),
-				Description:  "The number of seconds the queue retains a message.",
-			},
-			"message_max_size": {
-				Type:         schema.TypeInt,
-				Optional:     true,
-				Default:      DefaultQueueMaximumMessageSize,
-				ValidateFunc: validation.IntBetween(1024, 262_144),
-				Description:  "The maximum size of a message. Should be in bytes.",
-			},
-			"dead_letter_queue": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				Description: "Configuration for the dead-letter queue",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
+		},
+	}
+}
+
+func sqsQueueIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"name": {
+			Type:              schema.TypeString,
+			Description:       "The queue name",
+			RequiredForImport: true,
+		},
+	})
+}
+
+func sqsQueueSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "The name of the queue. Conflicts with name_prefix.",
+			ConflictsWith: []string{"name_prefix"},
+		},
+		"name_prefix": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Computed:      true,
+			ForceNew:      true,
+			Description:   "Creates a unique name beginning with the specified prefix. Conflicts with name.",
+			ConflictsWith: []string{"name"},
+		},
+		"sqs_endpoint": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "https://sqs.mnq.{region}.scaleway.com",
+			Description: "The sqs endpoint",
+		},
+		"access_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SQS access key",
+		},
+		"secret_key": {
+			Type:        schema.TypeString,
+			Required:    true,
+			Sensitive:   true,
+			Description: "SQS secret key",
+		},
+		"fifo_queue": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Whether the queue is a FIFO queue. If true, the queue name must end with .fifo",
+		},
+		"content_based_deduplication": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			Description: "Specifies whether to enable content-based deduplication. Allows omitting the deduplication ID",
+		},
+		"receive_wait_time_seconds": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Default:     DefaultQueueReceiveMessageWaitTimeSeconds,
+			Description: "The number of seconds to wait for a message to arrive in the queue before returning.",
+		},
+		"visibility_timeout_seconds": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueVisibilityTimeout,
+			ValidateFunc: validation.IntBetween(0, 43_200),
+			Description:  "The number of seconds a message is hidden from other consumers.",
+		},
+		"message_max_age": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueMessageRetentionPeriod,
+			ValidateFunc: validation.IntBetween(60, 1_209_600),
+			Description:  "The number of seconds the queue retains a message.",
+		},
+		"message_max_size": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Default:      DefaultQueueMaximumMessageSize,
+			ValidateFunc: validation.IntBetween(1024, 262_144),
+			Description:  "The maximum size of a message. Should be in bytes.",
+		},
+		"dead_letter_queue": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			Description: "Configuration for the dead-letter queue",
+			Elem: &schema.Resource{
+				SchemaFunc: func() map[string]*schema.Schema {
+					return map[string]*schema.Schema{
 						"id": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -124,32 +152,24 @@ func ResourceSQSQueue() *schema.Resource {
 							ValidateFunc: validation.IntBetween(1, 1000),
 							Description:  "The number of times a message is delivered to the source queue before being sent to the dead-letter queue. Must be between 1 and 1,000.",
 						},
-					},
+					}
 				},
 			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-
-			// Computed
-
-			"url": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The URL of the queue",
-			},
-			"arn": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The ARN of the queue",
-			},
 		},
-		CustomizeDiff: resourceMNQQueueCustomizeDiff,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    resourceMNQSQSQueueResourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: resourceMNQSQSQueueStateUpgradeV0,
-			},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+
+		// Computed
+
+		"url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The URL of the queue",
+		},
+		"arn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The ARN of the queue",
 		},
 	}
 }
@@ -185,14 +205,14 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 	isFifo := d.Get("fifo_queue").(bool)
 	queueName := resourceMNQQueueName(d.Get("name"), d.Get("name_prefix"), true, isFifo)
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	input := &sqs.CreateQueueInput{
 		Attributes: attributes,
-		QueueName:  scw.StringPtr(queueName),
+		QueueName:  new(queueName),
 	}
 
 	_, err = transport.RetryWhenAWSErrCodeEquals(ctx, []string{AWSErrQueueDeletedRecently}, &transport.RetryWhenConfig[*sqs.CreateQueueOutput]{
@@ -206,7 +226,13 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("failed to create SQS Queue: %s", err)
 	}
 
-	d.SetId(composeMNQID(region, projectID, queueName))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       queueName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSQSQueueRead(ctx, d, m)
 }
@@ -243,7 +269,15 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
 	}
 
-	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       queueName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
+
+	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.Errorf("failed to convert SQS Queue attributes to resource data: %s", err)
 	}
@@ -284,7 +318,7 @@ func ResourceMNQSQSQueueUpdate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("failed to get the SQS Queue URL: %s", err)
 	}
 
-	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().Schema, SQSAttributesToResourceMap)
+	attributes, err := awsResourceDataToAttributes(d, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)
 	if err != nil {
 		return diag.FromErr(err)
 	}

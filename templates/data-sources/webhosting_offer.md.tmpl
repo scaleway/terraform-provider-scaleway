@@ -65,4 +65,3 @@ In addition to all arguments above, the following attributes are exported:
         - `quota_warning` - Warning information regarding quota limitations for the option.
         - `price` - The price of the option.
 - `price` - The offer price.
-

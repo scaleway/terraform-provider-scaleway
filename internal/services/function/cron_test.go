@@ -17,7 +17,6 @@ func TestAccFunctionCron_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
@@ -57,7 +56,6 @@ func TestAccFunctionCron_NameUpdate(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{
@@ -123,7 +121,6 @@ func TestAccFunctionCron_WithArgs(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckFunctionCronDestroy(tt),
 		Steps: []resource.TestStep{

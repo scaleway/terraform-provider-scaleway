@@ -11,7 +11,7 @@ import (
 
 func DataSourcePrivilege() *schema.Resource {
 	// Generate datasource schema from resource
-	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivilege().Schema)
+	dsSchema := datasource.SchemaFromResourceSchema(ResourcePrivilege().SchemaFunc())
 
 	datasource.FixDatasourceSchemaFlags(dsSchema, true, "instance_id", "user_name", "database_name")
 
@@ -37,5 +37,5 @@ func DataSourceRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m a
 
 	d.SetId(ResourceRdbUserPrivilegeID(region, instanceID, databaseName, userName))
 
-	return ResourceRdbPrivilegeRead(ctx, d, m)
+	return readPrivilegeIntoState(ctx, d, m)
 }

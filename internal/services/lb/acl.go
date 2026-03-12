@@ -9,6 +9,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -20,6 +21,7 @@ func ResourceACL() *schema.Resource {
 		ReadContext:   resourceLbACLRead,
 		UpdateContext: resourceLbACLUpdate,
 		DeleteContext: resourceLbACLDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -27,133 +29,137 @@ func ResourceACL() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultLbLbTimeout),
 		},
 		SchemaVersion: 1,
-		Schema: map[string]*schema.Schema{
-			"frontend_id": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-				Description:      "The frontend ID on which the ACL is applied",
-			},
-			"name": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "The ACL name",
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Description of the ACL",
-			},
-			"index": {
-				Type:         schema.TypeInt,
-				Description:  "The priority of the ACL. (ACLs are applied in ascending order, 0 is the first ACL executed)",
-				Required:     true,
-				ValidateFunc: validation.IntAtLeast(0),
-			},
-			"action": {
-				Type:        schema.TypeList,
-				Required:    true,
-				Description: "Action to undertake when an ACL filter matches",
-				MaxItems:    1,
-				MinItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:             schema.TypeString,
-							Required:         true,
-							ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionType](),
-							Description:      "The action type",
-						},
-						"redirect": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "Redirect parameters when using an ACL with `redirect` action",
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"type": {
-										Type:             schema.TypeString,
-										Optional:         true,
-										ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionRedirectRedirectType](),
-										Description:      "The redirect type",
-									},
-									"target": {
-										Type:        schema.TypeString,
-										Optional:    true,
-										Description: "An URL can be used in case of a location redirect ",
-									},
-									"code": {
-										Type:        schema.TypeInt,
-										Optional:    true,
-										Description: "The HTTP redirect code to use",
-									},
+		SchemaFunc:    aclSchema,
+	}
+}
+
+func aclSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"frontend_id": {
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+			Description:      "The frontend ID on which the ACL is applied",
+		},
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "The ACL name",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Description: "Description of the ACL",
+		},
+		"index": {
+			Type:         schema.TypeInt,
+			Description:  "The priority of the ACL. (ACLs are applied in ascending order, 0 is the first ACL executed)",
+			Required:     true,
+			ValidateFunc: validation.IntAtLeast(0),
+		},
+		"action": {
+			Type:        schema.TypeList,
+			Required:    true,
+			Description: "Action to undertake when an ACL filter matches",
+			MaxItems:    1,
+			MinItems:    1,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"type": {
+						Type:             schema.TypeString,
+						Required:         true,
+						ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionType](),
+						Description:      "The action type",
+					},
+					"redirect": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "Redirect parameters when using an ACL with `redirect` action",
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"type": {
+									Type:             schema.TypeString,
+									Optional:         true,
+									ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLActionRedirectRedirectType](),
+									Description:      "The redirect type",
+								},
+								"target": {
+									Type:        schema.TypeString,
+									Optional:    true,
+									Description: "An URL can be used in case of a location redirect ",
+								},
+								"code": {
+									Type:        schema.TypeInt,
+									Optional:    true,
+									Description: "The HTTP redirect code to use",
 								},
 							},
 						},
 					},
 				},
 			},
-			"match": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				MinItems:    1,
-				Description: "The ACL match rule",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"ip_subnet": {
-							Type: schema.TypeList,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional:         true,
-							Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
-							DiffSuppressFunc: diffSuppressFunc32SubnetMask,
+		},
+		"match": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			MaxItems:    1,
+			MinItems:    1,
+			Description: "The ACL match rule",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"ip_subnet": {
+						Type: schema.TypeList,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"http_filter": {
-							Type:             schema.TypeString,
-							Optional:         true,
-							Default:          lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
-							ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLHTTPFilter](),
-							Description:      "The HTTP filter to match",
+						Optional:         true,
+						Description:      "A list of IPs or CIDR v4/v6 addresses of the client of the session to match",
+						DiffSuppressFunc: diffSuppressFunc32SubnetMask,
+					},
+					"http_filter": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Default:          lbSDK.ACLHTTPFilterACLHTTPFilterNone.String(),
+						ValidateDiagFunc: verify.ValidateEnum[lbSDK.ACLHTTPFilter](),
+						Description:      "The HTTP filter to match",
+					},
+					"http_filter_value": {
+						Type:        schema.TypeList,
+						Optional:    true,
+						Description: "A list of possible values to match for the given HTTP filter",
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
 						},
-						"http_filter_value": {
-							Type:        schema.TypeList,
-							Optional:    true,
-							Description: "A list of possible values to match for the given HTTP filter",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-						},
-						"http_filter_option": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "You can use this field with http_header_match acl type to set the header name to filter",
-						},
-						"invert": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: `If set to true, the condition will be of type "unless"`,
-						},
-						"ips_edge_services": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: `Defines whether Edge Services IPs should be matched`,
-						},
+					},
+					"http_filter_option": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "You can use this field with http_header_match acl type to set the header name to filter",
+					},
+					"invert": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: `If set to true, the condition will be of type "unless"`,
+					},
+					"ips_edge_services": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Description: `Defines whether Edge Services IPs should be matched`,
 					},
 				},
 			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "IsDate and time of ACL's creation (RFC 3339 format)",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "IsDate and time of ACL's update (RFC 3339 format)",
-			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "IsDate and time of ACL's creation (RFC 3339 format)",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "IsDate and time of ACL's update (RFC 3339 format)",
 		},
 	}
 }
@@ -184,7 +190,10 @@ func resourceLbACLCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, res.ID))
+	err = identity.SetZonalIdentity(d, frontZone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbACLRead(ctx, d, m)
 }
@@ -219,6 +228,11 @@ func resourceLbACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	if acl.Match != nil {
 		_ = d.Set("match", flattenLbACLMatch(acl.Match))
+	}
+
+	err = identity.SetZonalIdentity(d, zone, acl.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return nil

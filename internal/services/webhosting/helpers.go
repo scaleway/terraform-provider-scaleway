@@ -2,6 +2,7 @@ package webhosting
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -72,16 +73,22 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 	return api.WaitForHosting(&webhosting.WaitForHostingRequest{
 		HostingID:     hostingID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
 
 func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
-	result := []map[string]any{}
+	result := make([]map[string]any, 0, len(records))
+
 	for _, r := range records {
+		name := r.Name
+		if name == "" {
+			name = extractDNSRecordName(r.RawData)
+		}
+
 		result = append(result, map[string]any{
-			"name":     r.Name,
+			"name":     name,
 			"type":     r.Type.String(),
 			"ttl":      r.TTL,
 			"value":    r.Value,
@@ -93,8 +100,17 @@ func flattenDNSRecords(records []*webhosting.DNSRecord) []map[string]any {
 	return result
 }
 
+func extractDNSRecordName(raw string) string {
+	fields := strings.Fields(raw)
+	if len(fields) == 0 {
+		return ""
+	}
+
+	return strings.TrimSuffix(fields[0], ".")
+}
+
 func flattenNameServers(servers []*webhosting.Nameserver) []map[string]any {
-	result := []map[string]any{}
+	result := make([]map[string]any, 0, len(servers))
 	for _, s := range servers {
 		result = append(result, map[string]any{
 			"hostname":   s.Hostname,

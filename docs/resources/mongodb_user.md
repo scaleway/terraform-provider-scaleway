@@ -5,14 +5,18 @@ page_title: "Scaleway: scaleway_mongodb_user"
 
 # Resource: scaleway_mongodb_user
 
-Creates and manages Scaleway MongoDB® users.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+Manages MongoDB users. For more information, see the [API documentation](https://developers.scaleway.com/products/mongodb/api/).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
+
 
 ## Example Usage
 
-### Basic
-
 ```terraform
+### Basic user creation
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-user"
   version           = "7.0.12"
@@ -27,7 +31,7 @@ resource "scaleway_mongodb_user" "main" {
   instance_id = scaleway_mongodb_instance.main.id
   name        = "my_user"
   password    = "my_password123"
-  
+
   roles {
     role          = "read_write"
     database_name = "my_database"
@@ -35,9 +39,9 @@ resource "scaleway_mongodb_user" "main" {
 }
 ```
 
-### With Multiple Users
-
 ```terraform
+### Multiple user creation
+
 resource "scaleway_mongodb_instance" "main" {
   name              = "test-mongodb-multi-user"
   version           = "7.0.12"
@@ -52,12 +56,12 @@ resource "scaleway_mongodb_user" "app_user" {
   instance_id = scaleway_mongodb_instance.main.id
   name        = "app_user"
   password    = "app_password123"
-  
+
   roles {
     role          = "read_write"
     database_name = "app_database"
   }
-  
+
   roles {
     role          = "read"
     database_name = "logs_database"
@@ -68,18 +72,184 @@ resource "scaleway_mongodb_user" "admin_user" {
   instance_id = scaleway_mongodb_instance.main.id
   name        = "admin_user"
   password    = "admin_password123"
-  
+
   roles {
     role          = "db_admin"
     database_name = "admin"
   }
-  
+
   roles {
     role         = "read"
     any_database = true
   }
 }
 ```
+
+```terraform
+### Create user with Write Only password (not stored in state), update and rollback the password while ensuring the password is not stored in the state
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "main" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_secret" "main" {
+  name        = "mongodb-user-password"
+  description = "Password for MongoDB user"
+}
+
+# Store the generated password in a Write Only data (not stored in the state)
+resource "scaleway_secret_version" "main" {
+  secret_id       = scaleway_secret.main.id
+  data_wo         = ephemeral.random_password.main.result
+  data_wo_version = 1
+}
+
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-user"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "initial_user"
+  password          = "initial_password123"
+  volume_size_in_gb = 5
+}
+
+# Create a user, using the ephemeral password in the Write Only password attribute (not stored in the state)
+resource "scaleway_mongodb_user" "main" {
+  instance_id         = scaleway_mongodb_instance.main.id
+  name                = "test_user"
+  password_wo         = ephemeral.random_password.main.result
+  password_wo_version = scaleway_secret_version.main.data_wo_version
+
+  roles {
+    role          = "read_write"
+    database_name = "test_db"
+  }
+}
+
+## Generate a new ephemeral password (not stored in the state)
+ephemeral "random_password" "renewed" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+# Store the renewed generated password in a Write Only data (not stored in the state)
+resource "scaleway_secret_version" "renewed" {
+  secret_id       = scaleway_secret.main.id
+  data_wo         = ephemeral.random_password.renewed.result
+  data_wo_version = 2
+}
+
+# Renew the user password
+# resource "scaleway_mongodb_user" "main" {
+#   instance_id = scaleway_mongodb_instance.main.id
+#   name        = "test_user"
+#   password_wo = ephemeral.random_password.renewed.result
+#   password_wo_version = scaleway_secret_version.renewed.data_wo_version
+
+#   roles {
+#     role          = "read_write"
+#     database_name = "test_db"
+#   }
+# }
+
+# Query the first password version as an Ephemeral Resource (not stored in the state)
+# ephemeral "scaleway_secret_version" "main" {
+#   secret_id = scaleway_secret.main.id
+#   revision   = 1
+# }
+
+
+# Rollback the user password to the first version
+# resource "scaleway_mongodb_user" "main" {
+#   instance_id = scaleway_mongodb_instance.main.id
+#   name        = "test_user"
+#   password_wo = ephemeral.scaleway_secret_version.main.data
+#   password_wo_version = 1
+#   roles {
+#     role          = "read_write"
+#     database_name = "test_db"
+#   }
+# }
+```
+
+```terraform
+### Create user with Write Only password (not stored in state)
+
+## Generate an ephemeral password (not stored in the state)
+ephemeral "random_password" "main" {
+  length      = 20
+  special     = true
+  upper       = true
+  lower       = true
+  numeric     = true
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+  # Exclude characters that might cause issues in some contexts
+  override_special = "!@#$%^&*()_+-=[]{}|;:,.<>?"
+}
+
+resource "scaleway_secret" "main" {
+  name        = "mongodb-user-password"
+  description = "Password for MongoDB user"
+}
+
+# Store the generated password in a Write Only data (not stored in the state)
+resource "scaleway_secret_version" "main" {
+  secret_id       = scaleway_secret.main.id
+  data_wo         = ephemeral.random_password.main.result
+  data_wo_version = 1
+}
+
+resource "scaleway_mongodb_instance" "main" {
+  name              = "test-mongodb-user"
+  version           = "7.0.12"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "initial_user"
+  password          = "initial_password123"
+  volume_size_in_gb = 5
+}
+
+# Create a user, using the ephemeral password in the Write Only password attribute (not stored in the state)
+resource "scaleway_mongodb_user" "main" {
+  instance_id         = scaleway_mongodb_instance.main.id
+  name                = "test_user"
+  password_wo         = ephemeral.random_password.main.result
+  password_wo_version = scaleway_secret_version.main.data_wo_version
+
+  roles {
+    role          = "read_write"
+    database_name = "test_db"
+  }
+}
+```
+
+
+
+
 
 ## Argument Reference
 
@@ -89,7 +259,11 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the MongoDB® user.
 
-- `password` - (Required) The password of the MongoDB® user.
+- `password` - (Optional) The password of the MongoDB® user. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) The password of the MongoDB® user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `roles` - (Optional) List of roles assigned to the user. Each role block supports:
     - `role` - (Required) The role name. Valid values are `read`, `read_write`, `db_admin`, `sync`.

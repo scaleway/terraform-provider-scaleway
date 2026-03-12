@@ -18,54 +18,58 @@ import (
 
 func ResourceToken() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerTokenCreate,
-		ReadContext:   ResourceContainerTokenRead,
-		DeleteContext: ResourceContainerTokenDelete,
+		CreateContext:      ResourceContainerTokenCreate,
+		ReadContext:        ResourceContainerTokenRead,
+		DeleteContext:      ResourceContainerTokenDelete,
+		DeprecationMessage: "The \"scaleway_container_token\" resource is deprecated in favor of IAM authentication",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"container_id": {
-				Type:             schema.TypeString,
-				Description:      "Container ID",
-				ForceNew:         true,
-				Optional:         true,
-				ExactlyOneOf:     []string{"namespace_id"},
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"namespace_id": {
-				Type:             schema.TypeString,
-				Description:      "Namespace ID",
-				ForceNew:         true,
-				Optional:         true,
-				ExactlyOneOf:     []string{"container_id"},
-				DiffSuppressFunc: dsf.Locality,
-			},
-			"description": {
-				Type:        schema.TypeString,
-				Description: "Description of the token.",
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"expires_at": {
-				Type:             schema.TypeString,
-				Description:      "Expiration date of the token (TimeRFC3339)",
-				Optional:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: verify.IsDate(),
-				DiffSuppressFunc: dsf.TimeRFC3339,
-			},
-			"token": {
-				Type:        schema.TypeString,
-				Description: "Token",
-				Computed:    true,
-				Sensitive:   true,
-			},
-
-			"region": regional.Schema(),
-		},
+		SchemaFunc:    tokenSchema,
 		CustomizeDiff: cdf.LocalityCheck("container_id", "namespace_id"),
+	}
+}
+
+func tokenSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"container_id": {
+			Type:             schema.TypeString,
+			Description:      "Container ID",
+			ForceNew:         true,
+			Optional:         true,
+			ExactlyOneOf:     []string{"namespace_id"},
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"namespace_id": {
+			Type:             schema.TypeString,
+			Description:      "Namespace ID",
+			ForceNew:         true,
+			Optional:         true,
+			ExactlyOneOf:     []string{"container_id"},
+			DiffSuppressFunc: dsf.Locality,
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Description: "Description of the token.",
+			Optional:    true,
+			ForceNew:    true,
+		},
+		"expires_at": {
+			Type:             schema.TypeString,
+			Description:      "Expiration date of the token (TimeRFC3339)",
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: verify.IsDate(),
+			DiffSuppressFunc: dsf.TimeRFC3339,
+		},
+		"token": {
+			Type:        schema.TypeString,
+			Description: "Token",
+			Computed:    true,
+			Sensitive:   true,
+		},
+		"region": regional.Schema(),
 	}
 }
 
@@ -75,7 +79,7 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	token, err := api.CreateToken(&container.CreateTokenRequest{
+	token, err := api.CreateToken(&container.CreateTokenRequest{ //nolint:staticcheck
 		Region:      region,
 		ContainerID: types.ExpandStringPtr(locality.ExpandID(d.Get("container_id"))),
 		NamespaceID: types.ExpandStringPtr(locality.ExpandID(d.Get("namespace_id"))),

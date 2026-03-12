@@ -17,7 +17,6 @@ func TestAccGroupMembership_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamGroupDestroy(tt),
@@ -107,7 +106,6 @@ func TestAccGroupMembership_User(t *testing.T) {
 	defer tt.Cleanup()
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 func() { acctest.PreCheck(t) },
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamGroupDestroy(tt),
@@ -121,7 +119,7 @@ func TestAccGroupMembership_User(t *testing.T) {
 					}
 
 					data "scaleway_iam_user" "main" {
-						user_id = "b6360d4f-831c-45a8-889e-0b65ed079e63"
+						user_id = "ef29ce05-3f2b-4fa0-a259-d76110850d57"
 					}
 
 					resource scaleway_iam_group_membership main {

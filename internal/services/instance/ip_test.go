@@ -3,6 +3,7 @@ package instance_test
 import (
 	"fmt"
 	"net"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -31,6 +32,16 @@ func TestAccIP_Basic(t *testing.T) {
 					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.base"),
 					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.scaleway"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.base",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.scaleway",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -97,6 +108,11 @@ func TestAccIP_Tags(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "tags.1", "bar"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -120,9 +136,56 @@ func TestAccIP_RoutedIPV6(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv6"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "prefix"),
-					isIPValid("scaleway_instance_ip.main", "address"),
+					isIPValid("scaleway_instance_ip.main", "address", true),
 					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccIP_RoutedIPV6_Attached(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsIPDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+						resource "scaleway_instance_ip" "main" {
+							type = "routed_ipv6"
+						}
+						resource "scaleway_instance_server" "main" {
+							type = "PRO2-S"
+							image = "ubuntu_noble"
+							ip_id = scaleway_instance_ip.main.id
+						}
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.CheckIPExists(tt, "scaleway_instance_ip.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_ip.main", "type", "routed_ipv6"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "address"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_ip.main", "prefix"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_server.main", "public_ips.0.address"),
+					isIPValid("scaleway_instance_ip.main", "address", true),
+					isIPValid("scaleway_instance_server.main", "public_ips.0.address", false),
+					isIPCIDRValid("scaleway_instance_ip.main", "prefix"),
+				),
+			},
+			{
+				RefreshState: true,
+			},
+			{
+				ResourceName:      "scaleway_instance_ip.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -149,7 +212,7 @@ func isIPCIDRValid(name string, key string) resource.TestCheckFunc {
 	}
 }
 
-func isIPValid(name string, key string) resource.TestCheckFunc {
+func isIPValid(name string, key string, acceptPrefixFormat bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
@@ -159,6 +222,10 @@ func isIPValid(name string, key string) resource.TestCheckFunc {
 		ip, exists := rs.Primary.Attributes[key]
 		if !exists {
 			return fmt.Errorf("requested attribute %s[%q] does not exist", name, key)
+		}
+
+		if !acceptPrefixFormat && strings.HasSuffix(ip, "::") {
+			return fmt.Errorf("ip has prefix format (%s) in %s[%s]", ip, name, key)
 		}
 
 		parsedIP := net.ParseIP(ip)
@@ -203,8 +270,9 @@ func isIPAttachedToServer(tt *acctest.TestTools, ipResource, serverResource stri
 			return err
 		}
 
-		if server.Server.PublicIP != nil && server.Server.PublicIP.Address.String() != ip.IP.Address.String() { //nolint:staticcheck
-			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, server.Server.PublicIP.Address, ip.IP.Address) //nolint:staticcheck
+		publicIP := instance.FindIPInList(ID, server.Server.PublicIPs)
+		if publicIP != nil && publicIP.Address.String() != ip.IP.Address.String() {
+			return fmt.Errorf("IPs should be the same in %s and %s: %v is different than %v", ipResource, serverResource, publicIP.Address, ip.IP.Address)
 		}
 
 		return nil
@@ -231,7 +299,8 @@ func serverHasNoIPAssigned(tt *acctest.TestTools, serverResource string) resourc
 			return err
 		}
 
-		if server.Server.PublicIP != nil && !server.Server.PublicIP.Dynamic { //nolint:staticcheck
+		publicIP := instance.FindIPInList(ID, server.Server.PublicIPs)
+		if publicIP != nil && !publicIP.Dynamic {
 			return fmt.Errorf("no flexible IP should be assigned to %s", serverResource)
 		}
 
