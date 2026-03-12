@@ -32,10 +32,10 @@ func ResourceDevice() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion:  0,
-		SchemaFunc:     deviceSchema,
-		Identity:       identity.DefaultRegional(),
-		CustomizeDiff:  cdf.LocalityCheck("hub_id"),
+		SchemaVersion: 0,
+		SchemaFunc:    deviceSchema,
+		Identity:      identity.DefaultRegional(),
+		CustomizeDiff: cdf.LocalityCheck("hub_id"),
 	}
 }
 
