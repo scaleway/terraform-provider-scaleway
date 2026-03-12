@@ -8,6 +8,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +24,7 @@ func ResourceConnection() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    connectionSchema,
 	}
@@ -285,7 +287,10 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Connection.ID))
+	err = identity.SetRegionalIdentity(d, res.Connection.Region, res.Connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceConnectionRead(ctx, d, m)
 }
@@ -310,6 +315,17 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setConnectionState(d, connection)
+
+	err = identity.SetRegionalIdentity(d, connection.Region, connection.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection) diag.Diagnostics {
 	_ = d.Set("name", connection.Name)
 	_ = d.Set("region", connection.Region)
 	_ = d.Set("project_id", connection.ProjectID)
@@ -321,24 +337,24 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("is_ipv6", connection.IsIPv6)
 	_ = d.Set("initiation_policy", connection.InitiationPolicy.String())
 	_ = d.Set("route_propagation_enabled", connection.RoutePropagationEnabled)
-	_ = d.Set("vpn_gateway_id", regional.NewIDString(region, connection.VpnGatewayID))
-	_ = d.Set("customer_gateway_id", regional.NewIDString(region, connection.CustomerGatewayID))
+	_ = d.Set("vpn_gateway_id", regional.NewIDString(connection.Region, connection.VpnGatewayID))
+	_ = d.Set("customer_gateway_id", regional.NewIDString(connection.Region, connection.CustomerGatewayID))
 	_ = d.Set("tunnel_status", connection.TunnelStatus.String())
 	_ = d.Set("ikev2_ciphers", flattenConnectionCiphers(connection.Ikev2Ciphers))
 	_ = d.Set("esp_ciphers", flattenConnectionCiphers(connection.EspCiphers))
 	_ = d.Set("bgp_status_ipv4", connection.BgpStatusIPv4.String())
 	_ = d.Set("bgp_status_ipv6", connection.BgpStatusIPv6.String())
-	_ = d.Set("secret_id", regional.NewIDString(region, connection.SecretID))
+	_ = d.Set("secret_id", regional.NewIDString(connection.Region, connection.SecretID))
 	_ = d.Set("secret_version", int(connection.SecretRevision))
 
-	bgpSessionIPv4, err := flattenBGPSession(region, connection.BgpSessionIPv4)
+	bgpSessionIPv4, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv4)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("bgp_session_ipv4", bgpSessionIPv4)
 
-	bgpSessionIPv6, err := flattenBGPSession(region, connection.BgpSessionIPv6)
+	bgpSessionIPv6, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv6)
 	if err != nil {
 		return diag.FromErr(err)
 	}
