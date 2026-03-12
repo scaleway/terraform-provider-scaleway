@@ -119,9 +119,7 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
-
-	err = identity.SetRegionalIdentity(d, region, res.ID)
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -151,7 +149,7 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 
 	diags := setCustomerGatewayState(d, gateway)
 
-	err = identity.SetRegionalIdentity(d, region, gateway.ID)
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -169,6 +167,7 @@ func setCustomerGatewayState(d *schema.ResourceData, gateway *s2s_vpn.CustomerGa
 	_ = d.Set("ipv4_public", types.FlattenIPPtr(gateway.PublicIPv4))
 	_ = d.Set("ipv6_public", types.FlattenIPPtr(gateway.PublicIPv6))
 	_ = d.Set("asn", int(gateway.Asn))
+	_ = d.Set("region", gateway.Region.String())
 
 	return nil
 }
