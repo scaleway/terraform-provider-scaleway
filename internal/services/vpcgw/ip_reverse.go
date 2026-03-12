@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +25,7 @@ func ResourceIPReverseDNS() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.DefaultZonal(),
 		Timeouts: &schema.ResourceTimeout{
 			Default: schema.DefaultTimeout(defaultIPReverseDNSTimeout),
 			Create:  schema.DefaultTimeout(defaultIPReverseDNSTimeout),
@@ -64,7 +66,10 @@ func ResourceVPCPublicGatewayIPReverseDNSCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if _, ok := d.GetOk("reverse"); ok {
 		tflog.Debug(ctx, fmt.Sprintf("updating IP %q reverse to %q\n", d.Id(), d.Get("reverse")))
@@ -108,8 +113,20 @@ func ResourceVPCPublicGatewayIPReverseDNSRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("zone", string(zone))
-	_ = d.Set("reverse", res.Reverse)
+	diags := setIPReverseDNSState(d, res)
+
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setIPReverseDNSState(d *schema.ResourceData, ip *vpcgw.IP) diag.Diagnostics {
+	_ = d.Set("zone", ip.Zone.String())
+	_ = d.Set("reverse", ip.Reverse)
+	_ = d.Set("gateway_ip_id", zonal.NewID(ip.Zone, ip.ID).String())
 
 	return nil
 }
