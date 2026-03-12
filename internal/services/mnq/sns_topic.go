@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,7 +26,20 @@ func ResourceSNSTopic() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    snsTopicSchema,
 		CustomizeDiff: resourceMNQSSNSTopicCustomizeDiff,
+		Identity:      snsTopicIdentity(),
 	}
+}
+
+func snsTopicIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"name": {
+			Type:              schema.TypeString,
+			Description:       "The topic name",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func snsTopicSchema() map[string]*schema.Schema {
@@ -137,7 +151,13 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("topic id is nil on creation")
 	}
 
-	d.SetId(composeMNQID(region, projectID, topicName))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       topicName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSTopicRead(ctx, d, m)
 }
@@ -162,6 +182,14 @@ func ResourceMNQSNSTopicRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	schemaAttributes, err := awsAttributesToResourceData(topicAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicAttributesToResourceMap)
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       topicName,
+	}, "region", "project_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
