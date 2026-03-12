@@ -76,5 +76,5 @@ func DataSourceS2SConnectionRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	return setConnectionState(d, connection, region)
+	return setConnectionState(d, connection)
 }

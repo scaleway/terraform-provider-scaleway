@@ -287,9 +287,9 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Connection.ID))
+	d.SetId(regional.NewIDString(res.Connection.Region, res.Connection.ID))
 
-	err = identity.SetRegionalIdentity(d, region, res.Connection.ID)
+	err = identity.SetRegionalIdentity(d, res.Connection.Region, res.Connection.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -317,9 +317,9 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	diags := setConnectionState(d, connection, region)
+	diags := setConnectionState(d, connection)
 
-	err = identity.SetRegionalIdentity(d, region, connection.ID)
+	err = identity.SetRegionalIdentity(d, connection.Region, connection.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -327,7 +327,7 @@ func ResourceConnectionRead(ctx context.Context, d *schema.ResourceData, m any) 
 	return diags
 }
 
-func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection, region scw.Region) diag.Diagnostics {
+func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection) diag.Diagnostics {
 	_ = d.Set("name", connection.Name)
 	_ = d.Set("region", connection.Region)
 	_ = d.Set("project_id", connection.ProjectID)
@@ -339,24 +339,24 @@ func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection, 
 	_ = d.Set("is_ipv6", connection.IsIPv6)
 	_ = d.Set("initiation_policy", connection.InitiationPolicy.String())
 	_ = d.Set("route_propagation_enabled", connection.RoutePropagationEnabled)
-	_ = d.Set("vpn_gateway_id", regional.NewIDString(region, connection.VpnGatewayID))
-	_ = d.Set("customer_gateway_id", regional.NewIDString(region, connection.CustomerGatewayID))
+	_ = d.Set("vpn_gateway_id", regional.NewIDString(connection.Region, connection.VpnGatewayID))
+	_ = d.Set("customer_gateway_id", regional.NewIDString(connection.Region, connection.CustomerGatewayID))
 	_ = d.Set("tunnel_status", connection.TunnelStatus.String())
 	_ = d.Set("ikev2_ciphers", flattenConnectionCiphers(connection.Ikev2Ciphers))
 	_ = d.Set("esp_ciphers", flattenConnectionCiphers(connection.EspCiphers))
 	_ = d.Set("bgp_status_ipv4", connection.BgpStatusIPv4.String())
 	_ = d.Set("bgp_status_ipv6", connection.BgpStatusIPv6.String())
-	_ = d.Set("secret_id", regional.NewIDString(region, connection.SecretID))
+	_ = d.Set("secret_id", regional.NewIDString(connection.Region, connection.SecretID))
 	_ = d.Set("secret_version", int(connection.SecretRevision))
 
-	bgpSessionIPv4, err := flattenBGPSession(region, connection.BgpSessionIPv4)
+	bgpSessionIPv4, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv4)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("bgp_session_ipv4", bgpSessionIPv4)
 
-	bgpSessionIPv6, err := flattenBGPSession(region, connection.BgpSessionIPv6)
+	bgpSessionIPv6, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv6)
 	if err != nil {
 		return diag.FromErr(err)
 	}
