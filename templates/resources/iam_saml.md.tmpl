@@ -22,14 +22,16 @@ page_title: "Scaleway: {{ .Name }}"
 
 The following arguments are supported:
 
-- `organization_id` - (Optional) The organization ID.
-- `entity_id` - (Optional) The entity ID of the SAML Identity Provider.
-- `single_sign_on_url` - (Optional) The single sign-on URL of the SAML Identity Provider.
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization ID will be used.
 
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the SAML configuration.
-- `service_provider` - The Service Provider information.
-- `status` - The status of the SAML configuration.
+- `entity_id` - (Computed) The entity ID of the SAML Identity Provider.
+- `single_sign_on_url` - (Computed) The single sign-on URL of the SAML Identity Provider.
+- `status` - (Computed) The status of the SAML configuration.
+- `service_provider` - (Computed) The Service Provider information. It contains:
+  - `entity_id` - (Computed) The entity ID of the Service Provider.
+  - `assertion_consumer_service_url` - (Computed) The assertion consumer service URL of the Service Provider.

@@ -109,12 +109,10 @@ func (r *SamlResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"entity_id": schema.StringAttribute{
 				MarkdownDescription: "The entity ID of the SAML Identity Provider",
-				Optional:            true,
 				Computed:            true,
 			},
 			"single_sign_on_url": schema.StringAttribute{
 				MarkdownDescription: "The single sign-on URL of the SAML Identity Provider",
-				Optional:            true,
 				Computed:            true,
 			},
 			"status": schema.StringAttribute{
@@ -212,35 +210,6 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	// If parameters were provided in the plan, update the SAML configuration directly
-	if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() || !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() {
-		reqUpdate := &iam.UpdateSamlRequest{
-			SamlID: state.ID.ValueString(),
-		}
-
-		if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() {
-			entityID := data.EntityID.ValueString()
-			reqUpdate.EntityID = &entityID
-		}
-
-		if !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() {
-			ssoURL := data.SingleSignOnURL.ValueString()
-			reqUpdate.SingleSignOnURL = &ssoURL
-		}
-
-		updatedSaml, err := r.iamAPI.UpdateSaml(reqUpdate, scw.WithContext(ctx))
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to update SAML",
-				err.Error(),
-			)
-
-			return
-		}
-
-		state = r.convertToState(updatedSaml, orgID, &resp.Diagnostics)
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -291,81 +260,10 @@ func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 }
 
 func (r *SamlResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data samlResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	orgID := data.OrganizationID.ValueString()
-	if orgID == "" {
-		defaultOrgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
-		if exists {
-			orgID = defaultOrgID
-		} else {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("organization_id"),
-				"Organization ID is required",
-				"Either set organization_id or configure a default organization",
-			)
-
-			return
-		}
-	}
-
-	existingSaml, err := r.iamAPI.GetOrganizationSaml(&iam.GetOrganizationSamlRequest{
-		OrganizationID: orgID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			resp.Diagnostics.AddError(
-				"SAML not enabled",
-				"SAML configuration is not currently enabled for this organization.",
-			)
-
-			return
-		} else {
-			resp.Diagnostics.AddError(
-				"Failed to check SAML status",
-				err.Error(),
-			)
-
-			return
-		}
-	}
-
-	hasChanged := false
-	reqUpdate := &iam.UpdateSamlRequest{
-		SamlID: existingSaml.ID,
-	}
-
-	if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() && data.EntityID.ValueString() != existingSaml.EntityID {
-		entityID := data.EntityID.ValueString()
-		reqUpdate.EntityID = &entityID
-		hasChanged = true
-	}
-
-	if !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() && data.SingleSignOnURL.ValueString() != existingSaml.SingleSignOnURL {
-		ssoURL := data.SingleSignOnURL.ValueString()
-		reqUpdate.SingleSignOnURL = &ssoURL
-		hasChanged = true
-	}
-
-	if hasChanged {
-		saml, err := r.iamAPI.UpdateSaml(reqUpdate, scw.WithContext(ctx))
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to update SAML",
-				err.Error(),
-			)
-
-			return
-		}
-
-		updatedSaml := r.convertToState(saml, orgID, &resp.Diagnostics)
-		resp.Diagnostics.Append(resp.State.Set(ctx, &updatedSaml)...)
-	}
+	resp.Diagnostics.AddError(
+		"Update not supported",
+		"SAML configuration updates (entity_id and single_sign_on_url) are managed by the scaleway_iam_saml_configuration resource. This resource only handles enabling/disabling SAML.",
+	)
 }
 
 func (r *SamlResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -376,7 +274,6 @@ func (r *SamlResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	// TODO: use helper func
 	orgID := state.OrganizationID.ValueString()
 	if orgID == "" {
 		defaultOrgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
