@@ -71,7 +71,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "The member's password for first access in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:   "The member's password for first access in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:     true,
 			ConflictsWith: []string{"password"},
 			RequiredWith:  []string{"password_wo_version"},
@@ -79,7 +79,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{"password_wo"},
 		},
 		"first_name": {
@@ -245,23 +245,23 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("email") {
-		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.Email = new(d.Get("email").(string))
 	}
 
 	if d.HasChange("first_name") {
-		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+		req.FirstName = new(d.Get("first_name").(string))
 	}
 
 	if d.HasChanges("last_name") {
-		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.LastName = new(d.Get("last_name").(string))
 	}
 
 	if d.HasChange("phone_number") {
-		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.PhoneNumber = new(d.Get("phone_number").(string))
 	}
 
 	if d.HasChange("locale") {
-		req.Locale = scw.StringPtr(d.Get("locale").(string))
+		req.Locale = new(d.Get("locale").(string))
 	}
 
 	_, err = api.UpdateUser(req, scw.WithContext(ctx))

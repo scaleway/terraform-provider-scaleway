@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceSnapshot() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    snapshotSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: customdiff.All(),
 	}
 }
@@ -108,7 +110,9 @@ func ResourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if snapshot != nil {
-		d.SetId(regional.NewIDString(region, snapshot.ID))
+		if err := identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID); err != nil {
+			return diag.FromErr(err)
+		}
 
 		_, err = waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -134,6 +138,10 @@ func ResourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	snapshot, err := waitForSnapshot(ctx, mongodbAPI, region, instanceID, snapshotID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, snapshot.Region, snapshot.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

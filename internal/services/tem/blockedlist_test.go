@@ -85,7 +85,7 @@ func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFu
 		blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
 			Region:   region,
 			DomainID: domainID,
-			Email:    scw.StringPtr(blockedEmail),
+			Email:    new(blockedEmail),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return err
@@ -116,7 +116,7 @@ func isBlockedEmailDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
 				Region:   region,
 				DomainID: domainID,
-				Email:    scw.StringPtr(blockedEmail),
+				Email:    new(blockedEmail),
 			}, scw.WithContext(context.Background()))
 			if err != nil {
 				return err

@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
@@ -38,7 +37,7 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 		}
 
 		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			if !shouldBeAllowed && object.IsS3Err(err, object.ErrCodeForbidden, object.ErrCodeForbidden) {
@@ -113,8 +112,8 @@ func IsObjectDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
-				Bucket: scw.StringPtr(bucketName),
-				Key:    scw.StringPtr(key),
+				Bucket: new(bucketName),
+				Key:    new(key),
 			})
 			if err != nil {
 				if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "The specified bucket does not exist") {
@@ -235,8 +234,8 @@ func IsObjectExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		}
 
 		_, err = s3Client.HeadObject(ctx, &s3.HeadObjectInput{
-			Bucket: scw.StringPtr(bucketName),
-			Key:    scw.StringPtr(key),
+			Bucket: new(bucketName),
+			Key:    new(key),
 		})
 		if err != nil {
 			if object.IsS3Err(err, object.ErrCodeNoSuchBucket, "") {

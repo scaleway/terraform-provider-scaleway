@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -30,6 +31,7 @@ func ResourcePipeline() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    pipelineSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -76,7 +78,9 @@ func ResourcePipelineCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(pipeline.ID)
+	if err = identity.SetGlobalIdentity(d, pipeline.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourcePipelineRead(ctx, d, m)
 }
@@ -103,6 +107,10 @@ func ResourcePipelineRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("updated_at", types.FlattenTime(pipeline.UpdatedAt))
 	_ = d.Set("status", pipeline.Status.String())
 	_ = d.Set("project_id", pipeline.ProjectID)
+
+	if err = identity.SetGlobalIdentity(d, pipeline.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

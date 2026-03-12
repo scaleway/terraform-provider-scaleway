@@ -70,7 +70,7 @@ func isDatabasePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		resp, err := api.ListDatabases(&datawarehouseSDK.ListDatabasesRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
-			Name:         scw.StringPtr(dbName),
+			Name:         new(dbName),
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return err
@@ -105,7 +105,7 @@ func isDatabaseDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			resp, err := api.ListDatabases(&datawarehouseSDK.ListDatabasesRequest{
 				Region:       region,
 				DeploymentID: deploymentID,
-				Name:         scw.StringPtr(dbName),
+				Name:         new(dbName),
 			}, scw.WithContext(context.Background()))
 			if err != nil {
 				if httperrors.Is404(err) {

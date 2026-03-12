@@ -37,6 +37,11 @@ EOF
 					resource.TestCheckResourceAttr("scaleway_instance_user_data.main", "key", "cloud-init"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_instance_user_data.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

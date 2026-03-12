@@ -79,7 +79,7 @@ func DataSourceRDBDatabaseBackupRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceRdbDatabaseBackupRead(ctx, d, m)
+	_, diags := readDatabaseBackupIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read database backup state")...)
 	}

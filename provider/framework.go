@@ -26,6 +26,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
@@ -99,6 +100,44 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 	}
 }
 
+func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+	config := &meta.FrameworkProviderConfig{}
+
+	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
+		config.AccessKey = model.AccessKey.ValueString()
+	}
+
+	if !model.SecretKey.IsNull() && !model.SecretKey.IsUnknown() {
+		config.SecretKey = model.SecretKey.ValueString()
+	}
+
+	if !model.Profile.IsNull() && !model.Profile.IsUnknown() {
+		config.ProfileName = model.Profile.ValueString()
+	}
+
+	if !model.ProjectID.IsNull() && !model.ProjectID.IsUnknown() {
+		config.ProjectID = model.ProjectID.ValueString()
+	}
+
+	if !model.OrganizationID.IsNull() && !model.OrganizationID.IsUnknown() {
+		config.OrganizationID = model.OrganizationID.ValueString()
+	}
+
+	if !model.Region.IsNull() && !model.Region.IsUnknown() {
+		config.Region = model.Region.ValueString()
+	}
+
+	if !model.Zone.IsNull() && !model.Zone.IsUnknown() {
+		config.Zone = model.Zone.ValueString()
+	}
+
+	if !model.APIURL.IsNull() && !model.APIURL.IsUnknown() {
+		config.APIURL = model.APIURL.ValueString()
+	}
+
+	return config
+}
+
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data ScalewayProviderModel
 
@@ -117,17 +156,30 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		m = p.providerMeta
 	} else {
-		config := &meta.Config{
-			TerraformVersion: req.TerraformVersion,
-		}
+		frameworkConfig := modelToFrameworkConfig(&data)
 
-		var err error
-
-		m, err = meta.NewMeta(ctx, config)
+		m, err := meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
-			resp.Diagnostics.AddError("error while configuring the provider", err.Error())
+			resp.Diagnostics.AddError("error creating meta", err.Error())
 
 			return
+		}
+
+		ok, message, err := m.HasMultipleVariableSources()
+		if err != nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Error checking multiple variable sources",
+				err.Error(),
+			))
+
+			return
+		}
+
+		if ok && err == nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Multiple variable sources detected",
+				"Please make sure the right credentials are used: "+message,
+			))
 		}
 	}
 
@@ -149,6 +201,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 		keymanager.NewSignEphemeralResource,
 		iam.NewApiKeyEphemeralResource,
 		secret.NewVersionEphemeralResource,
+		scwconfig.NewScwConfigEphemeralResource,
 	}
 }
 

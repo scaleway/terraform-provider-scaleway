@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -79,14 +80,13 @@ func DataSourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(regionalID)
 	_ = d.Set("private_network_id", regionalID)
 
-	diags := ResourceVPCPrivateNetworkRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read private network state")...)
+	pn, err := vpcAPI.GetPrivateNetwork(&vpc.GetPrivateNetworkRequest{
+		PrivateNetworkID: regional.ExpandID(privateNetworkID).ID,
+		Region:           region,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("private network (%s) not found", regionalID)
-	}
-
-	return nil
+	return setPrivateNetworkState(d, m, pn, region)
 }

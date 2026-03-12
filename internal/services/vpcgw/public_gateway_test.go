@@ -85,6 +85,11 @@ func TestAccVPCPublicGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_public_gateway.main", "zone", "nl-ams-1"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_public_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -254,7 +259,7 @@ func testAccCheckVPCPublicGatewayExists(tt *acctest.TestTools, n string) resourc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, zone, ID, err := vpcgw.NewAPIWithZoneAndIDv2(tt.Meta, rs.Primary.ID)
+		api, zone, ID, err := vpcgw.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}

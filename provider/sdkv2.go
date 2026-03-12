@@ -35,12 +35,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/k8s"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
@@ -149,6 +151,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_datawarehouse_deployment":            datawarehouse.ResourceDeployment(),
 				"scaleway_datawarehouse_user":                  datawarehouse.ResourceUser(),
 				"scaleway_datawarehouse_database":              datawarehouse.ResourceDatabase(),
+				"scaleway_kafka_cluster":                       kafka.ResourceCluster(),
 				"scaleway_domain_record":                       domain.ResourceRecord(),
 				"scaleway_domain_registration":                 domain.ResourceRegistration(),
 				"scaleway_domain_zone":                         domain.ResourceZone(),
@@ -222,6 +225,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mongodb_snapshot":                    mongodb.ResourceSnapshot(),
 				"scaleway_mongodb_user":                        mongodb.ResourceUser(),
 				"scaleway_object":                              object.ResourceObject(),
+				"scaleway_opensearch_deployment":               opensearch.ResourceDeployment(),
 				"scaleway_object_bucket":                       object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                   object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":    object.ResourceLockConfiguration(),
@@ -268,6 +272,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_account_ssh_key":                     iam.DataSourceSSHKey(),
 				"scaleway_apple_silicon_os":                    applesilicon.DataSourceOS(),
 				"scaleway_audit_trail_event":                   audittrail.DataSourceEvent(),
+				"scaleway_autoscaling_instance_policy":         autoscaling.DataSourceInstancePolicy(),
+				"scaleway_autoscaling_instance_group":          autoscaling.DataSourceInstanceGroup(),
 				"scaleway_availability_zones":                  az.DataSourceAvailabilityZones(),
 				"scaleway_baremetal_offer":                     baremetal.DataSourceOffer(),
 				"scaleway_baremetal_partition_schema":          baremetal.DataPartitionSchema(),
@@ -313,6 +319,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_iot_hub":                             iot.DataSourceHub(),
 				"scaleway_ipam_ip":                             ipam.DataSourceIP(),
 				"scaleway_ipam_ips":                            ipam.DataSourceIPs(),
+				"scaleway_kafka_cluster":                       kafka.DataSourceCluster(),
 				"scaleway_k8s_cluster":                         k8s.DataSourceCluster(),
 				"scaleway_k8s_pool":                            k8s.DataSourcePool(),
 				"scaleway_k8s_version":                         k8s.DataSourceVersion(),
@@ -334,6 +341,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mnq_sqs":                             mnq.DataSourceSQS(),
 				"scaleway_mnq_sns":                             mnq.DataSourceSNS(),
 				"scaleway_mongodb_instance":                    mongodb.DataSourceInstance(),
+				"scaleway_opensearch_deployment":               opensearch.DataSourceDeployment(),
 				"scaleway_object_bucket":                       object.DataSourceBucket(),
 				"scaleway_object":                              object.DataSourceObject(),
 				"scaleway_object_bucket_policy":                object.DataSourceBucketPolicy(),
@@ -346,6 +354,10 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_registry_image":                      registry.DataSourceImage(),
 				"scaleway_registry_namespace":                  registry.DataSourceNamespace(),
 				"scaleway_registry_image_tag":                  registry.DataSourceImageTag(),
+				"scaleway_s2s_vpn_connection":                  s2svpn.DataSourceConnection(),
+				"scaleway_s2s_vpn_customer_gateway":            s2svpn.DataSourceCustomerGateway(),
+				"scaleway_s2s_vpn_gateway":                     s2svpn.DataSourceVPNGateway(),
+				"scaleway_s2s_vpn_routing_policy":              s2svpn.DataSourceRoutingPolicy(),
 				"scaleway_secret":                              secret.DataSourceSecret(),
 				"scaleway_secret_version":                      secret.DataSourceVersion(),
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),

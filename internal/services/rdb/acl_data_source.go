@@ -47,5 +47,5 @@ func DataSourceRDBACLRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbACLRead(ctx, d, m)
+	return readACLIntoState(ctx, d, m)
 }

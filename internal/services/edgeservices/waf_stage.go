@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -21,6 +22,7 @@ func ResourceWAFStage() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultGlobal(),
 		SchemaVersion: 0,
 		SchemaFunc:    wafStageSchema,
 	}
@@ -77,7 +79,10 @@ func ResourceWAFStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(wafStage.ID)
+	err = identity.SetGlobalIdentity(d, wafStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceWAFStageRead(ctx, d, m)
 }
@@ -104,6 +109,11 @@ func ResourceWAFStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	_ = d.Set("mode", wafStage.Mode.String())
 	_ = d.Set("created_at", types.FlattenTime(wafStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(wafStage.UpdatedAt))
+
+	err = identity.SetGlobalIdentity(d, wafStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

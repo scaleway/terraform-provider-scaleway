@@ -80,8 +80,8 @@ func DataSourceDomainRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceDomainRead(ctx, d, m)
-	if diags != nil {
+	diags := readDomainIntoState(ctx, d, m)
+	if diags.HasError() {
 		return append(diags, diag.Errorf("failed to read tem domain state")...)
 	}
 

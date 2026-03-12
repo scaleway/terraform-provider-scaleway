@@ -11,17 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -36,6 +35,7 @@ func ResourceLb() *schema.Resource {
 		ReadContext:   resourceLbRead,
 		UpdateContext: resourceLbUpdate,
 		DeleteContext: resourceLbDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -270,7 +270,10 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, lb.ID))
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	// check err waiting process
 	_, err = waitForLB(ctx, lbAPI, zone, lb.ID, d.Timeout(schema.TimeoutCreate))
@@ -324,6 +327,29 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 		return diag.FromErr(err)
 	}
 
+	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	external := d.Get("external_private_networks").(bool)
+
+	diags := setLBState(d, lb, zone, region, privateNetworks, allPrivateIPs, external)
+
+	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setLBState(d *schema.ResourceData, lb *lbSDK.LB, zone scw.Zone, region scw.Region, privateNetworks []*lbSDK.PrivateNetwork, allPrivateIPs []map[string]any, external bool) diag.Diagnostics {
 	_ = d.Set("release_ip", false)
 	_ = d.Set("name", lb.Name)
 	_ = d.Set("description", lb.Description)
@@ -357,46 +383,10 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 		_ = d.Set("ipv6_address", ipv6Address)
 	}
 
-	// retrieve attached private networks
-	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	external := d.Get("external_private_networks").(bool)
 	if !external {
 		_ = d.Set("private_network", flattenPrivateNetworkConfigs(privateNetworks))
 	} else {
 		_ = d.Set("private_network", schema.NewSet(lbPrivateNetworkSetHash, []any{}))
-	}
-
-	privateNetworkIDs := make([]string, 0, len(privateNetworks))
-	for _, pn := range privateNetworks {
-		privateNetworkIDs = append(privateNetworkIDs, pn.PrivateNetworkID)
-	}
-
-	allPrivateIPs := []map[string]any(nil)
-	resourceType := ipamAPI.ResourceTypeLBServer
-
-	for _, privateNetworkID := range privateNetworkIDs {
-		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
-			PrivateNetworkID: &privateNetworkID,
-			ResourceID:       &lb.ID,
-		}
-
-		privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if privateIPs != nil {
-			allPrivateIPs = append(allPrivateIPs, privateIPs...)
-		}
 	}
 
 	_ = d.Set("private_ips", allPrivateIPs)
