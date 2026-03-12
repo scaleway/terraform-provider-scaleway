@@ -109,6 +109,12 @@ func TestAccConnection_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "esp_ciphers.0.dh_group", "modp2048"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_s2s_vpn_connection.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"enable_route_propagation", "bgp_config_ipv4.#", "bgp_config_ipv4.0.%", "bgp_config_ipv4.0.private_ip", "bgp_config_ipv4.0.peer_private_ip", "bgp_config_ipv4.0.peer_public_ip", "bgp_config_ipv4.0.routing_policy_id"},
+			},
 		},
 	})
 }
