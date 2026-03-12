@@ -1,4 +1,4 @@
-### Enable and configure IAM SAML for an organization
+### Enable and configure IAM SAML with an external Identity Provider
 
 # Enable SAML on your Scaleway organization
 resource "scaleway_iam_saml" "sp" {
@@ -10,8 +10,8 @@ resource "scaleway_iam_saml" "sp" {
 # - Scaleway SAML Entity ID: ${scaleway_iam_saml.sp.service_provider.entity_id}
 # - Scaleway SAML ACS URL: ${scaleway_iam_saml.sp.service_provider.assertion_consumer_service_url}
 
-# Configure your organization SAML with your IdP 
-resource "scaleway_iam_saml_configuration" "main" {
+# Configure your organization SAML with your configurations from your IdP
+action "scaleway_iam_update_saml_configuration" "main" {
   organization_id    = scaleway_iam_saml.sp.organization_id
   entity_id          = my_idp.main.entity_id
   single_sign_on_url = my_idp.main.sso_url

@@ -93,7 +93,7 @@ func (r *SamlResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 		MarkdownDescription: samlResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"organization_id": schema.StringAttribute{
-				MarkdownDescription: "The organization ID",
+				MarkdownDescription: "The organization ID. If not provided, the default organization configured in the provider is used.",
 				Optional:            true,
 				Computed:            true,
 				Validators: []validator.String{
