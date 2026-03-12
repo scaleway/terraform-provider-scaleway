@@ -165,7 +165,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_domain_record",
 		"scaleway_domain_registration",
 		"scaleway_domain_zone",
-		"scaleway_file_filesystem",
 		"scaleway_function",
 		"scaleway_function_cron",
 		"scaleway_function_domain",
