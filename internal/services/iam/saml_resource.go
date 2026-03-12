@@ -191,7 +191,7 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 				return
 			}
 
-			state = r.convertToState(res, orgID, &resp.Diagnostics)
+			state = convertSamlToState(res, orgID, &resp.Diagnostics)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 		} else {
 			resp.Diagnostics.AddError(
@@ -255,7 +255,7 @@ func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	state = r.convertToState(saml, orgID, &resp.Diagnostics)
+	state = convertSamlToState(saml, orgID, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -323,7 +323,7 @@ func (r *SamlResource) ImportState(ctx context.Context, req resource.ImportState
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *SamlResource) convertToState(saml *iam.Saml, orgID string, diags *diag.Diagnostics) samlResourceModel {
+func convertSamlToState(saml *iam.Saml, orgID string, diags *diag.Diagnostics) samlResourceModel {
 	return samlResourceModel{
 		ID:              types.StringValue(saml.ID),
 		EntityID:        types.StringValue(saml.EntityID),
