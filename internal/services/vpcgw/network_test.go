@@ -111,6 +111,11 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					acctest.CheckResourceRawIDMatches("scaleway_vpc_gateway_network.main", "ipam_config.0.ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_gateway_network.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
