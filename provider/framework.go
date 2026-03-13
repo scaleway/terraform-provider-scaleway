@@ -219,6 +219,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
 		cockpit.NewTriggerTestAlertAction,
+		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
 		instance.NewExportSnapshot,
 		instance.NewServerAction,
