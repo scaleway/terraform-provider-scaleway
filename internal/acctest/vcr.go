@@ -27,12 +27,6 @@ import (
 // UpdateCassettes will update all cassettes of a given test
 var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
-// SensitiveFields is a map with keys listing fields that should be anonymized
-// value will be set in place of its old value
-var SensitiveFields = map[string]any{
-	"secret_key": "00000000-0000-0000-0000-000000000000",
-}
-
 // QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
 var QueryMatcherIgnore = []string{
 	"organization_id",
@@ -49,6 +43,8 @@ var BodyMatcherIgnore = []string{
 	"mnq_region",
 	"mnq_nats_account_id",
 	"mnq_nats_subject",
+	// cockpit exporter datadog destination
+	"api_key",
 }
 
 // removeKeyRecursive removes a key from a map and all its nested maps
