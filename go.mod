@@ -38,6 +38,7 @@ require (
 	golang.org/x/sync v0.19.0
 	gopkg.in/dnaeon/go-vcr.v3 v3.2.0
 	gopkg.in/dnaeon/go-vcr.v4 v4.0.6
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -178,7 +179,6 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/gotestsum v1.12.3 // indirect
 )
 
