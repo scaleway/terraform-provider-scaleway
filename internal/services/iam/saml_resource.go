@@ -262,7 +262,7 @@ func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 func (r *SamlResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError(
 		"Update not supported",
-		"SAML configuration updates (entity_id and single_sign_on_url) are managed by the scaleway_iam_saml_configuration resource. This resource only handles enabling/disabling SAML.",
+		"SAML configuration updates (entity_id and single_sign_on_url) are managed by the scaleway_iam_update_saml_configuration action. This resource only handles enabling/disabling SAML.",
 	)
 }
 
