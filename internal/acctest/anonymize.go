@@ -9,8 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// SensitiveFields is the canonical map of JSON keys to anonymize in cassette bodies.
-// Used by both the VCR before-save hook (vcr.go) and AnonymizeCassetteFile.
+// SensitiveFields maps JSON keys to anonymize in cassette bodies.
 var SensitiveFields = map[string]any{
 	"api_key":       "00000000000000000000000000000000",
 	"secret_key":    "00000000-0000-0000-0000-000000000000",
@@ -20,10 +19,7 @@ var SensitiveFields = map[string]any{
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
-// LeakCheckFields is checked by TestAccCassettes_NoSensitiveLeak on REQUEST only.
-// Credentials in request = we send them (potential leak). Credentials in response = API returns
-// created resources (ephemeral: CreateAPIKey, CreateToken, etc.), so we skip response bodies.
-// Excludes "password": often sent when creating resources (RDB user, etc.), ephemeral test data.
+// LeakCheckFields: fields checked on request body only (responses ignored).
 var LeakCheckFields = map[string]any{
 	"api_key":       "00000000000000000000000000000000",
 	"secret_key":    "00000000-0000-0000-0000-000000000000",
@@ -32,18 +28,12 @@ var LeakCheckFields = map[string]any{
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
-// HeaderPlaceholders lists HTTP header names to anonymize (case-insensitive).
-// Placeholder values used for cassette anonymization, not real credentials.
 var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
 	"x-auth-token":  "2b8d6113-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
-// AnonymizeCassetteForTest anonymizes the cassette file for the given test when
-// recording. Call via t.Cleanup() at the start of tests that record sensitive
-// data (e.g. API keys). Runs after the test completes and the cassette is saved.
-// If pkgFolder is empty, uses os.Getwd() to match the path used by the recorder
-// (NewTestTools), ensuring both read/write the same cassette file.
+// AnonymizeCassetteForTest anonymizes the cassette after recording. Call via t.Cleanup().
 func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 	t.Helper()
 
@@ -61,7 +51,6 @@ func AnonymizeCassetteForTest(t *testing.T, pkgFolder string) error {
 	return AnonymizeCassetteFile(path)
 }
 
-// AnonymizeCassetteFile anonymizes sensitive values in a cassette YAML file.
 func AnonymizeCassetteFile(path string) error {
 	data, err := os.ReadFile(path) //nolint: gosec // G304: path is from BuildCassetteName, not user input
 	if err != nil {

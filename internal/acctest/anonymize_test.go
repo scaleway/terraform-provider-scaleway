@@ -11,16 +11,14 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
-// TestAccCassettes_NoSensitiveLeak reads all cassette files and ensures no sensitive
-// data is leaked. Only checks REQUESTS (body + headers): credentials we send = potential leak.
-// Responses are skipped: API often returns created resources (CreateAPIKey, CreateToken) with
-// ephemeral credentials that are destroyed after the test.
+// TestAccCassettes_NoSensitiveLeak ensures no sensitive data in cassette requests.
 func TestAccCassettes_NoSensitiveLeak(t *testing.T) {
+	t.Parallel()
+
 	paths, err := getTestFiles(true)
 	require.NoError(t, err)
 
 	for path := range paths {
-		path := path
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 
@@ -41,7 +39,6 @@ func TestAccCassettes_NoSensitiveLeak(t *testing.T) {
 func checkInteractionForLeaks(t *testing.T, cassettePath string, idx int, inter *cassette.Interaction) {
 	t.Helper()
 
-	// Only check requests: credentials we send = leak. Responses often contain ephemeral created resources.
 	checkBodyForLeaks(t, cassettePath, idx, "request", inter.Request.Body)
 	checkHeadersForLeaks(t, cassettePath, idx, "request", inter.Request.Headers)
 }
@@ -97,6 +94,7 @@ func checkHeadersForLeaks(t *testing.T, cassettePath string, idx int, part strin
 
 	for name, vals := range headers {
 		nameLower := strings.ToLower(name)
+
 		expected, ok := acctest.HeaderPlaceholders[nameLower]
 		if !ok || len(vals) == 0 {
 			continue
