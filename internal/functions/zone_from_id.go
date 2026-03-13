@@ -43,7 +43,7 @@ func (f *ZoneFromID) Definition(ctx context.Context, req function.DefinitionRequ
 
 func (f *ZoneFromID) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {
 	var (
-		input                types.String
+		input              types.String
 		skipZoneValidation types.Bool
 	)
 
