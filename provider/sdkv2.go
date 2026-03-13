@@ -39,6 +39,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mailbox"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
@@ -199,6 +200,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_iot_hub":                                            iot.ResourceHub(),
 				"scaleway_iot_network":                                        iot.ResourceNetwork(),
 				"scaleway_iot_route":                                          iot.ResourceRoute(),
+				"scaleway_mailbox_domain":                                     mailbox.ResourceDomain(),
+				"scaleway_mailbox_mailbox":                                    mailbox.ResourceMailbox(),
 				"scaleway_ipam_ip":                                            ipam.ResourceIP(),
 				"scaleway_ipam_ip_reverse_dns":                                ipam.ResourceIPReverseDNS(),
 				"scaleway_job_definition":                                     jobs.ResourceDefinition(),
@@ -335,6 +338,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_interlink_pops":                                     interlink.DataSourcePops(),
 				"scaleway_iot_device":                                         iot.DataSourceDevice(),
 				"scaleway_iot_hub":                                            iot.DataSourceHub(),
+				"scaleway_mailbox_mailbox":                                    mailbox.DataSourceMailbox(),
 				"scaleway_ipam_ip":                                            ipam.DataSourceIP(),
 				"scaleway_ipam_ips":                                           ipam.DataSourceIPs(),
 				"scaleway_kafka_cluster":                                      kafka.DataSourceCluster(),
