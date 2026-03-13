@@ -10,6 +10,7 @@ Retrieves SAML configuration for an organization. This data source enables you t
 SAML (Security Assertion Markup Language) is an open standard for exchanging authentication and authorization data between parties, specifically between an identity provider and a service provider.
 
 
+
 ## Example Usage
 
 ```terraform

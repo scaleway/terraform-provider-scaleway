@@ -28,21 +28,6 @@ type SamlDataSource struct {
 	meta   *meta.Meta
 }
 
-type ServiceProviderModel struct {
-	EntityID                    types.String `tfsdk:"entity_id"`
-	AssertionConsumerServiceUrl types.String `tfsdk:"assertion_consumer_service_url"`
-}
-
-type samlDataSourceModel struct {
-	OrganizationID types.String `tfsdk:"organization_id"`
-	// Output
-	ID              types.String `tfsdk:"id"`
-	Status          types.String `tfsdk:"status"`
-	ServiceProvider types.Object `tfsdk:"service_provider"`
-	EntityID        types.String `tfsdk:"entity_id"`
-	SingleSignOnURL types.String `tfsdk:"single_sign_on_url"`
-}
-
 func (d *SamlDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_iam_saml"
 }
@@ -104,10 +89,9 @@ func (d *SamlDataSource) Configure(ctx context.Context, req datasource.Configure
 }
 
 func (d *SamlDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state samlDataSourceModel
+	var state samlResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
 
-	// TODO: use helper func
 	orgID := state.OrganizationID.ValueString()
 	if orgID == "" {
 		defaultOrgID, exists := d.meta.ScwClient().GetDefaultOrganizationID()

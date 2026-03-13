@@ -51,7 +51,7 @@ func TestAccDataSourceSaml_WithDefaultOrganizationID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	orgID, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+	_, orgIDExists := tt.Meta.ScwClient().GetDefaultOrganizationID()
 	if !orgIDExists {
 		t.Skip("No default organization ID found, skipping test")
 	}
@@ -61,27 +61,14 @@ func TestAccDataSourceSaml_WithDefaultOrganizationID(t *testing.T) {
 			CheckDestroy:             checkSamlDestroyed(tt),
 			Steps: []resource.TestStep{
 				{
-					Config: fmt.Sprintf(`
+					Config: `
 					resource "scaleway_iam_saml" "main" {
-						organization_id = "%s"
-					}
-				`, orgID),
-					Check: resource.ComposeTestCheckFunc(
-						testAccCheckSamlResourceExists(tt, "scaleway_iam_saml.main"),
-					),
-				},
-				{
-					Config: fmt.Sprintf(`
-					resource "scaleway_iam_saml" "main" {
-						organization_id = "%s"
-						entity_id = "https://example.com/saml/metadata"
-						single_sign_on_url = "https://example.com/saml/sso"
 					}
 
 					data "scaleway_iam_saml" "main" {
 						depends_on = [scaleway_iam_saml.main]
 					}
-				`, orgID),
+				`,
 					Check: resource.ComposeTestCheckFunc(
 						resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "organization_id", "scaleway_iam_saml.main", "organization_id"),
 						resource.TestCheckResourceAttrPair("data.scaleway_iam_saml.main", "id", "scaleway_iam_saml.main", "id"),
