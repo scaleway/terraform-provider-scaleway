@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -27,6 +28,7 @@ func ResourcePATRule() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultZonal(),
 		SchemaVersion: 0,
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultTimeout),
@@ -123,7 +125,12 @@ func ResourceVPCPublicGatewayPATRuleCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, patRule.ID))
+	d.SetId(zonal.NewIDString(patRule.Zone, patRule.ID))
+
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGateway(ctx, api, zone, patRule.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -153,15 +160,25 @@ func ResourceVPCPublicGatewayPATRuleRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
-	gatewayID := zonal.NewID(zone, patRule.GatewayID).String()
+	diags := setPATRuleState(d, patRule)
+
+	err = identity.SetZonalIdentity(d, patRule.Zone, patRule.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPATRuleState(d *schema.ResourceData, patRule *vpcgw.PatRule) diag.Diagnostics {
 	_ = d.Set("created_at", patRule.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", patRule.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("gateway_id", gatewayID)
+	_ = d.Set("gateway_id", zonal.NewID(patRule.Zone, patRule.GatewayID).String())
 	_ = d.Set("private_ip", patRule.PrivateIP.String())
 	_ = d.Set("private_port", int(patRule.PrivatePort))
 	_ = d.Set("public_port", int(patRule.PublicPort))
 	_ = d.Set("protocol", patRule.Protocol.String())
-	_ = d.Set("zone", zone)
+	_ = d.Set("zone", patRule.Zone.String())
 
 	return nil
 }
