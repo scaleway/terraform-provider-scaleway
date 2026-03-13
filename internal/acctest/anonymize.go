@@ -29,6 +29,8 @@ var LeakCheckFields = map[string]any{
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
+// HeaderPlaceholders lists HTTP header names to anonymize (case-insensitive).
+// Placeholder values used for cassette anonymization, not real credentials.
 var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
 	"x-auth-token":  "2b8d6113-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
