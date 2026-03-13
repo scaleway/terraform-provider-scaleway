@@ -28,6 +28,7 @@ func ResourceZone() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    zoneSchema,
+		CustomizeDiff: resourceZoneCustomizeDiff,
 	}
 }
 
@@ -94,6 +95,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 	subdomainName := strings.ToLower(d.Get("subdomain").(string))
 	zoneName := BuildZoneName(subdomainName, domainName)
 
+	// Check if a zone with the same name already exists in the project
 	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
 		ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		DNSZones:  []string{zoneName},
@@ -102,14 +104,15 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
+	// If zone already exists, throw an error to prevent duplicate creation
 	for i := range zones.DNSZones {
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
-			d.SetId(BuildZoneName(subdomainName, domainName))
-
-			return resourceDomainZoneRead(ctx, d, m)
+			// Zone already exists - throw error instead of managing existing resource
+			return diag.FromErr(fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists in this project", domainName, subdomainName))
 		}
 	}
 
+	// Proceed with zone creation only if no existing zone found with same name
 	var dnsZone *domain.DNSZone
 
 	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
@@ -118,10 +121,11 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
 	if err != nil {
+		// Handle case where zone was already created by another process (409 conflict)
 		if httperrors.Is409(err) {
-			return resourceDomainZoneRead(ctx, d, m)
+			// Zone was created by another process - throw error instead of managing it
+			return diag.FromErr(fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists in this project", domainName, subdomainName))
 		}
-
 		return diag.FromErr(err)
 	}
 
@@ -208,6 +212,42 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	if err != nil && !httperrors.Is404(err) && !httperrors.Is403(err) {
 		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func resourceZoneCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	// Only check during creation (when ID is not set)
+	if diff.Id() != "" {
+		return nil
+	}
+
+	// Check if domain or subdomain are being created/changed
+	if !diff.HasChanges("domain", "subdomain") {
+		return nil
+	}
+
+	domainAPI := NewDomainAPI(m)
+
+	domainName := strings.ToLower(diff.Get("domain").(string))
+	subdomainName := strings.ToLower(diff.Get("subdomain").(string))
+	zoneName := BuildZoneName(subdomainName, domainName)
+
+	// Check if a zone with the same name already exists in the project
+	zones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{
+		ProjectID: types.ExpandStringPtr(diff.Get("project_id")),
+		DNSZones:  []string{zoneName},
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	// If zone already exists, add an error to prevent duplicate creation
+	for i := range zones.DNSZones {
+		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
+			return fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists in this project", domainName, subdomainName)
+		}
 	}
 
 	return nil
