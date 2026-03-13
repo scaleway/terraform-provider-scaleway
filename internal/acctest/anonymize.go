@@ -20,9 +20,9 @@ var SensitiveFields = map[string]any{
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
 
-// headerKeys lists HTTP header names to anonymize (case-insensitive).
+// HeaderPlaceholders lists HTTP header names to anonymize (case-insensitive).
 // Placeholder values used for cassette anonymization, not real credentials.
-var headerKeys = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
+var HeaderPlaceholders = map[string]string{ //nolint: gosec // G101: placeholder values for anonymization
 	"x-auth-token":  "2b8d6113-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 }
@@ -125,7 +125,7 @@ func anonymizeHeadersInMap(m map[string]any, key string) {
 
 	for name, val := range headers {
 		nameLower := strings.ToLower(name)
-		if placeholder, ok := headerKeys[nameLower]; ok {
+		if placeholder, ok := HeaderPlaceholders[nameLower]; ok {
 			if arr, ok := val.([]any); ok && len(arr) > 0 {
 				if s, ok := arr[0].(string); ok && s != "" && s != placeholder {
 					headers[name] = []any{placeholder}
