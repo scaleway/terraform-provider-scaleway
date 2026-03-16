@@ -2,6 +2,7 @@ package vpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -116,6 +117,7 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 
 	// Filter to only keep custom routes
 	var filtered []*vpc.RouteWithNexthop
+
 	for _, r := range res.Routes {
 		if r.Route != nil && r.Route.ID != "" {
 			filtered = append(filtered, r)
@@ -123,7 +125,7 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if len(filtered) == 0 {
-		return diag.FromErr(fmt.Errorf("no route found matching the specified filters"))
+		return diag.FromErr(errors.New("no route found matching the specified filters"))
 	}
 
 	if len(filtered) > 1 {
