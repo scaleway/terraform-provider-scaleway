@@ -124,7 +124,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 		// Handle case where zone was already created by another process (409 conflict)
 		if httperrors.Is409(err) {
 			// Zone was created by another process - throw error instead of managing it
-			return diag.FromErr(fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists in this project", domainName, subdomainName))
+			return diag.FromErr(fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists (HTTP 409 error). This means either another process is trying to create the same zone, or it already exists in another project within your Scaleway Organization.", domainName, subdomainName))
 		}
 		return diag.FromErr(err)
 	}
