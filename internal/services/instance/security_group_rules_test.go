@@ -227,7 +227,7 @@ func TestAccSecurityGroupRules_IPRanges(t *testing.T) {
 	})
 }
 
-func TestAccSecurityGroupRules_ImportState(t *testing.T) {
+func TestAccSecurityGroupRules_ReapplyConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

@@ -238,6 +238,7 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 		for index, apiRule := range apiRules[direction] {
 			if index < len(stateRules[direction]) {
 				stateRuleRaw := stateRules[direction][index].(map[string]any)
+
 				var ipFieldToSet string
 				if _, ok := stateRuleRaw["ip"]; ok {
 					ipFieldToSet = "ip"
@@ -536,7 +537,7 @@ func securityGroupRuleFlatten(rule *instanceSDK.SecurityGroupRule, ipFieldToSet 
 		// If we don't have access to the IP field that was set in the config (most likely in an import context),
 		// we always set 'ip_range' with the value from the API, and 'ip' if the value is not a range.
 		res["ip_range"] = rule.IPRange.String()
-		if one, _ := rule.IPRange.IPNet.Mask.Size(); one == 32 {
+		if one, _ := rule.IPRange.Mask.Size(); one == 32 {
 			res["ip"] = rule.IPRange.IP.String()
 		}
 	default:
