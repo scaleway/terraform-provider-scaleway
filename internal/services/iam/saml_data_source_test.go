@@ -18,7 +18,7 @@ func TestAccDataSourceSaml_Basic(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             checkSamlDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -56,7 +56,7 @@ func TestAccDataSourceSaml_WithDefaultOrganizationID(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 	{
-		resource.ParallelTest(t, resource.TestCase{
+		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: tt.ProviderFactories,
 			CheckDestroy:             checkSamlDestroyed(tt),
 			Steps: []resource.TestStep{
@@ -93,7 +93,7 @@ func TestAccDataSourceSaml_InvalidDeactivated(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
