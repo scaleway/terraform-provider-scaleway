@@ -109,6 +109,12 @@ func TestAccInstanceGroup_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_group.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_autoscaling_instance_group.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_servers_on_destroy"},
+			},
 		},
 	})
 }

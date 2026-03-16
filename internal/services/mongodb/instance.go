@@ -120,7 +120,7 @@ func instanceSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "Password of the user in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description: "Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:   true,
 			ConflictsWith: []string{
 				"snapshot_id",
@@ -133,7 +133,7 @@ func instanceSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:        schema.TypeInt,
 			Optional:    true,
-			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{
 				"password_wo",
 			},
