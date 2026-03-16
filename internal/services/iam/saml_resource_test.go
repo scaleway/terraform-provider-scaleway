@@ -21,7 +21,7 @@ func TestAccSamlResource_Basic(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             checkSamlDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -60,7 +60,7 @@ func TestAccSamlResource_WithDefaultOrganizationID(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             checkSamlDestroyed(tt),
 		Steps: []resource.TestStep{
