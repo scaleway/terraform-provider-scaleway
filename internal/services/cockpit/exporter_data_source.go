@@ -124,6 +124,7 @@ func flattenExporterWithProjectID(ctx context.Context, d *schema.ResourceData, a
 		if exp.DatadogDestination.Endpoint != nil {
 			datadogDest["endpoint"] = *exp.DatadogDestination.Endpoint
 		}
+
 		_ = d.Set("datadog_destination", []map[string]any{datadogDest})
 	}
 
