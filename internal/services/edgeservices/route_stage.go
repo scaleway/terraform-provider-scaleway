@@ -54,16 +54,16 @@ func routeSchema() map[string]*schema.Schema {
 			Description: "List of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified backend stage. If no rules are matched, the request is forwarded to the WAF stage defined by `waf_stage_id`",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-				"backend_stage_id": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "ID of the backend stage that requests matching the rule should be forwarded to",
-				},
-				"waf_stage_id": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "ID of the WAF stage that requests matching the rule should be forwarded to",
-				},
+					"backend_stage_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the backend stage that requests matching the rule should be forwarded to",
+					},
+					"waf_stage_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the WAF stage that requests matching the rule should be forwarded to",
+					},
 					"rule_http_match": {
 						Type:        schema.TypeList,
 						Optional:    true,
