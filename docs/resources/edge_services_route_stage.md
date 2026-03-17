@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "Edge Services"
 page_title: "Scaleway: scaleway_edge_services_route_stage"
@@ -14,13 +13,69 @@ Creates and manages Scaleway Edge Services Route Stages.
 
 Routes all unmatched traffic through a WAF stage, while requests matching specific patterns are sent directly to a backend stage.
 
-{{ tffile "examples/resources/scaleway_edge_services_route_stage/resource-waf-default.tf" }}
+```terraform
+resource "scaleway_edge_services_route_stage" "main" {
+  pipeline_id  = scaleway_edge_services_pipeline.main.id
+  waf_stage_id = scaleway_edge_services_waf_stage.waf.id
+
+  rule {
+    backend_stage_id = scaleway_edge_services_backend_stage.backend.id
+    rule_http_match {
+      method_filters = ["get", "post"]
+      path_filter {
+        path_filter_type = "regex"
+        value            = ".*"
+      }
+    }
+  }
+}
+```
 
 ### Default to backend with selective WAF protection
 
 Serves static content directly from a backend by default, while routing API traffic through a WAF stage for protection against common web attacks.
 
-{{ tffile "examples/resources/scaleway_edge_services_route_stage/resource-selective-waf.tf" }}
+```terraform
+resource "scaleway_edge_services_pipeline" "main" {
+  name        = "my-pipeline"
+  description = "Static site with WAF-protected API"
+}
+
+resource "scaleway_object_bucket" "main" {
+  name = "my-static-site"
+}
+
+resource "scaleway_edge_services_backend_stage" "static" {
+  pipeline_id = scaleway_edge_services_pipeline.main.id
+  s3_backend_config {
+    bucket_name   = scaleway_object_bucket.main.name
+    bucket_region = "fr-par"
+  }
+}
+
+resource "scaleway_edge_services_waf_stage" "api" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
+  backend_stage_id = scaleway_edge_services_backend_stage.static.id
+  mode             = "enable"
+  paranoia_level   = 2
+}
+
+resource "scaleway_edge_services_route_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
+  backend_stage_id = scaleway_edge_services_backend_stage.static.id
+
+  rule {
+    waf_stage_id = scaleway_edge_services_waf_stage.api.id
+    rule_http_match {
+      method_filters = ["get", "post", "put", "patch", "delete"]
+      path_filter {
+        path_filter_type = "regex"
+        value            = "/api/.*"
+      }
+    }
+  }
+}
+```
 
 ## Argument Reference
 
