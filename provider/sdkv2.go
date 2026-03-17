@@ -370,6 +370,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_vpc_public_gateway_dhcp_reservation": vpcgw.DataSourceDHCPReservation(),
 				"scaleway_vpc_public_gateway_ip":               vpcgw.DataSourceIP(),
 				"scaleway_vpc_public_gateway_pat_rule":         vpcgw.DataSourcePATRule(),
+				"scaleway_vpc_route":                           vpc.DataSourceRoute(),
 				"scaleway_vpc_routes":                          vpc.DataSourceRoutes(),
 				"scaleway_vpcs":                                vpc.DataSourceVPCs(),
 				"scaleway_webhosting":                          webhosting.DataSourceWebhosting(),
