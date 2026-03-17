@@ -363,6 +363,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_tem_domain":                          tem.DataSourceDomain(),
 				"scaleway_tem_offer_subscription":              tem.DataSourceOfferSubscription(),
 				"scaleway_vpc":                                 vpc.DataSourceVPC(),
+				"scaleway_vpc_acl":                             vpc.DataSourceACL(),
 				"scaleway_vpc_gateway_network":                 vpcgw.DataSourceNetwork(),
 				"scaleway_vpc_private_network":                 vpc.DataSourcePrivateNetwork(),
 				"scaleway_vpc_public_gateway":                  vpcgw.DataSourceVPCPublicGateway(),
