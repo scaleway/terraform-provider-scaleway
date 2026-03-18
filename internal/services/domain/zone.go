@@ -10,6 +10,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -122,8 +123,13 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 	// Proceed with zone creation only if no existing zone found with same name
 	var dnsZone *domain.DNSZone
 
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	dnsZone, err = domainAPI.CreateDNSZone(&domain.CreateDNSZoneRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		Domain:    domainName,
 		Subdomain: subdomainName,
 	}, scw.WithContext(ctx))
@@ -140,6 +146,7 @@ func resourceDomainZoneCreate(ctx context.Context, d *schema.ResourceData, m any
 			// Zone was created by another process - throw error instead of managing it
 			return diag.FromErr(fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists (HTTP 409). This means either another process is creating the same zone, or it already exists in another project within your Scaleway Organization", domainName, subdomainName))
 		}
+
 		return diag.FromErr(err)
 	}
 
@@ -193,11 +200,16 @@ func resourceDomainZoneRead(ctx context.Context, d *schema.ResourceData, m any) 
 func resourceZoneUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
 
-	if d.HasChangesExcept("subdomain") {
+	if d.HasChange("subdomain") {
+		projectID, _, extractErr := meta.ExtractProjectID(d, m)
+		if extractErr != nil {
+			return diag.FromErr(extractErr)
+		}
+
 		_, err := domainAPI.UpdateDNSZone(&domain.UpdateDNSZoneRequest{
-			ProjectID:  d.Get("project_id").(string),
+			ProjectID:  projectID,
 			DNSZone:    d.Id(),
-			NewDNSZone: new(d.Get("subdomain").(string)),
+			NewDNSZone: types.ExpandStringPtr(d.Get("subdomain")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
@@ -219,8 +231,13 @@ func resourceZoneDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	projectID, _, extractErr := meta.ExtractProjectID(d, m)
+	if extractErr != nil {
+		return diag.FromErr(extractErr)
+	}
+
 	_, err = domainAPI.DeleteDNSZone(&domain.DeleteDNSZoneRequest{
-		ProjectID: d.Get("project_id").(string),
+		ProjectID: projectID,
 		DNSZone:   d.Id(),
 	}, scw.WithContext(ctx))
 
@@ -260,6 +277,11 @@ func resourceZoneCustomizeDiff(ctx context.Context, diff *schema.ResourceDiff, m
 	// If zone already exists, add an error to prevent duplicate creation
 	for i := range zones.DNSZones {
 		if zones.DNSZones[i].Domain == domainName && zones.DNSZones[i].Subdomain == subdomainName {
+			// Root zones (subdomain "") are auto-created with the domain — allow adoption in Create
+			if subdomainName == "" {
+				return nil
+			}
+
 			return fmt.Errorf("a zone with domain '%s' and subdomain '%s' already exists in this project", domainName, subdomainName)
 		}
 	}
