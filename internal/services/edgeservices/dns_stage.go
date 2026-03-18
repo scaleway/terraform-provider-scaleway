@@ -139,12 +139,14 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 
 	newFQDNs := make([]string, 0)
 
+	// add all FQDNs from the API response
 	for _, fqdn := range dnsStage.Fqdns {
 		if oldFQDNsSet[fqdn] || len(oldFQDNs) == 0 {
+			// keep FQDNs that were in the old state or if there were no old FQDNs
 			newFQDNs = append(newFQDNs, fqdn)
 		}
 	}
-
+	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
 		found := slices.Contains(newFQDNs, oldFQDN.(string))
 
