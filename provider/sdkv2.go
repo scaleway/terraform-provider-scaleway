@@ -294,6 +294,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_container_namespace":                 container.DataSourceNamespace(),
 				"scaleway_domain_record":                       domain.DataSourceRecord(),
 				"scaleway_domain_zone":                         domain.DataSourceZone(),
+				"scaleway_edge_services_dns_stage":             edgeservices.DataSourceDNSStage(),
 				"scaleway_flexible_ip":                         flexibleip.DataSourceFlexibleIP(),
 				"scaleway_flexible_ips":                        flexibleip.DataSourceFlexibleIPs(),
 				"scaleway_function":                            function.DataSourceFunction(),
