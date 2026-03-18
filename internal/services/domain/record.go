@@ -481,7 +481,7 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	return nil
 }
 
-// readRecordIntoState fetches record data and sets schema attributes without Identity (for data sources).
+// readRecordIntoState fetches record data and sets schema attributes (used by data source).
 func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
 	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
@@ -505,7 +505,12 @@ func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI 
 
 	record := res.Records[0]
 
-	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       record.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
