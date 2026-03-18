@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,7 +26,17 @@ func ResourceSNSTopicSubscription() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    snsTopicSubscriptionSchema,
+		Identity:      snsTopicSubscriptionIdentity(),
 	}
+}
+
+func snsTopicSubscriptionIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":          identity.DefaultRegionAttribute(),
+		"project_id":      identity.DefaultProjectIDAttribute(),
+		"topic_name":      {Type: schema.TypeString, Description: "The topic name", RequiredForImport: true},
+		"subscription_id": {Type: schema.TypeString, Description: "The subscription ID", RequiredForImport: true},
+	})
 }
 
 func snsTopicSubscriptionSchema() map[string]*schema.Schema {
@@ -163,7 +174,14 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 		return diag.FromErr(fmt.Errorf("failed to parse arn: %w", err))
 	}
 
-	d.SetId(composeMNQSubscriptionID(arn.Region, arn.ProjectID, arn.ResourceName, arn.ExtraResourceID))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":          string(arn.Region),
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
+		"subscription_id": arn.ExtraResourceID,
+	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSTopicSubscriptionRead(ctx, d, m)
 }
@@ -188,6 +206,15 @@ func ResourceMNQSNSTopicSubscriptionRead(ctx context.Context, d *schema.Resource
 
 	schemaAttributes, err := awsAttributesToResourceData(subAttributes.Attributes, ResourceSNSTopic().SchemaFunc(), SNSTopicSubscriptionAttributesToResourceMap)
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":          string(arn.Region),
+		"project_id":      arn.ProjectID,
+		"topic_name":      arn.ResourceName,
+		"subscription_id": arn.ExtraResourceID,
+	}, "region", "project_id", "topic_name", "subscription_id"); err != nil {
 		return diag.FromErr(err)
 	}
 

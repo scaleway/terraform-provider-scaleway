@@ -40,6 +40,11 @@ func TestAccCustomerGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_customer_gateway.main", "created_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_customer_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

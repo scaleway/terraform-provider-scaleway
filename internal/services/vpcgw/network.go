@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
@@ -28,6 +28,7 @@ func ResourceNetwork() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.DefaultZonal(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultTimeout),
 			Read:    schema.DefaultTimeout(defaultTimeout),
@@ -37,7 +38,6 @@ func ResourceNetwork() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    networkSchema,
-		CustomizeDiff: cdf.LocalityCheck("gateway_id", "private_network_id"),
 	}
 }
 
@@ -204,7 +204,12 @@ func ResourceVPCGatewayNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, gatewayNetwork.ID))
+	d.SetId(zonal.NewIDString(gatewayNetwork.Zone, gatewayNetwork.ID))
+
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForVPCPublicGateway(ctx, api, zone, gatewayNetwork.GatewayID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -242,31 +247,42 @@ func ResourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		diags = setPrivateIPs(ctx, d, api, gatewayNetwork, m)
 	}
 
-	fetchRegion, err := gatewayNetwork.Zone.Region()
+	diags = append(diags, setGatewayNetworkState(d, gatewayNetwork)...)
+
+	err = identity.SetZonalIdentity(d, gatewayNetwork.Zone, gatewayNetwork.ID)
 	if err != nil {
-		return append(diags, diag.FromErr(err)...)
+		return diag.FromErr(err)
 	}
 
-	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gatewayNetwork.PrivateNetworkID))
-	_ = d.Set("gateway_id", zonal.NewIDString(gatewayNetwork.Zone, gatewayNetwork.GatewayID))
-	_ = d.Set("enable_masquerade", gatewayNetwork.MasqueradeEnabled)
-	_ = d.Set("created_at", types.FlattenTime(gatewayNetwork.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(gatewayNetwork.UpdatedAt))
-	_ = d.Set("status", string(gatewayNetwork.Status))
-	_ = d.Set("zone", gatewayNetwork.Zone)
+	return diags
+}
 
-	if macAddress := gatewayNetwork.MacAddress; macAddress != nil {
+func setGatewayNetworkState(d *schema.ResourceData, gn *vpcgw.GatewayNetwork) diag.Diagnostics {
+	fetchRegion, err := gn.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_ = d.Set("private_network_id", regional.NewIDString(fetchRegion, gn.PrivateNetworkID))
+	_ = d.Set("gateway_id", zonal.NewIDString(gn.Zone, gn.GatewayID))
+	_ = d.Set("enable_masquerade", gn.MasqueradeEnabled)
+	_ = d.Set("created_at", types.FlattenTime(gn.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(gn.UpdatedAt))
+	_ = d.Set("status", string(gn.Status))
+	_ = d.Set("zone", gn.Zone)
+
+	if macAddress := gn.MacAddress; macAddress != nil {
 		_ = d.Set("mac_address", types.FlattenStringPtr(macAddress).(string))
 	}
 
 	_ = d.Set("ipam_config", []map[string]any{
 		{
-			"push_default_route": gatewayNetwork.PushDefaultRoute,
-			"ipam_ip_id":         gatewayNetwork.IpamIPID,
+			"push_default_route": gn.PushDefaultRoute,
+			"ipam_ip_id":         gn.IpamIPID,
 		},
 	})
 
-	return diags
+	return nil
 }
 
 func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -292,7 +308,7 @@ func ResourceVPCGatewayNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	if d.HasChange("ipam_config") {
 		pushDefaultRoute, ipamIPID := expandIpamConfig(d.Get("ipam_config"))
 
-		updateRequest.PushDefaultRoute = new(pushDefaultRoute)
+		updateRequest.PushDefaultRoute = &pushDefaultRoute
 		updateRequest.IpamIPID = ipamIPID
 	}
 

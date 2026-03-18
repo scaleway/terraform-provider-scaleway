@@ -78,9 +78,13 @@ func TestAccDataSourceServers_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_instance_servers.servers_by_tag", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_instance_servers.servers_by_tag", "servers.1.id"),
+					// public_ips must be a list (not null) even when empty - a schema mismatch
+					// between flattenServerPublicIPs fields and the declared schema caused the plugin to crash.
+					resource.TestCheckResourceAttr("data.scaleway_instance_servers.servers_by_tag", "servers.0.public_ips.#", "0"),
 
 					resource.TestCheckResourceAttrSet("data.scaleway_instance_servers.servers_by_name", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("data.scaleway_instance_servers.servers_by_name", "servers.1.id"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_servers.servers_by_name", "servers.0.public_ips.#", "0"),
 
 					resource.TestCheckNoResourceAttr("data.scaleway_instance_servers.servers_by_name_other_zone", "servers.0.id"),
 				),
