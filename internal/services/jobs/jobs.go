@@ -266,7 +266,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("memory_limit", int(definition.MemoryLimit))
 	_ = d.Set("local_storage_capacity", int(definition.LocalStorageCapacity))
 	_ = d.Set("image_uri", definition.ImageURI)
-	_ = d.Set("command", definition.Command)
+	_ = d.Set("command", definition.Command) //nolint:staticcheck
 	_ = d.Set("startup_command", types.FlattenSliceString(definition.StartupCommand))
 	_ = d.Set("args", types.FlattenSliceString(definition.Args))
 	_ = d.Set("env", types.FlattenMap(definition.EnvironmentVariables))
