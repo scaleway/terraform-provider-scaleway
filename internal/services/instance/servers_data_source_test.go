@@ -209,3 +209,121 @@ func TestAccDataSourceServers_PrivateIPs(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceServers_PublicIPs(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             instancechecks.IsServerDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip0" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "server0" {
+						name = "tf-acc-server-ips-0"
+						ip_ids = [scaleway_instance_ip.ip0.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						tags  = [ "terraform-test", "scaleway_instance_server", "ips" ]
+					}`,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip0" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "server0" {
+						name = "tf-acc-server-ips-0"
+						ip_ids = [scaleway_instance_ip.ip0.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						tags  = [ "terraform-test", "scaleway_instance_server", "ips" ]
+					}
+
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "server1" {
+						name = "tf-acc-server-ips-1"
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						tags  = [ "terraform-test", "scaleway_instance_server", "ips" ]
+					}`,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_ip" "ip0" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "server0" {
+						name = "tf-acc-server-ips-0"
+						ip_ids = [scaleway_instance_ip.ip0.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						tags  = [ "terraform-test", "scaleway_instance_server", "ips" ]
+					}
+
+					resource "scaleway_instance_ip" "ip1" {
+						type = "routed_ipv4"
+					}
+
+					resource "scaleway_instance_server" "server1" {
+						name = "tf-acc-server-ips-1"
+						ip_ids = [scaleway_instance_ip.ip1.id]
+						image = "ubuntu_jammy"
+						type  = "PRO2-XXS"
+						state = "stopped"
+						tags  = [ "terraform-test", "scaleway_instance_server", "ips" ]
+					}
+
+					data "scaleway_instance_servers" "servers" {
+					}
+
+					data "scaleway_instance_servers" "server0" {
+						name = scaleway_instance_server.server0.name
+					}
+
+					data "scaleway_instance_servers" "server1" {
+						name = scaleway_instance_server.server1.name
+					}
+
+					`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.id", "scaleway_instance_server.server0", "id"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.public_ips.0.id", "scaleway_instance_ip.ip0", "id"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.name", "scaleway_instance_server.server0", "name"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.type", "scaleway_instance_server.server0", "type"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.state", "scaleway_instance_server.server0", "state"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.enable_dynamic_ip", "scaleway_instance_server.server0", "enable_dynamic_ip"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server0", "servers.0.security_group_id", "scaleway_instance_server.server0", "security_group_id"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_servers.server0", "servers.0.tags.#", "3"),
+					resource.TestCheckTypeSetElemAttr("data.scaleway_instance_servers.server0", "servers.0.tags.*", "terraform-test"),
+					resource.TestCheckTypeSetElemAttr("data.scaleway_instance_servers.server0", "servers.0.tags.*", "scaleway_instance_server"),
+					resource.TestCheckTypeSetElemAttr("data.scaleway_instance_servers.server0", "servers.0.tags.*", "ips"),
+
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.id", "scaleway_instance_server.server1", "id"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.public_ips.0.id", "scaleway_instance_ip.ip1", "id"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.name", "scaleway_instance_server.server1", "name"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.type", "scaleway_instance_server.server1", "type"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.state", "scaleway_instance_server.server1", "state"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.enable_dynamic_ip", "scaleway_instance_server.server1", "enable_dynamic_ip"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_servers.server1", "servers.0.security_group_id", "scaleway_instance_server.server1", "security_group_id"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_servers.server1", "servers.0.tags.#", "3"),
+				),
+			},
+		},
+	})
+}
