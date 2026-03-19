@@ -40,13 +40,13 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) d
 		}
 	}
 
-	diags := diag.Diagnostics{}
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Deprecated attribute: 'plan'",
-		Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
-	})
+	diags := diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deprecated attribute: 'plan'",
+			Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
+		},
+	}
 
 	_ = d.Set("plan", d.Get("plan"))
 	_ = d.Set("project_id", projectID)
