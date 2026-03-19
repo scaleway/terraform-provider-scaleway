@@ -9,7 +9,9 @@ Creates and manages Scaleway Edge Services Route Stages.
 
 ## Example Usage
 
-### Basic
+### Default to WAF with backend rules
+
+Routes all unmatched traffic through a WAF stage, while requests matching specific patterns are sent directly to a backend stage.
 
 ```terraform
 resource "scaleway_edge_services_route_stage" "main" {
@@ -29,13 +31,61 @@ resource "scaleway_edge_services_route_stage" "main" {
 }
 ```
 
+### Default to backend with selective WAF protection
+
+Serves static content directly from a backend by default, while routing API traffic through a WAF stage for protection against common web attacks.
+
+```terraform
+resource "scaleway_edge_services_pipeline" "main" {
+  name        = "my-pipeline"
+  description = "Static site with WAF-protected API"
+}
+
+resource "scaleway_object_bucket" "main" {
+  name = "my-static-site"
+}
+
+resource "scaleway_edge_services_backend_stage" "static" {
+  pipeline_id = scaleway_edge_services_pipeline.main.id
+  s3_backend_config {
+    bucket_name   = scaleway_object_bucket.main.name
+    bucket_region = "fr-par"
+  }
+}
+
+resource "scaleway_edge_services_waf_stage" "api" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
+  backend_stage_id = scaleway_edge_services_backend_stage.static.id
+  mode             = "enable"
+  paranoia_level   = 2
+}
+
+resource "scaleway_edge_services_route_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
+  backend_stage_id = scaleway_edge_services_backend_stage.static.id
+
+  rule {
+    waf_stage_id = scaleway_edge_services_waf_stage.api.id
+    rule_http_match {
+      method_filters = ["get", "post", "put", "patch", "delete"]
+      path_filter {
+        path_filter_type = "regex"
+        value            = "/api/.*"
+      }
+    }
+  }
+}
+```
+
 ## Argument Reference
 
 - `pipeline_id` - (Required) The ID of the pipeline.
-- `waf_stage_id` - (Optional) The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched.
-- `rule` - (Optional) The list of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified backend stage. If no rules are matched, the request is forwarded to the WAF stage defined by `waf_stage_id`.
-    - `backend_stage_id` (Required) The ID of the backend stage that requests matching the rule should be forwarded to.
-    - `rule_http_match` (Optional) The rule condition to be matched. Requests matching the condition defined here will be directly forwarded to the backend specified by the `backend_stage_id` field. Requests that do not match will be checked by the next rule's condition.
+- `waf_stage_id` - (Optional) The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched. Conflicts with `backend_stage_id`.
+- `backend_stage_id` - (Optional) The ID of the backend stage HTTP requests should be forwarded to when no rules are matched. Conflicts with `waf_stage_id`.
+- `rule` - (Optional) List of rules to be checked against every HTTP request. The first matching rule will forward the request to its specified target stage. If no rules are matched, the request is forwarded to the default stage defined by `waf_stage_id` or `backend_stage_id`.
+    - `backend_stage_id` (Optional) The ID of the backend stage that requests matching the rule should be forwarded to. Conflicts with `waf_stage_id` within the same rule.
+    - `waf_stage_id` (Optional) The ID of the WAF stage that requests matching the rule should be forwarded to. Conflicts with `backend_stage_id` within the same rule.
+    - `rule_http_match` (Optional) The rule condition to be matched. Requests matching the condition defined here will be forwarded to the stage specified by `backend_stage_id` or `waf_stage_id`. Requests that do not match will be checked by the next rule's condition.
         - `method_filters` (Optional) HTTP methods to filter for. A request using any of these methods will be considered to match the rule. Possible values are `get`, `post`, `put`, `patch`, `delete`, `head`, `options`. All methods will match if none is provided.
         - `path_filter` (Optional) HTTP URL path to filter for. A request whose path matches the given filter will be considered to match the rule. All paths will match if none is provided.
             - `path_filter_type` (Required) The type of filter to match for the HTTP URL path. For now, all path filters must be written in regex and use the `regex` type.

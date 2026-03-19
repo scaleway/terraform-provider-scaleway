@@ -37,9 +37,16 @@ func routeSchema() map[string]*schema.Schema {
 			Description: "The ID of the pipeline",
 		},
 		"waf_stage_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
+			ConflictsWith: []string{"backend_stage_id"},
+		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The ID of the backend stage HTTP requests should be forwarded to when no rules are matched",
+			ConflictsWith: []string{"waf_stage_id"},
 		},
 		"rule": {
 			Type:        schema.TypeList,
@@ -49,8 +56,13 @@ func routeSchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"backend_stage_id": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "ID of the backend stage that requests matching the rule should be forwarded to",
+					},
+					"waf_stage_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the WAF stage that requests matching the rule should be forwarded to",
 					},
 					"rule_http_match": {
 						Type:        schema.TypeList,
@@ -114,8 +126,9 @@ func ResourceRouteStageCreate(ctx context.Context, d *schema.ResourceData, m any
 	api := NewEdgeServicesAPI(m)
 
 	routeStage, err := api.CreateRouteStage(&edgeservices.CreateRouteStageRequest{
-		PipelineID: d.Get("pipeline_id").(string),
-		WafStageID: types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
+		PipelineID:     d.Get("pipeline_id").(string),
+		WafStageID:     types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
+		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -154,6 +167,7 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 
 	_ = d.Set("pipeline_id", routeStage.PipelineID)
 	_ = d.Set("waf_stage_id", types.FlattenStringPtr(routeStage.WafStageID))
+	_ = d.Set("backend_stage_id", types.FlattenStringPtr(routeStage.BackendStageID))
 	_ = d.Set("created_at", types.FlattenTime(routeStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(routeStage.UpdatedAt))
 
@@ -184,6 +198,11 @@ func ResourceRouteStageUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("waf_stage_id") {
 		updateRequest.WafStageID = types.ExpandStringPtr(d.Get("waf_stage_id").(string))
+		hasChanged = true
+	}
+
+	if d.HasChange("backend_stage_id") {
+		updateRequest.BackendStageID = types.ExpandStringPtr(d.Get("backend_stage_id").(string))
 		hasChanged = true
 	}
 

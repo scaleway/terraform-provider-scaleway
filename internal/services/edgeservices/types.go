@@ -176,6 +176,7 @@ func expandRouteRules(raw any) []*edge_services.SetRouteRulesRequestRouteRule {
 		ruleMap := rawRule.(map[string]any)
 		rule := &edge_services.SetRouteRulesRequestRouteRule{
 			BackendStageID: types.ExpandStringPtr(ruleMap["backend_stage_id"].(string)),
+			WafStageID:     types.ExpandStringPtr(ruleMap["waf_stage_id"].(string)),
 		}
 
 		if rawHTTPMatch, ok := ruleMap["rule_http_match"]; ok && rawHTTPMatch != nil {
@@ -239,6 +240,7 @@ func flattenRouteRules(rules []*edge_services.RouteRule) []any {
 	for _, rule := range rules {
 		m := map[string]any{
 			"backend_stage_id": types.FlattenStringPtr(rule.BackendStageID),
+			"waf_stage_id":     types.FlattenStringPtr(rule.WafStageID),
 			"rule_http_match":  flattenRuleHTTPMatch(rule.RuleHTTPMatch),
 		}
 		result = append(result, m)
