@@ -9,7 +9,6 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -36,7 +35,6 @@ func DataSourceRecord() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: DataSourceRecordRead,
 		Schema:      dsSchema,
-		Identity:    identity.WrapSchemaMap(recordIdentitySchema()),
 	}
 }
 

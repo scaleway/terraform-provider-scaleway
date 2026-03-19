@@ -505,12 +505,7 @@ func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI 
 
 	record := res.Records[0]
 
-	if err := identity.SetMultiPartIdentity(d, map[string]string{
-		"dns_zone": dnsZone,
-		"id":       record.ID,
-	}, "dns_zone", "id"); err != nil {
-		return diag.FromErr(err)
-	}
+	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
 
 	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
