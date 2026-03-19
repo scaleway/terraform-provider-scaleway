@@ -53,6 +53,7 @@ func serversSchema() map[string]*schema.Schema {
 					"public_ips": {
 						Type:        schema.TypeList,
 						Description: "Public IPs associated with this server.",
+						Optional:    true,
 						Computed:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
@@ -309,7 +310,11 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(zone.String())
+	_ = d.Set("zone", zone)
 	_ = d.Set("servers", servers)
+	_ = d.Set("name", d.Get("name"))
+	_ = d.Set("project_id", d.Get("project_id"))
+	_ = d.Set("tags", d.Get("tags"))
 
 	return nil
 }
