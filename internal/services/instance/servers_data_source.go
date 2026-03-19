@@ -63,8 +63,33 @@ func serversSchema() map[string]*schema.Schema {
 								},
 								"address": {
 									Type:        schema.TypeString,
-									Description: "Address of the server",
+									Description: "IP address.",
 									Computed:    true,
+								},
+								"gateway": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Gateway's IP address.",
+								},
+								"netmask": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "CIDR netmask.",
+								},
+								"family": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "IP address family (inet or inet6).",
+								},
+								"dynamic": {
+									Type:        schema.TypeBool,
+									Computed:    true,
+									Description: "Whether the IP is dynamic.",
+								},
+								"provisioning_mode": {
+									Type:        schema.TypeString,
+									Computed:    true,
+									Description: "Provisioning mode of the IP address.",
 								},
 							},
 						},
