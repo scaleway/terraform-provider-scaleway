@@ -9,6 +9,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -74,7 +75,7 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(fmt.Errorf("no record found with the type this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 		}
 
-		return readRecordIntoState(ctx, d, domainAPI, dnsZone, record.ID)
+		return dataSourceRecordReadByID(ctx, d, domainAPI, dnsZone, record.ID)
 	}
 
 	recordIDStr := recordIDRaw.(string)
@@ -88,5 +89,63 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 		recordID = locality.ExpandID(recordIDStr)
 	}
 
-	return readRecordIntoState(ctx, d, domainAPI, dnsZone, recordID)
+	return dataSourceRecordReadByID(ctx, d, domainAPI, dnsZone, recordID)
+}
+
+func dataSourceRecordReadByID(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: dnsZone,
+		ID:      &recordID,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if len(res.Records) == 0 {
+		d.SetId("")
+
+		return nil
+	}
+
+	record := res.Records[0]
+
+	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
+
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	projectID := dnsZones.DNSZones[0].ProjectID
+
+	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
+	_ = d.Set("dns_zone", dnsZone)
+	_ = d.Set("name", record.Name)
+	_ = d.Set("type", record.Type.String())
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
+	_ = d.Set("ttl", int(record.TTL))
+	_ = d.Set("priority", int(record.Priority))
+	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
+	_ = d.Set("http_service", flattenDomainHTTPService(record.HTTPServiceConfig))
+	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
+	_ = d.Set("view", flattenDomainView(record.ViewConfig))
+	_ = d.Set("project_id", projectID)
+
+	if record.Name == "" || record.Name == "@" {
+		_ = d.Set("fqdn", dnsZone)
+	} else {
+		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
+	}
+
+	return nil
 }
