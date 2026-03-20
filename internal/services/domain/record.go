@@ -553,5 +553,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
+	d.SetId("")
+
 	return nil
 }
