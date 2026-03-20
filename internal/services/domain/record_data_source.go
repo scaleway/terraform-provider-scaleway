@@ -75,11 +75,10 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(fmt.Errorf("no record found with the type this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 		}
 
-		return dataSourceRecordReadByID(ctx, d, domainAPI, dnsZone, record.ID)
+		return readRecordIntoState(ctx, d, domainAPI, dnsZone, record.ID)
 	}
 
 	recordIDStr := recordIDRaw.(string)
-
 	var recordID string
 
 	if zone, id, err := locality.ParseLocalizedID(recordIDStr); err == nil {
@@ -89,10 +88,10 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 		recordID = locality.ExpandID(recordIDStr)
 	}
 
-	return dataSourceRecordReadByID(ctx, d, domainAPI, dnsZone, recordID)
+	return readRecordIntoState(ctx, d, domainAPI, dnsZone, recordID)
 }
 
-func dataSourceRecordReadByID(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
+func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
 	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
 		DNSZone: dnsZone,
 		ID:      &recordID,
@@ -115,6 +114,7 @@ func dataSourceRecordReadByID(ctx context.Context, d *schema.ResourceData, domai
 
 	record := res.Records[0]
 
+	// Data sources do not support Identity schema; use SetId directly.
 	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
 
 	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))

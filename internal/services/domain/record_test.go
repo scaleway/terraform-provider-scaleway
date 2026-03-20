@@ -3,7 +3,6 @@ package domain_test
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,6 +10,7 @@ import (
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 )
@@ -766,15 +766,10 @@ func testAccCheckDomainRecordExists(tt *acctest.TestTools, n string) resource.Te
 			return err
 		}
 
-		// Resource ID can be composite (dns_zone/uuid) or plain UUID
-		recordIDToFind := rs.Primary.ID
-		if strings.Contains(rs.Primary.ID, "/") {
-			parts := strings.SplitN(rs.Primary.ID, "/", 2)
-			recordIDToFind = parts[1]
-		}
-
-		for _, rec := range listDNSZones.Records {
-			if rec.ID == recordIDToFind {
+		recordID := locality.ExpandID(rs.Primary.ID)
+		for _, record := range listDNSZones.Records {
+			if record.ID == recordID {
+				// record found
 				return nil
 			}
 		}
@@ -1028,8 +1023,9 @@ func testAccCheckDomainRecordDestroy(tt *acctest.TestTools) resource.TestCheckFu
 			}
 
 			// Check if the specific record still exists
+			recordID := locality.ExpandID(rs.Primary.ID)
 			for _, record := range listDNSZones.Records {
-				if record.ID == rs.Primary.ID {
+				if record.ID == recordID {
 					return fmt.Errorf("record %s still exists in zone %s", rs.Primary.ID, rs.Primary.Attributes["dns_zone"])
 				}
 			}
