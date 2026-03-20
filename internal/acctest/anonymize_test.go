@@ -11,8 +11,7 @@ import (
 	"gopkg.in/dnaeon/go-vcr.v3/cassette"
 )
 
-// TestAccCassettes_NoSensitiveLeak reads all cassette files and ensures no sensitive
-// data (API keys, secrets, tokens) is leaked in requests. Values must be anonymized (placeholders only).
+// TestAccCassettes_NoSensitiveLeak ensures no sensitive data in cassette requests.
 func TestAccCassettes_NoSensitiveLeak(t *testing.T) {
 	t.Parallel()
 
@@ -20,7 +19,6 @@ func TestAccCassettes_NoSensitiveLeak(t *testing.T) {
 	require.NoError(t, err)
 
 	for path := range paths {
-		path := path
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 
