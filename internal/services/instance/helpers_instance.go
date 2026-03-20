@@ -152,6 +152,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 		{instance.ServerStateRunning, instance.ServerStateStoppedInPlace}: {instance.ServerActionStopInPlace},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateRunning}: {instance.ServerActionPoweron},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateStopped}: {instance.ServerActionPoweron, instance.ServerActionPoweroff},
+		{instance.ServerStateStopping, instance.ServerStateStopped}:       {}, // Already stopping, just wait
 	}
 
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
