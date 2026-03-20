@@ -8,6 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// testAccDomainRegistrationProjectID is the project ID used in domain registration cassettes (VCR).
+const testAccDomainRegistrationProjectID = "2efde44b-c582-4939-be07-6e3f62b3d71e"
+
 func TestExpandContact(t *testing.T) {
 	tests := []struct {
 		contactMap  map[string]any
