@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -23,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -145,6 +147,8 @@ func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "A description for the Datalab instance.",
 			},
 			"tags": schema.ListAttribute{
@@ -671,19 +675,10 @@ func flattenDatalab(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagno
 		Status:           types.StringValue(string(dl.Status)),
 	}
 
-	if dl.Tags != nil {
-		tagValues := make([]attr.Value, len(dl.Tags))
-		for i, t := range dl.Tags {
-			tagValues[i] = types.StringValue(t)
-		}
+	tagList, d := scwtypes.FlattenFrameworkStringList(ctx, dl.Tags)
+	diags.Append(d...)
 
-		tagList, d := types.ListValue(types.StringType, tagValues)
-		diags.Append(d...)
-
-		model.Tags = tagList
-	} else {
-		model.Tags = types.ListNull(types.StringType)
-	}
+	model.Tags = tagList
 
 	if dl.CreatedAt != nil {
 		model.CreatedAt = types.StringValue(dl.CreatedAt.Format("2006-01-02T15:04:05Z07:00"))
