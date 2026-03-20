@@ -79,6 +79,7 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	recordIDStr := recordIDRaw.(string)
+
 	var recordID string
 
 	if zone, id, err := locality.ParseLocalizedID(recordIDStr); err == nil {
