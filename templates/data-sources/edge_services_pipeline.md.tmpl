@@ -1,0 +1,34 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Edge Services"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+One of `pipeline_id` or filter arguments must be specified.
+
+- `pipeline_id` - (Optional) The ID of the pipeline. Conflicts with all filter arguments below.
+
+The following filter arguments are supported (cannot be used with `pipeline_id`):
+
+- `name` - (Optional) The pipeline name to filter for.
+- `project_id` - (Optional) The ID of the project to filter for.
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_edge_services_pipeline` [resource](../resources/edge_services_pipeline.md).
