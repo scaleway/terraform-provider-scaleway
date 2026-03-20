@@ -356,6 +356,43 @@ func mergeDiffToSchema(rulesFromSchema map[string]struct{}, ruleMap map[string]*
 	return res
 }
 
+func maintainACLDuringUpgrade(ctx context.Context, api *rdb.API, region scw.Region, oldInstanceID, newInstanceID string) error {
+	res, err := api.ListInstanceACLRules(&rdb.ListInstanceACLRulesRequest{
+		Region:     region,
+		InstanceID: locality.ExpandID(oldInstanceID),
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+		return err
+	}
+	if len(res.Rules) == 0 {
+		return nil
+	}
+	rules := rdbACLRulesToRequests(res.Rules)
+	_, err = api.SetInstanceACLRules(&rdb.SetInstanceACLRulesRequest{
+		Region:     region,
+		InstanceID: locality.ExpandID(newInstanceID),
+		Rules:      rules,
+	}, scw.WithContext(ctx))
+	return err
+}
+
+func rdbACLRulesToRequests(rules []*rdb.ACLRule) []*rdb.ACLRuleRequest {
+	if len(rules) == 0 {
+		return nil
+	}
+	reqs := make([]*rdb.ACLRuleRequest, len(rules))
+	for i, r := range rules {
+		reqs[i] = &rdb.ACLRuleRequest{
+			IP:          r.IP,
+			Description: r.Description,
+		}
+	}
+	return reqs
+}
+
 func rdbACLRulesFlatten(rules []*rdb.ACLRule) []map[string]any {
 	res := make([]map[string]any, 0, len(rules))
 
