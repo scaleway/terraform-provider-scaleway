@@ -13,6 +13,7 @@ import (
 	datalab "github.com/scaleway/scaleway-sdk-go/api/datalab/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -258,12 +259,7 @@ func flattenDatalabsList(ctx context.Context, datalabs []*datalab.Datalab, diags
 	items := make([]attr.Value, len(datalabs))
 
 	for i, dl := range datalabs {
-		tagValues := make([]attr.Value, len(dl.Tags))
-		for j, t := range dl.Tags {
-			tagValues[j] = types.StringValue(t)
-		}
-
-		tagList, d := types.ListValue(types.StringType, tagValues)
+		tagList, d := scwtypes.FlattenFrameworkStringList(ctx, dl.Tags)
 		diags.Append(d...)
 
 		createdAt := types.StringNull()
@@ -279,7 +275,7 @@ func flattenDatalabsList(ctx context.Context, datalabs []*datalab.Datalab, diags
 		attrValues := map[string]attr.Value{
 			"id":            types.StringValue(dl.ID),
 			"name":          types.StringValue(dl.Name),
-			"description":   types.StringValue(dl.Description),
+			"description":   scwtypes.FlattenFrameworkStringValue(dl.Description),
 			"status":        types.StringValue(string(dl.Status)),
 			"tags":          tagList,
 			"region":        types.StringValue(dl.Region.String()),
