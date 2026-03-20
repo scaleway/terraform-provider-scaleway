@@ -36,6 +36,7 @@ var foldersUsingVCRv4 = []string{
 	"audittrail",
 	"account",
 	"container",
+	"datalab",
 	"iam",
 	"instance",
 	"jobs",
