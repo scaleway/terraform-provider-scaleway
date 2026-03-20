@@ -416,5 +416,7 @@ func ResourceCockpitExporterDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	d.SetId("")
+
 	return nil
 }
