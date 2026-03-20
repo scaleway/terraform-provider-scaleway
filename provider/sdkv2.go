@@ -298,6 +298,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_edge_services_cache_stage":           edgeservices.DataSourceCacheStage(),
 				"scaleway_edge_services_dns_stage":             edgeservices.DataSourceDNSStage(),
 				"scaleway_edge_services_pipeline":              edgeservices.DataSourcePipeline(),
+				"scaleway_edge_services_route_stage":           edgeservices.DataSourceRouteStage(),
 				"scaleway_edge_services_tls_stage":             edgeservices.DataSourceTLSStage(),
 				"scaleway_edge_services_waf_stage":             edgeservices.DataSourceWAFStage(),
 				"scaleway_flexible_ip":                         flexibleip.DataSourceFlexibleIP(),

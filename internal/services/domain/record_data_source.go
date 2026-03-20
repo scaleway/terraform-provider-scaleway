@@ -9,6 +9,8 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -26,8 +28,8 @@ func DataSourceRecord() *schema.Resource {
 	dsSchema["record_id"] = &schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
-		Description:      "The ID of the record",
-		ValidateDiagFunc: verify.IsUUID(),
+		Description:      "The ID of the record (UUID or dns_zone/uuid format)",
+		ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		ConflictsWith:    []string{"name", "type", "data"},
 	}
 
@@ -39,11 +41,12 @@ func DataSourceRecord() *schema.Resource {
 
 func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	domainAPI := NewDomainAPI(m)
+	dnsZone := d.Get("dns_zone").(string)
 
-	recordID, ok := d.GetOk("record_id")
+	recordIDRaw, ok := d.GetOk("record_id")
 	if !ok { // Get Record by dns_zone, name, type and data.
 		res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
-			DNSZone:   d.Get("dns_zone").(string),
+			DNSZone:   dnsZone,
 			Name:      d.Get("name").(string),
 			Type:      domain.RecordType(d.Get("type").(string)),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
@@ -72,10 +75,78 @@ func DataSourceRecordRead(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(fmt.Errorf("no record found with the type this name: %s, type: %s and data: %s", d.Get("name"), d.Get("type"), d.Get("data")))
 		}
 
-		recordID = record.ID
+		return readRecordIntoState(ctx, d, domainAPI, dnsZone, record.ID)
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", d.Get("dns_zone"), recordID.(string)))
+	recordIDStr := recordIDRaw.(string)
 
-	return resourceDomainRecordRead(ctx, d, m)
+	var recordID string
+
+	if zone, id, err := locality.ParseLocalizedID(recordIDStr); err == nil {
+		dnsZone = zone
+		recordID = id
+	} else {
+		recordID = locality.ExpandID(recordIDStr)
+	}
+
+	return readRecordIntoState(ctx, d, domainAPI, dnsZone, recordID)
+}
+
+func readRecordIntoState(ctx context.Context, d *schema.ResourceData, domainAPI *domain.API, dnsZone, recordID string) diag.Diagnostics {
+	res, err := domainAPI.ListDNSZoneRecords(&domain.ListDNSZoneRecordsRequest{
+		DNSZone: dnsZone,
+		ID:      &recordID,
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if len(res.Records) == 0 {
+		d.SetId("")
+
+		return nil
+	}
+
+	record := res.Records[0]
+
+	// Data sources do not support Identity schema; use SetId directly.
+	d.SetId(fmt.Sprintf("%s/%s", dnsZone, record.ID))
+
+	dnsZones, err := domainAPI.ListDNSZones(&domain.ListDNSZonesRequest{DNSZones: []string{dnsZone}}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) || httperrors.Is403(err) {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	projectID := dnsZones.DNSZones[0].ProjectID
+
+	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
+	_ = d.Set("dns_zone", dnsZone)
+	_ = d.Set("name", record.Name)
+	_ = d.Set("type", record.Type.String())
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
+	_ = d.Set("ttl", int(record.TTL))
+	_ = d.Set("priority", int(record.Priority))
+	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
+	_ = d.Set("http_service", flattenDomainHTTPService(record.HTTPServiceConfig))
+	_ = d.Set("weighted", flattenDomainWeighted(record.WeightedConfig))
+	_ = d.Set("view", flattenDomainView(record.ViewConfig))
+	_ = d.Set("project_id", projectID)
+
+	if record.Name == "" || record.Name == "@" {
+		_ = d.Set("fqdn", dnsZone)
+	} else {
+		_ = d.Set("fqdn", fmt.Sprintf("%s.%s", record.Name, dnsZone))
+	}
+
+	return nil
 }

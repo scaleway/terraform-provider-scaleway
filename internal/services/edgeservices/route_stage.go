@@ -165,12 +165,6 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("pipeline_id", routeStage.PipelineID)
-	_ = d.Set("waf_stage_id", types.FlattenStringPtr(routeStage.WafStageID))
-	_ = d.Set("backend_stage_id", types.FlattenStringPtr(routeStage.BackendStageID))
-	_ = d.Set("created_at", types.FlattenTime(routeStage.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(routeStage.UpdatedAt))
-
 	routeRules, err := api.ListRouteRules(&edgeservices.ListRouteRulesRequest{
 		RouteStageID: routeStage.ID,
 	}, scw.WithContext(ctx))
@@ -178,11 +172,23 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("rule", flattenRouteRules(routeRules.RouteRules))
+	diags := setRouteStageState(d, routeStage, routeRules.RouteRules)
 
-	if err = identity.SetGlobalIdentity(d, routeStage.ID); err != nil {
+	err = identity.SetGlobalIdentity(d, routeStage.ID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	return diags
+}
+
+func setRouteStageState(d *schema.ResourceData, routeStage *edgeservices.RouteStage, routeRules []*edgeservices.RouteRule) diag.Diagnostics {
+	_ = d.Set("pipeline_id", routeStage.PipelineID)
+	_ = d.Set("waf_stage_id", types.FlattenStringPtr(routeStage.WafStageID))
+	_ = d.Set("backend_stage_id", types.FlattenStringPtr(routeStage.BackendStageID))
+	_ = d.Set("created_at", types.FlattenTime(routeStage.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(routeStage.UpdatedAt))
+	_ = d.Set("rule", flattenRouteRules(routeRules))
 
 	return nil
 }
