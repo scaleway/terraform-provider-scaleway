@@ -45,7 +45,7 @@ output "product_display_names" {
 ## Attributes Reference
 
 - `products` - List of Cockpit products with details.
-  - `name` - Product name to use in `exported_products` (e.g. `cockpit`, `lb`, `object-storage`).
-  - `display_name` - Human-readable display name of the product.
-  - `family_name` - Product family name.
+    - `name` - Product name to use in `exported_products` (e.g. `cockpit`, `lb`, `object-storage`).
+    - `display_name` - Human-readable display name of the product.
+    - `family_name` - Product family name.
 - `names` - List of product names for use in `scaleway_cockpit_exporter.exported_products`.

@@ -54,7 +54,7 @@ resource "scaleway_cockpit_source" "otlp_target" {
   project_id     = data.scaleway_account_project.project.id
   name           = "otlp-target"
   type           = "metrics"
-  retention_days = 31
+  retention_days  = 31
 }
 
 resource "scaleway_cockpit_exporter" "main" {
