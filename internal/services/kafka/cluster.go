@@ -346,8 +346,6 @@ func resourceClusterUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	var diags diag.Diagnostics
-
 	_, err = waitForKafkaCluster(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.FromErr(err)
@@ -384,9 +382,7 @@ func resourceClusterUpdate(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	}
 
-	readDiags := resourceClusterRead(ctx, d, meta)
-
-	return append(diags, readDiags...)
+	return resourceClusterRead(ctx, d, meta)
 }
 
 func resourceClusterDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
