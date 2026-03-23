@@ -3,14 +3,17 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_connector"
 ---
 
-# Resource: scaleway_vpc_connector
+# scaleway_vpc_connector
 
 Creates and manages Scaleway VPC Connectors.
+
+A VPC connector enables network connectivity between two VPCs, allowing resources in separate VPCs to communicate with each other.
+
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
 
-## Example Usage
 
-### Basic
+
+## Example Usage
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
@@ -28,7 +31,24 @@ resource "scaleway_vpc_connector" "main" {
 }
 ```
 
-### With Tags
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name   = "my-vpc-source"
+  region = "nl-ams"
+}
+
+resource "scaleway_vpc" "vpc02" {
+  name   = "my-vpc-target"
+  region = "nl-ams"
+}
+
+resource "scaleway_vpc_connector" "main" {
+  name          = "my-vpc-connector"
+  vpc_id        = scaleway_vpc.vpc01.id
+  target_vpc_id = scaleway_vpc.vpc02.id
+  region        = "nl-ams"
+}
+```
 
 ```terraform
 resource "scaleway_vpc" "vpc01" {
@@ -46,6 +66,9 @@ resource "scaleway_vpc_connector" "main" {
   tags          = ["production", "connector"]
 }
 ```
+
+
+
 
 ## Argument Reference
 
@@ -66,10 +89,9 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the VPC connector.
 - `created_at` - The date and time of the creation of the VPC connector (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the VPC connector (RFC 3339 format).
-
-~> **Important:** VPC connectors' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
-
 - `organization_id` - The Organization ID the VPC connector is associated with.
+
+~> **Important:** VPC connectors' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
 ## Import
 

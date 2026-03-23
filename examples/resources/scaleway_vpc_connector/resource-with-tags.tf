@@ -1,5 +1,3 @@
-### Example With Tags
-
 resource "scaleway_vpc" "vpc01" {
   name = "my-vpc-source"
 }

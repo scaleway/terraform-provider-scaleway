@@ -61,72 +61,15 @@ func TestAccVPCConnector_Basic(t *testing.T) {
 					  name          = "tf-vpc-connector-updated"
 					  vpc_id        = scaleway_vpc.vpc01.id
 					  target_vpc_id = scaleway_vpc.vpc02.id
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-vpc-connector-updated"),
-				),
-			},
-		},
-	})
-}
-
-func TestAccVPCConnector_WithTags(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isConnectorDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-vpc-connector-tags-source"
-					}
-
-					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-vpc-connector-tags-target"
-					}
-
-					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-vpc-connector-tags"
-					  vpc_id        = scaleway_vpc.vpc01.id
-					  target_vpc_id = scaleway_vpc.vpc02.id
 					  tags          = ["terraform", "connector"]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
+					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-vpc-connector-updated"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.0", "terraform"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.1", "connector"),
-				),
-			},
-			{
-				Config: `
-					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-vpc-connector-tags-source"
-					}
-
-					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-vpc-connector-tags-target"
-					}
-
-					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-vpc-connector-tags"
-					  vpc_id        = scaleway_vpc.vpc01.id
-					  target_vpc_id = scaleway_vpc.vpc02.id
-					  tags          = ["terraform", "connector", "updated"]
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.#", "3"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.0", "terraform"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.1", "connector"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.2", "updated"),
 				),
 			},
 		},

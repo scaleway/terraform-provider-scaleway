@@ -1,5 +1,3 @@
-### Example With Region
-
 resource "scaleway_vpc" "vpc01" {
   name   = "my-vpc-source"
   region = "nl-ams"
