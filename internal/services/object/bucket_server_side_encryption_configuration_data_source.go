@@ -48,7 +48,7 @@ func DataSourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, 
 }
 
 func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Context, d *schema.ResourceData, m any, configID string) diag.Diagnostics {
-	s3Client, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, configID)
+	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, configID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -59,8 +59,6 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Conte
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(regional.NewIDString(region, bucketName))
 
 	_ = d.Set("bucket", bucketName)
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {

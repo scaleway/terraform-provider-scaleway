@@ -11,19 +11,18 @@ description: |-
 Get information about a bucket server side encryption configuration. This data source allows you to retrieve information about the server-side encryption configuration of a bucket.
 
 
+
+
 ## Example Usage
 
-### Get by ID
-
-```hcl
+```terraform
+# Get by ID
 data "scaleway_object_bucket_server_side_encryption_configuration" "by_id" {
   bucket_server_side_encryption_configuration_id = scaleway_object_bucket_server_side_encryption_configuration.main.id
 }
 ```
-
-### Get by Bucket Name
-
-```hcl
+```terraform
+# Get by Bucket Name
 data "scaleway_object_bucket_server_side_encryption_configuration" "by_bucket" {
   bucket = scaleway_object_bucket.main.name
 }

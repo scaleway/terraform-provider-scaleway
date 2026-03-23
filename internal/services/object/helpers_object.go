@@ -799,10 +799,6 @@ func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule
 			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
 		}
 
-		if v, ok := tfMap["blocked_encryption_types"].([]any); ok && len(v) > 0 {
-			rule.BlockedEncryptionTypes = expandBlockedEncryptionTypes(v)
-		}
-
 		rules = append(rules, rule)
 	}
 
@@ -841,21 +837,6 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	}
 
 	return []any{m}
-}
-
-func expandBlockedEncryptionTypes(l []any) *s3Types.BlockedEncryptionTypes {
-	if len(l) == 0 {
-		return nil
-	}
-
-	var encryptionTypes []s3Types.EncryptionType
-	for _, v := range l {
-		encryptionTypes = append(encryptionTypes, s3Types.EncryptionType(v.(string)))
-	}
-
-	return &s3Types.BlockedEncryptionTypes{
-		EncryptionType: encryptionTypes,
-	}
 }
 
 func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
