@@ -4,15 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
 	terraformSDKv2 "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
@@ -87,8 +91,11 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 				Optional:    true,
 			},
 			"region": schema.StringAttribute{
-				Description: "Region of the VPC",
+				Description: "Region of the VPC. Use 'all' to list VPCs from all regions",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf(append(regional.AllRegions(), "all")...),
+				},
 			},
 		},
 	}
@@ -126,40 +133,78 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	listRequest := &vpc.ListVPCsRequest{
-		Region: scw.Region(data.Region.ValueString()),
-		Name:   data.Name.ValueStringPointer(),
-		// Tags:           data.Tags.Elements(),
-		OrganizationID: data.OrganizationID.ValueStringPointer(),
-		ProjectID:      data.ProjectID.ValueStringPointer(),
-		IsDefault:      data.IsDefault.ValueBoolPointer(),
-		RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
+	// Determine regions to query
+	var regionsToQuery []scw.Region
+	if data.Region.IsNull() || data.Region.ValueString() == "" {
+		// If no region specified, use default region from provider config
+		regionsToQuery = []scw.Region{scw.RegionFrPar}
+	} else if data.Region.ValueString() == "all" {
+		regionsToQuery = make([]scw.Region, 0, len(scw.AllRegions))
+		for _, region := range regional.AllRegions() {
+			regionsToQuery = append(regionsToQuery, scw.Region(region))
+		}
+	} else {
+		regionsToQuery = []scw.Region{scw.Region(data.Region.ValueString())}
 	}
 
-	vpcs, err := r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx))
-	if err != nil {
-		stream.Results = list.ListResultsStreamDiagnostics(diags)
-
-		return
+	// Convert tags from types.List to []string
+	var tags []string
+	if !data.Tags.IsNull() {
+		diags = data.Tags.ElementsAs(ctx, &tags, false)
+		if diags.HasError() {
+			stream.Results = list.ListResultsStreamDiagnostics(diags)
+			return
+		}
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, rawVPC := range vpcs.Vpcs {
-			result := req.NewListResult(ctx)
-			result.DisplayName = rawVPC.Name
+		for _, region := range regionsToQuery {
+			listRequest := &vpc.ListVPCsRequest{
+				Region:         region,
+				Name:           data.Name.ValueStringPointer(),
+				Tags:           tags,
+				OrganizationID: data.OrganizationID.ValueStringPointer(),
+				ProjectID:      data.ProjectID.ValueStringPointer(),
+				IsDefault:      data.IsDefault.ValueBoolPointer(),
+				RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
+			}
 
-			v := ResourceVPC()
-			d := v.Data(&terraformSDKv2.InstanceState{})
-			setVPCState(d, rawVPC)
-
-			err := identity.SetRegionalIdentity(d, rawVPC.Region, rawVPC.ID)
+			vpcs, err := r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx))
 			if err != nil {
+				diags.AddError("Error listing VPCs", fmt.Sprintf("Failed to list VPCs in region %s: %s", region, err.Error()))
+				stream.Results = list.ListResultsStreamDiagnostics(diags)
+
 				return
 			}
 
-			// Send the result to the stream.
-			if !push(result) {
-				return
+			for _, rawVPC := range vpcs.Vpcs {
+				result := req.NewListResult(ctx)
+				result.DisplayName = rawVPC.Name
+
+				v := ResourceVPC()
+				d := v.Data(&terraformSDKv2.InstanceState{})
+				setVPCState(d, rawVPC)
+
+				// Set identity on the result (regional identity with id and region)
+				identityValue := tftypes.NewValue(tftypes.Object{
+					AttributeTypes: map[string]tftypes.Type{
+						"id":     tftypes.String,
+						"region": tftypes.String,
+					},
+				}, map[string]tftypes.Value{
+					"id":     tftypes.NewValue(tftypes.String, rawVPC.ID),
+					"region": tftypes.NewValue(tftypes.String, rawVPC.Region.String()),
+				})
+
+				result.Identity = &tfsdk.ResourceIdentity{
+					Raw:    identityValue,
+					Schema: req.ResourceIdentitySchema,
+				}
+
+				// Send the result to the stream.
+				if !push(result) {
+					return
+				}
 			}
 		}
 	}
