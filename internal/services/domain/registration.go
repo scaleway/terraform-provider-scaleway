@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -418,7 +419,10 @@ func contactSchema() map[string]*schema.Schema {
 func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	domainNames := make([]string, 0, len(d.Get("domain_names").([]any)))
 	for _, v := range d.Get("domain_names").([]any) {
@@ -479,7 +483,13 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
-	d.SetId(projectID + "/" + resp.TaskID)
+	// Use API response project_id for ID consistency (API may return different project than requested)
+	apiProjectID := resp.ProjectID
+	if apiProjectID == "" {
+		apiProjectID = projectID
+	}
+
+	d.SetId(apiProjectID + "/" + resp.TaskID)
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
@@ -545,9 +555,16 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 	parts := strings.Split(id, "/")
 
 	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id))
+		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/taskID', got: %s", id))
 	}
 
+	// Use API response as source of truth for project_id (API may return different project than requested)
+	projectID := firstResp.ProjectID
+	if projectID == "" {
+		projectID = parts[0]
+	}
+
+	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
 
 	return nil
