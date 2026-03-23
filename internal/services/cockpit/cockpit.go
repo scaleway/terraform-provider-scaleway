@@ -113,8 +113,6 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) d
 }
 
 func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	api, err := NewGlobalAPI(m)
 	if err != nil {
 		return diag.FromErr(err)
@@ -133,11 +131,13 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		}
 	}
 
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Deprecated attribute: 'plan'",
-		Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
-	})
+	diags := diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deprecated attribute: 'plan'",
+			Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
+		},
+	}
 
 	_ = d.Set("plan", d.Get("plan"))
 	_ = d.Set("plan_id", "")

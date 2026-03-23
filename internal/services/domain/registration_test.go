@@ -32,8 +32,9 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
                     resource "scaleway_domain_registration" "test" {
-                      domain_names = [ "%s"]
-                      duration_in_years = 1
+                      project_id         = "%s"
+                      domain_names       = [ "%s"]
+                      duration_in_years  = 1
 
                       owner_contact {
                         firstname                   = "John"
@@ -49,7 +50,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
                         company_identification_code = "123456789"
                       }
                     }
-                `, singleDomain),
+                `, testAccDomainRegistrationProjectID, singleDomain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "domain_names.0", singleDomain),
 					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "duration_in_years", "1"),
@@ -62,8 +63,9 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 			           resource "scaleway_domain_registration" "test" {
-			             domain_names = [ "%s"]
-			             duration_in_years = 1
+			             project_id         = "%s"
+			             domain_names       = [ "%s"]
+			             duration_in_years  = 1
 
 			             owner_contact {
 			               firstname                   = "John"
@@ -83,7 +85,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 
 					     dnssec = true
 			           }
-			       `, singleDomain),
+			       `, testAccDomainRegistrationProjectID, singleDomain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "auto_renew", "true"),
 					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "dnssec", "true"),
@@ -113,9 +115,9 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
                     resource "scaleway_domain_registration" "multi" {
-                      domain_names = ["%s","%s","%s"]
-
-                      duration_in_years = 1
+                      project_id         = "%s"
+                      domain_names       = ["%s","%s","%s"]
+                      duration_in_years  = 1
 
                       owner_contact {
                         firstname                   = "John"
@@ -131,7 +133,7 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
                         company_identification_code = "123456789"
                       }
                     }
-                `, domainName1, domainName2, domainName3),
+                `, testAccDomainRegistrationProjectID, domainName1, domainName2, domainName3),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_registration.multi", "domain_names.0", domainName1),
 					resource.TestCheckResourceAttr("scaleway_domain_registration.multi", "domain_names.1", domainName2),
@@ -141,8 +143,9 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
                     resource "scaleway_domain_registration" "multi" {
-                      domain_names = ["%s", "%s", "%s"]
-                      duration_in_years = 1
+                      project_id         = "%s"
+                      domain_names       = ["%s", "%s", "%s"]
+                      duration_in_years   = 1
 
                       owner_contact {
                         firstname                   = "John"
@@ -161,7 +164,7 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
                       auto_renew = true
                       dnssec     = true
                     }
-                `, domainName1, domainName2, domainName3),
+                `, testAccDomainRegistrationProjectID, domainName1, domainName2, domainName3),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_registration.multi", "auto_renew", "true"),
 					resource.TestCheckResourceAttr("scaleway_domain_registration.multi", "dnssec", "true"),

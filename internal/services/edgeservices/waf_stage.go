@@ -103,17 +103,23 @@ func ResourceWAFStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	diags := setWAFStageState(d, wafStage)
+
+	err = identity.SetGlobalIdentity(d, wafStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setWAFStageState(d *schema.ResourceData, wafStage *edgeservices.WafStage) diag.Diagnostics {
 	_ = d.Set("pipeline_id", wafStage.PipelineID)
 	_ = d.Set("backend_stage_id", types.FlattenStringPtr(wafStage.BackendStageID))
 	_ = d.Set("paranoia_level", int(wafStage.ParanoiaLevel))
 	_ = d.Set("mode", wafStage.Mode.String())
 	_ = d.Set("created_at", types.FlattenTime(wafStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(wafStage.UpdatedAt))
-
-	err = identity.SetGlobalIdentity(d, wafStage.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }
