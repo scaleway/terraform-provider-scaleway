@@ -154,14 +154,19 @@ func checkSamlCertificateDestroyed(tt *acctest.TestTools) resource.TestCheckFunc
 				continue
 			}
 
+			samlID := rs.Primary.Attributes["saml_id"]
+			if samlID == "" {
+				continue
+			}
+
 			iamAPI := iam.NewAPI(tt.Meta)
 
 			_, err := iamAPI.ListSamlCertificates(&iamSDK.ListSamlCertificatesRequest{
-				SamlID: rs.Primary.Attributes["saml_id"],
+				SamlID: samlID,
 			})
 			if err == nil {
 				certificates, listErr := iamAPI.ListSamlCertificates(&iamSDK.ListSamlCertificatesRequest{
-					SamlID: rs.Primary.Attributes["saml_id"],
+					SamlID: samlID,
 				})
 				if listErr != nil {
 					return listErr

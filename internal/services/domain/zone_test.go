@@ -120,7 +120,6 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 			}
 
 			if listDNSZones.TotalCount > 0 {
-				// Root zones cannot be deleted, so we accept that they still exist
 				if rs.Primary.Attributes["subdomain"] == "" {
 					return nil
 				}

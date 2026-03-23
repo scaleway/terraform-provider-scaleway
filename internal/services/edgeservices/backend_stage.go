@@ -174,6 +174,17 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
+	diags := setBackendStageState(d, backendStage, zone)
+
+	err = identity.SetGlobalIdentity(d, backendStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setBackendStageState(d *schema.ResourceData, backendStage *edgeservices.BackendStage, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("pipeline_id", backendStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(backendStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(backendStage.UpdatedAt))
@@ -184,10 +195,6 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 
 	if backendStage.ScalewayLB != nil {
 		_ = d.Set("lb_backend_config", flattenLBBackendConfig(zone, backendStage.ScalewayLB))
-	}
-
-	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
-		return diag.FromErr(err)
 	}
 
 	return nil
