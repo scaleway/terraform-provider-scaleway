@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "VPC"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `connector_id` - (Optional) The ID of the VPC connector. Conflicts with all filter arguments below.
+
+The following arguments can be used to look up a VPC connector via the list API. They all conflict with `connector_id`:
+
+- `name` - (Optional) The name to filter for.
+- `vpc_id` - (Optional) The source VPC ID to filter for.
+- `target_vpc_id` - (Optional) The target VPC ID to filter for.
+- `tags` - (Optional) List of tags to filter for.
+- `project_id` - (Optional) The ID of the Project to filter for.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connector exists.
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_vpc_connector` [resource](../resources/vpc_connector.md).
