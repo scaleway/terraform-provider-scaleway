@@ -194,6 +194,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.DataSourceData = m
 	resp.ActionData = m
 	resp.EphemeralResourceData = m
+	resp.ListResourceData = m
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
