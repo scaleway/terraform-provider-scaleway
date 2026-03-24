@@ -49,6 +49,7 @@ func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
 		if ep.Public == nil {
 			continue
 		}
+
 		for _, svc := range ep.Services {
 			if svc.Name == "dashboard" || svc.Name == "dashboards" {
 				return svc.URL

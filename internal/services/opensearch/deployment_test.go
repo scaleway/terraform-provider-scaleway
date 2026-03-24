@@ -141,7 +141,7 @@ func testAccCheckOpenSearchHasPrivateNetworkEndpoint(resourceName string) resour
 			return fmt.Errorf("parse endpoints.#: %w", err)
 		}
 
-		for i := 0; i < n; i++ {
+		for i := range n {
 			if rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.public", i)] == "false" &&
 				rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.private_network_id", i)] != "" {
 				return nil
