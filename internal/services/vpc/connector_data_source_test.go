@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	vpctestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDataSourceVPCConnector_ByID(t *testing.T) {
@@ -13,7 +14,7 @@ func TestAccDataSourceVPCConnector_ByID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isConnectorDestroyed(tt),
+		CheckDestroy:             vpctestfuncs.CheckConnectorDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -36,7 +37,7 @@ func TestAccDataSourceVPCConnector_ByID(t *testing.T) {
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
+					vpctestfuncs.IsConnectorPresent(tt, "scaleway_vpc_connector.main"),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_vpc_connector.by_id", "name",
 						"scaleway_vpc_connector.main", "name"),
@@ -58,7 +59,7 @@ func TestAccDataSourceVPCConnector_ByFilters(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isConnectorDestroyed(tt),
+		CheckDestroy:             vpctestfuncs.CheckConnectorDestroy(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: `
