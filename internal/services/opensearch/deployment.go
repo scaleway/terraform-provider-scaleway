@@ -124,6 +124,11 @@ func deploymentSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"public_dashboard_url": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "URL of the OpenSearch Dashboards service when it is exposed on a public endpoint (including when the API uses a private network)",
+		},
 		"endpoints": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -326,6 +331,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	}
 
 	_ = d.Set("endpoints", flattenEndpoints(deployment.Endpoints))
+	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(deployment.Endpoints))
 
 	return nil
 }

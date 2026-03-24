@@ -97,6 +97,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the deployment (e.g., "ready", "creating", "upgrading").
 - `created_at` - Date and time of deployment creation (RFC 3339 format).
 - `updated_at` - Date and time of deployment last update (RFC 3339 format).
+- `public_dashboard_url` - URL of OpenSearch Dashboards when served on a **public** endpoint. With a private network for the API, the API endpoint is private but the dashboard may still be reachable at this public URL.
 - `endpoints` - List of endpoints for accessing the deployment.
     - `id` - The ID of the endpoint.
     - `services` - List of services exposed on the endpoint.
