@@ -59,7 +59,9 @@ const (
 	// ErrCodeValidationError validation error
 	ErrCodeValidationError = "ValidationError"
 	// ErrCodeValidationException validation exception
-	ErrCodeValidationException = "ValidationException"
+	ErrCodeValidationException                       = "ValidationException"
+	ErrCodeServerSideEncryptionConfigurationNotFound = "ServerSideEncryptionConfigurationNotFoundError"
+	ErrCodeOperationAborted                          = "OperationAborted"
 )
 
 // TimedOut returns true if the error represents a "wait timed out" condition.
