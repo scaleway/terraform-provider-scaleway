@@ -28,10 +28,10 @@ func ResourceZone() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion:  0,
-		SchemaFunc:     zoneSchema,
-		CustomizeDiff:  resourceZoneCustomizeDiff,
-		Identity:       identity.DefaultGlobal(),
+		SchemaVersion: 0,
+		SchemaFunc:    zoneSchema,
+		CustomizeDiff: resourceZoneCustomizeDiff,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
