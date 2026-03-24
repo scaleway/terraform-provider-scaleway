@@ -3,7 +3,7 @@ subcategory: "VPC"
 page_title: "Scaleway: scaleway_vpc_connector"
 ---
 
-# scaleway_vpc_connector
+# Resource: scaleway_vpc_connector
 
 Creates and manages Scaleway VPC Connectors.
 
