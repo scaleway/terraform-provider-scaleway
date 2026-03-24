@@ -18,15 +18,15 @@ func TestAccDataSourceVPCConnector_ByID(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-ds-connector-id-source"
+					  name = "tf-dsid-source"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-ds-connector-id-target"
+					  name = "tf-dsid-target"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-ds-connector-id"
+					  name          = "tf-dsid-conn"
 					  vpc_id        = scaleway_vpc.vpc01.id
 					  target_vpc_id = scaleway_vpc.vpc02.id
 					}
@@ -63,15 +63,15 @@ func TestAccDataSourceVPCConnector_ByFilters(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-ds-connector-filter-source"
+					  name = "tf-dsfilt-source"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-ds-connector-filter-target"
+					  name = "tf-dsfilt-target"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-ds-connector-filter"
+					  name          = "tf-dsfilt-conn"
 					  vpc_id        = scaleway_vpc.vpc01.id
 					  target_vpc_id = scaleway_vpc.vpc02.id
 					}

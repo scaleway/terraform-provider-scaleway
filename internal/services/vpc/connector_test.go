@@ -23,22 +23,22 @@ func TestAccVPCConnector_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-vpc-connector-source"
+					  name = "tf-conn-source"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-vpc-connector-target"
+					  name = "tf-conn-target"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-vpc-connector"
+					  name          = "tf-conn-basic"
 					  vpc_id        = scaleway_vpc.vpc01.id
 					  target_vpc_id = scaleway_vpc.vpc02.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-vpc-connector"),
+					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-conn-basic"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_connector.main", "vpc_id", "scaleway_vpc.vpc01", "id"),
 					resource.TestCheckResourceAttrPair("scaleway_vpc_connector.main", "target_vpc_id", "scaleway_vpc.vpc02", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_connector.main", "created_at"),
@@ -50,15 +50,15 @@ func TestAccVPCConnector_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-vpc-connector-source"
+					  name = "tf-conn-source"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-vpc-connector-target"
+					  name = "tf-conn-target"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
-					  name          = "tf-vpc-connector-updated"
+					  name          = "tf-conn-updated"
 					  vpc_id        = scaleway_vpc.vpc01.id
 					  target_vpc_id = scaleway_vpc.vpc02.id
 					  tags          = ["terraform", "connector"]
@@ -66,7 +66,7 @@ func TestAccVPCConnector_Basic(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isConnectorPresent(tt, "scaleway_vpc_connector.main"),
-					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-vpc-connector-updated"),
+					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "name", "tf-conn-updated"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.0", "terraform"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.1", "connector"),
