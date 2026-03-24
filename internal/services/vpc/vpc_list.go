@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
-	terraformSDKv2 "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -135,14 +134,8 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 
 	// Determine regions to query
 	var regionsToQuery []scw.Region
-	if data.Region.IsNull() || data.Region.ValueString() == "" {
-		// If no region specified, use default region from provider config
-		regionsToQuery = []scw.Region{scw.RegionFrPar}
-	} else if data.Region.ValueString() == "all" {
-		regionsToQuery = make([]scw.Region, 0, len(scw.AllRegions))
-		for _, region := range regional.AllRegions() {
-			regionsToQuery = append(regionsToQuery, scw.Region(region))
-		}
+	if data.Region.ValueString() == "all" {
+		regionsToQuery = scw.AllRegions
 	} else {
 		regionsToQuery = []scw.Region{scw.Region(data.Region.ValueString())}
 	}
@@ -181,11 +174,8 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 				result := req.NewListResult(ctx)
 				result.DisplayName = rawVPC.Name
 
-				v := ResourceVPC()
-				d := v.Data(&terraformSDKv2.InstanceState{})
-				setVPCState(d, rawVPC)
-
 				// Set identity on the result (regional identity with id and region)
+				regionStr := rawVPC.Region.String()
 				identityValue := tftypes.NewValue(tftypes.Object{
 					AttributeTypes: map[string]tftypes.Type{
 						"id":     tftypes.String,
@@ -193,7 +183,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 					},
 				}, map[string]tftypes.Value{
 					"id":     tftypes.NewValue(tftypes.String, rawVPC.ID),
-					"region": tftypes.NewValue(tftypes.String, rawVPC.Region.String()),
+					"region": tftypes.NewValue(tftypes.String, regionStr),
 				})
 
 				result.Identity = &tfsdk.ResourceIdentity{

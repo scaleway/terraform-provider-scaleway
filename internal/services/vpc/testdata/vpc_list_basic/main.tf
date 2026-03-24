@@ -6,12 +6,10 @@ resource "scaleway_vpc" "main" {
   project_id= scaleway_account_project.main.id
   region = "fr-par"
   name   = "test-vpc-fr-par"
-  tags   = ["environment=production", "team=devops"]
 }
 
 resource "scaleway_vpc" "alt" {
   project_id= scaleway_account_project.main.id
   region = "nl-ams"
   name   = "test-vpc-nl-ams"
-  tags   = ["environment=staging", "team=devops"]
 }
