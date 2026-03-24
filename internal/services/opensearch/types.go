@@ -43,3 +43,20 @@ func flattenEndpoints(endpoints []*searchdbapi.Endpoint) []map[string]any {
 
 	return result
 }
+
+// publicDashboardURLFromEndpoints returns the URL of the dashboard service on a public endpoint.
+// When a deployment uses a private network for the API, Scaleway may expose the dashboard on a separate public endpoint.
+func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
+	for _, ep := range endpoints {
+		if ep.Public == nil {
+			continue
+		}
+		for _, svc := range ep.Services {
+			if svc.Name == "dashboard" || svc.Name == "dashboards" {
+				return svc.URL
+			}
+		}
+	}
+
+	return ""
+}
