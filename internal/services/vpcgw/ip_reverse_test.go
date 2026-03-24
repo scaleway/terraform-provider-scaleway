@@ -46,6 +46,11 @@ func TestAccVPCPublicGatewayIPReverseDns_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      "scaleway_vpc_public_gateway_ip_reverse_dns.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: `
 					resource "scaleway_vpc_public_gateway_ip" "main" {}
 				`,

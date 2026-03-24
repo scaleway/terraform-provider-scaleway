@@ -161,7 +161,7 @@ type FakeSideProjectTerminateFunc func() error
 // CreateFakeSideProject creates a temporary project with a temporary IAM application and policy.
 //
 // The returned function is a cleanup function that should be called when to delete the project.
-func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
+func CreateFakeSideProject(tt *TestTools, permissions ...string) (*account.Project, *iam.APIKey, FakeSideProjectTerminateFunc, error) {
 	terminateFunctions := []FakeSideProjectTerminateFunc{}
 	terminate := func() error {
 		for i := len(terminateFunctions) - 1; i >= 0; i-- {
@@ -222,7 +222,7 @@ func CreateFakeSideProject(tt *TestTools) (*account.Project, *iam.APIKey, FakeSi
 		Rules: []*iam.RuleSpecs{
 			{
 				ProjectIDs:         &[]string{project.ID},
-				PermissionSetNames: &[]string{"ObjectStorageReadOnly", "ObjectStorageObjectsRead", "ObjectStorageBucketsRead"},
+				PermissionSetNames: &permissions,
 			},
 		},
 	})

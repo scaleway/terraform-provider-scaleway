@@ -115,7 +115,7 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetRegionalIdentity(d, region, res.ID)
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -143,13 +143,24 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 		return diag.FromErr(err)
 	}
 
+	diags := setRouteState(d, res)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setRouteState(d *schema.ResourceData, res *vpc.Route) diag.Diagnostics {
 	_ = d.Set("description", res.Description)
-	_ = d.Set("vpc_id", regional.NewIDString(region, res.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(res.Region, res.VpcID))
 	_ = d.Set("nexthop_resource_id", types.FlattenStringPtr(res.NexthopResourceID))
-	_ = d.Set("nexthop_private_network_id", regional.NewIDString(region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
+	_ = d.Set("nexthop_private_network_id", regional.NewIDString(res.Region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	destination, err := types.FlattenIPNet(res.Destination)
 	if err != nil {
@@ -160,11 +171,6 @@ func ResourceRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
-	}
-
-	err = identity.SetRegionalIdentity(d, region, ID)
-	if err != nil {
-		return diag.FromErr(err)
 	}
 
 	return nil
