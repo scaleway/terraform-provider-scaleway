@@ -43,3 +43,19 @@ func flattenEndpoints(endpoints []*searchdbapi.Endpoint) []map[string]any {
 
 	return result
 }
+
+func publicDashboardURLFromEndpoints(endpoints []*searchdbapi.Endpoint) string {
+	for _, ep := range endpoints {
+		if ep.Public == nil {
+			continue
+		}
+
+		for _, svc := range ep.Services {
+			if svc.Name == "dashboard" || svc.Name == "dashboards" {
+				return svc.URL
+			}
+		}
+	}
+
+	return ""
+}

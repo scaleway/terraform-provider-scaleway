@@ -3,6 +3,7 @@ package opensearch_test
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -119,13 +120,36 @@ resource "scaleway_opensearch_deployment" "pn" {
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
 					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "private_network.0.private_network_id"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.0.public", "false"),
-					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "endpoints.0.private_network_id"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "2"),
+					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
 			},
 		},
 	})
+}
+
+func testAccCheckOpenSearchHasPrivateNetworkEndpoint(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		n, err := strconv.Atoi(rs.Primary.Attributes["endpoints.#"])
+		if err != nil {
+			return fmt.Errorf("parse endpoints.#: %w", err)
+		}
+
+		for i := range n {
+			if rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.public", i)] == "false" &&
+				rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.private_network_id", i)] != "" {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("expected a private network endpoint among %d endpoints", n)
+	}
 }
 
 func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
