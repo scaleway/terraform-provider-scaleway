@@ -2,6 +2,7 @@ package domain_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,6 +13,19 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 )
+
+// testAccDomainZoneProjectID returns project_id for scaleway_domain_zone test configs: SDK default when set,
+// otherwise the VCR placeholder so replay matches committed cassettes.
+func testAccDomainZoneProjectID(tt *acctest.TestTools) string {
+	pid, ok := tt.Meta.ScwClient().GetDefaultProjectID()
+	if ok {
+		if s := strings.TrimSpace(pid); s != "" {
+			return s
+		}
+	}
+
+	return testAccDomainZoneVCRProjectID
+}
 
 func TestAccDomainZone_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -27,10 +41,11 @@ func TestAccDomainZone_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
+						domain     = "%s"
+						subdomain  = "%s"
+						project_id = "%s"
 					}
-				`, acctest.TestDomain, testDNSZone),
+				`, acctest.TestDomain, testDNSZone, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDomainZoneExists(tt, "scaleway_domain_zone.test"),
 					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "subdomain", testDNSZone),
@@ -55,10 +70,11 @@ func TestAccDomainZone_RootZone(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = ""
+						domain     = "%s"
+						subdomain  = ""
+						project_id = "%s"
 					}
-				`, acctest.TestDomain),
+				`, acctest.TestDomain, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDomainZoneExists(tt, "scaleway_domain_zone.test"),
 					resource.TestCheckResourceAttr("scaleway_domain_zone.test", "subdomain", ""),
