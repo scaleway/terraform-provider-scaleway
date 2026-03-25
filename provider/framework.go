@@ -164,7 +164,6 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 		}
 
 		var err error
-
 		m, err = meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
 			resp.Diagnostics.AddError("error creating meta", err.Error())
