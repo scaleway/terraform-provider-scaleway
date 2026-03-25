@@ -8,7 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
-func RegionalImporter() *schema.ResourceImporter {
+func DefaultRegionalImporter() *schema.ResourceImporter {
 	return &schema.ResourceImporter{
 		StateContext: func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 			// If importing by ID, we just set the ID field to state, allowing the read to fill in the rest of the data.

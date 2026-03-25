@@ -21,7 +21,7 @@ func ResourceVPC() *schema.Resource {
 		ReadContext:   ResourceVPCRead,
 		UpdateContext: ResourceVPCUpdate,
 		DeleteContext: ResourceVPCDelete,
-		Importer:      identity.RegionalImporter(),
+		Importer:      identity.DefaultRegionalImporter(),
 		SchemaVersion: 0,
 		SchemaFunc:    vpcSchema,
 		Identity:      identity.DefaultRegional(),
