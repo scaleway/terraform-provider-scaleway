@@ -1,7 +1,6 @@
 package vpc_test
 
 import (
-	"context"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -17,7 +16,6 @@ func TestAccListVPCs_Basic(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				// Create VPCs in different regions with different tags
 				Config: `
 					resource "scaleway_account_project" "main" {}
 					
@@ -31,7 +29,14 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  project_id= scaleway_account_project.main.id
 					  region = "nl-ams"
 					  name   = "test-vpc-nl-ams"
-					}`,
+					}
+
+					resource "scaleway_vpc" "tag" {
+					  project_id= scaleway_account_project.main.id
+					  region = "fr-par"
+                      tags = ["foobar"]
+					}
+`,
 			},
 			{
 				Query: true,
@@ -46,8 +51,7 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					}
 					`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					// Check that we can list all VPCs
-					querycheck.ExpectLength("list.scaleway_vpc.all", 2),
+					querycheck.ExpectLength("list.scaleway_vpc.all", 3),
 				},
 			},
 			{
@@ -63,10 +67,7 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					}
 					`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					intercept{},
-
-					// Check that we can filter by region
-					querycheck.ExpectLength("list.scaleway_vpc.fr-par", 1),
+					querycheck.ExpectLength("list.scaleway_vpc.fr-par", 2),
 				},
 			},
 			{
@@ -82,16 +83,25 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  }
 					}`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					// Check that we can filter by name pattern
 					querycheck.ExpectLength("list.scaleway_vpc.by_name", 2),
+				},
+			},
+			{
+				Query: true,
+				Config: `					
+					list "scaleway_vpc" "by_tag" {
+					  	provider = scaleway
+					
+						config {
+							project_id = scaleway_account_project.main.id
+							region = "all"
+							tags = ["foobar"]
+						}
+					}`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_vpc.by_tag", 1),
 				},
 			},
 		},
 	})
-}
-
-type intercept struct{}
-
-func (i intercept) CheckQuery(ctx context.Context, request querycheck.CheckQueryRequest, response *querycheck.CheckQueryResponse) {
-	return
 }
