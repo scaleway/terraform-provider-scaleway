@@ -3,7 +3,6 @@ package vpc
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,29 +21,7 @@ func ResourceVPC() *schema.Resource {
 		ReadContext:   ResourceVPCRead,
 		UpdateContext: ResourceVPCUpdate,
 		DeleteContext: ResourceVPCDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: func(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
-				// If importing by ID, we just set the ID field to state, allowing the read to fill in the rest of the data.
-				if d.Id() != "" {
-					return []*schema.ResourceData{d}, nil
-				}
-
-				importedIdentity, err := d.Identity()
-				if err != nil {
-					return nil, fmt.Errorf("error getting identity: %s", err)
-				}
-
-				region := importedIdentity.Get("region").(string)
-				id := importedIdentity.Get("id").(string)
-
-				err = identity.SetRegionalIdentity(d, scw.Region(region), id)
-				if err != nil {
-					return nil, err
-				}
-
-				return []*schema.ResourceData{d}, nil
-			},
-		},
+		Importer:      identity.RegionalImporter(),
 		SchemaVersion: 0,
 		SchemaFunc:    vpcSchema,
 		Identity:      identity.DefaultRegional(),
