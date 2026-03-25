@@ -25,8 +25,9 @@ func TestAccDomainValidation_Validation(t *testing.T) {
 				Config: fmt.Sprintf(`
 
 					resource "scaleway_domain_zone" "test" {
-  						domain    = "%s"
-  						subdomain = "%s"
+  						domain     = "%s"
+  						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -40,7 +41,7 @@ func TestAccDomainValidation_Validation(t *testing.T) {
   						region = scaleway_tem_domain.cr01.region
 						timeout = 3600
 					}
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 				),
@@ -63,8 +64,9 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
 				Config: fmt.Sprintf(`
 
                     resource "scaleway_domain_zone" "test" {
-                        domain    = "%s"
-                        subdomain = "%s"
+                        domain     = "%s"
+                        subdomain  = "%s"
+						project_id = "%s"
                     }
 
                     resource scaleway_tem_domain cr01 {
@@ -77,7 +79,7 @@ func TestAccDomainValidation_TimeoutError(t *testing.T) {
                         region    = scaleway_tem_domain.cr01.region
                         timeout   = 1
                     }
-                `, domainNameValidation, subDomainName),
+                `, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				ExpectError: regexp.MustCompile("(?i)domain validation did not complete"),
 			},
 		},

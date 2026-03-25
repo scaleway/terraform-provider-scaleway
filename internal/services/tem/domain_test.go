@@ -85,8 +85,9 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 				Config: fmt.Sprintf(`
 
 					resource "scaleway_domain_zone" "test" {
-  						domain    = "%s"
-  						subdomain = "%s"
+  						domain     = "%s"
+  						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -101,7 +102,7 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 						timeout = 3600
 					}
 
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", subDomainName+"."+domainNameValidation),
@@ -133,8 +134,9 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_zone" "test" {
-  						domain    = "%s"
-  						subdomain = "%s"
+  						domain     = "%s"
+  						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -143,7 +145,7 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 						autoconfig = false
 					}
 
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "name", subDomainName+"."+domainNameValidation),
@@ -160,8 +162,9 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_zone" "test" {
-  						domain    = "%s"
-  						subdomain = "%s"
+  						domain     = "%s"
+  						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -170,7 +173,7 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 						autoconfig = true
 					}
 
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_tem_domain.cr01"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "autoconfig", "true"),

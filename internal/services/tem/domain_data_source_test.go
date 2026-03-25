@@ -58,8 +58,9 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_domain_zone" "test" {
-						domain    = "%s"
-						subdomain = "%s"
+						domain     = "%s"
+						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					resource "scaleway_tem_domain" "main" {
@@ -77,7 +78,7 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 					data "scaleway_tem_domain" "test" {
 						name = scaleway_tem_domain.main.name
 					}
-				`, domainNameValidation, subDomainName),
+				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_tem_domain_validation.valid", "validated", "true"),
 					isDomainPresent(tt, "data.scaleway_tem_domain.test"),
