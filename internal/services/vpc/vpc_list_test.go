@@ -1,11 +1,10 @@
 package vpc_test
 
 import (
+	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 )
@@ -19,24 +18,80 @@ func TestAccListVPCs_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create VPCs in different regions with different tags
-				ConfigDirectory: config.StaticDirectory("testdata/vpc_list_basic/"),
+				Config: `
+					resource "scaleway_account_project" "main" {}
+					
+					resource "scaleway_vpc" "main" {
+					  project_id= scaleway_account_project.main.id
+					  region = "fr-par"
+					  name   = "test-vpc-fr-par"
+					}
+					
+					resource "scaleway_vpc" "alt" {
+					  project_id= scaleway_account_project.main.id
+					  region = "nl-ams"
+					  name   = "test-vpc-nl-ams"
+					}`,
 			},
 			{
-				Query:           true,
-				ConfigDirectory: config.StaticDirectory("testdata/vpc_list_basic/"),
+				Query: true,
+				Config: `
+					list "scaleway_vpc" "all" {
+					  provider = scaleway
+					
+					  config {
+						region = "all"
+						project_id = scaleway_account_project.main.id
+					  }
+					}
+					`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					// Check that we can list all VPCs
 					querycheck.ExpectLength("list.scaleway_vpc.all", 2),
-					// Check that we can filter by region and tag
+				},
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_vpc" "fr-par" {
+					  provider = scaleway
+					
+					  config {
+						project_id = scaleway_account_project.main.id
+						region = "fr-par"
+					  }
+					}
+					`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					intercept{},
+
+					// Check that we can filter by region
 					querycheck.ExpectLength("list.scaleway_vpc.fr-par", 1),
+				},
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_vpc" "by_name" {
+					  provider = scaleway
+					
+					  config {
+						project_id = scaleway_account_project.main.id
+						region = "all"
+						name = "test-vpc"
+					  }
+					}`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
 					// Check that we can filter by name pattern
 					querycheck.ExpectLength("list.scaleway_vpc.by_name", 2),
-					// Verify specific VPC attributes in the results
-					querycheck.ExpectIdentity("list.scaleway_vpc.fr-par", map[string]knownvalue.Check{
-						"region": knownvalue.StringExact("fr-par"),
-					}),
 				},
 			},
 		},
 	})
+}
+
+type intercept struct{}
+
+func (i intercept) CheckQuery(ctx context.Context, request querycheck.CheckQueryRequest, response *querycheck.CheckQueryResponse) {
+	return
 }

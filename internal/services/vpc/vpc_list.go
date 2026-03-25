@@ -9,12 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -174,21 +175,56 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 				result := req.NewListResult(ctx)
 				result.DisplayName = rawVPC.Name
 
-				// Set identity on the result (regional identity with id and region)
-				regionStr := rawVPC.Region.String()
-				identityValue := tftypes.NewValue(tftypes.Object{
-					AttributeTypes: map[string]tftypes.Type{
-						"id":     tftypes.String,
-						"region": tftypes.String,
-					},
-				}, map[string]tftypes.Value{
-					"id":     tftypes.NewValue(tftypes.String, rawVPC.ID),
-					"region": tftypes.NewValue(tftypes.String, regionStr),
-				})
+				vpcResource := ResourceVPC()
+				resourceData := vpcResource.Data(&terraform.InstanceState{})
+				err = identity.SetRegionalIdentity(resourceData, region, rawVPC.ID)
+				if err != nil {
+					result.Diagnostics.AddError(
+						"Retrieving identity data",
+						"An error was encountered when retrieving the identity data: "+err.Error(),
+					)
 
-				result.Identity = &tfsdk.ResourceIdentity{
-					Raw:    identityValue,
-					Schema: req.ResourceIdentitySchema,
+					return
+				}
+
+				// Convert and set the identity and resource state into the result
+				tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
+				if errIdentityState != nil {
+					result.Diagnostics.AddError(
+						"Converting identity data",
+						"An error was encountered when converting the identity data: "+err.Error(),
+					)
+				}
+
+				errtfTypeIdentity := result.Identity.Set(ctx, *tfTypeIdentity)
+				if errtfTypeIdentity != nil {
+					result.Diagnostics.AddError(
+						"Setting identity data",
+						"An error was encountered when setting the identity data: "+err.Error(),
+					)
+				}
+
+				diagsState := setVPCState(resourceData, rawVPC)
+				if diagsState.HasError() {
+					tflog.Error(ctx, "error from setting setVPCState")
+					return
+				}
+
+				// Convert and set the resource state into the result
+				tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
+				if errTfTypeResourceState != nil {
+					result.Diagnostics.AddError(
+						"Converting resource state",
+						"An error was encountered when converting the resource state: "+err.Error(),
+					)
+				}
+
+				errtfTypeResource := result.Resource.Set(ctx, *tfTypeResource)
+				if errtfTypeResource != nil {
+					result.Diagnostics.AddError(
+						"Setting resource state",
+						"An error was encountered when setting the resource state: "+err.Error(),
+					)
 				}
 
 				// Send the result to the stream.
