@@ -43,7 +43,7 @@ func (r *ListResource) Configure(ctx context.Context, request resource.Configure
 	if !ok {
 		response.Diagnostics.AddError(
 			"Unexpected List Configure Type",
-			fmt.Sprintf("Expected *scw.Client, got: %T. Please report this issue to the provider developers.", request.ProviderData),
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", request.ProviderData),
 		)
 
 		return
@@ -113,6 +113,10 @@ type ListResourceModel struct {
 	IsDefault      types.Bool   `tfsdk:"is_default"`
 }
 
+func (m *ListResourceModel) GetRegion() string {
+	return m.Region.ValueString()
+}
+
 func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_vpc"
 }
@@ -128,14 +132,6 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	// Determine regions to query
-	var regionsToQuery []scw.Region
-	if data.Region.ValueString() == "all" {
-		regionsToQuery = scw.AllRegions
-	} else {
-		regionsToQuery = []scw.Region{scw.Region(data.Region.ValueString())}
-	}
-
 	// Convert tags from types.List to []string
 	var tags []string
 	if !data.Tags.IsNull() {
@@ -147,7 +143,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, region := range regionsToQuery {
+		for _, region := range regional.RegionsToQuery(&data) {
 			listRequest := &vpc.ListVPCsRequest{
 				Region:         region,
 				Name:           data.Name.ValueStringPointer(),
