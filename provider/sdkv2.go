@@ -154,6 +154,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_datawarehouse_user":                                 datawarehouse.ResourceUser(),
 				"scaleway_datawarehouse_database":                             datawarehouse.ResourceDatabase(),
 				"scaleway_kafka_cluster":                                      kafka.ResourceCluster(),
+				"scaleway_domain_external":                                    domain.ResourceExternalDomain(),
+				"scaleway_domain_external_validated":                          domain.ResourceExternalDomainValidated(),
 				"scaleway_domain_record":                                      domain.ResourceRecord(),
 				"scaleway_domain_registration":                                domain.ResourceRegistration(),
 				"scaleway_domain_zone":                                        domain.ResourceZone(),
