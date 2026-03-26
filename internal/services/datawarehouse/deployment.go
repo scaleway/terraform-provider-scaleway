@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -449,6 +450,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 
 			pwd := d.GetRawConfig().GetAttr("password_wo").AsString()
+
 			_, err = api.UpdateUser(&datawarehouseapi.UpdateUserRequest{
 				Region:       region,
 				DeploymentID: id,
@@ -564,7 +566,7 @@ func findInitialDeploymentUserName(ctx context.Context, api *datawarehouseapi.AP
 	}
 
 	if len(resp.Users) == 0 {
-		return "", fmt.Errorf("no users found on datawarehouse deployment; cannot apply password_wo change")
+		return "", errors.New("no users found on datawarehouse deployment; cannot apply password_wo change")
 	}
 
 	var adminName string
