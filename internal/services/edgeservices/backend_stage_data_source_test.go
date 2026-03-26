@@ -18,9 +18,14 @@ func TestAccDataSourceBackendStage_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-backend-id"
 					  description = "pipeline for backend data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
@@ -62,9 +67,14 @@ func TestAccDataSourceBackendStage_ByPipelineID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-backend-filter"
 					  description = "pipeline for backend filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
