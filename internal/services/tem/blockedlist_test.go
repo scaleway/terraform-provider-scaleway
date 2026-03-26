@@ -28,10 +28,9 @@ func TestAccBlockedList_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 
-					resource "scaleway_domain_zone" "test" {
-  						domain     = "%s"
-  						subdomain  = "%s"
-						project_id = "%s"
+				resource "scaleway_domain_zone" "test" {
+  						domain    = "%s"
+  						subdomain = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -56,7 +55,7 @@ func TestAccBlockedList_Basic(t *testing.T) {
     						scaleway_tem_domain_validation.valid
   						]
 					}
-				`, domainNameValidation, subDomainName, testAccDomainZoneProjectID(tt), blockedEmail),
+				`, domainNameValidation, subDomainName, blockedEmail),
 				Check: resource.ComposeTestCheckFunc(
 					isBlockedEmailPresent(tt, "scaleway_tem_blocked_list.test"),
 					resource.TestCheckResourceAttr("scaleway_tem_blocked_list.test", "email", blockedEmail),
