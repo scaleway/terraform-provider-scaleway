@@ -12,6 +12,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
+	inference "github.com/scaleway/scaleway-sdk-go/api/inference/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
@@ -54,6 +55,14 @@ var transientStates = map[string]bool{
 	function.FunctionStatusCreating.String(): true,
 	function.FunctionStatusDeleting.String(): true,
 	function.FunctionStatusPending.String():  true,
+
+	inference.DeploymentStatusCreating.String():  true,
+	inference.DeploymentStatusDeploying.String(): true,
+	inference.DeploymentStatusDeleting.String():  true,
+	inference.DeploymentStatusScaling.String():   true,
+
+	inference.ModelStatusPreparing.String():   true,
+	inference.ModelStatusDownloading.String(): true,
 
 	instance.ServerStateStarting.String(): true,
 	instance.ServerStateStopping.String(): true,
