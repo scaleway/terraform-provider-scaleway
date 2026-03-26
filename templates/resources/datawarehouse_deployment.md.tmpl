@@ -73,10 +73,11 @@ The following arguments are supported:
 
 - `name` - (Required) Name of the Data Warehouse deployment.
 - `version` - (Required, Forces new resource) ClickHouse version to use (e.g., "v25"). Changing this forces recreation of the deployment.
-- `replica_count` - (Required) Number of replicas.
-- `cpu_min` - (Required) Minimum CPU count. Must be less than or equal to `cpu_max`.
-- `cpu_max` - (Required) Maximum CPU count. Must be greater than or equal to `cpu_min`.
+- `replica_count` - (Required) Number of replicas. Can be updated in place via the deployment configuration API.
+- `cpu_min` - (Required) Minimum CPU count (autoscaling lower bound). Must be less than or equal to `cpu_max`. Can be updated in place.
+- `cpu_max` - (Required) Maximum CPU count (autoscaling upper bound). Must be greater than or equal to `cpu_min`. Can be updated in place.
 - `ram_per_cpu` - (Required) RAM per CPU in GB.
+- `started` - (Optional, defaults to `true`) Whether the deployment should be running. When set to `false`, the provider calls the Stop deployment API after create or update; when set to `true`, it calls Start deployment if the deployment is stopped. Scaling fields (`replica_count`, `cpu_min`, `cpu_max`) require the deployment to be running; if it is stopped, the provider starts it to apply the change, then stops it again when `started` is `false`.
 - `password` - (Optional) Password for the first user of the deployment. If not specified, a random password will be generated. Note: password is only used during deployment creation.
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `private_network` - (Optional, Forces new resource) Private network configuration to expose your deployment. Changing this forces recreation of the deployment.
@@ -85,8 +86,6 @@ The following arguments are supported:
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
 ~> **Note:** A public endpoint is always created automatically alongside any private network configuration.
-
-~> **Note:** During the private beta phase, modifying `cpu_min`, `cpu_max`, and `replica_count` has no effect until the feature is launched in general availability.
 
 ## Attributes Reference
 
