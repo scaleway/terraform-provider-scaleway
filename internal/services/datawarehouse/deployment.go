@@ -108,7 +108,7 @@ func deploymentSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "Password for the first user of the deployment in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:   "Password for the first user of the deployment in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`. When updating, the password is rotated via the Data Warehouse Users API (the initial user is selected as an admin user when present, otherwise the first user by name).",
 			WriteOnly:     true,
 			ConflictsWith: []string{"password"},
 			RequiredWith:  []string{"password_wo_version"},
@@ -173,6 +173,7 @@ func deploymentSchema() map[string]*schema.Schema {
 						DiffSuppressFunc: dsf.Locality,
 						Description:      "The private network ID",
 					},
+					// Computed
 					"id": {
 						Type:        schema.TypeString,
 						Computed:    true,
@@ -205,6 +206,7 @@ func deploymentSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		// Computed
 		"status": {
 			Type:        schema.TypeString,
 			Computed:    true,
