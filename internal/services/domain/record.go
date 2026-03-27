@@ -13,6 +13,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -49,6 +50,22 @@ func ResourceRecord() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    recordSchema,
+		Identity:      identity.WrapSchemaMap(recordIdentitySchema()),
+	}
+}
+
+func recordIdentitySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"dns_zone": {
+			Type:              schema.TypeString,
+			Description:       "The DNS zone of the record",
+			RequiredForImport: true,
+		},
+		"id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the record (UUID format)",
+			RequiredForImport: true,
+		},
 	}
 }
 
@@ -98,6 +115,20 @@ func recordSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The data of the record",
 			Required:    true,
+			// NOTE: For CNAME/NS/MX/SRV records, the Scaleway API normalizes the "data" field to an absolute FQDN with a trailing dot. Example:
+			//
+			//   config: data = "www"
+			//   API/state: data = "www.scaleway-terraform.com."
+			//
+			// Without diff suppression, Terraform would continuously plan an update
+			// We normalize both values before comparison to avoid plan drift
+			DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+				recordType := domain.RecordType(d.Get("type").(string))
+				dnsZone := d.Get("dns_zone").(string)
+
+				return NormalizeRecordData(oldValue, recordType, dnsZone) ==
+					NormalizeRecordData(newValue, recordType, dnsZone)
+			},
 		},
 		"ttl": {
 			Type:         schema.TypeInt,
@@ -260,7 +291,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	dnsZone := d.Get("dns_zone").(string)
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordType := domain.RecordType(d.Get("type").(string))
-	recordData := d.Get("data").(string)
+	recordData := NormalizeRecordData(d.Get("data").(string), recordType, dnsZone)
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
 	record := &domain.Record{
 		Data:              recordData,
@@ -268,7 +299,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		TTL:               uint32(d.Get("ttl").(int)),
 		Type:              recordType,
 		Priority:          uint32(d.Get("priority").(int)),
-		GeoIPConfig:       expandDomainGeoIPConfig(d.Get("data").(string), geoIP, okGeoIP),
+		GeoIPConfig:       expandDomainGeoIPConfig(recordData, geoIP, okGeoIP),
 		HTTPServiceConfig: expandDomainHTTPService(d.GetOk("http_service")),
 		WeightedConfig:    expandDomainWeighted(d.GetOk("weighted")),
 		ViewConfig:        expandDomainView(d.GetOk("view")),
@@ -284,7 +315,7 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 				},
 			},
 		},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -309,15 +340,19 @@ func resourceRecordCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType).(string), dnsZoneData.Records)
+	currentRecord, err := getRecordFromTypeAndData(recordType, FlattenDomainData(recordData, recordType, dnsZone).(string), dnsZoneData.Records, dnsZone)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	recordID := fmt.Sprintf("%s/%s", dnsZone, currentRecord.ID)
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       currentRecord.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
 
-	d.SetId(recordID)
-	tflog.Debug(ctx, fmt.Sprintf("record ID[%s]", recordID))
+	tflog.Debug(ctx, fmt.Sprintf("record ID[%s/%s]", dnsZone, currentRecord.ID))
 
 	return resourceDomainRecordRead(ctx, d, m)
 }
@@ -417,12 +452,18 @@ func resourceDomainRecordRead(ctx context.Context, d *schema.ResourceData, m any
 	// get the default first record
 	projectID = dnsZones.DNSZones[0].ProjectID
 
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"dns_zone": dnsZone,
+		"id":       record.ID,
+	}, "dns_zone", "id"); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("root_zone", dnsZones.DNSZones[0].Subdomain == "")
-	d.SetId(record.ID)
 	_ = d.Set("dns_zone", dnsZone)
 	_ = d.Set("name", record.Name)
 	_ = d.Set("type", record.Type.String())
-	_ = d.Set("data", FlattenDomainData(record.Data, record.Type).(string))
+	_ = d.Set("data", FlattenDomainData(record.Data, record.Type, dnsZone).(string))
 	_ = d.Set("ttl", int(record.TTL))
 	_ = d.Set("priority", int(record.Priority))
 	_ = d.Set("geo_ip", flattenDomainGeoIP(record.GeoIPConfig))
@@ -450,18 +491,21 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	dnsZone := d.Get("dns_zone").(string)
 	req := &domain.UpdateDNSZoneRecordsRequest{
 		DNSZone:          dnsZone,
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	}
 
 	geoIP, okGeoIP := d.GetOk("geo_ip")
 	recordName := normalizeRecordName(d.Get("name").(string), dnsZone)
+	recordType := domain.RecordType(d.Get("type").(string))
+	recordData := NormalizeRecordData(d.Get("data").(string), recordType, dnsZone)
+
 	record := &domain.Record{
 		Name:              recordName,
-		Data:              d.Get("data").(string),
+		Data:              recordData,
 		Priority:          uint32(d.Get("priority").(int)),
 		TTL:               uint32(d.Get("ttl").(int)),
-		Type:              domain.RecordType(d.Get("type").(string)),
-		GeoIPConfig:       expandDomainGeoIPConfig(d.Get("data").(string), geoIP, okGeoIP),
+		Type:              recordType,
+		GeoIPConfig:       expandDomainGeoIPConfig(recordData, geoIP, okGeoIP),
 		HTTPServiceConfig: expandDomainHTTPService(d.GetOk("http_service")),
 		WeightedConfig:    expandDomainWeighted(d.GetOk("weighted")),
 		ViewConfig:        expandDomainView(d.GetOk("view")),
@@ -470,7 +514,7 @@ func resourceDomainRecordUpdate(ctx context.Context, d *schema.ResourceData, m a
 	req.Changes = []*domain.RecordChange{
 		{
 			Set: &domain.RecordChangeSet{
-				ID:      scw.StringPtr(locality.ExpandID(d.Id())),
+				ID:      new(locality.ExpandID(d.Id())),
 				Records: []*domain.Record{record},
 			},
 		},
@@ -503,7 +547,7 @@ func resourceDomainRecordDelete(ctx context.Context, d *schema.ResourceData, m a
 				},
 			},
 		},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords: new(false),
 	})
 	if err != nil {
 		return diag.FromErr(err)

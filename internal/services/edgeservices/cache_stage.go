@@ -8,6 +8,7 @@ import (
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,7 @@ func ResourceCacheStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    cacheStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -126,7 +128,9 @@ func ResourceCacheStageCreate(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	d.SetId(cacheStage.ID)
+	if err = identity.SetGlobalIdentity(d, cacheStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCacheStageRead(ctx, d, m)
 }
@@ -147,6 +151,17 @@ func ResourceCacheStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
+	diags := setCacheStageState(d, cacheStage)
+
+	err = identity.SetGlobalIdentity(d, cacheStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setCacheStageState(d *schema.ResourceData, cacheStage *edgeservices.CacheStage) diag.Diagnostics {
 	_ = d.Set("pipeline_id", cacheStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(cacheStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(cacheStage.UpdatedAt))

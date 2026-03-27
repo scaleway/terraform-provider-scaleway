@@ -28,12 +28,12 @@ func NewRegistrarDomainAPI(m any) *domain.RegistrarAPI {
 	return domain.NewRegistrarAPI(meta.ExtractScwClient(m))
 }
 
-func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record) (*domain.Record, error) {
+func getRecordFromTypeAndData(dnsType domain.RecordType, data string, records []*domain.Record, dnsZone string) (*domain.Record, error) {
 	var currentRecord *domain.Record
 
 	for _, r := range records {
-		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type).(string)
-		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type).(string)
+		flattedData := FlattenDomainData(strings.ToLower(r.Data), r.Type, dnsZone).(string)
+		flattenCurrentData := FlattenDomainData(strings.ToLower(data), r.Type, dnsZone).(string)
 
 		if dnsType == domain.RecordTypeSRV {
 			if flattedData == flattenCurrentData {
@@ -236,31 +236,31 @@ func ExpandNewContact(contactMap map[string]any) *domain.NewContact {
 	}
 
 	if v, ok := contactMap["company_name"].(string); ok {
-		contact.CompanyName = scw.StringPtr(v)
+		contact.CompanyName = new(v)
 	}
 
 	if v, ok := contactMap["email_alt"].(string); ok {
-		contact.EmailAlt = scw.StringPtr(v)
+		contact.EmailAlt = new(v)
 	}
 
 	if v, ok := contactMap["fax_number"].(string); ok {
-		contact.FaxNumber = scw.StringPtr(v)
+		contact.FaxNumber = new(v)
 	}
 
 	if v, ok := contactMap["address_line_2"].(string); ok {
-		contact.AddressLine2 = scw.StringPtr(v)
+		contact.AddressLine2 = new(v)
 	}
 
 	if v, ok := contactMap["vat_identification_code"].(string); ok {
-		contact.VatIDentificationCode = scw.StringPtr(v)
+		contact.VatIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["company_identification_code"].(string); ok {
-		contact.CompanyIDentificationCode = scw.StringPtr(v)
+		contact.CompanyIDentificationCode = new(v)
 	}
 
 	if v, ok := contactMap["state"].(string); ok {
-		contact.State = scw.StringPtr(v)
+		contact.State = new(v)
 	}
 
 	if extFr, ok := contactMap["extension_fr"].(map[string]any); ok && len(extFr) > 0 {
@@ -397,6 +397,31 @@ func SplitDomains(input *string) []string {
 	}
 
 	return result
+}
+
+func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, domainName string, projectID *string) (*domain.Task, error) {
+	req := &domain.RegistrarAPIListTasksRequest{
+		Domain:    &domainName,
+		ProjectID: projectID,
+	}
+
+	listTasksResponse, err := registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, fmt.Errorf("error listing tasks: %w", err)
+	}
+
+	domainNameLower := strings.ToLower(domainName)
+
+	for _, task := range listTasksResponse.Tasks {
+		domains := SplitDomains(task.Domain)
+		for _, d := range domains {
+			if strings.ToLower(d) == domainNameLower {
+				return task, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("no domain registration task found for domain %q", domainName)
 }
 
 func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
@@ -657,9 +682,44 @@ func normalizeRecordName(name, dnsZone string) string {
 	}
 
 	suffix := "." + dnsZone
-	if strings.HasSuffix(name, suffix) {
-		return strings.TrimSuffix(name, suffix)
+	if before, ok := strings.CutSuffix(name, suffix); ok {
+		return before
 	}
 
 	return name
+}
+
+func NormalizeRecordData(data string, recordType domain.RecordType, dnsZone string) string {
+	data = strings.TrimSpace(data)
+	if data == "" {
+		return ""
+	}
+
+	switch recordType {
+	case domain.RecordTypeSRV:
+		return NormalizeSRVData(data, dnsZone)
+	case domain.RecordTypeCNAME, domain.RecordTypeNS, domain.RecordTypeMX:
+		return NormalizeTargetFQDN(data, dnsZone)
+	default:
+		return data
+	}
+}
+
+func NormalizeTargetFQDN(target, dnsZone string) string {
+	target = strings.TrimSpace(target)
+	if target == "" || target == "@" {
+		return ""
+	}
+
+	target = strings.ToLower(target)
+	dnsZone = strings.ToLower(strings.TrimSpace(dnsZone))
+
+	target = strings.TrimRight(target, ".")
+	dnsZone = strings.TrimRight(dnsZone, ".")
+
+	if strings.Contains(target, ".") {
+		return target + "."
+	}
+
+	return fmt.Sprintf("%s.%s.", target, dnsZone)
 }

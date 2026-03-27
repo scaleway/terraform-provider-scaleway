@@ -37,12 +37,14 @@ jobs:
           - ipam
           - jobs
           - k8s
+          - kafka
           - keymanager
           - lb
           - marketplace
           - mnq
           - mongodb
           - object
+          - opensearch
           - rdb
           - redis
           - registry
@@ -53,15 +55,15 @@ jobs:
           - vpc
           - vpcgw
           - webhosting
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version: stable
       - name: Run Acceptance Tests
@@ -107,19 +109,19 @@ jobs:
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
   sweeper:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     needs: nightly
     if: always()
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version: stable
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
       - name: Run sweepers
         run: make sweep
         env:

@@ -112,7 +112,7 @@ func TestAccGenerateDataKeyEphemeralResource_WithoutPlaintext(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-				  name        = "tf-test-generate-data-key"
+				  name        = "tf-test-generate-no-plaintext"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"

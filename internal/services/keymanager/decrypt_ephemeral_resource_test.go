@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
@@ -22,6 +23,10 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			secrettestfuncs.CheckSecretDestroy(tt),
+			IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -43,6 +48,7 @@ func TestAccDecryptEphemeralResource_Basic(t *testing.T) {
 				  key_id     = scaleway_key_manager_key.main.id
 				  ciphertext = ephemeral.scaleway_key_manager_encrypt.test_encrypt.ciphertext
 				  region     = "fr-par"
+				  depends_on = [ephemeral.scaleway_key_manager_encrypt.test_encrypt]
 				}
 
 				resource "scaleway_secret" "main" {
@@ -82,11 +88,15 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			secrettestfuncs.CheckSecretDestroy(tt),
+			IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-				  name        = "tf-test-decrypt-key"
+				  name        = "tf-test-decrypt-key-ad"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"
@@ -112,7 +122,7 @@ func TestAccDecryptEphemeralResource_WithAssociatedData(t *testing.T) {
 				}
 
 				resource "scaleway_secret" "main" {
-					name        = "test-decrypt-secret"
+					name        = "test-decrypt-secret-ad"
 				}
 
 				resource "scaleway_secret_version" "data" {
@@ -163,11 +173,14 @@ func TestAccDecryptEphemeralResource_InvalidAssociatedData(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "scaleway_key_manager_key" "test_key" {
-				  name        = "tf-test-decrypt-key"
+				  name        = "tf-test-decrypt-key-invalid"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"

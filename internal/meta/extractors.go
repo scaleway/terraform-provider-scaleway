@@ -142,14 +142,14 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 					return nil, false
 				}
 
-				return getKeyInRawConfigMap(value.AsValueSlice()[index].AsValueMap(), strings.Join(keys[2:], ""), ty)
+				return getKeyInRawConfigMap(value.AsValueSlice()[index].AsValueMap(), strings.Join(keys[2:], "."), ty)
 			}
 			// If it's a list and the second element of the key is '#', we look for the value in the list's first element
-			return getKeyInRawConfigMap(value.AsValueSlice()[0].AsValueMap(), strings.Join(keys[2:], ""), ty)
+			return getKeyInRawConfigMap(value.AsValueSlice()[0].AsValueMap(), strings.Join(keys[2:], "."), ty)
 
-		case value.Type().IsMapType():
-			// If it's a map, we look for the value in the map
-			return getKeyInRawConfigMap(value.AsValueMap(), strings.Join(keys[1:], ""), ty)
+		case value.Type().IsMapType(), value.Type().IsObjectType():
+			// If it's a map or object, we look for the value in it
+			return getKeyInRawConfigMap(value.AsValueMap(), strings.Join(keys[1:], "."), ty)
 
 		case value.Type().IsPrimitiveType():
 			// If it's a primitive type (bool, string, number), we convert the value to the expected type given as parameter before returning it

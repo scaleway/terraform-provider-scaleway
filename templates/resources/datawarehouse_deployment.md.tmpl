@@ -40,6 +40,33 @@ resource "scaleway_datawarehouse_deployment" "main" {
 }
 ```
 
+### With Private Network
+
+```terraform
+resource "scaleway_vpc" "main" {
+  name = "my-vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn" {
+  name   = "my-private-network"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "my-datawarehouse"
+  version        = "v25"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "thiZ_is_v&ry_s3cret"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -52,10 +79,12 @@ The following arguments are supported:
 - `ram_per_cpu` - (Required) RAM per CPU in GB.
 - `password` - (Optional) Password for the first user of the deployment. If not specified, a random password will be generated. Note: password is only used during deployment creation.
 - `tags` - (Optional) List of tags to apply to the deployment.
+- `private_network` - (Optional, Forces new resource) Private network configuration to expose your deployment. Changing this forces recreation of the deployment.
+    - `pn_id` - (Required) The ID of the private network. Format: `{region}/{id}` or just `{id}`.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
-~> **Important:** Private endpoints are not yet supported by the API. A public endpoint is always created automatically.
+~> **Note:** A public endpoint is always created automatically alongside any private network configuration.
 
 ~> **Note:** During the private beta phase, modifying `cpu_min`, `cpu_max`, and `replica_count` has no effect until the feature is launched in general availability.
 
@@ -71,6 +100,13 @@ In addition to all arguments above, the following attributes are exported:
     - `id` - The ID of the public endpoint.
     - `dns_record` - DNS record for the public endpoint.
     - `services` - List of services exposed on the public endpoint.
+        - `protocol` - Service protocol (e.g., "tcp", "https", "mysql").
+        - `port` - TCP port number.
+- `private_network` - Private endpoint information (only present if configured).
+    - `pn_id` - The ID of the private network.
+    - `id` - The ID of the private endpoint.
+    - `dns_record` - DNS record for the private endpoint.
+    - `services` - List of services exposed on the private endpoint.
         - `protocol` - Service protocol (e.g., "tcp", "https", "mysql").
         - `port` - TCP port number.
 

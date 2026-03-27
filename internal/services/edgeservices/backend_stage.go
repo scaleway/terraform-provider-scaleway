@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +26,7 @@ func ResourceBackendStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    backendStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -75,14 +78,16 @@ func backendStageSchema() map[string]*schema.Schema {
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"id": {
-									Type:        schema.TypeString,
-									Optional:    true,
-									Description: "ID of the Load Balancer",
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
 								},
 								"frontend_id": {
-									Type:        schema.TypeString,
-									Optional:    true,
-									Description: "ID of the frontend linked to the Load Balancer",
+									Type:             schema.TypeString,
+									Optional:         true,
+									Description:      "ID of the frontend linked to the Load Balancer",
+									DiffSuppressFunc: dsf.Locality,
 								},
 								"is_ssl": {
 									Type:        schema.TypeBool,
@@ -93,6 +98,11 @@ func backendStageSchema() map[string]*schema.Schema {
 									Type:        schema.TypeString,
 									Optional:    true,
 									Description: "Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer",
+								},
+								"has_websocket": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Defines whether to forward websocket requests to the load balancer",
 								},
 								"zone": zonal.Schema(),
 							},
@@ -130,7 +140,7 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if lbConfig, ok := d.GetOk("lb_backend_config"); ok {
-		req.ScalewayLB = expandLBBackendConfig(zone, lbConfig)
+		req.ScalewayLB = expandLBBackendConfig(d, zone, lbConfig)
 	}
 
 	backendStage, err := api.CreateBackendStage(req, scw.WithContext(ctx))
@@ -138,7 +148,9 @@ func ResourceBackendStageCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(backendStage.ID)
+	if err = identity.SetGlobalIdentity(d, backendStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceBackendStageRead(ctx, d, m)
 }
@@ -162,6 +174,17 @@ func ResourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
+	diags := setBackendStageState(d, backendStage, zone)
+
+	err = identity.SetGlobalIdentity(d, backendStage.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setBackendStageState(d *schema.ResourceData, backendStage *edgeservices.BackendStage, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("pipeline_id", backendStage.PipelineID)
 	_ = d.Set("created_at", types.FlattenTime(backendStage.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(backendStage.UpdatedAt))
@@ -195,7 +218,7 @@ func ResourceBackendStageUpdate(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	if d.HasChange("lb_backend_config") {
-		updateRequest.ScalewayLB = expandLBBackendConfig(zone, d.Get("lb_backend_config"))
+		updateRequest.ScalewayLB = expandLBBackendConfig(d, zone, d.Get("lb_backend_config"))
 		hasChanged = true
 	}
 

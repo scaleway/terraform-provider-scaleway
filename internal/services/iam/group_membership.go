@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -97,20 +98,12 @@ func resourceIamGroupMembershipRead(ctx context.Context, d *schema.ResourceData,
 	foundInGroup := false
 
 	if userID != "" {
-		for _, groupUserID := range group.UserIDs {
-			if groupUserID == userID {
-				foundInGroup = true
-
-				break
-			}
+		if slices.Contains(group.UserIDs, userID) {
+			foundInGroup = true
 		}
 	} else if applicationID != "" {
-		for _, groupApplicationID := range group.ApplicationIDs {
-			if groupApplicationID == applicationID {
-				foundInGroup = true
-
-				break
-			}
+		if slices.Contains(group.ApplicationIDs, applicationID) {
+			foundInGroup = true
 		}
 	}
 

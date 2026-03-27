@@ -11,17 +11,21 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
+	"github.com/aws/smithy-go/middleware"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -29,6 +33,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
+	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const (
@@ -62,6 +67,9 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
+		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+			return awsmiddleware.AddUserAgentKeyValue("terraform-provider-scaleway", version.Version)(stack)
+		})
 	})
 
 	return client, nil
@@ -228,7 +236,7 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	tagsSet := make([]s3Types.Tag, 0, len(tags.(map[string]any)))
 	for key, value := range tags.(map[string]any) {
 		tagsSet = append(tagsSet, s3Types.Tag{
-			Key:   scw.StringPtr(key),
+			Key:   new(key),
 			Value: types.ExpandStringPtr(value),
 		})
 	}
@@ -356,7 +364,7 @@ func expandBucketCORS(ctx context.Context, rawCors []any, bucket string) []s3Typ
 				rule.ExposeHeaders = toStringSlice(ctx, value)
 			case "max_age_seconds":
 				if maxAge, ok := value.(int); ok {
-					rule.MaxAgeSeconds = scw.Int32Ptr(int32(maxAge))
+					rule.MaxAgeSeconds = new(int32(maxAge))
 				} else {
 					tflog.Warn(ctx, fmt.Sprintf("Invalid type for max_age_seconds in bucket %s: %T", bucket, value))
 				}
@@ -392,11 +400,11 @@ func toStringSlice(ctx context.Context, input any) []string {
 
 func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName string, key string, versionID string, _ bool) error {
 	input := &s3.DeleteObjectInput{
-		Bucket: scw.StringPtr(bucketName),
-		Key:    scw.StringPtr(key),
+		Bucket: new(bucketName),
+		Key:    new(key),
 	}
 	if versionID != "" {
-		input.VersionId = scw.StringPtr(versionID)
+		input.VersionId = new(versionID)
 	}
 
 	_, err := conn.DeleteObject(ctx, input)
@@ -408,7 +416,7 @@ func deleteS3ObjectVersion(ctx context.Context, conn *s3.Client, bucketName stri
 // returns true if legal hold was removed
 func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucketName string, objectVersion *s3Types.ObjectVersion) (bool, error) {
 	objectHead, err := conn.HeadObject(ctx, &s3.HeadObjectInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 	})
@@ -423,7 +431,7 @@ func removeS3ObjectVersionLegalHold(ctx context.Context, conn *s3.Client, bucket
 	}
 
 	_, err = conn.PutObjectLegalHold(ctx, &s3.PutObjectLegalHoldInput{
-		Bucket:    scw.StringPtr(bucketName),
+		Bucket:    new(bucketName),
 		Key:       objectVersion.Key,
 		VersionId: objectVersion.VersionId,
 		LegalHold: &s3Types.ObjectLockLegalHold{
@@ -469,7 +477,7 @@ func processAllPagesObject(ctx context.Context, bucketName string, conn *s3.Clie
 	deletionWorkers := findDeletionWorkerCapacity()
 	nObject := int64(0)
 	input := &s3.ListObjectVersionsInput{
-		Bucket: scw.StringPtr(bucketName),
+		Bucket: new(bucketName),
 	}
 	pages := s3.NewListObjectVersionsPaginator(conn, input)
 	pool := workerpool.NewWorkerPool(deletionWorkers)
@@ -553,10 +561,7 @@ func deleteVersionBucket(ctx context.Context, conn *s3.Client, bucketName string
 }
 
 func findDeletionWorkerCapacity() int {
-	deletionWorkers := runtime.NumCPU()
-	if deletionWorkers > maxObjectVersionDeletionWorkers {
-		deletionWorkers = maxObjectVersionDeletionWorkers
-	}
+	deletionWorkers := min(runtime.NumCPU(), maxObjectVersionDeletionWorkers)
 
 	return deletionWorkers
 }
@@ -734,4 +739,115 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 
 		return true, true
 	}
+}
+
+func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client, bucketName string) (*s3Types.ServerSideEncryptionConfiguration, error) {
+	input := s3.GetBucketEncryptionInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	output, err := conn.GetBucketEncryption(ctx, &input)
+
+	if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucket, ErrCodeServerSideEncryptionConfigurationNotFound) {
+		return nil, &retry.NotFoundError{
+			LastError: err,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil || output.ServerSideEncryptionConfiguration == nil {
+		return nil, fmt.Errorf("no configuration found for bucket %q", bucketName)
+	}
+
+	return output.ServerSideEncryptionConfiguration, nil
+}
+
+func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionByDefault {
+	if len(l) == 0 || l[0] == nil {
+		return nil
+	}
+
+	tfMap, ok := l[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	sse := &s3Types.ServerSideEncryptionByDefault{}
+
+	if v, ok := tfMap["sse_algorithm"].(string); ok && v != "" {
+		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
+	}
+
+	return sse
+}
+
+func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule {
+	var rules []s3Types.ServerSideEncryptionRule
+
+	for _, tfMapRaw := range l {
+		tfMap, ok := tfMapRaw.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		rule := s3Types.ServerSideEncryptionRule{}
+
+		if v, ok := tfMap["apply_server_side_encryption_by_default"].([]any); ok && len(v) > 0 && v[0] != nil {
+			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
+		}
+
+		rules = append(rules, rule)
+	}
+
+	return rules
+}
+
+func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) []any {
+	results := make([]any, 0, len(rules))
+
+	for _, rule := range rules {
+		m := make(map[string]any)
+
+		if rule.ApplyServerSideEncryptionByDefault != nil {
+			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
+		}
+
+		if rule.BlockedEncryptionTypes != nil {
+			if flattened := flattenBlockedEncryptionTypes(rule.BlockedEncryptionTypes); flattened != nil {
+				m["blocked_encryption_types"] = flattened
+			}
+		}
+
+		results = append(results, m)
+	}
+
+	return results
+}
+
+func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDefault) []any {
+	if sse == nil {
+		return nil
+	}
+
+	m := map[string]any{
+		"sse_algorithm": sse.SSEAlgorithm,
+	}
+
+	return []any{m}
+}
+
+func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
+	if bet == nil || len(bet.EncryptionType) == 0 {
+		return nil
+	}
+
+	var result []any
+	for _, et := range bet.EncryptionType {
+		result = append(result, string(et))
+	}
+
+	return result
 }

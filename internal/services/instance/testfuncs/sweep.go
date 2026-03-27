@@ -233,7 +233,7 @@ func testSweepImage(_ string) error {
 
 		listImagesResponse, err := api.ListImages(&instanceSDK.ListImagesRequest{
 			Zone:   zone,
-			Public: scw.BoolPtr(false),
+			Public: new(false),
 		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing instance images in sweeper: %w", err)

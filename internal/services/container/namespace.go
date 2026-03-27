@@ -126,7 +126,7 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
-		ActivateVpcIntegration:     scw.BoolPtr(true),
+		ActivateVpcIntegration:     new(true),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")

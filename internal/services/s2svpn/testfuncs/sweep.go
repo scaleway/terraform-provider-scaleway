@@ -12,9 +12,8 @@ import (
 
 func AddTestSweepers() {
 	resource.AddTestSweepers("scaleway_s2s_vpn_connection", &resource.Sweeper{
-		Name:         "scaleway_s2s_vpn_connection",
-		F:            testSweepConnection,
-		Dependencies: []string{"scaleway_s2s_vpn_gateway", "scaleway_s2s_vpn_customer_gateway"},
+		Name: "scaleway_s2s_vpn_connection",
+		F:    testSweepConnection,
 	})
 
 	resource.AddTestSweepers("scaleway_s2s_vpn_gateway", &resource.Sweeper{

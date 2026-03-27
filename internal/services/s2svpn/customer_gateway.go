@@ -2,14 +2,13 @@ package s2svpn
 
 import (
 	"context"
-	"net"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,56 +23,61 @@ func ResourceCustomerGateway() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the customer gateway",
+		SchemaFunc:    customerGatewaySchema,
+	}
+}
+
+func customerGatewaySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the customer gateway",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The list of tags to apply to the customer gateway",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The list of tags to apply to the customer gateway",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"ipv4_public": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The public IPv4 address of the customer gateway",
-			},
-			"ipv6_public": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The public IPv6 address of the customer gateway",
-			},
-			"asn": {
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "The AS Number of the customer gateway",
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the TLS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the TLS stage",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Organization ID of the Project",
-			},
+		},
+		"ipv4_public": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The public IPv4 address of the customer gateway",
+		},
+		"ipv6_public": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The public IPv6 address of the customer gateway",
+		},
+		"asn": {
+			Type:        schema.TypeInt,
+			Required:    true,
+			Description: "The AS Number of the customer gateway",
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the TLS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the TLS stage",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"organization_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Organization ID of the Project",
 		},
 	}
 }
@@ -92,12 +96,22 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		Asn:       uint32(d.Get("asn").(int)),
 	}
 
-	if d.Get("ipv4_public").(string) != "" {
-		req.IPv4Public = scw.IPPtr(net.ParseIP(d.Get("ipv4_public").(string)))
+	if ipv4Public, ok := d.GetOk("ipv4_public"); ok {
+		ipv4PublicNet, err := types.ExpandIPNet(ipv4Public.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv4Public = &ipv4PublicNet
 	}
 
-	if d.Get("ipv6_public").(string) != "" {
-		req.IPv6Public = scw.IPPtr(net.ParseIP(d.Get("ipv6_public").(string)))
+	if ipv6Public, ok := d.GetOk("ipv6_public"); ok {
+		ipv6PublicNet, err := types.ExpandIPNet(ipv6Public.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv6Public = &ipv6PublicNet
 	}
 
 	res, err := api.CreateCustomerGateway(req, scw.WithContext(ctx))
@@ -105,7 +119,10 @@ func ResourceCustomerGatewayCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCustomerGatewayRead(ctx, d, m)
 }
@@ -130,6 +147,17 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
+	diags := setCustomerGatewayState(d, gateway)
+
+	err = identity.SetRegionalIdentity(d, gateway.Region, gateway.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setCustomerGatewayState(d *schema.ResourceData, gateway *s2s_vpn.CustomerGateway) diag.Diagnostics {
 	_ = d.Set("name", gateway.Name)
 	_ = d.Set("project_id", gateway.ProjectID)
 	_ = d.Set("organization_id", gateway.OrganizationID)
@@ -139,6 +167,7 @@ func ResourceCustomerGatewayRead(ctx context.Context, d *schema.ResourceData, m 
 	_ = d.Set("ipv4_public", types.FlattenIPPtr(gateway.PublicIPv4))
 	_ = d.Set("ipv6_public", types.FlattenIPPtr(gateway.PublicIPv6))
 	_ = d.Set("asn", int(gateway.Asn))
+	_ = d.Set("region", gateway.Region.String())
 
 	return nil
 }
@@ -167,12 +196,22 @@ func ResourceCustomerGatewayUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("ipv4_public") {
-		req.IPv4Public = scw.IPPtr(net.ParseIP(d.Get("ipv4_public").(string)))
+		ipv4PublicNet, err := types.ExpandIPNet(d.Get("ipv4_public").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv4Public = &ipv4PublicNet
 		hasChanged = true
 	}
 
 	if d.HasChange("ipv6_public") {
-		req.IPv6Public = scw.IPPtr(net.ParseIP(d.Get("ipv6_public").(string)))
+		ipv6PublicNet, err := types.ExpandIPNet(d.Get("ipv6_public").(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		req.IPv6Public = &ipv6PublicNet
 		hasChanged = true
 	}
 

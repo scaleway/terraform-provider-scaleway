@@ -9,6 +9,9 @@ The `scaleway_secret_version` resource allows you to create and manage secret ve
 
 Refer to the Secret Manager [product documentation](https://www.scaleway.com/en/docs/secret-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/secret-manager/) for more information.
 
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`data_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `data` argument. This ensures your sensitive data is never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
 ## Example Usage
 
 ### Create a secret and a version
@@ -37,19 +40,27 @@ resource "scaleway_secret_version" "v1" {
 The following arguments are supported:
 
 - `secret_id` - (Required) The ID of the secret associated with the version.
-- `data` - (Optional) The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. Find out more on the [data section](/#data-information).
-- `data_wo` - (Optional) The data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`. Find out more on the [data section](/#data-information).
+- `data` - (Optional) The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
+- `data_wo` - (Optional) The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
 - `data_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
 - `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
-Note: The `data` should be a base64-encoded string when sent from the API. **The provider handles this encoding so you do not need to encode the data yourself.**
+Only one of `data` or `data_wo` should be specified. If both are provided, Terraform will return an error.
 
+Note: The `data` (or `data_wo`) should be a raw string. **The provider handles encoding this string to base64 before sending it to the API so you do not need to encode the data yourself.** The maximum size for either field is 64KiB.
+
+#### data
 Updating `data` will force the creation of a new secret version.
 
 Keep in mind that this is a sensitive attribute. For more information, see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
+
+#### data_wo
+`data_wo` is a [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) argument, ideal for sensitive secrets that should not be stored in Terraform state. As such, its value is ephemeral and **will not be stored in the state** or displayed in plans.
+
+To update the `data_wo` and trigger a new version creation, you must also update the `data_wo_version` attribute.
 
 ~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
 

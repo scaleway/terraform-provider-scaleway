@@ -2,12 +2,14 @@ package edgeservices
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	edgeservices "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +25,7 @@ func ResourceDNSStage() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    dnsStageSchema,
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -101,7 +104,9 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(dnsStage.ID)
+	if err = identity.SetGlobalIdentity(d, dnsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceDNSStageRead(ctx, d, m)
 }
@@ -122,16 +127,10 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("backend_stage_id", types.FlattenStringPtr(dnsStage.BackendStageID))
-	_ = d.Set("cache_stage_id", types.FlattenStringPtr(dnsStage.CacheStageID))
-	_ = d.Set("pipeline_id", dnsStage.PipelineID)
-	_ = d.Set("tls_stage_id", types.FlattenStringPtr(dnsStage.TLSStageID))
-	_ = d.Set("created_at", types.FlattenTime(dnsStage.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
-	_ = d.Set("type", dnsStage.Type.String())
-	_ = d.Set("default_fqdn", dnsStage.DefaultFqdn)
-
 	oldFQDNs := d.Get("fqdns").([]any)
+
+	diags := setDNSStageState(d, dnsStage)
+
 	oldFQDNsSet := make(map[string]bool)
 
 	for _, fqdn := range oldFQDNs {
@@ -139,6 +138,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	newFQDNs := make([]string, 0)
+
 	// add all FQDNs from the API response
 	for _, fqdn := range dnsStage.Fqdns {
 		if oldFQDNsSet[fqdn] || len(oldFQDNs) == 0 {
@@ -148,15 +148,7 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 	// add any FQDNs from the old state that aren't in the API response
 	for _, oldFQDN := range oldFQDNs {
-		found := false
-
-		for _, newFQDN := range newFQDNs {
-			if oldFQDN.(string) == newFQDN {
-				found = true
-
-				break
-			}
-		}
+		found := slices.Contains(newFQDNs, oldFQDN.(string))
 
 		if !found {
 			newFQDNs = append(newFQDNs, oldFQDN.(string))
@@ -166,6 +158,24 @@ func ResourceDNSStageRead(ctx context.Context, d *schema.ResourceData, m any) di
 	if err = d.Set("fqdns", newFQDNs); err != nil {
 		return diag.FromErr(err)
 	}
+
+	if err = identity.SetGlobalIdentity(d, dnsStage.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setDNSStageState(d *schema.ResourceData, dnsStage *edgeservices.DNSStage) diag.Diagnostics {
+	_ = d.Set("backend_stage_id", types.FlattenStringPtr(dnsStage.BackendStageID))
+	_ = d.Set("cache_stage_id", types.FlattenStringPtr(dnsStage.CacheStageID))
+	_ = d.Set("pipeline_id", dnsStage.PipelineID)
+	_ = d.Set("tls_stage_id", types.FlattenStringPtr(dnsStage.TLSStageID))
+	_ = d.Set("created_at", types.FlattenTime(dnsStage.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(dnsStage.UpdatedAt))
+	_ = d.Set("type", dnsStage.Type.String())
+	_ = d.Set("default_fqdn", dnsStage.DefaultFqdn)
+	_ = d.Set("fqdns", dnsStage.Fqdns)
 
 	return nil
 }

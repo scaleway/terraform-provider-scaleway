@@ -63,6 +63,7 @@ func TestAccFunctionTrigger_SQS(t *testing.T) {
 							project_id = scaleway_mnq_sqs.main.project_id
 							region = scaleway_mnq_sqs.main.region
 						}
+						depends_on = [ "scaleway_mnq_sqs_credentials.main" ]
 					}
 				`
 

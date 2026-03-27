@@ -40,7 +40,9 @@ func testSweepAccountProject(_ string) error {
 				ProjectID: project.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete project: %w", err)
+				logging.L.Debugf("sweeper: failed to delete project %s: %w", project.ID, err)
+
+				continue
 			}
 		}
 

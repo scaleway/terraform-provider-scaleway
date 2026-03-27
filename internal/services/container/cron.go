@@ -149,7 +149,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	req := &container.UpdateCronRequest{
-		ContainerID: scw.StringPtr(locality.ExpandID(d.Get("container_id"))),
+		ContainerID: new(locality.ExpandID(d.Get("container_id"))),
 		CronID:      locality.ExpandID(containerCronID),
 		Region:      region,
 	}
@@ -157,7 +157,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	shouldUpdate := false
 
 	if d.HasChange("schedule") {
-		req.Schedule = scw.StringPtr(d.Get("schedule").(string))
+		req.Schedule = new(d.Get("schedule").(string))
 		shouldUpdate = true
 	}
 
@@ -172,7 +172,7 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("name") {
-		req.Name = scw.StringPtr(d.Get("name").(string))
+		req.Name = new(d.Get("name").(string))
 		shouldUpdate = true
 	}
 

@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"net/http"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -41,6 +42,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"../services/function/testdata/function-namespace-vpc-integration.cassette.yaml":                   {},
 		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml":              {},
 		"../services/keymanager/testdata/decrypt-ephemeral-resource-invalid-associated-data.cassette.yaml": {},
+		"../services/block/testdata/action-snapshot-export-basic.cassette.yaml":                            {},
 	}
 }
 
@@ -101,13 +103,7 @@ func checkErrCodeExcept(i *cassette.Interaction, c *cassette.Cassette, codes ...
 	}
 
 	if i.Response.Code >= 400 {
-		for _, httpCode := range codes {
-			if i.Response.Code == httpCode {
-				return true
-			}
-		}
-
-		return false
+		return slices.Contains(codes, i.Response.Code)
 	}
 
 	return true

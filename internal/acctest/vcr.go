@@ -27,12 +27,6 @@ import (
 // UpdateCassettes will update all cassettes of a given test
 var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "true", "Record Cassettes")
 
-// SensitiveFields is a map with keys listing fields that should be anonymized
-// value will be set in place of its old value
-var SensitiveFields = map[string]any{
-	"secret_key": "00000000-0000-0000-0000-000000000000",
-}
-
 // QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
 var QueryMatcherIgnore = []string{
 	"organization_id",
@@ -49,6 +43,8 @@ var BodyMatcherIgnore = []string{
 	"mnq_region",
 	"mnq_nats_account_id",
 	"mnq_nats_subject",
+	// cockpit exporter datadog destination
+	"api_key",
 }
 
 // removeKeyRecursive removes a key from a map and all its nested maps
@@ -102,12 +98,16 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	r, err := request.GetBody()
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to copy request body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to copy request body: %v", err)
+
+		return false
 	}
 
 	requestBody, err := io.ReadAll(r)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to read actualRequest body: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to read actualRequest body: %v", err)
+
+		return false
 	}
 
 	// Try to match raw bodies if they are not JSON (ex: cloud-init config)
@@ -127,7 +127,9 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 	if !json.Valid(requestBody) {
 		requestValues, err := url.ParseQuery(string(requestBody))
 		if err != nil {
-			panic(fmt.Errorf("cassette body matcher: failed to parse body as url values: %w", err)) // lintignore: R009
+			logging.L.Errorf("cassette body matcher: failed to parse body as url values: %v", err)
+
+			return false
 		}
 
 		// Remove keys that should be ignored during comparison
@@ -140,7 +142,9 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 
 	err = json.Unmarshal(requestBody, &requestJSON)
 	if err != nil {
-		panic(fmt.Errorf("cassette body matcher: failed to parse request body as json: %w", err)) // lintignore: R009
+		logging.L.Errorf("cassette body matcher: failed to parse request body as json: %v", err)
+
+		return false
 	}
 
 	err = json.Unmarshal([]byte(cassette.Body), &cassetteJSON)

@@ -23,6 +23,9 @@ func ResourceKeyManagerKey() *schema.Resource {
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		CustomizeDiff: customdiff.All(
 			validateUsageAlgorithmCombination(),
 		),
@@ -52,19 +55,20 @@ func keySchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Algorithm to use for the key. The valid algorithms depend on the usage type.",
 			ValidateDiagFunc: func(i any, p cty.Path) diag.Diagnostics {
-				var allKnownAlgos []string
-
 				symAlgos := key_manager.KeyAlgorithmSymmetricEncryption("").Values()
+				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
+				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
+
+				allKnownAlgos := make([]string, 0, len(symAlgos)+len(asymEncAlgos)+len(asymSignAlgos))
+
 				for _, algo := range symAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
 				}
 
-				asymEncAlgos := key_manager.KeyAlgorithmAsymmetricEncryption("").Values()
 				for _, algo := range asymEncAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
 				}
 
-				asymSignAlgos := key_manager.KeyAlgorithmAsymmetricSigning("").Values()
 				for _, algo := range asymSignAlgos {
 					allKnownAlgos = append(allKnownAlgos, string(algo))
 				}

@@ -3,6 +3,7 @@ package acctest
 import (
 	"net/url"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -108,8 +109,8 @@ func compareFieldsStrings(expected, actual string) bool {
 	actualHandled := actual
 
 	// Remove s3 url suffix to allow comparison
-	if strings.HasSuffix(actual, ".s3-website.fr-par.scw.cloud") {
-		actual = strings.TrimSuffix(actual, ".s3-website.fr-par.scw.cloud")
+	if before, ok := strings.CutSuffix(actual, ".s3-website.fr-par.scw.cloud"); ok {
+		actual = before
 		expected = strings.TrimSuffix(expected, ".s3-website.fr-par.scw.cloud")
 	}
 
@@ -133,12 +134,8 @@ func compareStringSlices(request, cassette []string) bool {
 		return false
 	}
 
-	sort.Slice(request, func(i, j int) bool {
-		return request[i] < request[j]
-	})
-	sort.Slice(cassette, func(i, j int) bool {
-		return cassette[i] < cassette[j]
-	})
+	slices.Sort(request)
+	slices.Sort(cassette)
 
 	for i, v := range request {
 		if !compareFieldsStrings(v, cassette[i]) {

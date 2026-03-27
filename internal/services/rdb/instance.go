@@ -2,6 +2,7 @@ package rdb
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io"
@@ -17,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -25,8 +27,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
+//go:embed descriptions/instance.md
+var instanceDescription string
+
 func ResourceInstance() *schema.Resource {
 	return &schema.Resource{
+		Description:   instanceDescription,
 		CreateContext: ResourceRdbInstanceCreate,
 		ReadContext:   ResourceRdbInstanceRead,
 		UpdateContext: ResourceRdbInstanceUpdate,
@@ -41,9 +47,11 @@ func ResourceInstance() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
-		SchemaFunc:    instanceSchema,
-		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		SchemaVersion:    0,
+		SchemaFunc:       instanceSchema,
+		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -118,10 +126,25 @@ func instanceSchema() map[string]*schema.Schema {
 			Description: "Identifier for the first user of the database instance",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Optional:    true,
-			Description: "Password for the first user of the database instance",
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password for the first user of the database instance in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"settings": {
 			Type: schema.TypeMap,
@@ -448,9 +471,20 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	} else {
+		var password string
+		if _, ok := d.GetOk("password_wo_version"); ok {
+			password = d.GetRawConfig().GetAttr("password_wo").AsString()
+		} else {
+			// If `password` is not set, it will be set as the default empty string
+			password = d.Get("password").(string)
+		}
+
 		createReq := &rdb.CreateInstanceRequest{
 			Region:        region,
 			ProjectID:     types.ExpandStringPtr(d.Get("project_id")),
@@ -460,7 +494,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			IsHaCluster:   d.Get("is_ha_cluster").(bool),
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
-			Password:      d.Get("password").(string),
+			Password:      password,
 			VolumeType:    rdb.VolumeType(d.Get("volume_type").(string)),
 			Encryption: &rdb.EncryptionAtRest{
 				Enabled: d.Get("encryption_at_rest").(bool),
@@ -501,7 +535,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	}
 
@@ -514,14 +551,14 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	// BackupScheduleFrequency and BackupScheduleRetention can only configure after instance creation
 	if !d.Get("disable_backup").(bool) {
 		updateReq.BackupSameRegion = types.ExpandBoolPtr(d.Get("backup_same_region"))
-		updateReq.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		updateReq.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 
 		if backupScheduleFrequency, okFrequency := d.GetOk("backup_schedule_frequency"); okFrequency {
-			updateReq.BackupScheduleFrequency = scw.Uint32Ptr(uint32(backupScheduleFrequency.(int)))
+			updateReq.BackupScheduleFrequency = new(uint32(backupScheduleFrequency.(int)))
 		}
 
 		if backupScheduleRetention, okRetention := d.GetOk("backup_schedule_retention"); okRetention {
-			updateReq.BackupScheduleRetention = scw.Uint32Ptr(uint32(backupScheduleRetention.(int)))
+			updateReq.BackupScheduleRetention = new(uint32(backupScheduleRetention.(int)))
 		}
 
 		mustUpdate = true
@@ -635,24 +672,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -736,12 +756,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -823,6 +845,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 	return diags
 }
 
+// readInstanceIntoState fetches the instance and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setInstanceState(ctx, d, m, rdbAPI, region, res)
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readInstanceIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
 //gocyclo:ignore
 func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
@@ -876,7 +943,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					rdb.UpgradeInstanceRequest{
 						Region:     region,
 						InstanceID: ID,
-						VolumeSize: scw.Uint64Ptr(newSize * uint64(scw.GB)),
+						VolumeSize: new(newSize * uint64(scw.GB)),
 					})
 			}
 		case rdb.VolumeTypeLssd:
@@ -924,7 +991,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   scw.BoolPtr(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
 			})
 	}
 
@@ -951,7 +1018,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:           region,
 				InstanceID:       ID,
-				EnableEncryption: scw.BoolPtr(newValue.(bool)),
+				EnableEncryption: new(newValue.(bool)),
 			})
 	}
 
@@ -1001,8 +1068,11 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
+
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
@@ -1023,7 +1093,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
 						Region:     region,
 						InstanceID: oldInstanceID,
-						Timeout:    scw.TimeDurationPtr(d.Timeout(schema.TimeoutUpdate)),
+						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
 					}, scw.WithContext(ctx))
 					if err != nil && !httperrors.Is404(err) {
 						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
@@ -1051,15 +1121,15 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("disable_backup") {
-		req.IsBackupScheduleDisabled = scw.BoolPtr(d.Get("disable_backup").(bool))
+		req.IsBackupScheduleDisabled = new(d.Get("disable_backup").(bool))
 	}
 
 	if d.HasChange("backup_schedule_frequency") {
-		req.BackupScheduleFrequency = scw.Uint32Ptr(uint32(d.Get("backup_schedule_frequency").(int)))
+		req.BackupScheduleFrequency = new(uint32(d.Get("backup_schedule_frequency").(int)))
 	}
 
 	if d.HasChange("backup_schedule_retention") {
-		req.BackupScheduleRetention = scw.Uint32Ptr(uint32(d.Get("backup_schedule_retention").(int)))
+		req.BackupScheduleRetention = new(uint32(d.Get("backup_schedule_retention").(int)))
 	}
 
 	if d.HasChange("backup_same_region") {
@@ -1109,7 +1179,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	////////////////////
 	// Update user
 	////////////////////
-	if d.HasChange("password") {
+	if d.HasChange("password") || (d.HasChange("password_wo_version") && d.Get("password_wo_version").(int) > 0) {
 		_, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
@@ -1119,7 +1189,17 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			Region:     region,
 			InstanceID: ID,
 			Name:       d.Get("user_name").(string),
-			Password:   types.ExpandStringPtr(d.Get("password")),
+		}
+
+		if password, ok := d.GetOk("password"); ok {
+			if d.HasChange("password") {
+				// Check password field is being set (not just removed)
+				req.Password = types.ExpandStringPtr(password)
+			}
+		} else if _, ok := d.GetOk("password_wo_version"); ok {
+			if d.HasChange("password_wo_version") {
+				req.Password = types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString())
+			}
 		}
 
 		_, err = rdbAPI.UpdateUser(req, scw.WithContext(ctx))

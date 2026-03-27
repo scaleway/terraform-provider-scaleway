@@ -101,8 +101,6 @@ The following arguments are supported:
 
 - `security_group_id` - The ID of the security group
 
-~> **Important:** Updates to this field will recreate a new resource.
-
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:

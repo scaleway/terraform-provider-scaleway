@@ -17,7 +17,7 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 
 	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		InstanceID:    id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
@@ -31,7 +31,7 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 
 	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
 		Region:           region,
-		Timeout:          scw.TimeDurationPtr(timeout),
+		Timeout:          new(timeout),
 		DatabaseBackupID: id,
 		RetryInterval:    &retryInterval,
 	}, scw.WithContext(ctx))
@@ -45,7 +45,7 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 
 	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		ReadReplicaID: id,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
@@ -59,7 +59,7 @@ func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, sn
 
 	return api.WaitForSnapshot(&rdb.WaitForSnapshotRequest{
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		SnapshotID:    snapshotID,
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))

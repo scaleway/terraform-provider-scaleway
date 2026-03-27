@@ -1,5 +1,5 @@
 ---
-subcategory: "RDB"
+subcategory: "Databases"
 page_title: "Scaleway: scaleway_rdb_read_replica_promote"
 ---
 

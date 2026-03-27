@@ -1766,3 +1766,112 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 		return nil
 	}
 }
+
+func TestAccInstance_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			// Create instance with password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_v&ry_s3cret_WO"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "name", "test-rdb-password-wo"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", latestEngineVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "false"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "disable_backup", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "user_name", "my_initial_user"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "endpoint_port"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.ip"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance password_wo
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO"
+						password_wo_version = 2
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "2"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+			// Update instance from password_wo to password should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_@n0th3r_s3cret_not_WO"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "password"),
+				),
+			},
+			// Update instance from password to password_wo should not error
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-password-wo"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password_wo = "thiZ_is_@n0th3r_s3cret_WO_AGAIN"
+						password_wo_version = 1
+						tags = [ "terraform-test", "scaleway_rdb_instance", "password_wo" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "password_wo_version", "1"),
+					// password_wo should not be set in state
+					resource.TestCheckNoResourceAttr("scaleway_rdb_instance.main", "password_wo"),
+				),
+			},
+		},
+	})
+}

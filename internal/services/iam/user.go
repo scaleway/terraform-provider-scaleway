@@ -2,6 +2,7 @@ package iam
 
 import (
 	"context"
+	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,8 +13,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
+//go:embed descriptions/user.md
+var userDescription string
+
 func ResourceUser() *schema.Resource {
 	return &schema.Resource{
+		Description:   userDescription,
 		CreateContext: resourceIamUserCreate,
 		ReadContext:   resourceIamUserRead,
 		UpdateContext: resourceIamUserUpdate,
@@ -57,10 +62,25 @@ func userSchema() map[string]*schema.Schema {
 			Required:    true,
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Sensitive:   true,
-			Description: "The member's password for first access",
+			Type:          schema.TypeString,
+			Optional:      true,
+			Sensitive:     true,
+			Description:   "The member's password for first access. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The member's password for first access in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"first_name": {
 			Type:        schema.TypeString,
@@ -135,6 +155,14 @@ func userSchema() map[string]*schema.Schema {
 func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		// If `password` is not set, it will be set as the default empty string
+		password = d.Get("password").(string)
+	}
+
 	req := &iam.CreateUserRequest{
 		OrganizationID: d.Get("organization_id").(string),
 		Tags:           types.ExpandStrings(d.Get("tags")),
@@ -143,7 +171,7 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 			SendPasswordEmail: d.Get("send_password_email").(bool),
 			SendWelcomeEmail:  d.Get("send_welcome_email").(bool),
 			Username:          d.Get("username").(string),
-			Password:          d.Get("password").(string),
+			Password:          password,
 			FirstName:         d.Get("first_name").(string),
 			LastName:          d.Get("last_name").(string),
 			PhoneNumber:       d.Get("phone_number").(string),
@@ -217,23 +245,23 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("email") {
-		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.Email = new(d.Get("email").(string))
 	}
 
 	if d.HasChange("first_name") {
-		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+		req.FirstName = new(d.Get("first_name").(string))
 	}
 
 	if d.HasChanges("last_name") {
-		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.LastName = new(d.Get("last_name").(string))
 	}
 
 	if d.HasChange("phone_number") {
-		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.PhoneNumber = new(d.Get("phone_number").(string))
 	}
 
 	if d.HasChange("locale") {
-		req.Locale = scw.StringPtr(d.Get("locale").(string))
+		req.Locale = new(d.Get("locale").(string))
 	}
 
 	_, err = api.UpdateUser(req, scw.WithContext(ctx))

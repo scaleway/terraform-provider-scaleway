@@ -1,0 +1,3 @@
+The [`scaleway_key_manager_verify`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/ephemeral-resource/key_manager_verify) data source is used to verify a message signature against a message digest with a given key. The key must have its usage set to asymmetric_signing. The message digest must be generated using the same digest algorithm that is defined in the key's algorithm configuration, and encoded as a base64 string.
+
+Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/key-manager/) for more information.

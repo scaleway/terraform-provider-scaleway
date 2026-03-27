@@ -7,18 +7,27 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
@@ -91,6 +100,44 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 	}
 }
 
+func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+	config := &meta.FrameworkProviderConfig{}
+
+	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
+		config.AccessKey = model.AccessKey.ValueString()
+	}
+
+	if !model.SecretKey.IsNull() && !model.SecretKey.IsUnknown() {
+		config.SecretKey = model.SecretKey.ValueString()
+	}
+
+	if !model.Profile.IsNull() && !model.Profile.IsUnknown() {
+		config.ProfileName = model.Profile.ValueString()
+	}
+
+	if !model.ProjectID.IsNull() && !model.ProjectID.IsUnknown() {
+		config.ProjectID = model.ProjectID.ValueString()
+	}
+
+	if !model.OrganizationID.IsNull() && !model.OrganizationID.IsUnknown() {
+		config.OrganizationID = model.OrganizationID.ValueString()
+	}
+
+	if !model.Region.IsNull() && !model.Region.IsUnknown() {
+		config.Region = model.Region.ValueString()
+	}
+
+	if !model.Zone.IsNull() && !model.Zone.IsUnknown() {
+		config.Zone = model.Zone.ValueString()
+	}
+
+	if !model.APIURL.IsNull() && !model.APIURL.IsUnknown() {
+		config.APIURL = model.APIURL.ValueString()
+	}
+
+	return config
+}
+
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	var data ScalewayProviderModel
 
@@ -109,17 +156,30 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		m = p.providerMeta
 	} else {
-		config := &meta.Config{
-			TerraformVersion: req.TerraformVersion,
-		}
+		frameworkConfig := modelToFrameworkConfig(&data)
 
-		var err error
-
-		m, err = meta.NewMeta(ctx, config)
+		m, err := meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
-			resp.Diagnostics.AddError("error while configuring the provider", err.Error())
+			resp.Diagnostics.AddError("error creating meta", err.Error())
 
 			return
+		}
+
+		ok, message, err := m.HasMultipleVariableSources()
+		if err != nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Error checking multiple variable sources",
+				err.Error(),
+			))
+
+			return
+		}
+
+		if ok && err == nil {
+			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
+				"Multiple variable sources detected",
+				"Please make sure the right credentials are used: "+message,
+			))
 		}
 	}
 
@@ -130,46 +190,64 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		iam.NewSamlResource,
+		iam.NewSamlCertificateResource,
+	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
-	var res []func() ephemeral.EphemeralResource
-
-	res = append(res, keymanager.NewEncryptEphemeralResource)
-	res = append(res, keymanager.NewDecryptEphemeralResource)
-	res = append(res, keymanager.NewGenerateDataKeyEphemeralResource)
-
-	return res
+	return []func() ephemeral.EphemeralResource{
+		keymanager.NewDecryptEphemeralResource,
+		keymanager.NewEncryptEphemeralResource,
+		keymanager.NewGenerateDataKeyEphemeralResource,
+		keymanager.NewSignEphemeralResource,
+		iam.NewApiKeyEphemeralResource,
+		secret.NewVersionEphemeralResource,
+		scwconfig.NewScwConfigEphemeralResource,
+	}
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		iam.NewSamlDataSource,
+		iam.NewSamlCertificateDataSource,
+	}
 }
 
 func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
-	var res []func() action.Action
-
-	res = append(res, cockpit.NewTriggerTestAlertAction)
-	res = append(res, instance.NewCreateSnapshot)
-	res = append(res, instance.NewExportSnapshot)
-	res = append(res, instance.NewServerAction)
-	res = append(res, jobs.NewStartJobDefinitionAction)
-	res = append(res, keymanager.NewRotateKeyAction)
-	res = append(res, mongodb.NewInstanceSnapshotAction)
-	res = append(res, rdb.NewInstanceSnapshotAction)
-	res = append(res, rdb.NewReadReplicaResetAction)
-	res = append(res, rdb.NewReadReplicaPromoteAction)
-	res = append(res, rdb.NewDatabaseBackupRestoreAction)
-	res = append(res, rdb.NewInstanceLogsPurgeAction)
-	res = append(res, rdb.NewInstanceLogPrepareAction)
-	res = append(res, rdb.NewInstanceCertificateRenewAction)
-	res = append(res, rdb.NewDatabaseBackupExportAction)
-	res = append(res, vpcgw.NewRefreshSSHKeysAction)
-
-	return res
+	return []func() action.Action{
+		applesilicon.NewRebootServerAction,
+		baremetal.NewBaremetalServerAction,
+		block.NewExportSnapshot,
+		cockpit.NewTriggerTestAlertAction,
+		iam.NewSamlConfigurationAction,
+		instance.NewCreateSnapshot,
+		instance.NewExportSnapshot,
+		instance.NewServerAction,
+		jobs.NewStartJobDefinitionAction,
+		keymanager.NewRotateKeyAction,
+		mongodb.NewInstanceSnapshotAction,
+		rdb.NewDatabaseBackupExportAction,
+		rdb.NewDatabaseBackupRestoreAction,
+		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceLogPrepareAction,
+		rdb.NewInstanceLogsPurgeAction,
+		rdb.NewInstanceSnapshotAction,
+		rdb.NewReadReplicaPromoteAction,
+		rdb.NewReadReplicaResetAction,
+		s2svpn.NewConnectionEnableRoutePropagationAction,
+		s2svpn.NewConnectionDisableRoutePropagationAction,
+		vpcgw.NewRefreshSSHKeysAction,
+	}
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{}
+}
+
+func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
+	return []func() function.Function{
+		functions.NewRegionFromID,
+	}
 }

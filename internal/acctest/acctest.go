@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -37,6 +38,7 @@ var foldersUsingVCRv4 = []string{
 	"container",
 	"iam",
 	"instance",
+	"jobs",
 	"k8s",
 	"keymanager",
 	"marketplace",
@@ -45,15 +47,9 @@ var foldersUsingVCRv4 = []string{
 
 func FolderUsesVCRv4(fullFolderPath string) bool {
 	fullPathSplit := strings.Split(fullFolderPath, "/")
-
 	folder := fullPathSplit[len(fullPathSplit)-1]
-	for _, migratedFolder := range foldersUsingVCRv4 {
-		if migratedFolder == folder {
-			return true
-		}
-	}
 
-	return false
+	return slices.Contains(foldersUsingVCRv4, folder)
 }
 
 // s3Encoder encodes binary payloads as base64 because serialization changed on go-vcr.v4

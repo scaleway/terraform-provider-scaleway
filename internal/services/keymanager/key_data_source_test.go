@@ -18,7 +18,7 @@ func TestAccDataSourceKey_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_key_manager_key" "main" {
-				  name        = "tf-test-kms-key-unprotected-a"
+				  name        = "tf-test-kms-key-ds"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"
@@ -32,7 +32,7 @@ func TestAccDataSourceKey_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "name", "tf-test-kms-key-unprotected-a"),
+					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "name", "tf-test-kms-key-ds"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "region", "fr-par"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "usage", "symmetric_encryption"),
 					resource.TestCheckResourceAttr("data.scaleway_key_manager_key.by_id", "algorithm", "aes_256_gcm"),

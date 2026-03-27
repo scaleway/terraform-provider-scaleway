@@ -39,12 +39,13 @@ func versionSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			Description:      "The secret ID associated with this version",
+			ForceNew:         true,
 			DiffSuppressFunc: dsf.Locality,
 		},
 		"data": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified.",
+			Description: "The raw data payload of the secret version. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified.",
 			Sensitive:   true,
 			ForceNew:    true,
 			StateFunc: func(i any) string {
@@ -55,7 +56,7 @@ func versionSchema() map[string]*schema.Schema {
 		"data_wo": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Description: "The raw data payload of your secret version in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
 			Sensitive:   true,
 			WriteOnly:   true,
 			StateFunc: func(i any) string {
@@ -67,7 +68,7 @@ func versionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) data. To update the `data_wo`, you must also update the `data_wo_version`.",
 		},
 		"description": {
 			Type:        schema.TypeString,

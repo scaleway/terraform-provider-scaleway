@@ -73,3 +73,31 @@ func TestAccUser_Member(t *testing.T) {
 		},
 	})
 }
+
+func TestAccUser_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             iamchecks.CheckUserDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_user" "password_wo_user" {
+						email = "testiamuserpasswordwo@scaleway.com"
+						username = "testiamuserpasswordwo"
+						password_wo = "FirstWOPassword123"
+						password_wo_version = 1
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckIamUserExists(tt, "scaleway_iam_user.password_wo_user"),
+					acctest.CheckResourceAttrUUID("scaleway_iam_user.password_wo_user", "id"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.password_wo_user", "email", "testiamuserpasswordwo@scaleway.com"),
+					resource.TestCheckResourceAttr("scaleway_iam_user.password_wo_user", "username", "testiamuserpasswordwo"),
+				),
+			},
+		},
+	})
+}

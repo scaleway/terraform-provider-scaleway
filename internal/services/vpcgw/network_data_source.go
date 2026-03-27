@@ -16,10 +16,8 @@ import (
 )
 
 func DataSourceNetwork() *schema.Resource {
-	// Generate datasource schema from resource
 	dsSchema := datasource.SchemaFromResourceSchema(ResourceNetwork().SchemaFunc())
 
-	// Set 'Optional' schema elements
 	searchFields := []string{
 		"gateway_id",
 		"private_network_id",
@@ -43,14 +41,14 @@ func DataSourceNetwork() *schema.Resource {
 }
 
 func DataSourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	vpcgwAPI, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	gatewayNetworkID, ok := d.GetOk("gateway_network_id")
 	if !ok {
-		res, err := vpcgwAPI.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
+		res, err := api.ListGatewayNetworks(&vpcgw.ListGatewayNetworksRequest{
 			GatewayIDs:        []string{locality.ExpandID(d.Get("gateway_id").(string))},
 			PrivateNetworkIDs: []string{locality.ExpandID(d.Get("private_network_id"))},
 			MasqueradeEnabled: types.ExpandBoolPtr(types.GetBool(d, "enable_masquerade")),
@@ -73,17 +71,23 @@ func DataSourceVPCGatewayNetworkRead(ctx context.Context, d *schema.ResourceData
 
 	zonedID := datasource.NewZonedID(gatewayNetworkID, zone)
 	d.SetId(zonedID)
-
 	_ = d.Set("gateway_network_id", zonedID)
 
-	diags := ResourceVPCGatewayNetworkRead(ctx, d, m)
-	if len(diags) > 0 {
-		return append(diags, diag.Errorf("failed to read gateway network state")...)
+	gatewayNetwork, err := api.GetGatewayNetwork(&vpcgw.GetGatewayNetworkRequest{
+		GatewayNetworkID: locality.ExpandID(gatewayNetworkID),
+		Zone:             zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("gateway network (%s) not found", zonedID)
+	var diags diag.Diagnostics
+
+	if gatewayNetwork.PrivateNetworkID != "" {
+		diags = setPrivateIPs(ctx, d, api, gatewayNetwork, m)
 	}
 
-	return nil
+	diags = append(diags, setGatewayNetworkState(d, gatewayNetwork)...)
+
+	return diags
 }

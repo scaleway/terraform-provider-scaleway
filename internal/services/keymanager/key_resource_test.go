@@ -23,7 +23,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 			{
 				Config: `
 				resource "scaleway_key_manager_key" "main" {
-				  name        = "tf-test-kms-key-unprotected-a"
+				  name        = "tf-test-kms-key-unprotected"
 				  region      = "fr-par"
 				  usage       = "symmetric_encryption"
 				  algorithm   = "aes_256_gcm"
@@ -33,7 +33,7 @@ func TestAccKeyManagerKey_Basic(t *testing.T) {
 				}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-unprotected-a"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "name", "tf-test-kms-key-unprotected"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "region", "fr-par"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "usage", "symmetric_encryption"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "algorithm", "aes_256_gcm"),
@@ -147,8 +147,8 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 				  unprotected = true
 				  
 				  rotation_policy {
-				    rotation_period = "720h"
-					next_rotation_at = "2026-01-01T00:00:00Z"
+				    rotation_period = "876000h"
+					next_rotation_at = "2027-01-01T00:00:00Z"
 				  }
 				}
 				`,
@@ -157,7 +157,7 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "usage", "symmetric_encryption"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "algorithm", "aes_256_gcm"),
 					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "description", "Test key with rotation policy"),
-					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "720h0m0s"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "876000h0m0s"),
 				),
 			},
 		},

@@ -2,7 +2,6 @@ package s2svpn
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,6 +9,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,63 +24,69 @@ func ResourceRoutingPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-				Description: "The name of the routing policy",
+		SchemaFunc:    routingPolicySchema,
+	}
+}
+
+func routingPolicySchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Optional:    true,
+			Description: "The name of the routing policy",
+		},
+		"tags": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "The list of tags to apply to the routing policy",
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
 			},
-			"tags": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "The list of tags to apply to the routing policy",
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
+		},
+		"is_ipv6": {
+			Type:        schema.TypeBool,
+			Computed:    true,
+			Optional:    true,
+			ForceNew:    true,
+			Description: "IP prefixes version of the routing policy",
+		},
+		"prefix_filter_in": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "IP prefixes to accept from the peer (ranges of route announcements to accept)",
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.IsCIDR,
 			},
-			"is_ipv6": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Optional:    true,
-				Description: "IP prefixes version of the routing policy",
+		},
+		"prefix_filter_out": {
+			Type:        schema.TypeList,
+			Optional:    true,
+			Description: "IP prefix filters to advertise to the peer (ranges of routes to advertise)",
+			Elem: &schema.Schema{
+				Type:         schema.TypeString,
+				ValidateFunc: validation.IsCIDR,
 			},
-			"prefix_filter_in": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "IP prefixes to accept from the peer (ranges of route announcements to accept)",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.IsCIDR,
-				},
-			},
-			"prefix_filter_out": {
-				Type:        schema.TypeList,
-				Optional:    true,
-				Description: "IP prefix filters to advertise to the peer (ranges of routes to advertise)",
-				Elem: &schema.Schema{
-					Type:         schema.TypeString,
-					ValidateFunc: validation.IsCIDR,
-				},
-			},
-			"created_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the creation of the TLS stage",
-			},
-			"updated_at": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "The date and time of the last update of the TLS stage",
-			},
-			"region":     regional.Schema(),
-			"project_id": account.ProjectIDSchema(),
-			"organization_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Organization ID of the Project",
-			},
+		},
+		"created_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the creation of the TLS stage",
+		},
+		"updated_at": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The date and time of the last update of the TLS stage",
+		},
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
+		"organization_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Organization ID of the Project",
 		},
 	}
 }
@@ -116,7 +122,10 @@ func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRoutingPolicyRead(ctx, d, m)
 }
@@ -141,6 +150,17 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	diags := setRoutingPolicyState(d, policy)
+
+	err = identity.SetRegionalIdentity(d, policy.Region, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setRoutingPolicyState(d *schema.ResourceData, policy *s2s_vpn.RoutingPolicy) diag.Diagnostics {
 	prefixFilterIn, err := FlattenPrefixFilters(policy.PrefixFilterIn)
 	if err != nil {
 		return diag.FromErr(err)
@@ -185,6 +205,16 @@ func ResourceRoutingPolicyUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("tags") {
 		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_in") {
+		req.PrefixFilterIn = types.ExpandStringsPtr(d.Get("prefix_filter_in"))
+		hasChanged = true
+	}
+
+	if d.HasChange("prefix_filter_out") {
+		req.PrefixFilterOut = types.ExpandStringsPtr(d.Get("prefix_filter_out"))
 		hasChanged = true
 	}
 
