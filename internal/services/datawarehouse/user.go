@@ -141,7 +141,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// Build the update request only for changed fields
+
 	req := &datawarehouseapi.UpdateUserRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
