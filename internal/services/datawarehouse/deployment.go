@@ -349,10 +349,11 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	configNeedsRunning := d.HasChange("cpu_min") || d.HasChange("cpu_max") || d.HasChange("replica_count")
+	configNeedsRunning := d.HasChanges("cpu_min", "cpu_max", "replica_count")
 	wantStarted := d.Get("started").(bool)
 
 	startedForScaleUpdate := false
+
 	if configNeedsRunning && deployment.Status == datawarehouseapi.DeploymentStatusStopped {
 		if err := startDeploymentIfStopped(ctx, api, region, id, timeout); err != nil {
 			return diag.FromErr(err)
