@@ -31,6 +31,7 @@ The Scaleway Terraform Provider supports write-only arguments in several resourc
 - [**`scaleway_redis_cluster`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/redis_cluster#password_wo-4)
 - [**`scaleway_mongodb_instance`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/mongodb_instance#password_wo-5)
 - [**`scaleway_mongodb_user`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/mongodb_user#password_wo-6)
+- [**`scaleway_datawarehouse_deployment`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/datawarehouse_deployment#password_wo-1)
 
 ### Inference Resources
 

@@ -78,6 +78,60 @@ resource "scaleway_datawarehouse_deployment" "main" {
 	})
 }
 
+func TestAccDeployment_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name                = "tf-test-deploy-password-wo"
+  version             = "%s"
+  replica_count       = 1
+  cpu_min             = 2
+  cpu_max             = 4
+  ram_per_cpu         = 4
+  password_wo         = "thiZ_is_v&ry_s3cret_WO"
+  password_wo_version = 1
+  tags                = ["terraform-test", "scaleway_datawarehouse_deployment", "password_wo"]
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name                = "tf-test-deploy-password-wo"
+  version             = "%s"
+  replica_count       = 1
+  cpu_min             = 2
+  cpu_max             = 4
+  ram_per_cpu         = 4
+  password_wo         = "thiZ_is_@n0th3r_s3cret_WO"
+  password_wo_version = 2
+  tags                = ["terraform-test", "scaleway_datawarehouse_deployment", "password_wo"]
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("scaleway_datawarehouse_deployment.main", "password_wo"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
