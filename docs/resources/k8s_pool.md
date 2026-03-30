@@ -29,6 +29,11 @@ resource "scaleway_k8s_pool" "main" {
   autohealing        = true
   container_runtime  = "containerd"
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
+
+  # Make sure that the new resource is created before destroying the old one on changes that require replacement
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 ```
 
@@ -53,7 +58,7 @@ The following arguments are supported:
 
 ~> **Important:** This field will only be used at creation if autoscaling is enabled.
 
-- `min_size` - (Defaults to `1`) The minimum size of the pool, used by the autoscaling feature.
+- `min_size` - (Defaults to `1` if `size` > 0, or `0` otherwise) The minimum size of the pool, used by the autoscaling feature.
 
 - `max_size` - (Defaults to `size`) The maximum size of the pool, used by the autoscaling feature.
 
@@ -86,6 +91,8 @@ The following arguments are supported:
 - `root_volume_type` - (Optional) System volume type of the nodes composing the pool
 
 - `root_volume_size_in_gb` - (Optional) The size of the system volume of the nodes in gigabyte
+
+-> Note: The minimal volume size of a node is 20GB.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
