@@ -274,50 +274,64 @@ func TestAccCluster_OIDC(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterConfigOIDC(latestK8SVersion),
+				Config: kapsuleClusterRepeatedConfig("oidc-config", latestK8SVersion, `
+					open_id_connect_config {
+						issuer_url = "https://accounts.google.com/"
+						client_id = "my-super-id"
+						username_claim = "mario"
+						groups_claim = [ "k8s", "admin" ]
+						groups_prefix = "pouf"
+					}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.oidc"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "cni", "cilium"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "status", k8sSDK.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://accounts.google.com"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.client_id", "my-super-id"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_claim", "mario"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_prefix", "pouf"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_claim.0", "k8s"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_claim.1", "admin"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.2", "oidc-config"),
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "status", k8sSDK.ClusterStatusPoolRequired.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.issuer_url", "https://accounts.google.com/"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.client_id", "my-super-id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.username_claim", "mario"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.groups_prefix", "pouf"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.groups_claim.0", "k8s"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.groups_claim.1", "admin"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.2", "oidc-config"),
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterConfigOIDCChange(latestK8SVersion),
+				Config: kapsuleClusterRepeatedConfig("oidc-config", latestK8SVersion, `
+					open_id_connect_config {
+						issuer_url = "https://gitlab.com"
+						client_id = "my-even-more-awesome-id"
+						username_claim = "luigi"
+						groups_claim = [ ]
+						username_prefix = "boo"
+					}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.oidc"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "cni", "cilium"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "status", k8sSDK.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.oidc", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.issuer_url", "https://gitlab.com"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.client_id", "my-even-more-awesome-id"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_claim", "luigi"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.username_prefix", "boo"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "open_id_connect_config.0.groups_prefix", ""),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.oidc", "tags.2", "oidc-config"),
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "status", k8sSDK.ClusterStatusPoolRequired.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.issuer_url", "https://gitlab.com"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.client_id", "my-even-more-awesome-id"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.username_claim", "luigi"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.username_prefix", "boo"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "open_id_connect_config.0.groups_prefix", ""),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.2", "oidc-config"),
 				),
 			},
 		},
@@ -718,64 +732,6 @@ resource "scaleway_k8s_cluster" "autoscaler" {
 }`, version)
 }
 
-func testAccCheckK8SClusterConfigOIDC(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  name = "testAccCheckK8SClusterConfigOIDC"
-}
-
-resource "scaleway_vpc_private_network" "oidc" {
-  name       = "test-oidc"
-  vpc_id = scaleway_vpc.main.id
-}
-
-resource "scaleway_k8s_cluster" "oidc" {
-	cni = "cilium"
-	version = "%s"
-	name = "test-oidc"
-	open_id_connect_config {
-		issuer_url = "https://accounts.google.com"
-		client_id = "my-super-id"
-		username_claim = "mario"
-		groups_claim = [ "k8s", "admin" ]
-		groups_prefix = "pouf"
-	}
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.oidc.id
-}
-`, version)
-}
-
-func testAccCheckK8SClusterConfigOIDCChange(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  name = "testAccCheckK8SClusterConfigOIDCChange"
-}
-
-resource "scaleway_vpc_private_network" "oidc" {
-  name       = "test-oidc"
-  vpc_id = scaleway_vpc.main.id
-}
-
-resource "scaleway_k8s_cluster" "oidc" {
-	cni = "cilium"
-	version = "%s"
-	name = "test-oidc"
-	open_id_connect_config {
-		issuer_url = "https://gitlab.com"
-		client_id = "my-even-more-awesome-id"
-		username_claim = "luigi"
-		groups_claim = [ ]
-		username_prefix = "boo"
-	}
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "oidc-config" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.oidc.id
-}
-`, version)
-}
-
 func testAccCheckK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
@@ -1028,4 +984,26 @@ func TestAccCluster_Networking(t *testing.T) {
 			},
 		},
 	})
+}
+
+func kapsuleClusterRepeatedConfig(testName string, version string, configPartToTest string) string {
+	return fmt.Sprintf(`
+		resource "scaleway_vpc" "main" {
+			name = "test-cluster-%[1]s"
+		}
+
+		resource "scaleway_vpc_private_network" "main" {
+			name = "test-cluster-%[1]s"
+			vpc_id = scaleway_vpc.main.id
+		}
+
+		resource "scaleway_k8s_cluster" "main" {
+		    name = "test-cluster-%[1]s"
+			cni = "cilium"
+			version = "%[2]s"
+			tags = [ "terraform-test", "scaleway_k8s_cluster", "%[1]s" ]
+			delete_additional_resources = false
+			private_network_id = scaleway_vpc_private_network.main.id
+%[3]s
+		}`, testName, version, configPartToTest)
 }
