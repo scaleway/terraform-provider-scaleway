@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -98,10 +99,25 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "Whether the deployment should be running (`true`) or stopped (`false`). Maps to the Start deployment and Stop deployment API actions.",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Optional:    true,
-			Description: "Password for the first user of the deployment",
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password for the first user of the deployment. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password for the first user of the deployment in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`. When updating, the password is rotated via the Data Warehouse Users API (the initial user is selected as an admin user when present, otherwise the first user by name).",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"public_network": {
 			Type:        schema.TypeList,
@@ -215,6 +231,13 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		password = d.Get("password").(string)
+	}
+
 	req := &datawarehouseapi.CreateDeploymentRequest{
 		Region:       region,
 		ProjectID:    d.Get("project_id").(string),
@@ -224,7 +247,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		CPUMin:       uint32(d.Get("cpu_min").(int)),
 		CPUMax:       uint32(d.Get("cpu_max").(int)),
 		RAMPerCPU:    uint32(d.Get("ram_per_cpu").(int)),
-		Password:     d.Get("password").(string),
+		Password:     password,
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -419,6 +442,32 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			userName, err := findInitialDeploymentUserName(ctx, api, region, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			pwd := d.GetRawConfig().GetAttr("password_wo").AsString()
+
+			_, err = api.UpdateUser(&datawarehouseapi.UpdateUserRequest{
+				Region:       region,
+				DeploymentID: id,
+				Name:         userName,
+				Password:     types.ExpandStringPtr(pwd),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDatawarehouseDeployment(ctx, api, region, id, timeout)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return resourceDeploymentRead(ctx, d, meta)
 }
 
@@ -501,4 +550,40 @@ func stopDeploymentIfReady(ctx context.Context, api *datawarehouseapi.API, regio
 	_, err = waitForDatawarehouseDeployment(ctx, api, region, deploymentID, timeout)
 
 	return err
+}
+
+func findInitialDeploymentUserName(ctx context.Context, api *datawarehouseapi.API, region scw.Region, deploymentID string) (string, error) {
+	pageSize := uint32(100)
+
+	resp, err := api.ListUsers(&datawarehouseapi.ListUsersRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+		OrderBy:      datawarehouseapi.ListUsersRequestOrderByNameAsc,
+		PageSize:     &pageSize,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", err
+	}
+
+	if len(resp.Users) == 0 {
+		return "", errors.New("no users found on datawarehouse deployment; cannot apply password_wo change")
+	}
+
+	var adminName string
+
+	for _, u := range resp.Users {
+		if !u.IsAdmin {
+			continue
+		}
+
+		if adminName == "" || u.Name < adminName {
+			adminName = u.Name
+		}
+	}
+
+	if adminName != "" {
+		return adminName, nil
+	}
+
+	return resp.Users[0].Name, nil
 }
