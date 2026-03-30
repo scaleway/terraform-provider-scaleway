@@ -32,6 +32,10 @@ func WaitForDomainAutoconfig(ctx context.Context, api *tem.API, region scw.Regio
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
+	if retryInterval <= 0 {
+		retryInterval = time.Millisecond
+	}
+
 	ticker := time.NewTicker(retryInterval)
 	defer ticker.Stop()
 
