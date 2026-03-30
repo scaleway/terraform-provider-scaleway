@@ -15,7 +15,10 @@ import (
 )
 
 const (
-	DefaultDomainTimeout           = 5 * time.Minute
+	DefaultDomainTimeout = 5 * time.Minute
+	// DefaultDomainCreateTimeout is used for WaitForDomain after CreateDomain: autoconfig can stay in
+	// "autoconfiguring" until DNS checks complete (similar duration to domain validation).
+	DefaultDomainCreateTimeout     = 60 * time.Minute
 	defaultDomainValidationTimeout = 60 * time.Minute
 	defaultDomainRetryInterval     = 15 * time.Second
 )

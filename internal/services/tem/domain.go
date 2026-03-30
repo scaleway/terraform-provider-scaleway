@@ -26,8 +26,9 @@ func ResourceDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
 			Delete:  schema.DefaultTimeout(DefaultDomainTimeout),
-			Default: schema.DefaultTimeout(DefaultDomainTimeout),
+			Default: schema.DefaultTimeout(DefaultDomainCreateTimeout),
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    domainSchema,
@@ -228,6 +229,11 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if err := identity.SetRegionalIdentity(d, region, domain.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = WaitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
