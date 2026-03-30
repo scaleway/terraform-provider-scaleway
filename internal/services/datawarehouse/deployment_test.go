@@ -131,6 +131,77 @@ resource "scaleway_datawarehouse_deployment" "main" {
 	})
 }
 
+func TestAccDeployment_StartStop(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = true
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "true"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "ready"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = false
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "false"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "stopped"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name           = "tf-test-deploy-start-stop"
+  version        = "%s"
+  replica_count  = 1
+  cpu_min        = 2
+  cpu_max        = 4
+  ram_per_cpu    = 4
+  password       = "password@1234567"
+  started        = true
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "started", "true"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "status", "ready"),
+				),
+			},
+		},
+	})
+}
+
 func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		for _, rs := range s.RootModule().Resources {
