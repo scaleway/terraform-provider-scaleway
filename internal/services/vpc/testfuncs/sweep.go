@@ -14,7 +14,7 @@ func AddTestSweepers() {
 	resource.AddTestSweepers("scaleway_vpc", &resource.Sweeper{
 		Name:         "scaleway_vpc",
 		F:            testSweepVPC,
-		Dependencies: []string{"scaleway_vpc_private_network"},
+		Dependencies: []string{"scaleway_vpc_private_network", "scaleway_vpc_connector"},
 	})
 
 	resource.AddTestSweepers("scaleway_vpc_private_network", &resource.Sweeper{
@@ -26,6 +26,11 @@ func AddTestSweepers() {
 	resource.AddTestSweepers("scaleway_vpc_route", &resource.Sweeper{
 		Name: "scaleway_vpc_route",
 		F:    testSweepVPCRoute,
+	})
+
+	resource.AddTestSweepers("scaleway_vpc_connector", &resource.Sweeper{
+		Name: "scaleway_vpc_connector",
+		F:    testSweepVPCConnector,
 	})
 }
 
@@ -88,6 +93,33 @@ func testSweepVPCPrivateNetwork(_ string) error {
 	}
 
 	return nil
+}
+
+func testSweepVPCConnector(_ string) error {
+	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		vpcAPI := vpcSDK.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: deleting the VPC connectors in (%s)", region)
+
+		listConnectors, err := vpcAPI.ListVPCConnectors(&vpcSDK.ListVPCConnectorsRequest{
+			Region: region,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing VPC connectors in (%s) in sweeper: %w", region, err)
+		}
+
+		for _, c := range listConnectors.VpcConnectors {
+			err := vpcAPI.DeleteVPCConnector(&vpcSDK.DeleteVPCConnectorRequest{
+				VpcConnectorID: c.ID,
+				Region:         region,
+			})
+			if err != nil {
+				logging.L.Warningf("error deleting VPC connector %s in sweeper: %w", c.ID, err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func testSweepVPCRoute(_ string) error {

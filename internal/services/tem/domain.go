@@ -27,6 +27,7 @@ func ResourceDomain() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
+			Update:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
 			Delete:  schema.DefaultTimeout(DefaultDomainTimeout),
 			Default: schema.DefaultTimeout(DefaultDomainCreateTimeout),
 		},
@@ -365,7 +366,12 @@ func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			Region:     region,
 			DomainID:   id,
 			Autoconfig: &autoconfig,
-		})
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = WaitForDomainAutoconfig(ctx, api, region, id, autoconfig, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

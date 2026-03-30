@@ -109,7 +109,6 @@ func TestAccDomain_Autoconfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_config", "v=DMARC1; p=none"),
 					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", regexp.MustCompile(`^_dmarc\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
 					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dkim_name", regexp.MustCompile(`^[a-f0-9-]+\._domainkey\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
-					// Autoconfig publishes Scaleway's SPF include, not include:<fqdn>.
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "spf_value", "v=spf1 include:_spf.tem.scaleway.com -all"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "10 blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
@@ -152,7 +151,6 @@ func TestAccDomain_AutoconfigUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "dmarc_config", "v=DMARC1; p=none"),
 					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dmarc_name", regexp.MustCompile(`^_dmarc\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
 					resource.TestMatchResourceAttr("scaleway_tem_domain.cr01", "dkim_name", regexp.MustCompile(`^[a-f0-9-]+\._domainkey\.`+regexp.QuoteMeta(subDomainName+"."+domainNameValidation)+`\.$`)),
-					// API returns Scaleway's SPF include for real domains; autoconfig only toggles DNS automation.
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "spf_value", "v=spf1 include:_spf.tem.scaleway.com -all"),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "mx_config", "10 blackhole.tem.scaleway.com."),
 					resource.TestCheckResourceAttr("scaleway_tem_domain.cr01", "last_error", ""), // last_error is deprecated
