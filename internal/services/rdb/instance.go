@@ -1079,6 +1079,24 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				return diag.FromErr(err)
 			}
 
+			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
+				tflog.Info(ctx, fmt.Sprintf("Re-enabling HA on upgraded instance %s", ID))
+
+				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+					Region:     region,
+					InstanceID: ID,
+					EnableHa:   new(true),
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil && !httperrors.Is404(err) {
+					return diag.FromErr(err)
+				}
+			}
+
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
 				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))

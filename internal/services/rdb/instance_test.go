@@ -1743,6 +1743,123 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 	})
 }
 
+func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	oldVersion, newVersion := rdbchecks.GetEngineVersionsForUpgrade(tt, postgreSQLEngineName)
+	if oldVersion == newVersion {
+		t.Skip("Need at least 2 different PostgreSQL versions for upgrade testing")
+	}
+
+	var oldInstanceID string
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name              = "test-rdb-engine-upgrade-ha"
+						node_type         = "db-dev-s"
+						engine            = %q
+						is_ha_cluster     = true
+						disable_backup    = true
+						user_name         = "test_user"
+						password          = "thiZ_is_v&ry_s3cret"
+						tags              = ["terraform-test", "engine-upgrade-ha"]
+						volume_type       = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, oldVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", oldVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						_, _, ID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						oldInstanceID = ID
+
+						return nil
+					},
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name              = "test-rdb-engine-upgrade-ha"
+						node_type         = "db-dev-s"
+						engine            = %q
+						is_ha_cluster     = true
+						disable_backup    = true
+						user_name         = "test_user"
+						password          = "thiZ_is_v&ry_s3cret"
+						tags              = ["terraform-test", "engine-upgrade-ha"]
+						volume_type       = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+				`, newVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "engine", newVersion),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "is_ha_cluster", "true"),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources["scaleway_rdb_instance.main"]
+						if !ok {
+							return errors.New("resource not found: scaleway_rdb_instance.main")
+						}
+
+						rdbAPI, region, newInstanceID, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+						if err != nil {
+							return err
+						}
+
+						if newInstanceID == oldInstanceID {
+							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
+						}
+
+						instance, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+							Region:     region,
+							InstanceID: newInstanceID,
+						})
+						if err != nil {
+							return err
+						}
+
+						if !instance.IsHaCluster {
+							return fmt.Errorf("expected upgraded instance %s to keep HA enabled", newInstanceID)
+						}
+
+						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+							Region:     region,
+							InstanceID: oldInstanceID,
+						})
+						if err == nil {
+							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
+						}
+
+						if !httperrors.Is404(err) {
+							return fmt.Errorf("expected 404 error for old instance %s, got: %w", oldInstanceID, err)
+						}
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
