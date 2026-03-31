@@ -1080,7 +1080,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			}
 
 			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
-				tflog.Info(ctx, fmt.Sprintf("Re-enabling HA on upgraded instance %s", ID))
+				tflog.Info(ctx, "Re-enabling HA on upgraded instance "+ID)
 
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 					Region:     region,
