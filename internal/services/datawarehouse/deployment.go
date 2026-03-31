@@ -2,6 +2,7 @@ package datawarehouse
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -91,11 +92,32 @@ func deploymentSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "RAM per CPU (GB)",
 		},
-		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
+		"started": {
+			Type:        schema.TypeBool,
 			Optional:    true,
-			Description: "Password for the first user of the deployment",
+			Default:     true,
+			Description: "Whether the deployment should be running (`true`) or stopped (`false`). Maps to the Start deployment and Stop deployment API actions.",
+		},
+		"password": {
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			Description:   "Password for the first user of the deployment. Only one of `password` or `password_wo` should be specified.",
+			ConflictsWith: []string{"password_wo"},
+		},
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "Password for the first user of the deployment in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`. When updating, the password is rotated via the Data Warehouse Users API (the initial user is selected as an admin user when present, otherwise the first user by name).",
+			WriteOnly:     true,
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			RequiredWith: []string{"password_wo"},
 		},
 		"public_network": {
 			Type:        schema.TypeList,
@@ -209,6 +231,13 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	var password string
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	} else {
+		password = d.Get("password").(string)
+	}
+
 	req := &datawarehouseapi.CreateDeploymentRequest{
 		Region:       region,
 		ProjectID:    d.Get("project_id").(string),
@@ -218,7 +247,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		CPUMin:       uint32(d.Get("cpu_min").(int)),
 		CPUMax:       uint32(d.Get("cpu_max").(int)),
 		RAMPerCPU:    uint32(d.Get("ram_per_cpu").(int)),
-		Password:     d.Get("password").(string),
+		Password:     password,
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -255,6 +284,12 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	deployment, err = waitForDatawarehouseDeployment(ctx, api, region, deployment.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if !d.Get("started").(bool) {
+		if err := stopDeploymentIfReady(ctx, api, region, deployment.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(regional.NewIDString(region, deployment.ID))
@@ -296,6 +331,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
 	_ = d.Set("cpu_max", int(deployment.CPUMax))
 	_ = d.Set("ram_per_cpu", int(deployment.RAMPerCPU))
+	_ = d.Set("started", deploymentStatusIsRunning(deployment.Status))
 	_ = d.Set("status", string(deployment.Status))
 	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", deployment.UpdatedAt.Format(time.RFC3339))
@@ -321,11 +357,32 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	var diags diag.Diagnostics
+	timeout := d.Timeout(schema.TimeoutUpdate)
 
-	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, id, timeout)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	deployment, err := api.GetDeployment(&datawarehouseapi.GetDeploymentRequest{
+		Region:       region,
+		DeploymentID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	configNeedsRunning := d.HasChanges("cpu_min", "cpu_max", "replica_count")
+	wantStarted := d.Get("started").(bool)
+
+	startedForScaleUpdate := false
+
+	if configNeedsRunning && deployment.Status == datawarehouseapi.DeploymentStatusStopped {
+		if err := startDeploymentIfStopped(ctx, api, region, id, timeout); err != nil {
+			return diag.FromErr(err)
+		}
+
+		startedForScaleUpdate = true
 	}
 
 	req := &datawarehouseapi.UpdateDeploymentRequest{
@@ -345,52 +402,73 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if d.HasChange("cpu_min") {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "cpu_min cannot be updated in private beta",
-			Detail:   "Modifying cpu_min has no effect until this feature is launched in general availability.",
-		})
 		req.CPUMin = new(uint32(d.Get("cpu_min").(int)))
 		changed = true
 	}
 
 	if d.HasChange("cpu_max") {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "cpu_max cannot be updated in private beta",
-			Detail:   "Modifying cpu_max has no effect until this feature is launched in general availability.",
-		})
 		req.CPUMax = new(uint32(d.Get("cpu_max").(int)))
 		changed = true
 	}
 
 	if d.HasChange("replica_count") {
-		diags = append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "replica_count cannot be updated in private beta",
-			Detail:   "Modifying replica_count has no effect until this feature is launched in general availability.",
-		})
 		req.ReplicaCount = new(uint32(d.Get("replica_count").(int)))
 		changed = true
 	}
 
 	if changed {
-		resp, err := api.UpdateDeployment(req, scw.WithContext(ctx))
-		_ = resp
-
-		if err != nil {
+		if _, err := api.UpdateDeployment(req, scw.WithContext(ctx)); err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err = waitForDatawarehouseDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
+		if _, err := waitForDatawarehouseDeployment(ctx, api, region, id, timeout); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	readDiags := resourceDeploymentRead(ctx, d, meta)
+	if d.HasChange("started") {
+		if wantStarted {
+			if err := startDeploymentIfStopped(ctx, api, region, id, timeout); err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			if err := stopDeploymentIfReady(ctx, api, region, id, timeout); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else if startedForScaleUpdate && !wantStarted {
+		if err := stopDeploymentIfReady(ctx, api, region, id, timeout); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
-	return append(diags, readDiags...)
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		if d.HasChange("password_wo_version") {
+			userName, err := findInitialDeploymentUserName(ctx, api, region, id)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			pwd := d.GetRawConfig().GetAttr("password_wo").AsString()
+
+			_, err = api.UpdateUser(&datawarehouseapi.UpdateUserRequest{
+				Region:       region,
+				DeploymentID: id,
+				Name:         userName,
+				Password:     types.ExpandStringPtr(pwd),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDatawarehouseDeployment(ctx, api, region, id, timeout)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	return resourceDeploymentRead(ctx, d, meta)
 }
 
 func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -418,4 +496,94 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return nil
+}
+
+func deploymentStatusIsRunning(s datawarehouseapi.DeploymentStatus) bool {
+	return s != datawarehouseapi.DeploymentStatusStopped && s != datawarehouseapi.DeploymentStatusStopping
+}
+
+func startDeploymentIfStopped(ctx context.Context, api *datawarehouseapi.API, region scw.Region, deploymentID string, timeout time.Duration) error {
+	dep, err := api.GetDeployment(&datawarehouseapi.GetDeploymentRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	if dep.Status != datawarehouseapi.DeploymentStatusStopped {
+		return nil
+	}
+
+	if _, err := api.StartDeployment(&datawarehouseapi.StartDeploymentRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+	}, scw.WithContext(ctx)); err != nil {
+		return err
+	}
+
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, deploymentID, timeout)
+
+	return err
+}
+
+func stopDeploymentIfReady(ctx context.Context, api *datawarehouseapi.API, region scw.Region, deploymentID string, timeout time.Duration) error {
+	dep, err := api.GetDeployment(&datawarehouseapi.GetDeploymentRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	if dep.Status != datawarehouseapi.DeploymentStatusReady {
+		return nil
+	}
+
+	if _, err := api.StopDeployment(&datawarehouseapi.StopDeploymentRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+	}, scw.WithContext(ctx)); err != nil {
+		return err
+	}
+
+	_, err = waitForDatawarehouseDeployment(ctx, api, region, deploymentID, timeout)
+
+	return err
+}
+
+func findInitialDeploymentUserName(ctx context.Context, api *datawarehouseapi.API, region scw.Region, deploymentID string) (string, error) {
+	pageSize := uint32(100)
+
+	resp, err := api.ListUsers(&datawarehouseapi.ListUsersRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+		OrderBy:      datawarehouseapi.ListUsersRequestOrderByNameAsc,
+		PageSize:     &pageSize,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return "", err
+	}
+
+	if len(resp.Users) == 0 {
+		return "", errors.New("no users found on datawarehouse deployment; cannot apply password_wo change")
+	}
+
+	var adminName string
+
+	for _, u := range resp.Users {
+		if !u.IsAdmin {
+			continue
+		}
+
+		if adminName == "" || u.Name < adminName {
+			adminName = u.Name
+		}
+	}
+
+	if adminName != "" {
+		return adminName, nil
+	}
+
+	return resp.Users[0].Name, nil
 }
