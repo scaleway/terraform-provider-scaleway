@@ -113,6 +113,7 @@ func dataSourcePartnerReadByFilters(ctx context.Context, d *schema.ResourceData,
 	}
 
 	name := d.Get("name").(string)
+
 	var matches []*interlink.Partner
 
 	for _, p := range res.Partners {
