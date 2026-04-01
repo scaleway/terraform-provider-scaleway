@@ -2,7 +2,6 @@ package datalab
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -61,7 +60,7 @@ func (d *DatalabsDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *DatalabsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: "Lists Scaleway Datalab instances.",
 		Attributes: map[string]schema.Attribute{
 			"project_id": schema.StringAttribute{
 				Optional:            true,
@@ -168,7 +167,7 @@ func (d *DatalabsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	region, err := d.resolveRegion(config.Region)
+	region, err := resolveRegion(config.Region, d.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
@@ -201,49 +200,18 @@ func (d *DatalabsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 	}
 
-	var allDatalabs []*datalab.Datalab
+	listResp, listErr := d.api.ListDatalabs(listReq, scw.WithContext(ctx), scw.WithAllPages())
+	if listErr != nil {
+		resp.Diagnostics.AddError("Failed to list Datalabs", listErr.Error())
 
-	page := int32(1)
-	pageSize := uint32(100)
-
-	for {
-		listReq.Page = &page
-		listReq.PageSize = &pageSize
-
-		listResp, listErr := d.api.ListDatalabs(listReq, scw.WithContext(ctx))
-		if listErr != nil {
-			resp.Diagnostics.AddError("Failed to list Datalabs", listErr.Error())
-
-			return
-		}
-
-		allDatalabs = append(allDatalabs, listResp.Datalabs...)
-
-		if uint64(len(allDatalabs)) >= listResp.TotalCount {
-			break
-		}
-
-		page++
+		return
 	}
 
 	state := config
-	state.Datalabs = flattenDatalabsList(ctx, allDatalabs, &resp.Diagnostics)
+	state.Datalabs = flattenDatalabsList(ctx, listResp.Datalabs, &resp.Diagnostics)
 	state.Region = types.StringValue(region.String())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (d *DatalabsDataSource) resolveRegion(regionAttr types.String) (scw.Region, error) {
-	if !regionAttr.IsNull() && !regionAttr.IsUnknown() && regionAttr.ValueString() != "" {
-		return scw.ParseRegion(regionAttr.ValueString())
-	}
-
-	region, exists := d.meta.ScwClient().GetDefaultRegion()
-	if exists {
-		return region, nil
-	}
-
-	return "", errors.New("region is required; set it on the data source or configure a default region on the provider")
 }
 
 func flattenDatalabsList(ctx context.Context, datalabs []*datalab.Datalab, diags *diag.Diagnostics) types.List {
