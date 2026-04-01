@@ -2,7 +2,6 @@ package datalab
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -56,7 +55,7 @@ func (d *DatalabDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *DatalabDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: "Retrieves information about a Scaleway Datalab instance.",
 		Attributes: map[string]schema.Attribute{
 			"datalab_id": schema.StringAttribute{
 				Optional:            true,
@@ -221,7 +220,7 @@ func (d *DatalabDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	region, err := d.resolveRegion(config.Region)
+	region, err := resolveRegion(config.Region, d.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
@@ -298,19 +297,6 @@ func (d *DatalabDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	state := flattenDatalabDataSource(ctx, dl, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
-
-func (d *DatalabDataSource) resolveRegion(regionAttr types.String) (scw.Region, error) {
-	if !regionAttr.IsNull() && !regionAttr.IsUnknown() && regionAttr.ValueString() != "" {
-		return scw.ParseRegion(regionAttr.ValueString())
-	}
-
-	region, exists := d.meta.ScwClient().GetDefaultRegion()
-	if exists {
-		return region, nil
-	}
-
-	return "", errors.New("region is required; set it on the data source or configure a default region on the provider")
 }
 
 func flattenDatalabDataSource(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagnostics) datalabDataSourceModel {

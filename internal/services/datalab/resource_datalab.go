@@ -2,7 +2,6 @@ package datalab
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -110,7 +108,7 @@ func (r *DatalabResource) Metadata(_ context.Context, req resource.MetadataReque
 
 func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: "Manages a Scaleway Datalab instance.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -148,7 +146,6 @@ func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "A description for the Datalab instance.",
 			},
 			"tags": schema.ListAttribute{
@@ -346,14 +343,14 @@ func (r *DatalabResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	region, err := r.resolveRegion(data.Region)
+	region, err := resolveRegion(data.Region, r.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
 		return
 	}
 
-	projectID, err := r.resolveProjectID(data.ProjectID)
+	projectID, err := resolveProjectID(data.ProjectID, r.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
 
@@ -634,32 +631,6 @@ func (r *DatalabResource) ImportState(ctx context.Context, req resource.ImportSt
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), regional.NewIDString(region, id))...)
-}
-
-func (r *DatalabResource) resolveRegion(regionAttr types.String) (scw.Region, error) {
-	if !regionAttr.IsNull() && !regionAttr.IsUnknown() && regionAttr.ValueString() != "" {
-		return scw.ParseRegion(regionAttr.ValueString())
-	}
-
-	region, exists := r.meta.ScwClient().GetDefaultRegion()
-	if exists {
-		return region, nil
-	}
-
-	return "", errors.New("region is required; set it on the resource or configure a default region on the provider")
-}
-
-func (r *DatalabResource) resolveProjectID(projectIDAttr types.String) (string, error) {
-	if !projectIDAttr.IsNull() && !projectIDAttr.IsUnknown() && projectIDAttr.ValueString() != "" {
-		return projectIDAttr.ValueString(), nil
-	}
-
-	projectID, exists := r.meta.ScwClient().GetDefaultProjectID()
-	if exists {
-		return projectID, nil
-	}
-
-	return "", errors.New("project_id is required; set it on the resource or configure a default project on the provider")
 }
 
 func flattenDatalab(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagnostics) datalabResourceModel {
