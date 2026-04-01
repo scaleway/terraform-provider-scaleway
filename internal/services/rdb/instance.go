@@ -1097,6 +1097,12 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				}
 			}
 
+			if err := maintainACLDuringUpgrade(ctx, rdbAPI, region, oldInstanceID, ID); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("Failed to maintain ACL during upgrade: %v", err))
+			} else {
+				tflog.Warn(ctx, "ACL rules were copied to the upgraded instance. Because the instance ID changed during the blue/green upgrade, dependent resources such as scaleway_rdb_acl may require a second terraform apply to reconcile their state.")
+			}
+
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
 				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))
