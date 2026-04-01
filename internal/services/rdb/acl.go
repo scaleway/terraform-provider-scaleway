@@ -365,17 +365,21 @@ func maintainACLDuringUpgrade(ctx context.Context, api *rdb.API, region scw.Regi
 		if httperrors.Is404(err) {
 			return nil
 		}
+
 		return err
 	}
+
 	if len(res.Rules) == 0 {
 		return nil
 	}
+
 	rules := rdbACLRulesToRequests(res.Rules)
 	_, err = api.SetInstanceACLRules(&rdb.SetInstanceACLRulesRequest{
 		Region:     region,
 		InstanceID: locality.ExpandID(newInstanceID),
 		Rules:      rules,
 	}, scw.WithContext(ctx))
+
 	return err
 }
 
@@ -383,6 +387,7 @@ func rdbACLRulesToRequests(rules []*rdb.ACLRule) []*rdb.ACLRuleRequest {
 	if len(rules) == 0 {
 		return nil
 	}
+
 	reqs := make([]*rdb.ACLRuleRequest, len(rules))
 	for i, r := range rules {
 		reqs[i] = &rdb.ACLRuleRequest{
@@ -390,6 +395,7 @@ func rdbACLRulesToRequests(rules []*rdb.ACLRule) []*rdb.ACLRuleRequest {
 			Description: r.Description,
 		}
 	}
+
 	return reqs
 }
 

@@ -1872,6 +1872,7 @@ func TestAccInstance_EngineUpgrade_WithACL(t *testing.T) {
 
 	aclRule1 := "1.2.3.4/32"
 	aclRule2 := "9.0.0.0/16"
+
 	var oldInstanceID string
 
 	configForVersion := func(version string) string {
@@ -2020,6 +2021,7 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 		return nil
 	}
 }
+
 func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
