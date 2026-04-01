@@ -581,6 +581,7 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
+
 	if err := setRegistrationIdentity(d, projectID, parts[1]); err != nil {
 		return diag.FromErr(err)
 	}
