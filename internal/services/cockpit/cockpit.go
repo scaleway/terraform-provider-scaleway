@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -20,6 +21,7 @@ func ResourceCockpit() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc:         cockpitSchema,
+		Identity:           identity.DefaultProjectID(),
 		DeprecationMessage: "The scaleway_cockpit resource is deprecated and will be removed after January 1st, 2025. Use the new specialized resources instead: scaleway_cockpit_source and scaleway_cockpit_alert_manager. For Grafana access, use the scaleway_cockpit_grafana data source with IAM authentication (the scaleway_cockpit_grafana_user resource is also deprecated).",
 	}
 }
@@ -101,13 +103,19 @@ func cockpitSchema() map[string]*schema.Schema {
 func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	projectID := d.Get("project_id").(string)
 	if projectID == "" {
-		_, err := getDefaultProjectID(ctx, m)
+		var err error
+
+		projectID, err = getDefaultProjectID(ctx, m)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		_ = d.Set("project_id", projectID)
 	}
 
-	d.SetId(projectID)
+	if err := setCockpitProjectIdentity(d, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceCockpitRead(ctx, d, m)
 }
@@ -152,7 +160,9 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	_ = d.Set("project_id", projectID)
-	d.SetId(projectID)
+	if err := setCockpitProjectIdentity(d, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
 		ProjectID: projectID,
@@ -183,6 +193,21 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("push_url", createCockpitPushURLList(endpoints))
 
 	return diags
+}
+
+func setCockpitProjectIdentity(d *schema.ResourceData, projectID string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	d.SetId(projectID)
+
+	return nil
 }
 
 func ResourceCockpitUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
