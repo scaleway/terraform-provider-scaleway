@@ -219,6 +219,8 @@ interruption.
 
 ~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
 
+~> **Note** The provider copies instance-level data managed outside `scaleway_rdb_instance`, such as ACL rules, to the upgraded instance during the engine upgrade. However, Terraform plans dependent resources before the blue/green upgrade returns the new instance ID. As a result, resources that reference the previous instance ID, such as `scaleway_rdb_acl`, may require a second `terraform apply` to fully reconcile their Terraform state with the upgraded instance.
+
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 
 - `volume_size_in_gb` - (Optional) Volume size (in GB). Cannot be used when `volume_type` is set to `lssd`.
