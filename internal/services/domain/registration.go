@@ -510,6 +510,27 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readRegistrationIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	projectID := d.Get("project_id").(string)
+	taskID := d.Get("task_id").(string)
+	if err := setRegistrationIdentity(d, projectID, taskID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+// readRegistrationIntoState fetches the registration and sets state without calling setRegistrationIdentity.
+// Use this for data sources which do not have Identity schema.
+func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -581,10 +602,6 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
-
-	if err := setRegistrationIdentity(d, projectID, parts[1]); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return nil
 }
