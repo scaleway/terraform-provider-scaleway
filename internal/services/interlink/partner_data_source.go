@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -84,9 +83,16 @@ func dataSourcePartnerReadByID(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	idRegion, id, err := regional.ParseID(partnerID)
+	if err == nil {
+		region = idRegion
+	} else {
+		id = partnerID
+	}
+
 	partner, err := api.GetPartner(&interlink.GetPartnerRequest{
 		Region:    region,
-		PartnerID: locality.ExpandID(partnerID),
+		PartnerID: id,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
