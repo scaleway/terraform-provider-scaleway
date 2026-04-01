@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -34,7 +35,19 @@ func ResourceRegistration() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
+		Identity:      registrationIdentity(),
 	}
+}
+
+func registrationIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the registration task",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func registrationSchema() map[string]*schema.Schema {
@@ -489,7 +502,9 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		apiProjectID = projectID
 	}
 
-	d.SetId(apiProjectID + "/" + resp.TaskID)
+	if err := setRegistrationIdentity(d, apiProjectID, resp.TaskID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
@@ -566,6 +581,9 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
+	if err := setRegistrationIdentity(d, projectID, parts[1]); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -698,4 +716,11 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	return nil
+}
+
+func setRegistrationIdentity(d *schema.ResourceData, projectID, taskID string) error {
+	return identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"task_id":    taskID,
+	}, "project_id", "task_id")
 }
