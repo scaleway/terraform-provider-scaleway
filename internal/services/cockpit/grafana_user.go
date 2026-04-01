@@ -157,6 +157,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("role", grafanaUser.Role)
 	_ = d.Set("project_id", projectID)
 	_ = d.Set("grafana_url", grafana.GrafanaURL)
+
 	if err := setCockpitGrafanaUserIdentity(d, projectID, strconv.FormatUint(uint64(grafanaUser.ID), 10)); err != nil {
 		return diag.FromErr(err)
 	}

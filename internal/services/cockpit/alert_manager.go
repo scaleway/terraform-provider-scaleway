@@ -205,11 +205,13 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("region", string(alertManager.Region))
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
+
 	if err := setCockpitAlertManagerIdentity(d, alertManager.Region, projectID); err != nil {
 		return diag.FromErr(err)
 	}
 
 	var userRequestedIDs []string
+
 	isPreconfigured := true
 
 	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
