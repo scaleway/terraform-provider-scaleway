@@ -13,8 +13,7 @@ func IsHTTPCodeError(err error, statusCode int) bool {
 		return false
 	}
 
-	responseError := &scw.ResponseError{}
-	if errors.As(err, &responseError) && responseError.StatusCode == statusCode {
+	if responseError, ok := errors.AsType[*scw.ResponseError](err); ok && responseError.StatusCode == statusCode {
 		return true
 	}
 

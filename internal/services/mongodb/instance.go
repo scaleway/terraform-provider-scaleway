@@ -479,10 +479,9 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, mongod
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeMgdbInstance
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &instance.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeMgdbInstance),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &instance.ProjectID,
 			}
@@ -586,12 +585,10 @@ func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, regio
 		return diag.FromErr(errors.New("volume_size_in_gb must be a multiple of 5"))
 	}
 
-	size := scw.Size(newSize * uint64(scw.GB))
-
 	upgradeInstanceRequests := mongodb.UpgradeInstanceRequest{
 		InstanceID:      id,
 		Region:          region,
-		VolumeSizeBytes: &size,
+		VolumeSizeBytes: new(scw.Size(newSize * uint64(scw.GB))),
 	}
 
 	_, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequests, scw.WithContext(ctx))

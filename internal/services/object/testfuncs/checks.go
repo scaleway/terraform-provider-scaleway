@@ -66,7 +66,6 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			regionalID := regional.ExpandID(rs.Primary.ID)
 			bucketRegion := regionalID.Region.String()
-			bucketName := regionalID.ID
 
 			s3Client, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
 			if err != nil {
@@ -74,7 +73,7 @@ func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			}
 
 			_, err = s3Client.ListObjects(ctx, &s3.ListObjectsInput{
-				Bucket: &bucketName,
+				Bucket: new(regionalID.ID),
 			})
 			if err != nil {
 				if errors.As(err, new(*types.NoSuchBucket)) {

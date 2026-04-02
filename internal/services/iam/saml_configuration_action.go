@@ -135,13 +135,11 @@ func (a *SamlConfigurationAction) Invoke(ctx context.Context, req action.InvokeR
 	}
 
 	if !data.EntityID.IsUnknown() && !data.EntityID.IsNull() {
-		entityID := data.EntityID.ValueString()
-		reqUpdate.EntityID = &entityID
+		reqUpdate.EntityID = new(data.EntityID.ValueString())
 	}
 
 	if !data.SingleSignOnURL.IsUnknown() && !data.SingleSignOnURL.IsNull() {
-		ssoURL := data.SingleSignOnURL.ValueString()
-		reqUpdate.SingleSignOnURL = &ssoURL
+		reqUpdate.SingleSignOnURL = new(data.SingleSignOnURL.ValueString())
 	}
 
 	_, err = a.iamAPI.UpdateSaml(reqUpdate, scw.WithContext(ctx))
