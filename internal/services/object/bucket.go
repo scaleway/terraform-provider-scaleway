@@ -384,8 +384,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 			}
 
 			if ruleHasPrefix {
-				prefix := r["prefix"].(string)
-				lifecycleRuleAndOp.Prefix = &prefix
+				lifecycleRuleAndOp.Prefix = new(r["prefix"].(string))
 			}
 
 			filter.And = lifecycleRuleAndOp
@@ -394,8 +393,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		if !ruleHasPrefix && len(tags) == 1 {
 			filter.Tag = &tags[0]
 		} else if ruleHasPrefix && len(tags) == 0 {
-			prefix := r["prefix"].(string)
-			filter.Prefix = &prefix
+			filter.Prefix = new(r["prefix"].(string))
 		}
 
 		rule.Filter = filter
@@ -705,8 +703,7 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 		Bucket: new(bucketName),
 	})
 	if err != nil {
-		var noSuchBucket *s3Types.NoSuchBucket
-		if errors.As(err, &noSuchBucket) {
+		if _, ok := errors.AsType[*s3Types.NoSuchBucket](err); ok {
 			return nil // Bucket does not exist, so consider it deleted
 		}
 

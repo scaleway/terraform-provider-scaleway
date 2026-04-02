@@ -238,8 +238,7 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if OsID, ok := d.GetOk("os_id"); ok {
-		id := zonal.ExpandID(OsID).ID
-		createReq.OsID = &id
+		createReq.OsID = new(zonal.ExpandID(OsID).ID)
 	}
 
 	if runnerIDs, ok := d.GetOk("runner_ids"); ok {
@@ -375,9 +374,8 @@ func ResourceAppleSiliconServerRead(ctx context.Context, d *schema.ResourceData,
 	authorized := true
 
 	for _, privateNetworkID := range privateNetworkIDs {
-		resourceType := ipamAPI.ResourceTypeAppleSiliconPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
+			ResourceType:     new(ipamAPI.ResourceTypeAppleSiliconPrivateNic),
 			PrivateNetworkID: &privateNetworkID,
 			ProjectID:        &res.ProjectID,
 		}
@@ -442,8 +440,7 @@ func ResourceAppleSiliconServerUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChange("enable_vpc") {
-		enableVpc := d.Get("enable_vpc").(bool)
-		req.EnableVpc = &enableVpc
+		req.EnableVpc = new(d.Get("enable_vpc").(bool))
 	}
 
 	if d.HasChange("public_bandwidth") {

@@ -190,8 +190,7 @@ func isSNSTopicDestroyed(ctx context.Context, tt *acctest.TestTools) resource.Te
 				TopicArn: new(mnq.ComposeSNSARN(region, projectID, topicName)),
 			})
 			if err != nil {
-				var apiErr *smithy.GenericAPIError
-				if errors.As(err, &apiErr) && apiErr.Code == "AccessDeniedException" {
+				if apiErr, ok := errors.AsType[*smithy.GenericAPIError](err); ok && apiErr.Code == "AccessDeniedException" {
 					return nil
 				}
 

@@ -178,8 +178,7 @@ func ResourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	hasChanged := false
 
 	if d.HasChange("name") {
-		newName := types.ExpandOrGenerateString(d.Get("name"), "snapshot")
-		updateReq.Name = &newName
+		updateReq.Name = new(types.ExpandOrGenerateString(d.Get("name"), "snapshot"))
 		hasChanged = true
 	}
 

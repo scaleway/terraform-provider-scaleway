@@ -421,9 +421,6 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	var id string
 
 	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
-		haCluster := d.Get("is_ha_cluster").(bool)
-		nodeType := d.Get("node_type").(string)
-
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -433,8 +430,8 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  &haCluster,
-			NodeType:     &nodeType,
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)),
+			NodeType:     new(d.Get("node_type").(string)),
 		}
 
 		res, err := rdbAPI.CreateInstanceFromSnapshot(createReqFromSnapshot, scw.WithContext(ctx))
@@ -453,8 +450,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 				Region:     region,
 				InstanceID: res.ID,
 			}
-			tags := types.ExpandStrings(rawTag)
-			updateReq.Tags = &tags
+			updateReq.Tags = new(types.ExpandStrings(rawTag))
 
 			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 			if err != nil {
@@ -797,10 +793,9 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeRdbInstance
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &res.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeRdbInstance),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &res.ProjectID,
 			}

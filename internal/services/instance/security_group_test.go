@@ -65,7 +65,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 0, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetZero,
-						DestPortFrom: scw.Uint32Ptr(80),
+						DestPortFrom: new(uint32(80)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
@@ -77,7 +77,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 1, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetOne,
-						DestPortFrom: scw.Uint32Ptr(22),
+						DestPortFrom: new(uint32(22)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
@@ -124,7 +124,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 0, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetTest,
-						DestPortFrom: scw.Uint32Ptr(80),
+						DestPortFrom: new(uint32(80)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionDrop,
@@ -136,7 +136,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 1, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetZero,
-						DestPortFrom: scw.Uint32Ptr(80),
+						DestPortFrom: new(uint32(80)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
@@ -148,7 +148,7 @@ func TestAccSecurityGroup_Basic(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 2, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetOne,
-						DestPortFrom: scw.Uint32Ptr(22),
+						DestPortFrom: new(uint32(22)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
@@ -202,7 +202,7 @@ func TestAccSecurityGroup_ICMP(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 0, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetZero,
-						DestPortFrom: scw.Uint32Ptr(80),
+						DestPortFrom: new(uint32(80)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
@@ -344,7 +344,7 @@ func TestAccSecurityGroup_RemovePort(t *testing.T) {
 					isSecurityGroupRuleMatching(tt, "scaleway_instance_security_group.base", 0, &instanceSDK.SecurityGroupRule{
 						Direction:    instanceSDK.SecurityGroupRuleDirectionInbound,
 						IPRange:      ipnetZero,
-						DestPortFrom: scw.Uint32Ptr(22),
+						DestPortFrom: new(uint32(22)),
 						DestPortTo:   nil,
 						Protocol:     instanceSDK.SecurityGroupRuleProtocolTCP,
 						Action:       instanceSDK.SecurityGroupRuleActionAccept,
