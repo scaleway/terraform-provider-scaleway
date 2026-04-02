@@ -31,6 +31,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/inference"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/interlink"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iot"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
@@ -328,6 +329,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_instance_server_type":                               instance.DataSourceServerType(),
 				"scaleway_instance_snapshot":                                  instance.DataSourceSnapshot(),
 				"scaleway_instance_volume":                                    instance.DataSourceVolume(),
+				"scaleway_interlink_partner":                                  interlink.DataSourcePartner(),
+				"scaleway_interlink_partners":                                 interlink.DataSourcePartners(),
 				"scaleway_iot_device":                                         iot.DataSourceDevice(),
 				"scaleway_iot_hub":                                            iot.DataSourceHub(),
 				"scaleway_ipam_ip":                                            ipam.DataSourceIP(),
