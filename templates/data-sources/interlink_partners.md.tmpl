@@ -1,0 +1,35 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Interlink"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `pop_ids` - (Optional) Filter for partners present (offering a connection) in one of these PoPs.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) to list partners from.
+
+## Attributes Reference
+
+- `partners` - List of partners matching the filters. Each entry contains:
+    - `id` - ID of the partner.
+    - `name` - Name of the partner.
+    - `contact_email` - Contact email address.
+    - `logo_url` - URL of the partner's logo.
+    - `portal_url` - URL of the partner's portal.
+    - `created_at` - Creation date.
+    - `updated_at` - Last update date.
