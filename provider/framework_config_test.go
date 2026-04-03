@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -28,13 +27,21 @@ active_profile: test-profile
 // can properly load credentials from different sources in the correct priority order:
 // config file < provider config < environment variables
 
+func unsetEnv(unsetConfig bool) {
+	_ = os.Unsetenv(scw.ScwAccessKeyEnv)
+	_ = os.Unsetenv(scw.ScwSecretKeyEnv)
+	_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
+	_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
+	_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+
+	if unsetConfig {
+		_ = os.Unsetenv("SCW_CONFIG_PATH")
+	}
+}
+
 func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 	t.Run("Test config file loading", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -47,7 +54,7 @@ func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 
 		// Test with an empty provider config
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{},
 		)
 		if err != nil {
@@ -82,11 +89,7 @@ func TestFrameworkProviderConfigSources_ActiveProfile(t *testing.T) {
 
 func TestFrameworkProviderConfigSources_ProviderConfig(t *testing.T) {
 	t.Run("Test provider config overrides config file", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -99,7 +102,7 @@ func TestFrameworkProviderConfigSources_ProviderConfig(t *testing.T) {
 
 		// Test with provider config that should override config file
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "override-access-key",
 				SecretKey: "override-secret-key",
@@ -157,7 +160,7 @@ func TestFrameworkProviderConfigSources_EnvConfig(t *testing.T) {
 
 		// Test with provider config and config file, but env vars should take precedence
 		profile, credentialsSource, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{
 				AccessKey: "config-access-key",
 				SecretKey: "config-secret-key",
@@ -198,16 +201,11 @@ func TestFrameworkProviderConfigSources_EnvConfig(t *testing.T) {
 
 func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 	t.Run("Test defaults when no config provided", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
-		_ = os.Unsetenv("SCW_CONFIG_PATH")
+		unsetEnv(true)
 
 		// Test with no config - should get defaults
 		profile, _, err := meta.LoadProfileFromFrameworkConfig(
-			context.Background(),
+			t.Context(),
 			&meta.FrameworkProviderConfig{},
 		)
 		if err != nil {
@@ -238,16 +236,11 @@ func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 
 func TestFrameworkProviderMetaInitialization(t *testing.T) {
 	t.Run("Test that meta is properly initialized", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
-		_ = os.Unsetenv("SCW_CONFIG_PATH")
+		unsetEnv(true)
 
 		frameworkConfig := &meta.FrameworkProviderConfig{}
 
-		m, err := meta.NewMetaFromFrameworkConfig(context.Background(), frameworkConfig, "1.0.0")
+		m, err := meta.NewMetaFromFrameworkConfig(t.Context(), frameworkConfig, "1.0.0")
 		if err != nil {
 			t.Fatalf("NewMetaFromFrameworkConfig failed: %v", err)
 		}
@@ -268,12 +261,7 @@ func TestFrameworkProviderMetaInitialization(t *testing.T) {
 
 func TestFrameworkProviderConfigure(t *testing.T) {
 	t.Run("Test Configure properly assigns meta", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
-		_ = os.Unsetenv("SCW_CONFIG_PATH")
+		unsetEnv(true)
 
 		p := provider.NewFrameworkProvider(nil)()
 
