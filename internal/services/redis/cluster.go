@@ -269,6 +269,12 @@ func clusterSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
 		},
+		"connection_string": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "Redis connection URI for the first reachable endpoint (public is preferred over private). Uses scheme `rediss` when TLS is enabled. Database index is always `0`. When `password_wo` is used, the password is omitted because it is not stored in state.",
+		},
 		"created_at": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -523,6 +529,13 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 	} else {
 		_ = d.Set("certificate", "")
 	}
+
+	connPassword := ""
+	if _, ok := d.GetOk("password_wo_version"); !ok {
+		connPassword = d.Get("password").(string)
+	}
+
+	_ = d.Set("connection_string", redisConnectionString(cluster.Endpoints, connPassword, cluster.TLSEnabled))
 
 	return diags
 }

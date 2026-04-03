@@ -245,6 +245,7 @@ the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 - `created_at` - The date and time of creation of the Redis™ cluster.
 - `updated_at` - The date and time of the last update of the Redis™ cluster.
 - `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true
+- `connection_string` - (Sensitive) Redis connection URI for the first reachable endpoint (public is preferred over private). Uses the `rediss` scheme when TLS is enabled, otherwise `redis`. The path is always `/0` (default logical database). If `password_wo` is used, the password is omitted from the URI because it is not stored in state.
 
 ## Import
 
