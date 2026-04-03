@@ -102,6 +102,27 @@ func routeSchema() map[string]*schema.Schema {
 										},
 									},
 								},
+								"host_filter": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MaxItems:    1,
+									Description: "Host to filter for. A request whose host matches the given filter will be considered to match the rule. All hosts will match if none is provided",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"host_filter_type": {
+												Type:             schema.TypeString,
+												Required:         true,
+												ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchHostFilterHostFilterType](),
+												Description:      "The type of filter to match for the host path",
+											},
+											"value": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "The value to be matched for the host path",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
