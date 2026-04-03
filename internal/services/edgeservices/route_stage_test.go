@@ -98,20 +98,27 @@ func TestAccEdgeServicesRoute_HostFilter(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource "scaleway_account_project" "main" {
+				  name = "tf_tests_edge_services_project_pipeline-host-filter"
+				}
+
 				resource "scaleway_edge_services_plan" "main" {
 				  name = "starter"
+				  project_id = scaleway_account_project.main.id
 				}
 
 				resource "scaleway_edge_services_pipeline" "main" {
 				  name        = "my-edge-services-pipeline-host-filter"
 				  description = "pipeline for host filter test"
 				  depends_on  = [scaleway_edge_services_plan.main]
+				  project_id  = scaleway_account_project.main.id
 				}
 
 				resource "scaleway_edge_services_waf_stage" "waf" {
 				  pipeline_id    = scaleway_edge_services_pipeline.main.id
 				  mode           = "enable"
 				  paranoia_level = 2
+				  project_id = scaleway_account_project.main.id
 				}
 
 				resource "scaleway_object_bucket" "main" {
@@ -119,6 +126,7 @@ func TestAccEdgeServicesRoute_HostFilter(t *testing.T) {
 				  tags = {
 					foo = "bar"
 				  }
+				  project_id = scaleway_account_project.main.id
 				}
 
 				resource "scaleway_edge_services_backend_stage" "backend" {
