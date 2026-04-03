@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 	"time"
 
@@ -55,6 +56,7 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.main", "rediss", "thiZ_is_v&ry_s3cret"),
 				),
 			},
 			{
@@ -83,6 +85,7 @@ func TestAccCluster_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.main", "rediss", "thiZ_is_A_n3w_passw0rd"),
 				),
 			},
 		},
@@ -697,6 +700,7 @@ func TestAccCluster_Certificate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
 					isCertificateValid("scaleway_redis_cluster.main"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.main", "rediss", "thiZ_is_v&ry_s3cret"),
 				),
 			},
 		},
@@ -738,6 +742,7 @@ func TestAccCluster_NoCertificate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "tls_enabled", "false"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "zone", "fr-par-2"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.main", "certificate", ""),
+					testCheckRedisConnectionString("scaleway_redis_cluster.main", "redis", "thiZ_is_v&ry_s3cret"),
 				),
 			},
 		},
@@ -907,6 +912,19 @@ func privateNetworksIDsAreEither(name string, possibilities ...string) resource.
 	}
 }
 
+// testCheckRedisConnectionString asserts connection_string matches the public endpoint pattern (IPv4).
+// When password is empty (e.g. password_wo), the URI has no userinfo: scheme://host:port/0
+func testCheckRedisConnectionString(resourceName, scheme, password string) resource.TestCheckFunc {
+	var pattern string
+	if password == "" {
+		pattern = fmt.Sprintf(`^%s://\d+\.\d+\.\d+\.\d+:\d+/0$`, regexp.QuoteMeta(scheme))
+	} else {
+		pattern = fmt.Sprintf(`^%s://:%s@\d+\.\d+\.\d+\.\d+:\d+/0$`, regexp.QuoteMeta(scheme), regexp.QuoteMeta(password))
+	}
+
+	return resource.TestMatchResourceAttr(resourceName, "connection_string", regexp.MustCompile(pattern))
+}
+
 func isCertificateValid(name string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[name]
@@ -981,6 +999,7 @@ func TestAccCluster_PasswordWO(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "cluster_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "tls_enabled", "true"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "zone", "fr-par-2"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.password_wo_cluster", "rediss", ""),
 				),
 			},
 			// Update cluster password_wo with new version
@@ -1001,6 +1020,7 @@ func TestAccCluster_PasswordWO(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password_wo_version", "2"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.password_wo_cluster", "rediss", ""),
 				),
 			},
 			// Update cluster from password_wo to regular password
@@ -1020,6 +1040,7 @@ func TestAccCluster_PasswordWO(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password", "thiZ_is_v&ry_s3cret_regular"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.password_wo_cluster", "rediss", "thiZ_is_v&ry_s3cret_regular"),
 				),
 			},
 			// Update cluster from regular password back to password_wo
@@ -1040,6 +1061,7 @@ func TestAccCluster_PasswordWO(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isClusterPresent(tt, "scaleway_redis_cluster.password_wo_cluster"),
 					resource.TestCheckResourceAttr("scaleway_redis_cluster.password_wo_cluster", "password_wo_version", "3"),
+					testCheckRedisConnectionString("scaleway_redis_cluster.password_wo_cluster", "rediss", ""),
 				),
 			},
 		},
