@@ -32,7 +32,7 @@ data "scaleway_interlink_pop" "by_name" {
 
 ## Argument Reference
 
-- `pop_id` - (Optional) The ID of the PoP. Conflicts with `name`.
+- `pop_id` - (Optional) The ID of the PoP. Can be a plain UUID or a regional ID. Conflicts with `name`.
 - `name` - (Optional) The name of the PoP to filter for. Conflicts with `pop_id`.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the PoP exists.
 
