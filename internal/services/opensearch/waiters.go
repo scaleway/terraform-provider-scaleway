@@ -15,12 +15,10 @@ func waitForDeployment(
 	deploymentID string,
 	timeout time.Duration,
 ) (*searchdbapi.Deployment, error) {
-	retryInterval := defaultWaitRetryInterval
-
 	return api.WaitForDeployment(&searchdbapi.WaitForDeploymentRequest{
 		Region:        region,
 		DeploymentID:  deploymentID,
 		Timeout:       &timeout,
-		RetryInterval: &retryInterval,
+		RetryInterval: new(defaultWaitRetryInterval),
 	}, scw.WithContext(ctx))
 }

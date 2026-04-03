@@ -353,12 +353,10 @@ func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("autoconfig") {
-		autoconfig := d.Get("autoconfig").(bool)
-
 		_, err = api.UpdateDomain(&tem.UpdateDomainRequest{
 			Region:     region,
 			DomainID:   id,
-			Autoconfig: &autoconfig,
+			Autoconfig: new(d.Get("autoconfig").(bool)),
 		})
 		if err != nil {
 			return diag.FromErr(err)

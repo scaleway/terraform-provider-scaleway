@@ -102,8 +102,6 @@ func expandIpamConfig(raw any) (bool, *string) {
 }
 
 func setPrivateIPs(ctx context.Context, d *schema.ResourceData, api *vpcgw.API, gn *vpcgw.GatewayNetwork, m any) diag.Diagnostics {
-	resourceID := gn.ID
-
 	region, err := gn.Zone.Region()
 	if err != nil {
 		return diag.Diagnostics{
@@ -126,10 +124,9 @@ func setPrivateIPs(ctx context.Context, d *schema.ResourceData, api *vpcgw.API, 
 		}
 	}
 
-	resourceType := ipamAPI.ResourceTypeVpcGatewayNetwork
 	opts := &ipam.GetResourcePrivateIPsOptions{
-		ResourceID:       &resourceID,
-		ResourceType:     &resourceType,
+		ResourceID:       new(gn.ID),
+		ResourceType:     new(ipamAPI.ResourceTypeVpcGatewayNetwork),
 		PrivateNetworkID: &gn.PrivateNetworkID,
 		ProjectID:        &projectID,
 	}

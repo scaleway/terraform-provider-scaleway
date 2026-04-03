@@ -12,6 +12,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -34,7 +35,19 @@ func ResourceRegistration() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
+		Identity:      registrationIdentity(),
 	}
+}
+
+func registrationIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the registration task",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func registrationSchema() map[string]*schema.Schema {
@@ -489,12 +502,36 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		apiProjectID = projectID
 	}
 
-	d.SetId(apiProjectID + "/" + resp.TaskID)
+	if err := setRegistrationIdentity(d, apiProjectID, resp.TaskID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
 func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readRegistrationIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	projectID := d.Get("project_id").(string)
+	taskID := d.Get("task_id").(string)
+
+	if err := setRegistrationIdentity(d, projectID, taskID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+// readRegistrationIntoState fetches the registration and sets state without calling setRegistrationIdentity.
+// Use this for data sources which do not have Identity schema.
+func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -698,4 +735,11 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	return nil
+}
+
+func setRegistrationIdentity(d *schema.ResourceData, projectID, taskID string) error {
+	return identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"task_id":    taskID,
+	}, "project_id", "task_id")
 }
