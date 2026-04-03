@@ -24,3 +24,28 @@ func flattenPartners(region scw.Region, partners []*interlink.Partner) []map[str
 
 	return result
 }
+
+func flattenPops(pops []*interlink.Pop) []map[string]any {
+	result := make([]map[string]any, len(pops))
+
+	for i, pop := range pops {
+		bandwidths := make([]int, len(pop.AvailableLinkBandwidthsMbps))
+		for j, b := range pop.AvailableLinkBandwidthsMbps {
+			bandwidths[j] = int(b)
+		}
+
+		result[i] = map[string]any{
+			"id":                             regional.NewIDString(pop.Region, pop.ID),
+			"name":                           pop.Name,
+			"hosting_provider_name":          pop.HostingProviderName,
+			"address":                        pop.Address,
+			"city":                           pop.City,
+			"logo_url":                       pop.LogoURL,
+			"available_link_bandwidths_mbps": bandwidths,
+			"display_name":                   pop.DisplayName,
+			"region":                         pop.Region.String(),
+		}
+	}
+
+	return result
+}
