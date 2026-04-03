@@ -139,7 +139,7 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 }
 
 func (p *ScalewayProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var data ScalewayProviderModel
+	var data *ScalewayProviderModel
 
 	// Read configuration data into model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -156,10 +156,12 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		m = p.providerMeta
 	} else {
-		frameworkConfig := modelToFrameworkConfig(&data)
+		frameworkConfig := &meta.FrameworkProviderConfig{}
+		if data != nil {
+			frameworkConfig = modelToFrameworkConfig(data)
+		}
 
 		var err error
-
 		m, err = meta.NewMetaFromFrameworkConfig(ctx, frameworkConfig, req.TerraformVersion)
 		if err != nil {
 			resp.Diagnostics.AddError("error creating meta", err.Error())
