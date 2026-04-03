@@ -152,6 +152,7 @@ func setPopState(d *schema.ResourceData, pop *interlink.Pop) diag.Diagnostics {
 	for i, b := range pop.AvailableLinkBandwidthsMbps {
 		bandwidths[i] = int(b)
 	}
+
 	_ = d.Set("available_link_bandwidths_mbps", bandwidths)
 
 	return nil
