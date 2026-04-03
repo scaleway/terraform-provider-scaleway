@@ -5,8 +5,12 @@ import (
 	"os"
 	"testing"
 
+	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
 const configContent = `
@@ -228,6 +232,116 @@ func TestFrameworkProviderConfigSources_NoConfig(t *testing.T) {
 
 		if profile.DefaultProjectID != nil {
 			t.Errorf("Expected project ID to be nil, got: %v", profile.DefaultProjectID)
+		}
+	})
+}
+
+func TestFrameworkProviderMetaInitialization(t *testing.T) {
+	t.Run("Test that meta is properly initialized", func(t *testing.T) {
+		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
+		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
+		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
+		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
+		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		_ = os.Unsetenv("SCW_CONFIG_PATH")
+
+		frameworkConfig := &meta.FrameworkProviderConfig{}
+
+		m, err := meta.NewMetaFromFrameworkConfig(context.Background(), frameworkConfig, "1.0.0")
+		if err != nil {
+			t.Fatalf("NewMetaFromFrameworkConfig failed: %v", err)
+		}
+
+		if m == nil {
+			t.Fatal("meta is nil - NewMetaFromFrameworkConfig returned nil")
+		}
+
+		if m.ScwClient() == nil {
+			t.Fatal("meta.ScwClient() is nil")
+		}
+
+		if m.HTTPClient() == nil {
+			t.Fatal("meta.HTTPClient() is nil")
+		}
+	})
+}
+
+func TestFrameworkProviderConfigure(t *testing.T) {
+	t.Run("Test Configure properly assigns meta", func(t *testing.T) {
+		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
+		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
+		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
+		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
+		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		_ = os.Unsetenv("SCW_CONFIG_PATH")
+
+		p := provider.NewFrameworkProvider(nil)()
+
+		configValue := tfsdk.Config{
+			Schema: schema.Schema{
+				Attributes: map[string]schema.Attribute{
+					"access_key": schema.StringAttribute{
+						Optional: true,
+					},
+					"secret_key": schema.StringAttribute{
+						Optional: true,
+					},
+					"profile": schema.StringAttribute{
+						Optional: true,
+					},
+					"project_id": schema.StringAttribute{
+						Optional: true,
+					},
+					"organization_id": schema.StringAttribute{
+						Optional: true,
+					},
+					"api_url": schema.StringAttribute{
+						Optional: true,
+					},
+					"region": schema.StringAttribute{
+						Optional: true,
+					},
+					"zone": schema.StringAttribute{
+						Optional: true,
+					},
+				},
+			},
+		}
+
+		req := providerFramework.ConfigureRequest{
+			Config: configValue,
+		}
+
+		var resp providerFramework.ConfigureResponse
+		p.Configure(t.Context(), req, &resp)
+
+		if resp.Diagnostics.HasError() {
+			for _, diag := range resp.Diagnostics {
+				t.Logf("Diagnostic: %s: %s", diag.Severity(), diag.Detail())
+			}
+
+			t.Fatalf("Configure failed")
+		}
+
+		if resp.ResourceData == nil {
+			t.Fatal("resp.ResourceData is nil - meta was not properly assigned.")
+		}
+
+		if resp.DataSourceData == nil {
+			t.Fatal("resp.DataSourceData is nil - meta was not properly assigned")
+		}
+
+		metaObj, ok := resp.ResourceData.(*meta.Meta)
+		if !ok {
+			t.Fatalf("ResourceData is not of type *meta.Meta, got: %T", resp.ResourceData)
+		}
+
+		if metaObj.ScwClient() == nil {
+			t.Fatal("meta.ScwClient() is nil")
+		}
+
+		if metaObj.HTTPClient() == nil {
+			t.Fatal("meta.HTTPClient() is nil")
 		}
 	})
 }
