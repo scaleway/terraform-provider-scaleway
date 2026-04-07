@@ -16,6 +16,12 @@ Routes all unmatched traffic through a WAF stage, while requests matching specif
 
 {{ tffile "examples/resources/scaleway_edge_services_route_stage/resource-waf-default.tf" }}
 
+### Host-based routing
+
+Routes requests to different backends based on the hostname, allowing a single pipeline to serve multiple domains.
+
+{{ tffile "examples/resources/scaleway_edge_services_route_stage/resource-host-routing.tf" }}
+
 ### Default to backend with selective WAF protection
 
 Serves static content directly from a backend by default, while routing API traffic through a WAF stage for protection against common web attacks.
@@ -35,6 +41,9 @@ Serves static content directly from a backend by default, while routing API traf
         - `path_filter` (Optional) HTTP URL path to filter for. A request whose path matches the given filter will be considered to match the rule. All paths will match if none is provided.
             - `path_filter_type` (Required) The type of filter to match for the HTTP URL path. For now, all path filters must be written in regex and use the `regex` type.
             - `value` (Required) The value to be matched for the HTTP URL path.
+        - `host_filter` (Optional) Host to filter for. A request whose host matches the given filter will be considered to match the rule. All hosts will match if none is provided.
+            - `host_filter_type` (Required) The type of filter to match for the host. Use the `regex` type.
+            - `value` (Required) The value to be matched for the host.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the route stage is associated with.
 
 ## Attributes Reference

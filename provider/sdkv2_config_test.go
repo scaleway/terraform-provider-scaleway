@@ -16,11 +16,7 @@ import (
 
 func TestSDKv2ProviderConfigSources_ActiveProfile(t *testing.T) {
 	t.Run("Test config file loading", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -107,11 +103,7 @@ func TestSDKv2ProviderConfigSources_ActiveProfile(t *testing.T) {
 
 func TestSDKv2ProviderConfigSources_ProviderConfig(t *testing.T) {
 	t.Run("Test provider config overrides config file", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
+		unsetEnv(false)
 
 		tempDir := t.TempDir()
 		configFile := tempDir + "/config.yaml"
@@ -299,12 +291,7 @@ func TestSDKv2ProviderConfigSources_EnvConfig(t *testing.T) {
 
 func TestSDKv2ProviderConfigSources_NoConfig(t *testing.T) {
 	t.Run("Test defaults when no config provided", func(t *testing.T) {
-		_ = os.Unsetenv(scw.ScwAccessKeyEnv)
-		_ = os.Unsetenv(scw.ScwSecretKeyEnv)
-		_ = os.Unsetenv(scw.ScwDefaultProjectIDEnv)
-		_ = os.Unsetenv(scw.ScwDefaultRegionEnv)
-		_ = os.Unsetenv(scw.ScwDefaultZoneEnv)
-		_ = os.Unsetenv("SCW_CONFIG_PATH")
+		unsetEnv(true)
 
 		// Test with no config - should get defaults
 		providerSchema := schema.TestResourceDataRaw(t, map[string]*schema.Schema{
