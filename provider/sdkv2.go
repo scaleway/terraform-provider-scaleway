@@ -331,6 +331,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_instance_volume":                                    instance.DataSourceVolume(),
 				"scaleway_interlink_partner":                                  interlink.DataSourcePartner(),
 				"scaleway_interlink_partners":                                 interlink.DataSourcePartners(),
+				"scaleway_interlink_pop":                                      interlink.DataSourcePop(),
+				"scaleway_interlink_pops":                                     interlink.DataSourcePops(),
 				"scaleway_iot_device":                                         iot.DataSourceDevice(),
 				"scaleway_iot_hub":                                            iot.DataSourceHub(),
 				"scaleway_ipam_ip":                                            ipam.DataSourceIP(),

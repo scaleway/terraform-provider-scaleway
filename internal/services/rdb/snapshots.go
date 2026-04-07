@@ -203,8 +203,7 @@ func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta
 	needsUpdate := false
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		snapshotUpdateRequest.Name = &name
+		snapshotUpdateRequest.Name = new(d.Get("name").(string))
 		needsUpdate = true
 	}
 

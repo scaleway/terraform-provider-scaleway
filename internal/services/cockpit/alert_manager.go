@@ -212,12 +212,10 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 
 	var userRequestedIDs []string
 
-	isPreconfigured := true
-
 	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
 		ProjectID:       projectID,
-		IsPreconfigured: &isPreconfigured,
+		IsPreconfigured: new(true),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)

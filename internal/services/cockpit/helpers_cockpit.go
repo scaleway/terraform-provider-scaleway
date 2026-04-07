@@ -63,14 +63,11 @@ func waitForExporter(
 	exporterID string,
 	timeout time.Duration,
 ) (*cockpit.Exporter, error) {
-	retryInterval := defaultCockpitRetryInterval
-	timeoutVal := timeout
-
 	return api.WaitForExporter(&cockpit.WaitForExporterRequest{
 		Region:        region,
 		ExporterID:    exporterID,
-		Timeout:       &timeoutVal,
-		RetryInterval: &retryInterval,
+		Timeout:       new(timeout),
+		RetryInterval: new(defaultCockpitRetryInterval),
 	}, scw.WithContext(ctx))
 }
 

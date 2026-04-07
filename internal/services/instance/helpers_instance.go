@@ -334,7 +334,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				PrivateNicID:  p.ID,
 				Zone:          ph.zone,
 				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
+				RetryInterval: new(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err

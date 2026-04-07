@@ -236,8 +236,7 @@ type FrameworkProviderConfig struct {
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
 	scwConfig, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	var configFileNotFoundError *scw.ConfigFileNotFoundError
-	if errors.As(err, &configFileNotFoundError) {
+	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		scwConfig = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err
@@ -317,8 +316,7 @@ func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProvid
 func LoadProfile(ctx context.Context, d *schema.ResourceData) (*scw.Profile, *CredentialsSource, error) {
 	config, err := scw.LoadConfig()
 	// If the config file do not exist, don't return an error as we may find config in ENV or flags.
-	var configFileNotFoundError *scw.ConfigFileNotFoundError
-	if errors.As(err, &configFileNotFoundError) {
+	if _, ok := errors.AsType[*scw.ConfigFileNotFoundError](err); ok {
 		config = &scw.Config{}
 	} else if err != nil {
 		return nil, nil, err

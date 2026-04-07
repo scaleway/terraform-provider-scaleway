@@ -561,8 +561,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if serviceDNSIP, ok := d.GetOk("service_dns_ip"); ok {
-		serviceDNSIPNetIP := net.ParseIP(serviceDNSIP.(string))
-		req.ServiceDNSIP = &serviceDNSIPNetIP
+		req.ServiceDNSIP = new(net.ParseIP(serviceDNSIP.(string)))
 	}
 
 	// Cluster creation

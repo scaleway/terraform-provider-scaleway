@@ -95,13 +95,11 @@ func expandConnectionCiphers(raw any) []*s2s_vpn.ConnectionCipher {
 		}
 
 		if v, ok := m["integrity"]; ok {
-			val := s2s_vpn.ConnectionIntegrity(v.(string))
-			c.Integrity = &val
+			c.Integrity = new(s2s_vpn.ConnectionIntegrity(v.(string)))
 		}
 
 		if v, ok := m["dh_group"]; ok {
-			val := s2s_vpn.ConnectionDhGroup(v.(string))
-			c.DhGroup = &val
+			c.DhGroup = new(s2s_vpn.ConnectionDhGroup(v.(string)))
 		}
 
 		res = append(res, c)

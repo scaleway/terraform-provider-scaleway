@@ -408,8 +408,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if cloudInit, ok := d.GetOk("cloud_init"); ok {
-		cloudInitStr := []byte(cloudInit.(string))
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit.(string)))
 	}
 
 	if file, ok := d.GetOk("partitioning"); ok || !d.Get("install_config_afterward").(bool) {
@@ -618,9 +617,8 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	diags := diag.Diagnostics{}
 
 	for _, privateNetworkID := range privateNetworkIDs {
-		resourceType := ipamAPI.ResourceTypeBaremetalPrivateNic
 		opts := &ipam.GetResourcePrivateIPsOptions{
-			ResourceType:     &resourceType,
+			ResourceType:     new(ipamAPI.ResourceTypeBaremetalPrivateNic),
 			PrivateNetworkID: &privateNetworkID,
 			ProjectID:        &server.ProjectID,
 		}
@@ -765,8 +763,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChange("cloud_init") {
 		cloudInit, _ := d.Get("cloud_init").(string)
-		cloudInitStr := []byte(cloudInit)
-		req.UserData = &cloudInitStr
+		req.UserData = new([]byte(cloudInit))
 		hasChanged = true
 	}
 
