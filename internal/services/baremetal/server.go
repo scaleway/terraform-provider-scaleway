@@ -235,9 +235,9 @@ If this behaviour is wanted, please set 'reinstall_on_ssh_key_changes' argument 
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"id": {
-						Type:        schema.TypeString,
-						Description: "IDs of the options",
-						Required:    true,
+						Type:             schema.TypeString,
+						Description:      "IDs of the options",
+						Required:         true,
 						DiffSuppressFunc: dsf.Locality,
 					},
 					"expires_at": {
