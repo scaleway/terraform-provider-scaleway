@@ -1,3 +1,4 @@
+//nolint:testpackage // Tests need access to unexported redis connection helpers.
 package redis
 
 import (
@@ -15,10 +16,10 @@ func TestRedisConnectionString(t *testing.T) {
 
 	tests := []struct {
 		name       string
-		endpoints  []*redis.Endpoint
 		password   string
-		tlsEnabled bool
 		want       string
+		tlsEnabled bool
+		endpoints  []*redis.Endpoint
 	}{
 		{
 			name: "empty endpoints",

@@ -206,6 +206,7 @@ func redisConnectionHostPort(endpoints []*redis.Endpoint) (host string, port uin
 		if endpoint == nil || endpoint.PublicNetwork == nil {
 			continue
 		}
+
 		if len(endpoint.IPs) > 0 {
 			return endpoint.IPs[0].String(), endpoint.Port
 		}
@@ -215,6 +216,7 @@ func redisConnectionHostPort(endpoints []*redis.Endpoint) (host string, port uin
 		if endpoint == nil || endpoint.PrivateNetwork == nil {
 			continue
 		}
+
 		if len(endpoint.IPs) > 0 {
 			return endpoint.IPs[0].String(), endpoint.Port
 		}

@@ -56,7 +56,6 @@ In addition to all above arguments, the following attributes are exported:
 - `acl` - List of acl rules.
 - `settings` -  Map of settings for redis cluster.
 - `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true.
-- `connection_string` - (Sensitive) Redis connection URI. See the [`scaleway_redis_cluster` resource documentation](../resources/redis_cluster.md#attributes-reference) for details.
 - `tags` - The tags associated with the Redis Cluster.
 
 ~> **Important:** Redis™ cluster IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
