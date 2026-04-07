@@ -131,8 +131,7 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 	}
 
 	if ruleStatus, ok := d.GetOk("rule_status"); ok {
-		status := cockpit.AlertStatus(ruleStatus.(string))
-		req.RuleStatus = &status
+		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
 	response, err := api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())

@@ -176,6 +176,7 @@ func expandRouteRules(raw any) []*edge_services.SetRouteRulesRequestRouteRule {
 		ruleMap := rawRule.(map[string]any)
 		rule := &edge_services.SetRouteRulesRequestRouteRule{
 			BackendStageID: types.ExpandStringPtr(ruleMap["backend_stage_id"].(string)),
+			WafStageID:     types.ExpandStringPtr(ruleMap["waf_stage_id"].(string)),
 		}
 
 		if rawHTTPMatch, ok := ruleMap["rule_http_match"]; ok && rawHTTPMatch != nil {
@@ -212,6 +213,10 @@ func expandRuleHTTPMatch(raw any) *edge_services.RuleHTTPMatch {
 		result.PathFilter = expandRuleHTTPMatchPathFilter(rawPF)
 	}
 
+	if rawHF, exists := ruleMap["host_filter"]; exists && rawHF != nil {
+		result.HostFilter = expandRuleHTTPMatchHostFilter(rawHF)
+	}
+
 	return result
 }
 
@@ -239,6 +244,7 @@ func flattenRouteRules(rules []*edge_services.RouteRule) []any {
 	for _, rule := range rules {
 		m := map[string]any{
 			"backend_stage_id": types.FlattenStringPtr(rule.BackendStageID),
+			"waf_stage_id":     types.FlattenStringPtr(rule.WafStageID),
 			"rule_http_match":  flattenRuleHTTPMatch(rule.RuleHTTPMatch),
 		}
 		result = append(result, m)
@@ -266,6 +272,7 @@ func flattenRuleHTTPMatch(match *edge_services.RuleHTTPMatch) []any {
 	}
 
 	m["path_filter"] = flattenRuleHTTPMatchPathFilter(match.PathFilter)
+	m["host_filter"] = flattenRuleHTTPMatchHostFilter(match.HostFilter)
 
 	return []any{m}
 }
@@ -278,6 +285,33 @@ func flattenRuleHTTPMatchPathFilter(pathFilter *edge_services.RuleHTTPMatchPathF
 	m := map[string]any{
 		"path_filter_type": pathFilter.PathFilterType.String(),
 		"value":            pathFilter.Value,
+	}
+
+	return []any{m}
+}
+
+func expandRuleHTTPMatchHostFilter(raw any) *edge_services.RuleHTTPMatchHostFilter {
+	list, ok := raw.([]any)
+	if !ok || len(list) < 1 {
+		return nil
+	}
+
+	mapHF := list[0].(map[string]any)
+
+	return &edge_services.RuleHTTPMatchHostFilter{
+		HostFilterType: edge_services.RuleHTTPMatchHostFilterHostFilterType(mapHF["host_filter_type"].(string)),
+		Value:          mapHF["value"].(string),
+	}
+}
+
+func flattenRuleHTTPMatchHostFilter(hostFilter *edge_services.RuleHTTPMatchHostFilter) []any {
+	if hostFilter == nil {
+		return nil
+	}
+
+	m := map[string]any{
+		"host_filter_type": hostFilter.HostFilterType.String(),
+		"value":            hostFilter.Value,
 	}
 
 	return []any{m}

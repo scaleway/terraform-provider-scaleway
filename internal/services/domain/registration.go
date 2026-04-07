@@ -12,6 +12,8 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -33,7 +35,19 @@ func ResourceRegistration() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
+		Identity:      registrationIdentity(),
 	}
+}
+
+func registrationIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the registration task",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func registrationSchema() map[string]*schema.Schema {
@@ -418,7 +432,10 @@ func contactSchema() map[string]*schema.Schema {
 func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 
-	projectID := d.Get("project_id").(string)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	domainNames := make([]string, 0, len(d.Get("domain_names").([]any)))
 	for _, v := range d.Get("domain_names").([]any) {
@@ -479,12 +496,42 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
-	d.SetId(projectID + "/" + resp.TaskID)
+	// Use API response project_id for ID consistency (API may return different project than requested)
+	apiProjectID := resp.ProjectID
+	if apiProjectID == "" {
+		apiProjectID = projectID
+	}
+
+	if err := setRegistrationIdentity(d, apiProjectID, resp.TaskID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceRegistrationsRead(ctx, d, m)
 }
 
 func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readRegistrationIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	projectID := d.Get("project_id").(string)
+	taskID := d.Get("task_id").(string)
+
+	if err := setRegistrationIdentity(d, projectID, taskID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+// readRegistrationIntoState fetches the registration and sets state without calling setRegistrationIdentity.
+// Use this for data sources which do not have Identity schema.
+func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
@@ -545,9 +592,16 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 	parts := strings.Split(id, "/")
 
 	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id))
+		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/taskID', got: %s", id))
 	}
 
+	// Use API response as source of truth for project_id (API may return different project than requested)
+	projectID := firstResp.ProjectID
+	if projectID == "" {
+		projectID = parts[0]
+	}
+
+	_ = d.Set("project_id", projectID)
 	_ = d.Set("task_id", parts[1])
 
 	return nil
@@ -681,4 +735,11 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	return nil
+}
+
+func setRegistrationIdentity(d *schema.ResourceData, projectID, taskID string) error {
+	return identity.SetMultiPartIdentity(d, map[string]string{
+		"project_id": projectID,
+		"task_id":    taskID,
+	}, "project_id", "task_id")
 }

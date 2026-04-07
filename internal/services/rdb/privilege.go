@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -39,6 +41,7 @@ func ResourcePrivilege() *schema.Resource {
 		},
 		SchemaFunc:    privilegeSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -63,9 +66,19 @@ func privilegeSchema() map[string]*schema.Schema {
 		},
 		"permission": {
 			Type:             schema.TypeString,
-			Description:      "Privilege",
+			Description:      "Desired permission (readonly, readwrite, all, custom, none)",
 			ValidateDiagFunc: verify.ValidateEnum[rdb.Permission](),
 			Required:         true,
+		},
+		"effective_permission": {
+			Type:        schema.TypeString,
+			Description: "Actual permission currently set in Scaleway. May differ from 'permission' after database schema changes",
+			Computed:    true,
+		},
+		"permission_status": {
+			Type:        schema.TypeString,
+			Description: "Permission synchronization status: 'synced' if effective matches desired, 'drifted' if they differ",
+			Computed:    true,
 		},
 		// Common
 		"region": regional.Schema(),
@@ -122,12 +135,28 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(ResourceRdbUserPrivilegeID(region, locality.ExpandID(instanceID), databaseName, userName))
+	if err := identity.SetRegionalCompositeIdentity(d, region, locality.ExpandID(instanceID), databaseName, userName); err != nil {
+		return diag.FromErr(err)
+	}
+
+	configuredPermission := d.Get("permission").(string)
+	_ = d.Set("effective_permission", configuredPermission)
+	_ = d.Set("permission_status", "synced")
 
 	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
 
-func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+func setPrivilegeState(d *schema.ResourceData, region scw.Region, instanceID string, privilege *rdb.Privilege) {
+	_ = d.Set("database_name", privilege.DatabaseName)
+	_ = d.Set("user_name", privilege.UserName)
+	_ = d.Set("permission", privilege.Permission)
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
+	_ = d.Set("region", string(region))
+}
+
+// readPrivilegeIntoState fetches the privilege and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := newAPI(m)
 
 	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
@@ -188,11 +217,63 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	privilege := res.Privileges[0]
-	_ = d.Set("database_name", privilege.DatabaseName)
-	_ = d.Set("user_name", privilege.UserName)
-	_ = d.Set("permission", privilege.Permission)
-	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("region", region)
+	effectivePermission := string(privilege.Permission)
+	configuredPermission := d.Get("permission").(string)
+
+	setPrivilegeState(d, region, instanceID, privilege)
+	_ = d.Set("effective_permission", effectivePermission)
+
+	var diags diag.Diagnostics
+
+	if effectivePermission != configuredPermission {
+		_ = d.Set("permission_status", "drifted")
+
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Database privilege drift detected",
+			Detail: fmt.Sprintf(
+				"The privilege for user '%s' on database '%s' has drifted:\n"+
+					"  • Configured permission: '%s'\n"+
+					"  • Effective permission:  '%s'\n\n"+
+					"This usually happens after database schema changes (new tables, views, or sequences created).\n"+
+					"The configured permission was applied to objects existing at the time, but new objects created "+
+					"afterward don't automatically inherit these permissions.\n\n"+
+					"To fix this:\n"+
+					"  1. Run 'terraform apply' to reapply the configured permission to all objects\n"+
+					"  2. Or use PostgreSQL default privileges to automatically grant permissions to future objects\n"+
+					"  3. Or set 'permission = \"%s\"' if you want to keep the current state\n\n"+
+					"See: https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/how-to/manage-users/",
+				userName, databaseName,
+				configuredPermission, effectivePermission,
+				effectivePermission,
+			),
+			AttributePath: cty.GetAttrPath("permission"),
+		})
+	} else {
+		_ = d.Set("permission_status", "synced")
+	}
+
+	return diags
+}
+
+func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readPrivilegeIntoState(ctx, d, m)
+	if diags != nil {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return nil
+	}
+
+	region, instanceID, databaseName, userName, err := ResourceRdbUserPrivilegeParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, databaseName, userName); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

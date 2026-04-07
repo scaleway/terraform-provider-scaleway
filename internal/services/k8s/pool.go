@@ -338,8 +338,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if volumeSize, ok := d.GetOk("root_volume_size_in_gb"); ok {
-		volumeSizeInBytes := scw.Size(uint64(volumeSize.(int)) * gb)
-		req.RootVolumeSize = &volumeSizeInBytes
+		req.RootVolumeSize = new(scw.Size(uint64(volumeSize.(int)) * gb))
 	}
 
 	if securityGroupID, ok := d.GetOk("security_group_id"); ok {
@@ -549,8 +548,7 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("kubelet_args") {
-		kubeletArgs := expandKubeletArgs(d.Get("kubelet_args"))
-		updateRequest.KubeletArgs = &kubeletArgs
+		updateRequest.KubeletArgs = new(expandKubeletArgs(d.Get("kubelet_args")))
 	}
 
 	upgradePolicyReq := &k8s.UpdatePoolRequestUpgradePolicy{}
@@ -566,7 +564,7 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	updateRequest.UpgradePolicy = upgradePolicyReq
 
 	if d.HasChange("security_group_id") {
-		updateRequest.SecurityGroupID = types.ExpandStringPtr(d.Get("security_group_id"))
+		updateRequest.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(d.Get("security_group_id").(string)))
 	}
 
 	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))

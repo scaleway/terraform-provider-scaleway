@@ -6,18 +6,13 @@ permissions:
 on:
   push:
     branches:
-      - master
+      - main
   merge_group:
   pull_request:
-    paths:
-      - .markdownlinkcheck.json
-      - .markdownlint.yml
-      - .github/workflows/documentation.yml
-      - docs/**
 
 jobs:
   markdown-link-check:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: tcort/github-action-markdown-link-check@e7c7a18363c842693fadde5d41a3bd3573a7a225 # v1.1.2
@@ -28,7 +23,7 @@ jobs:
           folder-path: 'docs'
           file-extension: '.md'
   markdown-lint:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: avto-dev/markdown-lint@04d43ee9191307b50935a753da3b775ab695eceb # v1.5.0
@@ -36,14 +31,14 @@ jobs:
           config: '.markdownlint.yml'
           args: 'docs templates/** README.md TESTING.md'
   misspell:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
-      - uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         continue-on-error: true
         timeout-minutes: 2
         with:
@@ -53,22 +48,22 @@ jobs:
       - run: misspell -error -source text docs/
 
   tfplugindocs:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
       - run: make docs
       - run: git diff --exit-code docs
 
   terraform_fmt:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
       - name: Run terraform fmt on examples folder
         run: terraform fmt -recursive -check -diff examples

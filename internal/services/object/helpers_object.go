@@ -11,17 +11,21 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awsmiddleware "github.com/aws/aws-sdk-go-v2/aws/middleware"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
 	smithyendpoints "github.com/aws/smithy-go/endpoints"
+	"github.com/aws/smithy-go/middleware"
+	"github.com/hashicorp/aws-sdk-go-base/tfawserr"
 	awspolicy "github.com/hashicorp/awspolicyequivalence"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -29,6 +33,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/workerpool"
+	"github.com/scaleway/terraform-provider-scaleway/v2/version"
 )
 
 const (
@@ -62,6 +67,9 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
+		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
+			return awsmiddleware.AddUserAgentKeyValue("terraform-provider-scaleway", version.Version)(stack)
+		})
 	})
 
 	return client, nil
@@ -249,8 +257,7 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 //   - Error.Code() matches code
 //   - Error.Message() contains message
 func IsS3Err(err error, code string, message string) bool {
-	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
+	if awsErr, ok := errors.AsType[smithy.APIError](err); ok {
 		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
 	}
 
@@ -671,9 +678,7 @@ func WebsiteDomainURL(region string) string {
 }
 
 func buildBucketOwnerID(id *string) *string {
-	s := fmt.Sprintf("%[1]s:%[1]s", *id)
-
-	return &s
+	return new(fmt.Sprintf("%[1]s:%[1]s", *id))
 }
 
 func NormalizeOwnerID(id *string) *string {
@@ -731,4 +736,115 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 
 		return true, true
 	}
+}
+
+func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client, bucketName string) (*s3Types.ServerSideEncryptionConfiguration, error) {
+	input := s3.GetBucketEncryptionInput{
+		Bucket: aws.String(bucketName),
+	}
+
+	output, err := conn.GetBucketEncryption(ctx, &input)
+
+	if tfawserr.ErrCodeEquals(err, ErrCodeNoSuchBucket, ErrCodeServerSideEncryptionConfigurationNotFound) {
+		return nil, &retry.NotFoundError{
+			LastError: err,
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if output == nil || output.ServerSideEncryptionConfiguration == nil {
+		return nil, fmt.Errorf("no configuration found for bucket %q", bucketName)
+	}
+
+	return output.ServerSideEncryptionConfiguration, nil
+}
+
+func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionByDefault {
+	if len(l) == 0 || l[0] == nil {
+		return nil
+	}
+
+	tfMap, ok := l[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	sse := &s3Types.ServerSideEncryptionByDefault{}
+
+	if v, ok := tfMap["sse_algorithm"].(string); ok && v != "" {
+		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
+	}
+
+	return sse
+}
+
+func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule {
+	var rules []s3Types.ServerSideEncryptionRule
+
+	for _, tfMapRaw := range l {
+		tfMap, ok := tfMapRaw.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		rule := s3Types.ServerSideEncryptionRule{}
+
+		if v, ok := tfMap["apply_server_side_encryption_by_default"].([]any); ok && len(v) > 0 && v[0] != nil {
+			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
+		}
+
+		rules = append(rules, rule)
+	}
+
+	return rules
+}
+
+func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) []any {
+	results := make([]any, 0, len(rules))
+
+	for _, rule := range rules {
+		m := make(map[string]any)
+
+		if rule.ApplyServerSideEncryptionByDefault != nil {
+			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
+		}
+
+		if rule.BlockedEncryptionTypes != nil {
+			if flattened := flattenBlockedEncryptionTypes(rule.BlockedEncryptionTypes); flattened != nil {
+				m["blocked_encryption_types"] = flattened
+			}
+		}
+
+		results = append(results, m)
+	}
+
+	return results
+}
+
+func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDefault) []any {
+	if sse == nil {
+		return nil
+	}
+
+	m := map[string]any{
+		"sse_algorithm": sse.SSEAlgorithm,
+	}
+
+	return []any{m}
+}
+
+func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
+	if bet == nil || len(bet.EncryptionType) == 0 {
+		return nil
+	}
+
+	var result []any
+	for _, et := range bet.EncryptionType {
+		result = append(result, string(et))
+	}
+
+	return result
 }

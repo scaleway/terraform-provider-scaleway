@@ -6,7 +6,11 @@ page_title: "Scaleway: scaleway_rdb_instance"
 # Resource: scaleway_rdb_instance
 
 Creates and manages Scaleway Database Instances.
-For more information, see refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-postgre-mysql/).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
 
 
 ## Example Usage
@@ -214,6 +218,8 @@ interruption.
 ~> **Warning** Provider versions prior to `2.61.0` did not support engine upgrades. Changing the `engine` value in these versions would recreate the Database Instance **empty**, resulting in **data loss**. Ensure you are using provider version `>= 2.61.0` before upgrading your Database Instance engine version.
 
 ~> **Important** Updates to `engine` will perform a blue/green upgrade using `MajorUpgradeWorkflow`. This creates a new instance from a snapshot, migrates endpoints automatically, and updates the Terraform state with the new instance ID. The upgrade ensures minimal downtime but **any writes between the snapshot and the endpoint migration will be lost**. Use the `upgradable_versions` computed attribute to check available versions for upgrade.
+
+~> **Note** The provider copies instance-level data managed outside `scaleway_rdb_instance`, such as ACL rules, to the upgraded instance during the engine upgrade. However, Terraform plans dependent resources before the blue/green upgrade returns the new instance ID. As a result, resources that reference the previous instance ID, such as `scaleway_rdb_acl`, may require a second `terraform apply` to fully reconcile their Terraform state with the upgraded instance.
 
 - `volume_type` - (Optional, default to `lssd`) Type of volume where data are stored (`lssd`, `sbs_5k` or `sbs_15k`).
 

@@ -37,5 +37,5 @@ func DataSourceRDBPrivilegeRead(ctx context.Context, d *schema.ResourceData, m a
 
 	d.SetId(ResourceRdbUserPrivilegeID(region, instanceID, databaseName, userName))
 
-	return ResourceRdbPrivilegeRead(ctx, d, m)
+	return readPrivilegeIntoState(ctx, d, m)
 }

@@ -64,6 +64,11 @@ func TestAccInstanceTemplate_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_instance_template.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_autoscaling_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

@@ -1595,3 +1595,324 @@ func testIPAMIPs(_ *acctest.TestTools, ipamResourcePrefix, ipamDataSource string
 		return nil
 	}
 }
+
+func TestAccServer_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	offer := "EM-I120E-NVME"
+
+	if !IsOfferAvailable(offer, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_PasswordWO"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			// Create server with password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_1"
+						password_wo_version = 1
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "name", "test_bm_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "user", "ubuntu"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "1"),
+				),
+			},
+			// Update server password_wo with new version
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo updated"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_2"
+						password_wo_version = 2
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "2"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo updated"),
+				),
+			},
+			// Update server from password_wo to regular password
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test regular password"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password          = "thiZ_is_v&ry_s3cret_regular"
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password", "thiZ_is_v&ry_s3cret_regular"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test regular password"),
+				),
+			},
+			// Update server from regular password back to password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "password_wo_server" {
+						name              = "test_bm_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test password_wo again"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-password-wo"
+						user              = "ubuntu"
+						password_wo       = "thiZ_is_v&ry_s3cret_WO_3"
+						password_wo_version = 3
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "password_wo_version", "3"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.password_wo_server", "description", "test password_wo again"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServer_ServicePasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	offer := "EM-I120E-NVME"
+
+	if !IsOfferAvailable(offer, scw.Zone(Zone), tt) {
+		t.Skip("Offer is out of stock")
+	}
+
+	SSHKeyName := "TestAccServer_ServicePasswordWO"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             baremetalchecks.CheckServerDestroy(tt),
+		Steps: []resource.TestStep{
+			// Create server with service_password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_1"
+						service_password_wo_version = 1
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "name", "test_bm_service_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "1"),
+				),
+			},
+			// Update server service_password_wo with new version
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo updated"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_2"
+						service_password_wo_version = 2
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "2"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo updated"),
+				),
+			},
+			// Update server from service_password_wo to regular service_password
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test regular service_password"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password  = "thiZ_is_v&ry_s3cret_SERVICE_regular"
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password", "thiZ_is_v&ry_s3cret_SERVICE_regular"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test regular service_password"),
+				),
+			},
+			// Update server from regular service_password back to service_password_wo
+			{
+				Config: fmt.Sprintf(`
+					data "scaleway_baremetal_os" "my_os" {
+					  zone    = "%s"
+					  name    = "Ubuntu"
+					  version = "22.04 LTS (Jammy Jellyfish)"
+					}
+
+					resource "scaleway_iam_ssh_key" "main" {
+						name       = "%s"
+						public_key = "%s"
+					}
+
+					resource "scaleway_baremetal_server" "service_password_wo_server" {
+						name              = "test_bm_service_password_wo"
+						zone              = "%s"
+						offer             = "%s"
+						description       = "test service_password_wo again"
+						os                = data.scaleway_baremetal_os.my_os.id
+						hostname          = "test-bm-service-password-wo"
+						user              = "ubuntu"
+						service_password_wo       = "thiZ_is_v&ry_s3cret_SERVICE_WO_3"
+						service_password_wo_version = 3
+						ssh_key_ids       = [scaleway_iam_ssh_key.main.id]
+						reinstall_on_config_changes = true
+						depends_on = [scaleway_iam_ssh_key.main]
+					}
+				`, Zone, SSHKeyName, SSHKeyBaremetal, Zone, offer),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBaremetalServerExists(tt, "scaleway_baremetal_server.service_password_wo_server"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "service_password_wo_version", "3"),
+					resource.TestCheckResourceAttr("scaleway_baremetal_server.service_password_wo_server", "description", "test service_password_wo again"),
+				),
+			},
+		},
+	})
+}

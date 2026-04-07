@@ -12,11 +12,11 @@ on:
 jobs:
   terrafmt:
     name: terrafmt
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
       - name: Run terrafmt on documentation
@@ -24,22 +24,22 @@ jobs:
 
   spelling:
     name: Spell Check with Typos
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - name: Checkout Actions Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Spell Check Repo
-        uses: crate-ci/typos@78bc6fb2c0d734235d57a2d6b9de923cc325ebdd # v1.43.4
+        uses: crate-ci/typos@02ea592e44b3a53c302f697cddca7641cd051c3d # v1.45.0
         env:
           CLICOLOR: 1
 
   tfproviderlint:
     name: tfproviderlint
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
       - name: Run tfproviderlint
@@ -51,33 +51,41 @@ jobs:
 
   tfproviderdocs:
     name: tfproviderdocs
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
       - run: make tfproviderdocs
 
-  actionlint:
-    name: actionlint
+  nightly-matrix:
+    name: nightly-matrix
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Check all services are in the nightly matrix
+        run: bash .github/scripts/check_nightly_matrix.sh
+
+  actionlint:
+    name: actionlint
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Check workflow files
-        uses: rhysd/actionlint@0933c147c9d6587653d45fdcb4c497c57a65f9af # v1.7.10
+        uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
         with:
           args: -color -ignore SC2086
 
   golangci:
     name: golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: golangci-lint
         uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
-          version: v2.10.1
+          version: v2.11.3
           args: --timeout 5m

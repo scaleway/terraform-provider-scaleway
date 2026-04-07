@@ -63,21 +63,15 @@ func NewKeyManagerAPIWithRegionAndID(m any, id string) (*key_manager.API, scw.Re
 
 func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 	if v, ok := d.GetOk("usage_symmetric_encryption"); ok {
-		alg := key_manager.KeyAlgorithmSymmetricEncryption(v.(string))
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryption(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_encryption"); ok {
-		alg := key_manager.KeyAlgorithmAsymmetricEncryption(v.(string))
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryption(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage_asymmetric_signing"); ok {
-		alg := key_manager.KeyAlgorithmAsymmetricSigning(v.(string))
-
-		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(v.(string)))}
 	}
 
 	if v, ok := d.GetOk("usage"); ok {
@@ -90,17 +84,11 @@ func ExpandKeyUsageFromFields(d *schema.ResourceData) *key_manager.KeyUsage {
 func ExpandKeyUsageLegacy(usage string) *key_manager.KeyUsage {
 	switch usage {
 	case usageSymmetricEncryption:
-		alg := key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryptionAes256Gcm)}
 	case usageAsymmetricEncryption:
-		alg := key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &alg}
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryptionRsaOaep3072Sha256)}
 	case usageAsymmetricSigning:
-		alg := key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256
-
-		return &key_manager.KeyUsage{AsymmetricSigning: &alg}
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigningEcP256Sha256)}
 	default:
 		return nil
 	}

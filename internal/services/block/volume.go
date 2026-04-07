@@ -221,8 +221,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("size_in_gb") {
-		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
-		req.Size = &volumeSizeInBytes
+		req.Size = new(scw.Size(uint64(d.Get("size_in_gb").(int)) * gb))
 	}
 
 	if d.HasChange("tags") {

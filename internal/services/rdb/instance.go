@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -46,9 +47,11 @@ func ResourceInstance() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 0,
-		SchemaFunc:    instanceSchema,
-		CustomizeDiff: cdf.LocalityCheck("private_network.#.pn_id"),
+		SchemaVersion:    0,
+		SchemaFunc:       instanceSchema,
+		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -132,7 +135,7 @@ func instanceSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "Password for the first user of the database instance in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:   "Password for the first user of the database instance in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:     true,
 			ConflictsWith: []string{"password"},
 			RequiredWith:  []string{"password_wo_version"},
@@ -140,7 +143,7 @@ func instanceSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{"password_wo"},
 		},
 		"settings": {
@@ -418,9 +421,6 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 	var id string
 
 	if regionalSnapshotID, ok := d.GetOk("snapshot_id"); ok {
-		haCluster := d.Get("is_ha_cluster").(bool)
-		nodeType := d.Get("node_type").(string)
-
 		_, snapshotID, err := regional.ParseID(regionalSnapshotID.(string))
 		if err != nil {
 			return diag.FromErr(err)
@@ -430,8 +430,8 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  &haCluster,
-			NodeType:     &nodeType,
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)),
+			NodeType:     new(d.Get("node_type").(string)),
 		}
 
 		res, err := rdbAPI.CreateInstanceFromSnapshot(createReqFromSnapshot, scw.WithContext(ctx))
@@ -450,8 +450,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 				Region:     region,
 				InstanceID: res.ID,
 			}
-			tags := types.ExpandStrings(rawTag)
-			updateReq.Tags = &tags
+			updateReq.Tags = new(types.ExpandStrings(rawTag))
 
 			_, err = rdbAPI.UpdateInstance(updateReq, scw.WithContext(ctx))
 			if err != nil {
@@ -468,7 +467,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	} else {
 		var password string
@@ -529,7 +531,10 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		d.SetId(regional.NewIDString(region, res.ID))
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
 		id = res.ID
 	}
 
@@ -663,24 +668,7 @@ func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Dia
 	return endpoints, diags
 }
 
-func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// verify resource is ready
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
+func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI *rdb.API, region scw.Region, res *rdb.Instance) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("node_type", res.NodeType)
 	_ = d.Set("engine", res.Engine)
@@ -764,12 +752,14 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	_ = d.Set("password", d.Get("password").(string))
+	if v, ok := d.GetOk("password"); ok {
+		_ = d.Set("password", v.(string))
+	}
 
 	// set certificate
 	cert, err := rdbAPI.GetInstanceCertificate(&rdb.GetInstanceCertificateRequest{
 		Region:     region,
-		InstanceID: ID,
+		InstanceID: res.ID,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -803,10 +793,9 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 				continue
 			}
 
-			resourceType := ipamAPI.ResourceTypeRdbInstance
 			opts := &ipam.GetResourcePrivateIPsOptions{
 				ResourceID:       &res.ID,
-				ResourceType:     &resourceType,
+				ResourceType:     new(ipamAPI.ResourceTypeRdbInstance),
 				PrivateNetworkID: &endpoint.PrivateNetwork.PrivateNetworkID,
 				ProjectID:        &res.ProjectID,
 			}
@@ -846,6 +835,51 @@ func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any)
 
 	if lbI, lbExists := flattenLoadBalancer(res.Endpoints); lbExists {
 		_ = d.Set("load_balancer", lbI)
+	}
+
+	return diags
+}
+
+// readInstanceIntoState fetches the instance and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	rdbAPI, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// verify resource is ready
+	res, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setInstanceState(ctx, d, m, rdbAPI, region, res)
+}
+
+func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	diags := readInstanceIntoState(ctx, d, m)
+	if diags.HasError() {
+		return diags
+	}
+
+	if d.Id() == "" {
+		return diags
+	}
+
+	_, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags
@@ -1029,12 +1063,39 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 		if upgradeInstanceRequests[i].MajorUpgradeWorkflow != nil && upgradedInstance.ID != ID {
 			tflog.Info(ctx, fmt.Sprintf("Engine upgrade created new instance, updating ID from %s to %s", ID, upgradedInstance.ID))
 			oldInstanceID := ID
+
 			ID = upgradedInstance.ID
-			d.SetId(regional.NewIDString(region, ID))
+			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
+				return diag.FromErr(err)
+			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
 				return diag.FromErr(err)
+			}
+
+			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
+				tflog.Info(ctx, "Re-enabling HA on upgraded instance "+ID)
+
+				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
+					Region:     region,
+					InstanceID: ID,
+					EnableHa:   new(true),
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
+				if err != nil && !httperrors.Is404(err) {
+					return diag.FromErr(err)
+				}
+			}
+
+			if err := maintainACLDuringUpgrade(ctx, rdbAPI, region, oldInstanceID, ID); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("Failed to maintain ACL during upgrade: %v", err))
+			} else {
+				tflog.Warn(ctx, "ACL rules were copied to the upgraded instance. Because the instance ID changed during the blue/green upgrade, dependent resources such as scaleway_rdb_acl may require a second terraform apply to reconcile their state.")
 			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))

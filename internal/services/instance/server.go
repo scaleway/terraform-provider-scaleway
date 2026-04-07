@@ -438,8 +438,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
-		bootType := instanceSDK.BootType(bootType.(string))
-		req.BootType = &bootType
+		req.BootType = new(instanceSDK.BootType(bootType.(string)))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -982,8 +981,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		if ipID == "" {
-			emptyIPList := make([]string, 0)
-			updateRequest.PublicIPs = &emptyIPList
+			updateRequest.PublicIPs = new(make([]string, 0))
 			serverShouldUpdate = true
 		} else {
 			err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id, "ip_id")
@@ -1001,9 +999,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChanges("boot_type") {
-		bootType := instanceSDK.BootType(d.Get("boot_type").(string))
 		serverShouldUpdate = true
-		updateRequest.BootType = &bootType
+		updateRequest.BootType = new(instanceSDK.BootType(d.Get("boot_type").(string)))
 
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{

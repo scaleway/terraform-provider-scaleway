@@ -459,9 +459,10 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
-	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
+	issuerURL, issuerURLOK := d.GetOk("open_id_connect_config.0.issuer_url")
+	if issuerURLOK {
 		req.OpenIDConnectConfig = createClusterRequestOpenIDConnectConfig
-		createClusterRequestOpenIDConnectConfig.IssuerURL = issuerURL.(string)
+		createClusterRequestOpenIDConnectConfig.IssuerURL = strings.TrimSuffix(issuerURL.(string), "/")
 	}
 
 	if clientID, ok := d.GetOk("open_id_connect_config.0.client_id"); ok {
@@ -560,8 +561,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if serviceDNSIP, ok := d.GetOk("service_dns_ip"); ok {
-		serviceDNSIPNetIP := net.ParseIP(serviceDNSIP.(string))
-		req.ServiceDNSIP = &serviceDNSIPNetIP
+		req.ServiceDNSIP = new(net.ParseIP(serviceDNSIP.(string)))
 	}
 
 	// Cluster creation
@@ -583,6 +583,19 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	if err != nil {
 		return append(diag.FromErr(err), diags...)
+	}
+
+	if issuerURLOK && strings.HasSuffix(issuerURL.(string), "/") {
+		_, err = k8sAPI.UpdateCluster(&k8s.UpdateClusterRequest{
+			Region:    region,
+			ClusterID: res.ID,
+			OpenIDConnectConfig: &k8s.UpdateClusterRequestOpenIDConnectConfig{
+				IssuerURL: new(issuerURL.(string)),
+			},
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return append(diag.FromErr(err), diags...)
+		}
 	}
 
 	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
