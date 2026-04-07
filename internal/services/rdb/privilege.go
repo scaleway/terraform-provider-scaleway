@@ -220,11 +220,7 @@ func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) 
 	effectivePermission := string(privilege.Permission)
 	configuredPermission := d.Get("permission").(string)
 
-	_ = d.Set("database_name", privilege.DatabaseName)
-	_ = d.Set("user_name", privilege.UserName)
-	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
-	_ = d.Set("region", region)
-	_ = d.Set("permission", privilege.Permission)
+	setPrivilegeState(d, region, instanceID, privilege)
 	_ = d.Set("effective_permission", effectivePermission)
 
 	var diags diag.Diagnostics
