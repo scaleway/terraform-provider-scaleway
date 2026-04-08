@@ -3,12 +3,12 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"sync"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
@@ -16,22 +16,19 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 var (
-	_ list.ListResource                   = (*ListResource)(nil)
-	_ list.ListResourceWithConfigure      = (*ListResource)(nil)
-	_ list.ListResourceWithRawV6Schemas   = (*ListResource)(nil)
-	_ list.ListResourceWithValidateConfig = (*ListResource)(nil)
+	_ list.ListResource                 = (*ListResource)(nil)
+	_ list.ListResourceWithConfigure    = (*ListResource)(nil)
+	_ list.ListResourceWithRawV6Schemas = (*ListResource)(nil)
 )
 
 type ListResource struct {
+	client *scw.Client
 	vpcAPI *vpc.API
-}
-
-func (r *ListResource) ValidateListResourceConfig(ctx context.Context, request list.ValidateConfigRequest, response *list.ValidateConfigResponse) {
 }
 
 func (r *ListResource) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
@@ -60,38 +57,19 @@ func NewVPCListResource() list.ListResource {
 func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request list.ListResourceSchemaRequest, response *list.ListResourceSchemaResponse) {
 	response.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Description: "Name of the vpc to list for",
-				Optional:    true,
-			},
-			"organization_id": schema.StringAttribute{
-				Description: "Organization ID of the VPC to list for",
-				Optional:    true,
-			},
-			"project_id": schema.StringAttribute{
-				Description: "Project ID of the VPC to list for",
-				Optional:    true,
-			},
 			"routing_enabled": schema.BoolAttribute{
 				Description: "Whether routing is enabled for VPC",
-				Optional:    true,
-			},
-			"tags": schema.ListAttribute{
-				Description: "Tags associated with VPC",
-				ElementType: types.StringType,
 				Optional:    true,
 			},
 			"is_default": schema.BoolAttribute{
 				Description: "Whether the VPC is the default VPC",
 				Optional:    true,
 			},
-			"region": schema.StringAttribute{
-				Description: "Region of the VPC. Use 'all' to list VPCs from all regions",
-				Optional:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf(append(regional.AllRegions(), "all")...),
-				},
-			},
+			"name":            listscw.NameAttribute("Name of the vpc to list for"),
+			"tags":            listscw.TagsAttribute("Tags of the VPC to list for"),
+			"organization_id": listscw.OrganizationIDAttribute("Organization ID of the VPC to list for"),
+			"project_ids":     listscw.ProjectIDAttribute("Project IDs of the VPC to list for"),
+			"regions":         listscw.RegionAttribute("Regions of the VPC to list for"),
 		},
 	}
 }
@@ -107,18 +85,45 @@ type ListResourceModel struct {
 	Tags           types.List   `tfsdk:"tags"`
 	Name           types.String `tfsdk:"name"`
 	OrganizationID types.String `tfsdk:"organization_id"`
-	ProjectID      types.String `tfsdk:"project_id"`
-	Region         types.String `tfsdk:"region"`
+	ProjectIDs     types.List   `tfsdk:"project_ids"`
+	Regions        types.List   `tfsdk:"regions"`
 	RoutingEnabled types.Bool   `tfsdk:"routing_enabled"`
 	IsDefault      types.Bool   `tfsdk:"is_default"`
 }
 
-func (m *ListResourceModel) GetRegion() string {
-	return m.Region.ValueString()
+func (m *ListResourceModel) GetTags() types.List {
+	return m.Tags
+}
+
+func (m *ListResourceModel) GetRegions() types.List {
+	return m.Regions
+}
+
+func (m *ListResourceModel) GetProjects() types.List {
+	return m.ProjectIDs
 }
 
 func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_vpc"
+}
+
+func (r *ListResource) FetchVPCs(ctx context.Context, region scw.Region, project *string, tags []string, data ListResourceModel) ([]*vpc.VPC, error) {
+	listRequest := &vpc.ListVPCsRequest{
+		Region:         region,
+		Name:           data.Name.ValueStringPointer(),
+		Tags:           tags,
+		OrganizationID: data.OrganizationID.ValueStringPointer(),
+		ProjectID:      project,
+		IsDefault:      data.IsDefault.ValueBoolPointer(),
+		RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
+	}
+
+	response, err := r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Vpcs, nil
 }
 
 func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
@@ -132,96 +137,123 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	// Convert tags from types.List to []string
-	var tags []string
-	if !data.Tags.IsNull() {
-		diags = data.Tags.ElementsAs(ctx, &tags, false)
-		if diags.HasError() {
-			stream.Results = list.ListResultsStreamDiagnostics(diags)
-			return
+	tags, diags := listscw.ExtractTags(ctx, &data)
+	if diags.HasError() {
+		stream.Results = list.ListResultsStreamDiagnostics(diags)
+
+		return
+	}
+
+	regions, err := listscw.ExtractRegions(ctx, &data)
+	if err != nil {
+		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
+			diag.NewErrorDiagnostic("Listing regions", "An error was encountered when listing regions: "+err.Error()),
+		})
+
+		return
+	}
+
+	projects, err := listscw.ExtractProjects(ctx, &data, r.client)
+	if err != nil {
+		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
+			diag.NewErrorDiagnostic("Listing projects", "An error was encountered when listing projects: "+err.Error()),
+		})
+
+		return
+	}
+
+	var allVPCs []*vpc.VPC
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	var fetchErr error
+
+	for _, region := range regions {
+		for _, project := range projects {
+			wg.Add(1)
+			go func(region scw.Region, projectID string) {
+				defer wg.Done()
+				vpcs, err := r.FetchVPCs(ctx, region, &projectID, tags, data)
+				if err != nil {
+					mu.Lock()
+					fetchErr = err
+					mu.Unlock()
+
+					return
+				}
+				mu.Lock()
+				allVPCs = append(allVPCs, vpcs...)
+				mu.Unlock()
+			}(region, project)
 		}
 	}
 
+	wg.Wait()
+
+	if fetchErr != nil {
+		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
+			diag.NewErrorDiagnostic("Listing VPCs", "Failed to list VPCs: "+fetchErr.Error()),
+		})
+
+		return
+	}
+
 	stream.Results = func(push func(list.ListResult) bool) {
-		for _, region := range regional.RegionsToQuery(&data) {
-			listRequest := &vpc.ListVPCsRequest{
-				Region:         region,
-				Name:           data.Name.ValueStringPointer(),
-				Tags:           tags,
-				OrganizationID: data.OrganizationID.ValueStringPointer(),
-				ProjectID:      data.ProjectID.ValueStringPointer(),
-				IsDefault:      data.IsDefault.ValueBoolPointer(),
-				RoutingEnabled: data.RoutingEnabled.ValueBoolPointer(),
-			}
+		for _, rawVPC := range allVPCs {
+			result := req.NewListResult(ctx)
+			result.DisplayName = rawVPC.Name
 
-			vpcs, err := r.vpcAPI.ListVPCs(listRequest, scw.WithContext(ctx))
+			vpcResource := ResourceVPC()
+			resourceData := vpcResource.Data(&terraform.InstanceState{})
+			err := identity.SetRegionalIdentity(resourceData, rawVPC.Region, rawVPC.ID)
 			if err != nil {
-				diags.AddError("Error listing VPCs", fmt.Sprintf("Failed to list VPCs in region %s: %s", region, err.Error()))
-				stream.Results = list.ListResultsStreamDiagnostics(diags)
-
-				return
-			}
-
-			for _, rawVPC := range vpcs.Vpcs {
-				result := req.NewListResult(ctx)
-				result.DisplayName = rawVPC.Name
-
-				vpcResource := ResourceVPC()
-				resourceData := vpcResource.Data(&terraform.InstanceState{})
-				err = identity.SetRegionalIdentity(resourceData, region, rawVPC.ID)
-				if err != nil {
-					result.Diagnostics.AddError(
-						"Retrieving identity data",
-						"An error was encountered when retrieving the identity data: "+err.Error(),
-					)
-
-					return
-				}
-
-				// Convert and set the identity and resource state into the result
-				tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
-				if errIdentityState != nil {
-					result.Diagnostics.AddError(
-						"Converting identity data",
-						"An error was encountered when converting the identity data: "+err.Error(),
-					)
-				}
-
-				errtfTypeIdentity := result.Identity.Set(ctx, *tfTypeIdentity)
-				if errtfTypeIdentity != nil {
-					result.Diagnostics.AddError(
-						"Setting identity data",
-						"An error was encountered when setting the identity data: "+err.Error(),
-					)
-				}
-
-				diagsState := setVPCState(resourceData, rawVPC)
-				if diagsState.HasError() {
-					tflog.Error(ctx, "error from setting setVPCState")
-					return
-				}
-
-				// Convert and set the resource state into the result
-				tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
-				if errTfTypeResourceState != nil {
-					result.Diagnostics.AddError(
-						"Converting resource state",
-						"An error was encountered when converting the resource state: "+err.Error(),
-					)
-				}
-
-				errtfTypeResource := result.Resource.Set(ctx, *tfTypeResource)
-				if errtfTypeResource != nil {
-					result.Diagnostics.AddError(
-						"Setting resource state",
-						"An error was encountered when setting the resource state: "+err.Error(),
-					)
-				}
-
-				// Send the result to the stream.
+				result.Diagnostics.AddError(
+					"Retrieving identity data",
+					"An error was encountered when retrieving the identity data: "+err.Error(),
+				)
 				if !push(result) {
 					return
 				}
+
+				continue
+			}
+
+			// Convert and set the identity and resource state into the result
+			tfTypeIdentity, errIdentityState := resourceData.TfTypeIdentityState()
+			if errIdentityState != nil {
+				result.Diagnostics.AddError(
+					"Converting identity data",
+					"An error was encountered when converting the identity data: "+errIdentityState.Error(),
+				)
+			}
+
+			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
+			result.Diagnostics.Append(identitySetDiags...)
+
+			diagsState := setVPCState(resourceData, rawVPC)
+			if diagsState.HasError() {
+				tflog.Error(ctx, "error from setting setVPCState")
+				if !push(result) {
+					return
+				}
+
+				continue
+			}
+
+			// Convert and set the resource state into the result
+			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
+			if errTfTypeResourceState != nil {
+				result.Diagnostics.AddError(
+					"Converting resource state",
+					"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
+				)
+			}
+
+			resourceSetDiags := result.Resource.Set(ctx, *tfTypeResource)
+			result.Diagnostics.Append(resourceSetDiags...)
+
+			// Send the result to the stream.
+			if !push(result) {
+				return
 			}
 		}
 	}

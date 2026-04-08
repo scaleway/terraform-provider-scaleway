@@ -45,8 +45,8 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  provider = scaleway
 					
 					  config {
-						region = "all"
-						project_id = scaleway_account_project.main.id
+						regions = ["*"]
+						project_ids = [scaleway_account_project.main.id]
 					  }
 					}
 					`,
@@ -61,8 +61,8 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  provider = scaleway
 					
 					  config {
-						project_id = scaleway_account_project.main.id
-						region = "fr-par"
+						project_ids = [scaleway_account_project.main.id]
+						regions = ["fr-par"]
 					  }
 					}
 					`,
@@ -77,8 +77,8 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  provider = scaleway
 					
 					  config {
-						project_id = scaleway_account_project.main.id
-						region = "all"
+						project_ids = [scaleway_account_project.main.id]
+						regions = ["*"]
 						name = "test-vpc"
 					  }
 					}`,
@@ -93,8 +93,8 @@ func TestAccListVPCs_Basic(t *testing.T) {
 					  	provider = scaleway
 					
 						config {
-							project_id = scaleway_account_project.main.id
-							region = "all"
+							project_ids = [scaleway_account_project.main.id]
+							regions = ["*"]
 							tags = ["foobar"]
 						}
 					}`,
