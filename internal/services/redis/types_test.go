@@ -15,11 +15,11 @@ func TestRedisConnectionString(t *testing.T) {
 	privIP := net.ParseIP("10.0.0.5")
 
 	tests := []struct {
+		endpoints  []*redis.Endpoint
 		name       string
 		password   string
 		want       string
 		tlsEnabled bool
-		endpoints  []*redis.Endpoint
 	}{
 		{
 			name: "empty endpoints",
