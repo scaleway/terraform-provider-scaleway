@@ -20,7 +20,7 @@ func OrganizationIDAttribute(description string) schema.StringAttribute {
 	}
 }
 
-func ProjectIDAttribute(description string) schema.ListAttribute {
+func ProjectIDsAttribute(description string) schema.ListAttribute {
 	return schema.ListAttribute{
 		Description: description + " Use '*' to list across all projects",
 		Optional:    true,
@@ -31,7 +31,7 @@ func ProjectIDAttribute(description string) schema.ListAttribute {
 	}
 }
 
-func RegionAttribute(description string) schema.ListAttribute {
+func RegionsAttribute(description string) schema.ListAttribute {
 	return schema.ListAttribute{
 		Description: description + " Use '*' to list from all regions",
 		Optional:    true,

@@ -18,7 +18,7 @@ func DefaultRegionalImporter() *schema.ResourceImporter {
 
 			importedIdentity, err := d.Identity()
 			if err != nil {
-				return nil, fmt.Errorf("error getting identity: %s", err)
+				return nil, fmt.Errorf("error getting identity: %w", err)
 			}
 
 			region := importedIdentity.Get("region").(string)

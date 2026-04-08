@@ -14,18 +14,20 @@ type RegionalModel interface {
 
 // ExtractRegions determines regions to query
 func ExtractRegions(ctx context.Context, model RegionalModel) ([]scw.Region, error) {
-	var regionStrings []string
 	regionsList := model.GetRegions()
 	if regionsList.IsNull() {
 		return nil, nil
 	}
+
+	var regionStrings []string
 
 	diags := regionsList.ElementsAs(ctx, &regionStrings, false)
 	if diags.HasError() {
 		return nil, fmt.Errorf("converting regions: %s", diags.Errors()[0].Detail())
 	}
 
-	var regionsToQuery []scw.Region
+	var res []scw.Region
+
 	for _, region := range regionStrings {
 		if region == "*" {
 			return scw.AllRegions, nil
@@ -35,8 +37,14 @@ func ExtractRegions(ctx context.Context, model RegionalModel) ([]scw.Region, err
 		if err != nil {
 			return nil, err
 		}
-		regionsToQuery = append(regionsToQuery, parsedRegion)
+
+		res = append(res, parsedRegion)
 	}
 
-	return regionsToQuery, nil
+	return res, nil
+}
+
+type RegionalFetchTarget struct {
+	Region    scw.Region
+	ProjectID string
 }

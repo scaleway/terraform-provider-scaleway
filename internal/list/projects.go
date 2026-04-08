@@ -30,11 +30,12 @@ func ExtractProjects(ctx context.Context, model ProjectModel, client *scw.Client
 	}
 
 	var result []string
+
 	for _, project := range projectsToQuery {
 		if project == "*" {
 			api := account.NewProjectAPI(client)
-			req := &accountSDK.ProjectAPIListProjectsRequest{}
-			res, err := api.ListProjects(req, scw.WithContext(ctx), scw.WithAllPages())
+
+			res, err := api.ListProjects(new(accountSDK.ProjectAPIListProjectsRequest{}), scw.WithContext(ctx), scw.WithAllPages())
 			if err != nil {
 				return nil, err
 			}

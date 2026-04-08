@@ -3,7 +3,6 @@ package vpc
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -68,8 +67,8 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 			"name":            listscw.NameAttribute("Name of the vpc to list for"),
 			"tags":            listscw.TagsAttribute("Tags of the VPC to list for"),
 			"organization_id": listscw.OrganizationIDAttribute("Organization ID of the VPC to list for"),
-			"project_ids":     listscw.ProjectIDAttribute("Project IDs of the VPC to list for"),
-			"regions":         listscw.RegionAttribute("Regions of the VPC to list for"),
+			"project_ids":     listscw.ProjectIDsAttribute("Project IDs of the VPC to list for"),
+			"regions":         listscw.RegionsAttribute("Regions of the VPC to list for"),
 		},
 	}
 }
@@ -162,36 +161,22 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	var allVPCs []*vpc.VPC
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-	var fetchErr error
+	var targets []listscw.RegionalFetchTarget
 
-	for _, region := range regions {
-		for _, project := range projects {
-			wg.Add(1)
-			go func(region scw.Region, projectID string) {
-				defer wg.Done()
-				vpcs, err := r.FetchVPCs(ctx, region, &projectID, tags, data)
-				if err != nil {
-					mu.Lock()
-					fetchErr = err
-					mu.Unlock()
-
-					return
-				}
-				mu.Lock()
-				allVPCs = append(allVPCs, vpcs...)
-				mu.Unlock()
-			}(region, project)
+	for _, r := range regions {
+		for _, p := range projects {
+			targets = append(targets, listscw.RegionalFetchTarget{Region: r, ProjectID: p})
 		}
 	}
 
-	wg.Wait()
-
-	if fetchErr != nil {
+	allVPCs, err := listscw.FetchConcurrently(ctx, targets,
+		func(ctx context.Context, target listscw.RegionalFetchTarget) ([]*vpc.VPC, error) {
+			return r.FetchVPCs(ctx, target.Region, &target.ProjectID, tags, data)
+		},
+	)
+	if err != nil {
 		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
-			diag.NewErrorDiagnostic("Listing VPCs", "Failed to list VPCs: "+fetchErr.Error()),
+			diag.NewErrorDiagnostic("Listing VPCs", "Failed to list VPCs: "+err.Error()),
 		})
 
 		return
@@ -204,12 +189,14 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 
 			vpcResource := ResourceVPC()
 			resourceData := vpcResource.Data(&terraform.InstanceState{})
+
 			err := identity.SetRegionalIdentity(resourceData, rawVPC.Region, rawVPC.ID)
 			if err != nil {
 				result.Diagnostics.AddError(
 					"Retrieving identity data",
 					"An error was encountered when retrieving the identity data: "+err.Error(),
 				)
+
 				if !push(result) {
 					return
 				}
@@ -232,6 +219,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 			diagsState := setVPCState(resourceData, rawVPC)
 			if diagsState.HasError() {
 				tflog.Error(ctx, "error from setting setVPCState")
+
 				if !push(result) {
 					return
 				}

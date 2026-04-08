@@ -13,6 +13,7 @@ type TagsModel interface {
 
 func ExtractTags(ctx context.Context, data TagsModel) ([]string, diag.Diagnostics) {
 	var tags []string
+
 	tagsList := data.GetTags()
 	if !tagsList.IsNull() {
 		diags := tagsList.ElementsAs(ctx, &tags, false)
@@ -20,5 +21,6 @@ func ExtractTags(ctx context.Context, data TagsModel) ([]string, diag.Diagnostic
 			return nil, diags
 		}
 	}
+
 	return tags, nil
 }
