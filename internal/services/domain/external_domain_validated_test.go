@@ -73,18 +73,18 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 	}
 }
 
-func testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain string,rootZoneProfile string) string {
+func testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain string, rootZoneProfile string) string {
 	return fmt.Sprintf(`
 resource "scaleway_domain_external_domain" "example" {
   domain = "%s"
 }
 
 resource "scaleway_domain_record" "validation" {
-  dns_zone   = "%s"
-  name       = "_scaleway-challenge.%s"
-  type       = "TXT"
-  data       = scaleway_domain_external_domain.example.validation_token
- provider    = scaleway.alt
+  dns_zone = "%s"
+  name     = "_scaleway-challenge.%s"
+  type     = "TXT"
+  data     = scaleway_domain_external_domain.example.validation_token
+  provider = scaleway.alt
 }
 
 resource "scaleway_domain_external_domain_validated" "example" {
@@ -92,10 +92,8 @@ resource "scaleway_domain_external_domain_validated" "example" {
 }
 
 provider "scaleway" {
-  profile="%s"
-  alias="alt"
+  profile = "%s"
+  alias   = "alt"
 }
-
-
 `, domainName, acctest.TestDomain, subdomain, rootZoneProfile)
 }
