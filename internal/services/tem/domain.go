@@ -26,8 +26,10 @@ func ResourceDomain() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
+			Create:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
+			Update:  schema.DefaultTimeout(DefaultDomainCreateTimeout),
 			Delete:  schema.DefaultTimeout(DefaultDomainTimeout),
-			Default: schema.DefaultTimeout(DefaultDomainTimeout),
+			Default: schema.DefaultTimeout(DefaultDomainCreateTimeout),
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    domainSchema,
@@ -231,6 +233,11 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	_, err = WaitForDomain(ctx, api, region, domain.ID, d.Timeout(schema.TimeoutCreate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceDomainRead(ctx, d, m)
 }
 
@@ -353,11 +360,18 @@ func ResourceDomainUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	if d.HasChange("autoconfig") {
+		autoconfig := d.Get("autoconfig").(bool)
+
 		_, err = api.UpdateDomain(&tem.UpdateDomainRequest{
 			Region:     region,
 			DomainID:   id,
-			Autoconfig: new(d.Get("autoconfig").(bool)),
-		})
+			Autoconfig: &autoconfig,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		err = WaitForDomainAutoconfig(ctx, api, region, id, autoconfig, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}

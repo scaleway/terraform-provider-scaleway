@@ -11,6 +11,10 @@ import (
 // testAccDomainRegistrationProjectID is the project ID used in domain registration cassettes (VCR).
 const testAccDomainRegistrationProjectID = "2efde44b-c582-4939-be07-6e3f62b3d71e"
 
+// testAccDomainZoneVCRProjectID is the anonymized project id in domain DNS zone VCR cassettes, used when
+// ScwClient has no default project (e.g. CI replay with placeholder credentials).
+const testAccDomainZoneVCRProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+
 func TestExpandContact(t *testing.T) {
 	tests := []struct {
 		contactMap  map[string]any
