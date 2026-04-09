@@ -553,13 +553,11 @@ func stopDeploymentIfReady(ctx context.Context, api *datawarehouseapi.API, regio
 }
 
 func findInitialDeploymentUserName(ctx context.Context, api *datawarehouseapi.API, region scw.Region, deploymentID string) (string, error) {
-	pageSize := uint32(100)
-
 	resp, err := api.ListUsers(&datawarehouseapi.ListUsersRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
 		OrderBy:      datawarehouseapi.ListUsersRequestOrderByNameAsc,
-		PageSize:     &pageSize,
+		PageSize:     new(uint32(100)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return "", err

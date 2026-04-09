@@ -171,9 +171,7 @@ func (r *SamlCertificateResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	state := r.convertToState(res, orgID, samlID)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, new(r.convertToState(res, orgID, samlID)))...)
 }
 
 func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {

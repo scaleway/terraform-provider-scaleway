@@ -35,7 +35,7 @@ func TestAccDataSourceOfferSubscription_Basic(t *testing.T) {
 				`, orgID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_tem_offer_subscription.test", "project_id"),
-					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "offer_name", "essential"),
+					resource.TestCheckResourceAttr("data.scaleway_tem_offer_subscription.test", "offer_name", "scale"),
 				),
 			},
 		},

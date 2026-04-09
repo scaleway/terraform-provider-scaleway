@@ -257,8 +257,7 @@ func objectBucketAPIEndpointURL(region scw.Region) string {
 //   - Error.Code() matches code
 //   - Error.Message() contains message
 func IsS3Err(err error, code string, message string) bool {
-	var awsErr smithy.APIError
-	if errors.As(err, &awsErr) {
+	if awsErr, ok := errors.AsType[smithy.APIError](err); ok {
 		return awsErr.ErrorCode() == code && strings.Contains(awsErr.ErrorMessage(), message)
 	}
 
@@ -679,9 +678,7 @@ func WebsiteDomainURL(region string) string {
 }
 
 func buildBucketOwnerID(id *string) *string {
-	s := fmt.Sprintf("%[1]s:%[1]s", *id)
-
-	return &s
+	return new(fmt.Sprintf("%[1]s:%[1]s", *id))
 }
 
 func NormalizeOwnerID(id *string) *string {

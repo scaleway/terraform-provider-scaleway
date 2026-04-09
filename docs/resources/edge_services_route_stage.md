@@ -31,6 +31,56 @@ resource "scaleway_edge_services_route_stage" "main" {
 }
 ```
 
+### Host-based routing
+
+Routes requests to different backends based on the hostname, allowing a single pipeline to serve multiple domains.
+
+```terraform
+resource "scaleway_edge_services_pipeline" "main" {
+  name        = "my-pipeline"
+  description = "Multi-host pipeline with host-based routing"
+}
+
+resource "scaleway_object_bucket" "api" {
+  name = "my-api-bucket"
+}
+
+resource "scaleway_object_bucket" "static" {
+  name = "my-static-site"
+}
+
+resource "scaleway_edge_services_backend_stage" "api" {
+  pipeline_id = scaleway_edge_services_pipeline.main.id
+  s3_backend_config {
+    bucket_name   = scaleway_object_bucket.api.name
+    bucket_region = "fr-par"
+  }
+}
+
+resource "scaleway_edge_services_backend_stage" "static" {
+  pipeline_id = scaleway_edge_services_pipeline.main.id
+  s3_backend_config {
+    bucket_name   = scaleway_object_bucket.static.name
+    bucket_region = "fr-par"
+  }
+}
+
+resource "scaleway_edge_services_route_stage" "main" {
+  pipeline_id      = scaleway_edge_services_pipeline.main.id
+  backend_stage_id = scaleway_edge_services_backend_stage.static.id
+
+  rule {
+    backend_stage_id = scaleway_edge_services_backend_stage.api.id
+    rule_http_match {
+      host_filter {
+        host_filter_type = "regex"
+        value            = "api\\.example\\.com"
+      }
+    }
+  }
+}
+```
+
 ### Default to backend with selective WAF protection
 
 Serves static content directly from a backend by default, while routing API traffic through a WAF stage for protection against common web attacks.
@@ -90,6 +140,9 @@ resource "scaleway_edge_services_route_stage" "main" {
         - `path_filter` (Optional) HTTP URL path to filter for. A request whose path matches the given filter will be considered to match the rule. All paths will match if none is provided.
             - `path_filter_type` (Required) The type of filter to match for the HTTP URL path. For now, all path filters must be written in regex and use the `regex` type.
             - `value` (Required) The value to be matched for the HTTP URL path.
+        - `host_filter` (Optional) Host to filter for. A request whose host matches the given filter will be considered to match the rule. All hosts will match if none is provided.
+            - `host_filter_type` (Required) The type of filter to match for the host. Use the `regex` type.
+            - `value` (Required) The value to be matched for the host.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the route stage is associated with.
 
 ## Attributes Reference

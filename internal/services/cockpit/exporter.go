@@ -342,8 +342,7 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		req.Name = &name
+		req.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {

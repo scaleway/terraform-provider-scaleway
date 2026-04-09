@@ -16,6 +16,7 @@ import (
 
 const (
 	DefaultDomainTimeout           = 5 * time.Minute
+	DefaultDomainCreateTimeout     = 60 * time.Minute
 	defaultDomainValidationTimeout = 60 * time.Minute
 	defaultDomainRetryInterval     = 15 * time.Second
 )
