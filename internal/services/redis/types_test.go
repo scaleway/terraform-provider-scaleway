@@ -30,6 +30,7 @@ func TestRedisConnectionString(t *testing.T) {
 
 	t.Run("public preferred over private", func(t *testing.T) {
 		t.Parallel()
+
 		endpoints := []*redis.Endpoint{
 			{
 				Port:           6379,
@@ -47,6 +48,7 @@ func TestRedisConnectionString(t *testing.T) {
 
 	t.Run("private only", func(t *testing.T) {
 		t.Parallel()
+
 		endpoints := []*redis.Endpoint{
 			{
 				Port:           6380,
@@ -59,6 +61,7 @@ func TestRedisConnectionString(t *testing.T) {
 
 	t.Run("password with ampersand (sub-delimiter allowed unescaped in userinfo)", func(t *testing.T) {
 		t.Parallel()
+
 		endpoints := []*redis.Endpoint{
 			{
 				Port:          6379,
@@ -71,6 +74,7 @@ func TestRedisConnectionString(t *testing.T) {
 
 	t.Run("no password", func(t *testing.T) {
 		t.Parallel()
+
 		endpoints := []*redis.Endpoint{
 			{
 				Port:          6379,
