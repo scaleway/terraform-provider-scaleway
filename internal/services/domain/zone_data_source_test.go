@@ -21,8 +21,9 @@ func TestAccDataSourceDomainZone_Basic(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 					resource scaleway_domain_zone main {
-						domain    = "%s"
-						subdomain = "%s"
+						domain     = "%s"
+						subdomain  = "%s"
+						project_id = "%s"
 					}
 
 					data scaleway_domain_zone test {
@@ -30,7 +31,7 @@ func TestAccDataSourceDomainZone_Basic(t *testing.T) {
 						subdomain = scaleway_domain_zone.main.subdomain
 						project_id = scaleway_domain_zone.main.project_id
 					}
-				`, acctest.TestDomain, testDNSZone),
+				`, acctest.TestDomain, testDNSZone, testAccDomainZoneProjectID(tt)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckDomainZoneExists(tt, "data.scaleway_domain_zone.test"),
 					resource.TestCheckResourceAttr("data.scaleway_domain_zone.test", "subdomain", testDNSZone),
