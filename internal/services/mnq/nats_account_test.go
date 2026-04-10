@@ -16,7 +16,7 @@ func TestAccNatsAccount_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsAccountDestroyed(tt),
 		Steps: []resource.TestStep{

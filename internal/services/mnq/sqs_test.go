@@ -1,10 +1,14 @@
 package mnq_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
@@ -17,7 +21,7 @@ func TestAccSQS_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -45,7 +49,7 @@ func TestAccSQS_AlreadyActivated(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSQSDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -92,16 +96,33 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		sqs, err := api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
-			ProjectID: id,
-			Region:    region,
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		defer cancel()
+
+		var sqsInfo *mnqSDK.SqsInfo
+
+		retryErr := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+			sqsInfo, err = api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
+				ProjectID: id,
+				Region:    region,
+			})
+			if err == nil {
+				return nil
+			}
+			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
+				return retry.RetryableError(err)
+			}
+			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
+				return retry.RetryableError(err)
+			}
+			return retry.NonRetryableError(err)
 		})
-		if err != nil {
-			return err
+		if retryErr != nil {
+			return retryErr
 		}
 
-		if sqs.Status != mnqSDK.SqsInfoStatusEnabled {
-			return fmt.Errorf("sqs status should be enabled, got: %s", sqs.Status)
+		if sqsInfo.Status != mnqSDK.SqsInfoStatusEnabled {
+			return fmt.Errorf("sqs status should be enabled, got: %s", sqsInfo.Status)
 		}
 
 		return nil

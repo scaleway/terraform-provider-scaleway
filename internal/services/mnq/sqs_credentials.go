@@ -2,8 +2,10 @@ package mnq
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -87,13 +89,15 @@ func sqsCredentialsSchema() map[string]*schema.Schema {
 	}
 }
 
+const sqsCredentialsCreateRetryTimeout = 60 * time.Second
+
 func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	credentials, err := api.CreateSqsCredentials(&mnq.SqsAPICreateSqsCredentialsRequest{
+	req := &mnq.SqsAPICreateSqsCredentialsRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sqs-credentials"),
@@ -102,7 +106,20 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 			CanReceive: types.ExpandBoolPtr(d.Get("permissions.0.can_receive")),
 			CanManage:  types.ExpandBoolPtr(d.Get("permissions.0.can_manage")),
 		},
-	}, scw.WithContext(ctx))
+	}
+
+	var credentials *mnq.SqsCredentials
+
+	err = retry.RetryContext(ctx, sqsCredentialsCreateRetryTimeout, func() *retry.RetryError {
+		credentials, err = api.CreateSqsCredentials(req, scw.WithContext(ctx))
+		if err == nil {
+			return nil
+		}
+		if isMNQNamespaceReadRetryableError(err) {
+			return retry.RetryableError(err)
+		}
+		return retry.NonRetryableError(err)
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,6 +144,15 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 		Region:           region,
 		SqsCredentialsID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			credentials, err = api.GetSqsCredentials(&mnq.SqsAPIGetSqsCredentialsRequest{
+				Region:           region,
+				SqsCredentialsID: id,
+			}, scw.WithContext(ctx))
+			return err
+		})
+	}
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -187,7 +213,11 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, err := api.UpdateSqsCredentials(req, scw.WithContext(ctx)); err != nil {
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.UpdateSqsCredentials(req, scw.WithContext(ctx))
+		return e
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

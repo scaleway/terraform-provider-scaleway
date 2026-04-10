@@ -19,7 +19,7 @@ func TestAccSNSTopicSubscription_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	ctx := t.Context()
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSNSTopicSubscriptionDestroyed(ctx, tt),
 		Steps: []resource.TestStep{

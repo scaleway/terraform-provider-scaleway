@@ -185,16 +185,15 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	sqsInfo, err := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
-		Region:    region,
-		ProjectID: projectID,
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+			Region:    region,
+			ProjectID: projectID,
+		})
+		return e
 	})
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if sqsInfo.Status != mnq.SqsInfoStatusEnabled {
-		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project, got: %q", sqsInfo.Status))
+		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project: %w", err))
 	}
 
 	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)

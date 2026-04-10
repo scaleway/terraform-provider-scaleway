@@ -34,6 +34,15 @@ func DataSourceMNQSQSRead(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 	})
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sqs, err = api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+				Region:    region,
+				ProjectID: d.Get("project_id").(string),
+			})
+			return err
+		})
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
