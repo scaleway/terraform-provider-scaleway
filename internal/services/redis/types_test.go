@@ -20,6 +20,9 @@ func assertRedisConnectionString(t *testing.T, endpoints []*redis.Endpoint, pass
 func TestRedisConnectionString(t *testing.T) {
 	t.Parallel()
 
+	// Expected URIs use the Redis convention for password-only ACL auth: an empty username before the
+	// password (redis(s)://:password@host:port/0), matching url.UserPassword("", password) in production code.
+
 	pubIP := net.ParseIP("51.158.1.2")
 	privIP := net.ParseIP("10.0.0.5")
 

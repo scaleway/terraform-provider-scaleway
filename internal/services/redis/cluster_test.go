@@ -6,7 +6,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"regexp"
+	"net"
+	"net/url"
+	"strconv"
 	"testing"
 	"time"
 
@@ -912,17 +914,75 @@ func privateNetworksIDsAreEither(name string, possibilities ...string) resource.
 	}
 }
 
-// testCheckRedisConnectionString asserts connection_string matches the public endpoint pattern (IPv4).
-// When password is empty (e.g. password_wo), the URI has no userinfo: scheme://host:port/0
+// testCheckRedisConnectionString parses connection_string with net/url and checks scheme, path /0,
+// IPv4 host:port, and userinfo. When password is empty (e.g. password_wo), there must be no userinfo.
+// When password is set, userinfo must be password-only (empty username), per Redis URI convention and redisConnectionString.
 func testCheckRedisConnectionString(resourceName, scheme, password string) resource.TestCheckFunc {
-	var pattern string
-	if password == "" {
-		pattern = fmt.Sprintf(`^%s://\d+\.\d+\.\d+\.\d+:\d+/0$`, regexp.QuoteMeta(scheme))
-	} else {
-		pattern = fmt.Sprintf(`^%s://:%s@\d+\.\d+\.\d+\.\d+:\d+/0$`, regexp.QuoteMeta(scheme), regexp.QuoteMeta(password))
-	}
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
 
-	return resource.TestMatchResourceAttr(resourceName, "connection_string", regexp.MustCompile(pattern))
+		raw, ok := rs.Primary.Attributes["connection_string"]
+		if !ok || raw == "" {
+			return fmt.Errorf("connection_string not set for %s", resourceName)
+		}
+
+		u, err := url.Parse(raw)
+		if err != nil {
+			return fmt.Errorf("parse connection_string: %w", err)
+		}
+
+		if u.Scheme != scheme {
+			return fmt.Errorf("connection_string scheme = %q, want %q", u.Scheme, scheme)
+		}
+
+		if u.Path != "/0" {
+			return fmt.Errorf("connection_string path = %q, want \"/0\"", u.Path)
+		}
+
+		host, portStr, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			return fmt.Errorf("connection_string host: %w", err)
+		}
+
+		if ip := net.ParseIP(host); ip == nil || ip.To4() == nil {
+			return fmt.Errorf("connection_string host %q is not an IPv4 address", host)
+		}
+
+		port, err := strconv.Atoi(portStr)
+		if err != nil || port < 1 || port > 65535 {
+			return fmt.Errorf("connection_string invalid port %q", portStr)
+		}
+
+		if password == "" {
+			if u.User != nil {
+				user := u.User.Username()
+				pass, hasPass := u.User.Password()
+				if user != "" || (hasPass && pass != "") {
+					return fmt.Errorf("connection_string expected no userinfo when password is empty, got %q", u.User.String())
+				}
+			}
+
+			return nil
+		}
+
+		if u.User == nil {
+			return fmt.Errorf("connection_string missing userinfo, want password-only auth")
+		}
+
+		if got := u.User.Username(); got != "" {
+			return fmt.Errorf("connection_string username = %q, want empty (Redis password-only URI)", got)
+		}
+
+		gotPass, ok := u.User.Password()
+		if !ok || gotPass != password {
+			return fmt.Errorf("connection_string password mismatch")
+		}
+
+		return nil
+	}
 }
 
 func isCertificateValid(name string) resource.TestCheckFunc {
