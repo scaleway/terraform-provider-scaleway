@@ -85,6 +85,7 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 
 		return retry.NonRetryableError(err)
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -114,9 +115,11 @@ func ResourceMNQNatsCredentialsRead(ctx context.Context, d *schema.ResourceData,
 				Region:            region,
 				NatsCredentialsID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")

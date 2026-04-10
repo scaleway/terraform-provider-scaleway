@@ -85,6 +85,7 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 
 		return retry.NonRetryableError(err)
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -108,9 +109,11 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 				Region:        region,
 				NatsAccountID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -181,12 +184,14 @@ func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m
 		if httperrors.Is404(delErr) {
 			return nil
 		}
+
 		return retry.NonRetryableError(delErr)
 	})
 	// If the retry timed out on a namespace error, assume the account is gone
 	if err != nil && isMNQNamespaceReadRetryableError(err) {
 		return nil
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

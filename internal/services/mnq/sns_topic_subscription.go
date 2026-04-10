@@ -121,8 +121,10 @@ func ResourceMNQSNSTopicSubscriptionCreate(ctx context.Context, d *schema.Resour
 			Region:    region,
 			ProjectID: projectID,
 		})
+
 		return e
 	})
+
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project: %w", err))
 	}

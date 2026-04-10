@@ -40,9 +40,11 @@ func DataSourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) di
 				Region:    region,
 				ProjectID: d.Get("project_id").(string),
 			})
+
 			return err
 		})
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

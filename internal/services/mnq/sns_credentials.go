@@ -115,11 +115,14 @@ func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		if err == nil {
 			return nil
 		}
+
 		if isMNQNamespaceReadRetryableError(err) {
 			return retry.RetryableError(err)
 		}
+
 		return retry.NonRetryableError(err)
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,9 +153,11 @@ func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 				Region:           region,
 				SnsCredentialsID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -215,8 +220,10 @@ func ResourceMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 
 	err = retryMNQNamespaceRead(ctx, func() error {
 		_, err = api.UpdateSnsCredentials(req, scw.WithContext(ctx))
+
 		return err
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

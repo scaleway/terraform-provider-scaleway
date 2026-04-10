@@ -69,14 +69,18 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			if err == nil {
 				return nil
 			}
+
 			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
 				return retry.RetryableError(err)
 			}
+
 			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
 				return retry.RetryableError(err)
 			}
+
 			return retry.NonRetryableError(err)
 		})
+
 		if retryErr != nil {
 			return retryErr
 		}

@@ -75,9 +75,11 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,9 +109,11 @@ func readSNSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.D
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -141,9 +145,11 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 				Region:    region,
 				ProjectID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,8 +165,10 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 			Region:    region,
 			ProjectID: id,
 		}, scw.WithContext(ctx))
+
 		return e
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

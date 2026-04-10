@@ -115,11 +115,14 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		if err == nil {
 			return nil
 		}
+
 		if isMNQNamespaceReadRetryableError(err) {
 			return retry.RetryableError(err)
 		}
+
 		return retry.NonRetryableError(err)
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,9 +153,11 @@ func ResourceMNQSQSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 				Region:           region,
 				SqsCredentialsID: id,
 			}, scw.WithContext(ctx))
+
 			return err
 		})
 	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -215,8 +220,10 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 
 	err = retryMNQNamespaceRead(ctx, func() error {
 		_, e := api.UpdateSqsCredentials(req, scw.WithContext(ctx))
+
 		return e
 	})
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

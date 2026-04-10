@@ -124,9 +124,11 @@ func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestChec
 			if err == nil {
 				return nil
 			}
+
 			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
 				return retry.RetryableError(err)
 			}
+
 			return retry.NonRetryableError(err)
 		})
 	}

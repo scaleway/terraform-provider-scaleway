@@ -128,9 +128,11 @@ func isSQSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			if err == nil {
 				return nil
 			}
+
 			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
 				return retry.RetryableError(err)
 			}
+
 			return retry.NonRetryableError(err)
 		})
 	}
