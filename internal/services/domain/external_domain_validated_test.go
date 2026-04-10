@@ -3,7 +3,6 @@ package domain_test
 import (
 	"fmt"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,10 +17,6 @@ func TestAccDomainExternalDomainValidated_Basic(t *testing.T) {
 	if acctest.TestDomain == "" {
 		t.Skip("Test skipped: SCW_TEST_DOMAIN must be set")
 	}
-	rootZoneProfile := os.Getenv("SCW_TEST_ROOT_ZONE_PROFILE")
-	if rootZoneProfile == "" {
-		t.Skip("Test skipped: SCW_TEST_ROOT_ZONE_PROFILE must be set")
-	}
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -35,12 +30,14 @@ func TestAccDomainExternalDomainValidated_Basic(t *testing.T) {
 		CheckDestroy:             testAccCheckExternalDomainDestroy(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain, rootZoneProfile),
+				Config: testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_domain_external_domain.example", "domain", domainName),
 					resource.TestCheckResourceAttrSet("scaleway_domain_external_domain.example", "validation_token"),
 					resource.TestCheckResourceAttr("scaleway_domain_external_domain_validated.example", "domain", domainName),
 					resource.TestCheckResourceAttrSet("scaleway_domain_external_domain_validated.example", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_domain_external_domain_validated.example", "organization_id"),
+					resource.TestCheckResourceAttrSet("scaleway_domain_external_domain_validated.example", "ns_servers.#"),
 				),
 			},
 		},
@@ -73,7 +70,7 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 	}
 }
 
-func testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain string, rootZoneProfile string) string {
+func testAccDomainExternalDomainValidatedConfigBasic(domainName, subdomain string) string {
 	return fmt.Sprintf(`
 resource "scaleway_domain_external_domain" "example" {
   domain = "%s"
@@ -84,16 +81,10 @@ resource "scaleway_domain_record" "validation" {
   name     = "_scaleway-challenge.%s"
   type     = "TXT"
   data     = scaleway_domain_external_domain.example.validation_token
-  provider = scaleway.alt
 }
 
 resource "scaleway_domain_external_domain_validated" "example" {
   domain = scaleway_domain_external_domain.example.domain
 }
-
-provider "scaleway" {
-  profile = "%s"
-  alias   = "alt"
-}
-`, domainName, acctest.TestDomain, subdomain, rootZoneProfile)
+`, domainName, acctest.TestDomain, subdomain)
 }
