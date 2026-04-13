@@ -11,7 +11,6 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/std"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
