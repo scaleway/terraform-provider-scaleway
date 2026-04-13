@@ -916,7 +916,7 @@ func privateNetworksIDsAreEither(name string, possibilities ...string) resource.
 
 // testCheckRedisConnectionString parses connection_string with net/url and checks scheme, path /0,
 // IPv4 host:port, and userinfo. When password is empty (e.g. password_wo), there must be no userinfo.
-// When password is set, userinfo must be password-only (empty username), per Redis URI convention and redisConnectionString.
+// When password is set, userinfo must match user_name and password (Redis ACL).
 func testCheckRedisConnectionString(resourceName, scheme, password string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
@@ -960,6 +960,7 @@ func testCheckRedisConnectionString(resourceName, scheme, password string) resou
 			if u.User != nil {
 				user := u.User.Username()
 				pass, hasPass := u.User.Password()
+
 				if user != "" || (hasPass && pass != "") {
 					return fmt.Errorf("connection_string expected no userinfo when password is empty, got %q", u.User.String())
 				}
@@ -969,16 +970,17 @@ func testCheckRedisConnectionString(resourceName, scheme, password string) resou
 		}
 
 		if u.User == nil {
-			return fmt.Errorf("connection_string missing userinfo, want password-only auth")
+			return errors.New("connection_string missing userinfo, want user_name and password")
 		}
 
-		if got := u.User.Username(); got != "" {
-			return fmt.Errorf("connection_string username = %q, want empty (Redis password-only URI)", got)
+		wantUser := rs.Primary.Attributes["user_name"]
+		if got := u.User.Username(); got != wantUser {
+			return fmt.Errorf("connection_string username = %q, want %q (user_name)", got, wantUser)
 		}
 
 		gotPass, ok := u.User.Password()
 		if !ok || gotPass != password {
-			return fmt.Errorf("connection_string password mismatch")
+			return errors.New("connection_string password mismatch")
 		}
 
 		return nil

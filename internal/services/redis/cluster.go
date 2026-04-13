@@ -273,7 +273,7 @@ func clusterSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Sensitive:   true,
-			Description: "Redis connection URI for the first reachable endpoint (public is preferred over private). Uses scheme `rediss` when TLS is enabled. Database index is always `0`. When `password_wo` is used, the password is omitted because it is not stored in state.",
+			Description: "Redis connection URI for the first reachable endpoint (public is preferred over private). Uses scheme `rediss` when TLS is enabled. Database index is always `0`. When a password is available in state, userinfo includes `user_name` and the password (Redis ACL). When `password_wo` is used, the password is omitted because it is not stored in state.",
 		},
 		"created_at": {
 			Type:        schema.TypeString,
@@ -535,7 +535,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 		connPassword = d.Get("password").(string)
 	}
 
-	_ = d.Set("connection_string", redisConnectionString(cluster.Endpoints, connPassword, cluster.TLSEnabled))
+	_ = d.Set("connection_string", redisConnectionString(cluster.Endpoints, userName, connPassword, cluster.TLSEnabled))
 
 	return diags
 }

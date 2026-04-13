@@ -3,15 +3,16 @@ package redis
 
 import (
 	"net"
+	"net/url"
 	"testing"
 
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
 )
 
-func assertRedisConnectionString(t *testing.T, endpoints []*redis.Endpoint, password string, tlsEnabled bool, want string) {
+func assertRedisConnectionString(t *testing.T, endpoints []*redis.Endpoint, userName, password string, tlsEnabled bool, want string) {
 	t.Helper()
 
-	got := redisConnectionString(endpoints, password, tlsEnabled)
+	got := redisConnectionString(endpoints, userName, password, tlsEnabled)
 	if got != want {
 		t.Fatalf("redisConnectionString() = %q, want %q", got, want)
 	}
@@ -20,15 +21,15 @@ func assertRedisConnectionString(t *testing.T, endpoints []*redis.Endpoint, pass
 func TestRedisConnectionString(t *testing.T) {
 	t.Parallel()
 
-	// Expected URIs use the Redis convention for password-only ACL auth: an empty username before the
-	// password (redis(s)://:password@host:port/0), matching url.UserPassword("", password) in production code.
+	// When a password is present, userinfo uses user_name + password (Redis ACL). When password is empty,
+	// userinfo is omitted (e.g. password_wo).
 
 	pubIP := net.ParseIP("51.158.1.2")
 	privIP := net.ParseIP("10.0.0.5")
 
 	t.Run("empty endpoints", func(t *testing.T) {
 		t.Parallel()
-		assertRedisConnectionString(t, nil, "", false, "")
+		assertRedisConnectionString(t, nil, "", "", false, "")
 	})
 
 	t.Run("public preferred over private", func(t *testing.T) {
@@ -46,7 +47,7 @@ func TestRedisConnectionString(t *testing.T) {
 				IPs:           []net.IP{pubIP},
 			},
 		}
-		assertRedisConnectionString(t, endpoints, "secret", true, "rediss://:secret@51.158.1.2:6379/0")
+		assertRedisConnectionString(t, endpoints, "redisuser", "secret", true, "rediss://redisuser:secret@51.158.1.2:6379/0")
 	})
 
 	t.Run("private only", func(t *testing.T) {
@@ -59,10 +60,10 @@ func TestRedisConnectionString(t *testing.T) {
 				IPs:            []net.IP{privIP},
 			},
 		}
-		assertRedisConnectionString(t, endpoints, "p", false, "redis://:p@10.0.0.5:6380/0")
+		assertRedisConnectionString(t, endpoints, "redisuser", "p", false, "redis://redisuser:p@10.0.0.5:6380/0")
 	})
 
-	t.Run("password with ampersand (sub-delimiter allowed unescaped in userinfo)", func(t *testing.T) {
+	t.Run("password with ampersand (escaped in userinfo per url.URL)", func(t *testing.T) {
 		t.Parallel()
 
 		endpoints := []*redis.Endpoint{
@@ -72,7 +73,13 @@ func TestRedisConnectionString(t *testing.T) {
 				IPs:           []net.IP{pubIP},
 			},
 		}
-		assertRedisConnectionString(t, endpoints, "a&b", false, "redis://:a&b@51.158.1.2:6379/0")
+		want := &url.URL{
+			Scheme: "redis",
+			Host:   net.JoinHostPort("51.158.1.2", "6379"),
+			Path:   "/0",
+		}
+		want.User = url.UserPassword("redisuser", "a&b")
+		assertRedisConnectionString(t, endpoints, "redisuser", "a&b", false, want.String())
 	})
 
 	t.Run("no password", func(t *testing.T) {
@@ -85,6 +92,6 @@ func TestRedisConnectionString(t *testing.T) {
 				IPs:           []net.IP{pubIP},
 			},
 		}
-		assertRedisConnectionString(t, endpoints, "", false, "redis://51.158.1.2:6379/0")
+		assertRedisConnectionString(t, endpoints, "ignored", "", false, "redis://51.158.1.2:6379/0")
 	})
 }

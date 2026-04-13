@@ -176,10 +176,11 @@ func flattenPublicNetwork(endpoints []*redis.Endpoint) any {
 	return pnFlat
 }
 
-// redisConnectionString builds a URI of the form redis(s)://[:password]@host:port/0 for the first
+// redisConnectionString builds a URI of the form redis(s)://[user:password@]host:port/0 for the first
 // endpoint with a usable IP (public network preferred, then private).
-// The leading colon denotes an empty username; Redis URIs commonly use password-only auth via url.UserPassword("", password).
-func redisConnectionString(endpoints []*redis.Endpoint, password string, tlsEnabled bool) string {
+// When password is set, user and password are set via url.UserPassword so clients send ACL AUTH (required e.g. on Redis 8).
+// When password is empty (e.g. password_wo), userinfo is omitted because the secret is not in state.
+func redisConnectionString(endpoints []*redis.Endpoint, username, password string, tlsEnabled bool) string {
 	scheme := "redis"
 	if tlsEnabled {
 		scheme = "rediss"
@@ -196,7 +197,7 @@ func redisConnectionString(endpoints []*redis.Endpoint, password string, tlsEnab
 		Path:   "/0",
 	}
 	if password != "" {
-		u.User = url.UserPassword("", password)
+		u.User = url.UserPassword(username, password)
 	}
 
 	return u.String()
