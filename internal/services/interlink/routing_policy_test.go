@@ -26,6 +26,7 @@ func TestAccInterlinkRoutingPolicy_Basic(t *testing.T) {
 						name              = "tf-test-interlink-routing-policy"
 						prefix_filter_in  = ["10.0.1.0/24"]
 						prefix_filter_out = ["10.0.2.0/24"]
+						tags              = ["tf_tests"]
 						region            = "fr-par"
 					}
 				`,
@@ -35,9 +36,36 @@ func TestAccInterlinkRoutingPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "is_ipv6", "false"),
 					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "region", "fr-par"),
 					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_in.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_in.0", "10.0.1.0/24"),
 					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_out.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_out.0", "10.0.2.0/24"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttrSet("scaleway_interlink_routing_policy.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_interlink_routing_policy.main", "updated_at"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_interlink_routing_policy" "main" {
+						name              = "tf-test-interlink-routing-policy-updated"
+						prefix_filter_in  = ["10.0.1.0/24", "10.0.3.0/24"]
+						prefix_filter_out = ["10.0.4.0/24"]
+						tags              = ["tf_tests", "updated"]
+						region            = "fr-par"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkRoutingPolicyExists(tt, "scaleway_interlink_routing_policy.main"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "name", "tf-test-interlink-routing-policy-updated"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_in.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_in.0", "10.0.1.0/24"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_in.1", "10.0.3.0/24"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_out.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "prefix_filter_out.0", "10.0.4.0/24"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.0", "tf_tests"),
+					resource.TestCheckResourceAttr("scaleway_interlink_routing_policy.main", "tags.1", "updated"),
 				),
 			},
 			{
