@@ -3,7 +3,7 @@ subcategory: "Interlink"
 page_title: "Scaleway: scaleway_interlink_routing_policy"
 ---
 
-# scaleway_interlink_routing_policy
+# Resource: scaleway_interlink_routing_policy
 
 Creates and manages Scaleway Interlink Routing Policies.
 
