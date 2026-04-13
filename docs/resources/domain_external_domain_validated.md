@@ -9,8 +9,7 @@ The `scaleway_domain_external_domain_validated` resource allows you to wait unti
 This resource is used to block the Terraform execution until the validation token has been correctly added to the external domain's DNS records and verified by Scaleway.
 
 
-~> **WARNING:** This resource implements a part of the validation workflow. It does not represent a real-world entity in Scaleway, therefore changing or deleting this resource on its own has no effect. It must be used with a `scaleway_domain_external_domain` resource. 
-
+~> **WARNING:** This resource implements a part of the validation workflow. It does not represent a real-world entity in Scaleway, therefore changing or deleting this resource on its own has no effect. It must be used with a `scaleway_domain_external_domain` resource.
 
 Once the domain is validated, its status becomes `active`, and it can be used within Scaleway services.
 
