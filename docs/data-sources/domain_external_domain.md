@@ -1,0 +1,33 @@
+---
+subcategory: "Domains and DNS"
+page_title: "Scaleway: scaleway_domain_external_domain"
+---
+
+# scaleway_domain_external_domain
+
+Use this data source to read the current state of an external domain already registered with Scaleway (same information as the [`scaleway_domain_external_domain`](../resources/domain_external_domain.md) resource after apply).
+
+Refer to the [Domains and DNS documentation](https://www.scaleway.com/en/docs/network/domains-and-dns/) and the [API documentation](https://developers.scaleway.com/) for more details.
+
+## Example Usage
+
+```hcl
+data "scaleway_domain_external_domain" "example" {
+  domain = "example.com"
+}
+```
+
+## Argument Reference
+
+- `domain` - (Required) The domain name to look up.
+- `project_id` - (Optional) If set, the API response must use this project ID.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The domain name.
+- `organization_id` - The organization ID the domain is associated with.
+- `ns_servers` - List of default NS servers for the domain.
+- `status` - The status of the domain (for example `checking`, `active`).
+- `validation_token` - The validation token for DNS ownership, when applicable.

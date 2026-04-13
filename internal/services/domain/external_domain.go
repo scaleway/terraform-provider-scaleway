@@ -109,6 +109,12 @@ func resourceExternalDomainRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
+	persistExternalDomainFromRegistrarResponse(resp, d)
+
+	return nil
+}
+
+func persistExternalDomainFromRegistrarResponse(resp *domain.Domain, d *schema.ResourceData) {
 	_ = d.Set("domain", resp.Domain)
 	_ = d.Set("project_id", resp.ProjectID)
 	_ = d.Set("organization_id", resp.OrganizationID)
@@ -121,8 +127,6 @@ func resourceExternalDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	if resp.ExternalDomainRegistrationStatus != nil && resp.ExternalDomainRegistrationStatus.ValidationToken != "" {
 		_ = d.Set("validation_token", resp.ExternalDomainRegistrationStatus.ValidationToken)
 	}
-
-	return nil
 }
 
 func resourceExternalDomainDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

@@ -89,6 +89,12 @@ func resourceExternalDomainValidatedRead(ctx context.Context, d *schema.Resource
 		return diag.FromErr(err)
 	}
 
+	persistExternalDomainValidatedFromRegistrarResponse(resp, d)
+
+	return nil
+}
+
+func persistExternalDomainValidatedFromRegistrarResponse(resp *domainSDK.Domain, d *schema.ResourceData) {
 	_ = d.Set("domain", resp.Domain)
 	_ = d.Set("project_id", resp.ProjectID)
 	_ = d.Set("organization_id", resp.OrganizationID)
@@ -96,8 +102,6 @@ func resourceExternalDomainValidatedRead(ctx context.Context, d *schema.Resource
 	if len(resp.DNSZones) > 0 {
 		_ = d.Set("ns_servers", resp.DNSZones[0].NsDefault)
 	}
-
-	return nil
 }
 
 func resourceExternalDomainValidatedDelete(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
