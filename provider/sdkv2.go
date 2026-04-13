@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -153,10 +154,10 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_datawarehouse_deployment":                           datawarehouse.ResourceDeployment(),
 				"scaleway_datawarehouse_user":                                 datawarehouse.ResourceUser(),
 				"scaleway_datawarehouse_database":                             datawarehouse.ResourceDatabase(),
-			"scaleway_kafka_cluster":                                      kafka.ResourceCluster(),
-			"scaleway_domain_external_domain":                             domain.ResourceExternalDomain(),
-			"scaleway_domain_external_domain_validated":                   domain.ResourceExternalDomainValidated(),
-			"scaleway_domain_record":                                      domain.ResourceRecord(),
+				"scaleway_kafka_cluster":                                      kafka.ResourceCluster(),
+				"scaleway_domain_external_domain":                             domain.ResourceExternalDomain(),
+				"scaleway_domain_external_domain_validated":                   domain.ResourceExternalDomainValidated(),
+				"scaleway_domain_record":                                      domain.ResourceRecord(),
 				"scaleway_domain_registration":                                domain.ResourceRegistration(),
 				"scaleway_domain_zone":                                        domain.ResourceZone(),
 				"scaleway_edge_services_backend_stage":                        edgeservices.ResourceBackendStage(),

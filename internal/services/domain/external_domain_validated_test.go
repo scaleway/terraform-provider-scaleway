@@ -60,6 +60,7 @@ func testAccCheckExternalDomainDestroy(tt *acctest.TestTools) resource.TestCheck
 				if httperrors.Is404(err) {
 					continue
 				}
+
 				return err
 			}
 

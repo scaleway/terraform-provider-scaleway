@@ -78,6 +78,7 @@ func resourceExternalDomainValidatedRead(ctx context.Context, d *schema.Resource
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
 

@@ -6,14 +6,17 @@ import (
 
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
-	defaultDomainRecordTimeout       = 5 * time.Minute
-	defaultDomainZoneTimeout         = 5 * time.Minute
-	defaultDomainZoneRetryInterval   = 5 * time.Second
-	defaultDomainRegistrationTimeout = 30 * time.Minute
+	defaultDomainRecordTimeout                        = 5 * time.Minute
+	defaultDomainZoneTimeout                          = 5 * time.Minute
+	defaultDomainZoneRetryInterval                    = 5 * time.Second
+	defaultDomainRegistrationTimeout                  = 30 * time.Minute
+	defaultWaitDomainsRegistrationRetryInterval       = 10 * time.Minute
+	defaultWaitExternalDomainsValidationRetryInterval = 30 * time.Second
 )
 
 func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {

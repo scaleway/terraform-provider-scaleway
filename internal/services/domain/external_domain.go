@@ -98,6 +98,7 @@ func resourceExternalDomainRead(ctx context.Context, d *schema.ResourceData, m a
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
 
@@ -133,6 +134,7 @@ func resourceExternalDomainDelete(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
+
 			return nil
 		}
 
