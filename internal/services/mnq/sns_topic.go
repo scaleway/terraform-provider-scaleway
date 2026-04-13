@@ -124,7 +124,6 @@ func ResourceMNQSNSTopicCreate(ctx context.Context, d *schema.ResourceData, m an
 
 		return e
 	})
-
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("expected sns to be enabled for given project: %w", err))
 	}

@@ -120,7 +120,6 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 			return retry.NonRetryableError(err)
 		})
-
 		if retryErr != nil {
 			return retryErr
 		}

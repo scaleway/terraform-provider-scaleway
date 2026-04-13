@@ -122,7 +122,6 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 
 		return retry.NonRetryableError(err)
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -223,7 +222,6 @@ func ResourceMNQSQSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 
 		return e
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

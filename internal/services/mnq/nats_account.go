@@ -85,7 +85,6 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 
 		return retry.NonRetryableError(err)
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

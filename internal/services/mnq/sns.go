@@ -168,7 +168,6 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 
 		return e
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

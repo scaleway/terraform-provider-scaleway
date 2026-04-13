@@ -85,7 +85,6 @@ func ResourceMNQNatsCredentialsCreate(ctx context.Context, d *schema.ResourceDat
 
 		return retry.NonRetryableError(err)
 	})
-
 	if err != nil {
 		return diag.FromErr(err)
 	}
