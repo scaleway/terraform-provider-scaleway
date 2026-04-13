@@ -253,6 +253,8 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_datawarehouse_database",
 		"scaleway_datawarehouse_deployment",
 		"scaleway_datawarehouse_user",
+		"scaleway_domain_external_domain",
+		"scaleway_domain_external_domain_validated",
 		"scaleway_domain_registration",
 		"scaleway_edge_services_backend_stage",
 		"scaleway_edge_services_cache_stage",
