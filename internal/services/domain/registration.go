@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
@@ -72,8 +71,7 @@ func registrationSchema() map[string]*schema.Schema {
 				"owner_contact_id",
 				"owner_contact",
 			},
-			ValidateFunc: validation.IsUUID,
-			Description:  "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
+			Description: "ID of the owner contact. Either `owner_contact_id` or `owner_contact` must be provided.",
 		},
 		"owner_contact": {
 			Type:     schema.TypeList,
