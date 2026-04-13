@@ -27,6 +27,8 @@ func TestAccTrigger_SQS(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						registry_image = "nginx:latest"
+						port = 80
 					}
 
 					resource "scaleway_mnq_sqs" "main" {
@@ -93,6 +95,8 @@ func TestAccTrigger_Nats(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						registry_image = "nginx:latest"
+						port = 80
 					}
 
 					resource "scaleway_mnq_nats_account" "main" {}
