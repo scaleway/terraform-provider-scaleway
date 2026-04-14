@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -16,7 +17,7 @@ type ProjectModel interface {
 
 // ExtractProjects determines project id to query, if "*" is passed, then all projects
 // will be queried
-func ExtractProjects(ctx context.Context, model ProjectModel, client *scw.Client) ([]string, error) {
+func ExtractProjects(ctx context.Context, model ProjectModel, meta *meta.Meta) ([]string, error) {
 	var projectsToQuery []string
 
 	projectsList := model.GetProjects()
@@ -33,7 +34,7 @@ func ExtractProjects(ctx context.Context, model ProjectModel, client *scw.Client
 
 	for _, project := range projectsToQuery {
 		if project == "*" {
-			api := account.NewProjectAPI(client)
+			api := account.NewProjectAPI(meta)
 
 			res, err := api.ListProjects(new(accountSDK.ProjectAPIListProjectsRequest{}), scw.WithContext(ctx), scw.WithAllPages())
 			if err != nil {

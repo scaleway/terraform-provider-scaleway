@@ -26,7 +26,7 @@ var (
 )
 
 type ListResource struct {
-	client *scw.Client
+	meta   *meta.Meta
 	vpcAPI *vpc.API
 }
 
@@ -45,9 +45,8 @@ func (r *ListResource) Configure(ctx context.Context, request resource.Configure
 		return
 	}
 
-	client := m.ScwClient()
-	r.client = client
-	r.vpcAPI = vpc.NewAPI(client)
+	r.meta = m
+	r.vpcAPI = vpc.NewAPI(meta.ExtractScwClient(m))
 }
 
 func NewVPCListResource() list.ListResource {
@@ -153,7 +152,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	projects, err := listscw.ExtractProjects(ctx, &data, r.client)
+	projects, err := listscw.ExtractProjects(ctx, &data, r.meta)
 	if err != nil {
 		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
 			diag.NewErrorDiagnostic("Listing projects", "An error was encountered when listing projects: "+err.Error()),
