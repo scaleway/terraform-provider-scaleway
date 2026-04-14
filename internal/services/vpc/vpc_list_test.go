@@ -10,6 +10,10 @@ import (
 )
 
 func TestAccListVPCs_Basic(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListVPCs_Basic because list resources are not yet supported on OpenTofu")
+	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
