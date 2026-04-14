@@ -46,6 +46,7 @@ func (r *ListResource) Configure(ctx context.Context, request resource.Configure
 	}
 
 	client := m.ScwClient()
+	r.client = client
 	r.vpcAPI = vpc.NewAPI(client)
 }
 
