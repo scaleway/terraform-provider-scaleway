@@ -26,7 +26,12 @@ func ProjectIDsAttribute(description string) schema.ListAttribute {
 		Optional:    true,
 		ElementType: types.StringType,
 		Validators: []validator.List{
-			listvalidator.ValueStringsAre(verify.IsStringUUID()),
+			listvalidator.ValueStringsAre(
+				stringvalidator.Any(
+					stringvalidator.OneOf("*"),
+					verify.IsStringUUID(),
+				),
+			),
 		},
 	}
 }
