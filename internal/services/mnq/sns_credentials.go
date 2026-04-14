@@ -89,7 +89,7 @@ func snsCredentialsSchema() map[string]*schema.Schema {
 	}
 }
 
-const snsCredentialsCreateRetryTimeout = 60 * time.Second
+const snsCredentialsCreateRetryTimeout = 30 * time.Second
 
 func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)

@@ -17,7 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-const natsCredentialsCreateRetryTimeout = 60 * time.Second
+const natsCredentialsCreateRetryTimeout = 30 * time.Second
 
 func ResourceNatsCredentials() *schema.Resource {
 	return &schema.Resource{

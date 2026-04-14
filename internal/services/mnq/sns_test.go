@@ -56,12 +56,12 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 		defer cancel()
 
 		var snsInfo *mnqSDK.SnsInfo
 
-		retryErr := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
+		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
 			snsInfo, err = api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
 				ProjectID: id,
 				Region:    region,

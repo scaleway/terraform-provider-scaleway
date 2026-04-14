@@ -89,7 +89,7 @@ func sqsCredentialsSchema() map[string]*schema.Schema {
 	}
 }
 
-const sqsCredentialsCreateRetryTimeout = 60 * time.Second
+const sqsCredentialsCreateRetryTimeout = 30 * time.Second
 
 func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)

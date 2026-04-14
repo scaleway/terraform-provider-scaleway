@@ -9,7 +9,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 )
 
-const mnqNamespaceReadRetryTimeout = 120 * time.Second
+const mnqNamespaceReadRetryTimeout = 30 * time.Second
 
 func retryMNQNamespaceRead(ctx context.Context, action func() error) error {
 	return retry.RetryContext(ctx, mnqNamespaceReadRetryTimeout, func() *retry.RetryError {

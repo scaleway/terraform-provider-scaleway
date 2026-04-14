@@ -117,10 +117,10 @@ func isSNSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel()
 
-		return retry.RetryContext(ctx, 30*time.Second, func() *retry.RetryError {
+		return retry.RetryContext(ctx, 15*time.Second, func() *retry.RetryError {
 			_, err = api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
 				SnsCredentialsID: id,
 				Region:           region,
