@@ -2,8 +2,10 @@ package mnq
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -13,6 +15,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
+
+const natsAccountReadAfterCreateRetryTimeout = 30 * time.Second
 
 func ResourceNatsAccount() *schema.Resource {
 	return &schema.Resource{
@@ -66,6 +70,25 @@ func ResourceMNQNatsAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	err = retry.RetryContext(ctx, natsAccountReadAfterCreateRetryTimeout, func() *retry.RetryError {
+		_, err = api.GetNatsAccount(&mnq.NatsAPIGetNatsAccountRequest{
+			Region:        account.Region,
+			NatsAccountID: account.ID,
+		}, scw.WithContext(ctx))
+		if err == nil {
+			return nil
+		}
+
+		if isMNQNamespaceReadRetryableError(err) {
+			return retry.RetryableError(err)
+		}
+
+		return retry.NonRetryableError(err)
+	})
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
@@ -79,6 +102,17 @@ func ResourceMNQNatsAccountRead(ctx context.Context, d *schema.ResourceData, m a
 		Region:        region,
 		NatsAccountID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			account, err = api.GetNatsAccount(&mnq.NatsAPIGetNatsAccountRequest{
+				Region:        region,
+				NatsAccountID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -123,17 +157,41 @@ func ResourceMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
+const natsAccountDeleteRetryTimeout = 30 * time.Second
+
 func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteNatsAccount(&mnq.NatsAPIDeleteNatsAccountRequest{
+	req := &mnq.NatsAPIDeleteNatsAccountRequest{
 		Region:        region,
 		NatsAccountID: id,
-	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
+	}
+
+	err = retry.RetryContext(ctx, natsAccountDeleteRetryTimeout, func() *retry.RetryError {
+		delErr := api.DeleteNatsAccount(req, scw.WithContext(ctx))
+		if delErr == nil {
+			return nil
+		}
+		// Transient: namespace routing unavailable, account still exists → retry
+		if isMNQNamespaceReadRetryableError(delErr) {
+			return retry.RetryableError(delErr)
+		}
+		// Account genuinely not found → treat as already deleted
+		if httperrors.Is404(delErr) {
+			return nil
+		}
+
+		return retry.NonRetryableError(delErr)
+	})
+	// If the retry timed out on a namespace error, assume the account is gone
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		return nil
+	}
+
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
