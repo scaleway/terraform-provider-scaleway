@@ -107,13 +107,14 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 	}
 
 	req := &vpc.CreateRouteRequest{
-		Description:           d.Get("description").(string),
-		Tags:                  types.ExpandStrings(d.Get("tags")),
-		VpcID:                 locality.ExpandID(d.Get("vpc_id").(string)),
-		NexthopResourceID:     types.ExpandStringPtr(resourceID),
-		NexthopVpcConnectorID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id").(string))),
-		Destination:           destination,
-		Region:                region,
+		Description:             d.Get("description").(string),
+		Tags:                    types.ExpandStrings(d.Get("tags")),
+		VpcID:                   locality.ExpandID(d.Get("vpc_id").(string)),
+		NexthopResourceID:       types.ExpandStringPtr(resourceID),
+		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id").(string))),
+		NexthopVpcConnectorID:   types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id").(string))),
+		Destination:             destination,
+		Region:                  region,
 	}
 
 	res, err := vpcAPI.CreateRoute(req, scw.WithContext(ctx))
