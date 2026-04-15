@@ -2,8 +2,10 @@ package mnq
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -87,13 +89,15 @@ func snsCredentialsSchema() map[string]*schema.Schema {
 	}
 }
 
+const snsCredentialsCreateRetryTimeout = 30 * time.Second
+
 func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newMNQSNSAPI(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	credentials, err := api.CreateSnsCredentials(&mnq.SnsAPICreateSnsCredentialsRequest{
+	req := &mnq.SnsAPICreateSnsCredentialsRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "sns-credentials"),
@@ -102,7 +106,22 @@ func ResourceMNQSNSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 			CanReceive: types.ExpandBoolPtr(d.Get("permissions.0.can_receive")),
 			CanManage:  types.ExpandBoolPtr(d.Get("permissions.0.can_manage")),
 		},
-	}, scw.WithContext(ctx))
+	}
+
+	var credentials *mnq.SnsCredentials
+
+	err = retry.RetryContext(ctx, snsCredentialsCreateRetryTimeout, func() *retry.RetryError {
+		credentials, err = api.CreateSnsCredentials(req, scw.WithContext(ctx))
+		if err == nil {
+			return nil
+		}
+
+		if isMNQNamespaceReadRetryableError(err) {
+			return retry.RetryableError(err)
+		}
+
+		return retry.NonRetryableError(err)
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -127,6 +146,17 @@ func ResourceMNQSNSCredentialsRead(ctx context.Context, d *schema.ResourceData, 
 		Region:           region,
 		SnsCredentialsID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			credentials, err = api.GetSnsCredentials(&mnq.SnsAPIGetSnsCredentialsRequest{
+				Region:           region,
+				SnsCredentialsID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -187,7 +217,12 @@ func ResourceMNQSNSCredentialsUpdate(ctx context.Context, d *schema.ResourceData
 		}
 	}
 
-	if _, err := api.UpdateSnsCredentials(req, scw.WithContext(ctx)); err != nil {
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, err = api.UpdateSnsCredentials(req, scw.WithContext(ctx))
+
+		return err
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

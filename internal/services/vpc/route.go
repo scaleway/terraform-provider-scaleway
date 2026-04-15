@@ -69,6 +69,12 @@ func routeSchema() map[string]*schema.Schema {
 			Description:      "The ID of the nexthop private network",
 			DiffSuppressFunc: dsf.Locality,
 		},
+		"nexthop_vpc_connector_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "The ID of the nexthop VPC Connector",
+			DiffSuppressFunc: dsf.Locality,
+		},
 		"region": regional.Schema(),
 		// Computed elements
 		"created_at": {
@@ -105,7 +111,8 @@ func ResourceRouteCreate(ctx context.Context, d *schema.ResourceData, m any) dia
 		Tags:                    types.ExpandStrings(d.Get("tags")),
 		VpcID:                   locality.ExpandID(d.Get("vpc_id").(string)),
 		NexthopResourceID:       types.ExpandStringPtr(resourceID),
-		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id"))),
+		NexthopPrivateNetworkID: types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id").(string))),
+		NexthopVpcConnectorID:   types.ExpandStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id").(string))),
 		Destination:             destination,
 		Region:                  region,
 	}
@@ -158,6 +165,7 @@ func setRouteState(d *schema.ResourceData, res *vpc.Route) diag.Diagnostics {
 	_ = d.Set("vpc_id", regional.NewIDString(res.Region, res.VpcID))
 	_ = d.Set("nexthop_resource_id", types.FlattenStringPtr(res.NexthopResourceID))
 	_ = d.Set("nexthop_private_network_id", regional.NewIDString(res.Region, types.FlattenStringPtr(res.NexthopPrivateNetworkID).(string)))
+	_ = d.Set("nexthop_vpc_connector_id", regional.NewIDString(res.Region, types.FlattenStringPtr(res.NexthopVpcConnectorID).(string)))
 	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("region", res.Region)
@@ -216,6 +224,11 @@ func ResourceRouteUpdate(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	if d.HasChange("nexthop_private_network_id") {
 		updateRequest.NexthopPrivateNetworkID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("nexthop_private_network_id")))
+		hasChanged = true
+	}
+
+	if d.HasChange("nexthop_vpc_connector_id") {
+		updateRequest.NexthopVpcConnectorID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("nexthop_vpc_connector_id")))
 		hasChanged = true
 	}
 
