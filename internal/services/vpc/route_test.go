@@ -150,11 +150,11 @@ func TestAccVPCRoute_WithVPCConnector(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "tf-vpc-route-conn-src"
+					  name = "tf-vpcsrc"
 					}
 
 					resource "scaleway_vpc" "vpc02" {
-					  name = "tf-vpc-route-conn-dst"
+					  name = "tf-vpcdst"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
