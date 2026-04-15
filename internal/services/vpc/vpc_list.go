@@ -21,17 +21,17 @@ import (
 )
 
 var (
-	_ list.ListResource                 = (*ListResource)(nil)
-	_ list.ListResourceWithConfigure    = (*ListResource)(nil)
-	_ list.ListResourceWithRawV6Schemas = (*ListResource)(nil)
+	_ list.ListResource                 = (*VPCListResource)(nil)
+	_ list.ListResourceWithConfigure    = (*VPCListResource)(nil)
+	_ list.ListResourceWithRawV6Schemas = (*VPCListResource)(nil)
 )
 
-type ListResource struct {
+type VPCListResource struct {
 	meta   *meta.Meta
 	vpcAPI *vpc.API
 }
 
-func (r *ListResource) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
+func (r *VPCListResource) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
 	if request.ProviderData == nil {
 		return
 	}
@@ -51,10 +51,10 @@ func (r *ListResource) Configure(ctx context.Context, request resource.Configure
 }
 
 func NewVPCListResource() list.ListResource {
-	return &ListResource{}
+	return &VPCListResource{}
 }
 
-func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request list.ListResourceSchemaRequest, response *list.ListResourceSchemaResponse) {
+func (r *VPCListResource) ListResourceConfigSchema(ctx context.Context, request list.ListResourceSchemaRequest, response *list.ListResourceSchemaResponse) {
 	response.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"routing_enabled": schema.BoolAttribute{
@@ -74,7 +74,7 @@ func (r *ListResource) ListResourceConfigSchema(ctx context.Context, request lis
 	}
 }
 
-func (r *ListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
+func (r *VPCListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
 	resourceVPC := ResourceVPC()
 
 	resp.ProtoV6Schema = translate.Schema(resourceVPC.ProtoSchema(ctx)())
@@ -103,11 +103,11 @@ func (m *ListResourceModel) GetProjects() types.List {
 	return m.ProjectIDs
 }
 
-func (r *ListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *VPCListResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_vpc"
 }
 
-func (r *ListResource) FetchVPCs(ctx context.Context, region scw.Region, project *string, tags []string, data ListResourceModel) ([]*vpc.VPC, error) {
+func (r *VPCListResource) FetchVPCs(ctx context.Context, region scw.Region, project *string, tags []string, data ListResourceModel) ([]*vpc.VPC, error) {
 	listRequest := &vpc.ListVPCsRequest{
 		Region:         region,
 		Name:           data.Name.ValueStringPointer(),
@@ -126,7 +126,7 @@ func (r *ListResource) FetchVPCs(ctx context.Context, region scw.Region, project
 	return response.Vpcs, nil
 }
 
-func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
+func (r *VPCListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
 	var data ListResourceModel
 
 	// Read list config data into the model
