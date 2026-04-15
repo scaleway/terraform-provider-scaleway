@@ -28,12 +28,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 )
 
 var (
-	_ provider.Provider            = &ScalewayProvider{}
-	_ provider.ProviderWithActions = (*ScalewayProvider)(nil)
+	_ provider.Provider                  = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithActions       = (*ScalewayProvider)(nil)
+	_ provider.ProviderWithListResources = (*ScalewayProvider)(nil)
 )
 
 type ScalewayProvider struct {
@@ -192,6 +194,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	resp.DataSourceData = m
 	resp.ActionData = m
 	resp.EphemeralResourceData = m
+	resp.ListResourceData = m
 }
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
@@ -248,7 +251,9 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 }
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
-	return []func() list.ListResource{}
+	return []func() list.ListResource{
+		vpc.NewVPCListResource,
+	}
 }
 
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
