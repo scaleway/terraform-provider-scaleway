@@ -139,6 +139,57 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 	})
 }
 
+func TestAccVPCRoute_WithVPCConnector(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isRouteDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpc-route-conn-src"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+					  name = "tf-vpc-route-conn-dst"
+					}
+
+					resource "scaleway_vpc_connector" "main" {
+					  name          = "tf-conn-route"
+					  vpc_id        = scaleway_vpc.vpc01.id
+					  target_vpc_id = scaleway_vpc.vpc02.id
+					}
+
+					resource "scaleway_vpc_route" "rt01" {
+					  vpc_id                   = scaleway_vpc.vpc01.id
+					  description              = "tf-route-connector"
+					  tags                     = ["tf", "route", "connector"]
+					  destination              = "10.0.0.0/24"
+					  nexthop_vpc_connector_id = scaleway_vpc_connector.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isRoutePresent(tt, "scaleway_vpc_route.rt01"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_route.rt01", "vpc_id", "scaleway_vpc.vpc01", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "destination", "10.0.0.0/24"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "description", "tf-route-connector"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "tags.#", "3"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_route.rt01", "nexthop_vpc_connector_id", "scaleway_vpc_connector.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "region", "fr-par"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_route.rt01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func isRoutePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
