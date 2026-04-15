@@ -20,7 +20,7 @@ func TestAccNatsCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
@@ -52,7 +52,7 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{

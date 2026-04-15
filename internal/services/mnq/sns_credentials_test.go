@@ -20,7 +20,7 @@ func TestAccSNSCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSNSCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
