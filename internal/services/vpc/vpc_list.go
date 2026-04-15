@@ -143,7 +143,7 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 		return
 	}
 
-	regions, err := listscw.ExtractRegions(ctx, &data)
+	regions, err := listscw.ExtractRegions(ctx, &data, r.meta)
 	if err != nil {
 		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
 			diag.NewErrorDiagnostic("Listing regions", "An error was encountered when listing regions: "+err.Error()),

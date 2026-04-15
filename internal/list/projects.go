@@ -15,14 +15,19 @@ type ProjectModel interface {
 	GetProjects() types.List
 }
 
-// ExtractProjects determines project id to query, if "*" is passed, then all projects
-// will be queried
+// ExtractProjects determines project id to query.
+// If projects is null, returns the default project ID from the provider config.
+// If "*" is passed, all projects will be queried.
 func ExtractProjects(ctx context.Context, model ProjectModel, meta *meta.Meta) ([]string, error) {
 	var projectsToQuery []string
 
 	projectsList := model.GetProjects()
 	if projectsList.IsNull() {
-		return nil, nil
+		defaultProjectID, exists := meta.ScwClient().GetDefaultProjectID()
+		if !exists {
+			return nil, fmt.Errorf("no project_ids specified and no default project ID configured")
+		}
+		return []string{defaultProjectID}, nil
 	}
 
 	diags := projectsList.ElementsAs(ctx, &projectsToQuery, false)

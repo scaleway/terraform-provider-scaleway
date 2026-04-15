@@ -6,17 +6,23 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
 type RegionalModel interface {
 	GetRegions() types.List
 }
 
-// ExtractRegions determines regions to query
-func ExtractRegions(ctx context.Context, model RegionalModel) ([]scw.Region, error) {
+// ExtractRegions determines regions to query.
+// If regions is null, returns the default region from the provider config.
+func ExtractRegions(ctx context.Context, model RegionalModel, meta *meta.Meta) ([]scw.Region, error) {
 	regionsList := model.GetRegions()
 	if regionsList.IsNull() {
-		return nil, nil
+		defaultRegion, exists := meta.ScwClient().GetDefaultRegion()
+		if !exists {
+			return nil, fmt.Errorf("no regions specified and no default region configured")
+		}
+		return []scw.Region{defaultRegion}, nil
 	}
 
 	var regionStrings []string
