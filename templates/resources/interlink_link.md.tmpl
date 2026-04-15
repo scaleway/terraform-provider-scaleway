@@ -1,0 +1,64 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Interlink"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end }}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `pop_id` - (Required) PoP (location) where the link will be created.
+- `bandwidth_mbps` - (Required) Desired bandwidth for the link. Must be compatible with available link bandwidths and remaining bandwidth capacity of the connection.
+- `name` - (Optional) Name of the link. If not provided, a name will be randomly generated.
+- `tags` - (Optional) List of tags to apply to the link.
+- `partner_id` - (Optional) If set, creates a hosted link on a partner's connection. Specify the ID of the chosen partner, who already has a shared connection with available bandwidth. Conflicts with `connection_id`.
+- `connection_id` - (Optional) If set, creates a self-hosted link using this dedicated physical connection. Conflicts with `partner_id`.
+- `peer_asn` - (Optional) For self-hosted links, the peer AS Number to establish BGP session. If not given, a default one will be assigned.
+- `vlan` - (Optional) For self-hosted links only, the VLAN ID. If the VLAN is not available (already taken or out of range), an error is returned.
+- `routing_policy_v4_id` - (Optional) If set, attaches this routing policy containing IPv4 prefixes to the link. A BGP IPv4 session will be created.
+- `routing_policy_v6_id` - (Optional) If set, attaches this routing policy containing IPv6 prefixes to the link. A BGP IPv6 session will be created.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the link should be created.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the link is associated with.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - Unique identifier of the link.
+- `status` - Status of the link.
+- `bgp_v4_status` - Status of the link's BGP IPv4 session.
+- `bgp_v6_status` - Status of the link's BGP IPv6 session.
+- `vpc_id` - ID of the Scaleway VPC attached to the link.
+- `enable_route_propagation` - Defines whether route propagation is enabled or not.
+- `pairing_key` - Used to identify a link from a user or partner's point of view.
+- `scw_bgp_config` - BGP configuration on Scaleway's side. Contains `asn`, `ipv4`, `ipv6`.
+- `peer_bgp_config` - BGP configuration on peer's side (on-premises or other hosting provider). Contains `asn`, `ipv4`, `ipv6`.
+- `created_at` - Creation date of the link (RFC 3339 format).
+- `updated_at` - Last modification date of the link (RFC 3339 format).
+- `organization_id` - Organization ID.
+
+~> **Important:** Interlink Links' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
+
+## Import
+
+Interlink Links can be imported using `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_interlink_link.main fr-par/11111111-1111-1111-1111-111111111111
+```
