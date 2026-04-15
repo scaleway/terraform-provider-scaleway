@@ -254,9 +254,11 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
 		Description:           d.Get("description").(string),
 		Type:                  d.Get("type").(string),
-		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
 		AssignFlexibleIP:      types.ExpandBoolPtr(types.GetBool(d, "assign_flexible_ip")),
 		AssignFlexibleIPv6:    types.ExpandBoolPtr(types.GetBool(d, "assign_flexible_ipv6")),
+	}
+	if sslLevel := types.ExpandStringPtr(d.Get("ssl_compatibility_level")); sslLevel != nil {
+		createReq.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*sslLevel)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
@@ -402,12 +404,14 @@ func resourceLbUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	}
 
 	req := &lbSDK.ZonedAPIUpdateLBRequest{
-		Zone:                  zone,
-		LBID:                  ID,
-		Name:                  d.Get("name").(string),
-		Tags:                  types.ExpandStrings(d.Get("tags")),
-		Description:           d.Get("description").(string),
-		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
+		Zone:        zone,
+		LBID:        ID,
+		Name:        d.Get("name").(string),
+		Tags:        types.ExpandStrings(d.Get("tags")),
+		Description: d.Get("description").(string),
+	}
+	if sslLevel := types.ExpandStringPtr(d.Get("ssl_compatibility_level")); sslLevel != nil {
+		req.SslCompatibilityLevel = lbSDK.SSLCompatibilityLevel(*sslLevel)
 	}
 
 	_, err = lbAPI.UpdateLB(req, scw.WithContext(ctx))

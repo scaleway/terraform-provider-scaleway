@@ -64,8 +64,10 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 		NamespaceID: locality.ExpandID(namespaceID),
 		Name:        name,
 		Privacy:     container.ContainerPrivacy(privacyType.(string)),
-		Protocol:    container.ContainerProtocol(*types.ExpandStringPtr(protocol)),
 		HTTPOption:  container.ContainerHTTPOption(httpOption.(string)),
+	}
+	if proto := types.ExpandStringPtr(protocol); proto != nil {
+		req.Protocol = container.ContainerProtocol(*proto)
 	}
 
 	// optional
@@ -200,7 +202,9 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("privacy") {
-		req.Privacy = container.ContainerPrivacy(*types.ExpandStringPtr(d.Get("privacy")))
+		if privacy := types.ExpandStringPtr(d.Get("privacy")); privacy != nil {
+			req.Privacy = container.ContainerPrivacy(*privacy)
+		}
 	}
 
 	if d.HasChanges("description") {
@@ -216,7 +220,9 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 	}
 
 	if d.HasChanges("protocol") {
-		req.Protocol = container.ContainerProtocol(*types.ExpandStringPtr(d.Get("protocol")))
+		if protocol := types.ExpandStringPtr(d.Get("protocol")); protocol != nil {
+			req.Protocol = container.ContainerProtocol(*protocol)
+		}
 	}
 
 	if d.HasChanges("port") {
@@ -307,7 +313,9 @@ func expandHealthCheck(healthCheckSchema any) (*container.ContainerHealthCheckSp
 				return nil, err
 			}
 
-			healthCheckSpec.Interval = scw.NewDurationFromTimeDuration(*duration)
+			if duration != nil {
+				healthCheckSpec.Interval = scw.NewDurationFromTimeDuration(*duration)
+			}
 		}
 
 		return healthCheckSpec, nil

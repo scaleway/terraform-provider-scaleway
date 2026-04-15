@@ -95,8 +95,10 @@ func ResourceFileSystemCreate(ctx context.Context, d *schema.ResourceData, m any
 		Region:    region,
 		Name:      types.ExpandOrGenerateString(d.Get("name").(string), "file"),
 		ProjectID: d.Get("project_id").(string),
-		Size:      *types.ExpandUint64Ptr(d.Get("size_in_gb")),
 		Tags:      types.ExpandStrings(d.Get("tags")),
+	}
+	if size := types.ExpandUint64Ptr(d.Get("size_in_gb")); size != nil {
+		req.Size = *size
 	}
 
 	if size, ok := d.GetOk("size_in_gb"); ok {
