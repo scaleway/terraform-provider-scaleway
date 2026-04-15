@@ -2,6 +2,7 @@ package list
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -20,8 +21,9 @@ func ExtractRegions(ctx context.Context, model RegionalModel, meta *meta.Meta) (
 	if regionsList.IsNull() {
 		defaultRegion, exists := meta.ScwClient().GetDefaultRegion()
 		if !exists {
-			return nil, fmt.Errorf("no regions specified and no default region configured")
+			return nil, errors.New("no regions specified and no default region configured")
 		}
+
 		return []scw.Region{defaultRegion}, nil
 	}
 

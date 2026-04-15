@@ -2,6 +2,7 @@ package list
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -25,8 +26,9 @@ func ExtractProjects(ctx context.Context, model ProjectModel, meta *meta.Meta) (
 	if projectsList.IsNull() {
 		defaultProjectID, exists := meta.ScwClient().GetDefaultProjectID()
 		if !exists {
-			return nil, fmt.Errorf("no project_ids specified and no default project ID configured")
+			return nil, errors.New("no project_ids specified and no default project ID configured")
 		}
+
 		return []string{defaultProjectID}, nil
 	}
 
