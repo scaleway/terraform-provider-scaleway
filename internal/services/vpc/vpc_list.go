@@ -3,6 +3,7 @@ package vpc
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -172,6 +173,17 @@ func (r *ListResource) List(ctx context.Context, req list.ListRequest, stream *l
 	allVPCs, err := listscw.FetchConcurrently(ctx, targets,
 		func(ctx context.Context, target listscw.RegionalFetchTarget) ([]*vpc.VPC, error) {
 			return r.FetchVPCs(ctx, target.Region, &target.ProjectID, tags, data)
+		},
+		func(a, b *vpc.VPC) int {
+			if a.ProjectID != b.ProjectID {
+				return strings.Compare(a.ProjectID, b.ProjectID)
+			}
+
+			if a.Region != b.Region {
+				return strings.Compare(string(a.Region), string(b.Region))
+			}
+
+			return strings.Compare(a.ID, b.ID)
 		},
 	)
 	if err != nil {
