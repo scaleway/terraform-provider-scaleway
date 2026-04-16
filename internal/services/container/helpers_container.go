@@ -23,6 +23,8 @@ const (
 	defaultContainerDomainTimeout    = 10 * time.Minute
 	DefaultContainerRetryInterval    = 5 * time.Second
 	defaultTriggerRetryInterval      = 5 * time.Second
+	// The API requires a valid image on create even though registry_image is optional.
+	defaultContainerRegistryImage = "nginx:latest"
 )
 
 // newAPIWithRegion returns a new container API and the region.
@@ -108,6 +110,8 @@ func setCreateContainerRequest(d *schema.ResourceData, region scw.Region) (*cont
 
 	if registryImage, ok := d.GetOk("registry_image"); ok {
 		req.RegistryImage = types.ExpandStringPtr(registryImage)
+	} else {
+		req.RegistryImage = types.ExpandStringPtr(defaultContainerRegistryImage)
 	}
 
 	if maxConcurrency, ok := d.GetOk("max_concurrency"); ok {
