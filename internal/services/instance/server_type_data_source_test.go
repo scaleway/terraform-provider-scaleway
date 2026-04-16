@@ -116,10 +116,6 @@ func TestAccDataSourceServerType_CompareWithPCU(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	client := meta.ExtractScwClient(tt.Meta)
-	pcuAPI := product_catalog.NewPublicCatalogAPI(client)
-	steps := []resource.TestStep(nil)
-
 	serverTypeToTestByZone := map[scw.Zone]string{
 		scw.ZoneFrPar1: "RENDER-S",
 		scw.ZoneFrPar2: "H100-SXM-2-80G",
@@ -132,72 +128,76 @@ func TestAccDataSourceServerType_CompareWithPCU(t *testing.T) {
 		scw.ZonePlWaw3: "PRO2-M",
 	}
 
+	client := meta.ExtractScwClient(tt.Meta)
+	pcuAPI := product_catalog.NewPublicCatalogAPI(client)
+	steps := make([]resource.TestStep, 0, len(serverTypeToTestByZone))
+
 	for zone, serverTypeToTest := range serverTypeToTestByZone {
-		// List all available server types in the zone to test
+		// Get server type in the zone to test
 		pcuInstances, err := pcuAPI.ListPublicCatalogProducts(&product_catalog.PublicCatalogAPIListPublicCatalogProductsRequest{
 			ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
 				product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
 			},
-			Zone: &zone,
+			APIIDs: []string{serverTypeToTest},
+			Zone:   &zone,
 		}, scw.WithAllPages(), scw.WithContext(t.Context()))
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// Look for the server type to test in the PCU
-		for _, pcuInstance := range pcuInstances.Products {
-			if pcuInstance.Properties.Instance.OfferID != serverTypeToTest {
-				continue
-			}
+		if pcuInstances.TotalCount != 1 {
+			t.Fatal(fmt.Errorf("expected exactly 1 PCU entry for %q, got %d", serverTypeToTest, pcuInstances.TotalCount))
+		}
 
-			// Fetch expected values from the PCU to be compared with the data source's info
-			datasourceTFName := "data.scaleway_instance_server_type." + serverTypeToTest
-			hardwareSpecs := pcuInstance.Properties.Hardware
+		pcuInstance := pcuInstances.Products[0]
 
-			expectedArch := ""
+		// Fetch expected values from the PCU to be compared with the data source's info
+		datasourceTFName := "data.scaleway_instance_server_type." + serverTypeToTest
+		hardwareSpecs := pcuInstance.Properties.Hardware
 
-			switch hardwareSpecs.CPU.Arch {
-			case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchX64:
-				expectedArch = instance.ArchX86_64.String()
-			case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchArm64:
-				expectedArch = instance.ArchArm64.String()
-			case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchUnknownArch:
-				expectedArch = instance.ArchUnknownArch.String()
-			}
+		expectedArch := ""
 
-			expectedCPU := strconv.FormatUint(uint64(hardwareSpecs.CPU.Threads), 10)
-			expectedRAM := hardwareSpecs.RAM.Size.String()
+		switch hardwareSpecs.CPU.Arch {
+		case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchX64:
+			expectedArch = instance.ArchX86_64.String()
+		case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchArm64:
+			expectedArch = instance.ArchArm64.String()
+		case product_catalog.PublicCatalogProductPropertiesHardwareCPUArchUnknownArch:
+			expectedArch = instance.ArchUnknownArch.String()
+		}
 
-			expectedGPU := "0"
-			if hardwareSpecs.Gpu != nil {
-				expectedGPU = strconv.FormatUint(uint64(hardwareSpecs.Gpu.Count), 10)
-			}
+		expectedCPU := strconv.FormatUint(uint64(hardwareSpecs.CPU.Threads), 10)
+		expectedRAM := hardwareSpecs.RAM.Size.String()
 
-			expectedInternalBandwidth := strconv.FormatUint(hardwareSpecs.Network.InternalBandwidth, 10)
-			expectedPublicBandwidth := strconv.FormatUint(hardwareSpecs.Network.PublicBandwidth, 10)
+		expectedGPU := "0"
+		if hardwareSpecs.Gpu != nil {
+			expectedGPU = strconv.FormatUint(uint64(hardwareSpecs.Gpu.Count), 10)
+		}
 
-			expectedHourlyPrice := strings.TrimPrefix(pcuInstance.Price.RetailPrice.String(), "€ ")
+		expectedInternalBandwidth := strconv.FormatUint(hardwareSpecs.Network.InternalBandwidth, 10)
+		expectedPublicBandwidth := strconv.FormatUint(hardwareSpecs.Network.PublicBandwidth, 10)
 
-			// Create test step
-			steps = append(steps, resource.TestStep{
-				Config: fmt.Sprintf(`
+		expectedHourlyPrice := strings.TrimPrefix(pcuInstance.Price.RetailPrice.String(), "€ ")
+
+		// Create test step
+		steps = append(steps, resource.TestStep{
+			Config: fmt.Sprintf(`
 				data "scaleway_instance_server_type" "%[1]s" {
 					name = "%[1]s"
 					zone = "%[2]s"
 				}`, serverTypeToTest, zone),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceTFName, "name", serverTypeToTest),
-					resource.TestCheckResourceAttr(datasourceTFName, "zone", zone.String()),
-					resource.TestCheckResourceAttr(datasourceTFName, "arch", expectedArch),
-					resource.TestCheckResourceAttr(datasourceTFName, "cpu", expectedCPU),
-					resource.TestCheckResourceAttr(datasourceTFName, "ram", expectedRAM),
-					resource.TestCheckResourceAttr(datasourceTFName, "gpu", expectedGPU),
-					resource.TestCheckResourceAttr(datasourceTFName, "network.0.internal_bandwidth", expectedInternalBandwidth),
-					resource.TestCheckResourceAttr(datasourceTFName, "network.0.public_bandwidth", expectedPublicBandwidth),
-					resource.TestCheckResourceAttr(datasourceTFName, "hourly_price", expectedHourlyPrice),
-				),
-			})
-		}
+			Check: resource.ComposeTestCheckFunc(
+				resource.TestCheckResourceAttr(datasourceTFName, "name", serverTypeToTest),
+				resource.TestCheckResourceAttr(datasourceTFName, "zone", zone.String()),
+				resource.TestCheckResourceAttr(datasourceTFName, "arch", expectedArch),
+				resource.TestCheckResourceAttr(datasourceTFName, "cpu", expectedCPU),
+				resource.TestCheckResourceAttr(datasourceTFName, "ram", expectedRAM),
+				resource.TestCheckResourceAttr(datasourceTFName, "gpu", expectedGPU),
+				resource.TestCheckResourceAttr(datasourceTFName, "network.0.internal_bandwidth", expectedInternalBandwidth),
+				resource.TestCheckResourceAttr(datasourceTFName, "network.0.public_bandwidth", expectedPublicBandwidth),
+				resource.TestCheckResourceAttr(datasourceTFName, "hourly_price", expectedHourlyPrice),
+			),
+		})
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
