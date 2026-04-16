@@ -96,12 +96,12 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
 
 		var sqsInfo *mnqSDK.SqsInfo
 
-		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
+		retryErr := retry.RetryContext(ctx, 60*time.Second, func() *retry.RetryError {
 			sqsInfo, err = api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
 				ProjectID: id,
 				Region:    region,

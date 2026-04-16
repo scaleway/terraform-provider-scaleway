@@ -16,7 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-const natsAccountReadAfterCreateRetryTimeout = 30 * time.Second
+const natsAccountReadAfterCreateRetryTimeout = 60 * time.Second
 
 func ResourceNatsAccount() *schema.Resource {
 	return &schema.Resource{
@@ -157,7 +157,7 @@ func ResourceMNQNatsAccountUpdate(ctx context.Context, d *schema.ResourceData, m
 	return ResourceMNQNatsAccountRead(ctx, d, m)
 }
 
-const natsAccountDeleteRetryTimeout = 30 * time.Second
+const natsAccountDeleteRetryTimeout = 60 * time.Second
 
 func ResourceMNQNatsAccountDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, id, err := NewNatsAPIWithRegionAndID(m, d.Id())
