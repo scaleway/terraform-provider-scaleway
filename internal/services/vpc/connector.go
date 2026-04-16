@@ -62,8 +62,12 @@ func connectorSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The ID of the target VPC to connect to",
 		},
-		"project_id": account.ProjectIDSchema(),
-		"region":     regional.Schema(),
+		"project_id": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Project the VPC connector belongs to",
+		},
+		"region": regional.Schema(),
 		// Computed elements
 		"organization_id": account.OrganizationIDSchema(),
 		"status": {
