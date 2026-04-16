@@ -14,10 +14,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-const (
-	defaultWaitDomainsRegistrationRetryInterval = 10 * time.Minute
-)
-
 // NewDomainAPI returns a new domain API.
 func NewDomainAPI(m any) *domain.API {
 	return domain.NewAPI(meta.ExtractScwClient(m))

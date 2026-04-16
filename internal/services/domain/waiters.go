@@ -10,10 +10,12 @@ import (
 )
 
 const (
-	defaultDomainRecordTimeout       = 5 * time.Minute
-	defaultDomainZoneTimeout         = 5 * time.Minute
-	defaultDomainZoneRetryInterval   = 5 * time.Second
-	defaultDomainRegistrationTimeout = 30 * time.Minute
+	defaultDomainRecordTimeout                        = 5 * time.Minute
+	defaultDomainZoneTimeout                          = 5 * time.Minute
+	defaultDomainZoneRetryInterval                    = 5 * time.Second
+	defaultDomainRegistrationTimeout                  = 30 * time.Minute
+	defaultWaitDomainsRegistrationRetryInterval       = 10 * time.Minute
+	defaultWaitExternalDomainsValidationRetryInterval = 30 * time.Second
 )
 
 func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, timeout time.Duration) (*domain.DNSZone, error) {
@@ -77,6 +79,19 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 	}
 
 	return api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
+		Domain:        domainName,
+		Timeout:       new(timeout),
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(ctx))
+}
+
+func waitForExternalDomainValidation(ctx context.Context, api *domain.RegistrarAPI, domainName string, timeout time.Duration) (*domain.Domain, error) {
+	retryInterval := defaultWaitExternalDomainsValidationRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	return api.WaitForValidatedExternalDomain(&domain.WaitForValidatedExternalDomainRequest{
 		Domain:        domainName,
 		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
