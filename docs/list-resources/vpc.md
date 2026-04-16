@@ -15,50 +15,48 @@ For more information, see [the main documentation](https://www.scaleway.com/en/d
 ## Example Usage
 
 ```terraform
-# List all VPCs across all regions and all projects
+# List VPCs across all regions and all projects
 list "scaleway_vpc" "all" {
   provider = scaleway
 
   config {
     regions     = ["*"]
-    project_ids = [scaleway_account_project.main.id]
+    project_ids = ["*"]
   }
 }
 ```
 
 ```terraform
-# List VPCs filtered by name prefix (matches VPCs with names starting with "test-vpc")
+# List VPCs across all regions filtered by name prefix (matches VPCs with names starting with "test-vpc")
 list "scaleway_vpc" "by_name" {
   provider = scaleway
 
   config {
     regions     = ["*"]
-    project_ids = [scaleway_account_project.main.id]
     name        = "test-vpc"
   }
 }
 ```
 
 ```terraform
-# List VPCs in a specific region (fr-par)
+# List VPCs in a specific region (fr-par) for a specific project
 list "scaleway_vpc" "region" {
   provider = scaleway
 
   config {
     regions     = ["fr-par"]
-    project_ids = [scaleway_account_project.main.id]
+    project_ids = ["11111111-1111-1111-1111-111111111111"]
   }
 }
 ```
 
 ```terraform
-# List VPCs filtered by a specific tag
+# List VPCs in all regions for the default project filtered by a specific tag
 list "scaleway_vpc" "by_tag" {
   provider = scaleway
 
   config {
     regions     = ["*"]
-    project_ids = [scaleway_account_project.main.id]
     tags        = ["foobar"]
   }
 }
@@ -75,8 +73,8 @@ The following arguments can be specified in the `config` block:
 - `is_default` - (Optional) Whether to filter for the default VPC only.
 - `routing_enabled` - (Optional) Whether to filter for VPCs with routing enabled.
 - `organization_id` - (Optional) Organization ID to filter for.
-- `project_ids` - (Optional) Project IDs to filter for. Use `[*]` to list across all projects.
-- `regions` - (Optional) Regions to filter for. Use `[*]` to list from all regions.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
 
 ## Attributes Reference
 
