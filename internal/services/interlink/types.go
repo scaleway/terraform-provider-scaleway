@@ -63,6 +63,30 @@ func flattenPartners(region scw.Region, partners []*interlink.Partner) []map[str
 	return result
 }
 
+func flattenBgpConfig(config *interlink.BgpConfig) (any, error) {
+	if config == nil {
+		return nil, nil
+	}
+
+	ipv4, err := types.FlattenIPNet(config.IPv4)
+	if err != nil {
+		return nil, err
+	}
+
+	ipv6, err := types.FlattenIPNet(config.IPv6)
+	if err != nil {
+		return nil, err
+	}
+
+	return []map[string]any{
+		{
+			"asn":  int(config.Asn),
+			"ipv4": ipv4,
+			"ipv6": ipv6,
+		},
+	}, nil
+}
+
 func flattenPops(pops []*interlink.Pop) []map[string]any {
 	result := make([]map[string]any, len(pops))
 
