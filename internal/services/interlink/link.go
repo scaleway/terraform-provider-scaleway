@@ -441,6 +441,7 @@ func ResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 				LinkID: id,
 			}, scw.WithContext(ctx))
 		}
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
