@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -83,6 +84,12 @@ func linkSchema() map[string]*schema.Schema {
 			Description:   "If set, creates a hosted link on a partner's connection. Specify the ID of the chosen partner, who already has a shared connection with available bandwidth",
 			ConflictsWith: []string{"connection_id"},
 		},
+		"vpc_id": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "ID of the Scaleway VPC to attach to the link",
+			DiffSuppressFunc: dsf.Locality,
+		},
 		"peer_asn": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -122,11 +129,6 @@ func linkSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Status of the link's BGP IPv6 session",
-		},
-		"vpc_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "ID of the Scaleway VPC attached to the link",
 		},
 		"enable_route_propagation": {
 			Type:        schema.TypeBool,
@@ -261,6 +263,22 @@ func ResourceLinkCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if vpcID, ok := d.GetOk("vpc_id"); ok {
+		_, err = api.AttachVpc(&interlink.AttachVpcRequest{
+			Region: link.Region,
+			LinkID: link.ID,
+			VpcID:  regional.ExpandID(vpcID.(string)).ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLink(ctx, api, link.Region, link.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	return ResourceLinkRead(ctx, d, m)
 }
 
@@ -312,6 +330,8 @@ func setLinkState(d *schema.ResourceData, link *interlink.Link) diag.Diagnostics
 
 	if link.VpcID != nil {
 		_ = d.Set("vpc_id", regional.NewIDString(link.Region, *link.VpcID))
+	} else {
+		_ = d.Set("vpc_id", "")
 	}
 
 	if link.RoutingPolicyV4ID != nil {
@@ -394,6 +414,43 @@ func ResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("vpc_id") {
+		oldRaw, newRaw := d.GetChange("vpc_id")
+		oldVpcID := oldRaw.(string)
+		newVpcID := newRaw.(string)
+
+		if oldVpcID != "" {
+			_, err = api.DetachVpc(&interlink.DetachVpcRequest{
+				Region: region,
+				LinkID: id,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForLink(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if newVpcID != "" {
+			_, err = api.AttachVpc(&interlink.AttachVpcRequest{
+				Region: region,
+				LinkID: id,
+				VpcID:  regional.ExpandID(newVpcID).ID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForLink(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	return ResourceLinkRead(ctx, d, m)
 }
 
@@ -401,6 +458,21 @@ func ResourceLinkDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if vpcID := d.Get("vpc_id").(string); vpcID != "" {
+		_, err = api.DetachVpc(&interlink.DetachVpcRequest{
+			Region: region,
+			LinkID: id,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLink(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err = api.DeleteLink(&interlink.DeleteLinkRequest{

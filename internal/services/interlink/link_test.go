@@ -95,6 +95,118 @@ func TestAccInterlinkLink_Basic(t *testing.T) {
 	})
 }
 
+func TestAccInterlinkLink_WithVPC(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInterlinkLinkDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_interlink_pop" "pop" {
+						name   = "Telehouse TH2"
+						region = "fr-par"
+					}
+
+					data "scaleway_interlink_partner" "partner" {
+						name   = "FranceIX"
+						region = "fr-par"
+					}
+
+					resource "scaleway_vpc" "vpc01" {
+						name = "tf-test-interlink-vpc"
+					}
+
+					resource "scaleway_interlink_link" "main" {
+						name           = "tf-test-interlink-link-vpc"
+						pop_id         = data.scaleway_interlink_pop.pop.id
+						partner_id     = data.scaleway_interlink_partner.partner.id
+						bandwidth_mbps = 50
+						vpc_id         = scaleway_vpc.vpc01.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkLinkExists(tt, "scaleway_interlink_link.main"),
+					resource.TestCheckResourceAttr("scaleway_interlink_link.main", "name", "tf-test-interlink-link-vpc"),
+					resource.TestCheckResourceAttrPair("scaleway_interlink_link.main", "vpc_id", "scaleway_vpc.vpc01", "id"),
+				),
+			},
+			{
+				Config: `
+					data "scaleway_interlink_pop" "pop" {
+						name   = "Telehouse TH2"
+						region = "fr-par"
+					}
+
+					data "scaleway_interlink_partner" "partner" {
+						name   = "FranceIX"
+						region = "fr-par"
+					}
+
+					resource "scaleway_vpc" "vpc01" {
+						name = "tf-test-interlink-vpc"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+						name = "tf-test-interlink-swap-target"
+					}
+
+					resource "scaleway_interlink_link" "main" {
+						name           = "tf-test-interlink-link-vpc"
+						pop_id         = data.scaleway_interlink_pop.pop.id
+						partner_id     = data.scaleway_interlink_partner.partner.id
+						bandwidth_mbps = 50
+						vpc_id         = scaleway_vpc.vpc02.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkLinkExists(tt, "scaleway_interlink_link.main"),
+					resource.TestCheckResourceAttrPair("scaleway_interlink_link.main", "vpc_id", "scaleway_vpc.vpc02", "id"),
+				),
+			},
+			{
+				Config: `
+					data "scaleway_interlink_pop" "pop" {
+						name   = "Telehouse TH2"
+						region = "fr-par"
+					}
+
+					data "scaleway_interlink_partner" "partner" {
+						name   = "FranceIX"
+						region = "fr-par"
+					}
+
+					resource "scaleway_vpc" "vpc01" {
+						name = "tf-test-interlink-vpc"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+						name = "tf-test-interlink-swap-target"
+					}
+
+					resource "scaleway_interlink_link" "main" {
+						name           = "tf-test-interlink-link-vpc"
+						pop_id         = data.scaleway_interlink_pop.pop.id
+						partner_id     = data.scaleway_interlink_partner.partner.id
+						bandwidth_mbps = 50
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkLinkExists(tt, "scaleway_interlink_link.main"),
+					resource.TestCheckResourceAttr("scaleway_interlink_link.main", "vpc_id", ""),
+				),
+			},
+			{
+				ResourceName:      "scaleway_interlink_link.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckInterlinkLinkExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

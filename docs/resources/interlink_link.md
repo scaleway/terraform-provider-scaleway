@@ -12,8 +12,9 @@ A link is a logical Interlink session created within a PoP, representing the con
 
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
 
-
 ## Example Usage
+
+### Basic
 
 ```terraform
 data "scaleway_interlink_pop" "pop" {
@@ -32,8 +33,29 @@ resource "scaleway_interlink_link" "main" {
 }
 ```
 
+### With VPC
 
+```terraform
+data "scaleway_interlink_pop" "pop" {
+  name = "Telehouse TH2"
+}
 
+data "scaleway_interlink_partner" "partner" {
+  name = "FranceIX"
+}
+
+resource "scaleway_vpc" "vpc" {
+  name = "my-vpc"
+}
+
+resource "scaleway_interlink_link" "main" {
+  name           = "my-hosted-link"
+  pop_id         = data.scaleway_interlink_pop.pop.id
+  partner_id     = data.scaleway_interlink_partner.partner.id
+  bandwidth_mbps = 50
+  vpc_id         = scaleway_vpc.vpc.id
+}
+```
 
 ## Argument Reference
 
@@ -49,6 +71,7 @@ The following arguments are supported:
 - `vlan` - (Optional) For self-hosted links only, the VLAN ID. If the VLAN is not available (already taken or out of range), an error is returned.
 - `routing_policy_v4_id` - (Optional) If set, attaches this routing policy containing IPv4 prefixes to the link. A BGP IPv4 session will be created.
 - `routing_policy_v6_id` - (Optional) If set, attaches this routing policy containing IPv6 prefixes to the link. A BGP IPv6 session will be created.
+- `vpc_id` - (Optional) ID of the Scaleway VPC to attach to the link.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the link should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the link is associated with.
 
@@ -60,7 +83,6 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - Status of the link.
 - `bgp_v4_status` - Status of the link's BGP IPv4 session.
 - `bgp_v6_status` - Status of the link's BGP IPv6 session.
-- `vpc_id` - ID of the Scaleway VPC attached to the link.
 - `enable_route_propagation` - Defines whether route propagation is enabled or not.
 - `pairing_key` - Used to identify a link from a user or partner's point of view.
 - `scw_bgp_config` - BGP configuration on Scaleway's side. Contains `asn`, `ipv4`, `ipv6`.
