@@ -12,7 +12,6 @@ A link is a logical Interlink session created within a PoP, representing the con
 
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
 
-
 ## Example Usage
 
 ### Basic
@@ -57,9 +56,6 @@ resource "scaleway_interlink_link" "main" {
   vpc_id         = scaleway_vpc.vpc.id
 }
 ```
-
-
-
 
 ## Argument Reference
 
