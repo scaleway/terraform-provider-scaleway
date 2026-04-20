@@ -49,6 +49,7 @@ The following arguments are supported:
 - `vlan` - (Optional) For self-hosted links only, the VLAN ID. If the VLAN is not available (already taken or out of range), an error is returned.
 - `routing_policy_v4_id` - (Optional) If set, attaches this routing policy containing IPv4 prefixes to the link. A BGP IPv4 session will be created.
 - `routing_policy_v6_id` - (Optional) If set, attaches this routing policy containing IPv6 prefixes to the link. A BGP IPv6 session will be created.
+- `vpc_id` - (Optional) ID of the Scaleway VPC to attach to the link.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the link should be created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the link is associated with.
 
@@ -60,7 +61,6 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - Status of the link.
 - `bgp_v4_status` - Status of the link's BGP IPv4 session.
 - `bgp_v6_status` - Status of the link's BGP IPv6 session.
-- `vpc_id` - ID of the Scaleway VPC attached to the link.
 - `enable_route_propagation` - Defines whether route propagation is enabled or not.
 - `pairing_key` - Used to identify a link from a user or partner's point of view.
 - `scw_bgp_config` - BGP configuration on Scaleway's side. Contains `asn`, `ipv4`, `ipv6`.
