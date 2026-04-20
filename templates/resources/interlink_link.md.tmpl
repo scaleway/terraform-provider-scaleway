@@ -10,14 +10,15 @@ page_title: "Scaleway: {{ .Name }}"
 
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
 
-{{ if .HasExamples }}
 ## Example Usage
 
-{{ range .ExampleFiles -}}
-{{ tffile . }}
+### Basic
 
-{{ end }}
-{{ end }}
+{{ tffile "examples/resources/scaleway_interlink_link/resource-hosted.tf" }}
+
+### With VPC
+
+{{ tffile "examples/resources/scaleway_interlink_link/resource-hosted-with-vpc.tf" }}
 
 ## Argument Reference
 
