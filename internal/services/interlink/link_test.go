@@ -207,6 +207,73 @@ func TestAccInterlinkLink_WithVPC(t *testing.T) {
 	})
 }
 
+func TestAccInterlinkLink_RoutePropagation(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckInterlinkLinkDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					data "scaleway_interlink_pop" "pop" {
+						name   = "Telehouse TH2"
+						region = "fr-par"
+					}
+
+					data "scaleway_interlink_partner" "partner" {
+						name   = "FranceIX"
+						region = "fr-par"
+					}
+
+					resource "scaleway_interlink_link" "main" {
+						name                     = "tf-test-interlink-link-rp"
+						pop_id                   = data.scaleway_interlink_pop.pop.id
+						partner_id               = data.scaleway_interlink_partner.partner.id
+						bandwidth_mbps           = 50
+						enable_route_propagation = true
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkLinkExists(tt, "scaleway_interlink_link.main"),
+					resource.TestCheckResourceAttr("scaleway_interlink_link.main", "enable_route_propagation", "true"),
+				),
+			},
+			{
+				Config: `
+					data "scaleway_interlink_pop" "pop" {
+						name   = "Telehouse TH2"
+						region = "fr-par"
+					}
+
+					data "scaleway_interlink_partner" "partner" {
+						name   = "FranceIX"
+						region = "fr-par"
+					}
+
+					resource "scaleway_interlink_link" "main" {
+						name                     = "tf-test-interlink-link-rp"
+						pop_id                   = data.scaleway_interlink_pop.pop.id
+						partner_id               = data.scaleway_interlink_partner.partner.id
+						bandwidth_mbps           = 50
+						enable_route_propagation = false
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckInterlinkLinkExists(tt, "scaleway_interlink_link.main"),
+					resource.TestCheckResourceAttr("scaleway_interlink_link.main", "enable_route_propagation", "false"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_interlink_link.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckInterlinkLinkExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

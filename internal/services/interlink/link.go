@@ -90,6 +90,11 @@ func linkSchema() map[string]*schema.Schema {
 			Description:      "ID of the Scaleway VPC to attach to the link",
 			DiffSuppressFunc: dsf.Locality,
 		},
+		"enable_route_propagation": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "Defines whether route propagation is enabled or not. Defaults to false",
+		},
 		"peer_asn": {
 			Type:        schema.TypeInt,
 			Optional:    true,
@@ -129,11 +134,6 @@ func linkSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Status of the link's BGP IPv6 session",
-		},
-		"enable_route_propagation": {
-			Type:        schema.TypeBool,
-			Computed:    true,
-			Description: "Defines whether route propagation is enabled or not",
 		},
 		"pairing_key": {
 			Type:        schema.TypeString,
@@ -261,6 +261,21 @@ func ResourceLinkCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 	_, err = waitForLink(ctx, api, region, link.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.Get("enable_route_propagation").(bool) {
+		_, err = api.EnableRoutePropagation(&interlink.EnableRoutePropagationRequest{
+			Region: link.Region,
+			LinkID: link.ID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLink(ctx, api, link.Region, link.ID, d.Timeout(schema.TimeoutCreate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if vpcID, ok := d.GetOk("vpc_id"); ok {
@@ -414,6 +429,28 @@ func ResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if d.HasChange("enable_route_propagation") {
+		if d.Get("enable_route_propagation").(bool) {
+			_, err = api.EnableRoutePropagation(&interlink.EnableRoutePropagationRequest{
+				Region: region,
+				LinkID: id,
+			}, scw.WithContext(ctx))
+		} else {
+			_, err = api.DisableRoutePropagation(&interlink.DisableRoutePropagationRequest{
+				Region: region,
+				LinkID: id,
+			}, scw.WithContext(ctx))
+		}
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLink(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if d.HasChange("vpc_id") {
 		oldRaw, newRaw := d.GetChange("vpc_id")
 		oldVpcID := oldRaw.(string)
@@ -458,6 +495,21 @@ func ResourceLinkDelete(ctx context.Context, d *schema.ResourceData, m any) diag
 	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if d.Get("enable_route_propagation").(bool) {
+		_, err = api.DisableRoutePropagation(&interlink.DisableRoutePropagationRequest{
+			Region: region,
+			LinkID: id,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForLink(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+		if err != nil && !httperrors.Is404(err) {
+			return diag.FromErr(err)
+		}
 	}
 
 	if vpcID := d.Get("vpc_id").(string); vpcID != "" {
