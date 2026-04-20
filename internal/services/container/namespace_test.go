@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -106,8 +106,6 @@ func TestAccNamespace_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
 					resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "name"),
-					resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "registry_endpoint"),
-					resource.TestCheckResourceAttrSet("scaleway_container_namespace.main", "registry_namespace_id"),
 					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "tags.#", "0"),
 				),
 			},
@@ -235,34 +233,6 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 	})
 }
 
-func TestAccNamespace_DestroyRegistry(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			isNamespaceDestroyed(tt),
-			isRegistryDestroyed(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: `
-					resource scaleway_container_namespace main {
-						region = "pl-waw"
-						name = "test-cr-ns-01"
-						destroy_registry = true
-					}
-				`,
-				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					acctest.CheckResourceAttrUUID("scaleway_container_namespace.main", "id"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccNamespace_VPCIntegration(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -278,7 +248,7 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_vpc main {
 						name = "TestAccNamespace_VPCIntegration"
 					}
@@ -291,17 +261,18 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						sandbox = "v1"
 					}
-				`,
+				`, testImage),
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_vpc main {
 						name = "TestAccNamespace_VPCIntegration"
 					}
@@ -310,20 +281,19 @@ func TestAccNamespace_VPCIntegration(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						private_network_id = scaleway_vpc_private_network.main.id
 						sandbox = "v1"
 					}
-				`,
+				`, testImage),
 				Check: resource.ComposeTestCheckFunc(
 					isNamespacePresent(tt, "scaleway_container_namespace.main"),
 					isContainerPresent(tt, "scaleway_container.main"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttrPair("scaleway_container.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
 					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
 				),
