@@ -207,7 +207,7 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
 	}
 
-	if d.HasChanges("registry_image") {
+	if d.HasChanges("registry_image", "registry_sha256") {
 		req.RegistryImage = types.ExpandStringPtr(d.Get("registry_image"))
 	}
 
@@ -255,11 +255,6 @@ func setUpdateContainerRequest(d *schema.ResourceData, region scw.Region, contai
 		}
 
 		req.ScalingOption = scalingOptionReq
-	}
-
-	imageHasChanged := d.HasChanges("registry_sha256")
-	if imageHasChanged {
-		req.Redeploy = &imageHasChanged //nolint: staticcheck
 	}
 
 	if d.HasChanges("local_storage_limit") {
