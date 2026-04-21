@@ -331,6 +331,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_instance_server_type":                               instance.DataSourceServerType(),
 				"scaleway_instance_snapshot":                                  instance.DataSourceSnapshot(),
 				"scaleway_instance_volume":                                    instance.DataSourceVolume(),
+				"scaleway_interlink_dedicated_connection":                     interlink.DataSourceDedicatedConnection(),
 				"scaleway_interlink_link":                                     interlink.DataSourceLink(),
 				"scaleway_interlink_partner":                                  interlink.DataSourcePartner(),
 				"scaleway_interlink_partners":                                 interlink.DataSourcePartners(),
