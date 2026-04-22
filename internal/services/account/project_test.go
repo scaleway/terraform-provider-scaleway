@@ -46,6 +46,11 @@ func TestAccProject_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_account_project.main", "description", "another description"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_account_project.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -77,6 +82,11 @@ func TestAccProject_NoUpdate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isProjectPresent(tt, "scaleway_account_project.main"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_account_project.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
