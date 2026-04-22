@@ -170,7 +170,12 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_id"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						contact_points {
 							email = "test@example.com"
 						}
@@ -187,7 +192,12 @@ func TestAccCockpitAlertManager_IDHandling(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_id"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						contact_points {
 							email = "updated@example.com"
 						}
@@ -219,7 +229,12 @@ func testAccCockpitAlertManagerConfigWithContacts(contactPoints []map[string]str
 	contactsConfig += contactsConfigSb230.String()
 
 	return fmt.Sprintf(`
+		resource "scaleway_account_project" "project" {
+			name = "tf_tests_cockpit_alert_manager"
+		}
+
 		resource "scaleway_cockpit_alert_manager" "alert_manager" {
+			project_id = scaleway_account_project.project.id
 			%s
 		}
 	`, contactsConfig)
@@ -254,28 +269,34 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 
 func testAccCockpitAlertManagerAndContactsDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
+		cockpitAPI := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
+		region := scw.RegionFrPar
+
 		for _, rs := range state.RootModule().Resources {
 			if rs.Type != "scaleway_cockpit_alert_manager" {
 				continue
 			}
 
-			api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 			projectID := rs.Primary.Attributes["project_id"]
-			region := scw.RegionFrPar
-			alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			if projectID == "" {
+				continue
+			}
+
+			alertManager, err := cockpitAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 				Region:    region,
 				ProjectID: projectID,
 			})
 
-			if !httperrors.Is404(err) && !httperrors.Is403(err) {
-				return err
-			}
-
-			if alertManager == nil {
+			if httperrors.Is404(err) || httperrors.Is403(err) {
+				// Project deleted or no permissions, consider it cleaned up
 				return nil
 			}
 
-			if alertManager.AlertManagerEnabled {
+			if err != nil {
+				return err
+			}
+
+			if alertManager != nil && alertManager.AlertManagerEnabled {
 				return errors.New("cockpit alert manager (" + rs.Primary.ID + ") is still enabled")
 			}
 		}
@@ -341,7 +362,12 @@ func TestAccCockpitAlertManager_WithPreconfiguredAlerts(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_preconfigured"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						# Enable 2 specific preconfigured alerts (stable IDs)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7", # PostgreSQL Too Many Connections
@@ -377,7 +403,12 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_update_preconfigured"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						# Enable a specific PostgreSQL alert (stable ID)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7" # PostgreSQL Too Many Connections
@@ -397,7 +428,12 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_update_preconfigured"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						# Enable 2 specific alerts (stable IDs)
 						preconfigured_alert_ids = [
 							"6c6843af-1815-46df-9e52-6feafcf31fd7", # PostgreSQL Too Many Connections
@@ -418,7 +454,12 @@ func TestAccCockpitAlertManager_UpdatePreconfiguredAlerts(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_alert_manager_update_preconfigured"
+					}
+
 					resource "scaleway_cockpit_alert_manager" "main" {
+						project_id = scaleway_account_project.project.id
 						# Disable all
 						preconfigured_alert_ids = []
 
