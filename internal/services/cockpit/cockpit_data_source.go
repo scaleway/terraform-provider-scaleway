@@ -37,6 +37,7 @@ func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	diags := diag.Diagnostics{
 		diag.Diagnostic{
 			Severity: diag.Warning,

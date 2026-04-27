@@ -106,6 +106,7 @@ func ResourceCockpitCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	_ = d.Set("project_id", projectID)
 
 	if err := setCockpitProjectIdentity(d, projectID); err != nil {
