@@ -347,7 +347,7 @@ func ResourceRdbPrivilegeUpdate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	return nil
+	return ResourceRdbPrivilegeRead(ctx, d, m)
 }
 
 //gocyclo:ignore
