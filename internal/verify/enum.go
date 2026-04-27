@@ -3,6 +3,8 @@ package verify
 import (
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -24,6 +26,18 @@ func ValidateEnumIgnoreCase[T EnumValues[T]]() schema.SchemaValidateDiagFunc {
 	values := filterUnknownValues(getValues[T]())
 
 	return validation.ToDiagFunc(validation.StringInSlice(values, true))
+}
+
+func FrameworkValidateEnum[T EnumValues[T]]() validator.String {
+	values := filterUnknownValues(getValues[T]())
+
+	return stringvalidator.OneOf(values...)
+}
+
+func FrameworkValidateEnumIgnoreCase[T EnumValues[T]]() validator.String {
+	values := filterUnknownValues(getValues[T]())
+
+	return stringvalidator.OneOfCaseInsensitive(values...)
 }
 
 func getValues[T EnumValues[T]]() []string {
