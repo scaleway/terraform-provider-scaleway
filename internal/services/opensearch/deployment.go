@@ -2,16 +2,19 @@ package opensearch
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
+	vpcapi "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -94,9 +97,29 @@ func deploymentSchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"private_network_id": {
 						Type:             schema.TypeString,
-						Required:         true,
+						Optional:         true,
 						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 						Description:      "UUID of the Private Network",
+						AtLeastOneOf: []string{
+							"private_network.0.private_network_id",
+							"private_network.0.vpc_id",
+						},
+						ConflictsWith: []string{
+							"private_network.0.vpc_id",
+						},
+					},
+					"vpc_id": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
+						Description:      "UUID of the VPC containing the Private Network to use",
+						AtLeastOneOf: []string{
+							"private_network.0.private_network_id",
+							"private_network.0.vpc_id",
+						},
+						ConflictsWith: []string{
+							"private_network.0.private_network_id",
+						},
 					},
 				},
 			},
@@ -239,7 +262,11 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		pnList := v.([]any)
 		if len(pnList) > 0 {
 			pnMap := pnList[0].(map[string]any)
-			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
+			pnID, err := expandPrivateNetworkID(ctx, meta, region, d.Get("project_id").(string), pnMap)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			req.Endpoints = []*searchdbapi.EndpointSpec{
 				{
 					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
@@ -405,4 +432,61 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	return nil
+}
+
+func expandPrivateNetworkID(ctx context.Context, m any, region scw.Region, projectID string, pn map[string]any) (string, error) {
+	if rawPNID, ok := pn["private_network_id"]; ok && rawPNID.(string) != "" {
+		return locality.ExpandID(rawPNID.(string)), nil
+	}
+
+	rawVPCID, ok := pn["vpc_id"]
+	if !ok || rawVPCID.(string) == "" {
+		return "", fmt.Errorf("one of private_network.private_network_id or private_network.vpc_id must be set")
+	}
+
+	vpcID := locality.ExpandID(rawVPCID.(string))
+
+	vpcAPI := vpcapi.NewAPI(meta.ExtractScwClient(m))
+	const privateNetworkLookupTimeout = 20 * time.Second
+	const privateNetworkLookupInterval = 2 * time.Second
+
+	deadline := time.Now().Add(privateNetworkLookupTimeout)
+
+	for {
+		privateNetworksResponse, err := vpcAPI.ListPrivateNetworks(&vpcapi.ListPrivateNetworksRequest{
+			Region:    region,
+			ProjectID: types.ExpandStringPtr(projectID),
+			VpcID:     types.ExpandStringPtr(vpcID),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return "", err
+		}
+
+		pnID, err := selectPrivateNetworkIDFromVPC(privateNetworksResponse.PrivateNetworks, vpcID)
+		if err == nil {
+			return pnID, nil
+		}
+
+		// A newly created private network may not be immediately listed.
+		if len(privateNetworksResponse.PrivateNetworks) > 0 || time.Now().After(deadline) {
+			return "", err
+		}
+
+		select {
+		case <-ctx.Done():
+			return "", ctx.Err()
+		case <-time.After(privateNetworkLookupInterval):
+		}
+	}
+}
+
+func selectPrivateNetworkIDFromVPC(privateNetworks []*vpcapi.PrivateNetwork, vpcID string) (string, error) {
+	switch len(privateNetworks) {
+	case 0:
+		return "", fmt.Errorf("no private network found in vpc %q", vpcID)
+	case 1:
+		return privateNetworks[0].ID, nil
+	default:
+		return "", fmt.Errorf("multiple private networks found in vpc %q, please use private_network_id instead", vpcID)
+	}
 }

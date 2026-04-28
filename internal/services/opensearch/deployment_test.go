@@ -129,6 +129,60 @@ resource "scaleway_opensearch_deployment" "pn" {
 	})
 }
 
+func TestAccDeployment_WithVPC(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "tf-test-opensearch-vpc-only"
+}
+
+resource "scaleway_vpc_private_network" "main" {
+  name   = "tf-test-opensearch-pn-vpc-only"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_opensearch_deployment" "vpc" {
+  name        = "tf-test-opensearch-vpc"
+  version     = "%s"
+  node_amount = 1
+  node_type   = "%s"
+  password    = "ThisIsASecurePassword123!"
+
+  private_network {
+    vpc_id = scaleway_vpc.main.id
+  }
+
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+
+  depends_on = [scaleway_vpc_private_network.main]
+}
+`, latestVersion, nodeType),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.vpc"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.vpc", "name", "tf-test-opensearch-vpc"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.vpc", "private_network.0.vpc_id"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.vpc", "endpoints.#", "2"),
+					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.vpc"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.vpc", "public_dashboard_url"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckOpenSearchHasPrivateNetworkEndpoint(resourceName string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
