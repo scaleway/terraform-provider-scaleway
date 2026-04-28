@@ -111,7 +111,10 @@ func TestAccCockpitAlertManager_UpdateSingleContact(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCockpitAlertManagerAndContactsDestroy(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testAccCockpitAlertManagerAndContactsDestroy(tt),
+			accounttestfuncs.IsProjectDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCockpitAlertManagerConfigWithContacts(
