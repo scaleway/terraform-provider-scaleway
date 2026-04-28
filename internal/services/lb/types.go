@@ -432,13 +432,25 @@ func attachLBPrivateNetworks(ctx context.Context, lbAPI *lb.ZonedAPI, zone scw.Z
 			return nil, err
 		}
 
+		if pn == nil || pn.LB == nil {
+			continue
+		}
+
 		privateNetworks, err = waitForPrivateNetworks(ctx, lbAPI, zone, pn.LB.ID, timeout)
 		if err != nil && !httperrors.Is404(err) {
 			return nil, err
 		}
 
 		for _, pn := range privateNetworks {
+			if pn == nil {
+				continue
+			}
+
 			if pn.Status == lb.PrivateNetworkStatusError {
+				if pn.LB == nil {
+					continue
+				}
+
 				err = lbAPI.DetachPrivateNetwork(&lb.ZonedAPIDetachPrivateNetworkRequest{
 					Zone:             zone,
 					LBID:             pn.LB.ID,

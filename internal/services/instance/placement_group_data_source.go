@@ -94,5 +94,9 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	if pg == nil {
+		return diag.Errorf("placement group not found")
+	}
+
 	return setPlacementGroupState(d, pg)
 }
