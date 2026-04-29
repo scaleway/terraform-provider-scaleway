@@ -197,9 +197,9 @@ func (r *PrivateNetworkListResource) List(ctx context.Context, req list.ListRequ
 
 			err := identity.SetRegionalIdentity(resourceData, pn.Region, pn.ID)
 			if err != nil {
-			result.Diagnostics.AddError("Retrieving identity data",
-				"An error was encountered when retrieving the identity data: "+err.Error(),
-			)
+				result.Diagnostics.AddError("Retrieving identity data",
+					"An error was encountered when retrieving the identity data: "+err.Error(),
+				)
 
 				if !push(result) {
 					return
@@ -212,8 +212,8 @@ func (r *PrivateNetworkListResource) List(ctx context.Context, req list.ListRequ
 			if errIdentityState != nil {
 				result.Diagnostics.AddError(
 					"Converting identity data",
-				"An error was encountered when converting the identity data: "+errIdentityState.Error(),
-			)
+					"An error was encountered when converting the identity data: "+errIdentityState.Error(),
+				)
 			}
 
 			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
@@ -238,8 +238,8 @@ func (r *PrivateNetworkListResource) List(ctx context.Context, req list.ListRequ
 			if errTfTypeResourceState != nil {
 				result.Diagnostics.AddError(
 					"Converting resource state",
-				"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
-			)
+					"An error was encountered when converting the resource state: "+errTfTypeResourceState.Error(),
+				)
 			}
 
 			resourceSetDiags := result.Resource.Set(ctx, *tfTypeResource)
@@ -251,4 +251,3 @@ func (r *PrivateNetworkListResource) List(ctx context.Context, req list.ListRequ
 		}
 	}
 }
-
