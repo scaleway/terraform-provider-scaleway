@@ -70,11 +70,11 @@ func (r *InstanceListResource) ListResourceConfigSchema(_ context.Context, _ lis
 	}
 }
 
-func (r *InstanceListResource) RawV6Schemas(_ context.Context, _ list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
+func (r *InstanceListResource) RawV6Schemas(ctx context.Context, _ list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
 	resourceInstance := ResourceInstance()
 
-	resp.ProtoV6Schema = translate.Schema(resourceInstance.ProtoSchema(context.Background())())
-	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceInstance.ProtoIdentitySchema(context.Background())())
+	resp.ProtoV6Schema = translate.Schema(resourceInstance.ProtoSchema(ctx)())
+	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceInstance.ProtoIdentitySchema(ctx)())
 }
 
 type InstanceListResourceModel struct {
@@ -95,32 +95,6 @@ func (m *InstanceListResourceModel) GetRegions() types.List {
 
 func (m *InstanceListResourceModel) GetProjects() types.List {
 	return m.ProjectIDs
-}
-
-func (r *InstanceListResource) fetchInstances(ctx context.Context, target listscw.RegionalFetchTarget, tags []string, data InstanceListResourceModel) ([]*mongodb.Instance, error) {
-	req := &mongodb.ListInstancesRequest{
-		Region:         target.Region,
-		Name:           data.Name.ValueStringPointer(),
-		Tags:           tags,
-		OrganizationID: data.OrganizationID.ValueStringPointer(),
-		ProjectID:      &target.ProjectID,
-	}
-
-	response, err := r.mongodbAPI.ListInstances(req, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return nil, err
-	}
-
-	// ListInstances can return instances from other projects when filtering by tags;
-	// keep only rows for the project we requested (one target per project/region).
-	filtered := make([]*mongodb.Instance, 0, len(response.Instances))
-	for _, inst := range response.Instances {
-		if inst.ProjectID == target.ProjectID {
-			filtered = append(filtered, inst)
-		}
-	}
-
-	return filtered, nil
 }
 
 func (r *InstanceListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
@@ -250,4 +224,30 @@ func (r *InstanceListResource) List(ctx context.Context, req list.ListRequest, s
 			}
 		}
 	}
+}
+
+func (r *InstanceListResource) fetchInstances(ctx context.Context, target listscw.RegionalFetchTarget, tags []string, data InstanceListResourceModel) ([]*mongodb.Instance, error) {
+	req := &mongodb.ListInstancesRequest{
+		Region:         target.Region,
+		Name:           data.Name.ValueStringPointer(),
+		Tags:           tags,
+		OrganizationID: data.OrganizationID.ValueStringPointer(),
+		ProjectID:      &target.ProjectID,
+	}
+
+	response, err := r.mongodbAPI.ListInstances(req, scw.WithContext(ctx), scw.WithAllPages())
+	if err != nil {
+		return nil, err
+	}
+
+	// ListInstances can return instances from other projects when filtering by tags;
+	// keep only rows for the project we requested (one target per project/region).
+	filtered := make([]*mongodb.Instance, 0, len(response.Instances))
+	for _, inst := range response.Instances {
+		if inst.ProjectID == target.ProjectID {
+			filtered = append(filtered, inst)
+		}
+	}
+
+	return filtered, nil
 }
