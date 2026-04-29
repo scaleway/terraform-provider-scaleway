@@ -344,10 +344,12 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 			desiredPNID := locality.ExpandID(pnMap["private_network_id"].(string))
 
 			filteredEndpoints = nil
+
 			for _, ep := range allEndpoints {
 				if ep == nil || ep.PrivateNetwork == nil {
 					continue
 				}
+
 				if ep.PrivateNetwork.PrivateNetworkID == desiredPNID {
 					filteredEndpoints = append(filteredEndpoints, ep)
 				}
@@ -361,10 +363,12 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	} else {
 		// Public mode: keep only endpoints that are public (and not private).
 		filteredEndpoints = nil
+
 		for _, ep := range allEndpoints {
 			if ep == nil || ep.Public == nil || ep.PrivateNetwork != nil {
 				continue
 			}
+
 			filteredEndpoints = append(filteredEndpoints, ep)
 		}
 
@@ -448,6 +452,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		desiredPrivate := false
+
 		var pnID string
 
 		if v, ok := d.GetOk("private_network"); ok {
