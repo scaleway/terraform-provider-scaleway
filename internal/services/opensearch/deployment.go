@@ -330,8 +330,52 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 		})
 	}
 
-	_ = d.Set("endpoints", flattenEndpoints(deployment.Endpoints))
-	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(deployment.Endpoints))
+	// OpenSearch endpoints behave like an additive list: when switching connectivity mode,
+	// the API can briefly return both public and private endpoints during the async update.
+	// For Terraform state, we expose only the endpoint matching the desired connectivity mode.
+	// Note: `public_dashboard_url` must still be derived from the full endpoint list.
+	allEndpoints := deployment.Endpoints
+	filteredEndpoints := allEndpoints
+
+	if pnRaw, ok := d.GetOk("private_network"); ok {
+		pnList := pnRaw.([]any)
+		if len(pnList) > 0 {
+			pnMap := pnList[0].(map[string]any)
+			desiredPNID := locality.ExpandID(pnMap["private_network_id"].(string))
+
+			filteredEndpoints = nil
+			for _, ep := range allEndpoints {
+				if ep == nil || ep.PrivateNetwork == nil {
+					continue
+				}
+				if ep.PrivateNetwork.PrivateNetworkID == desiredPNID {
+					filteredEndpoints = append(filteredEndpoints, ep)
+				}
+			}
+
+			// If the desired private endpoint is not visible yet, don't hide everything.
+			if len(filteredEndpoints) == 0 {
+				filteredEndpoints = allEndpoints
+			}
+		}
+	} else {
+		// Public mode: keep only endpoints that are public (and not private).
+		filteredEndpoints = nil
+		for _, ep := range allEndpoints {
+			if ep == nil || ep.Public == nil || ep.PrivateNetwork != nil {
+				continue
+			}
+			filteredEndpoints = append(filteredEndpoints, ep)
+		}
+
+		// If no public endpoint is visible yet, don't hide everything.
+		if len(filteredEndpoints) == 0 {
+			filteredEndpoints = allEndpoints
+		}
+	}
+
+	_ = d.Set("endpoints", flattenEndpoints(filteredEndpoints))
+	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(allEndpoints))
 
 	return nil
 }
