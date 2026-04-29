@@ -111,7 +111,16 @@ func (r *InstanceListResource) fetchInstances(ctx context.Context, target listsc
 		return nil, err
 	}
 
-	return response.Instances, nil
+	// ListInstances can return instances from other projects when filtering by tags;
+	// keep only rows for the project we requested (one target per project/region).
+	filtered := make([]*mongodb.Instance, 0, len(response.Instances))
+	for _, inst := range response.Instances {
+		if inst.ProjectID == target.ProjectID {
+			filtered = append(filtered, inst)
+		}
+	}
+
+	return filtered, nil
 }
 
 func (r *InstanceListResource) List(ctx context.Context, req list.ListRequest, stream *list.ListResultsStream) {
