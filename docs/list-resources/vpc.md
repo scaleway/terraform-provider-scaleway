@@ -32,8 +32,8 @@ list "scaleway_vpc" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "test-vpc"
+    regions = ["*"]
+    name    = "test-vpc"
   }
 }
 ```
@@ -56,8 +56,8 @@ list "scaleway_vpc" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["foobar"]
+    regions = ["*"]
+    tags    = ["foobar"]
   }
 }
 ```

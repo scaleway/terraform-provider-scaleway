@@ -3,7 +3,7 @@ list "scaleway_vpc_private_network" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["production"]
+    regions = ["*"]
+    tags    = ["production"]
   }
 }
