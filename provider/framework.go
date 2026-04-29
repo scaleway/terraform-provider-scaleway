@@ -221,6 +221,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
+		iam.NewScimDataSource,
 	}
 }
 

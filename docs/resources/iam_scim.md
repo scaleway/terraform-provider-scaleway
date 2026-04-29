@@ -28,6 +28,8 @@ resource "scaleway_iam_scim" "main" {
 
 ## Attributes Reference
 
+In addition to all arguments above, the following attributes are exported:
+
 - `id` - The ID of the SCIM configuration.
 - `created_at` - The date and time of SCIM configuration creation.
 
