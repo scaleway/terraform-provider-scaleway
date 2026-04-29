@@ -43,6 +43,7 @@ func exceptionsCassettesCases() map[string]struct{} {
 		"../services/baremetal/testdata/server-cloud-init-not-compatible-offer.cassette.yaml":              {},
 		"../services/keymanager/testdata/decrypt-ephemeral-resource-invalid-associated-data.cassette.yaml": {},
 		"../services/block/testdata/action-snapshot-export-basic.cassette.yaml":                            {},
+		"../services/iam/testdata/data-source-scim-invalid-deactivated.cassette.yaml":                      {},
 	}
 }
 

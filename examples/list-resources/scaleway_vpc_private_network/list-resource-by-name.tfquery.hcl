@@ -3,7 +3,7 @@ list "scaleway_vpc_private_network" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "my-network"
+    regions = ["*"]
+    name    = "my-network"
   }
 }
