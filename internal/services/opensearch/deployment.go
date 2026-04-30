@@ -228,12 +228,11 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			sizeGB := uint64(volumeMap["size_in_gb"].(int))
 			req.Volume = &searchdbapi.Volume{
 				Type:      searchdbapi.VolumeType(volumeMap["type"].(string)),
-				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000), // Convert GB to bytes
+				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000),
 			}
 		}
 	}
 
-	// Handle endpoint configuration
 	if v, ok := d.GetOk("private_network"); ok {
 		pnList := v.([]any)
 		if len(pnList) > 0 {
@@ -249,7 +248,6 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 	} else {
-		// Create public endpoint by default
 		req.Endpoints = []*searchdbapi.EndpointSpec{
 			{
 				Public: &searchdbapi.EndpointSpecPublicDetails{},
@@ -330,10 +328,8 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 		})
 	}
 
-	// OpenSearch endpoints behave like an additive list: when switching connectivity mode,
-	// the API can briefly return both public and private endpoints during the async update.
-	// For Terraform state, we expose only the endpoint matching the desired connectivity mode.
-	// Note: `public_dashboard_url` must still be derived from the full endpoint list.
+	// API may briefly return both public and private endpoints during a switch.
+	// In state, keep only the endpoint matching Terraform config.
 	allEndpoints := deployment.Endpoints
 	filteredEndpoints := allEndpoints
 
@@ -355,13 +351,11 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 				}
 			}
 
-			// If the desired private endpoint is not visible yet, don't hide everything.
 			if len(filteredEndpoints) == 0 {
 				filteredEndpoints = allEndpoints
 			}
 		}
 	} else {
-		// Public mode: keep only endpoints that are public (and not private).
 		filteredEndpoints = nil
 
 		for _, ep := range allEndpoints {
@@ -372,7 +366,6 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 			filteredEndpoints = append(filteredEndpoints, ep)
 		}
 
-		// If no public endpoint is visible yet, don't hide everything.
 		if len(filteredEndpoints) == 0 {
 			filteredEndpoints = allEndpoints
 		}
