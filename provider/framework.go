@@ -254,6 +254,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		mongodb.NewInstanceListResource,
 		vpc.NewVPCListResource,
 		vpc.NewPrivateNetworkListResource,
 	}
