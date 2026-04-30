@@ -87,7 +87,6 @@ func deploymentSchema() map[string]*schema.Schema {
 		"private_network": {
 			Type:        schema.TypeList,
 			Optional:    true,
-			ForceNew:    true,
 			MaxItems:    1,
 			Description: "Private network configuration",
 			Elem: &schema.Resource{
@@ -229,17 +228,17 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			sizeGB := uint64(volumeMap["size_in_gb"].(int))
 			req.Volume = &searchdbapi.Volume{
 				Type:      searchdbapi.VolumeType(volumeMap["type"].(string)),
-				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000), // Convert GB to bytes
+				SizeBytes: scw.Size(sizeGB * 1000 * 1000 * 1000),
 			}
 		}
 	}
 
-	// Handle endpoint configuration
 	if v, ok := d.GetOk("private_network"); ok {
 		pnList := v.([]any)
 		if len(pnList) > 0 {
 			pnMap := pnList[0].(map[string]any)
 			pnID := locality.ExpandID(pnMap["private_network_id"].(string))
+
 			req.Endpoints = []*searchdbapi.EndpointSpec{
 				{
 					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
@@ -249,7 +248,6 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 	} else {
-		// Create public endpoint by default
 		req.Endpoints = []*searchdbapi.EndpointSpec{
 			{
 				Public: &searchdbapi.EndpointSpecPublicDetails{},
@@ -330,8 +328,51 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 		})
 	}
 
-	_ = d.Set("endpoints", flattenEndpoints(deployment.Endpoints))
-	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(deployment.Endpoints))
+	// API may briefly return both public and private endpoints during a switch.
+	// In state, keep only the endpoint matching Terraform config.
+	allEndpoints := deployment.Endpoints
+	filteredEndpoints := allEndpoints
+
+	if pnRaw, ok := d.GetOk("private_network"); ok {
+		pnList := pnRaw.([]any)
+		if len(pnList) > 0 {
+			pnMap := pnList[0].(map[string]any)
+			desiredPNID := locality.ExpandID(pnMap["private_network_id"].(string))
+
+			filteredEndpoints = nil
+
+			for _, ep := range allEndpoints {
+				if ep == nil || ep.PrivateNetwork == nil {
+					continue
+				}
+
+				if ep.PrivateNetwork.PrivateNetworkID == desiredPNID {
+					filteredEndpoints = append(filteredEndpoints, ep)
+				}
+			}
+
+			if len(filteredEndpoints) == 0 {
+				filteredEndpoints = allEndpoints
+			}
+		}
+	} else {
+		filteredEndpoints = nil
+
+		for _, ep := range allEndpoints {
+			if ep == nil || ep.Public == nil || ep.PrivateNetwork != nil {
+				continue
+			}
+
+			filteredEndpoints = append(filteredEndpoints, ep)
+		}
+
+		if len(filteredEndpoints) == 0 {
+			filteredEndpoints = allEndpoints
+		}
+	}
+
+	_ = d.Set("endpoints", flattenEndpoints(filteredEndpoints))
+	_ = d.Set("public_dashboard_url", publicDashboardURLFromEndpoints(allEndpoints))
 
 	return nil
 }
@@ -374,6 +415,77 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			if err != nil {
 				return diag.FromErr(err)
 			}
+		}
+	}
+
+	if d.HasChange("private_network") {
+		deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// SearchDB endpoints are additive: when switching connectivity mode we must explicitly remove
+		// the endpoints that no longer match the desired private/public state.
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil {
+				continue
+			}
+
+			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		desiredPrivate := false
+
+		var pnID string
+
+		if v, ok := d.GetOk("private_network"); ok {
+			pnList := v.([]any)
+			if len(pnList) > 0 {
+				desiredPrivate = true
+				pnMap := pnList[0].(map[string]any)
+				pnID = locality.ExpandID(pnMap["private_network_id"].(string))
+			}
+		}
+
+		if desiredPrivate {
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: &searchdbapi.EndpointSpec{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				},
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: &searchdbapi.EndpointSpec{
+					Public: &searchdbapi.EndpointSpecPublicDetails{},
+				},
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
