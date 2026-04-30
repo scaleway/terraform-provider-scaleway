@@ -1,0 +1,44 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "IAM"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `scim_id` - (Required) The SCIM configuration ID for which to create the token.
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization configured in the provider is used.
+
+## Attributes Reference
+
+- `id` - The ID of the SCIM token
+- `bearer_token` - The Bearer Token to use to authenticate to SCIM endpoints.
+- `created_at` - The date and time of SCIM token creation
+- `expires_at` - The date and time when the SCIM token expires
+
+## Import
+
+SCIM token can be imported using either:
+
+- Just the token ID (uses default organization):
+```bash
+terraform import scaleway_iam_scim_token.main 11111111-1111-1111-1111-111111111111
+```
+
+- Or with explicit organization ID:
+```bash
+terraform import scaleway_iam_scim_token.main 22222222-1111-1111-1111-111111111111/11111111-1111-1111-1111-111111111111
+```

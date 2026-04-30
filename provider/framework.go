@@ -202,6 +202,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
+		iam.NewScimTokenResource,
 	}
 }
 
