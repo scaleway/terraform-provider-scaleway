@@ -3,7 +3,7 @@ list "scaleway_vpc" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["foobar"]
+    regions = ["*"]
+    tags    = ["foobar"]
   }
 }

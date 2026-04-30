@@ -3,7 +3,7 @@ list "scaleway_vpc" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "test-vpc"
+    regions = ["*"]
+    name    = "test-vpc"
   }
 }

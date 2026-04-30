@@ -3,7 +3,7 @@ list "scaleway_mongodb_instance" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "my-mongodb"
+    regions = ["*"]
+    name    = "my-mongodb"
   }
 }

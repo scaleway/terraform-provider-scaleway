@@ -32,8 +32,8 @@ list "scaleway_mongodb_instance" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "my-mongodb"
+    regions = ["*"]
+    name    = "my-mongodb"
   }
 }
 ```
@@ -56,8 +56,8 @@ list "scaleway_mongodb_instance" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["production"]
+    regions = ["*"]
+    tags    = ["production"]
   }
 }
 ```

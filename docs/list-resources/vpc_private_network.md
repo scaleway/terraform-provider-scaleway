@@ -32,8 +32,8 @@ list "scaleway_vpc_private_network" "by_name" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    name        = "my-network"
+    regions = ["*"]
+    name    = "my-network"
   }
 }
 ```
@@ -56,8 +56,8 @@ list "scaleway_vpc_private_network" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["production"]
+    regions = ["*"]
+    tags    = ["production"]
   }
 }
 ```

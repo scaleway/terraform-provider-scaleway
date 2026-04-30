@@ -3,7 +3,7 @@ list "scaleway_mongodb_instance" "by_tag" {
   provider = scaleway
 
   config {
-    regions     = ["*"]
-    tags        = ["production"]
+    regions = ["*"]
+    tags    = ["production"]
   }
 }
