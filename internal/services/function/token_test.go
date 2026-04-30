@@ -21,7 +21,7 @@ func TestAccFunctionToken_Basic(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /tokens" request.
-		expiresAt = "2026-04-21T16:57:32+02:00"
+		expiresAt = "2026-05-05T14:37:48+02:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
