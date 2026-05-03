@@ -18,9 +18,14 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
@@ -69,6 +74,10 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_lb_ip" "lb_ip" {}
 					
 					resource "scaleway_lb" "lb01" {
@@ -112,6 +121,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -145,6 +155,10 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 			},
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_lb_ip" "lb_ip" {}
 					
 					resource "scaleway_lb" "lb01" {
@@ -188,6 +202,7 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

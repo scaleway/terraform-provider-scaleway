@@ -18,9 +18,14 @@ func TestAccDataSourceCacheStage_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-cache-id"
 					  description = "pipeline for cache data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
@@ -68,9 +73,14 @@ func TestAccDataSourceCacheStage_ByPipelineID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-cache-filter"
 					  description = "pipeline for cache filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
