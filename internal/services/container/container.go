@@ -6,12 +6,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	containerV1 "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -301,9 +303,11 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
+	apiV1 := containerV1.NewAPI(meta.ExtractScwClient(m))
+
 	namespaceID := locality.ExpandID(d.Get("namespace_id").(string))
 	// verify name space state
-	_, err = waitForNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
+	_, err = waitForNamespace(ctx, apiV1, region, namespaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}
@@ -410,9 +414,11 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
+	apiV1 := containerV1.NewAPI(meta.ExtractScwClient(m))
+
 	namespaceID := d.Get("namespace_id")
 	// verify name space state
-	_, err = waitForNamespace(ctx, api, region, locality.ExpandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
+	_, err = waitForNamespace(ctx, apiV1, region, locality.ExpandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
 	}

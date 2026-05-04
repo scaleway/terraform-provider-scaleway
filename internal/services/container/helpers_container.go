@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	containerV1 "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -505,4 +506,46 @@ func filterSecretEnvsToPatch(oldEnv []*container.Secret, newEnv []*container.Sec
 	}
 
 	return toPatch
+}
+
+// filterSecretEnvsToPatchV1 builds the list of secrets to be patched.
+// - New secrets (which values are not hashed) should be added,
+// - Unchanged secrets (which values are already hashed) should be passed as an empty string to indicate that no change is needed,
+// - Old secrets which don't end up in the final list will be deleted.
+func filterSecretEnvsToPatchV1(newEnv map[string]string) *map[string]string {
+	toPatch := map[string]string{}
+
+	for key, value := range newEnv {
+		if !strings.HasPrefix(value, "$argon2id") {
+			toPatch[key] = value
+		} else {
+			toPatch[key] = ""
+		}
+	}
+
+	return &toPatch
+}
+
+// newAPIV1WithRegion returns a new container API v1 and the region.
+func newAPIV1WithRegion(d *schema.ResourceData, m any) (*containerV1.API, scw.Region, error) {
+	api := containerV1.NewAPI(meta.ExtractScwClient(m))
+
+	region, err := meta.ExtractRegion(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return api, region, nil
+}
+
+// NewAPIV1WithRegionAndID returns a new container API v1, region and ID.
+func NewAPIV1WithRegionAndID(m any, id string) (*containerV1.API, scw.Region, string, error) {
+	api := containerV1.NewAPI(meta.ExtractScwClient(m))
+
+	region, id, err := regional.ParseID(id)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return api, region, id, nil
 }

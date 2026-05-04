@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
-	//containerV1Beta1 "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -92,12 +91,6 @@ func namespaceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The ID of the registry namespace",
 		},
-		"activate_vpc_integration": {
-			Type:        schema.TypeBool,
-			Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
-			Optional:    true,
-			Description: "Activate VPC integration for the namespace",
-		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -105,40 +98,7 @@ func namespaceSchema() map[string]*schema.Schema {
 }
 
 func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	//if os.Getenv("API_VERSION") == "v1beta1" {
-	//	api, region, err := newAPIWithRegion(d, m)
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//createReq := &container.CreateNamespaceRequest{
-	//	Description:                types.ExpandStringPtr(d.Get("description").(string)),
-	//	EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
-	//	SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
-	//	Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
-	//	ProjectID:                  d.Get("project_id").(string),
-	//	Region:                     region,
-	//	ActivateVpcIntegration:     new(true),
-	//}
-	//
-	//	rawTag, tagExist := d.GetOk("tags")
-	//	if tagExist {
-	//		createReq.Tags = types.ExpandStrings(rawTag)
-	//	}
-	//
-	//	ns, err := api.CreateNamespace(createReq, scw.WithContext(ctx))
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	d.SetId(regional.NewIDString(region, ns.ID))
-	//
-	//	_, err = waitForNamespace(ctx, api, region, ns.ID, d.Timeout(schema.TimeoutCreate))
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//} else if os.Getenv("API_VERSION") == "v1" {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newAPIV1WithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,43 +128,12 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	//} else {
-	//	panic("API_VERSION not set !!")
-	//}
 
 	return ResourceContainerNamespaceRead(ctx, d, m)
 }
 
 func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	//if os.Getenv("API_VERSION") == "v1beta1" {
-	//	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	ns, err := waitForNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutRead))
-	//	if err != nil {
-	//		if httperrors.Is404(err) {
-	//			d.SetId("")
-	//
-	//			return nil
-	//		}
-	//
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	_ = d.Set("description", types.FlattenStringPtr(ns.Description))
-	//	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
-	//	_ = d.Set("environment_variables", ns.EnvironmentVariables)
-	//	_ = d.Set("name", ns.Name)
-	//	_ = d.Set("organization_id", ns.OrganizationID)
-	//	_ = d.Set("project_id", ns.ProjectID)
-	//	_ = d.Set("region", ns.Region)
-	//	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
-	//	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
-	//	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
-	//} else if os.Getenv("API_VERSION") == "v1" {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := NewAPIV1WithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -228,52 +157,12 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 	_ = d.Set("secret_environment_variables", ns.SecretEnvironmentVariables)
 	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("region", ns.Region)
-	//} else {
-	//	panic("API_VERSION not set !!")
-	//}
 
 	return nil
 }
 
 func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	//if os.Getenv("API_VERSION") == "v1beta1" {
-	//	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	ns, err := waitForNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	req := &containerV1Beta1.UpdateNamespaceRequest{
-	//		Region:      ns.Region,
-	//		NamespaceID: ns.ID,
-	//	}
-	//
-	//	if d.HasChange("description") {
-	//		req.Description = types.ExpandUpdatedStringPtr(d.Get("description"))
-	//	}
-	//
-	//	if d.HasChange("tags") {
-	//		req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-	//	}
-	//
-	//	if d.HasChanges("environment_variables") {
-	//		req.EnvironmentVariables = types.ExpandMapPtrStringString(d.Get("environment_variables"))
-	//	}
-	//
-	//	if d.HasChanges("secret_environment_variables") {
-	//		oldEnv, newEnv := d.GetChange("secret_environment_variables")
-	//		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
-	//	}
-	//
-	//	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//} else if os.Getenv("API_VERSION") == "v1" {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := NewAPIV1WithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -302,51 +191,18 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 
 	if d.HasChanges("secret_environment_variables") {
 		_, newEnv := d.GetChange("secret_environment_variables")
-		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(types.ExpandMapStringString(newEnv))
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatchV1(types.ExpandMapStringString(newEnv))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
 		return diag.FromErr(err)
 	}
-	//} else {
-	//	panic("API_VERSION not set !!")
-	//}
 
 	return ResourceContainerNamespaceRead(ctx, d, m)
 }
 
 func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	//if os.Getenv("API_VERSION") == "v1beta1" {
-	//	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
-	//	if err != nil {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	_, err = waitForNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	//	if err != nil {
-	//		if httperrors.Is404(err) {
-	//			d.SetId("")
-	//
-	//			return nil
-	//		}
-	//
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	_, err = api.DeleteNamespace(&containerV1Beta1.DeleteNamespaceRequest{
-	//		Region:      region,
-	//		NamespaceID: id,
-	//	}, scw.WithContext(ctx))
-	//	if err != nil && !httperrors.Is404(err) {
-	//		return diag.FromErr(err)
-	//	}
-	//
-	//	_, err = waitForNamespace(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	//	if err != nil && !httperrors.Is404(err) {
-	//		return diag.FromErr(err)
-	//	}
-	//} else if os.Getenv("API_VERSION") == "v1" {
-	api, region, id, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, id, err := NewAPIV1WithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -374,9 +230,6 @@ func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceDat
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
-	//} else {
-	//	panic("API_VERSION not set !!")
-	//}
 
 	d.SetId("")
 

@@ -7,12 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1"
-	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/container"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
-	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 const containerNamespaceResource = "scaleway_container_namespace"
@@ -233,75 +230,6 @@ func TestAccNamespace_SecretManagement(t *testing.T) {
 	})
 }
 
-func TestAccNamespace_VPCIntegration(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	namespaceID := ""
-
-	resource.ParallelTest(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy: resource.ComposeTestCheckFunc(
-			isNamespaceDestroyed(tt),
-			isContainerDestroyed(tt),
-			vpcchecks.CheckPrivateNetworkDestroy(tt),
-		),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {
-						name = "TestAccNamespace_VPCIntegration"
-					}
-
-					resource scaleway_vpc_private_network main {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource scaleway_container_namespace main {}
-
-					resource scaleway_container main {
-						namespace_id = scaleway_container_namespace.main.id
-						image = "%s"
-						port = 80
-						sandbox = "v1"
-					}
-				`, testImage),
-				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource scaleway_vpc main {
-						name = "TestAccNamespace_VPCIntegration"
-					}
-
-					resource scaleway_vpc_private_network main {
-						vpc_id = scaleway_vpc.main.id
-					}
-
-					resource scaleway_container_namespace main {}
-
-					resource scaleway_container main {
-						namespace_id = scaleway_container_namespace.main.id
-						image = "%s"
-						port = 80
-						private_network_id = scaleway_vpc_private_network.main.id
-						sandbox = "v1"
-					}
-				`, testImage),
-				Check: resource.ComposeTestCheckFunc(
-					isNamespacePresent(tt, "scaleway_container_namespace.main"),
-					isContainerPresent(tt, "scaleway_container.main"),
-					resource.TestCheckResourceAttrPair("scaleway_container.main", "private_network_id", "scaleway_vpc_private_network.main", "id"),
-					acctest.CheckResourceIDPersisted("scaleway_container_namespace.main", &namespaceID),
-				),
-			},
-		},
-	})
-}
-
 func isNamespacePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		rs, ok := state.RootModule().Resources[n]
@@ -309,7 +237,7 @@ func isNamespacePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		api, region, id, err := container.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		api, region, id, err := container.NewAPIV1WithRegionAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -333,7 +261,7 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			api, region, id, err := container.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+			api, region, id, err := container.NewAPIV1WithRegionAndID(tt.Meta, rs.Primary.ID)
 			if err != nil {
 				return err
 			}
@@ -344,35 +272,6 @@ func isNamespaceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			})
 			if err == nil {
 				return fmt.Errorf("container namespace (%s) still exists", rs.Primary.ID)
-			}
-
-			if !httperrors.Is404(err) {
-				return err
-			}
-		}
-
-		return nil
-	}
-}
-
-func isRegistryDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != containerNamespaceResource {
-				continue
-			}
-
-			api, region, _, err := registry.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.DeleteNamespace(&registrySDK.DeleteNamespaceRequest{
-				NamespaceID: rs.Primary.Attributes["registry_namespace_id"],
-				Region:      region,
-			})
-			if err == nil {
-				return fmt.Errorf("registry namespace (%s) still exists", rs.Primary.Attributes["registry_namespace_id"])
 			}
 
 			if !httperrors.Is404(err) {

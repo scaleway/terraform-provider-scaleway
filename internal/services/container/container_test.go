@@ -648,9 +648,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container to_stay {
 						name = "test-acc-container-pn-to-stay"
@@ -662,7 +660,6 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.to_stay"),
-					resource.TestCheckResourceAttr("scaleway_container_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttr("scaleway_container.to_stay", "sandbox", "v1"),
 					resource.TestCheckResourceAttrPair("scaleway_container.to_stay", "private_network_id", "scaleway_vpc_private_network.start", "id"),
 				),
@@ -678,9 +675,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container to_stay {
 						name = "test-acc-container-pn-to-stay"
@@ -734,9 +729,7 @@ func TestAccContainer_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_container_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_container_namespace main {}
 
 					resource scaleway_container to_stay {
 						name = "test-acc-container-pn-to-stay"

@@ -4,18 +4,19 @@ import (
 	"context"
 	"time"
 
+	containerV1 "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
-func waitForNamespace(ctx context.Context, containerAPI *container.API, region scw.Region, namespaceID string, timeout time.Duration) (*container.Namespace, error) {
+func waitForNamespace(ctx context.Context, containerAPI *containerV1.API, region scw.Region, namespaceID string, timeout time.Duration) (*containerV1.Namespace, error) {
 	retryInterval := DefaultContainerRetryInterval
 	if transport.DefaultWaitRetryInterval != nil {
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	ns, err := containerAPI.WaitForNamespace(&container.WaitForNamespaceRequest{
+	ns, err := containerAPI.WaitForNamespace(&containerV1.WaitForNamespaceRequest{
 		Region:        region,
 		NamespaceID:   namespaceID,
 		RetryInterval: &retryInterval,
