@@ -123,12 +123,12 @@ func (r *IPListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaR
 
 type IPListResourceModel struct {
 	Tags             types.List   `tfsdk:"tags"`
-	Name             types.String `tfsdk:"name"`
-	OrganizationID   types.String `tfsdk:"organization_id"`
 	ProjectIDs       types.List   `tfsdk:"project_ids"`
 	Regions          types.List   `tfsdk:"regions"`
-	Attached         types.Bool   `tfsdk:"attached"`
-	IsIPv6           types.Bool   `tfsdk:"is_ipv6"`
+	ResourceTypes    types.List   `tfsdk:"resource_types"`
+	ResourceIDs      types.List   `tfsdk:"resource_ids"`
+	Name             types.String `tfsdk:"name"`
+	OrganizationID   types.String `tfsdk:"organization_id"`
 	VpcID            types.String `tfsdk:"vpc_id"`
 	PrivateNetworkID types.String `tfsdk:"private_network_id"`
 	SubnetID         types.String `tfsdk:"subnet_id"`
@@ -136,9 +136,9 @@ type IPListResourceModel struct {
 	SourceVpcID      types.String `tfsdk:"source_vpc_id"`
 	ResourceName     types.String `tfsdk:"resource_name"`
 	ResourceType     types.String `tfsdk:"resource_type"`
-	ResourceTypes    types.List   `tfsdk:"resource_types"`
-	ResourceIDs      types.List   `tfsdk:"resource_ids"`
 	MacAddress       types.String `tfsdk:"mac_address"`
+	Attached         types.Bool   `tfsdk:"attached"`
+	IsIPv6           types.Bool   `tfsdk:"is_ipv6"`
 }
 
 func (m *IPListResourceModel) GetTags() types.List    { return m.Tags }
