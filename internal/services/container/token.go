@@ -74,7 +74,7 @@ func tokenSchema() map[string]*schema.Schema {
 }
 
 func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
+	api, region, err := newAPIBetaWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -98,7 +98,7 @@ func ResourceContainerTokenCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := NewAPIBetaWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -126,7 +126,7 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func ResourceContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, ID, err := NewAPIWithRegionAndID(m, d.Id())
+	api, region, ID, err := NewAPIBetaWithRegionAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

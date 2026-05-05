@@ -6,14 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
-	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -87,25 +85,20 @@ func namespaceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The endpoint reachable by docker",
+			Deprecated:  "A registry is no longer created alongside the namespace, it has to be handled separately.",
 		},
 		"registry_namespace_id": {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The ID of the registry namespace",
+			Deprecated:  "A registry is no longer created alongside the namespace, it has to be handled separately.",
 		},
 		"destroy_registry": {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Default:     false,
 			Description: "Destroy registry on deletion",
-			Deprecated:  "Registry namespace is automatically destroyed with namespace",
-		},
-		"activate_vpc_integration": {
-			Type:        schema.TypeBool,
-			Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
-			Optional:    true,
-			Default:     true,
-			Description: "Activate VPC integration for the namespace",
+			Deprecated:  "A registry is no longer created alongside the namespace, it has to be handled separately.",
 		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
@@ -121,12 +114,11 @@ func ResourceContainerNamespaceCreate(ctx context.Context, d *schema.ResourceDat
 
 	createReq := &container.CreateNamespaceRequest{
 		Description:                types.ExpandStringPtr(d.Get("description").(string)),
-		EnvironmentVariables:       types.ExpandMapPtrStringString(d.Get("environment_variables")),
-		SecretEnvironmentVariables: expandContainerSecrets(d.Get("secret_environment_variables")),
+		EnvironmentVariables:       types.ExpandMapStringString(d.Get("environment_variables")),
+		SecretEnvironmentVariables: types.ExpandMapStringString(d.Get("secret_environment_variables")),
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "ns"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
-		ActivateVpcIntegration:     new(true),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -166,17 +158,14 @@ func ResourceContainerNamespaceRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("description", types.FlattenStringPtr(ns.Description))
-	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
-	_ = d.Set("environment_variables", ns.EnvironmentVariables)
 	_ = d.Set("name", ns.Name)
 	_ = d.Set("organization_id", ns.OrganizationID)
 	_ = d.Set("project_id", ns.ProjectID)
+	_ = d.Set("description", ns.Description)
+	_ = d.Set("environment_variables", ns.EnvironmentVariables)
+	_ = d.Set("secret_environment_variables", ns.SecretEnvironmentVariables)
+	_ = d.Set("tags", types.FlattenSliceString(ns.Tags))
 	_ = d.Set("region", ns.Region)
-	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
-	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
-	_ = d.Set("secret_environment_variables", flattenContainerSecrets(ns.SecretEnvironmentVariables))
-	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
 
 	return nil
 }
@@ -210,8 +199,8 @@ func ResourceContainerNamespaceUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if d.HasChanges("secret_environment_variables") {
-		oldEnv, newEnv := d.GetChange("secret_environment_variables")
-		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(expandContainerSecrets(oldEnv), expandContainerSecrets(newEnv))
+		newEnv := d.Get("secret_environment_variables")
+		req.SecretEnvironmentVariables = filterSecretEnvsToPatch(types.ExpandMapStringString(newEnv))
 	}
 
 	if _, err := api.UpdateNamespace(req, scw.WithContext(ctx)); err != nil {
@@ -252,28 +241,6 @@ func ResourceContainerNamespaceDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	d.SetId("")
-
-	if destroy := d.Get("destroy_registry"); destroy != nil && destroy == true {
-		registryAPI, region, err := registry.NewAPIWithRegion(d, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		registryID := d.Get("registry_namespace_id").(string)
-
-		_, err = registryAPI.DeleteNamespace(&registrySDK.DeleteNamespaceRequest{
-			Region:      region,
-			NamespaceID: registryID,
-		})
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
-		}
-
-		_, err = registry.WaitForNamespace(ctx, registryAPI, region, registryID, d.Timeout(schema.TimeoutDelete))
-		if err != nil && !httperrors.Is404(err) {
-			return diag.FromErr(err)
-		}
-	}
 
 	return nil
 }

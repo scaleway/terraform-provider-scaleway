@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -26,10 +26,12 @@ func TestAccDomain_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource scaleway_container_namespace main {}
+				resource scaleway_container_namespace main {
+					name = "tf-test-domain-basic"
+				}
 
 				resource scaleway_container app {
-					registry_image = "nginx:latest"
+					registry_image = "%s"
 					namespace_id = scaleway_container_namespace.main.id
 					port = 80
 					deploy = true
@@ -47,7 +49,7 @@ func TestAccDomain_Basic(t *testing.T) {
 				  container_id = scaleway_container.app.id
 				  hostname = "${scaleway_domain_record.container.name}.${scaleway_domain_record.container.dns_zone}"
 				}
-			`, testDNSZone),
+			`, defaultTestImage, testDNSZone),
 				Check: resource.ComposeTestCheckFunc(
 					isDomainPresent(tt, "scaleway_container_domain.app"),
 				),
