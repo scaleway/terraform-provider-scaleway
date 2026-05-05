@@ -275,6 +275,7 @@ func (r *IPListResource) List(ctx context.Context, req list.ListRequest, stream 
 			err = identity.SetRegionalIdentity(resourceData, ip.Region, ip.ID)
 			if err != nil {
 				result.Diagnostics.AddError("Retrieving identity data", "An error was encountered when retrieving the identity data: "+err.Error())
+
 				if !push(result) {
 					return
 				}
@@ -298,9 +299,11 @@ func (r *IPListResource) List(ctx context.Context, req list.ListRequest, stream 
 			sdkDiags := setIPAMIPState(resourceData, ip, privateNetworkID)
 			if sdkDiags.HasError() {
 				tflog.Error(ctx, "error from setting IPAM IP state")
+
 				for _, d := range sdkDiags {
 					result.Diagnostics.AddError(d.Summary, d.Detail)
 				}
+
 				if !push(result) {
 					return
 				}
