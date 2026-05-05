@@ -431,9 +431,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-00"
@@ -447,7 +445,6 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFunctionExists(tt, "scaleway_function.f00"),
-					resource.TestCheckResourceAttr("scaleway_function_namespace.main", "activate_vpc_integration", "true"),
 					resource.TestCheckResourceAttr("scaleway_function.f00", "sandbox", "v1"),
 					resource.TestCheckResourceAttrPair("scaleway_function.f00", "private_network_id", "scaleway_vpc_private_network.pn00", "id"),
 				),
@@ -468,9 +465,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-f00"
@@ -530,9 +525,7 @@ func TestAccFunction_PrivateNetwork(t *testing.T) {
 						vpc_id = scaleway_vpc.main.id
 					}
 
-					resource scaleway_function_namespace main {
-						activate_vpc_integration = true
-					}
+					resource scaleway_function_namespace main {}
 
 					resource scaleway_function f00 {
 						name = "test-acc-function-pn-f00"
