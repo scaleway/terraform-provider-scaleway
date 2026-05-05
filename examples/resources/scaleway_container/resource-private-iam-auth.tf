@@ -23,10 +23,9 @@ resource "scaleway_container_namespace" "private" {
   name = "private-container-namespace"
 }
 resource "scaleway_container" "private" {
-  namespace_id   = scaleway_container_namespace.private.id
-  registry_image = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
-  privacy        = "private"
-  deploy         = true
+  namespace_id = scaleway_container_namespace.private.id
+  image        = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
+  privacy      = "private"
 }
 
 # Output the secret key and the container's endpoint for the curl command
