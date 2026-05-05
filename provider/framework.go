@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
@@ -257,6 +258,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		mongodb.NewInstanceListResource,
 		vpc.NewVPCListResource,
 		vpc.NewPrivateNetworkListResource,
+		ipam.NewIPListResource,
 	}
 }
 

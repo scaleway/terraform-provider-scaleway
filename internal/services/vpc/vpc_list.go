@@ -2,8 +2,6 @@ package vpc
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
@@ -31,18 +29,9 @@ type VPCListResource struct {
 	vpcAPI *vpc.API
 }
 
-func (r *VPCListResource) Configure(ctx context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
-	if request.ProviderData == nil {
-		return
-	}
-
-	m, ok := request.ProviderData.(*meta.Meta)
-	if !ok {
-		response.Diagnostics.AddError(
-			"Unexpected List Configure Type",
-			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", request.ProviderData),
-		)
-
+func (r *VPCListResource) Configure(_ context.Context, request resource.ConfigureRequest, response *resource.ConfigureResponse) {
+	m := listscw.ConfigureMeta(request, response)
+	if m == nil {
 		return
 	}
 
@@ -162,28 +151,12 @@ func (r *VPCListResource) List(ctx context.Context, req list.ListRequest, stream
 		return
 	}
 
-	var targets []listscw.RegionalFetchTarget
-
-	for _, r := range regions {
-		for _, p := range projects {
-			targets = append(targets, listscw.RegionalFetchTarget{Region: r, ProjectID: p})
-		}
-	}
-
-	allVPCs, err := listscw.FetchConcurrently(ctx, targets,
+	allVPCs, err := listscw.FetchConcurrently(ctx, listscw.RegionalProjectTargets(regions, projects),
 		func(ctx context.Context, target listscw.RegionalFetchTarget) ([]*vpc.VPC, error) {
 			return r.FetchVPCs(ctx, target.Region, &target.ProjectID, tags, data)
 		},
 		func(a, b *vpc.VPC) int {
-			if a.ProjectID != b.ProjectID {
-				return strings.Compare(a.ProjectID, b.ProjectID)
-			}
-
-			if a.Region != b.Region {
-				return strings.Compare(string(a.Region), string(b.Region))
-			}
-
-			return strings.Compare(a.ID, b.ID)
+			return listscw.CompareRegionalProjectItems(a.ProjectID, b.ProjectID, a.Region, b.Region, a.ID, b.ID)
 		},
 	)
 	if err != nil {
