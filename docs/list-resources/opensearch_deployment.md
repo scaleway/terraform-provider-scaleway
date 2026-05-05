@@ -35,6 +35,7 @@ list "scaleway_opensearch_deployment" "by_name" {
     regions = ["*"]
     name    = "my-opensearch"
   }
+}
 ```
 
 ```terraform
