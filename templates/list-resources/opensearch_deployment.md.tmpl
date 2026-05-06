@@ -1,0 +1,38 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Databases"
+description: |-
+  Lists Scaleway OpenSearch (SearchDB) deployments across regions and projects.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/opensearch/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the OpenSearch deployment to filter on.
+- `tags` - (Optional) Tags of the OpenSearch deployment to filter on.
+- `organization_id` - (Optional) Organization ID of the OpenSearch deployment to filter on.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+- `version` - (Optional) OpenSearch engine version to filter on (same value as the deployment `version` attribute, e.g. `"2.15"`).
+
+## Attributes Reference
+
+Each result corresponds to one OpenSearch deployment and exposes the same attributes as the [`scaleway_opensearch_deployment` resource](../resources/opensearch_deployment.md).
