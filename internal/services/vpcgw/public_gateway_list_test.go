@@ -35,7 +35,7 @@ func TestAccListPublicGateways_Basic(t *testing.T) {
 					  type = "VPC-GW-S"
 					  tags = ["test-gw-list-tagged"]
 					}
-`,
+				`,
 			},
 			{
 				Query: true,
@@ -44,8 +44,9 @@ func TestAccListPublicGateways_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						zones = ["fr-par-1"]
-						name  = "test-gw-list-1"
+						zones       = ["fr-par-1"]
+						project_ids = [scaleway_vpc_public_gateway.gw1.project_id]
+						name        = "test-gw-list-1"
 					  }
 					}
 				`,
@@ -60,8 +61,9 @@ func TestAccListPublicGateways_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						zones = ["fr-par-1"]
-						tags  = ["test-gw-list-tagged"]
+						zones       = ["fr-par-1"]
+						project_ids = [scaleway_vpc_public_gateway.gw1.project_id]
+						tags        = ["test-gw-list-tagged"]
 					  }
 					}
 				`,
@@ -76,9 +78,10 @@ func TestAccListPublicGateways_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						zones = ["fr-par-1"]
-						name  = "test-gw-list-2"
-						types = ["VPC-GW-S"]
+						zones       = ["fr-par-1"]
+						project_ids = [scaleway_vpc_public_gateway.gw1.project_id]
+						name        = "test-gw-list-2"
+						types       = ["VPC-GW-S"]
 					  }
 					}
 				`,
