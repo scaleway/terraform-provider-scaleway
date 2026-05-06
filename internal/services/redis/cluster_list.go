@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -297,7 +298,7 @@ func extractZones(ctx context.Context, model ClusterListResourceModel, m *meta.M
 	if model.Zones.IsNull() {
 		defaultZone, exists := m.ScwClient().GetDefaultZone()
 		if !exists {
-			return nil, fmt.Errorf("no zones specified and no default zone configured")
+			return nil, errors.New("no zones specified and no default zone configured")
 		}
 
 		return []scw.Zone{defaultZone}, nil

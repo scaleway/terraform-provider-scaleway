@@ -39,18 +39,6 @@ list "scaleway_redis_cluster" "by_name" {
 ```
 
 ```terraform
-# List Redis clusters in a specific zone for a specific project
-list "scaleway_redis_cluster" "zone" {
-  provider = scaleway
-
-  config {
-    zones       = ["fr-par-2"]
-    project_ids = ["11111111-1111-1111-1111-111111111111"]
-  }
-}
-```
-
-```terraform
 # List Redis clusters filtered by tag
 list "scaleway_redis_cluster" "by_tag" {
   provider = scaleway
@@ -71,6 +59,18 @@ list "scaleway_redis_cluster" "by_version" {
     zones       = ["*"]
     project_ids = ["*"]
     version     = "7.2"
+  }
+}
+```
+
+```terraform
+# List Redis clusters in a specific zone for a specific project
+list "scaleway_redis_cluster" "zone" {
+  provider = scaleway
+
+  config {
+    zones       = ["fr-par-2"]
+    project_ids = ["11111111-1111-1111-1111-111111111111"]
   }
 }
 ```

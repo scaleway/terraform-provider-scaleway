@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -26,8 +25,9 @@ func TestAccListRedisClusters_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	latestVersion := getLatestVersion(tt)
-	clusterName := sdkacctest.RandomWithPrefix("tf-test-redis-list")
-	clusterTag := sdkacctest.RandomWithPrefix("redis-list-test")
+	// Keep deterministic values to match VCR cassette playback.
+	clusterName := "tf-test-redis-list-4823616331525728375"
+	clusterTag := "redis-list-test-2078923807392667811"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
