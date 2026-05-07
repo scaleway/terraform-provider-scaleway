@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -160,6 +161,16 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						Description: "The tags associated with the bucket lifecycle",
 					},
+					"object_size_greated_than": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "", // FIXME
+					},
+					"object_size_less_than": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "", // FIXME
+					},
 					"enabled": {
 						Type:        schema.TypeBool,
 						Required:    true,
@@ -175,13 +186,24 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						MaxItems:    1,
 						Description: "Specifies a period in the object's expire",
-						Elem: &schema.Resource{
+						Elem: &schema.Resource{ // FIXME: au moins un des trois
 							Schema: map[string]*schema.Schema{
+								"date": {
+									Type:         schema.TypeString,
+									Optional:     true,
+									ValidateFunc: validBucketLifecycleTimestamp,
+									Description:  "", // FIXME
+								},
 								"days": {
 									Type:         schema.TypeInt,
-									Required:     true,
+									Optional:     true,
 									ValidateFunc: validation.IntAtLeast(0),
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+								},
+								"expired_object_delete_marker": {
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "", // FIXME
 								},
 							},
 						},
@@ -191,8 +213,14 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						Set:         transitionHash,
 						Description: "Define when objects transition to another storage class",
-						Elem: &schema.Resource{
+						Elem: &schema.Resource{ // FIXME: date or days mandatory
 							Schema: map[string]*schema.Schema{
+								"date": {
+									Type:         schema.TypeString,
+									Optional:     true,
+									ValidateFunc: validBucketLifecycleTimestamp,
+									Description:  "", // FIXME
+								},
 								"days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
@@ -204,6 +232,53 @@ func bucketSchema() map[string]*schema.Schema {
 									Required:     true,
 									ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
 									Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
+								},
+							},
+						},
+					},
+					"noncurrent_version_expiration": {
+						Type:     schema.TypeList,
+						MaxItems: 1,
+						Optional: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"newer_noncurrent_versions": {
+									Type:         schema.TypeInt,
+									Optional:     true,
+									ValidateFunc: validation.IntBetween(0, 100),
+									Description:  "", // FIXME
+								},
+								"noncurrent_days": {
+									Type:         schema.TypeInt,
+									Optional:     true,
+									ValidateFunc: validation.IntAtLeast(1),
+									Description:  "", // FIXME
+								},
+							},
+						},
+					},
+					"noncurrent_version_transition": {
+						Type:     schema.TypeSet,
+						Optional: true,
+						Elem: &schema.Resource{
+							Schema: map[string]*schema.Schema{
+								"newer_noncurrent_versions": {
+									Type:         schema.TypeInt,
+									Optional:     true,
+									ValidateFunc: validation.IntBetween(0, 100),
+									Description:  "", // FIXME
+								},
+								"noncurrent_days": {
+									Type:         schema.TypeInt,
+									Required:     true,
+									ValidateFunc: validation.IntAtLeast(1),
+									Description:  "", // FIXME
+								},
+								"storage_class": {
+									Type:         schema.TypeString,
+									Required:     true,
+									ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
+									Description:  "", // FIXME
 								},
 							},
 						},
@@ -779,4 +854,15 @@ func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schem
 	}
 
 	return nil
+}
+
+func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error) {
+	value := v.(string)
+	_, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", value))
+	if err != nil {
+		errors = append(errors, fmt.Errorf(
+			"%q cannot be parsed as RFC3339 Timestamp Format", value))
+	}
+
+	return
 }

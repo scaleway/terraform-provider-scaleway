@@ -401,6 +401,174 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.abort_incomplete_multipart_upload_days", "30"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+					name = "%s"
+					region = "%s"
+
+					lifecycle_rule {
+						id      = "id1"
+						prefix  = "path1/"
+						enabled = true
+
+						expiration {
+							days = 365
+						}
+
+						transition {
+							days          = 30
+							storage_class = "ONEZONE_IA"
+						}
+
+						transition {
+							days          = 60
+							storage_class = "GLACIER"
+						}
+
+						transition {
+							days          = 90
+							storage_class = "ONEZONE_IA"
+						}
+
+						transition {
+							days          = 120
+							storage_class = "GLACIER"
+						}
+
+						transition {
+							days          = 210
+							storage_class = "ONEZONE_IA"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id2"
+						prefix  = "path2/"
+						enabled = true
+
+						expiration {
+							date = "2016-01-12"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id3"
+						prefix  = "path3/"
+						enabled = true
+
+						transition {
+							days          = 0
+							storage_class = "GLACIER"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id4"
+						prefix  = "path4/"
+						enabled = true
+
+						tags = {
+							"tagKey"    = "tagValue"
+							"terraform" = "hashicorp"
+						}
+
+						expiration {
+							date = "2016-01-12"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id5"
+						enabled = true
+
+						tags = {
+							"tagKey"    = "tagValue"
+							"terraform" = "hashicorp"
+						}
+
+						transition {
+							days          = 0
+							storage_class = "GLACIER"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id6"
+						enabled = true
+
+						tags = {
+							"tagKey" = "tagValue"
+						}
+
+						transition {
+							days          = 0
+							storage_class = "GLACIER"
+						}
+					}
+				}`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.#", "6"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.date", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "hehe",
+						"days":          "30",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "60",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "120",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "210",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.date", "2016-01-12"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "0"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.2.transition.*", map[string]string{
+						"days": "0",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.prefix", "path4/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.terraform", "hashicorp"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+						"days":          "0",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.id", "id6"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.tags.tagKey", "tagValue"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.5.transition.*", map[string]string{
+						"days":          "0",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
 		},
 	})
 }
