@@ -6,8 +6,7 @@ page_title: "Scaleway: scaleway_container_namespace"
 
 # Resource: scaleway_container_namespace
 
-The `scaleway_container_namespace` resource allows you to
-for Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
+The `scaleway_container_namespace` resource allows you to manage Scaleway [Serverless Containers](https://www.scaleway.com/en/docs/serverless/containers/).
 
 Refer to the Containers namespace [documentation](https://www.scaleway.com/en/docs/serverless/containers/how-to/create-manage-delete-containers-namespace/) and [API documentation](https://www.scaleway.com/en/developers/api/serverless-containers/#path-namespaces-list-all-your-namespaces) for more information.
 
@@ -33,17 +32,13 @@ The following arguments are supported:
 
 - `tags` - (Optional) The list of tags associated with the namespace.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project that contains the namespace.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The unique identifier of the project that contains the namespace.
 
 - `environment_variables` - (Optional) The environment variables of the namespace.
 
 - `secret_environment_variables` - (Optional) The secret environment variables of the namespace.
-
-- `activate_vpc_integration` - (Deprecated) Activates VPC integration for the namespace. Containers of a namespace with VPC integration activated will be able to connect to a Private Network.
-
-~> **Important:** VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be "true".
 
 ## Attributes Reference
 
@@ -55,9 +50,12 @@ The `scaleway_container_namespace` resource exports certain attributes once the 
 
 - `organization_id` - The Organization ID with which the namespace is associated.
 
-- `registry_endpoint` - The registry endpoint of the namespace.
+- `registry_endpoint` - (Deprecated) The registry endpoint of the namespace.
 
-- `registry_namespace_id` - The registry namespace ID of the namespace.
+- `registry_namespace_id` - (Deprecated) The registry namespace ID of the namespace.
+
+~> **Important:** A registry is no longer created alongside the namespace, it has to be handled separately. Therefore,
+`registry_endpoint` and `registry_namespace_id` are no longer provided.
 
 ## Import
 

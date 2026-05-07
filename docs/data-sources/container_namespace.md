@@ -36,9 +36,9 @@ This section lists the arguments that you can provide to the `scaleway_container
 
 - `namespace_id` - (Optional) The unique identifier of the namespace. Only one of `name` and `namespace_id` should be specified.
 
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the namespace is associated.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The unique identifier of the project with which the namespace is associated.
 
 ## Attributes Reference
 
@@ -53,5 +53,8 @@ In addition to the arguments above, the following attributes are exported:
 - `organization_id` - The unique identifier of the organization with which the namespace is associated.
 - `description` - The description of the namespace.
 - `environment_variables` - The environment variables of the namespace.
-- `registry_endpoint` - The registry endpoint of the namespace.
-- `registry_namespace_id` - The unique identifier of the registry namespace of the Serverless Containers namespace.
+- `registry_endpoint` - (Deprecated) The registry endpoint of the namespace.
+- `registry_namespace_id` - (Deprecated) The unique identifier of the registry namespace of the Serverless Containers namespace.
+
+~> **Important:** A registry is no longer created alongside the namespace, it has to be handled separately. Therefore,
+`registry_endpoint` and `registry_namespace_id` are no longer exported.

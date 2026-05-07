@@ -162,6 +162,9 @@ linters:
       - linters:
           - staticcheck
         text: "QF1012:"
+      - path: internal/services/container/helpers_container.go
+        linters:
+          - gocyclo # should be removed along with the deprecated attributes of the scaleway_container resource
 
 issues:
   max-issues-per-linter: 0

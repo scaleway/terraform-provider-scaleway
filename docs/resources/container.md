@@ -11,31 +11,27 @@ Refer to the Serverless Containers [product documentation](https://www.scaleway.
 
 For more information on the limitations of Serverless Containers, refer to the [dedicated documentation](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/).
 
-
 ## Example Usage
 
+### Basic
+
 ```terraform
-resource "scaleway_container_namespace" "main" {
-  name        = "my-ns-test"
-  description = "test container"
-}
+resource "scaleway_container_namespace" "main" {}
 
 resource "scaleway_container" "main" {
-  name            = "my-container-02"
-  description     = "environment variables test"
-  tags            = ["tag1", "tag2"]
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_container_namespace.main.registry_endpoint}/alpine:test"
-  port            = 9997
-  cpu_limit       = 1024
-  memory_limit    = 2048
-  min_scale       = 3
-  max_scale       = 5
-  timeout         = 600
-  max_concurrency = 80
-  privacy         = "private"
-  protocol        = "http1"
-  deploy          = true
+  name         = "my-container"
+  description  = "This container has a description."
+  tags         = ["tag1", "tag2"]
+  namespace_id = scaleway_container_namespace.main.id
+  image        = "nginx:latest"
+  port         = 80
+
+  cpu_limit    = 1024
+  memory_limit_bytes = 2048000000
+  min_scale    = 3
+  max_scale    = 5
+  timeout      = 600
+  protocol     = "http1"
 
   command = ["bash", "-c", "script.sh"]
   args    = ["some", "args"]
@@ -48,6 +44,72 @@ resource "scaleway_container" "main" {
   }
 }
 ```
+
+### Redeploy the container everytime an update is made
+
+```terraform
+data scaleway_registry_namespace "main" {
+  name = "my-registry"
+  region = "fr-par"
+}
+
+data scaleway_registry_image "main" {
+  namespace_id = data.scaleway_registry_namespace.main.id
+  name = "nginx-1-29-2-alpine"
+}
+
+resource "scaleway_container_namespace" "main" {}
+
+resource "scaleway_container" "main" {
+  name         = "my-container"
+  namespace_id = scaleway_container_namespace.main.id
+  image        = "${data.scaleway_registry_namespace.main.endpoint}/${data.scaleway_registry_image.main.name}:${data.scaleway_registry_image.main.tags[0]}"
+  port         = 80
+
+  # At every update, timestamp() will trigger a change and redeploy the container, even though nothing else has changed.
+  registry_sha256 = timestamp()
+}
+```
+
+### Redeploy the container when the image changes
+
+```terraform
+# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along
+# with the `registry_sha256` argument to trigger container redeployments when the image is updated.
+
+# Ideally, you would create the namespace separately.
+# For demonstration purposes, this example assumes the "nginx:latest" image is already available
+# in the referenced namespace.
+resource "scaleway_registry_namespace" "main" {
+  name = "some-unique-name"
+}
+
+data "scaleway_registry_image" "nginx" {
+  namespace_id = scaleway_registry_namespace.main.id
+  name         = "nginx"
+}
+
+data "scaleway_registry_image_tag" "nginx_latest" {
+  image_id = data.scaleway_registry_image.nginx.id
+  name     = "latest"
+}
+
+resource "scaleway_container_namespace" "main" {
+  name = "my-container-namespace"
+}
+
+resource "scaleway_container" "main" {
+  name         = "nginx-latest"
+  namespace_id = scaleway_container_namespace.main.id
+  image        = "${data.scaleway_registry_namespace.main.endpoint}/${data.scaleway_registry_image.nginx.name}:${data.scaleway_registry_image_tag.nginx_latest.name}"
+  port         = 80
+
+  # Whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
+  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
+}
+```
+
+### Managing authentication of private containers with IAM
 
 ```terraform
 # Project to be referenced in the IAM policy
@@ -76,9 +138,8 @@ resource "scaleway_container_namespace" "private" {
 }
 resource "scaleway_container" "private" {
   namespace_id   = scaleway_container_namespace.private.id
-  registry_image = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
+  image = "rg.fr-par.scw.cloud/my-registry-ns/my-image:latest"
   privacy        = "private"
-  deploy         = true
 }
 
 # Output the secret key and the container's endpoint for the curl command
@@ -97,55 +158,15 @@ output "container_endpoint" {
 # Keep in mind that you should revoke your legacy JWT tokens to ensure maximum security.
 ```
 
-```terraform
-# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along 
-# with the `registry_sha256` argument to trigger container redeployments when the image is updated.
-
-# Ideally, you would create the namespace separately.
-# For demonstration purposes, this example assumes the "nginx:latest" image is already available
-# in the referenced namespace.
-resource "scaleway_registry_namespace" "main" {
-  name = "some-unique-name"
-}
-
-data "scaleway_registry_image" "nginx" {
-  namespace_id = scaleway_registry_namespace.main.id
-  name         = "nginx"
-}
-
-data "scaleway_registry_image_tag" "nginx_latest" {
-  image_id = data.scaleway_registry_image.nginx.id
-  name     = "latest"
-}
-
-resource "scaleway_container_namespace" "main" {
-  name = "my-container-namespace"
-}
-
-resource "scaleway_container" "main" {
-  name            = "nginx-latest"
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_registry_namespace.main.endpoint}/nginx:latest"
-  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
-  port            = 80
-  deploy          = true
-}
-
-# Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
-```
-
-
-
-
 ## Argument Reference
 
 The following arguments are supported:
 
 - `name` - (Required) The unique name of the container name.
 
-- `namespace_id` - (Required) The Containers namespace ID of the container.
-
 ~> **Important** Updating the `name` argument will recreate the container.
+
+- `namespace_id` - (Required) The Containers namespace ID of the container.
 
 - `description` (Optional) The description of the container.
 
@@ -159,7 +180,11 @@ The following arguments are supported:
 
 - `max_scale` - (Optional) The maximum number of instances this container can scale to.
 
-- `memory_limit` - (Optional) The memory resources in MB to allocate to each container.
+- `memory_limit_bytes` - (Optional) The memory resources in bytes to allocate to each container.
+
+- `memory_limit` - (Deprecated) The memory resources in MB to allocate to each container.
+
+~> **Important:** Only one of `memory_limit` or `memory_limit_bytes` can be set at a time.
 
 - `cpu_limit` - (Optional) The amount of vCPU computing resources to allocate to each container.
 
@@ -167,23 +192,48 @@ The following arguments are supported:
 
 - `privacy` - (Optional) The privacy type defines the way to authenticate to your container. Please check our dedicated [section](https://www.scaleway.com/en/developers/api/serverless-containers/#protocol-9dd4c8).
 
-- `registry_image` - (Optional) The registry image address (e.g., `rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE`)
+- `image` - (Optional) The image address (e.g., `rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE`)
+
+- `registry_image` - (Deprecated) The registry image address (e.g., `rg.fr-par.scw.cloud/$NAMESPACE/$IMAGE`)
+
+- ~> **Important:** Exactly one of `image` or `registry_image` must be set.
 
 - `registry_sha256` - (Optional) The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string.
 
-- `max_concurrency` - (Deprecated) The maximum number of simultaneous requests your container can handle at the same time. Use `scaling_option.concurrent_requests_threshold` instead.
-
 - `protocol` - (Optional) The communication [protocol](https://www.scaleway.com/en/developers/api/serverless-containers/#path-containers-update-an-existing-container) `http1` or `h2c`. Defaults to `http1`.
 
-- `http_option` - (Optional) Allows both HTTP and HTTPS (`enabled`) or redirect HTTP to HTTPS (`redirected`). Defaults to `enabled`.
+- `https_connections_only` - (Optional) Allows both HTTP and HTTPS (`false`) or redirect HTTP to HTTPS (`true`). Defaults to `false`.
+
+- `http_option` - (Deprecated) Allows both HTTP and HTTPS (`enabled`) or redirect HTTP to HTTPS (`redirected`). Defaults to `enabled`.
+
+~> **Important:** Only one of `https_connections_only` or `http_option` can be set at a time.
 
 - `sandbox` - (Optional) Execution environment of the container.
 
-- `health_check` - (Optional) Health check configuration block of the container.
+- `liveness_probe` - (Optional) Defines how to check if the container is running.
+    - `tcp` - When set to `true`, performs TCP checks on the container.
+    - `http` - Perform HTTP check on the container with the specified path.
+        - `path` - Path to use for the HTTP health check.
+    - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
+    - `interval`- Time interval between checks (in duration notation, e.g. "30s").
+    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
+
+- `health_check` - (Deprecated) Health check configuration block of the container.
+    - `tcp` - When set to `true`, performs TCP checks on the container.
     - `http` - HTTP health check configuration.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
+
+~> **Important:** Only one of `liveness_probe` or `health_check` can be set at a time.
+
+- ` startup_probe` - (Optional) Defines how to check if the container has started successfully.
+    - `tcp` - When set to `true`, performs TCP checks on the container.
+    - `http` - Perform HTTP check on the container with the specified path.
+        - `path` - Path to use for the HTTP health check.
+    - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
+    - `interval`- Time interval between checks (in duration notation, e.g. "30s").
+    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
 
 - `scaling_option` - (Optional) Configuration block used to decide when to scale up or down. Possible values:
     - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
@@ -192,17 +242,21 @@ The following arguments are supported:
 
 - `port` - (Optional) The port to expose the container.
 
-- `deploy` - (Optional) Boolean indicating whether the container is in a production environment.
+- `deploy` - (Deprecated) Boolean indicating whether the container is in a production environment.
 
-- `local_storage_limit` - (Optional) Local storage limit of the container (in MB)
+~> **Important:** Containers are now automatically deployed and redeployed; setting this attribute will not have any effect.
+
+- `local_storage_limit_bytes` - (Optional) Local storage limit of the container (in bytes).
+
+- `local_storage_limit` - (Deprecated) Local storage limit of the container (in MB)
+
+~> **Important:** Only one of `local_storage_limit_bytes` or `local_storage_limit` can be set at a time.
 
 - `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
 
 - `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
 
 - `private_network_id` (Optional) The ID of the Private Network the container is connected to.
-
-~> **Important** This feature is currently in beta and requires a namespace with VPC integration activated by setting the `activate_vpc_integration` attribute to `true`.
 
 Note that if you want to use your own configuration, you must consult our configuration [restrictions](https://www.scaleway.com/en/docs/serverless-containers/reference-content/containers-limitations/#configuration-restrictions) section.
 
@@ -214,7 +268,7 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 ~> **Important:** Container IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 
 - `status` - The container status.
 
@@ -223,6 +277,10 @@ The `scaleway_container` resource exports certain attributes once the Container 
 - `error_message` - The error message of the container.
 
 - `domain_name` - The native domain name of the container
+
+- ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
+
+- `public_endpoint` - The native domain name of the container
 
 ## Import
 
@@ -255,7 +313,7 @@ The vCPU represents a portion of the underlying, physical CPU that is assigned t
 
 You can determine the computing resources to allocate to each container.
 
-The `memory_limit` (in MB) must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
+The `memory_limit_bytes` must correspond with the right amount of vCPU. Refer to the table below to determine the right memory/vCPU combination.
 
 | Memory (in MB) | vCPU |
 |----------------|------|
@@ -283,15 +341,16 @@ Example:
 
 ```terraform
 resource "scaleway_container" "main" {
-  name         = "my-container-02"
+  name         = "my-container"
   namespace_id = scaleway_container_namespace.main.id
 
-  health_check {
+  liveness_probe {
     http {
       path = "/ping"
     }
     failure_threshold = 40
     interval          = "5s"
+    timeout           = "1m"
   }
 }
 ```
@@ -304,7 +363,6 @@ Refer to the [Serverless Containers pricing](https://www.scaleway.com/en/docs/fa
 
 Scaling option block configuration allows you to choose which parameter will scale up/down containers.
 Options are number of concurrent requests, CPU or memory usage.
-It replaces current `max_concurrency` that has been deprecated.
 
 Example:
 

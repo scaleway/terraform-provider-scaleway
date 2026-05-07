@@ -1,6 +1,7 @@
 package container_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,13 +17,16 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-basic"
 					}
 
 					resource scaleway_container main {
 						name = "test-container-data"
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 					}
 
 					data "scaleway_container" "by_name" {
@@ -34,7 +38,7 @@ func TestAccDataSourceContainer_Basic(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					resource.TestCheckResourceAttr("scaleway_container.main", "name", "test-container-data"),
@@ -58,11 +62,15 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_container_namespace main {}
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-healthcheck"
+					}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						deploy = false
 					}
 
@@ -70,7 +78,7 @@ func TestAccDataSourceContainer_HealthCheck(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					// Check default option returned by the API when you don't specify the health_check block.
@@ -95,11 +103,15 @@ func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 		CheckDestroy:             isNamespaceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_container_namespace main {}
+				Config: fmt.Sprintf(`
+					resource scaleway_container_namespace main {
+						name = "tf-test-datasource-scalingoption"
+					}
 
 					resource scaleway_container main {
 						namespace_id = scaleway_container_namespace.main.id
+						image = "%s"
+						port = 80
 						deploy = false
 					}
 
@@ -107,7 +119,7 @@ func TestAccDataSourceContainer_ScalingOption(t *testing.T) {
 						namespace_id = scaleway_container_namespace.main.id
 						container_id = scaleway_container.main.id
 					}
-				`,
+				`, defaultTestImage),
 				Check: resource.ComposeTestCheckFunc(
 					isContainerPresent(tt, "scaleway_container.main"),
 					// Check default option returned by the API when you don't specify the scaling_option block.
