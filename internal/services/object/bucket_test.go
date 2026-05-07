@@ -781,6 +781,176 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucket_Lifecycle_NoncurrentVersionExpiration(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle-nve")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle-nve"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle-nve"{
+						name = "%s"
+						region = "%s"
+						acl = "private"
+						versioning {
+							enabled = true
+						}
+
+						lifecycle_rule {
+							id      = "id-nve"
+							prefix  = "config/"
+							enabled = true
+							noncurrent_version_expiration {
+								days = 90
+							}
+						}
+					}
+				`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle-nve", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle-nve", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id-nve"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "config/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.days", "90"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle-nve"{
+						name = "%s"
+						region = "%s"
+						acl = "private"
+						versioning {
+							enabled = true
+						}
+
+						lifecycle_rule {
+							id      = "id-nve"
+							prefix  = "config/"
+							enabled = true
+							noncurrent_version_expiration {
+								days = 120
+							}
+						}
+					}
+				`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle-nve", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle-nve", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id-nve"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "config/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.days", "120"),
+				),
+			},
+			{
+				ResourceName:      resourceNameLifecycle,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_Lifecycle_NoncurrentVersionTransition(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle-nvt")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle-nvt"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle-nvt"{
+						name = "%s"
+						region = "%s"
+						acl = "private"
+						versioning {
+							enabled = true
+						}
+
+						lifecycle_rule {
+							id      = "id-nvt"
+							prefix  = "config/"
+							enabled = true
+							noncurrent_version_transition {
+								days          = 30
+								storage_class = "GLACIER"
+							}
+						}
+					}
+				`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle-nvt", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle-nvt", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id-nvt"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "config/"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.*", map[string]string{
+						"days":          "30",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle-nvt"{
+						name = "%s"
+						region = "%s"
+						acl = "private"
+						versioning {
+							enabled = true
+						}
+
+						lifecycle_rule {
+							id      = "id-nvt"
+							prefix  = "config/"
+							enabled = true
+							noncurrent_version_transition {
+								days          = 60
+								storage_class = "GLACIER"
+							}
+							noncurrent_version_transition {
+								days          = 90
+								storage_class = "ONEZONE_IA"
+							}
+						}
+					}
+				`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle-nvt", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle-nvt", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id-nvt"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "config/"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.*", map[string]string{
+						"days":          "60",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.*", map[string]string{
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+				),
+			},
+			{
+				ResourceName:      resourceNameLifecycle,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
