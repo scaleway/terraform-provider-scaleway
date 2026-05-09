@@ -774,13 +774,15 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 
 	userData := make(map[string]any)
 
-	for key, value := range allUserData.UserData {
-		userDataValue, err := io.ReadAll(value)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	if allUserData != nil {
+		for key, value := range allUserData.UserData {
+			userDataValue, err := io.ReadAll(value)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-		userData[key] = string(userDataValue)
+			userData[key] = string(userDataValue)
+		}
 	}
 
 	_ = d.Set("user_data", userData)

@@ -248,7 +248,9 @@ func ResourceAppleSiliconServerCreate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if bandwidth, ok := d.GetOk("public_bandwidth"); ok {
-		createReq.PublicBandwidthBps = *types.ExpandUint64Ptr(bandwidth)
+		if bw := types.ExpandUint64Ptr(bandwidth); bw != nil {
+			createReq.PublicBandwidthBps = *bw
+		}
 	}
 
 	res, err := asAPI.CreateServer(createReq, scw.WithContext(ctx))

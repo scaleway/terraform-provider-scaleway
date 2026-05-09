@@ -246,7 +246,9 @@ func getSecurityGroupRules(ctx context.Context, instanceAPI *instanceSDK.API, zo
 		// There are rule in tfstate not present in api
 		if len(apiRules[direction]) != len(stateRules[direction]) {
 			// Truncate stateRules with apiRules length
-			stateRules[direction] = stateRules[direction][0:len(apiRules[direction])]
+			if stateRules[direction] != nil && len(stateRules[direction]) >= len(apiRules[direction]) {
+				stateRules[direction] = stateRules[direction][0:len(apiRules[direction])]
+			}
 		}
 	}
 

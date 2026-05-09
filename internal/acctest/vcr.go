@@ -164,7 +164,11 @@ func cassetteBodyMatcher(request *http.Request, cassette cassette.Request) bool 
 // CassetteMatcher is a custom matcher that check equivalence of a played request against a recorded one
 // It compares method, path and query but will remove unwanted values from query
 func CassetteMatcher(request *http.Request, cassette cassette.Request) bool {
-	cassetteURL, _ := url.Parse(cassette.URL)
+	cassetteURL, err := url.Parse(cassette.URL)
+	if err != nil || cassetteURL == nil {
+		return false
+	}
+
 	requestURL := request.URL
 
 	requestURLValues := requestURL.Query()

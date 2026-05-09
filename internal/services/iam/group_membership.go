@@ -157,7 +157,11 @@ func GroupMembershipID(groupID string, userID *string, applicationID *string) st
 		return fmt.Sprintf("%s/user/%s", groupID, *userID)
 	}
 
-	return fmt.Sprintf("%s/app/%s", groupID, *applicationID)
+	if applicationID != nil {
+		return fmt.Sprintf("%s/app/%s", groupID, *applicationID)
+	}
+
+	return groupID
 }
 
 func ExpandGroupMembershipID(id string) (groupID string, userID string, applicationID string, err error) {

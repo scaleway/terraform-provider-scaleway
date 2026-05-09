@@ -258,7 +258,7 @@ func ResourceIPAMIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	if source, ok := d.GetOk("source"); ok {
 		sourceData := expandIPSource(source)
-		if sourceData.PrivateNetworkID != nil {
+		if sourceData != nil && sourceData.PrivateNetworkID != nil {
 			pn, err := vpcAPI.GetPrivateNetwork(&vpcSDK.GetPrivateNetworkRequest{
 				PrivateNetworkID: *sourceData.PrivateNetworkID,
 				Region:           region,

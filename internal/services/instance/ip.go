@@ -102,15 +102,17 @@ func ResourceInstanceIPCreate(ctx context.Context, d *schema.ResourceData, m any
 	reverseRaw, ok := d.GetOk("reverse")
 	if ok {
 		reverseStrPtr := types.ExpandStringPtr(reverseRaw)
-		req := &instanceSDK.UpdateIPRequest{
-			IP:      res.IP.ID,
-			Reverse: &instanceSDK.NullableStringValue{Value: *reverseStrPtr},
-			Zone:    zone,
-		}
+		if reverseStrPtr != nil {
+			req := &instanceSDK.UpdateIPRequest{
+				IP:      res.IP.ID,
+				Reverse: &instanceSDK.NullableStringValue{Value: *reverseStrPtr},
+				Zone:    zone,
+			}
 
-		_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
+			_, err = instanceAPI.UpdateIP(req, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

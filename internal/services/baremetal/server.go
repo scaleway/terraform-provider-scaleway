@@ -582,7 +582,7 @@ func ResourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	_ = d.Set("cloud_init", cloudInit)
 
-	if server.Install != nil {
+	if server.Install != nil && os != nil {
 		_ = d.Set("os", zonal.NewIDString(server.Zone, os.ID))
 		_ = d.Set("os_name", os.Name)
 		_ = d.Set("ssh_key_ids", server.Install.SSHKeyIDs)
