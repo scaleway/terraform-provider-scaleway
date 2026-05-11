@@ -31,16 +31,8 @@ func ResourceBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaFunc: bucketSchema,
-		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
-			if diff.Get("object_lock_enabled").(bool) {
-				if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
-					return errors.New("versioning must be enabled when object lock is enabled")
-				}
-			}
-
-			return nil
-		},
+		SchemaFunc:    bucketSchema,
+		CustomizeDiff: validateLifecycle,
 	}
 }
 
@@ -193,20 +185,17 @@ func bucketSchema() map[string]*schema.Schema {
 									Optional:     true,
 									ValidateFunc: validBucketLifecycleTimestamp,
 									Description:  "Specifies the date the object is to be moved or deleted. The date value must be in RFC3339 full-date format e.g. `2023-08-22`",
-									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
 								},
 								"days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
-									ValidateFunc: validation.IntAtLeast(0),
+									ValidateFunc: validation.IntAtLeast(1),
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
 								},
 								"expired_object_delete_marker": {
-									Type:         schema.TypeBool,
-									Optional:     true,
-									Description:  "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action",
-									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
+									Type:        schema.TypeBool,
+									Optional:    true,
+									Description: "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action",
 								},
 							},
 						},
@@ -223,14 +212,12 @@ func bucketSchema() map[string]*schema.Schema {
 									Optional:     true,
 									ValidateFunc: validBucketLifecycleTimestamp,
 									Description:  "Specifies the date objects are transitioned to the specified storage class. The date value must be in RFC3339 full-date format e.g. `2023-08-22`",
-									ExactlyOneOf: []string{"transition.0.days", "transition.0.date"},
 								},
 								"days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
 									ValidateFunc: validation.IntAtLeast(0),
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
-									ExactlyOneOf: []string{"transition.0.days", "transition.0.date"},
 								},
 								"storage_class": {
 									Type:         schema.TypeString,
@@ -919,4 +906,94 @@ func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error
 	}
 
 	return
+}
+
+func validateLifecycle(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+	// Object lock and versioning
+	if diff.Get("object_lock_enabled").(bool) {
+		if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
+			return errors.New("versioning must be enabled when object lock is enabled")
+		}
+	}
+
+	ruleCount := diff.Get("lifecycle_rule.#").(int)
+
+	for i := range ruleCount {
+		// Expiration
+		if _, ok := diff.GetOk(fmt.Sprintf("lifecycle_rule.%d.expiration", i)); ok {
+			if err := validateLifecycleExpiration(diff, i); err != nil {
+				return err
+			}
+		}
+
+		// Transition
+		if v, ok := diff.GetOk(fmt.Sprintf("lifecycle_rule.%d.transition", i)); ok {
+			// Special treatment for "TypeSet" (can't be simply indexed)
+			transitionSet := v.(*schema.Set)
+			for _, transitionRaw := range transitionSet.List() {
+				transition := transitionRaw.(map[string]interface{})
+				if err := validateLifecycleTransition(transition, i); err != nil {
+					return err
+				}
+
+			}
+		}
+	}
+
+	return nil
+}
+
+func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
+	prefix := fmt.Sprintf("lifecycle_rule.%d.expiration.0.", i)
+
+	_, daysOk := diff.GetOk(prefix + "days")
+	_, dateOk := diff.GetOk(prefix + "date")
+	_, markerOk := diff.GetOk(prefix + "expired_object_delete_marker")
+
+	// Implement "ExactlyOneOf"
+	count := 0
+	if daysOk {
+		count++
+	}
+	if dateOk {
+		count++
+	}
+	if markerOk {
+		count++
+	}
+
+	if count == 0 {
+		return fmt.Errorf("lifecycle_rule.%d.expiration: one (only one) of 'days', 'date', 'expired_object_delete_marker' should be defined", i)
+	}
+	if count > 1 {
+		return fmt.Errorf("lifecycle_rule.%d.expiration: 'days', 'date', 'expired_object_delete_marker' are mutually exclusive", i)
+	}
+
+	return nil
+}
+
+func validateLifecycleTransition(transition map[string]interface{}, i int) error {
+	daysVal, _ := transition["days"]
+	dateVal, _ := transition["date"]
+
+	days := daysVal.(int)
+	date := dateVal.(string)
+
+	// Implement "ExactlyOneOf"
+	count := 0
+	if days > 0 {
+		count++
+	}
+	if date != "" {
+		count++
+	}
+
+	if count == 0 {
+		return fmt.Errorf("lifecycle_rule.transition: one (only one) of 'days', 'date' should be defined")
+	}
+	if count > 1 {
+		return fmt.Errorf("lifecycle_rule.transition: 'days', 'date' are mutually exclusive")
+	}
+
+	return nil
 }
