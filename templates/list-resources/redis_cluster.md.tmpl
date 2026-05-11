@@ -1,0 +1,38 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Redis"
+description: |-
+  Lists Scaleway Redis clusters across zones and projects.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/redis/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the Redis cluster to filter on.
+- `tags` - (Optional) Tags of the Redis cluster to filter on.
+- `organization_id` - (Optional) Organization ID of the Redis cluster to filter on.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `zones` - (Optional) Zones to filter for. Use `["*"]` to list from all zones.
+- `version` - (Optional) Redis engine version to filter on.
+
+## Attributes Reference
+
+Each result corresponds to one Redis cluster and exposes the same attributes as the [`scaleway_redis_cluster` resource](../resources/redis_cluster.md).
