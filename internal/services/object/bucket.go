@@ -164,12 +164,12 @@ func bucketSchema() map[string]*schema.Schema {
 					"object_size_greated_than": {
 						Type:        schema.TypeInt,
 						Optional:    true,
-						Description: "", // FIXME
+						Description: "Minimum object size (in bytes) to which the rule applies",
 					},
 					"object_size_less_than": {
 						Type:        schema.TypeInt,
 						Optional:    true,
-						Description: "", // FIXME
+						Description: "Maximum object size (in bytes) to which the rule applies",
 					},
 					"enabled": {
 						Type:        schema.TypeBool,
@@ -186,24 +186,27 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						MaxItems:    1,
 						Description: "Specifies a period in the object's expire",
-						Elem: &schema.Resource{ // FIXME: au moins un des trois
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"date": {
 									Type:         schema.TypeString,
 									Optional:     true,
 									ValidateFunc: validBucketLifecycleTimestamp,
-									Description:  "", // FIXME
+									Description:  "Specifies the date the object is to be moved or deleted. The date value must be in RFC3339 full-date format e.g. `2023-08-22`",
+									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
 								},
 								"days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
 									ValidateFunc: validation.IntAtLeast(0),
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
 								},
 								"expired_object_delete_marker": {
-									Type:        schema.TypeBool,
-									Optional:    true,
-									Description: "", // FIXME
+									Type:         schema.TypeBool,
+									Optional:     true,
+									Description:  "Specifies whether Scaleway Object will remove a delete marker with no noncurrent versions. If set to `true`, the delete marker will be expired; if set to `false` the policy takes no action",
+									ExactlyOneOf: []string{"expiration.0.days", "expiration.0.date", "expiration.0.expired_object_delete_marker"},
 								},
 							},
 						},
@@ -213,19 +216,21 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						Set:         transitionHash,
 						Description: "Define when objects transition to another storage class",
-						Elem: &schema.Resource{ // FIXME: date or days mandatory
+						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"date": {
 									Type:         schema.TypeString,
 									Optional:     true,
 									ValidateFunc: validBucketLifecycleTimestamp,
-									Description:  "", // FIXME
+									Description:  "Specifies the date objects are transitioned to the specified storage class. The date value must be in RFC3339 full-date format e.g. `2023-08-22`",
+									ExactlyOneOf: []string{"transition.0.days", "transition.0.date"},
 								},
 								"days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
 									ValidateFunc: validation.IntAtLeast(0),
 									Description:  "Specifies the number of days after object creation when the specific rule action takes effect",
+									ExactlyOneOf: []string{"transition.0.days", "transition.0.date"},
 								},
 								"storage_class": {
 									Type:         schema.TypeString,
@@ -245,14 +250,14 @@ func bucketSchema() map[string]*schema.Schema {
 								"newer_noncurrent_versions": {
 									Type:         schema.TypeInt,
 									Optional:     true,
-									ValidateFunc: validation.IntBetween(0, 100),
-									Description:  "", // FIXME
+									ValidateFunc: validation.IntBetween(1, 100),
+									Description:  "Number of noncurrent versions Scaleway Object Storage will retain. Must be a non-zero positive integer",
 								},
 								"noncurrent_days": {
 									Type:         schema.TypeInt,
 									Optional:     true,
 									ValidateFunc: validation.IntAtLeast(1),
-									Description:  "", // FIXME
+									Description:  "Number of days an object is noncurrent before Scaleway Object Storage can perform the associated action. Must be a positive integer",
 								},
 							},
 						},
@@ -265,20 +270,20 @@ func bucketSchema() map[string]*schema.Schema {
 								"newer_noncurrent_versions": {
 									Type:         schema.TypeInt,
 									Optional:     true,
-									ValidateFunc: validation.IntBetween(0, 100),
-									Description:  "", // FIXME
+									ValidateFunc: validation.IntBetween(1, 100),
+									Description:  "Number of noncurrent versions Scaleway Object Storage will retain. Must be a non-zero positive integer",
 								},
 								"noncurrent_days": {
 									Type:         schema.TypeInt,
 									Required:     true,
 									ValidateFunc: validation.IntAtLeast(1),
-									Description:  "", // FIXME
+									Description:  "Number of days an object is noncurrent before Scaleway Object Storage can perform the associated action",
 								},
 								"storage_class": {
 									Type:         schema.TypeString,
 									Required:     true,
 									ValidateFunc: validation.StringInSlice(TransitionSCWStorageClassValues(), false),
-									Description:  "", // FIXME
+									Description:  "Specifies the Scaleway Object Storage class to which you want the object to transition",
 								},
 							},
 						},
