@@ -440,7 +440,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		rule := s3Types.LifecycleRule{}
 
 		// Filter
-		rule.Filter = extractFilter(r)
+		rule.Filter = extractFilter(r, d)
 
 		// ID
 		if val, ok := r["id"].(string); ok && val != "" {
@@ -517,11 +517,19 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 	return nil
 }
 
-func extractFilter(r map[string]any) *s3Types.LifecycleRuleFilter {
+func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types.LifecycleRuleFilter {
 	prefix := r["prefix"].(string)
 	tags := ExpandObjectBucketTags(r["tags"])
-	objectSizeGreaterThan := r["object_size_greater_than"].(*int64)
-	objectSizeLessThan := r["object_size_less_than"].(*int64)
+
+	var objectSizeGreaterThan *int64
+	if v, ok := resourceData.GetOk("object_size_greater_than"); ok {
+		objectSizeGreaterThan = new(int64(v.(int)))
+	}
+
+	var objectSizeLessThan *int64
+	if v, ok := resourceData.GetOk("object_size_less_than"); ok {
+		objectSizeLessThan = new(int64(v.(int)))
+	}
 
 	filterElements := []any{prefix, tags, objectSizeGreaterThan, objectSizeLessThan}
 	fieldsCounter := 0
