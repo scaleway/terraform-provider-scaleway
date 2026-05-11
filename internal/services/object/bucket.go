@@ -161,7 +161,7 @@ func bucketSchema() map[string]*schema.Schema {
 						Optional:    true,
 						Description: "The tags associated with the bucket lifecycle",
 					},
-					"object_size_greated_than": {
+					"object_size_greater_than": {
 						Type:        schema.TypeInt,
 						Optional:    true,
 						Description: "Minimum object size (in bytes) to which the rule applies",
@@ -453,30 +453,7 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		rule := s3Types.LifecycleRule{}
 
 		// Filter
-		prefix := r["prefix"].(string)
-		tags := ExpandObjectBucketTags(r["tags"])
-		ruleHasPrefix := prefix != ""
-		filter := &s3Types.LifecycleRuleFilter{}
-
-		if len(tags) > 1 || (ruleHasPrefix && len(tags) == 1) {
-			lifecycleRuleAndOp := &s3Types.LifecycleRuleAndOperator{
-				Tags: tags,
-			}
-
-			if ruleHasPrefix {
-				lifecycleRuleAndOp.Prefix = new(r["prefix"].(string))
-			}
-
-			filter.And = lifecycleRuleAndOp
-		}
-
-		if !ruleHasPrefix && len(tags) == 1 {
-			filter.Tag = &tags[0]
-		} else if ruleHasPrefix && len(tags) == 0 {
-			filter.Prefix = new(r["prefix"].(string))
-		}
-
-		rule.Filter = filter
+		rule.Filter = extractFilter(r)
 
 		// ID
 		if val, ok := r["id"].(string); ok && val != "" {
@@ -551,6 +528,78 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 	}
 
 	return nil
+}
+
+func extractFilter(r map[string]any) *s3Types.LifecycleRuleFilter {
+	prefix := r["prefix"].(string)
+	tags := ExpandObjectBucketTags(r["tags"])
+	objectSizeGreaterThan := r["object_size_greater_than"].(*int64)
+	objectSizeLessThan := r["object_size_less_than"].(*int64)
+
+	filterElements := []any{prefix, tags, objectSizeGreaterThan, objectSizeLessThan}
+	fieldsCounter := 0
+	for _, e := range filterElements {
+		if isSet(e) {
+			fieldsCounter++
+		}
+	}
+
+	filter := &s3Types.LifecycleRuleFilter{}
+
+	if fieldsCounter == 1 {
+		// If a single filter field is set, just put it in "filter"
+		if len(tags) > 0 {
+			filter.Tag = &tags[0]
+		}
+
+		if prefix != "" {
+			filter.Prefix = new(r["prefix"].(string))
+		}
+
+		if objectSizeGreaterThan != nil {
+			filter.ObjectSizeGreaterThan = new(r["object_size_greater_than"].(int64))
+		}
+
+		if objectSizeLessThan != nil {
+			filter.ObjectSizeLessThan = new(r["object_size_less_than"].(int64))
+		}
+	} else if fieldsCounter >= 2 {
+		// If several fields are set, put them into "filter.and"
+		lifecycleRuleAndOp := &s3Types.LifecycleRuleAndOperator{}
+
+		if len(tags) > 0 {
+			lifecycleRuleAndOp.Tags = tags
+		}
+
+		if prefix != "" {
+			lifecycleRuleAndOp.Prefix = new(r["prefix"].(string))
+		}
+
+		if objectSizeGreaterThan != nil {
+			lifecycleRuleAndOp.ObjectSizeGreaterThan = new(r["object_size_greater_than"].(int64))
+		}
+
+		if objectSizeLessThan != nil {
+			lifecycleRuleAndOp.ObjectSizeLessThan = new(r["object_size_less_than"].(int64))
+		}
+
+		filter.And = lifecycleRuleAndOp
+	}
+
+	return filter
+}
+
+func isSet(i any) bool {
+	switch v := i.(type) {
+	case string:
+		return v != ""
+	case *int64:
+		return v != nil
+	case []string:
+		return len(v) > 0 // This handles "v != nil" as well
+	default:
+		return i != nil
+	}
 }
 
 //gocyclo:ignore
