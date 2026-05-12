@@ -3,11 +3,12 @@ package container
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -18,10 +19,11 @@ import (
 
 func ResourceCron() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceContainerCronCreate,
-		ReadContext:   ResourceContainerCronRead,
-		UpdateContext: ResourceContainerCronUpdate,
-		DeleteContext: ResourceContainerCronDelete,
+		CreateContext:      ResourceContainerCronCreate,
+		ReadContext:        ResourceContainerCronRead,
+		UpdateContext:      ResourceContainerCronUpdate,
+		DeleteContext:      ResourceContainerCronDelete,
+		DeprecationMessage: "The \"scaleway_container_cron\" resource is deprecated, please use `scaleway_container_trigger` with a cron configuration instead",
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -76,29 +78,33 @@ func ResourceContainerCronCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	jsonObj, err := scw.DecodeJSONObject(d.Get("args").(string), scw.NoEscape)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	containerID := locality.ExpandID(d.Get("container_id").(string))
 	schedule := d.Get("schedule").(string)
-	req := &container.CreateCronRequest{
-		ContainerID: containerID,
-		Region:      region,
-		Schedule:    schedule,
-		Name:        types.ExpandStringPtr(d.Get("name")),
-		Args:        &jsonObj,
-	}
 
-	res, err := api.CreateCron(req, scw.WithContext(ctx))
+	timezone, err := time.LoadLocation("Europe/Paris") // Timezone is required for API v1 so we use the same default as the Console
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", res.Schedule))
+	req := &container.CreateTriggerRequest{
+		ContainerID: containerID,
+		Region:      region,
+		Name:        types.ExpandOrGenerateString(d.Get("name"), "cron"),
+		CronConfig: &container.CreateTriggerRequestCronConfig{
+			Schedule: schedule,
+			Body:     d.Get("args").(string),
+			Timezone: timezone.String(),
+		},
+	}
 
-	_, err = waitForCron(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
+	res, err := api.CreateTrigger(req, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	tflog.Info(ctx, fmt.Sprintf("[INFO] Submitted new cron job: %#v", res.CronConfig.Schedule))
+
+	_, err = waitForTrigger(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,7 +122,7 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	cron, err := waitForCron(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutRead))
+	trigger, err := waitForTrigger(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -127,16 +133,11 @@ func ResourceContainerCronRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	args, err := scw.EncodeJSONObject(*cron.Args, scw.NoEscape)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("container_id", regional.NewID(region, cron.ContainerID).String())
-	_ = d.Set("schedule", cron.Schedule)
-	_ = d.Set("args", args)
-	_ = d.Set("status", cron.Status)
-	_ = d.Set("name", cron.Name)
+	_ = d.Set("container_id", regional.NewID(region, trigger.ContainerID).String())
+	_ = d.Set("schedule", trigger.CronConfig.Schedule)
+	_ = d.Set("args", trigger.CronConfig.Body)
+	_ = d.Set("status", trigger.Status)
+	_ = d.Set("name", trigger.Name)
 	_ = d.Set("region", region)
 
 	return nil
@@ -148,27 +149,22 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	req := &container.UpdateCronRequest{
-		ContainerID: new(locality.ExpandID(d.Get("container_id"))),
-		CronID:      locality.ExpandID(containerCronID),
-		Region:      region,
+	req := &container.UpdateTriggerRequest{
+		TriggerID:  locality.ExpandID(containerCronID),
+		Region:     region,
+		CronConfig: &container.UpdateTriggerRequestCronConfig{},
 	}
 
 	shouldUpdate := false
 
 	if d.HasChange("schedule") {
-		req.Schedule = new(d.Get("schedule").(string))
+		req.CronConfig.Schedule = new(d.Get("schedule").(string))
 		shouldUpdate = true
 	}
 
 	if d.HasChange("args") {
-		jsonObj, err := scw.DecodeJSONObject(d.Get("args").(string), scw.NoEscape)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		shouldUpdate = true
-		req.Args = &jsonObj
+		req.CronConfig.Body = new(d.Get("args").(string))
 	}
 
 	if d.HasChange("name") {
@@ -177,14 +173,14 @@ func ResourceContainerCronUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if shouldUpdate {
-		cron, err := api.UpdateCron(req, scw.WithContext(ctx))
+		cron, err := api.UpdateTrigger(req, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		tflog.Info(ctx, fmt.Sprintf("[INFO] Updated cron job: %#v", req.Schedule))
+		tflog.Info(ctx, fmt.Sprintf("[INFO] Updated cron job: %#v", req.CronConfig.Schedule))
 
-		_, err = waitForCron(ctx, api, cron.ID, region, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitForTrigger(ctx, api, cron.ID, region, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -201,14 +197,14 @@ func ResourceContainerCronDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForCron(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForTrigger(ctx, api, containerCronID, region, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = api.DeleteCron(&container.DeleteCronRequest{
-		Region: region,
-		CronID: containerCronID,
+	_, err = api.DeleteTrigger(&container.DeleteTriggerRequest{
+		Region:    region,
+		TriggerID: containerCronID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)

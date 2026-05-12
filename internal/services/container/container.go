@@ -2,11 +2,13 @@ package container
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
+	containerBeta "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -14,10 +16,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
-)
-
-const (
-	containerMaxConcurrencyLimit int = 80
 )
 
 func ResourceContainer() *schema.Resource {
@@ -97,7 +95,7 @@ func containerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Computed:    true,
 			Optional:    true,
-			Description: "The minimum of running container instances continuously.",
+			Description: "The minimum of number of instances this container can scale to.",
 		},
 		"max_scale": {
 			Type:        schema.TypeInt,
@@ -106,10 +104,19 @@ func containerSchema() map[string]*schema.Schema {
 			Description: "The maximum of number of instances this container can scale to.",
 		},
 		"memory_limit": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Optional:    true,
-			Description: "The memory computing resources in MB to allocate to each container.",
+			Type:          schema.TypeInt,
+			Computed:      true,
+			Optional:      true,
+			Description:   "The memory computing resources in MB to allocate to each container.",
+			Deprecated:    "Please use memory_limit_bytes instead",
+			ConflictsWith: []string{"memory_limit_bytes"},
+		},
+		"memory_limit_bytes": {
+			Type:          schema.TypeInt,
+			Computed:      true,
+			Optional:      true,
+			Description:   "The memory computing resources in bytes to allocate to each container.",
+			ConflictsWith: []string{"memory_limit"},
 		},
 		"cpu_limit": {
 			Type:        schema.TypeInt,
@@ -126,34 +133,29 @@ func containerSchema() map[string]*schema.Schema {
 		"privacy": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Description:      "The privacy type define the way to authenticate to your container",
+			Description:      "The privacy type defines the way to authenticate to your container",
 			Default:          container.ContainerPrivacyPublic,
 			ValidateDiagFunc: verify.ValidateEnum[container.ContainerPrivacy](),
 		},
 		"registry_image": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "The scaleway registry image address",
-		},
-		"registry_sha256": {
 			Type:         schema.TypeString,
 			Optional:     true,
-			RequiredWith: []string{"registry_image"},
-			Description:  "The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string",
+			Computed:     true,
+			Description:  "The scaleway registry image address",
+			Deprecated:   "Please use image instead",
+			ExactlyOneOf: []string{"image"},
 		},
-		"max_concurrency": {
-			Type:         schema.TypeInt,
+		"image": {
+			Type:         schema.TypeString,
 			Optional:     true,
 			Computed:     true,
-			Deprecated:   "Use scaling_option.concurrent_requests_threshold instead. This attribute will be removed.",
-			Description:  "The maximum the number of simultaneous requests your container can handle at the same time.",
-			ValidateFunc: validation.IntAtMost(containerMaxConcurrencyLimit),
+			Description:  "The image reference (e.g. \"rg.fr-par.scw.cloud/my-registry-namespace/image:tag\" or \"nginx:latest\").",
+			ExactlyOneOf: []string{"registry_image"},
 		},
-		"domain_name": {
+		"registry_sha256": {
 			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The native container domain name.",
+			Optional:    true,
+			Description: "The sha256 of your source registry image, changing it will re-apply the deployment. Can be any string",
 		},
 		"protocol": {
 			Type:             schema.TypeString,
@@ -172,14 +174,23 @@ func containerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeBool,
 			Optional:    true,
 			Description: "This allows you to control your production environment",
-			Default:     false,
+			Deprecated:  "Containers are now automatically deployed or redeployed; setting this attribute will not have any effect.",
+		},
+		"https_connections_only": {
+			Type:          schema.TypeBool,
+			Optional:      true,
+			Computed:      true,
+			Description:   "If true, it will allow only HTTPS connections to access your container to prevent it from being triggered by insecure connections (HTTP).",
+			ConflictsWith: []string{"http_option"},
 		},
 		"http_option": {
 			Type:             schema.TypeString,
 			Optional:         true,
+			Computed:         true,
 			Description:      "HTTP traffic configuration",
-			Default:          container.ContainerHTTPOptionEnabled.String(),
-			ValidateDiagFunc: verify.ValidateEnum[container.ContainerHTTPOption](),
+			Deprecated:       "Please use https_connections_only instead",
+			ValidateDiagFunc: verify.ValidateEnum[containerBeta.ContainerHTTPOption](),
+			ConflictsWith:    []string{"https_connections_only"},
 		},
 		"sandbox": {
 			Type:             schema.TypeString,
@@ -189,24 +200,33 @@ func containerSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: verify.ValidateEnum[container.ContainerSandbox](),
 		},
 		"health_check": {
-			Type:        schema.TypeSet,
+			Type:        schema.TypeList,
 			Optional:    true,
 			Computed:    true,
+			MaxItems:    1,
 			Description: "Health check configuration of the container.",
+			Deprecated:  "Please use liveness_probe instead",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					// TCP has not been implemented yet in the API SDK, that's why the parameter is not in the schema.
-					// See container.ContainerHealthCheckSpecTCPProbe.
+					"tcp": {
+						Type:        schema.TypeBool,
+						Description: "Perform TCP check on the container",
+						Optional:    true,
+						Computed:    true,
+					},
 					"http": {
-						Type:        schema.TypeSet,
+						Type:        schema.TypeList,
 						Description: "HTTP health check configuration.",
-						Required:    true,
+						Computed:    true,
+						Optional:    true,
+						MaxItems:    1,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"path": {
 									Type:        schema.TypeString,
 									Description: "Path to use for the HTTP health check.",
-									Required:    true,
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -214,17 +234,34 @@ func containerSchema() map[string]*schema.Schema {
 					"failure_threshold": {
 						Type:        schema.TypeInt,
 						Description: "Number of consecutive health check failures before considering the container unhealthy.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 					},
 					"interval": {
 						Type:             schema.TypeString,
 						Description:      "Period between health checks.",
 						DiffSuppressFunc: dsf.Duration,
 						ValidateDiagFunc: verify.IsDuration(),
-						Required:         true,
+						Optional:         true,
+						Computed:         true,
 					},
 				},
 			},
+		},
+		"liveness_probe": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Computed:    true,
+			Description: "Defines how to check if the container is running.",
+			Elem:        containerProbeSchema(),
+		},
+		"startup_probe": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Description: "Defines how to check if the container has started successfully.",
+			Elem:        containerProbeSchema(),
 		},
 		"scaling_option": {
 			Type:        schema.TypeSet,
@@ -252,10 +289,19 @@ func containerSchema() map[string]*schema.Schema {
 			},
 		},
 		"local_storage_limit": {
-			Type:        schema.TypeInt,
-			Description: "Local storage limit of the container (in MB)",
-			Optional:    true,
-			Computed:    true,
+			Type:          schema.TypeInt,
+			Description:   "Local storage limit of the container (in MB)",
+			Deprecated:    "Please use local_storage_limit_bytes instead",
+			Optional:      true,
+			Computed:      true,
+			ConflictsWith: []string{"local_storage_limit_bytes"},
+		},
+		"local_storage_limit_bytes": {
+			Type:          schema.TypeInt,
+			Description:   "Local storage limit of the container (in bytes)",
+			Optional:      true,
+			Computed:      true,
+			ConflictsWith: []string{"local_storage_limit"},
 		},
 		"command": {
 			Type:        schema.TypeList,
@@ -275,9 +321,19 @@ func containerSchema() map[string]*schema.Schema {
 			Description: "ID of the Private Network the container is connected to",
 		},
 		// computed
+		"domain_name": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The native container domain name.",
+			Deprecated:  "This attribute will be removed in the future, please use public_endpoint instead",
+		},
+		"public_endpoint": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "Public URL of the container. This is the default endpoint generated by Scaleway to access the container from the Internet.",
+		},
 		"status": {
 			Type:        schema.TypeString,
-			Optional:    true,
 			Description: "The container status",
 			Computed:    true,
 		},
@@ -295,6 +351,52 @@ func containerSchema() map[string]*schema.Schema {
 	}
 }
 
+func containerProbeSchema() any {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"failure_threshold": {
+				Type:        schema.TypeInt,
+				Description: "Number of consecutive failures before considering the container has to be restarted.",
+				Required:    true,
+			},
+			"interval": {
+				Type:             schema.TypeString,
+				Description:      "Time interval between checks (in duration notation).",
+				DiffSuppressFunc: dsf.Duration,
+				ValidateDiagFunc: verify.IsDuration(),
+				Required:         true,
+			},
+			"timeout": {
+				Type:             schema.TypeString,
+				Description:      "Duration before the check times out (in duration notation).",
+				DiffSuppressFunc: dsf.Duration,
+				ValidateDiagFunc: verify.IsDuration(),
+				Required:         true,
+			},
+			"http": {
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Description: "Perform HTTP check on the container with the specified path.",
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"path": {
+							Type:        schema.TypeString,
+							Description: "Path to use for the HTTP health check.",
+							Required:    true,
+						},
+					},
+				},
+			},
+			"tcp": {
+				Type:        schema.TypeBool,
+				Description: "Perform TCP check on the container",
+				Optional:    true,
+			},
+		},
+	}
+}
+
 func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
@@ -302,7 +404,7 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	namespaceID := locality.ExpandID(d.Get("namespace_id").(string))
-	// verify name space state
+	// verify namespace state
 	_, err = waitForNamespace(ctx, api, region, namespaceID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
@@ -316,31 +418,6 @@ func ResourceContainerCreate(ctx context.Context, d *schema.ResourceData, m any)
 	res, err := api.CreateContainer(req, scw.WithContext(ctx))
 	if err != nil {
 		return diag.Errorf("creation container error: %s", err)
-	}
-
-	// check if container should be deployed
-	shouldDeploy := d.Get("deploy")
-	if *types.ExpandBoolPtr(shouldDeploy) {
-		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.Errorf("unexpected waiting container error: %s", err)
-		}
-
-		reqUpdate := &container.UpdateContainerRequest{
-			Region:      res.Region,
-			ContainerID: res.ID,
-			Redeploy:    types.ExpandBoolPtr(shouldDeploy),
-		}
-
-		_, err = api.UpdateContainer(reqUpdate, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForContainer(ctx, api, res.ID, region, d.Timeout(schema.TimeoutCreate))
-		if err != nil {
-			return diag.Errorf("unexpected waiting container error: %s", err)
-		}
 	}
 
 	d.SetId(regional.NewIDString(region, res.ID))
@@ -372,25 +449,36 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("environment_variables", types.FlattenMap(co.EnvironmentVariables))
 	_ = d.Set("min_scale", int(co.MinScale))
 	_ = d.Set("max_scale", int(co.MaxScale))
-	_ = d.Set("memory_limit", int(co.MemoryLimit))
-	_ = d.Set("cpu_limit", int(co.CPULimit))
+	_ = d.Set("memory_limit_bytes", int(co.MemoryLimitBytes))
+	_ = d.Set("memory_limit", int(co.MemoryLimitBytes/scw.MB))
+	_ = d.Set("cpu_limit", int(co.MvcpuLimit))
 	_ = d.Set("timeout", co.Timeout.Seconds)
 	_ = d.Set("privacy", co.Privacy.String())
-	_ = d.Set("description", new(*co.Description))
-	_ = d.Set("registry_image", co.RegistryImage)
-	_ = d.Set("max_concurrency", int(co.MaxConcurrency))
-	_ = d.Set("domain_name", co.DomainName)
+	_ = d.Set("description", co.Description)
+	_ = d.Set("registry_image", co.Image)
+	_ = d.Set("image", co.Image)
+	_ = d.Set("public_endpoint", co.PublicEndpoint)
+	_ = d.Set("domain_name", strings.TrimPrefix(co.PublicEndpoint, "https://"))
 	_ = d.Set("protocol", co.Protocol.String())
 	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
-	_ = d.Set("deploy", new(*types.ExpandBoolPtr(d.Get("deploy"))))
-	_ = d.Set("http_option", co.HTTPOption)
+	_ = d.Set("https_connections_only", co.HTTPSConnectionsOnly)
+
+	if co.HTTPSConnectionsOnly {
+		_ = d.Set("http_option", containerBeta.ContainerHTTPOptionRedirected.String())
+	} else {
+		_ = d.Set("http_option", containerBeta.ContainerHTTPOptionEnabled.String())
+	}
+
 	_ = d.Set("sandbox", co.Sandbox)
-	_ = d.Set("health_check", flattenHealthCheck(co.HealthCheck))
+	_ = d.Set("health_check", flattenLivenessProbeAsHealthCheck(co.LivenessProbe))
+	_ = d.Set("liveness_probe", flattenContainerProbe(co.LivenessProbe))
+	_ = d.Set("startup_probe", flattenContainerProbe(co.StartupProbe))
 	_ = d.Set("scaling_option", flattenScalingOption(co.ScalingOption))
 	_ = d.Set("region", co.Region.String())
-	_ = d.Set("local_storage_limit", int(co.LocalStorageLimit))
-	_ = d.Set("secret_environment_variables", flattenContainerSecrets(co.SecretEnvironmentVariables))
+	_ = d.Set("local_storage_limit_bytes", int(co.LocalStorageLimitBytes))
+	_ = d.Set("local_storage_limit", int(co.LocalStorageLimitBytes/scw.MB))
+	_ = d.Set("secret_environment_variables", co.SecretEnvironmentVariables)
 	_ = d.Set("tags", types.FlattenSliceString(co.Tags))
 	_ = d.Set("command", types.FlattenSliceString(co.Command))
 	_ = d.Set("args", types.FlattenSliceString(co.Args))
@@ -411,7 +499,7 @@ func ResourceContainerUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	namespaceID := d.Get("namespace_id")
-	// verify name space state
+	// verify namespace state
 	_, err = waitForNamespace(ctx, api, region, locality.ExpandID(namespaceID), d.Timeout(schema.TimeoutUpdate))
 	if err != nil {
 		return diag.Errorf("unexpected namespace error: %s", err)
