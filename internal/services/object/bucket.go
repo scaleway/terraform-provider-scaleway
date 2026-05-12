@@ -439,15 +439,15 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 
 		rule := s3Types.LifecycleRule{}
 
-		// Filter
-		rule.Filter = extractFilter(r, d)
-
 		// ID
 		if val, ok := r["id"].(string); ok && val != "" {
 			rule.ID = aws.String(val)
 		} else {
 			rule.ID = aws.String(id.PrefixedUniqueId("tf-scw-bucket-lifecycle-"))
 		}
+
+		// Filter
+		rule.Filter = extractFilter(r, d)
 
 		// Enabled
 		if val, ok := r["enabled"].(bool); ok && val {
@@ -534,15 +534,13 @@ func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types
 	filterElements := []any{prefix, tags, objectSizeGreaterThan, objectSizeLessThan}
 	fieldsCounter := 0
 	for _, e := range filterElements {
-		if isSet(e) {
-			fieldsCounter++
-		}
+		fieldsCounter += countFilters(e)
 	}
 
 	filter := &s3Types.LifecycleRuleFilter{}
 
 	if fieldsCounter == 1 {
-		// If a single filter field is set, just put it in "filter"
+		// If a single filter field is set, put it in "filter"
 		if len(tags) > 0 {
 			filter.Tag = &tags[0]
 		}
@@ -584,17 +582,27 @@ func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types
 	return filter
 }
 
-func isSet(i any) bool {
+// Return as many elements as represented by "i"
+// This function was designed around the need to count each tag as separate filters
+func countFilters(i any) int {
 	switch v := i.(type) {
 	case string:
-		return v != ""
+		if v != "" {
+			return 1
+		}
 	case *int64:
-		return v != nil
-	case []string:
-		return len(v) > 0 // This handles "v != nil" as well
+		if v != nil {
+			return 1
+		}
+	case []s3Types.Tag:
+		return len(v)
 	default:
-		return i != nil
+		if v != nil {
+			return 1
+		}
 	}
+
+	return 0
 }
 
 //gocyclo:ignore
@@ -771,7 +779,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 				}
 			}
 
-			// expiration
+			// Expiration
 			if lifecycleRule.Expiration != nil {
 				e := make(map[string]any)
 				if lifecycleRule.Expiration.Days != nil {
@@ -780,7 +788,8 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 				rule["expiration"] = []any{e}
 			}
-			//// transition
+
+			// Transition
 			if len(lifecycleRule.Transitions) > 0 {
 				transitions := make([]any, 0, len(lifecycleRule.Transitions))
 
