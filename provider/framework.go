@@ -259,12 +259,15 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 	return []func() list.ListResource{
 		mongodb.NewInstanceListResource,
 		rdb.NewDatabaseListResource,
+		rdb.NewInstanceListResource,
 		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
 		vpc.NewPrivateNetworkListResource,
 		ipam.NewIPListResource,
 		vpcgw.NewPublicGatewayListResource,
 		lb.NewLbListResource,
+		lb.NewFrontendListResource,
+		lb.NewBackendListResource,
 	}
 }
 
