@@ -116,9 +116,9 @@ type DatabaseListResourceModel struct {
 	ProjectIDs     types.List   `tfsdk:"project_ids"`
 	InstanceIDs    types.List   `tfsdk:"instance_ids"`
 	Name           types.String `tfsdk:"name"`
-	Managed        types.Bool   `tfsdk:"managed"`
 	Owner          types.String `tfsdk:"owner"`
 	OrganizationID types.String `tfsdk:"organization_id"`
+	Managed        types.Bool   `tfsdk:"managed"`
 }
 
 func (m *DatabaseListResourceModel) GetRegions() types.List {
@@ -130,10 +130,10 @@ func (m *DatabaseListResourceModel) GetProjects() types.List {
 }
 
 type rdbDatabaseRow struct {
+	Database   *rdbSDK.Database
 	Region     scw.Region
 	ProjectID  string
 	InstanceID string
-	Database   *rdbSDK.Database
 }
 
 type databaseListTarget struct {
