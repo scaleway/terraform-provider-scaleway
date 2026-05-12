@@ -949,10 +949,9 @@ func validateLifecycle(ctx context.Context, diff *schema.ResourceDiff, meta inte
 			transitionSet := v.(*schema.Set)
 			for _, transitionRaw := range transitionSet.List() {
 				transition := transitionRaw.(map[string]interface{})
-				if err := validateLifecycleTransition(transition, i); err != nil {
+				if err := validateLifecycleTransition(transition); err != nil {
 					return err
 				}
-
 			}
 		}
 	}
@@ -989,7 +988,11 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 	return nil
 }
 
-func validateLifecycleTransition(transition map[string]interface{}, i int) error {
+func validateLifecycleTransition(transition map[string]interface{}) error {
+	// At this point, the "days" and "date" fields are initialized.
+	// Either with the filled values, or with default zero values, which makes
+	// the "ok" value obsolete.
+
 	daysVal, _ := transition["days"]
 	dateVal, _ := transition["date"]
 
@@ -1006,7 +1009,9 @@ func validateLifecycleTransition(transition map[string]interface{}, i int) error
 	}
 
 	if count == 0 {
-		return fmt.Errorf("lifecycle_rule.transition: one (only one) of 'days', 'date' should be defined")
+		// This case also happens when "days = 0", which is supported according to AWS tests.
+		// No errors.
+		return nil
 	}
 	if count > 1 {
 		return fmt.Errorf("lifecycle_rule.transition: 'days', 'date' are mutually exclusive")
