@@ -321,25 +321,10 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 
 		return diag.FromErr(err)
 	}
-	// set the region from zone
-	region, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, zone, ID, d.Timeout(schema.TimeoutRead))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	external := d.Get("external_private_networks").(bool)
 
-	diags := setLBState(d, lb, zone, region, privateNetworks, allPrivateIPs, external)
+	diags := setLBState(ctx, d, m, lbAPI, lb, external)
 
 	err = identity.SetZonalIdentity(d, lb.Zone, lb.ID)
 	if err != nil {
@@ -349,7 +334,22 @@ func resourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.Dia
 	return diags
 }
 
-func setLBState(d *schema.ResourceData, lb *lbSDK.LB, zone scw.Zone, region scw.Region, privateNetworks []*lbSDK.PrivateNetwork, allPrivateIPs []map[string]any, external bool) diag.Diagnostics {
+func setLBState(ctx context.Context, d *schema.ResourceData, m any, lbAPI *lbSDK.ZonedAPI, lb *lbSDK.LB, external bool) diag.Diagnostics {
+	region, err := lb.Zone.Region()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	privateNetworks, err := waitForPrivateNetworks(ctx, lbAPI, lb.Zone, lb.ID, d.Timeout(schema.TimeoutRead))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("release_ip", false)
 	_ = d.Set("name", lb.Name)
 	_ = d.Set("description", lb.Description)
@@ -363,8 +363,8 @@ func setLBState(d *schema.ResourceData, lb *lbSDK.LB, zone scw.Zone, region scw.
 	_ = d.Set("ssl_compatibility_level", lb.SslCompatibilityLevel.String())
 
 	if len(lb.IP) > 0 {
-		_ = d.Set("ip_id", zonal.NewIDString(zone, lb.IP[0].ID))
-		_ = d.Set("ip_ids", flattenLBIPIDs(zone, lb.IP))
+		_ = d.Set("ip_id", zonal.NewIDString(lb.Zone, lb.IP[0].ID))
+		_ = d.Set("ip_ids", flattenLBIPIDs(lb.Zone, lb.IP))
 
 		var ipv4Address, ipv6Address string
 

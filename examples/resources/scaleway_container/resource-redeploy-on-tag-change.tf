@@ -1,4 +1,4 @@
-# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along 
+# When using mutable images (e.g., `latest` tag), you can use the `scaleway_registry_image_tag` data source along
 # with the `registry_sha256` argument to trigger container redeployments when the image is updated.
 
 # Ideally, you would create the namespace separately.
@@ -23,12 +23,11 @@ resource "scaleway_container_namespace" "main" {
 }
 
 resource "scaleway_container" "main" {
-  name            = "nginx-latest"
-  namespace_id    = scaleway_container_namespace.main.id
-  registry_image  = "${scaleway_registry_namespace.main.endpoint}/nginx:latest"
-  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
-  port            = 80
-  deploy          = true
-}
+  name         = "nginx-latest"
+  namespace_id = scaleway_container_namespace.main.id
+  image        = "${data.scaleway_registry_namespace.main.endpoint}/${data.scaleway_registry_image.nginx.name}:${data.scaleway_registry_image_tag.nginx_latest.name}"
+  port         = 80
 
-# Using this configuration, whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
+  # Whenever the `latest` tag of the `nginx` image is updated, the `registry_sha256` will change, triggering a redeployment of the container with the new image.
+  registry_sha256 = data.scaleway_registry_image_tag.nginx_latest.digest
+}
