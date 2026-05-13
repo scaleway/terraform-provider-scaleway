@@ -494,6 +494,10 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 				i.Date = aws.Time(date)
 			}
 
+			if val, ok := e["expired_object_delete_marker"].(bool); ok {
+				i.ExpiredObjectDeleteMarker = aws.Bool(val)
+			}
+
 			rule.Expiration = i
 		}
 
@@ -891,6 +895,10 @@ func resourceBucketLifecycleRulesRead(
 
 				if lifecycleRule.Expiration.Date != nil {
 					e["date"] = aws.ToString(new(lifecycleRule.Expiration.Date.Format("2006-01-02")))
+				}
+
+				if lifecycleRule.Expiration.ExpiredObjectDeleteMarker != nil {
+					e["expired_object_delete_marker"] = aws.ToBool(lifecycleRule.Expiration.ExpiredObjectDeleteMarker)
 				}
 
 				rule["expiration"] = []any{e}

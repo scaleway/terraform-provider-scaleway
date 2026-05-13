@@ -574,6 +574,31 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucket_Lifecycle_removeRule(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketLifecycleConfigurationConfig_removeRule(bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "expire delete markers"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucket_ObjectLock(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -987,4 +1012,23 @@ func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools,
 
 		return nil
 	}
+}
+
+func testAccBucketLifecycleConfigurationConfig_removeRule(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+	name = "%s"
+	region = "%s"
+	acl = "private"
+
+  lifecycle_rule {
+    id      = "expire delete markers"
+    enabled = true
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
 }
