@@ -229,9 +229,10 @@ func bucketSchema() map[string]*schema.Schema {
 						},
 					},
 					"noncurrent_version_expiration": {
-						Type:     schema.TypeList,
-						MaxItems: 1,
-						Optional: true,
+						Type:        schema.TypeList,
+						MaxItems:    1,
+						Optional:    true,
+						Description: "Configuration block that specifies when noncurrent object versions expire",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"newer_noncurrent_versions": {
@@ -250,8 +251,9 @@ func bucketSchema() map[string]*schema.Schema {
 						},
 					},
 					"noncurrent_version_transition": {
-						Type:     schema.TypeSet,
-						Optional: true,
+						Type:        schema.TypeSet,
+						Optional:    true,
+						Description: "Set of configuration blocks that specify the transition rule for the lifecycle rule that describes when noncurrent objects transition to a specific storage class",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"newer_noncurrent_versions": {
