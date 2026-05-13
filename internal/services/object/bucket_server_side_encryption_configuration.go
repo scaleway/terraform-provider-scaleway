@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -37,6 +38,7 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The bucket's name or regional ID.",
 		},
+		"region": regional.Schema(),
 		"rule": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -124,6 +126,7 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 	}
 
 	_ = d.Set("bucket", bucketName)
+	_ = d.Set("region", region)
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
 	}
