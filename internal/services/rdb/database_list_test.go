@@ -31,12 +31,15 @@ func TestAccListRDBDatabases_Basic(t *testing.T) {
 					resource "scaleway_account_project" "main" {}
 
 					resource "scaleway_rdb_instance" "main" {
-					  project_id    = scaleway_account_project.main.id
-					  name          = "%s"
-					  node_type     = "db-dev-s"
-					  engine        = %q
-					  is_ha_cluster = false
-					  tags          = ["rdb-db-list-test"]
+					  project_id      = scaleway_account_project.main.id
+					  name            = "%s"
+					  node_type       = "db-dev-s"
+					  engine          = %q
+					  is_ha_cluster   = false
+					  disable_backup  = true
+					  user_name       = "my_initial_user"
+					  password        = "thiZ_is_v&ry_s3cret"
+					  tags            = ["rdb-db-list-test"]
 					}
 
 					resource "scaleway_rdb_database" "main" {
