@@ -127,6 +127,7 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 
 	_ = d.Set("bucket", bucketName)
 	_ = d.Set("region", region)
+
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
 	}
