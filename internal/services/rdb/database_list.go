@@ -112,12 +112,12 @@ func (r *DatabaseListResource) RawV6Schemas(ctx context.Context, _ list.RawV6Sch
 }
 
 type DatabaseListResourceModel struct {
-	Regions        types.List   `tfsdk:"regions"`
-	ProjectIDs     types.List   `tfsdk:"project_ids"`
 	InstanceIDs    types.List   `tfsdk:"instance_ids"`
+	ProjectIDs     types.List   `tfsdk:"project_ids"`
+	Regions        types.List   `tfsdk:"regions"`
+	OrganizationID types.String `tfsdk:"organization_id"`
 	Name           types.String `tfsdk:"name"`
 	Owner          types.String `tfsdk:"owner"`
-	OrganizationID types.String `tfsdk:"organization_id"`
 	Managed        types.Bool   `tfsdk:"managed"`
 }
 
