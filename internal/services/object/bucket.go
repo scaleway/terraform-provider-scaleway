@@ -32,7 +32,7 @@ func ResourceBucket() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc:    bucketSchema,
-		CustomizeDiff: validateLifecycle,
+		CustomizeDiff: validateBucket,
 	}
 }
 
@@ -300,6 +300,10 @@ func bucketSchema() map[string]*schema.Schema {
 	}
 }
 
+/*
+*** CREATE
+ */
+
 func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	bucketName := d.Get("name").(string)
 
@@ -348,6 +352,10 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	return resourceObjectBucketUpdate(ctx, d, m)
 }
+
+/*
+*** UPDATE
+ */
 
 func resourceObjectBucketUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
@@ -475,6 +483,15 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 				i.Days = aws.Int32(days)
 			}
 
+			if val, ok := e["date"].(string); ok && val != "" {
+				date, err := time.Parse("2006-01-02", val)
+				if err != nil {
+					return fmt.Errorf("error while parsing expiration date '%s': %w", val, err)
+				}
+
+				i.Date = aws.Time(date)
+			}
+
 			rule.Expiration = i
 		}
 
@@ -494,6 +511,15 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 
 				if val, ok := transition["storage_class"].(string); ok && val != "" {
 					i.StorageClass = s3Types.TransitionStorageClass(val)
+				}
+
+				if val, ok := transition["date"].(string); ok && val != "" {
+					date, err := time.Parse(time.RFC3339, val)
+					if err != nil {
+						return fmt.Errorf("error while parsing transition date '%s': %w", date, err)
+					}
+
+					i.Date = aws.Time(date)
 				}
 
 				rule.Transitions = append(rule.Transitions, i)
@@ -604,6 +630,63 @@ func countFilters(i any) int {
 
 	return 0
 }
+
+func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
+	v := d.Get("versioning").([]any)
+	bucketName := d.Get("name").(string)
+	vc := expandObjectBucketVersioning(v)
+
+	i := &s3.PutBucketVersioningInput{
+		Bucket:                  new(bucketName),
+		VersioningConfiguration: vc,
+	}
+	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
+
+	_, err := s3conn.PutBucketVersioning(ctx, i)
+	if err != nil {
+		return fmt.Errorf("error putting S3 versioning: %w", err)
+	}
+
+	return nil
+}
+
+func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
+	bucketName := d.Get("name").(string)
+	rawCors := d.Get("cors_rule").([]any)
+
+	if len(rawCors) == 0 {
+		// Delete CORS
+		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
+
+		_, err := s3conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
+			Bucket: new(bucketName),
+		})
+		if err != nil {
+			return fmt.Errorf("error deleting S3 CORS: %w", err)
+		}
+	} else {
+		// Put CORS
+		rules := expandBucketCORS(ctx, rawCors, bucketName)
+		corsInput := &s3.PutBucketCorsInput{
+			Bucket: new(bucketName),
+			CORSConfiguration: &s3Types.CORSConfiguration{
+				CORSRules: rules,
+			},
+		}
+		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput))
+
+		_, err := s3conn.PutBucketCors(ctx, corsInput)
+		if err != nil {
+			return fmt.Errorf("error putting S3 CORS: %w", err)
+		}
+	}
+
+	return nil
+}
+
+/*
+*** READ
+ */
 
 //gocyclo:ignore
 func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -724,7 +807,23 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
+	lifecycleRules := resourceBucketLifecycleRulesRead(lifecycle, d)
+
+	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
+		return append(diags, diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  fmt.Sprintf("error setting lifecycle_rule: %s", err),
+		})
+	}
+
+	return diags
+}
+
+func resourceBucketLifecycleRulesRead(
+	lifecycle *s3.GetBucketLifecycleConfigurationOutput, d *schema.ResourceData,
+) []map[string]any {
 	lifecycleRules := make([]map[string]any, 0)
+
 	if lifecycle != nil && len(lifecycle.Rules) > 0 {
 		lifecycleRules = make([]map[string]any, 0, len(lifecycle.Rules))
 
@@ -775,7 +874,9 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 			// AbortIncompleteMultipartUploadDays
 			if lifecycleRule.AbortIncompleteMultipartUpload != nil {
 				if lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation != nil {
-					rule["abort_incomplete_multipart_upload_days"] = int(aws.ToInt32(lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation))
+					rule["abort_incomplete_multipart_upload_days"] = int(aws.ToInt32(
+						lifecycleRule.AbortIncompleteMultipartUpload.DaysAfterInitiation,
+					))
 				}
 			}
 
@@ -784,6 +885,10 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 				e := make(map[string]any)
 				if lifecycleRule.Expiration.Days != nil {
 					e["days"] = int(aws.ToInt32(lifecycleRule.Expiration.Days))
+				}
+
+				if lifecycleRule.Expiration.Date != nil {
+					e["date"] = aws.ToString(new(lifecycleRule.Expiration.Date.Format("2006-01-02")))
 				}
 
 				rule["expiration"] = []any{e}
@@ -797,6 +902,10 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 					t := make(map[string]any)
 					if v.Days != nil {
 						t["days"] = int(aws.ToInt32(v.Days))
+					}
+
+					if v.Date != nil {
+						t["date"] = aws.ToString(new(v.Date.Format("2006-01-02")))
 					}
 
 					if v.StorageClass != "" {
@@ -813,15 +922,12 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	if err := d.Set("lifecycle_rule", lifecycleRules); err != nil {
-		return append(diags, diag.Diagnostic{
-			Severity: diag.Error,
-			Summary:  fmt.Sprintf("error setting lifecycle_rule: %s", err),
-		})
-	}
-
-	return diags
+	return lifecycleRules
 }
+
+/*
+*** DELETE
+ */
 
 func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	s3Client, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
@@ -861,58 +967,9 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 	return nil
 }
 
-func resourceObjectBucketVersioningUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-	v := d.Get("versioning").([]any)
-	bucketName := d.Get("name").(string)
-	vc := expandObjectBucketVersioning(v)
-
-	i := &s3.PutBucketVersioningInput{
-		Bucket:                  new(bucketName),
-		VersioningConfiguration: vc,
-	}
-	tflog.Debug(ctx, fmt.Sprintf("S3 put bucket versioning: %#v", i))
-
-	_, err := s3conn.PutBucketVersioning(ctx, i)
-	if err != nil {
-		return fmt.Errorf("error putting S3 versioning: %w", err)
-	}
-
-	return nil
-}
-
-func resourceS3BucketCorsUpdate(ctx context.Context, s3conn *s3.Client, d *schema.ResourceData) error {
-	bucketName := d.Get("name").(string)
-	rawCors := d.Get("cors_rule").([]any)
-
-	if len(rawCors) == 0 {
-		// Delete CORS
-		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, delete CORS", bucketName))
-
-		_, err := s3conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-			Bucket: new(bucketName),
-		})
-		if err != nil {
-			return fmt.Errorf("error deleting S3 CORS: %w", err)
-		}
-	} else {
-		// Put CORS
-		rules := expandBucketCORS(ctx, rawCors, bucketName)
-		corsInput := &s3.PutBucketCorsInput{
-			Bucket: new(bucketName),
-			CORSConfiguration: &s3Types.CORSConfiguration{
-				CORSRules: rules,
-			},
-		}
-		tflog.Debug(ctx, fmt.Sprintf("S3 bucket: %s, put CORS: %#v", bucketName, corsInput))
-
-		_, err := s3conn.PutBucketCors(ctx, corsInput)
-		if err != nil {
-			return fmt.Errorf("error putting S3 CORS: %w", err)
-		}
-	}
-
-	return nil
-}
+/*
+*** VALIDATE
+ */
 
 func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error) {
 	value := v.(string)
@@ -925,7 +982,7 @@ func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error
 	return
 }
 
-func validateLifecycle(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func validateBucket(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
 	// Object lock and versioning
 	if diff.Get("object_lock_enabled").(bool) {
 		if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
@@ -933,6 +990,7 @@ func validateLifecycle(ctx context.Context, diff *schema.ResourceDiff, meta inte
 		}
 	}
 
+	// Lifecycle rules
 	ruleCount := diff.Get("lifecycle_rule.#").(int)
 
 	for i := range ruleCount {

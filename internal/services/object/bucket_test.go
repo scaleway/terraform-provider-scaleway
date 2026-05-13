@@ -458,7 +458,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 						enabled = true
 
 						transition {
-							days          = 0
+							days          = 130
 							storage_class = "GLACIER"
 						}
 					}
@@ -516,7 +516,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.date", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"date":          "hehe",
+						"date":          "",
 						"days":          "30",
 						"storage_class": "ONEZONE_IA",
 					}),
@@ -548,8 +548,8 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.2.transition.*", map[string]string{
-						"days":          "0",
-						"storage_class": "ONEZONE_IA",
+						"days":          "130",
+						"storage_class": "GLACIER",
 					}),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.prefix", "path4/"),
