@@ -585,6 +585,30 @@ func transitionHash(v any) int {
 	return types.StringHashcode(buf.String())
 }
 
+func noncurrentVersionTransitionHash(v any) int {
+	var buf bytes.Buffer
+
+	m, ok := v.(map[string]any)
+
+	if !ok {
+		return 0
+	}
+
+	if v, ok := m["days"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	if v, ok := m["storage_class"]; ok {
+		buf.WriteString(v.(string) + "-")
+	}
+
+	if v, ok := m["newer_versions"]; ok {
+		buf.WriteString(fmt.Sprintf("%d-", v.(int)))
+	}
+
+	return types.StringHashcode(buf.String())
+}
+
 const (
 	// TransitionStorageClassStandard is a TransitionStorageClass enum value
 	TransitionStorageClassStandard = "STANDARD"
