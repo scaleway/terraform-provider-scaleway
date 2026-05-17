@@ -77,6 +77,13 @@ func deploymentSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Number of replicas",
 		},
+		"shard_count": {
+			Type:        schema.TypeInt,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "Number of shards for the deployment. This value is immutable and cannot be changed after creation.",
+		},
 		"cpu_min": {
 			Type:        schema.TypeInt,
 			Required:    true,
@@ -250,6 +257,10 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		Password:     password,
 	}
 
+	if v, ok := d.GetOk("shard_count"); ok {
+		req.ShardCount = new(uint32(v.(int)))
+	}
+
 	if v, ok := d.GetOk("tags"); ok {
 		req.Tags = types.ExpandStrings(v)
 	}
@@ -328,6 +339,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
 	_ = d.Set("replica_count", int(deployment.ReplicaCount))
+	_ = d.Set("shard_count", int(deployment.ShardCount))
 	_ = d.Set("cpu_min", int(deployment.CPUMin))
 	_ = d.Set("cpu_max", int(deployment.CPUMax))
 	_ = d.Set("ram_per_cpu", int(deployment.RAMPerCPU))

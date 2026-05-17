@@ -132,10 +132,12 @@ func testAccBucketServerSideEncryptionConfigurationConfig_basic(rName string) st
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
+  region = "%[2]s"
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
 
   rule {
     apply_server_side_encryption_by_default {
@@ -143,17 +145,19 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
     }
   }
 }
-`, rName)
+`, rName, objectTestsMainRegion)
 }
 
 func testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
+  region = "%[3]s"
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   bucket = scaleway_object_bucket.test.name
+  region = "%[3]s"
 
   rule {
     apply_server_side_encryption_by_default {
@@ -161,5 +165,5 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
     }
   }
 }
-`, rName, sseAlgorithm)
+`, rName, sseAlgorithm, objectTestsMainRegion)
 }
