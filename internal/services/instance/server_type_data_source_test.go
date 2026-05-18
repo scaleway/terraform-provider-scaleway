@@ -120,7 +120,7 @@ func TestAccDataSourceServerType_CompareWithPCU(t *testing.T) {
 		scw.ZoneFrPar1: "RENDER-S",
 		scw.ZoneFrPar2: "H100-SXM-2-80G",
 		scw.ZoneFrPar3: "POP2-HM-16C-128G",
-		scw.ZoneNlAms1: "COPARM1-8C-32G",
+		scw.ZoneNlAms1: "BASIC3-X8C-32G",
 		scw.ZoneNlAms2: "DEV1-XL",
 		scw.ZoneNlAms3: "PLAY2-NANO",
 		scw.ZonePlWaw1: "GP1-L",
