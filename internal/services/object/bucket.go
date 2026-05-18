@@ -882,48 +882,8 @@ func resourceBucketLifecycleRulesRead(
 				rule["id"] = aws.ToString(lifecycleRule.ID)
 			}
 
-			filter := lifecycleRule.Filter
-			if filter != nil {
-				if filter.And != nil {
-					// Prefix
-					if filter.And.Prefix != nil && aws.ToString(filter.And.Prefix) != "" {
-						rule["prefix"] = aws.ToString(filter.And.Prefix)
-					}
-					// Tag
-					if len(filter.And.Tags) > 0 {
-						rule["tags"] = flattenObjectBucketTags(filter.And.Tags)
-					}
-					// ObjectSizeGreaterThan
-					if filter.And.ObjectSizeGreaterThan != nil && *filter.And.ObjectSizeGreaterThan > 0 {
-						rule["object_size_greater_than"] = filter.And.ObjectSizeGreaterThan
-					}
-					// ObjectSizeLessThan
-					if filter.And.ObjectSizeLessThan != nil && *filter.And.ObjectSizeLessThan > 0 {
-						rule["object_size_less_than"] = filter.And.ObjectSizeLessThan
-					}
-				} else {
-					// Prefix
-					if filter.Prefix != nil && aws.ToString(filter.Prefix) != "" {
-						rule["prefix"] = aws.ToString(filter.Prefix)
-					}
-					// Tag
-					if filter.Tag != nil {
-						rule["tags"] = flattenObjectBucketTags([]s3Types.Tag{*filter.Tag})
-					}
-					// ObjectSizeGreaterThan
-					if filter.ObjectSizeGreaterThan != nil && *filter.ObjectSizeGreaterThan > 0 {
-						rule["object_size_greater_than"] = filter.ObjectSizeGreaterThan
-					}
-					// ObjectSizeLessThan
-					if filter.ObjectSizeLessThan != nil && *filter.ObjectSizeLessThan > 0 {
-						rule["object_size_less_than"] = filter.ObjectSizeLessThan
-					}
-				}
-			} else {
-				if lifecycleRule.Filter != nil && lifecycleRule.Filter.Prefix != nil {
-					rule["prefix"] = aws.ToString(lifecycleRule.Filter.Prefix)
-				}
-			}
+			// Filter
+			resourceBucketLifecycleRulesFilterRead(lifecycleRule.Filter, rule)
 
 			// Enabled
 			if lifecycleRule.Status == s3Types.ExpirationStatusEnabled {
@@ -942,90 +902,156 @@ func resourceBucketLifecycleRulesRead(
 			}
 
 			// Expiration
-			if lifecycleRule.Expiration != nil {
-				e := make(map[string]any)
-				if lifecycleRule.Expiration.Days != nil {
-					e["days"] = int(aws.ToInt32(lifecycleRule.Expiration.Days))
-				}
+			resourceBucketLifecycleRulesExpirationRead(lifecycleRule.Expiration, rule)
 
-				if lifecycleRule.Expiration.Date != nil {
-					e["date"] = aws.ToString(new(lifecycleRule.Expiration.Date.Format("2006-01-02")))
-				}
-
-				if lifecycleRule.Expiration.ExpiredObjectDeleteMarker != nil {
-					e["expired_object_delete_marker"] = aws.ToBool(lifecycleRule.Expiration.ExpiredObjectDeleteMarker)
-				}
-
-				rule["expiration"] = []any{e}
-			}
-
-			// Transition
-			if len(lifecycleRule.Transitions) > 0 {
-				transitions := make([]any, 0, len(lifecycleRule.Transitions))
-
-				for _, v := range lifecycleRule.Transitions {
-					t := make(map[string]any)
-					if v.Days != nil {
-						t["days"] = int(aws.ToInt32(v.Days))
-					}
-
-					if v.Date != nil {
-						t["date"] = aws.ToString(new(v.Date.Format("2006-01-02")))
-					}
-
-					if v.StorageClass != "" {
-						t["storage_class"] = string(v.StorageClass)
-					}
-
-					transitions = append(transitions, t)
-				}
-
-				rule["transition"] = schema.NewSet(transitionHash, transitions)
-			}
+			// Transitions
+			resourceBucketLifecycleRulesTransitionsRead(lifecycleRule.Transitions, rule)
 
 			// NonCurrentVersionExpiration
-			if lifecycleRule.NoncurrentVersionExpiration != nil {
-				e := make(map[string]any)
-				if lifecycleRule.NoncurrentVersionExpiration.NewerNoncurrentVersions != nil {
-					e["newer_noncurrent_versions"] = int(aws.ToInt32(lifecycleRule.NoncurrentVersionExpiration.NewerNoncurrentVersions))
-				}
-
-				if lifecycleRule.NoncurrentVersionExpiration.NoncurrentDays != nil {
-					e["noncurrent_days"] = int(aws.ToInt32(lifecycleRule.NoncurrentVersionExpiration.NoncurrentDays))
-				}
-
-				rule["noncurrent_version_expiration"] = []any{e}
-			}
+			resourceBucketLifecycleRulesNonCurrentVersionExpiration(lifecycleRule.NoncurrentVersionExpiration, rule)
 
 			// NonCurrentVersionTransition
-			if len(lifecycleRule.NoncurrentVersionTransitions) > 0 {
-				noncurrentTransitions := make([]any, 0, len(lifecycleRule.NoncurrentVersionTransitions))
-
-				for _, v := range lifecycleRule.NoncurrentVersionTransitions {
-					t := make(map[string]any)
-					if v.NoncurrentDays != nil {
-						t["noncurrent_days"] = int(aws.ToInt32(v.NoncurrentDays))
-					}
-
-					if v.NewerNoncurrentVersions != nil {
-						t["newer_noncurrent_versions"] = int(aws.ToInt32(v.NewerNoncurrentVersions))
-					}
-
-					if v.StorageClass != "" {
-						t["storage_class"] = string(v.StorageClass)
-					}
-
-					noncurrentTransitions = append(noncurrentTransitions, t)
-				}
-
-				rule["noncurrent_version_transition"] = schema.NewSet(noncurrentVersionTransitionHash, noncurrentTransitions)
-			}
+			resourceBucketLifecycleRulesNonCurrentVersionTransitions(lifecycleRule.NoncurrentVersionTransitions, rule)
 
 			lifecycleRules = append(lifecycleRules, rule)
 		}
 	}
 
 	return lifecycleRules
+}
+
+func resourceBucketLifecycleRulesFilterRead(filter *s3Types.LifecycleRuleFilter, rule map[string]any) {
+	if filter == nil {
+		return
+	}
+
+	if filter.And != nil {
+		// Prefix
+		if filter.And.Prefix != nil && aws.ToString(filter.And.Prefix) != "" {
+			rule["prefix"] = aws.ToString(filter.And.Prefix)
+		}
+		// Tag
+		if len(filter.And.Tags) > 0 {
+			rule["tags"] = flattenObjectBucketTags(filter.And.Tags)
+		}
+		// ObjectSizeGreaterThan
+		if filter.And.ObjectSizeGreaterThan != nil && *filter.And.ObjectSizeGreaterThan > 0 {
+			rule["object_size_greater_than"] = filter.And.ObjectSizeGreaterThan
+		}
+		// ObjectSizeLessThan
+		if filter.And.ObjectSizeLessThan != nil && *filter.And.ObjectSizeLessThan > 0 {
+			rule["object_size_less_than"] = filter.And.ObjectSizeLessThan
+		}
+	} else {
+		// Prefix
+		if filter.Prefix != nil && aws.ToString(filter.Prefix) != "" {
+			rule["prefix"] = aws.ToString(filter.Prefix)
+		}
+		// Tag
+		if filter.Tag != nil {
+			rule["tags"] = flattenObjectBucketTags([]s3Types.Tag{*filter.Tag})
+		}
+		// ObjectSizeGreaterThan
+		if filter.ObjectSizeGreaterThan != nil && *filter.ObjectSizeGreaterThan > 0 {
+			rule["object_size_greater_than"] = filter.ObjectSizeGreaterThan
+		}
+		// ObjectSizeLessThan
+		if filter.ObjectSizeLessThan != nil && *filter.ObjectSizeLessThan > 0 {
+			rule["object_size_less_than"] = filter.ObjectSizeLessThan
+		}
+	}
+}
+
+func resourceBucketLifecycleRulesExpirationRead(expiration *s3Types.LifecycleExpiration, rule map[string]any) {
+	if expiration == nil {
+		return
+	}
+
+	e := make(map[string]any)
+	if expiration.Days != nil {
+		e["days"] = int(aws.ToInt32(expiration.Days))
+	}
+
+	if expiration.Date != nil {
+		e["date"] = aws.ToString(new(expiration.Date.Format("2006-01-02")))
+	}
+
+	if expiration.ExpiredObjectDeleteMarker != nil {
+		e["expired_object_delete_marker"] = aws.ToBool(expiration.ExpiredObjectDeleteMarker)
+	}
+
+	rule["expiration"] = []any{e}
+}
+
+func resourceBucketLifecycleRulesTransitionsRead(transitions []s3Types.Transition, rule map[string]any) {
+	if len(transitions) < 1 {
+		return
+	}
+
+	parsedTransitions := make([]any, 0, len(transitions))
+
+	for _, v := range transitions {
+		t := make(map[string]any)
+		if v.Days != nil {
+			t["days"] = int(aws.ToInt32(v.Days))
+		}
+
+		if v.Date != nil {
+			t["date"] = aws.ToString(new(v.Date.Format("2006-01-02")))
+		}
+
+		if v.StorageClass != "" {
+			t["storage_class"] = string(v.StorageClass)
+		}
+
+		parsedTransitions = append(parsedTransitions, t)
+	}
+
+	rule["transition"] = schema.NewSet(transitionHash, parsedTransitions)
+}
+
+func resourceBucketLifecycleRulesNonCurrentVersionExpiration(noncurrentExpiration *s3Types.NoncurrentVersionExpiration, rule map[string]any) {
+	if noncurrentExpiration == nil {
+		return
+	}
+
+	e := make(map[string]any)
+	if noncurrentExpiration.NewerNoncurrentVersions != nil {
+		e["newer_noncurrent_versions"] = int(aws.ToInt32(noncurrentExpiration.NewerNoncurrentVersions))
+	}
+
+	if noncurrentExpiration.NoncurrentDays != nil {
+		e["noncurrent_days"] = int(aws.ToInt32(noncurrentExpiration.NoncurrentDays))
+	}
+
+	rule["noncurrent_version_expiration"] = []any{e}
+}
+
+func resourceBucketLifecycleRulesNonCurrentVersionTransitions(noncurrentVersionTransitions []s3Types.NoncurrentVersionTransition, rule map[string]any) {
+	if len(noncurrentVersionTransitions) < 1 {
+		return
+	}
+
+	noncurrentTransitions := make([]any, 0, len(noncurrentVersionTransitions))
+
+	for _, v := range noncurrentVersionTransitions {
+		t := make(map[string]any)
+		if v.NoncurrentDays != nil {
+			t["noncurrent_days"] = int(aws.ToInt32(v.NoncurrentDays))
+		}
+
+		if v.NewerNoncurrentVersions != nil {
+			t["newer_noncurrent_versions"] = int(aws.ToInt32(v.NewerNoncurrentVersions))
+		}
+
+		if v.StorageClass != "" {
+			t["storage_class"] = string(v.StorageClass)
+		}
+
+		noncurrentTransitions = append(noncurrentTransitions, t)
+	}
+
+	rule["noncurrent_version_transition"] = schema.NewSet(noncurrentVersionTransitionHash, noncurrentTransitions)
 }
 
 /*
