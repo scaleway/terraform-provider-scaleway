@@ -602,6 +602,7 @@ func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types
 	objectSizeLessThan := r["object_size_less_than"].(int)
 
 	filterElements := []any{prefix, tags, objectSizeGreaterThan, objectSizeLessThan}
+
 	fieldsCounter := 0
 	for _, e := range filterElements {
 		fieldsCounter += countFilters(e)
@@ -1075,7 +1076,8 @@ func resourceObjectBucketDelete(ctx context.Context, d *schema.ResourceData, m a
 
 func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error) {
 	value := v.(string)
-	_, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", value))
+
+	_, err := time.Parse(time.RFC3339, value+"T00:00:00Z")
 	if err != nil {
 		errors = append(errors, fmt.Errorf(
 			"%q cannot be parsed as RFC3339 Timestamp Format", value))
@@ -1084,7 +1086,7 @@ func validBucketLifecycleTimestamp(v any, k string) (ws []string, errors []error
 	return
 }
 
-func validateBucket(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+func validateBucket(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 	// Object lock and versioning
 	if diff.Get("object_lock_enabled").(bool) {
 		if diff.HasChange("versioning") && !diff.Get("versioning.0.enabled").(bool) {
@@ -1108,7 +1110,7 @@ func validateBucket(ctx context.Context, diff *schema.ResourceDiff, meta interfa
 			// Special treatment for "TypeSet" (can't be simply indexed)
 			transitionSet := v.(*schema.Set)
 			for _, transitionRaw := range transitionSet.List() {
-				transition := transitionRaw.(map[string]interface{})
+				transition := transitionRaw.(map[string]any)
 				if err := validateLifecycleTransition(transition); err != nil {
 					return err
 				}
@@ -1131,9 +1133,11 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 	if daysOk {
 		count++
 	}
+
 	if dateOk {
 		count++
 	}
+
 	if markerOk {
 		count++
 	}
@@ -1141,6 +1145,7 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 	if count == 0 {
 		return fmt.Errorf("lifecycle_rule.%d.expiration: one (only one) of 'days', 'date', 'expired_object_delete_marker' should be defined", i)
 	}
+
 	if count > 1 {
 		return fmt.Errorf("lifecycle_rule.%d.expiration: 'days', 'date', 'expired_object_delete_marker' are mutually exclusive", i)
 	}
@@ -1148,13 +1153,12 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 	return nil
 }
 
-func validateLifecycleTransition(transition map[string]interface{}) error {
+func validateLifecycleTransition(transition map[string]any) error {
 	// At this point, the "days" and "date" fields are initialized.
 	// Either with the filled values, or with default zero values, which makes
 	// the "ok" value obsolete.
-
-	daysVal, _ := transition["days"]
-	dateVal, _ := transition["date"]
+	daysVal := transition["days"]
+	dateVal := transition["date"]
 
 	days := daysVal.(int)
 	date := dateVal.(string)
@@ -1164,6 +1168,7 @@ func validateLifecycleTransition(transition map[string]interface{}) error {
 	if days > 0 {
 		count++
 	}
+
 	if date != "" {
 		count++
 	}
@@ -1173,8 +1178,9 @@ func validateLifecycleTransition(transition map[string]interface{}) error {
 		// No errors.
 		return nil
 	}
+
 	if count > 1 {
-		return fmt.Errorf("lifecycle_rule.transition: 'days', 'date' are mutually exclusive")
+		return errors.New("lifecycle_rule.transition: 'days', 'date' are mutually exclusive")
 	}
 
 	return nil
