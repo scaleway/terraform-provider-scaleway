@@ -609,6 +609,7 @@ func TestAccObjectBucket_Lifecycle_removeRule(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "expire delete markers"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "true"),
 				),
 			},
@@ -642,8 +643,8 @@ func TestAccObjectBucket_Lifecycle_EmptyFilter_NonCurrentVersions(t *testing.T) 
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.newer_noncurrent_versions", "2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.noncurrent_days", "30"),
 
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.noncurrent_days", "20"),
-					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.storage_class", "STANDARD_IA"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.noncurrent_days", "40"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.storage_class", "ONEZONE_IA"),
 				),
 			},
 		},
@@ -1125,17 +1126,13 @@ resource "scaleway_object_bucket" "main-bucket-lifecycle" {
     object_size_greater_than = 30
     object_size_less_than = 500
 
-    expiration {
-      expired_object_delete_marker = true
-    }
-
     noncurrent_version_expiration {
       newer_noncurrent_versions = 2
       noncurrent_days           = 30
     }
 
     noncurrent_version_transition {
-      noncurrent_days = 20
+      noncurrent_days = 40
       storage_class   = "ONEZONE_IA"
     }
 

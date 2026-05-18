@@ -532,6 +532,52 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 			}
 		}
 
+		// NoncurrentVersionExpiration
+		noncurrentVersionExpiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.noncurrent_version_expiration", i)).([]any)
+		if len(noncurrentVersionExpiration) > 0 && noncurrentVersionExpiration[0] != nil {
+			expiration := noncurrentVersionExpiration[0].(map[string]any)
+			i := &s3Types.NoncurrentVersionExpiration{}
+
+			if val, ok := expiration["noncurrent_days"].(int); ok && val > 0 {
+				noncurrentDays := int32(val)
+				i.NoncurrentDays = aws.Int32(noncurrentDays)
+			}
+
+			if val, ok := expiration["newer_noncurrent_versions"].(int); ok && val > 0 {
+				newerNoncurrentVersions := int32(val)
+				i.NewerNoncurrentVersions = aws.Int32(newerNoncurrentVersions)
+			}
+
+			rule.NoncurrentVersionExpiration = i
+		}
+
+		// NoncurrentVersionTransitions
+		noncurrentVersionTransitions := d.Get(fmt.Sprintf("lifecycle_rule.%d.noncurrent_version_transition", i)).(*schema.Set).List()
+		if len(noncurrentVersionTransitions) > 0 {
+			rule.NoncurrentVersionTransitions = []s3Types.NoncurrentVersionTransition{}
+
+			for _, transition := range noncurrentVersionTransitions {
+				transition := transition.(map[string]any)
+				i := s3Types.NoncurrentVersionTransition{}
+
+				if val, ok := transition["storage_class"].(string); ok && val != "" {
+					i.StorageClass = s3Types.TransitionStorageClass(val)
+				}
+
+				if val, ok := transition["noncurrent_days"].(int); ok && val > 0 {
+					noncurrentDays := int32(val)
+					i.NoncurrentDays = aws.Int32(noncurrentDays)
+				}
+
+				if val, ok := transition["newer_noncurrent_versions"].(int); ok && val > 0 {
+					newerNoncurrentVersions := int32(val)
+					i.NewerNoncurrentVersions = aws.Int32(newerNoncurrentVersions)
+				}
+
+				rule.NoncurrentVersionTransitions = append(rule.NoncurrentVersionTransitions, i)
+			}
+		}
+
 		rules = append(rules, rule)
 	}
 
@@ -934,6 +980,44 @@ func resourceBucketLifecycleRulesRead(
 				}
 
 				rule["transition"] = schema.NewSet(transitionHash, transitions)
+			}
+
+			// NonCurrentVersionExpiration
+			if lifecycleRule.NoncurrentVersionExpiration != nil {
+				e := make(map[string]any)
+				if lifecycleRule.NoncurrentVersionExpiration.NewerNoncurrentVersions != nil {
+					e["newer_noncurrent_versions"] = int(aws.ToInt32(lifecycleRule.NoncurrentVersionExpiration.NewerNoncurrentVersions))
+				}
+
+				if lifecycleRule.NoncurrentVersionExpiration.NoncurrentDays != nil {
+					e["noncurrent_days"] = int(aws.ToInt32(lifecycleRule.NoncurrentVersionExpiration.NoncurrentDays))
+				}
+
+				rule["noncurrent_version_expiration"] = []any{e}
+			}
+
+			// NonCurrentVersionTransition
+			if len(lifecycleRule.NoncurrentVersionTransitions) > 0 {
+				noncurrentTransitions := make([]any, 0, len(lifecycleRule.NoncurrentVersionTransitions))
+
+				for _, v := range lifecycleRule.NoncurrentVersionTransitions {
+					t := make(map[string]any)
+					if v.NoncurrentDays != nil {
+						t["noncurrent_days"] = int(aws.ToInt32(v.NoncurrentDays))
+					}
+
+					if v.NewerNoncurrentVersions != nil {
+						t["newer_noncurrent_versions"] = int(aws.ToInt32(v.NewerNoncurrentVersions))
+					}
+
+					if v.StorageClass != "" {
+						t["storage_class"] = string(v.StorageClass)
+					}
+
+					noncurrentTransitions = append(noncurrentTransitions, t)
+				}
+
+				rule["noncurrent_version_transition"] = schema.NewSet(noncurrentVersionTransitionHash, noncurrentTransitions)
 			}
 
 			lifecycleRules = append(lifecycleRules, rule)
