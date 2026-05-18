@@ -467,6 +467,12 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
+		_, wantPrivateNetwork := d.GetOk("private_network")
+		_, wantLoadBalancer := d.GetOk("load_balancer")
+		if err := waitForRDBInstanceEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate), wantPrivateNetwork, wantLoadBalancer); err != nil {
+			return diag.FromErr(err)
+		}
+
 		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
 			return diag.FromErr(err)
 		}
@@ -1277,6 +1283,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					return diag.FromErr(err)
 				}
 			}
+
+			if err := waitForRDBInstanceEndpoints(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate), true, false); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1311,6 +1321,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				EndpointSpec: expandLoadBalancer(),
 			}, scw.WithContext(ctx))
 			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			if err := waitForRDBInstanceEndpoints(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate), false, true); err != nil {
 				return diag.FromErr(err)
 			}
 		}
