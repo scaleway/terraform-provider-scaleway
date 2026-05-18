@@ -643,6 +643,7 @@ func TestAccObjectBucket_Lifecycle_EmptyFilter_NonCurrentVersions(t *testing.T) 
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.newer_noncurrent_versions", "2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.noncurrent_days", "30"),
 
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.newer_noncurrent_versions", "5"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.noncurrent_days", "40"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.storage_class", "ONEZONE_IA"),
 				),
@@ -1132,8 +1133,9 @@ resource "scaleway_object_bucket" "main-bucket-lifecycle" {
     }
 
     noncurrent_version_transition {
-      noncurrent_days = 40
-      storage_class   = "ONEZONE_IA"
+      newer_noncurrent_versions = 5
+      noncurrent_days           = 40
+      storage_class            	= "ONEZONE_IA"
     }
 
     enabled = true
