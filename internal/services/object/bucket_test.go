@@ -1115,7 +1115,6 @@ resource "scaleway_object_bucket" "main-bucket-lifecycle" {
 `, rName, objectTestsMainRegion)
 }
 
-// FIXME: remove "expiration" bloc after my update
 func testAccBucketLifecycleConfigurationConfig_emptyFilterNonCurrentVersions(rName string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "main-bucket-lifecycle" {
