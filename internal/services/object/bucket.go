@@ -552,16 +552,8 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types.LifecycleRuleFilter {
 	prefix := r["prefix"].(string)
 	tags := ExpandObjectBucketTags(r["tags"])
-
-	var objectSizeGreaterThan *int64
-	if v, ok := resourceData.GetOk("object_size_greater_than"); ok {
-		objectSizeGreaterThan = new(int64(v.(int)))
-	}
-
-	var objectSizeLessThan *int64
-	if v, ok := resourceData.GetOk("object_size_less_than"); ok {
-		objectSizeLessThan = new(int64(v.(int)))
-	}
+	objectSizeGreaterThan := r["object_size_greater_than"].(int)
+	objectSizeLessThan := r["object_size_less_than"].(int)
 
 	filterElements := []any{prefix, tags, objectSizeGreaterThan, objectSizeLessThan}
 	fieldsCounter := 0
@@ -581,12 +573,12 @@ func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types
 			filter.Prefix = new(r["prefix"].(string))
 		}
 
-		if objectSizeGreaterThan != nil {
-			filter.ObjectSizeGreaterThan = new(r["object_size_greater_than"].(int64))
+		if objectSizeGreaterThan > 0 {
+			filter.ObjectSizeGreaterThan = new(int64(objectSizeGreaterThan))
 		}
 
-		if objectSizeLessThan != nil {
-			filter.ObjectSizeLessThan = new(r["object_size_less_than"].(int64))
+		if objectSizeLessThan > 0 {
+			filter.ObjectSizeLessThan = new(int64(objectSizeLessThan))
 		}
 	} else if fieldsCounter >= 2 {
 		// If several fields are set, put them into "filter.and"
@@ -600,12 +592,12 @@ func extractFilter(r map[string]any, resourceData *schema.ResourceData) *s3Types
 			lifecycleRuleAndOp.Prefix = new(r["prefix"].(string))
 		}
 
-		if objectSizeGreaterThan != nil {
-			lifecycleRuleAndOp.ObjectSizeGreaterThan = new(r["object_size_greater_than"].(int64))
+		if objectSizeGreaterThan > 0 {
+			lifecycleRuleAndOp.ObjectSizeGreaterThan = new(int64(objectSizeGreaterThan))
 		}
 
-		if objectSizeLessThan != nil {
-			lifecycleRuleAndOp.ObjectSizeLessThan = new(r["object_size_less_than"].(int64))
+		if objectSizeLessThan > 0 {
+			lifecycleRuleAndOp.ObjectSizeLessThan = new(int64(objectSizeLessThan))
 		}
 
 		filter.And = lifecycleRuleAndOp
@@ -622,8 +614,8 @@ func countFilters(i any) int {
 		if v != "" {
 			return 1
 		}
-	case *int64:
-		if v != nil {
+	case int:
+		if v > 0 {
 			return 1
 		}
 	case []s3Types.Tag:
@@ -854,6 +846,14 @@ func resourceBucketLifecycleRulesRead(
 					if len(filter.And.Tags) > 0 {
 						rule["tags"] = flattenObjectBucketTags(filter.And.Tags)
 					}
+					// ObjectSizeGreaterThan
+					if filter.And.ObjectSizeGreaterThan != nil && *filter.And.ObjectSizeGreaterThan > 0 {
+						rule["object_size_greater_than"] = filter.And.ObjectSizeGreaterThan
+					}
+					// ObjectSizeLessThan
+					if filter.And.ObjectSizeLessThan != nil && *filter.And.ObjectSizeLessThan > 0 {
+						rule["object_size_less_than"] = filter.And.ObjectSizeLessThan
+					}
 				} else {
 					// Prefix
 					if filter.Prefix != nil && aws.ToString(filter.Prefix) != "" {
@@ -862,6 +862,14 @@ func resourceBucketLifecycleRulesRead(
 					// Tag
 					if filter.Tag != nil {
 						rule["tags"] = flattenObjectBucketTags([]s3Types.Tag{*filter.Tag})
+					}
+					// ObjectSizeGreaterThan
+					if filter.ObjectSizeGreaterThan != nil && *filter.ObjectSizeGreaterThan > 0 {
+						rule["object_size_greater_than"] = filter.ObjectSizeGreaterThan
+					}
+					// ObjectSizeLessThan
+					if filter.ObjectSizeLessThan != nil && *filter.ObjectSizeLessThan > 0 {
+						rule["object_size_less_than"] = filter.ObjectSizeLessThan
 					}
 				}
 			} else {

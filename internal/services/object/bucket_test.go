@@ -616,6 +616,40 @@ func TestAccObjectBucket_Lifecycle_removeRule(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucket_Lifecycle_EmptyFilter_NonCurrentVersions(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketLifecycleConfigurationConfig_emptyFilterNonCurrentVersions(bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceNameLifecycle, true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "name", bucketLifecycle),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "noncurrent_versions_rule"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.object_size_greater_than", "30"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.object_size_less_than", "500"),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.newer_noncurrent_versions", "2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.noncurrent_days", "30"),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.noncurrent_days", "20"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.storage_class", "STANDARD_IA"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucket_ObjectLock(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -1075,6 +1109,43 @@ resource "scaleway_object_bucket" "main-bucket-lifecycle" {
       expired_object_delete_marker = true
     }
   }
+}
+`, rName, objectTestsMainRegion)
+}
+
+// FIXME: remove "expiration" bloc after my update
+func testAccBucketLifecycleConfigurationConfig_emptyFilterNonCurrentVersions(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+  name = "%s"
+  region = "%s"
+
+  lifecycle_rule {
+    id = "noncurrent_versions_rule"
+    object_size_greater_than = 30
+    object_size_less_than = 500
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+
+    noncurrent_version_expiration {
+      newer_noncurrent_versions = 2
+      noncurrent_days           = 30
+    }
+
+    noncurrent_version_transition {
+      noncurrent_days = 20
+      storage_class   = "ONEZONE_IA"
+    }
+
+    enabled = true
+  }
+}
+
+resource "scaleway_object_bucket_acl" "main" {
+  bucket = scaleway_object_bucket.main-bucket-lifecycle.id
+  acl    = "private"
 }
 `, rName, objectTestsMainRegion)
 }
