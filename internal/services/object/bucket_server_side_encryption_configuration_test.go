@@ -50,7 +50,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 	})
 }
 
-func TestAccS3BucketServerSideEncryptionConfiguration_ApplySEEByDefault_AES256(t *testing.T) {
+func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
