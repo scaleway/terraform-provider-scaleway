@@ -842,6 +842,10 @@ func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) 
 			}
 		}
 
+		if rule.BucketKeyEnabled != nil {
+			m["bucket_key_enabled"] = rule.BucketKeyEnabled
+		}
+
 		results = append(results, m)
 	}
 
@@ -854,7 +858,8 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	}
 
 	m := map[string]any{
-		"sse_algorithm": sse.SSEAlgorithm,
+		"kms_master_key_id": sse.KMSMasterKeyID,
+		"sse_algorithm":     sse.SSEAlgorithm,
 	}
 
 	return []any{m}
