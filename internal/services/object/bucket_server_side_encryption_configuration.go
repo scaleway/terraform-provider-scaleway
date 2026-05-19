@@ -2,6 +2,7 @@ package object
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 
@@ -25,8 +26,9 @@ func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaFunc: bucketServerSideEncryptionConfigurationSchema,
-		Identity:   identity.DefaultRegional(),
+		SchemaFunc:    bucketServerSideEncryptionConfigurationSchema,
+		Identity:      identity.DefaultRegional(),
+		CustomizeDiff: validateBucketServerSideEncryptionConfiguration,
 	}
 }
 
@@ -207,4 +209,16 @@ func resourceBucketServerSideEncryptionConfigurationDelete(ctx context.Context, 
 	// Don't wait for the SSE configuration to disappear as the bucket now always has one.
 
 	return diags
+}
+
+func validateBucketServerSideEncryptionConfiguration(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+	// master_key_id and sse_algorithm
+	masterKeyId, masterKeyOk := diff.Get("apply_server_side_encryption_by_default.master_key_id").(string)
+	sseAlgorithm, sseOk := diff.Get("apply_server_side_encryption_by_default.sse_algorithm").(string)
+
+	if masterKeyOk && masterKeyId != "" && sseOk && sseAlgorithm != "aws:kms" {
+		return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
+	}
+
+	return nil
 }
