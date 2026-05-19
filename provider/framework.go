@@ -269,6 +269,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		lb.NewFrontendListResource,
 		lb.NewBackendListResource,
 		iam.NewSSHKeyListResource,
+		iam.NewGroupListResource,
 	}
 }
 
