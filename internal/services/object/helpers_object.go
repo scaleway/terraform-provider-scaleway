@@ -802,6 +802,10 @@ func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionB
 		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
 	}
 
+	if v, ok := tfMap["kms_master_key_id"].(string); ok && v != "" {
+		sse.KMSMasterKeyID = new(v)
+	}
+
 	return sse
 }
 
@@ -818,6 +822,10 @@ func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule
 
 		if v, ok := tfMap["apply_server_side_encryption_by_default"].([]any); ok && len(v) > 0 && v[0] != nil {
 			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
+		}
+
+		if v, ok := tfMap["bucket_key_enabled"].(bool); ok && v {
+			rule.BucketKeyEnabled = aws.Bool(v)
 		}
 
 		rules = append(rules, rule)
