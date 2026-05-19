@@ -172,7 +172,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_iam_group",
 		"scaleway_iam_group_membership",
 		"scaleway_iam_policy",
-		"scaleway_iam_ssh_key",
 		"scaleway_iam_user",
 		"scaleway_inference_deployment",
 		"scaleway_inference_model",

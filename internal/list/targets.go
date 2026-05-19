@@ -53,3 +53,11 @@ func CompareRegionalProjectItems(aProject, bProject string, aRegion, bRegion scw
 
 	return strings.Compare(aID, bID)
 }
+
+func CompareGlobalProjectItems(aProject, bProject string, aID, bID string) int {
+	if aProject != bProject {
+		return strings.Compare(aProject, bProject)
+	}
+
+	return strings.Compare(aID, bID)
+}
