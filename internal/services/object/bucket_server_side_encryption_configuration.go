@@ -74,15 +74,6 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 							},
 						},
 					},
-					"blocked_encryption_types": {
-						Type:        schema.TypeList,
-						Optional:    true,
-						Computed:    true,
-						Description: "List of server-side encryption types to block for object uploads",
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
 					"bucket_key_enabled": {
 						Type:        schema.TypeBool,
 						Optional:    true,

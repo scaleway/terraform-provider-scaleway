@@ -836,12 +836,6 @@ func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) 
 			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
 		}
 
-		if rule.BlockedEncryptionTypes != nil {
-			if flattened := flattenBlockedEncryptionTypes(rule.BlockedEncryptionTypes); flattened != nil {
-				m["blocked_encryption_types"] = flattened
-			}
-		}
-
 		if rule.BucketKeyEnabled != nil {
 			m["bucket_key_enabled"] = rule.BucketKeyEnabled
 		}
