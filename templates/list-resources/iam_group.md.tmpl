@@ -1,0 +1,47 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "IAM"
+description: |-
+  Lists Scaleway IAM Groups.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway IAM Groups.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/iam/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `organization_id` - (Optional) Organization ID to filter for. If not specified, the provider default organization is used.
+- `name` - (Optional) Name of the group to filter for.
+- `tag` - (Optional) Tag to filter for.
+- `user_ids` - (Optional) Filter groups by user IDs.
+- `application_ids` - (Optional) Filter groups by application IDs.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Group:
+
+- `id` - The ID of the group.
+- `name` - The name of the group.
+- `description` - The description of the group.
+- `created_at` - The date and time of the creation of the group.
+- `updated_at` - The date and time of the last update of the group.
+- `organization_id` - The organization ID the group belongs to.
+- `tags` - The tags associated with the group.
+- `user_ids` - List of IDs of the users attached to the group.
+- `application_ids` - List of IDs of the applications attached to the group.
+- `editable` - Defines whether or not the group is editable.
+- `deletable` - Defines whether or not the group is deletable.
+- `managed` - Defines whether or not the group is managed.

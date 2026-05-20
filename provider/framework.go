@@ -258,6 +258,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
 		mongodb.NewInstanceListResource,
+		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
 		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
@@ -269,6 +270,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		lb.NewFrontendListResource,
 		lb.NewBackendListResource,
 		iam.NewSSHKeyListResource,
+		iam.NewGroupListResource,
 	}
 }
 

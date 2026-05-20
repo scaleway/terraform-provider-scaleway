@@ -8,6 +8,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -19,6 +20,7 @@ func ResourceGroup() *schema.Resource {
 		ReadContext:   resourceIamGroupRead,
 		UpdateContext: resourceIamGroupUpdate,
 		DeleteContext: resourceIamGroupDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -100,7 +102,10 @@ func resourceIamGroupCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(group.ID)
+	err = identity.SetGlobalIdentity(d, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	appIDs := types.ExpandStrings(d.Get("application_ids").(*schema.Set).List())
 	userIDs := types.ExpandStrings(d.Get("user_ids").(*schema.Set).List())
@@ -135,19 +140,15 @@ func resourceIamGroupRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", group.Name)
-	_ = d.Set("description", group.Description)
-	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
-	_ = d.Set("organization_id", group.OrganizationID)
-	_ = d.Set("tags", types.FlattenSliceString(group.Tags))
+	external_membership := d.Get("external_membership").(bool)
+	diags := setGroupState(d, group, external_membership)
 
-	if !d.Get("external_membership").(bool) {
-		_ = d.Set("user_ids", group.UserIDs)
-		_ = d.Set("application_ids", group.ApplicationIDs)
+	err = identity.SetGlobalIdentity(d, group.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	return nil
+	return diags
 }
 
 func resourceIamGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -219,6 +220,22 @@ func resourceIamGroupDelete(ctx context.Context, d *schema.ResourceData, m any) 
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setGroupState(d *schema.ResourceData, group *iam.Group, external_membership bool) diag.Diagnostics {
+	_ = d.Set("name", group.Name)
+	_ = d.Set("description", group.Description)
+	_ = d.Set("created_at", types.FlattenTime(group.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
+	_ = d.Set("organization_id", group.OrganizationID)
+	_ = d.Set("tags", types.FlattenSliceString(group.Tags))
+
+	if !external_membership {
+		_ = d.Set("user_ids", group.UserIDs)
+		_ = d.Set("application_ids", group.ApplicationIDs)
 	}
 
 	return nil
