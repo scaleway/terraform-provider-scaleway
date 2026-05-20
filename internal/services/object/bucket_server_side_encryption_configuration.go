@@ -2,7 +2,6 @@ package object
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
@@ -26,9 +25,8 @@ func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaFunc:    bucketServerSideEncryptionConfigurationSchema,
-		Identity:      identity.DefaultRegional(),
-		CustomizeDiff: validateBucketServerSideEncryptionConfiguration,
+		SchemaFunc: bucketServerSideEncryptionConfigurationSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -200,34 +198,4 @@ func resourceBucketServerSideEncryptionConfigurationDelete(ctx context.Context, 
 	// Don't wait for the SSE configuration to disappear as the bucket now always has one.
 
 	return diags
-}
-
-func validateBucketServerSideEncryptionConfiguration(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-	if rules, ok := diff.Get("rule").(*schema.Set); ok {
-
-		for _, ruleRaw := range rules.List() {
-			ruleMap := ruleRaw.(map[string]interface{})
-
-			if applyRaw, applyOk := ruleMap["apply_server_side_encryption_by_default"]; applyOk && applyRaw != nil {
-				applyList := applyRaw.([]interface{})
-
-				for _, apply := range applyList {
-					if apply == nil {
-						continue
-					}
-
-					sseMap := apply.(map[string]interface{})
-
-					masterKeyId, _ := sseMap["kms_master_key_id"].(string)
-					sseAlgorithm, _ := sseMap["sse_algorithm"].(string)
-
-					if masterKeyId != "" && sseAlgorithm != "aws:kms" {
-						return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
-					}
-				}
-			}
-		}
-	}
-
-	return nil
 }
