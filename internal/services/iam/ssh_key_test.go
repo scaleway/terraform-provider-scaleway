@@ -50,6 +50,11 @@ func TestAccSSHKey_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_ssh_key.main", "public_key", SSHKeyWithoutComment),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_ssh_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
