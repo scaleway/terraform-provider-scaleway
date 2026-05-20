@@ -866,4 +866,3 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 
 	return []any{m}
 }
-
