@@ -203,12 +203,20 @@ func resourceBucketServerSideEncryptionConfigurationDelete(ctx context.Context, 
 }
 
 func validateBucketServerSideEncryptionConfiguration(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-	// master_key_id and sse_algorithm
-	masterKeyId, masterKeyOk := diff.Get("apply_server_side_encryption_by_default.master_key_id").(string)
-	sseAlgorithm, sseOk := diff.Get("apply_server_side_encryption_by_default.sse_algorithm").(string)
+	rulesCount := diff.Get("rule.#").(int)
 
-	if masterKeyOk && masterKeyId != "" && sseOk && sseAlgorithm != "aws:kms" {
-		return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
+	for i := range rulesCount {
+		prefix := fmt.Sprintf("rule.%d", i)
+
+		masterKeyIdField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.master_key_id", prefix)
+		masterKeyId, masterKeyOk := diff.Get(masterKeyIdField).(string)
+
+		sseAlgorithmField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.sse_algorithm", prefix)
+		sseAlgorithm, sseOk := diff.Get(sseAlgorithmField).(string)
+
+		if masterKeyOk && masterKeyId != "" && sseOk && sseAlgorithm != "aws:kms" {
+			return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
+		}
 	}
 
 	return nil
