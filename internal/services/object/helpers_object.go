@@ -867,15 +867,3 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	return []any{m}
 }
 
-func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
-	if bet == nil || len(bet.EncryptionType) == 0 {
-		return nil
-	}
-
-	var result []any
-	for _, et := range bet.EncryptionType {
-		result = append(result, string(et))
-	}
-
-	return result
-}
