@@ -17,10 +17,10 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
 
   rule {
     apply_server_side_encryption_by_default {
-	  kms_master_key_id = scaleway_key_manager_key.mykey.name
-	  sse_algorithm     = "aws:kms"
+      kms_master_key_id = scaleway_key_manager_key.mykey.name
+      sse_algorithm     = "aws:kms"
     }
-	bucket_key_enabled = true
+    bucket_key_enabled = true
   }
 }
 
