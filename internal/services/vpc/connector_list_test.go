@@ -28,13 +28,13 @@ func TestAccListVPCConnectors_Basic(t *testing.T) {
 					resource "scaleway_vpc" "source" {
 					  project_id = scaleway_account_project.main.id
 					  region     = "fr-par"
-					  name       = "tf-conn-list-source"
+					  name       = "tf-vpc-source"
 					}
 
 					resource "scaleway_vpc" "target" {
 					  project_id = scaleway_account_project.main.id
 					  region     = "fr-par"
-					  name       = "tf-conn-list-target"
+					  name       = "tf-vpc-target"
 					}
 
 					resource "scaleway_vpc_connector" "main" {
