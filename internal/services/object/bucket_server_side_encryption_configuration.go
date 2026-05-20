@@ -207,16 +207,22 @@ func validateBucketServerSideEncryptionConfiguration(ctx context.Context, diff *
 
 	for i := range rulesCount {
 		prefix := fmt.Sprintf("rule.%d", i)
+		sseByDefaultCount := diff.Get(fmt.Sprintf("%s.apply_server_side_encryption_by_default.#", prefix)).(int)
 
-		masterKeyIdField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.master_key_id", prefix)
-		masterKeyId, masterKeyOk := diff.Get(masterKeyIdField).(string)
+		for j := range sseByDefaultCount {
+			subPrefix := fmt.Sprintf("%s.apply_server_side_encryption_by_default.%d", prefix, j)
 
-		sseAlgorithmField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.sse_algorithm", prefix)
-		sseAlgorithm, sseOk := diff.Get(sseAlgorithmField).(string)
+			masterKeyIdField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.0.kms_master_key_id", subPrefix)
+			masterKeyId, masterKeyOk := diff.Get(masterKeyIdField).(string)
 
-		if masterKeyOk && masterKeyId != "" && sseOk && sseAlgorithm != "aws:kms" {
-			return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
+			sseAlgorithmField := fmt.Sprintf("%s.apply_server_side_encryption_by_default.0.sse_algorithm", subPrefix)
+			sseAlgorithm, sseOk := diff.Get(sseAlgorithmField).(string)
+
+			if masterKeyOk && masterKeyId != "" && sseOk && sseAlgorithm != "aws:kms" {
+				return errors.New("'master_key_id' can only be used with 'sse_algorithm = aws:kms'")
+			}
 		}
+
 	}
 
 	return nil
