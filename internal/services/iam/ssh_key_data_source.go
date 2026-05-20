@@ -65,14 +65,12 @@ func DataSourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamSSHKeyRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam ssh key state")...)
+	res, err := iamAPI.GetSSHKey(&iam.GetSSHKeyRequest{
+		SSHKeyID: d.Id(),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam ssh key (%s) not found", sshKeyID)
-	}
-
-	return nil
+	return setSSHKeyState(d, res)
 }

@@ -69,6 +69,13 @@ func TagsAttribute(description string) schema.ListAttribute {
 	}
 }
 
+func TagAttribute(description string) schema.StringAttribute {
+	return schema.StringAttribute{
+		Description: description,
+		Optional:    true,
+	}
+}
+
 func NameAttribute(description string) schema.StringAttribute {
 	return schema.StringAttribute{
 		Description: description,

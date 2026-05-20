@@ -10,6 +10,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"golang.org/x/crypto/ssh"
@@ -21,6 +22,7 @@ func ResourceSSKKey() *schema.Resource {
 		ReadContext:   resourceIamSSHKeyRead,
 		UpdateContext: resourceIamSSKKeyUpdate,
 		DeleteContext: resourceIamSSKKeyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -110,7 +112,10 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 		}
 	}
 
-	d.SetId(res.ID)
+	err = identity.SetGlobalIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamSSHKeyRead(ctx, d, m)
 }
@@ -131,14 +136,25 @@ func resourceIamSSHKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", res.Name)
-	_ = d.Set("public_key", res.PublicKey)
-	_ = d.Set("fingerprint", res.Fingerprint)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("organization_id", res.OrganizationID)
-	_ = d.Set("project_id", res.ProjectID)
-	_ = d.Set("disabled", res.Disabled)
+	diags := setSSHKeyState(d, res)
+
+	err = identity.SetGlobalIdentity(d, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setSSHKeyState(d *schema.ResourceData, sshKey *iam.SSHKey) diag.Diagnostics {
+	_ = d.Set("name", sshKey.Name)
+	_ = d.Set("public_key", sshKey.PublicKey)
+	_ = d.Set("fingerprint", sshKey.Fingerprint)
+	_ = d.Set("created_at", types.FlattenTime(sshKey.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(sshKey.UpdatedAt))
+	_ = d.Set("organization_id", sshKey.OrganizationID)
+	_ = d.Set("project_id", sshKey.ProjectID)
+	_ = d.Set("disabled", sshKey.Disabled)
 
 	return nil
 }
