@@ -263,6 +263,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		rdb.NewInstanceListResource,
 		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
+		vpc.NewConnectorListResource,
 		vpc.NewPrivateNetworkListResource,
 		ipam.NewIPListResource,
 		vpcgw.NewPublicGatewayListResource,
