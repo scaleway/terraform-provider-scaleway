@@ -21,6 +21,7 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccObjectBucket_Basic(t *testing.T) {
@@ -114,6 +115,51 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.%", "1"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.foo", "bar"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("test")
+	resourceName := "scaleway_object_bucket.test"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccObjectBucket_sideProject(bucketName, project.ID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, bucketName, true),
+					resource.TestCheckResourceAttr(resourceName, "name", bucketName),
+					resource.TestCheckResourceAttr(resourceName, "region", objectTestsMainRegion),
+					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -1146,4 +1192,14 @@ resource "scaleway_object_bucket_acl" "main" {
   acl    = "private"
 }
 `, rName, objectTestsMainRegion)
+}
+
+func testAccObjectBucket_sideProject(rName, projectId string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name       = %[1]q
+  region     = "%[2]s"
+  project_id = "%[3]s"
+}
+`, rName, objectTestsMainRegion, projectId)
 }
