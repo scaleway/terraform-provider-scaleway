@@ -130,6 +130,10 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 	_ = d.Set("bucket", bucketName)
 	_ = d.Set("region", region)
 
+	if ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, &diags); !ok {
+		return diags
+	}
+
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
 	}

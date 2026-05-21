@@ -892,3 +892,18 @@ func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
 
 	return result
 }
+
+func setProjectIDFromACL(ctx context.Context, s3Client *s3.Client, d *schema.ResourceData, bucketName string, diags *diag.Diagnostics) (ok bool) {
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(diags, err, "acl", ""); !bucketFound {
+			return false
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	}
+
+	return true
+}
