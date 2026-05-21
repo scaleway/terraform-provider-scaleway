@@ -326,7 +326,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 		updateReq.Name = types.ExpandStringPtr(d.Get("name"))
 	}
 
-	res, err := instanceAPI.UpdateSecurityGroup(updateReq, scw.WithContext(ctx))
+	_, err = instanceAPI.UpdateSecurityGroup(updateReq, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -338,7 +338,7 @@ func ResourceInstanceSecurityGroupUpdate(ctx context.Context, d *schema.Resource
 		}
 	}
 
-	return setSecurityGroupState(ctx, instanceAPI, d, res.SecurityGroup)
+	return ResourceInstanceSecurityGroupRead(ctx, d, m)
 }
 
 // updateSecurityGroupeRules handles updating SecurityGroupRules
