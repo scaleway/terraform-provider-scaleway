@@ -69,7 +69,7 @@ func DataSourceBackendStageRead(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func dataSourceBackendStageReadByID(ctx context.Context, d *schema.ResourceData, m any, stageID string) diag.Diagnostics {
-	api, zone, err := edgeServicesAPIWithZone(d, m)
+	api, zone, _, err := edgeServicesAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -87,7 +87,7 @@ func dataSourceBackendStageReadByID(ctx context.Context, d *schema.ResourceData,
 }
 
 func dataSourceBackendStageReadByFilters(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := edgeServicesAPIWithZone(d, m)
+	api, zone, _, err := edgeServicesAPIWithZoneAndRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}

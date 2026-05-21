@@ -6,6 +6,7 @@ import (
 	edge_services "github.com/scaleway/scaleway-sdk-go/api/edge_services/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -33,6 +34,66 @@ func flattenS3BackendConfig(s3backend *edge_services.ScalewayS3BackendConfig) []
 			"is_website":    types.FlattenBoolPtr(s3backend.IsWebsite),
 		},
 	}
+}
+
+func expandContainerBackendConfig(raw any, defaultRegion scw.Region) *edge_services.ScalewayServerlessContainerBackendConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]any)[0].(map[string]any)
+
+	region := defaultRegion
+	if v, ok := rawMap["region"].(string); ok && v != "" {
+		region = scw.Region(v)
+	}
+
+	containerID := rawMap["container_id"].(string)
+	if id := regional.ExpandID(containerID); id.Region != "" {
+		region = id.Region
+	}
+
+	return &edge_services.ScalewayServerlessContainerBackendConfig{
+		Region:      region,
+		ContainerID: locality.ExpandID(containerID),
+	}
+}
+
+func flattenContainerBackendConfig(cfg *edge_services.ScalewayServerlessContainerBackendConfig) []map[string]any {
+	return []map[string]any{{
+		"container_id": regional.NewIDString(cfg.Region, cfg.ContainerID),
+		"region":       cfg.Region.String(),
+	}}
+}
+
+func expandFunctionBackendConfig(raw any, defaultRegion scw.Region) *edge_services.ScalewayServerlessFunctionBackendConfig {
+	if raw == nil || len(raw.([]any)) != 1 {
+		return nil
+	}
+
+	rawMap := raw.([]any)[0].(map[string]any)
+
+	region := defaultRegion
+	if v, ok := rawMap["region"].(string); ok && v != "" {
+		region = scw.Region(v)
+	}
+
+	functionID := rawMap["function_id"].(string)
+	if id := regional.ExpandID(functionID); id.Region != "" {
+		region = id.Region
+	}
+
+	return &edge_services.ScalewayServerlessFunctionBackendConfig{
+		Region:     region,
+		FunctionID: locality.ExpandID(functionID),
+	}
+}
+
+func flattenFunctionBackendConfig(cfg *edge_services.ScalewayServerlessFunctionBackendConfig) []map[string]any {
+	return []map[string]any{{
+		"function_id": regional.NewIDString(cfg.Region, cfg.FunctionID),
+		"region":      cfg.Region.String(),
+	}}
 }
 
 func expandPurge(raw any) []*edge_services.PurgeRequest {
