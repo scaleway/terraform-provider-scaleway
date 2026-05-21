@@ -108,5 +108,7 @@ func DataSourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	return setUserState(d, res)
+	setUserState(d, res)
+
+	return nil
 }

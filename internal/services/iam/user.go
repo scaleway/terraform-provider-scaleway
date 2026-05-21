@@ -210,14 +210,14 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	diags := setUserState(d, user)
+	setUserState(d, user)
 
 	err = identity.SetGlobalIdentity(d, user.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return diags
+	return nil
 }
 
 func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -287,7 +287,7 @@ func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m any) d
 	return nil
 }
 
-func setUserState(d *schema.ResourceData, user *iam.User) diag.Diagnostics {
+func setUserState(d *schema.ResourceData, user *iam.User) {
 	_ = d.Set("organization_id", user.OrganizationID)
 	_ = d.Set("email", user.Email)
 	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
@@ -305,6 +305,4 @@ func setUserState(d *schema.ResourceData, user *iam.User) diag.Diagnostics {
 	_ = d.Set("mfa", user.Mfa)
 	_ = d.Set("account_root_user_id", user.AccountRootUserID)
 	_ = d.Set("locked", user.Locked)
-
-	return nil
 }
