@@ -1,0 +1,121 @@
+package iam_test
+
+import (
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/querycheck"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	iamtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
+)
+
+func TestAccListIAMUsers_Basic(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListIAMUsers_Basic because list resources are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             iamtestfuncs.CheckUserDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_user" "user1" {
+						email = "test-user-list-1@example.com"
+						username = "test-user-list-1"
+						tags = ["toto"]
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_iam_user" "user1" {
+						email = "test-user-list-1@example.com"
+						username = "test-user-list-1"
+						tags = ["toto"]
+					}
+
+					resource "scaleway_iam_user" "user2" {
+						email = "test-user-list-2@example.com"
+						username = "test-user-list-2"
+						tags = ["test-tag"]
+					}
+				`,
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_iam_user" "all" {
+						provider = scaleway
+
+						config {
+							organization_id = scaleway_iam_user.user2.organization_id
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLengthAtLeast("list.scaleway_iam_user.all", 2),
+				},
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_iam_user" "by_tag" {
+						provider = scaleway
+
+						config {
+							organization_id = scaleway_iam_user.user2.organization_id
+							tag              = "test-tag"
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_iam_user.by_tag", 1),
+				},
+			},
+		},
+	})
+}
+
+func TestAccListIAMUsers_MFA(t *testing.T) {
+	if acctest.IsRunningOpenTofu() {
+		t.Skip("Skipping TestAccListIAMUsers_MFA because list resources are not yet supported on OpenTofu")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             iamtestfuncs.CheckUserDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_iam_user" "user1" {
+						email = "test-user-mfa-1@example.com"
+						username = "test-user-mfa-1"
+					}
+				`,
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_iam_user" "by_mfa" {
+						provider = scaleway
+
+						config {
+							organization_id = scaleway_iam_user.user1.organization_id
+							mfa              = false
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLengthAtLeast("list.scaleway_iam_user.by_mfa", 1),
+				},
+			},
+		},
+	})
+}
