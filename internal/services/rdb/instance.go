@@ -469,6 +469,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 
 		_, wantPrivateNetwork := d.GetOk("private_network")
 		_, wantLoadBalancer := d.GetOk("load_balancer")
+
 		if wantPrivateNetwork || wantLoadBalancer {
 			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
 				return diag.FromErr(err)
