@@ -45,7 +45,7 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, "scaleway_object_bucket_server_side_encryption_configuration.main"),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, "scaleway_object_bucket_server_side_encryption_configuration.main", ""),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "bucket",
 						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),

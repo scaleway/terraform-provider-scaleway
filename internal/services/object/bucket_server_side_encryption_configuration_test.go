@@ -32,7 +32,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic(bucketName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
@@ -61,7 +61,6 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
 		tt,
-		"ObjectStorageReadWrite",
 		"ObjectStorageObjectsRead",
 		"ObjectStorageBucketsRead",
 		"ObjectStorageObjectsWrite",
@@ -72,7 +71,6 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 	ctx := t.Context()
 
 	resource.ParallelTest(t, resource.TestCase{
-		// ProtoV6ProviderFactories: tt.ProviderFactories,
 		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			func(_ *terraform.State) error {
@@ -84,7 +82,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_sideProject(bucketName, project.ID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, project.ID),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
@@ -117,7 +115,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySEEByDefault_AES256(t
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", string(awstypes.ServerSideEncryptionAes256)),
@@ -136,7 +134,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySEEByDefault_AES256(t
 	})
 }
 
-func testAccCheckBucketServerSideEncryptionConfigurationExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+func testAccCheckBucketServerSideEncryptionConfigurationExists(tt *acctest.TestTools, n, projectID string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		ctx := context.Background()
 
@@ -147,7 +145,7 @@ func testAccCheckBucketServerSideEncryptionConfigurationExists(tt *acctest.TestT
 
 		bucketRegion := rs.Primary.Attributes["region"]
 
-		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+		conn, err := object.NewS3ClientFromMetaWithProjectID(ctx, tt.Meta, bucketRegion, projectID)
 		if err != nil {
 			return err
 		}
