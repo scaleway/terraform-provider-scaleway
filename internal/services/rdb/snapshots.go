@@ -150,7 +150,16 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	// Set resource data fields
+	setSnapshotState(d, region, res)
+
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setSnapshotState(d *schema.ResourceData, region scw.Region, res *rdb.Snapshot) {
 	_ = d.Set("instance_id", regional.NewIDString(region, res.InstanceID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("expires_at", res.ExpiresAt.Format(time.RFC3339))
@@ -169,12 +178,6 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 	}
 
 	_ = d.Set("region", string(region))
-
-	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
 }
 
 func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
