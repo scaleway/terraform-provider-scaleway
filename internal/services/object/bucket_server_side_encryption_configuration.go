@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -81,6 +82,7 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
