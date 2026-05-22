@@ -1345,6 +1345,10 @@ func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m an
 	// We first wait in case the instance is in a transient state
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
