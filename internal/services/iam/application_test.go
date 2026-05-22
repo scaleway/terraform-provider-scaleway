@@ -55,6 +55,11 @@ func TestAccApplication_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_application.main", "tags.#", "0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_application.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
