@@ -260,6 +260,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		mongodb.NewInstanceListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
+		rdb.NewSnapshotListResource,
 		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
 		vpc.NewConnectorListResource,
