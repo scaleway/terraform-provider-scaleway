@@ -3,6 +3,7 @@ package rdbtestfuncs
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -15,6 +16,22 @@ import (
 )
 
 var DestroyWaitTimeout = 3 * time.Minute
+
+// testAccRDBListVCRProjectID is the default project ID in RDB list VCR cassettes.
+const testAccRDBListVCRProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+
+// ListProjectID returns project_id for RDB list acceptance tests: SDK default when set,
+// otherwise the VCR placeholder so replay matches committed cassettes.
+func ListProjectID(tt *acctest.TestTools) string {
+	pid, ok := tt.Meta.ScwClient().GetDefaultProjectID()
+	if ok {
+		if s := strings.TrimSpace(pid); s != "" {
+			return s
+		}
+	}
+
+	return testAccRDBListVCRProjectID
+}
 
 func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {

@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 )
 
@@ -19,19 +18,21 @@ func TestAccListRDBSnapshots_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	projectID := rdbchecks.ListProjectID(tt)
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	snapshotName := "tf-test-rdb-snapshot-list"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			rdbchecks.IsInstanceDestroyed(tt),
+			IsSnapshotDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "main" {}
-
 					resource "scaleway_rdb_instance" "main" {
-					  project_id         = scaleway_account_project.main.id
+					  project_id         = %q
 					  name               = "tf-test-rdb-snapshot-list-inst"
 					  node_type          = "db-dev-s"
 					  engine             = %q
@@ -48,40 +49,40 @@ func TestAccListRDBSnapshots_Basic(t *testing.T) {
 					  instance_id = scaleway_rdb_instance.main.id
 					  depends_on  = [scaleway_rdb_instance.main]
 					}
-				`, latestEngineVersion, snapshotName),
+				`, projectID, latestEngineVersion, snapshotName),
 			},
 			{
 				Query: true,
-				Config: `
+				Config: fmt.Sprintf(`
 					list "scaleway_rdb_snapshot" "by_instance" {
 					  provider = scaleway
 
 					  config {
 					    regions      = ["fr-par"]
-					    project_ids  = [scaleway_account_project.main.id]
+					    project_ids  = [%q]
 					    instance_ids = [scaleway_rdb_instance.main.id]
 					    name         = "tf-test-rdb-snapshot-list"
 					  }
 					}
-				`,
+				`, projectID),
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLength("list.scaleway_rdb_snapshot.by_instance", 1),
 				},
 			},
 			{
 				Query: true,
-				Config: `
+				Config: fmt.Sprintf(`
 					list "scaleway_rdb_snapshot" "wildcard" {
 					  provider = scaleway
 
 					  config {
 					    regions      = ["fr-par"]
-					    project_ids  = [scaleway_account_project.main.id]
+					    project_ids  = [%q]
 					    instance_ids = ["*"]
 					    name         = "tf-test-rdb-snapshot-list"
 					  }
 					}
-				`,
+				`, projectID),
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLength("list.scaleway_rdb_snapshot.wildcard", 1),
 				},
