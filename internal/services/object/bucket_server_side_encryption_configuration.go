@@ -52,14 +52,31 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 						Description: "Single object for setting server-side encryption by default.",
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
+								"kms_master_key_id": {
+									Type:     schema.TypeString,
+									Optional: true,
+									Computed: true,
+									Description: "Scaleway KMS master key ID used for the SSE-KMS encryption. " +
+										"This can only be used when you set the value of sse_algorithm as aws:kms. " +
+										"Will return an error if not this element is absent while the sse_algorithm is aws:kms.",
+								},
 								"sse_algorithm": {
-									Type:         schema.TypeString,
-									Required:     true,
-									Description:  "Server-side encryption algorithm to use. Valid values are AES256",
-									ValidateFunc: validation.StringInSlice([]string{string(awstypes.ServerSideEncryptionAes256)}, true),
+									Type:        schema.TypeString,
+									Required:    true,
+									Description: "Server-side encryption algorithm to use. Valid values are 'AES256', 'aws:kms'",
+									ValidateFunc: validation.StringInSlice([]string{
+										string(awstypes.ServerSideEncryptionAes256),
+										string(awstypes.ServerSideEncryptionAwsKms),
+									}, true),
 								},
 							},
 						},
+					},
+					"bucket_key_enabled": {
+						Type:        schema.TypeBool,
+						Optional:    true,
+						Computed:    true,
+						Description: "Whether or not to use Scaleway Object Bucket Keys for SSE-KMS.",
 					},
 				},
 			},
