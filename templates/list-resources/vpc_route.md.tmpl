@@ -1,0 +1,51 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "VPC"
+description: |-
+  Lists Scaleway VPC Routes across regions.
+---
+
+# Resource: {{ .Name }}
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+- `tags` - (Optional) Tags to filter for.
+- `vpc_id` - (Optional) Filter for routes belonging to this VPC (regional ID or plain UUID).
+- `nexthop_resource_id` - (Optional) Filter for routes with this nexthop resource ID (regional ID or plain UUID).
+- `nexthop_private_network_id` - (Optional) Filter for routes with this nexthop private network ID (regional ID or plain UUID).
+- `nexthop_vpc_connector_id` - (Optional) Filter for routes with this nexthop VPC connector ID (regional ID or plain UUID).
+- `nexthop_resource_type` - (Optional) Filter for routes with this nexthop resource type.
+- `is_ipv6` - (Optional) Filter for routes with an IPv6 destination.
+- `contains` - (Optional) Filter for routes whose destination is contained in this subnet (CIDR notation).
+
+## Attributes Reference
+
+In addition to the arguments above, each listed VPC route exports the same attributes as the `scaleway_vpc_route` managed resource:
+
+- `id` - The ID of the VPC route.
+- `vpc_id` - The ID of the VPC the route belongs to.
+- `description` - The description of the route.
+- `tags` - The tags associated with the route.
+- `destination` - The destination IP or IP range of the route.
+- `nexthop_resource_id` - The ID of the nexthop resource.
+- `nexthop_private_network_id` - The ID of the nexthop private network.
+- `nexthop_vpc_connector_id` - The ID of the nexthop VPC connector.
+- `region` - The region of the VPC route.
+- `created_at` - The date and time of the creation of the route.
+- `updated_at` - The date and time of the last update of the route.
