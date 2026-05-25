@@ -1,0 +1,52 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "VPC Gateway"
+description: |-
+  Lists Scaleway VPC Public Gateways across zones and projects.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway VPC Public Gateways across zones and projects.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/network/vpc/concepts/#public-gateways).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the Public Gateway to filter for.
+- `tags` - (Optional) Tags to filter for.
+- `types` - (Optional) Filter for gateways of these types (e.g. `VPC-GW-S`, `VPC-GW-M`).
+- `private_network_ids` - (Optional) Filter for gateways attached to these Private Networks.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `zones` - (Optional) Zones to filter for. Use `["*"]` to list from all zones.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Public Gateway:
+
+- `id` - The ID of the Public Gateway.
+- `name` - The name of the Public Gateway.
+- `type` - The type of the Public Gateway.
+- `status` - The current status of the Public Gateway.
+- `zone` - The zone of the Public Gateway.
+- `created_at` - The date and time of the creation of the Public Gateway.
+- `updated_at` - The date and time of the last update of the Public Gateway.
+- `organization_id` - The ID of the organization the Public Gateway is associated with.
+- `project_id` - The ID of the project the Public Gateway is associated with.
+- `tags` - The tags associated with the Public Gateway.
+- `ip_id` - The ID of the IP address associated with the Public Gateway.
+- `bandwidth` - The bandwidth of the Public Gateway (in Mbps).
+- `bastion_enabled` - Whether bastion is enabled on the Public Gateway.
+- `bastion_port` - The port of the bastion.
+- `enable_smtp` - Whether SMTP is enabled on the Public Gateway.

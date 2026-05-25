@@ -21,11 +21,14 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/scwconfig"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
@@ -257,8 +260,22 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 	return []func() list.ListResource{
 		mongodb.NewInstanceListResource,
 		opensearch.NewDeploymentListResource,
+		rdb.NewDatabaseBackupListResource,
+		rdb.NewDatabaseListResource,
+		rdb.NewInstanceListResource,
+		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
+		vpc.NewConnectorListResource,
 		vpc.NewPrivateNetworkListResource,
+		ipam.NewIPListResource,
+		vpcgw.NewPublicGatewayListResource,
+		vpcgw.NewIPListResource,
+		lb.NewLbListResource,
+		lb.NewFrontendListResource,
+		lb.NewBackendListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewGroupListResource,
+		iam.NewApplicationListResource,
 	}
 }
 

@@ -90,20 +90,5 @@ func DataSourceLbRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
-	region, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	privateNetworks, err := waitForPrivateNetworks(ctx, api, zone, lb.ID, d.Timeout(schema.TimeoutRead))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	allPrivateIPs, err := getLBPrivateIPs(ctx, m, region, lb.ID, privateNetworks)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setLBState(d, lb, zone, region, privateNetworks, allPrivateIPs, false)
+	return setLBState(ctx, d, m, api, lb, false)
 }

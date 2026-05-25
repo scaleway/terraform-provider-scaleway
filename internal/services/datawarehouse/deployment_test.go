@@ -78,6 +78,38 @@ resource "scaleway_datawarehouse_deployment" "main" {
 	})
 }
 
+func TestAccDeployment_ShardCount(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestClickHouseVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_datawarehouse_deployment" "main" {
+  name          = "tf-test-deploy-shard-count"
+  version       = "%s"
+  replica_count = 1
+  shard_count   = 2
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "password@1234567"
+}
+`, latestVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_datawarehouse_deployment.main"),
+					resource.TestCheckResourceAttr("scaleway_datawarehouse_deployment.main", "shard_count", "2"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccDeployment_PasswordWO(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

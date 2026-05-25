@@ -3,6 +3,7 @@ package object_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -35,22 +36,138 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
-					resource.TestCheckNoResourceAttr(resourceName, "rule.0.bucket_key_enabled"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"rule.0.bucket_key_enabled",
-				},
 			},
 		},
 	})
 }
 
-func TestAccS3BucketServerSideEncryptionConfiguration_ApplySEEByDefault_AES256(t *testing.T) {
+func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic_withKMS(bucketName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "the-key-id"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_KMS_withKey(bucketName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "my-kms-key-tf-test"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_wrongAlgo(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(
+					bucketName, "hehehe-wait-i-dont-exist",
+				),
+				ExpectError: regexp.MustCompile(`to be one of`),
+			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_KeyID_withoutKMS(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_KeyID_withoutKMS(bucketName),
+				ExpectError: regexp.MustCompile(
+					`InvalidArgument: KMS master key id is only supported when using Server Side Encryption with KMS managed keys`,
+				),
+			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withoutBucketKey(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfig_KMS_withoutBucketKey(bucketName),
+				ExpectError: regexp.MustCompile(
+					`InvalidArgument: Bucket key is mandatory when using Server Side Encryption with KMS managed keys`,
+				),
+			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -67,7 +184,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySEEByDefault_AES256(t
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", string(awstypes.ServerSideEncryptionAes256)),
-					resource.TestCheckNoResourceAttr(resourceName, "rule.0.bucket_key_enabled"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
 				),
 			},
 			{
@@ -132,10 +249,12 @@ func testAccBucketServerSideEncryptionConfigurationConfig_basic(rName string) st
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
+  region = "%[2]s"
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
 
   rule {
     apply_server_side_encryption_by_default {
@@ -143,17 +262,113 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
     }
   }
 }
-`, rName)
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfig_basic_withKMS(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name = %[1]q
+  region = "%[2]s"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+	  kms_master_key_id = "the-key-id"
+	  sse_algorithm = "aws:kms"
+    }
+	bucket_key_enabled = true
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfig_KMS_withKey(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name = %[1]q
+  region = "%[2]s"
+}
+
+resource "scaleway_key_manager_key" "mykmskey" {
+  name        = "my-kms-key-tf-test"
+  description = "This key is used to encrypt bucket objects"
+  usage       = "asymmetric_encryption"
+  algorithm   = "rsa_oaep_4096_sha256"
+  unprotected = "true"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+	  kms_master_key_id = scaleway_key_manager_key.mykmskey.name
+	  sse_algorithm = "aws:kms"
+    }
+	bucket_key_enabled = true
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfig_KeyID_withoutKMS(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name = %[1]q
+  region = "%[2]s"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+	  kms_master_key_id = "the-key-id"
+	  sse_algorithm = "AES256"
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfig_KMS_withoutBucketKey(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name = %[1]q
+  region = "%[2]s"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region = "%[2]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+	  kms_master_key_id = "the-key-id"
+	  sse_algorithm = "aws:kms"
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
 }
 
 func testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
+  region = "%[3]s"
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   bucket = scaleway_object_bucket.test.name
+  region = "%[3]s"
 
   rule {
     apply_server_side_encryption_by_default {
@@ -161,5 +376,5 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
     }
   }
 }
-`, rName, sseAlgorithm)
+`, rName, sseAlgorithm, objectTestsMainRegion)
 }

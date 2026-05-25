@@ -116,6 +116,7 @@ func flattenPrivateNetwork(endpoints []*rdb.Endpoint) (any, bool) {
 				"pn_id":       pnRegionalID,
 				"hostname":    types.FlattenStringPtr(endpoint.Hostname),
 				"enable_ipam": enableIpam,
+				"zone":        pn.Zone,
 			})
 
 			return pnI, true

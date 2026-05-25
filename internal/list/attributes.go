@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -36,6 +37,18 @@ func ProjectIDsAttribute(description string) schema.ListAttribute {
 	}
 }
 
+func ZonesAttribute(description string) schema.ListAttribute {
+	return schema.ListAttribute{
+		Description: description + " Use '*' to list from all zones",
+		Optional:    true,
+		ElementType: types.StringType,
+		Validators: []validator.List{
+			listvalidator.ValueStringsAre(
+				stringvalidator.OneOf(append(zonal.AllZones(), "*")...)),
+		},
+	}
+}
+
 func RegionsAttribute(description string) schema.ListAttribute {
 	return schema.ListAttribute{
 		Description: description + " Use '*' to list from all regions",
@@ -52,6 +65,13 @@ func TagsAttribute(description string) schema.ListAttribute {
 	return schema.ListAttribute{
 		Description: description,
 		ElementType: types.StringType,
+		Optional:    true,
+	}
+}
+
+func TagAttribute(description string) schema.StringAttribute {
+	return schema.StringAttribute{
+		Description: description,
 		Optional:    true,
 	}
 }
