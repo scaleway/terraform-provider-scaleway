@@ -29,6 +29,8 @@ func clusterAutoscalerConfigFlatten(cluster *k8s.Cluster) []map[string]any {
 
 	autoscalerConfig["scale_down_utilization_threshold"] = thresholdF64
 	autoscalerConfig["max_graceful_termination_sec"] = cluster.AutoscalerConfig.MaxGracefulTerminationSec
+	autoscalerConfig["skip_nodes_with_local_storage"] = cluster.AutoscalerConfig.SkipNodesWithLocalStorage
+	autoscalerConfig["log_level"] = cluster.AutoscalerConfig.LogLevel
 
 	return []map[string]any{autoscalerConfig}
 }
