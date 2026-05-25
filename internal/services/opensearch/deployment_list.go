@@ -245,9 +245,7 @@ func (r *DeploymentListResource) fetchDeployments(ctx context.Context, target li
 		OrganizationID: data.OrganizationID.ValueStringPointer(),
 		ProjectID:      &target.ProjectID,
 		OrderBy:        searchdbapi.ListDeploymentsRequestOrderByCreatedAtAsc,
-		// Do not set Version on the API request: the SDK validates it with a pattern that
-		// rejects typical OpenSearch version strings (they contain dots). Filter on
-		// Deployment.Version after listing instead.
+		// Version is filtered client-side: the SDK rejects dotted version strings in ListDeploymentsRequest.
 	}
 
 	response, err := r.searchdbAPI.ListDeployments(req, scw.WithContext(ctx), scw.WithAllPages())
@@ -255,8 +253,6 @@ func (r *DeploymentListResource) fetchDeployments(ctx context.Context, target li
 		return nil, err
 	}
 
-	// Defensive filter: keep only deployments for the requested project/region target,
-	// and apply optional version filter (client-side; see Version comment above).
 	filtered := make([]*searchdbapi.Deployment, 0, len(response.Deployments))
 	for _, dep := range response.Deployments {
 		if dep == nil {
