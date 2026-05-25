@@ -35,6 +35,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					  version     = "%s"
 					  node_amount = 1
 					  node_type   = "%s"
+					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"
 					  tags        = ["opensearch-list-test"]
 					  volume {
@@ -49,6 +50,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					  version     = "%s"
 					  node_amount = 1
 					  node_type   = "%s"
+					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"
 					  depends_on  = [scaleway_opensearch_deployment.main]
 					  volume {
@@ -56,7 +58,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					    size_in_gb = 5
 					  }
 					}
-				`, latestVersion, nodeType, latestVersion, nodeType),
+				`, latestVersion, nodeType, deploymentTestUserName, latestVersion, nodeType, deploymentTestUserName),
 			},
 			{
 				Query: true,
