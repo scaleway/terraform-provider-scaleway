@@ -467,6 +467,15 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diags
 		}
 
+		_, wantPrivateNetwork := d.GetOk("private_network")
+		_, wantLoadBalancer := d.GetOk("load_balancer")
+
+		if wantPrivateNetwork || wantLoadBalancer {
+			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
 		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
 			return diag.FromErr(err)
 		}
@@ -1277,6 +1286,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 					return diag.FromErr(err)
 				}
 			}
+
+			if _, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1313,6 +1326,10 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
+			if _, err := waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
@@ -1328,6 +1345,10 @@ func ResourceRdbInstanceDelete(ctx context.Context, d *schema.ResourceData, m an
 	// We first wait in case the instance is in a transient state
 	_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
