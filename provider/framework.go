@@ -263,9 +263,11 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
+		rdb.NewSnapshotListResource,
 		redis.NewClusterListResource,
 		vpc.NewVPCListResource,
 		vpc.NewConnectorListResource,
+		vpc.NewRouteListResource,
 		vpc.NewPrivateNetworkListResource,
 		ipam.NewIPListResource,
 		vpcgw.NewPublicGatewayListResource,
@@ -275,6 +277,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		lb.NewBackendListResource,
 		iam.NewSSHKeyListResource,
 		iam.NewGroupListResource,
+		iam.NewUserListResource,
 		iam.NewApplicationListResource,
 	}
 }
