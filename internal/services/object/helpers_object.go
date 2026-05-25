@@ -802,6 +802,10 @@ func expandServerSideEncryptionByDefault(l []any) *s3Types.ServerSideEncryptionB
 		sse.SSEAlgorithm = s3Types.ServerSideEncryption(v)
 	}
 
+	if v, ok := tfMap["kms_master_key_id"].(string); ok && v != "" {
+		sse.KMSMasterKeyID = new(v)
+	}
+
 	return sse
 }
 
@@ -820,6 +824,10 @@ func expandServerSideEncryptionRules(l []any) []s3Types.ServerSideEncryptionRule
 			rule.ApplyServerSideEncryptionByDefault = expandServerSideEncryptionByDefault(v)
 		}
 
+		if v, ok := tfMap["bucket_key_enabled"].(bool); ok && v {
+			rule.BucketKeyEnabled = aws.Bool(v)
+		}
+
 		rules = append(rules, rule)
 	}
 
@@ -836,10 +844,8 @@ func flattenServerSideEncryptionRules(rules []s3Types.ServerSideEncryptionRule) 
 			m["apply_server_side_encryption_by_default"] = flattenServerSideEncryptionByDefault(rule.ApplyServerSideEncryptionByDefault)
 		}
 
-		if rule.BlockedEncryptionTypes != nil {
-			if flattened := flattenBlockedEncryptionTypes(rule.BlockedEncryptionTypes); flattened != nil {
-				m["blocked_encryption_types"] = flattened
-			}
+		if rule.BucketKeyEnabled != nil {
+			m["bucket_key_enabled"] = rule.BucketKeyEnabled
 		}
 
 		results = append(results, m)
@@ -854,21 +860,9 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	}
 
 	m := map[string]any{
-		"sse_algorithm": sse.SSEAlgorithm,
+		"kms_master_key_id": sse.KMSMasterKeyID,
+		"sse_algorithm":     sse.SSEAlgorithm,
 	}
 
 	return []any{m}
-}
-
-func flattenBlockedEncryptionTypes(bet *s3Types.BlockedEncryptionTypes) []any {
-	if bet == nil || len(bet.EncryptionType) == 0 {
-		return nil
-	}
-
-	var result []any
-	for _, et := range bet.EncryptionType {
-		result = append(result, string(et))
-	}
-
-	return result
 }

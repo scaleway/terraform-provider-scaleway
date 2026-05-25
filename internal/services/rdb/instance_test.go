@@ -1043,6 +1043,10 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_endpoints", "private_network.0.pn_id", "scaleway_vpc_private_network.test_endpoints", "id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "load_balancer.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
 				),
@@ -1070,6 +1074,75 @@ func TestAccInstance_Endpoints(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_endpoints", "private_network.#", "0"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_ip"),   // Deprecated attribute, might be deleted later
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_endpoints", "endpoint_port"), // Deprecated attribute, might be deleted later
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_EndpointOutputsAfterAdd(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "test_outputs" {
+						name = "test-rdb-outputs"
+					}
+
+					resource "scaleway_rdb_instance" "test_outputs" {
+						name = "test-rdb-outputs"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_outputs" ]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.test_outputs"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "private_network.#", "0"),
+					// A default load balancer endpoint is always provisioned by the API.
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "load_balancer.0.ip"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc_private_network" "test_outputs" {
+						name = "test-rdb-outputs"
+					}
+
+					resource "scaleway_rdb_instance" "test_outputs" {
+						name = "test-rdb-outputs"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						tags = [ "terraform-test", "scaleway_rdb_instance", "test_outputs" ]
+						private_network {
+							pn_id = scaleway_vpc_private_network.test_outputs.id
+							enable_ipam = true
+						}
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.test_outputs"),
+					vpcchecks.IsPrivateNetworkPresent(tt, "scaleway_vpc_private_network.test_outputs"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.test_outputs", "private_network.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_rdb_instance.test_outputs", "private_network.0.pn_id", "scaleway_vpc_private_network.test_outputs", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "private_network.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.test_outputs", "private_network.0.port"),
 				),
 			},
 		},

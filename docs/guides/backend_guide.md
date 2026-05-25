@@ -179,10 +179,12 @@ data "scaleway_rdb_instance" "mybackend" {
 }
 ```
 
-## Alternative: Store Terraform State in Scaleway Object Storage (Without Locking)
+## Alternative: Store Terraform State in Scaleway Object Storage (With Locking)
 
 [Scaleway object storage](https://www.scaleway.com/en/object-storage/) can be used to store your Terraform state.
-However, this backend does not support state locking, which is critical when multiple users or automated processes might access the same state concurrently.
+Thanks to the [object locking](https://www.scaleway.com/en/docs/object-storage/how-to/use-object-lock/)
+feature, this method also supports locking.
+
 Configure your backend as:
 
 ```hcl
@@ -196,9 +198,11 @@ terraform {
     secret_key                  = "my-secret-key"
     skip_credentials_validation = true
     force_path_style            = true
-    skip_region_validation = true
+    skip_region_validation      = true
     # Need terraform>=1.6.1
     skip_requesting_account_id  = true
+    # Enable locking
+    use_lockfile                = true
   }
 }
 ```
