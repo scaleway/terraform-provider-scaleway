@@ -42,6 +42,7 @@ func routeSchema() map[string]*schema.Schema {
 		"description": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "The route description",
 		},
 		"tags": {
