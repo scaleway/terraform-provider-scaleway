@@ -119,8 +119,8 @@ type RouteListResourceModel struct {
 	NexthopPrivateNetworkID types.String `tfsdk:"nexthop_private_network_id"`
 	NexthopVpcConnectorID   types.String `tfsdk:"nexthop_vpc_connector_id"`
 	NexthopResourceType     types.String `tfsdk:"nexthop_resource_type"`
-	IsIPv6                  types.Bool   `tfsdk:"is_ipv6"`
 	Contains                types.String `tfsdk:"contains"`
+	IsIPv6                  types.Bool   `tfsdk:"is_ipv6"`
 }
 
 func (m *RouteListResourceModel) GetTags() types.List    { return m.Tags }
