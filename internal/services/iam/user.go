@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,7 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   resourceIamUserRead,
 		UpdateContext: resourceIamUserUpdate,
 		DeleteContext: resourceIamUserDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -184,7 +186,10 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(user.ID)
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamUserRead(ctx, d, m)
 }
@@ -205,25 +210,12 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("organization_id", user.OrganizationID)
-	// User input data
-	_ = d.Set("email", user.Email)
-	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
-	_ = d.Set("username", user.Username)
-	_ = d.Set("first_name", user.FirstName)
-	_ = d.Set("last_name", user.LastName)
-	_ = d.Set("phone_number", user.PhoneNumber)
-	_ = d.Set("locale", user.Locale)
-	// Computed data
-	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
-	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
-	_ = d.Set("type", user.Type)
-	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
-	_ = d.Set("mfa", user.Mfa)
-	_ = d.Set("account_root_user_id", user.AccountRootUserID)
-	_ = d.Set("locked", user.Locked)
+	setUserState(d, user)
+
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -293,4 +285,24 @@ func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	return nil
+}
+
+func setUserState(d *schema.ResourceData, user *iam.User) {
+	_ = d.Set("organization_id", user.OrganizationID)
+	_ = d.Set("email", user.Email)
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
+	_ = d.Set("username", user.Username)
+	_ = d.Set("first_name", user.FirstName)
+	_ = d.Set("last_name", user.LastName)
+	_ = d.Set("phone_number", user.PhoneNumber)
+	_ = d.Set("locale", user.Locale)
+	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
+	_ = d.Set("deletable", user.Deletable)
+	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
+	_ = d.Set("type", user.Type)
+	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
+	_ = d.Set("mfa", user.Mfa)
+	_ = d.Set("account_root_user_id", user.AccountRootUserID)
+	_ = d.Set("locked", user.Locked)
 }
