@@ -244,7 +244,7 @@ func (r *SnapshotListResource) List(ctx context.Context, req list.ListRequest, s
 			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
 			result.Diagnostics.Append(identitySetDiags...)
 
-			setSnapshotState(resourceData, row.Region, row.Snapshot)
+			setSnapshotState(resourceData, row.Snapshot)
 
 			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
 			if errTfTypeResourceState != nil {
