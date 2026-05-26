@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -277,6 +278,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		iam.NewGroupListResource,
 		iam.NewUserListResource,
 		iam.NewApplicationListResource,
+		domain.NewRecordListResource,
 	}
 }
 

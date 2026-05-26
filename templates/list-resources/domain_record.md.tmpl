@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Domains and DNS"
+description: |-
+  Lists Scaleway DNS zone records across projects and DNS zones.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects. If omitted, the provider default project is used.
+- `dns_zones` - (Required) DNS zone FQDNs to list records from. Use `["*"]` or `["all"]` to list records across all zones in each selected project. Must contain at least one value.
+- `name` - (Optional) Name of the DNS zone record to filter on.
+- `type` - (Optional) Type of the DNS zone record to filter on.
+
+## Attributes Reference
+
+Each result corresponds to one DNS zone record and exposes the same attributes as the [`scaleway_domain_record` resource](../resources/domain_record.md).
