@@ -30,6 +30,17 @@ resource "scaleway_k8s_pool" "main" {
   container_runtime  = "containerd"
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
 
+  labels = {
+    "key" = "value"
+    "foo" = "bar"
+  }
+
+  taints {
+    key    = "taint-key"
+    value  = "taint-value"
+    effect = "NoSchedule"
+  }
+
   # Make sure that the new resource is created before destroying the old one on changes that require replacement
   lifecycle {
     create_before_destroy = true
@@ -94,11 +105,11 @@ The following arguments are supported:
 
 -> Note: The minimal volume size of a node is 20GB.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
@@ -107,6 +118,12 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `security_group_id` - The ID of the security group
+
+- `labels` - The list of Kubernetes labels applied and reconciled on the nodes.
+
+- `taints` - The list of Kubernetes taints applied and reconciled on the nodes.
+
+- `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
 
 ## Attributes Reference
 
