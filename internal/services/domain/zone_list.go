@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -32,8 +33,8 @@ var (
 )
 
 type ZoneListResource struct {
-	meta       *meta.Meta
-	domainAPI  *domainSDK.API
+	meta      *meta.Meta
+	domainAPI *domainSDK.API
 }
 
 func NewZoneListResource() list.ListResource {
@@ -181,6 +182,7 @@ func (r *ZoneListResource) List(ctx context.Context, req list.ListRequest, strea
 	}
 
 	targets := buildZoneListTargets(projects, domainElems)
+
 	allZones, err := listscw.FetchConcurrently(ctx, targets,
 		func(ctx context.Context, target zoneListTarget) ([]*domainSDK.DNSZone, error) {
 			return r.fetchDNSZones(ctx, target, dnsZoneElems, timeFilters)
