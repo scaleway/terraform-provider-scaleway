@@ -25,6 +25,7 @@ list "scaleway_domain_zone" "all_domains" {
   }
 }
 ```
+
 ```terraform
 // List a specific DNS zone by FQDN
 list "scaleway_domain_zone" "by_dns_zone" {
@@ -36,6 +37,7 @@ list "scaleway_domain_zone" "by_dns_zone" {
   }
 }
 ```
+
 ```terraform
 // List DNS zones for a domain in the default project
 list "scaleway_domain_zone" "by_domain" {
