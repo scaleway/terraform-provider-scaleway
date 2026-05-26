@@ -125,6 +125,19 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Optional:    true,
 					Description: "The Scaleway API URL to use.",
 				},
+				"endpoints": {
+					Type:     schema.TypeSet,
+					Optional: true,
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"s3": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Use this to override the default service endpoint URL",
+							},
+						},
+					},
+				},
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -416,9 +429,23 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
+			var endpoints map[string]string
+			if rawEndpoints, ok := data.GetOk("endpoints"); ok {
+				endpointsSet := rawEndpoints.(*schema.Set)
+				endpoints = make(map[string]string)
+
+				for _, endpoint := range endpointsSet.List() {
+					endpointMap := endpoint.(map[string]any)
+					if s3, ok := endpointMap["s3"]; ok && s3 != "" {
+						endpoints["s3"] = s3.(string)
+					}
+				}
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
+				Endpoints:        endpoints,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -437,7 +464,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return m, diags
 			}
 
-			if ok && err == nil {
+			if ok { // && err == nil
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",

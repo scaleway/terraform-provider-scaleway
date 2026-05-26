@@ -49,6 +49,10 @@ type ScalewayProvider struct {
 	providerMeta *meta.Meta
 }
 
+type EndpointModel struct {
+	S3 types.String `tfsdk:"s3"`
+}
+
 func NewFrameworkProvider(m *meta.Meta) func() provider.Provider {
 	return func() provider.Provider {
 		return &ScalewayProvider{providerMeta: m}
@@ -68,6 +72,7 @@ type ScalewayProviderModel struct {
 	APIURL         types.String `tfsdk:"api_url"`
 	Region         types.String `tfsdk:"region"`
 	Zone           types.String `tfsdk:"zone"`
+	Endpoints      types.Set    `tfsdk:"endpoints"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -106,6 +111,18 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Optional:    true,
 			},
 		},
+		Blocks: map[string]schema.Block{
+			"endpoints": schema.SetNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"s3": schema.StringAttribute{
+							Optional:    true,
+							Description: "Use this to override the default service endpoint URL",
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -142,6 +159,22 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 
 	if !model.APIURL.IsNull() && !model.APIURL.IsUnknown() {
 		config.APIURL = model.APIURL.ValueString()
+	}
+
+	if !model.Endpoints.IsNull() && !model.Endpoints.IsUnknown() {
+		config.Endpoints = make(map[string]string)
+
+		var endpoints []EndpointModel
+		diags := model.Endpoints.ElementsAs(context.Background(), &endpoints, false)
+		if diags.HasError() {
+			return config
+		}
+
+		for _, endpoint := range endpoints {
+			if !endpoint.S3.IsNull() && !endpoint.S3.IsUnknown() {
+				config.Endpoints["s3"] = endpoint.S3.ValueString()
+			}
+		}
 	}
 
 	return config

@@ -48,6 +48,9 @@ type Meta struct {
 	httpClient *http.Client
 	// credentialsSource stores information about the source (env, profile, etc.) of each credential
 	credentialsSource *CredentialsSource
+	// endpoints from the provider configuration
+	// Possible keys are: "s3"
+	endpoints map[string]string
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -92,7 +95,7 @@ func NewMeta(ctx context.Context, config *Config) (*Meta, error) {
 	// Return scaleway client
 	////
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, config.TerraformVersion, config.HTTPClient)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.TerraformVersion, config.HTTPClient)
 }
 
 // NewMetaFromFrameworkConfig creates a Meta object from FrameworkProviderConfig
@@ -102,10 +105,10 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 		return nil, err
 	}
 
-	return NewMetaFromProfile(ctx, profile, credentialsSource, terraformVersion, nil)
+	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, terraformVersion, nil)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, terraformVersion string, httpClient *http.Client) (*Meta, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	}
@@ -125,6 +128,7 @@ func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSo
 		scwClient:         scwClient,
 		httpClient:        httpClient,
 		credentialsSource: credentialsSource,
+		endpoints:         endpoints,
 	}, nil
 }
 
@@ -158,6 +162,10 @@ func (m Meta) ZoneSource() string {
 
 func (m Meta) OrganizationIDSource() string {
 	return m.credentialsSource.OrganizationID
+}
+
+func (m Meta) Endpoints() map[string]string {
+	return m.endpoints
 }
 
 // HasMultipleVariableSources return an informative message during the Provider initialization
@@ -217,6 +225,7 @@ type Config struct {
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
+	Endpoints           map[string]string
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
@@ -238,6 +247,7 @@ type FrameworkProviderConfig struct {
 	Region         string
 	Zone           string
 	APIURL         string
+	Endpoints      map[string]string
 }
 
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {
