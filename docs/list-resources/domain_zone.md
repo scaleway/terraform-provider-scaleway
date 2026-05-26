@@ -50,6 +50,7 @@ list "scaleway_domain_zone" "by_domain" {
 ```
 
 
+
 ## Argument Reference
 
 The following arguments can be specified in the `config` block:
