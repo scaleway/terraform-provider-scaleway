@@ -7,36 +7,14 @@ description: |-
 
 # Resource: scaleway_domain_zone
 
-Lists Scaleway DNS zones across projects and domains.
+
 
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
 
+
 ## Example Usage
 
-```hcl
-// List DNS zones for a domain in the default project
-list "scaleway_domain_zone" "by_domain" {
-  provider = scaleway
-
-  config {
-    domains = ["example.com"]
-  }
-}
-```
-
-```hcl
-// List a specific DNS zone by FQDN
-list "scaleway_domain_zone" "by_dns_zone" {
-  provider = scaleway
-
-  config {
-    domains   = ["example.com"]
-    dns_zones = ["www.example.com"]
-  }
-}
-```
-
-```hcl
+```terraform
 // List DNS zones across all domains in a project
 list "scaleway_domain_zone" "all_domains" {
   provider = scaleway
@@ -47,6 +25,28 @@ list "scaleway_domain_zone" "all_domains" {
   }
 }
 ```
+```terraform
+// List a specific DNS zone by FQDN
+list "scaleway_domain_zone" "by_dns_zone" {
+  provider = scaleway
+
+  config {
+    domains   = ["example.com"]
+    dns_zones = ["www.example.com"]
+  }
+}
+```
+```terraform
+// List DNS zones for a domain in the default project
+list "scaleway_domain_zone" "by_domain" {
+  provider = scaleway
+
+  config {
+    domains = ["example.com"]
+  }
+}
+```
+
 
 ## Argument Reference
 
