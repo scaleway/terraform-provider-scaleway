@@ -87,7 +87,13 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 }
 
 func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(ctx, d, meta)
+	projectId := ""
+	projectIdData := d.Get("project_id")
+	if projectIdData != nil {
+		projectId = projectIdData.(string)
+	}
+
+	conn, region, err := s3ClientWithRegionFromProjectId(ctx, d, meta, projectId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

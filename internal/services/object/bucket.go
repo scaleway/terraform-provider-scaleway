@@ -307,9 +307,15 @@ func bucketSchema() map[string]*schema.Schema {
  */
 
 func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	projectId := ""
+	projectIdData := d.Get("project_id")
+	if projectIdData != nil {
+		projectId = projectIdData.(string)
+	}
+
 	bucketName := d.Get("name").(string)
 
-	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
+	s3Client, region, err := s3ClientWithRegionFromProjectId(ctx, d, m, projectId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
