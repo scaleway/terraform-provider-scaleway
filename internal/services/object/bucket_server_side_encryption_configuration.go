@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -38,7 +39,8 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The bucket's name or regional ID.",
 		},
-		"region": regional.Schema(),
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 		"rule": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -147,6 +149,17 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 	}
 
 	return diags

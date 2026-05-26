@@ -37,6 +37,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 				),
 			},
 			{

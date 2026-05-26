@@ -27,8 +27,9 @@ resource "scaleway_key_manager_key" "mykey" {
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
-  bucket = scaleway_object_bucket.test.name
-  region = "fr-par"
+  bucket     = scaleway_object_bucket.test.name
+  region     = scaleway_object_bucket.test.region
+  project_id = scaleway_object_bucket.test.project_id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -47,8 +48,9 @@ resource "scaleway_object_bucket" "test" {
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
-  bucket = scaleway_object_bucket.test.name
-  region = "fr-par"
+  bucket     = scaleway_object_bucket.test.name
+  region     = scaleway_object_bucket.test.region
+  project_id = scaleway_object_bucket.test.project_id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -67,8 +69,9 @@ resource "scaleway_object_bucket" "test" {
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
-  bucket = scaleway_object_bucket.test.name
-  region = "fr-par"
+  bucket     = scaleway_object_bucket.test.name
+  region     = scaleway_object_bucket.test.region
+  project_id = scaleway_object_bucket.test.project_id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -84,7 +87,8 @@ resource "scaleway_object_bucket" "test" {
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
-  bucket = scaleway_object_bucket.test.name
+  bucket     = scaleway_object_bucket.test.name
+  project_id = scaleway_object_bucket.test.project_id
 
   rule {
     apply_server_side_encryption_by_default {
@@ -109,6 +113,12 @@ The following arguments are supported:
 
 * `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
 
+* `project_id` - (Optional) The ID of the project the bucket is associated with.
+
+~> **Important:** The `project_id` attribute has a particular behavior with S3 products because the S3 API is scoped by project.
+If you are using a project different from the default one, you have to specify the `project_id` for every child resource of the bucket,
+like bucket server-side encryption configurations. Otherwise, Terraform will try to create the child resource with the default project ID and you will get a 403 error.
+
 ## Attributes Reference
 
 The `scaleway_object_bucket_server_side_encryption_configuration` resource exports certain attributes once the configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
@@ -118,6 +128,8 @@ The `scaleway_object_bucket_server_side_encryption_configuration` resource expor
 ~> **Important:** Server-side encryption configuration IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{bucket-name}`, e.g. `fr-par/bucket-name`.
 
 * `region` - The Scaleway [region](../guides/regions_and_zones.md) the bucket resides in.
+
+* `project_id` - The ID of the project the bucket server-side encryption configuration is associated with.
 
 ## Import
 

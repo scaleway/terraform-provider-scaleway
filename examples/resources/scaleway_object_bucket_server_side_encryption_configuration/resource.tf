@@ -3,7 +3,8 @@ resource "scaleway_object_bucket" "test" {
 }
 
 resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
-  bucket = scaleway_object_bucket.test.name
+  bucket     = scaleway_object_bucket.test.name
+  project_id = scaleway_object_bucket.test.project_id
 
   rule {
     apply_server_side_encryption_by_default {

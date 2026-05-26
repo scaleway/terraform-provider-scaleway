@@ -27,9 +27,17 @@ description: |-
 
 - `bucket` - (Optional, String) The bucket's name or regional ID. Conflicts with `bucket_server_side_encryption_configuration_id`.
 
+- `project_id` - (Optional, String) The ID of the project the bucket is associated with.
+
+~> **Important:** The `project_id` attribute has a particular behavior with S3 products because the S3 API is scoped by project.
+If you are using a project different from the default one, you have to specify the `project_id` when reading the data source.
+Otherwise, Terraform will use the default project ID and you will get a 403 error.
+
 ## Attributes Reference
 
 - `bucket` - (String) The bucket's name or regional ID.
+
+- `project_id` - (String) The ID of the project the bucket is associated with.
 
 - `rule` - (Set of Object) Set of server-side encryption configuration rules.
     - `apply_server_side_encryption_by_default` - (List of Object) Single object for setting server-side encryption by default.
