@@ -12,6 +12,8 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 )
 
+const deploymentTestUserName = "my_initial_user"
+
 func fetchLatestVersion(tt *acctest.TestTools) string {
 	tt.T.Helper()
 
