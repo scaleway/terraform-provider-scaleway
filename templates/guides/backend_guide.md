@@ -184,8 +184,13 @@ data "scaleway_rdb_instance" "mybackend" {
 [Scaleway Object Storage](https://www.scaleway.com/en/object-storage/) can be
 used to store your Terraform state.
 
-Thanks to the conditional writes feature from Scaleway Object Storage, this
-method also supports locking.
+Since May of 2026, Scaleway Object Storage supports the "conditional writes"
+feature, which is the requirement for the native locking mechanism of Terraform
+to work.
+
+You can now enable it using the `use_lockfile` flag. See
+[this pull request](https://github.com/hashicorp/terraform/pull/35661) for more
+details.
 
 Configure your backend as:
 
