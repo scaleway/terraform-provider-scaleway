@@ -26,6 +26,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+	objectBucketTestDefaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -33,12 +34,13 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic(bucketName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, objectBucketTestDefaultProjectId),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
 			{
@@ -56,6 +58,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+	objectBucketTestDefaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -63,13 +66,14 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic_withKMS(bucketName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, objectBucketTestDefaultProjectId),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "the-key-id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
 			{
@@ -87,6 +91,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+	objectBucketTestDefaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -94,13 +99,14 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_KMS_withKey(bucketName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, objectBucketTestDefaultProjectId),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "my-kms-key-tf-test"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
 			{
@@ -175,6 +181,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t
 
 	rName := sdkacctest.RandomWithPrefix(ResourcePrefix)
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+	objectBucketTestDefaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -182,11 +189,12 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, ""),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName, objectBucketTestDefaultProjectId),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", string(awstypes.ServerSideEncryptionAes256)),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
 			{
