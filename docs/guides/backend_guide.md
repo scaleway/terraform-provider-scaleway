@@ -188,9 +188,11 @@ Since May of 2026, Scaleway Object Storage supports the "conditional writes"
 feature, which is the requirement for the native locking mechanism of Terraform
 to work.
 
-You can now enable it using the `use_lockfile` flag. See
-[this pull request](https://github.com/hashicorp/terraform/pull/35661) for more
-details.
+You can now enable it using the `use_lockfile` flag, as per
+[the official documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+
+See [this pull request](https://github.com/hashicorp/terraform/pull/35661) for
+more details of the implementation.
 
 Configure your backend as:
 
