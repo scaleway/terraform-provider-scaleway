@@ -72,6 +72,32 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	return "", regional.ErrRegionNotFound
 }
 
+// ExtractEndpoints will try to guess the endpoints from the following:
+//   - endpoints field of the resource data
+//   - endpoints from config
+func ExtractEndpoints(d terraformResourceData, m any) map[string]string {
+	rawConfigEndpoints, ok := d.GetOk("endpoints")
+	if ok && rawConfigEndpoints != nil {
+		return rawConfigEndpoints.(map[string]string)
+	}
+
+	meta, ok := m.(*Meta)
+	if !ok {
+		return nil
+	}
+
+	return meta.Endpoints()
+}
+
+func ExtractS3Endpoint(d terraformResourceData, m any) string {
+	endpoints := ExtractEndpoints(d, m)
+	if endpoints == nil {
+		return ""
+	}
+
+	return endpoints["s3"] // Will be "" if the key doesn't exist
+}
+
 // ExtractRegionWithDefault will try to guess the region from the following:
 //   - region field of the resource data
 //   - default region given in argument
