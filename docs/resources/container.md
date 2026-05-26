@@ -45,6 +45,25 @@ resource "scaleway_container" "main" {
 }
 ```
 
+### VPC integration
+
+```terraform
+resource "scaleway_vpc" "vpc" {}
+
+resource "scaleway_vpc_private_network" "pn" {
+  vpc_id = scaleway_vpc.vpc.id
+}
+
+resource "scaleway_container_namespace" "with_pn" {}
+
+resource "scaleway_container" "with_pn" {
+  namespace_id       = scaleway_container_namespace.with_pn.id
+  name               = "container-with-private-network"
+  image              = "my-image:latest"
+  private_network_id = scaleway_vpc_private_network.pn.id
+}
+```
+
 ### Redeploy the container everytime an update is made
 
 ```terraform
@@ -342,6 +361,7 @@ Example:
 resource "scaleway_container" "main" {
   name         = "my-container"
   namespace_id = scaleway_container_namespace.main.id
+  image        = "nginx:latest"
 
   liveness_probe {
     http {
