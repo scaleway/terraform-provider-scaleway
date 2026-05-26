@@ -55,6 +55,46 @@ func CheckBucketExists(tt *acctest.TestTools, n string, shouldBeAllowed bool) re
 	}
 }
 
+func CheckBucketExistsInProject(tt *acctest.TestTools, n string, shouldBeAllowed bool, projectId string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		rs := state.RootModule().Resources[n]
+		if rs == nil {
+			return errors.New("resource not found")
+		}
+
+		bucketName := rs.Primary.Attributes["name"]
+		bucketRegion := rs.Primary.Attributes["region"]
+
+		s3Client, err := object.NewS3ClientFromMetaWithProjectID(ctx, tt.Meta, bucketRegion, projectId)
+		if err != nil {
+			return err
+		}
+
+		if rs.Primary.ID == "" {
+			return errors.New("no ID is set")
+		}
+
+		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
+			Bucket: new(bucketName),
+		})
+		if err != nil {
+			if !shouldBeAllowed && object.IsS3Err(err, object.ErrCodeForbidden, object.ErrCodeForbidden) {
+				return nil
+			}
+
+			if errors.As(err, new(*types.NoSuchBucket)) {
+				return errors.New("s3 bucket not found")
+			}
+
+			return err
+		}
+
+		return nil
+	}
+}
+
 func IsBucketDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()

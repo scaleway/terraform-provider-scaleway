@@ -21,6 +21,7 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccObjectBucket_Basic(t *testing.T) {
@@ -35,6 +36,7 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 	objectBucketTestMainRegion := scw.RegionFrPar
 	objectBucketTestSecondaryRegion := scw.RegionNlAms
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
+	objectBucketTestDefaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -64,9 +66,9 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketBasic, bucketSecondary, bucketMainRegion, objectBucketTestSecondaryRegion, objectBucketTestMainRegion),
 				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.secondary-bucket-01", true),
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-01", true),
+					objectchecks.CheckBucketExistsInProject(tt, "scaleway_object_bucket.base-01", true, objectBucketTestDefaultProjectId),
+					objectchecks.CheckBucketExistsInProject(tt, "scaleway_object_bucket.secondary-bucket-01", true, objectBucketTestDefaultProjectId),
+					objectchecks.CheckBucketExistsInProject(tt, "scaleway_object_bucket.main-bucket-01", true, objectBucketTestDefaultProjectId),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketACL),
@@ -74,6 +76,7 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.foo", "bar"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketBasic, objectBucketTestDefaultRegion)),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", objectBucketTestDefaultRegion)),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "project_id", objectBucketTestDefaultProjectId),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "name", bucketSecondary),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.%", "2"),
@@ -81,10 +84,12 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.baz", "qux"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketSecondary, objectBucketTestSecondaryRegion)),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", objectBucketTestSecondaryRegion)),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "project_id", objectBucketTestDefaultProjectId),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-01", "name", bucketMainRegion),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-01", "endpoint", fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketMainRegion, objectBucketTestMainRegion)),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-01", "api_endpoint", fmt.Sprintf("https://s3.%s.scw.cloud", objectBucketTestMainRegion)),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-01", "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
 			{
@@ -93,7 +98,7 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 						name = "%[1]s"
 						acl = "%[2]s"
 					}
-			
+
 					resource "scaleway_object_bucket" "secondary-bucket-01" {
 						name = "%[3]s"
 						region = "%[4]s"
@@ -103,18 +108,69 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 					}
 				`, bucketBasic, testBucketUpdatedACL, bucketSecondary, objectTestsSecondaryRegion),
 				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.secondary-bucket-01", true),
+					objectchecks.CheckBucketExistsInProject(tt, "scaleway_object_bucket.base-01", true, objectBucketTestDefaultProjectId),
+					objectchecks.CheckBucketExistsInProject(tt, "scaleway_object_bucket.secondary-bucket-01", true, objectBucketTestDefaultProjectId),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "name", bucketBasic),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "acl", testBucketUpdatedACL),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "tags.%", "0"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "project_id", objectBucketTestDefaultProjectId),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "name", bucketSecondary),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.%", "1"),
 					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "tags.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.secondary-bucket-01", "project_id", objectBucketTestDefaultProjectId),
 				),
 			},
+		},
+	})
+}
+
+func TestAccObjectBucket_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket.test"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucket_sideProject(bucketName, project.ID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
+
+					resource.TestCheckResourceAttr(resourceName, "name", bucketName),
+					resource.TestCheckResourceAttr(resourceName, "acl", "private"),
+					resource.TestCheckResourceAttr(resourceName, "tags.%", "0"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
+				),
+			},
+
+			// The following code breaks the checks with an "unauthorized" error
+			// {
+			// 	ResourceName:      resourceName,
+			// 	ImportState:       true,
+			// 	ImportStateVerify: true,
+			// },
 		},
 	})
 }
@@ -125,6 +181,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 
 	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
 	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
@@ -135,7 +192,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 						name = "%s"
 						region = "%s"
 						acl = "private"
-			
+
 						lifecycle_rule {
 							id      = "id1"
 							prefix  = "path1/"
@@ -169,7 +226,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 							name = "%s"
 							region = "%s"
 							acl = "private"
-			
+
 							lifecycle_rule {
 								id      = "id1"
 								prefix  = "path1/"
@@ -203,7 +260,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 							name = "%s"
 							region = "%s"
 							acl = "private"
-			
+
 							lifecycle_rule {
 								id      = "id1"
 								prefix  = "path1/"
@@ -216,7 +273,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								  	storage_class = "GLACIER"
 								}
 							}
-			
+
 							lifecycle_rule {
 								id      = "id2"
 								prefix  = "path2/"
@@ -225,7 +282,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 									days = "50"
 								}
 							}
-			
+
 							lifecycle_rule {
 								id      = "id3"
 								prefix  = "path3/"
@@ -238,7 +295,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								  	days = "1"
 								}
 							}
-			
+
 							lifecycle_rule {
 								id      = "id4"
 								enabled = true
@@ -251,7 +308,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								  	storage_class = "GLACIER"
 								}
 							}
-			
+
 							lifecycle_rule {
 								id      = "id5"
 								enabled = true
@@ -304,7 +361,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 							name = "%s"
 							region = "%s"
 							acl = "private"
-			
+
 							lifecycle_rule {
 								id      = "id1"
 								prefix  = "path1/"
@@ -328,7 +385,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 							name = "%s"
 							region = "%s"
 							acl = "private"
-			
+
 							lifecycle_rule {
 								prefix  = "path1/"
 								enabled = true
@@ -349,7 +406,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								name = "%s"
 								region = "%s"
 								acl = "private"
-			
+
 								lifecycle_rule {
 									prefix  = "path1/"
 									enabled = true
@@ -385,7 +442,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 									days = 2
 								}
 							}
-			
+
 							lifecycle_rule {
 								enabled = true
 								abort_incomplete_multipart_upload_days = 30
@@ -1146,4 +1203,14 @@ resource "scaleway_object_bucket_acl" "main" {
   acl    = "private"
 }
 `, rName, objectTestsMainRegion)
+}
+
+func testAccBucket_sideProject(rName, projectId string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name       = %[1]q
+  region     = "%[2]s"
+  project_id = "%[3]s"
+}
+`, rName, objectTestsMainRegion, projectId)
 }
