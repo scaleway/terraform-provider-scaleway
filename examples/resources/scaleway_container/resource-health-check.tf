@@ -1,6 +1,7 @@
 resource "scaleway_container" "main" {
   name         = "my-container"
   namespace_id = scaleway_container_namespace.main.id
+  image        = "nginx:latest"
 
   liveness_probe {
     http {
