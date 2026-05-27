@@ -44,10 +44,20 @@ func ExpandID(id any) ID {
 
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
+		tab2 := strings.Split(regionalID.ID, "@")
+		if len(tab2) == 2 {
+			regionalID.ID = tab2[0]
+		}
 	} else {
 		region, _ := scw.ParseRegion(tab[0])
-		regionalID.ID = tab[1]
 		regionalID.Region = region
+
+		tab2 := strings.Split(tab[1], "@")
+		if len(tab2) == 2 {
+			regionalID.ID = tab2[0]
+		} else {
+			regionalID.ID = tab[1]
+		}
 	}
 
 	return regionalID
