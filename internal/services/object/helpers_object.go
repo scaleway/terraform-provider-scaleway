@@ -913,17 +913,20 @@ func flattenServerSideEncryptionByDefault(sse *s3Types.ServerSideEncryptionByDef
 	return []any{m}
 }
 
-func setProjectId(ctx context.Context, d *schema.ResourceData, bucketName string, s3Client *s3.Client, diags *diag.Diagnostics) (diag.Diagnostics, bool) {
+func setProjectId(ctx context.Context, d *schema.ResourceData, bucketName string, s3Client *s3.Client, diags *diag.Diagnostics) (string, diag.Diagnostics, bool) {
+	projectId := ""
 	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
 		Bucket: aws.String(bucketName),
 	})
+
 	if err != nil {
 		if bucketFound, _ := addReadBucketErrorDiagnostic(diags, err, "acl", ""); !bucketFound {
-			return *diags, false
+			return "", *diags, false
 		}
 	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+		projectId = *NormalizeOwnerID(acl.Owner.ID)
+		_ = d.Set("project_id", projectId)
 	}
 
-	return *diags, true
+	return projectId, *diags, true
 }
