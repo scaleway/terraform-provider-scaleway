@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -32,6 +33,7 @@ func ResourceBucket() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc:    bucketSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: validateBucket,
 	}
 }
@@ -314,22 +316,22 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 
 	bucketName := d.Get("name").(string)
 
-	req := &s3.CreateBucketInput{
+	input := &s3.CreateBucketInput{
 		Bucket: new(bucketName),
 	}
 
 	if v, ok := d.GetOk("object_lock_enabled"); ok {
-		req.ObjectLockEnabledForBucket = new(v.(bool))
+		input.ObjectLockEnabledForBucket = new(v.(bool))
 	}
 
-	_, err = s3Client.CreateBucket(ctx, req)
+	_, err = s3Client.CreateBucket(ctx, input)
 
 	if v, ok := d.GetOk("acl"); ok {
-		req.ACL = s3Types.BucketCannedACL(v.(string))
+		input.ACL = s3Types.BucketCannedACL(v.(string))
 	}
 
 	if TimedOut(err) {
-		_, err = s3Client.CreateBucket(ctx, req)
+		_, err = s3Client.CreateBucket(ctx, input)
 	}
 
 	if err != nil {
@@ -339,9 +341,12 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 	projectId := d.Get("project_id").(string)
 
 	if projectId != "" {
-		d.SetId(regional.NewIDString(region, bucketName+"@"+projectId))
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
 	} else {
-		d.SetId(regional.NewIDString(region, bucketName))
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
@@ -757,7 +762,12 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if projectId != "" {
-		d.SetId(regional.NewIDString(region, bucketName+"@"+projectId))
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	// Get object_lock_enabled

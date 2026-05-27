@@ -87,13 +87,7 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 }
 
 func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	projectId := ""
-	projectIdData := d.Get("project_id")
-	if projectIdData != nil {
-		projectId = projectIdData.(string)
-	}
-
-	conn, region, err := s3ClientWithRegionFromProjectId(ctx, d, meta, projectId)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, meta)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -107,17 +101,23 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 		},
 	}
 
-	_, err = conn.PutBucketEncryption(ctx, &input)
+	_, err = s3Client.PutBucketEncryption(ctx, &input)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("creating S3 Bucket (%s) Server-side Encryption Configuration: %w", bucketName, err))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
+	projectId := d.Get("project_id").(string)
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	_, err = findServerSideEncryptionConfiguration(ctx, conn, bucketName)
+	_, err = findServerSideEncryptionConfiguration(ctx, s3Client, bucketName)
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("waiting for S3 Bucket Server-side Encryption Configuration (%s) create: %w", d.Id(), err))
 	}
@@ -126,12 +126,12 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 }
 
 func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	s3Client, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, meta, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	var diags diag.Diagnostics
 
 	sse, err := findServerSideEncryptionConfiguration(ctx, s3Client, bucketName)
 	if err != nil {
@@ -145,17 +145,21 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 		return diag.FromErr(fmt.Errorf("reading S3 Bucket Server-side Encryption Configuration (%s): %w", d.Id(), err))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	_ = d.Set("bucket", bucketName)
 	_ = d.Set("region", region)
 
-	diags, ok := setProjectId(ctx, d, bucketName, s3Client, &diags)
+	projectId, diags, ok := setProjectId(ctx, d, bucketName, s3Client, &diags)
 	if !ok {
 		return diags
+	}
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
