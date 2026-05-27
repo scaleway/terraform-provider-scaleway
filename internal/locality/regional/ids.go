@@ -10,8 +10,9 @@ import (
 
 // ID represents an ID that is linked with a region, eg fr-par/11111111-1111-1111-1111-111111111111
 type ID struct {
-	ID     string
-	Region scw.Region
+	ID        string
+	ProjectID string
+	Region    scw.Region
 }
 
 func NewID(region scw.Region, id string) ID {
@@ -44,20 +45,17 @@ func ExpandID(id any) ID {
 
 	if len(tab) != 2 {
 		regionalID.ID = id.(string)
-		tab2 := strings.Split(regionalID.ID, "@")
-		if len(tab2) == 2 {
-			regionalID.ID = tab2[0]
-		}
 	} else {
 		region, _ := scw.ParseRegion(tab[0])
+		regionalID.ID = tab[1]
 		regionalID.Region = region
+	}
 
-		tab2 := strings.Split(tab[1], "@")
-		if len(tab2) == 2 {
-			regionalID.ID = tab2[0]
-		} else {
-			regionalID.ID = tab[1]
-		}
+	tab = strings.Split(regionalID.ID, "@")
+	regionalID.ID = tab[0]
+
+	if len(tab) == 2 {
+		regionalID.ProjectID = tab[1]
 	}
 
 	return regionalID

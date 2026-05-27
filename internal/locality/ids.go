@@ -1,5 +1,7 @@
 package locality
 
+import "strings"
+
 // ExpandID returns the id whether it is a localizedID or a raw ID.
 func ExpandID(id any) string {
 	_, ID, err := ParseLocalizedID(id.(string))
@@ -7,7 +9,7 @@ func ExpandID(id any) string {
 		return id.(string)
 	}
 
-	return ID
+	return strings.Split(ID, "@")[0]
 }
 
 func ExpandIDs(data any) []string {
