@@ -164,13 +164,14 @@ func TestAccObjectBucket_sideProject(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
 				),
 			},
-
-			// The following code breaks the checks with an "unauthorized" error
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// There is a known bug that always triggers a diff on these fields,
+				// see bucket.go:782. We can thus ignore these fields.
+				ImportStateVerifyIgnore: []string{"acl", "force_destroy"},
+			},
 		},
 	})
 }
