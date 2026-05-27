@@ -14,7 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -38,6 +39,7 @@ func ResourceBucketACL() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: bucketAclSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -147,27 +149,12 @@ func bucketAclSchema() map[string]*schema.Schema {
 			}, false),
 		},
 		"bucket": {
-			Type:         schema.TypeString,
-			Required:     true,
-			ForceNew:     true,
-			ValidateFunc: validation.StringLenBetween(1, 126),
-			Description:  "The bucket's name or regional ID.",
-			// Add this to ignore plan diff caused by @project_id
-			DiffSuppressFunc: func(_, oldVal, newVal string, _ *schema.ResourceData) bool {
-				// Strip region prefix for comparison
-				oldBucket := locality.ExpandID(oldVal)
-				newBucket := locality.ExpandID(newVal)
-
-				// Strip @project_id suffix if present
-				if idx := strings.Index(oldBucket, "@"); idx != -1 {
-					oldBucket = oldBucket[:idx]
-				}
-				if idx := strings.Index(newBucket, "@"); idx != -1 {
-					newBucket = newBucket[:idx]
-				}
-
-				return oldBucket == newBucket
-			},
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			ValidateFunc:     validation.StringLenBetween(1, 126),
+			Description:      "The bucket's name or regional ID.",
+			DiffSuppressFunc: dsf.Locality,
 		},
 		"expected_bucket_owner": {
 			Type:             schema.TypeString,
@@ -182,22 +169,14 @@ func bucketAclSchema() map[string]*schema.Schema {
 }
 
 func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, err := s3ClientWithRegion(ctx, d, m)
+	regionalID := regional.ExpandID(d.Get("bucket"))
+	bucketName := regionalID.ID
+	bucketRegion := regionalID.Region
+	projectId := regionalID.ProjectID
+
+	conn, region, err := s3ClientWithRegionFromProjectId(ctx, d, m, projectId)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	regionalID := regional.ExpandID(d.Get("bucket"))
-	bucket := regionalID.ID
-	bucketRegion := regionalID.Region
-
-	// Rm "@<PROJECT_ID>"
-	bucketName := bucket
-	parts := strings.Split(bucket, "@")
-	if len(parts) == 2 {
-		bucketName = parts[0]
-	} else if len(parts) > 2 {
-		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucket))
 	}
 
 	if bucketRegion != "" && bucketRegion != region {
@@ -239,6 +218,17 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
+
+	projectId = d.Get("project_id").(string)
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId(BucketACLCreateResourceID(region, bucketName, acl))
 
@@ -450,18 +440,17 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3Types.Owner) []any {
 func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	expectedBucketOwner := d.Get("expected_bucket_owner")
 
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, region, bucketName, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Rm "@<PROJECT_ID>"
-	bucketName := bucket
-	parts := strings.Split(bucket, "@")
+	parts := strings.Split(bucketName, "@")
 	if len(parts) == 2 {
 		bucketName = parts[0]
 	} else if len(parts) > 2 {
-		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucket))
+		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucketName))
 	}
 
 	input := &s3.GetBucketAclInput{
@@ -514,18 +503,17 @@ func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
 }
 
 func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, bucket, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, region, bucketName, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Rm "@<PROJECT_ID>"
-	bucketName := bucket
-	parts := strings.Split(bucket, "@")
+	parts := strings.Split(bucketName, "@")
 	if len(parts) == 2 {
 		bucketName = parts[0]
 	} else if len(parts) > 2 {
-		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucket))
+		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucketName))
 	}
 
 	input := &s3.PutBucketAclInput{
@@ -557,25 +545,24 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any)
 
 	if d.HasChange("acl") {
 		// Set new ACL value back in resource ID
-		d.SetId(BucketACLCreateResourceID(region, bucket, acl))
+		d.SetId(BucketACLCreateResourceID(region, bucketName, acl))
 	}
 
 	return resourceBucketACLRead(ctx, d, m)
 }
 
 func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucket, _, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, _, bucketName, _, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	// Rm "@<PROJECT_ID>"
-	bucketName := bucket
-	parts := strings.Split(bucket, "@")
+	parts := strings.Split(bucketName, "@")
 	if len(parts) == 2 {
 		bucketName = parts[0]
 	} else if len(parts) > 2 {
-		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucket))
+		return diag.FromErr(fmt.Errorf("invalid bucket ID %q: expected format <name>[@<project_id>]", bucketName))
 	}
 
 	_, err = conn.PutBucketAcl(ctx, &s3.PutBucketAclInput{
