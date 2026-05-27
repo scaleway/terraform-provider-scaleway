@@ -16,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -79,7 +80,9 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 
 	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-grantee")
 
-	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf" // scaleway-dev-tools-org
+	// FIXME: this used to work, but why actually?
+	// ownerID := "105bdce1-64c0-48ab-899d-868455867ecf" // scaleway-dev-tools-org
+	ownerID, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
@@ -89,6 +92,7 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 					resource "scaleway_object_bucket" "main" {
 						name = "%[1]s"
 						region = "%[3]s"
+						project_id = "%[2]s"
 					}
 
 					resource "scaleway_object_bucket_acl" "main" {
@@ -189,6 +193,98 @@ func TestAccObjectBucketACL_Grantee(t *testing.T) {
 				ResourceName:      "scaleway_object_bucket_acl.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccObjectBucketACL_Basic_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket.test"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketACL_Basic_sideProject(bucketName, project.ID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// There is a known bug that always triggers a diff on these fields,
+				// see bucket.go:782. We can thus ignore these fields.
+				ImportStateVerifyIgnore: []string{"acl", "force_destroy"},
+			},
+		},
+	})
+}
+
+func TestAccObjectBucketACL_Grantee_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket.test"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketACL_Grantee_sideProject(bucketName, project.ID, project.OrganizationID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// There is a known bug that always triggers a diff on these fields,
+				// see bucket.go:782. We can thus ignore these fields.
+				ImportStateVerifyIgnore: []string{"acl", "force_destroy"},
 			},
 		},
 	})
@@ -488,4 +584,55 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	}
 
 	return errs
+}
+
+func testAccBucketACL_Grantee_sideProject(rName, projectId, orgId string) string {
+	return fmt.Sprintf(`
+	resource "scaleway_object_bucket" "main" {
+		name = "%[1]s"
+		region = "%[3]s"
+		project_id = "%[2]s"
+	}
+
+	resource "scaleway_object_bucket_acl" "main" {
+		bucket = scaleway_object_bucket.main.id
+		access_control_policy {
+		  	grant {
+				grantee {
+					id   = "%[4]s"
+					type = "CanonicalUser"
+				}
+				permission = "FULL_CONTROL"
+		  	}
+
+		  	grant {
+				grantee {
+			  		id   = "%[4]s"
+			  		type = "CanonicalUser"
+				}
+				permission = "WRITE"
+		  	}
+
+		  	owner {
+				id = "%[4]s"
+		  	}
+		}
+	}
+`, rName, projectId, objectTestsMainRegion, orgId)
+}
+
+func testAccBucketACL_Basic_sideProject(rName, projectId string) string {
+	return fmt.Sprintf(`
+	resource "scaleway_object_bucket" "main" {
+		name = "%[1]s"
+		region = "%[3]s"
+		project_id = "%[2]s"
+	}
+
+	resource "scaleway_object_bucket_acl" "main" {
+		bucket = scaleway_object_bucket.main.id
+		acl = "private"
+		project_id = "%[2]s"
+	}
+`, rName, projectId, objectTestsMainRegion)
 }
