@@ -307,18 +307,12 @@ func bucketSchema() map[string]*schema.Schema {
  */
 
 func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	projectId := ""
-	projectIdData := d.Get("project_id")
-	if projectIdData != nil {
-		projectId = projectIdData.(string)
-	}
-
-	bucketName := d.Get("name").(string)
-
-	s3Client, region, err := s3ClientWithRegionFromProjectId(ctx, d, m, projectId)
+	s3Client, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	bucketName := d.Get("name").(string)
 
 	req := &s3.CreateBucketInput{
 		Bucket: new(bucketName),
@@ -342,7 +336,13 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, bucketName))
+	projectId := d.Get("project_id").(string)
+
+	if projectId != "" {
+		d.SetId(regional.NewIDString(region, bucketName+"@"+projectId))
+	} else {
+		d.SetId(regional.NewIDString(region, bucketName))
+	}
 
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
@@ -751,9 +751,13 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
-	diags, ok := setProjectId(ctx, d, bucketName, s3Client, &diags)
+	projectId, diags, ok := setProjectId(ctx, d, bucketName, s3Client, &diags)
 	if !ok {
 		return diags
+	}
+
+	if projectId != "" {
+		d.SetId(regional.NewIDString(region, bucketName+"@"+projectId))
 	}
 
 	// Get object_lock_enabled
