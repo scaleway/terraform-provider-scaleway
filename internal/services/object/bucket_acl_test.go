@@ -106,6 +106,8 @@ func TestAccObjectBucketACL_Basic_sideProject(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "acl", "private"),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "project_id", project.ID),
 				),
 			},
 			{
@@ -152,6 +154,7 @@ func TestAccObjectBucketACL_Grantee_sideProject(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "project_id", project.ID),
 				),
 			},
 			{
@@ -171,7 +174,8 @@ func TestAccObjectBucketACL_GranteeWithOwner_sideProject(t *testing.T) {
 	defer tt.Cleanup()
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
-	resourceName := "scaleway_object_bucket.main"
+	bucketResourceName := "scaleway_object_bucket.main"
+	resourceName := "scaleway_object_bucket_acl.main"
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
 		tt,
@@ -196,12 +200,27 @@ func TestAccObjectBucketACL_GranteeWithOwner_sideProject(t *testing.T) {
 			{
 				Config: testAccBucketACL_GranteeWithOwner_sideProject(bucketName, project.ID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
-					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
+					objectchecks.CheckBucketExistsInProject(tt, bucketResourceName, true, project.ID),
+					resource.TestCheckResourceAttr(resourceName, "bucket", bucketName),
+					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
+					resource.TestCheckResourceAttr(resourceName, "expected_bucket_owner", project.ID),
+					resource.TestCheckResourceAttr(resourceName, "access_control_policy.0.grant.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "access_control_policy.0.grant.*", map[string]string{
+						"grantee.#":      "1",
+						"grantee.0.type": "CanonicalUser",
+						"permission":     "FULL_CONTROL",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "access_control_policy.0.grant.*", map[string]string{
+						"grantee.#":      "1",
+						"grantee.0.type": "CanonicalUser",
+						"permission":     "WRITE",
+					}),
+					resource.TestCheckResourceAttr(resourceName, "access_control_policy.0.owner.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "access_control_policy.0.owner.0.id", project.ID),
 				),
 			},
 			{
-				ResourceName:      resourceName,
+				ResourceName:      bucketResourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				// There is a known bug that always triggers a diff on these fields,
