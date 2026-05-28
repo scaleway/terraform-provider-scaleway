@@ -927,12 +927,10 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	////
 	// Apply Update
 	////
-	clstr, err := k8sAPI.UpdateCluster(updateRequest, scw.WithContext(ctx))
+	_, err = k8sAPI.UpdateCluster(updateRequest, scw.WithContext(ctx))
 	if err != nil {
 		return append(diag.FromErr(err), diags...)
 	}
-
-	fmt.Print(clstr)
 
 	_, err = waitCluster(ctx, k8sAPI, region, clusterID, d.Timeout(schema.TimeoutUpdate))
 	if err != nil {

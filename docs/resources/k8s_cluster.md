@@ -278,13 +278,13 @@ you can still set it now. In this case it will not destroy and recreate your clu
     ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
 
     - `log_level` - (Defaults to `2`) Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
-      Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
+    Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
 
     ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
 
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
-  - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+    - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
     ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
     - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
