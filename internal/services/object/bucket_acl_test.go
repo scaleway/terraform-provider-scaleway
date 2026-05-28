@@ -203,7 +203,7 @@ func TestAccObjectBucketACL_Basic_sideProject(t *testing.T) {
 	defer tt.Cleanup()
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
-	resourceName := "scaleway_object_bucket.test"
+	resourceName := "scaleway_object_bucket.main"
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
 		tt,
@@ -249,7 +249,7 @@ func TestAccObjectBucketACL_Grantee_sideProject(t *testing.T) {
 	defer tt.Cleanup()
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
-	resourceName := "scaleway_object_bucket.test"
+	resourceName := "scaleway_object_bucket.main"
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
 		tt,

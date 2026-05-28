@@ -172,9 +172,8 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any)
 	regionalID := regional.ExpandID(d.Get("bucket"))
 	bucketName := regionalID.ID
 	bucketRegion := regionalID.Region
-	projectId := regionalID.ProjectID
 
-	conn, region, err := s3ClientWithRegionFromProjectId(ctx, d, m, projectId)
+	conn, region, err := s3ClientWithRegion(ctx, d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -219,7 +218,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any)
 
 	tflog.Debug(ctx, fmt.Sprintf("output: %v", out))
 
-	projectId = d.Get("project_id").(string)
+	projectId := d.Get("project_id").(string)
 
 	if projectId != "" {
 		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
