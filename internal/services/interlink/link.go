@@ -76,6 +76,7 @@ func linkSchema() map[string]*schema.Schema {
 			ForceNew:      true,
 			Description:   "If set, creates a self-hosted link using this dedicated physical connection",
 			ConflictsWith: []string{"partner_id"},
+			RequiredWith:  []string{"peer_asn"},
 		},
 		"partner_id": {
 			Type:          schema.TypeString,
@@ -99,7 +100,7 @@ func linkSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			Computed:    true,
-			Description: "For self-hosted links, the peer AS Number to establish BGP session. If not given, a default one will be assigned",
+			Description: "For self-hosted links, the peer AS Number to establish BGP session. Required when `connection_id` is set",
 		},
 		"vlan": {
 			Type:        schema.TypeInt,

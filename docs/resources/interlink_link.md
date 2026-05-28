@@ -67,7 +67,7 @@ The following arguments are supported:
 - `tags` - (Optional) List of tags to apply to the link.
 - `partner_id` - (Optional) If set, creates a hosted link on a partner's connection. Specify the ID of the chosen partner, who already has a shared connection with available bandwidth. Conflicts with `connection_id`.
 - `connection_id` - (Optional) If set, creates a self-hosted link using this dedicated physical connection. Conflicts with `partner_id`.
-- `peer_asn` - (Optional) For self-hosted links, the peer AS Number to establish BGP session. If not given, a default one will be assigned.
+- `peer_asn` - (Optional) For self-hosted links, the peer AS Number to establish BGP session. Required when `connection_id` is set.
 - `vlan` - (Optional) For self-hosted links only, the VLAN ID. If the VLAN is not available (already taken or out of range), an error is returned.
 - `routing_policy_v4_id` - (Optional) If set, attaches this routing policy containing IPv4 prefixes to the link. A BGP IPv4 session will be created.
 - `routing_policy_v6_id` - (Optional) If set, attaches this routing policy containing IPv6 prefixes to the link. A BGP IPv6 session will be created.
