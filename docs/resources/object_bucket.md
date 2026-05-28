@@ -285,7 +285,10 @@ The `scaleway_object_bucket` resource exports certain attributes once the bucket
 
 * `id` - The unique name of the bucket.
 
-~> **Important:** Object bucket IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`.
+~> **Important:** Object bucket IDs are
+[regional](../guides/regions_and_zones.md#resource-ids), which means they are of
+the form `{region}/{name}@{project_id}`, e.g.
+`fr-par/bucket-name@f9007329-f631-42b3-9ff7-b82d36320014`.
 
 * `endpoint` - The endpoint URL of the bucket.
 

@@ -33,13 +33,19 @@ The following arguments are supported:
 
 * `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
 
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference)
+`project_id`) The ID of the project the bucket is associated with.
+
 ## Attributes Reference
 
 The `scaleway_object_bucket_server_side_encryption_configuration` resource exports certain attributes once the configuration is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
 * `id` - The unique identifier of the server-side encryption configuration.
 
-~> **Important:** Server-side encryption configuration IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{bucket-name}`, e.g. `fr-par/bucket-name`.
+~> **Important:** Server-side encryption configuration IDs are
+[regional](../guides/regions_and_zones.md#resource-ids), which means they are of
+the form `{region}/{bucket-name}@{project_id}`, e.g.
+`fr-par/bucket-name@f9007329-f631-42b3-9ff7-b82d36320014`.
 
 * `region` - The Scaleway [region](../guides/regions_and_zones.md) the bucket resides in.
 
