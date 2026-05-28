@@ -74,130 +74,6 @@ func TestAccObjectBucketACL_Basic(t *testing.T) {
 	})
 }
 
-func TestAccObjectBucketACL_Grantee(t *testing.T) {
-	tt := acctest.NewTestTools(t)
-	defer tt.Cleanup()
-
-	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-grantee")
-
-	// FIXME: this used to work, but why actually?
-	// ownerID := "105bdce1-64c0-48ab-899d-868455867ecf" // scaleway-dev-tools-org
-	ownerID, _ := tt.Meta.ScwClient().GetDefaultProjectID()
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
-		Steps: []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "main" {
-						name = "%[1]s"
-						region = "%[3]s"
-						project_id = "%[2]s"
-					}
-
-					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.id
-						access_control_policy {
-						  	grant {
-								grantee {
-									id   = "%[2]s"
-									type = "CanonicalUser"
-								}
-								permission = "FULL_CONTROL"
-						  	}
-
-						  	grant {
-								grantee {
-							  		id   = "%[2]s"
-							  		type = "CanonicalUser"
-								}
-								permission = "WRITE"
-						  	}
-
-						  	owner {
-								id = "%[2]s"
-						  	}
-						}
-					}
-					`, testBucketName, ownerID, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
-					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "main" {
-						name = "%[1]s"
-						region = "%[3]s"
-					}
-
-					data "scaleway_iam_user" "devtool" {
-						email = "developer-tools-team@scaleway.com"
-					}
-
-					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.id
-						access_control_policy {
-						  	grant {
-								grantee {
-									id   = "%[2]s"
-									type = "CanonicalUser"
-								}
-								permission = "FULL_CONTROL"
-						  	}
-
-						  	grant {
-								grantee {
-							  		id   = "%[2]s"
-							  		type = "CanonicalUser"
-								}
-								permission = "WRITE"
-						  	}
-
-							grant {
-								grantee {
-								  	id   = data.scaleway_iam_user.devtool.id
-								  	type = "CanonicalUser"
-								}
-								permission = "FULL_CONTROL"
-							}
-
-							grant {
-								grantee {
-								  	uri  = "%[4]s"
-								  	type = "Group"
-								}
-								permission = "READ_ACP"
-							}
-
-							grant {
-								grantee {
-								  	uri  = "%[5]s"
-								  	type = "Group"
-								}
-								permission = "READ"
-							}
-						  	owner {
-								id = "%[2]s"
-						  	}
-						}
-					}
-				`, testBucketName, ownerID, objectTestsMainRegion, object.AuthenticatedUsersURI, object.AllUsersURI),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
-					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
-				),
-			},
-			{
-				ResourceName:      "scaleway_object_bucket_acl.main",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-		},
-	})
-}
-
 func TestAccObjectBucketACL_Basic_sideProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -290,53 +166,47 @@ func TestAccObjectBucketACL_Grantee_sideProject(t *testing.T) {
 	})
 }
 
-func TestAccObjectBucketACL_GranteeWithOwner(t *testing.T) {
+func TestAccObjectBucketACL_GranteeWithOwner_sideProject(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-owner")
-	ownerID := "105bdce1-64c0-48ab-899d-868455867ecf"
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket.main"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_object_bucket" "main" {
-						name = "%[1]s"
-						region = "%[3]s"
-					}
-
-					resource "scaleway_object_bucket_acl" "main" {
-						bucket = scaleway_object_bucket.main.id
-						expected_bucket_owner = "%[2]s"
-						access_control_policy {
-						  grant {
-							grantee {
-								id   = "%[2]s"
-								type = "CanonicalUser"
-							}
-							permission = "FULL_CONTROL"
-						  }
-
-						  grant {
-							grantee {
-							  id   = "%[2]s"
-							  type = "CanonicalUser"
-							}
-							permission = "WRITE"
-						  }
-
-						  owner {
-							id = "%[2]s"
-						  }
-						}
-					}
-					`, testBucketName, ownerID, objectTestsMainRegion),
-				Check: resource.ComposeTestCheckFunc(
-					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main", true),
-					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", testBucketName),
+				Config: testAccBucketACL_GranteeWithOwner_sideProject(bucketName, project.ID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
+					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// There is a known bug that always triggers a diff on these fields,
+				// see bucket.go:782. We can thus ignore these fields.
+				ImportStateVerifyIgnore: []string{"acl", "force_destroy"},
 			},
 		},
 	})
@@ -636,5 +506,42 @@ func testAccBucketACL_Basic_sideProject(rName, projectId string) string {
 		acl = "private"
 		project_id = "%[2]s"
 	}
+`, rName, projectId, objectTestsMainRegion)
+}
+
+func testAccBucketACL_GranteeWithOwner_sideProject(rName, projectId string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main" {
+	name = "%[1]s"
+	region = "%[3]s"
+	project_id = "%[2]s"
+}
+
+resource "scaleway_object_bucket_acl" "main" {
+	bucket = scaleway_object_bucket.main.id
+	project_id = "%[2]s"
+	expected_bucket_owner = "%[2]s"
+	access_control_policy {
+	  grant {
+		grantee {
+			id   = "%[2]s"
+			type = "CanonicalUser"
+		}
+		permission = "FULL_CONTROL"
+	  }
+
+	  grant {
+		grantee {
+		  id   = "%[2]s"
+		  type = "CanonicalUser"
+		}
+		permission = "WRITE"
+	  }
+
+	  owner {
+		id = "%[2]s"
+	  }
+	}
+}
 `, rName, projectId, objectTestsMainRegion)
 }
