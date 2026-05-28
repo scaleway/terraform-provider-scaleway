@@ -246,6 +246,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewDatabaseBackupExportAction,
 		rdb.NewDatabaseBackupRestoreAction,
 		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceRestartAction,
 		rdb.NewInstanceLogPrepareAction,
 		rdb.NewInstanceLogsPurgeAction,
 		rdb.NewInstanceSnapshotAction,
