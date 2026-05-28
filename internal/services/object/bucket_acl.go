@@ -225,6 +225,7 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any)
 	} else {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

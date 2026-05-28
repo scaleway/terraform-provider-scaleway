@@ -345,6 +345,7 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 	} else {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -766,6 +767,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	} else {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -60,6 +60,7 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	var diags diag.Diagnostics
+
 	projectId, diags, ok := setProjectId(ctx, d, bucket, s3Client, &diags)
 	if !ok {
 		return diags
