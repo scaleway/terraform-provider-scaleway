@@ -279,6 +279,75 @@ func TestAccObjectBucketACL_WithBucketName(t *testing.T) {
 	})
 }
 
+func TestAccObjectBucketACL_WithBucketName_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	testBucketName := sdkacctest.RandomWithPrefix("tf-tests-scw-object-acl-name")
+	bucketResourceName := "scaleway_object_bucket.main"
+	resourceName := "scaleway_object_bucket_acl.main"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+						project_id = "%[3]s"
+					}
+
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.name
+						acl = "public-read"
+						project_id = "%[3]s"
+					}
+					`, testBucketName, objectTestsMainRegion, project.ID),
+				ExpectError: regexp.MustCompile("api error NoSuchBucket: The specified bucket does not exist"),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main" {
+						name = "%s"
+						region = "%s"
+						project_id = "%[3]s"
+					}
+
+					resource "scaleway_object_bucket_acl" "main" {
+						bucket = scaleway_object_bucket.main.name
+						acl = "public-read"
+						region = "%[2]s"
+						project_id = "%[3]s"
+					}
+					`, testBucketName, objectTestsMainRegion, project.ID),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, bucketResourceName, true),
+					resource.TestCheckResourceAttr(resourceName, "bucket", testBucketName),
+					resource.TestCheckResourceAttr(resourceName, "acl", "public-read"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucketACL_Remove(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
