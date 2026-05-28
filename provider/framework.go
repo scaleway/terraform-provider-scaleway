@@ -19,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -26,6 +27,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
@@ -259,6 +261,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
 		mongodb.NewInstanceListResource,
+		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
@@ -278,6 +281,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		iam.NewGroupListResource,
 		iam.NewUserListResource,
 		iam.NewApplicationListResource,
+		domain.NewZoneListResource,
 	}
 }
 
