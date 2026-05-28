@@ -37,7 +37,7 @@ func lockConfigurationSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			ForceNew:         true,
-			ValidateFunc:     validation.StringLenBetween(1, 63),
+			ValidateFunc:     validation.StringLenBetween(1, 126),
 			Description:      "The bucket's name or regional ID.",
 			DiffSuppressFunc: dsf.Locality,
 		},
