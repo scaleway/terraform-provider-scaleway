@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -140,6 +139,7 @@ func bucketAclSchema() map[string]*schema.Schema {
 		"acl": {
 			Type:        schema.TypeString,
 			Optional:    true,
+			Computed:    true,
 			Description: "ACL of the bucket: either 'private', 'public-read', 'public-read-write' or 'authenticated-read'.",
 			ValidateFunc: validation.StringInSlice([]string{
 				string(s3Types.ObjectCannedACLPrivate),
@@ -229,8 +229,6 @@ func resourceBucketACLCreate(ctx context.Context, d *schema.ResourceData, m any)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(BucketACLCreateResourceID(region, bucketName, acl))
 
 	return resourceBucketACLRead(ctx, d, m)
 }
@@ -440,7 +438,7 @@ func flattenBucketACLAccessControlPolicyOwner(owner *s3Types.Owner) []any {
 func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	expectedBucketOwner := d.Get("expected_bucket_owner")
 
-	conn, region, bucketName, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, region, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -462,6 +460,11 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	output, err := conn.GetBucketAcl(ctx, input)
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error getting object storage bucket ACL (%s): %w", d.Id(), err))
+	} else if output == nil {
+		return diag.FromErr(fmt.Errorf("error getting object bucket ACL (%s): empty output", d.Id()))
+	}
 
 	if !d.IsNewResource() && errors.As(err, new(*s3Types.NoSuchBucket)) {
 		tflog.Warn(ctx, fmt.Sprintf("[WARN] Object Bucket ACL (%s) not found, removing from state", d.Id()))
@@ -470,14 +473,7 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return nil
 	}
 
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error getting object storage bucket ACL (%s): %w", d.Id(), err))
-	}
-
-	if output == nil {
-		return diag.FromErr(fmt.Errorf("error getting object bucket ACL (%s): empty output", d.Id()))
-	}
-
+	acl := determineCannedACL(output)
 	_ = d.Set("acl", acl)
 	_ = d.Set("expected_bucket_owner", expectedBucketOwner)
 
@@ -486,24 +482,26 @@ func resourceBucketACLRead(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	_ = d.Set("region", region)
-	_ = d.Set("project_id", NormalizeOwnerID(output.Owner.ID))
 	_ = d.Set("bucket", bucketName)
+
+	projectId := *NormalizeOwnerID(output.Owner.ID)
+	_ = d.Set("project_id", NormalizeOwnerID(output.Owner.ID))
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentity(d, region, bucketName+"@"+projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
 
-// BucketACLCreateResourceID is a method for creating an ID string
-// with the bucket name and optional organizationID and/or ACL.
-func BucketACLCreateResourceID(region scw.Region, bucket, acl string) string {
-	if acl == "" {
-		return regional.NewIDString(region, bucket)
-	}
-
-	return regional.NewIDString(region, strings.Join([]string{bucket, acl}, BucketACLSeparator))
-}
-
 func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, region, bucketName, acl, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -521,7 +519,7 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if d.HasChange("acl") {
-		acl = d.Get("acl").(string)
+		acl := d.Get("acl").(string)
 		input.ACL = s3Types.BucketCannedACL(acl)
 	}
 
@@ -543,16 +541,11 @@ func resourceBucketACLUpdate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(fmt.Errorf("error updating object bucket ACL (%s): %w", d.Id(), err))
 	}
 
-	if d.HasChange("acl") {
-		// Set new ACL value back in resource ID
-		d.SetId(BucketACLCreateResourceID(region, bucketName, acl))
-	}
-
 	return resourceBucketACLRead(ctx, d, m)
 }
 
 func resourceBucketACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	conn, _, bucketName, _, err := s3ClientWithRegionWithNameACL(ctx, d, m, d.Id())
+	conn, _, bucketName, err := s3ClientWithRegionAndName(ctx, d, m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}

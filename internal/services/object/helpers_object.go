@@ -28,7 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -187,27 +186,6 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	}
 
 	return s3Client, region, outerID, innerID, err
-}
-
-func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, m any, name string) (*s3.Client, scw.Region, string, string, error) {
-	region, name, outerID, err := locality.ParseLocalizedNestedOwnerID(name)
-	if err != nil {
-		return nil, "", name, "", err
-	}
-
-	accessKey, _ := meta.ExtractScwClient(m).GetAccessKey()
-	if projectID, _, err := meta.ExtractProjectID(d, m); err == nil {
-		accessKey = accessKeyWithProjectID(accessKey, projectID)
-	}
-
-	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
-	if err != nil {
-		return nil, "", "", "", err
-	}
-
-	return s3Client, scw.Region(region), name, outerID, err
 }
 
 func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, region string) (*s3.Client, error) {
@@ -903,4 +881,41 @@ func setProjectId(ctx context.Context, d *schema.ResourceData, bucketName string
 	}
 
 	return projectId, *diags, true
+}
+
+func determineCannedACL(output *s3.GetBucketAclOutput) string {
+	if output == nil || len(output.Grants) == 0 {
+		// Default value
+		return "private"
+	}
+
+	if len(output.Grants) == 1 {
+		return "private"
+	}
+
+	hasPublicRead := false
+	hasPublicWrite := false
+
+	for _, grant := range output.Grants {
+		if grant.Grantee != nil && grant.Grantee.URI != nil {
+			if *grant.Grantee.URI == AllUsersURI {
+				switch grant.Permission {
+				case s3Types.PermissionRead:
+					hasPublicRead = true
+				case s3Types.PermissionWrite:
+					hasPublicWrite = true
+				}
+			}
+		}
+	}
+
+	if hasPublicRead && hasPublicWrite {
+		return "public-read-write"
+	}
+
+	if hasPublicRead {
+		return "public-read"
+	}
+
+	return "private"
 }
