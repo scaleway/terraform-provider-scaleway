@@ -272,7 +272,7 @@ func TestAccObjectBucketACL_Grantee_sideProject(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketACL_Grantee_sideProject(bucketName, project.ID, project.OrganizationID),
+				Config: testAccBucketACL_Grantee_sideProject(bucketName, project.ID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					objectchecks.CheckBucketExistsInProject(tt, resourceName, true, project.ID),
 					resource.TestCheckResourceAttr("scaleway_object_bucket_acl.main", "bucket", bucketName),
@@ -586,7 +586,7 @@ func s3ACLAreEqual(expected string, actual *s3.GetBucketAclOutput) (errs []error
 	return errs
 }
 
-func testAccBucketACL_Grantee_sideProject(rName, projectId, orgId string) string {
+func testAccBucketACL_Grantee_sideProject(rName, projectId string) string {
 	return fmt.Sprintf(`
 	resource "scaleway_object_bucket" "main" {
 		name = "%[1]s"
@@ -596,10 +596,12 @@ func testAccBucketACL_Grantee_sideProject(rName, projectId, orgId string) string
 
 	resource "scaleway_object_bucket_acl" "main" {
 		bucket = scaleway_object_bucket.main.id
+		project_id = "%[2]s"
+
 		access_control_policy {
 		  	grant {
 				grantee {
-					id   = "%[4]s"
+					id   = "%[2]s"
 					type = "CanonicalUser"
 				}
 				permission = "FULL_CONTROL"
@@ -607,18 +609,18 @@ func testAccBucketACL_Grantee_sideProject(rName, projectId, orgId string) string
 
 		  	grant {
 				grantee {
-			  		id   = "%[4]s"
+			  		id   = "%[2]s"
 			  		type = "CanonicalUser"
 				}
 				permission = "WRITE"
 		  	}
 
 		  	owner {
-				id = "%[4]s"
+				id = "%[2]s"
 		  	}
 		}
 	}
-`, rName, projectId, objectTestsMainRegion, orgId)
+`, rName, projectId, objectTestsMainRegion)
 }
 
 func testAccBucketACL_Basic_sideProject(rName, projectId string) string {
