@@ -274,12 +274,31 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	return tagsSet
 }
 
-func objectBucketEndpointURL(bucketName string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region) // FIXME
+func computeObjectBucketURLs(
+	d *schema.ResourceData, m any, bucketName string, region scw.Region,
+) (endpoint, apiEndpoint string, err error) {
+	usePathStyle := false // FIXME
+	apiEndpoint = objectBucketAPIEndpointURL(d, m, region)
+
+	if usePathStyle {
+		return fmt.Sprintf("%s/%s", apiEndpoint, bucketName), apiEndpoint, nil
+	}
+
+	tab := strings.Split(apiEndpoint, "//")
+	if len(tab) == 2 {
+		return fmt.Sprintf("%s//%s.%s", tab[0], bucketName, tab[1]), apiEndpoint, nil
+	}
+
+	return fmt.Sprintf("%s.%s", bucketName, apiEndpoint), apiEndpoint, nil
 }
 
-func objectBucketAPIEndpointURL(region scw.Region) string {
-	return fmt.Sprintf("https://s3.%s.scw.cloud", region) // FIXME
+func objectBucketAPIEndpointURL(d *schema.ResourceData, m any, region scw.Region) string {
+	s3Endpoint := meta.ExtractS3Endpoint(d, m)
+	if s3Endpoint != "" {
+		return s3Endpoint
+	}
+
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
 }
 
 // IsS3Err returns true if the error matches all these conditions:
