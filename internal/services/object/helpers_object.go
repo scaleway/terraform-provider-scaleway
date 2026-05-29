@@ -277,7 +277,7 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 func computeObjectBucketURLs(
 	d *schema.ResourceData, m any, bucketName string, region scw.Region,
 ) (endpoint, apiEndpoint string, err error) {
-	usePathStyle := false // FIXME
+	usePathStyle := meta.ExtractS3UsePathStyle(d, m)
 	apiEndpoint = objectBucketAPIEndpointURL(d, m, region)
 
 	if usePathStyle {
