@@ -3,7 +3,6 @@ package secret
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -22,6 +22,7 @@ func ResourceVersion() *schema.Resource {
 		ReadContext:   ResourceVersionRead,
 		UpdateContext: ResourceVersionUpdate,
 		DeleteContext: ResourceVersionDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -138,7 +139,10 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 	}
 
-	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
+	err = identity.SetRegionalIdentity(d, region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVersionRead(ctx, d, m)
 }
@@ -164,14 +168,12 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	revisionStr := strconv.Itoa(int(secretResponse.Revision))
-	_ = d.Set("revision", revisionStr)
-	_ = d.Set("secret_id", regional.NewIDString(region, id))
-	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
-	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("region", string(region))
+	setVersionState(d, secretResponse)
+
+	err = identity.SetRegionalIdentity(d, region, fmt.Sprintf("%s/%s", id, revision))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
