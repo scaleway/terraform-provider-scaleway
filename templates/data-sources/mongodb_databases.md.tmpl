@@ -1,35 +1,21 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DataSourceTemplateType */ -}}
 ---
 subcategory: "MongoDB®"
-page_title: "Scaleway: scaleway_mongodb_databases"
+page_title: "Scaleway: {{ .Name }}"
 ---
 
-# scaleway_mongodb_databases
+# {{ .Name }}
 
-Gets information about databases on a MongoDB® instance.
+{{ .Description }}
 
-For further information refer to the Managed Databases for MongoDB® [API documentation](https://developers.scaleway.com/en/products/mongodb/api/)
-
+{{ if .HasExamples }}
 ## Example Usage
 
-```hcl
-resource "scaleway_mongodb_instance" "main" {
-  name        = "foobar"
-  version     = "7.0"
-  node_type   = "MGDB-PLAY2-NANO"
-  node_number = 1
-  user_name   = "my_initial_user"
-  password    = "thiZ_is_v&ry_s3cret"
-}
+{{ range .ExampleFiles -}}
+{{ tffile . }}
 
-data "scaleway_mongodb_databases" "db" {
-  instance_id = scaleway_mongodb_instance.main.id
-  region      = "fr-par"
-}
-
-output "database_names" {
-  value = [for database in data.scaleway_mongodb_databases.db.databases : database.name]
-}
-```
+{{ end }}
+{{ end }}
 
 ## Argument Reference
 

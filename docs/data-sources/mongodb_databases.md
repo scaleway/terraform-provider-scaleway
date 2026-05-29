@@ -11,7 +11,7 @@ For further information refer to the Managed Databases for MongoDB® [API docume
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_mongodb_instance" "main" {
   name        = "foobar"
   version     = "7.0"
