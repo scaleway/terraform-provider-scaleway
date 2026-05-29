@@ -503,19 +503,27 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 		DatalabID: id,
 	}
 
-	updateReq.Tags = expandTags(ctx, plan.Tags, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	hasChanges := false
 
 	if !plan.Name.Equal(state.Name) {
 		name := plan.Name.ValueString()
 		updateReq.Name = &name
+		hasChanges = true
 	}
 
 	if !plan.Description.Equal(state.Description) {
 		desc := plan.Description.ValueString()
 		updateReq.Description = &desc
+		hasChanges = true
+	}
+
+	if !plan.Tags.Equal(state.Tags) {
+		updateReq.Tags = expandTags(ctx, plan.Tags, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		hasChanges = true
 	}
 
 	if !plan.Worker.IsNull() && !plan.Worker.IsUnknown() {
@@ -526,7 +534,11 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 			return
 		}
 
-		if !state.Worker.IsNull() && !state.Worker.IsUnknown() {
+		if state.Worker.IsNull() || state.Worker.IsUnknown() {
+			nodeCount := uint32(planWorker.NodeCount.ValueInt64())
+			updateReq.NodeCount = &nodeCount
+			hasChanges = true
+		} else {
 			var stateWorker sparkWorkerModel
 			resp.Diagnostics.Append(state.Worker.As(ctx, &stateWorker, basetypes.ObjectAsOptions{})...)
 
@@ -537,8 +549,13 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 			if !planWorker.NodeCount.Equal(stateWorker.NodeCount) {
 				nodeCount := uint32(planWorker.NodeCount.ValueInt64())
 				updateReq.NodeCount = &nodeCount
+				hasChanges = true
 			}
 		}
+	}
+
+	if !hasChanges {
+		return
 	}
 
 	dl, err := r.api.UpdateDatalab(updateReq, scw.WithContext(ctx))
