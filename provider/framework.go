@@ -73,6 +73,7 @@ type ScalewayProviderModel struct {
 	Region         types.String `tfsdk:"region"`
 	Zone           types.String `tfsdk:"zone"`
 	Endpoints      types.Set    `tfsdk:"endpoints"`
+	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -104,10 +105,14 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 			},
 			"region": schema.StringAttribute{
 				Optional:    true,
-				Description: "The region you want to attach the resource to",
+				Description: "The region you want to attach the resource to.",
 			},
 			"zone": schema.StringAttribute{
-				Description: "The zone you want to attach the resource to",
+				Description: "The zone you want to attach the resource to.",
+				Optional:    true,
+			},
+			"s3_use_path_style": schema.BoolAttribute{
+				Description: "Whether to enable the request to use path-style addressing.",
 				Optional:    true,
 			},
 		},
@@ -175,6 +180,10 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 				config.Endpoints["s3"] = endpoint.S3.ValueString()
 			}
 		}
+	}
+
+	if !model.S3UsePathStyle.IsNull() && !model.S3UsePathStyle.IsUnknown() {
+		config.S3UsePathStyle = model.S3UsePathStyle.ValueBool()
 	}
 
 	return config

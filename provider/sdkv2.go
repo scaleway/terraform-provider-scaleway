@@ -138,6 +138,12 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 						},
 					},
 				},
+				"s3_use_path_style": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Whether to enable the request to use path-style addressing.",
+				},
 			},
 
 			ResourcesMap: map[string]*schema.Resource{
@@ -442,10 +448,16 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				}
 			}
 
+			s3UsePathStyle := false
+			if rawS3UsePathStyle, ok := data.GetOk("s3_use_path_style"); ok {
+				s3UsePathStyle = rawS3UsePathStyle.(bool)
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
 				Endpoints:        endpoints,
+				S3UsePathStyle:   s3UsePathStyle,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
