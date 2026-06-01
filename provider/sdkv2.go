@@ -364,6 +364,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_marketplace_image":                                  marketplace.DataSourceImage(),
 				"scaleway_mnq_sqs":                                            mnq.DataSourceSQS(),
 				"scaleway_mnq_sns":                                            mnq.DataSourceSNS(),
+				"scaleway_mongodb_databases":                                  mongodb.DataSourceDatabases(),
 				"scaleway_mongodb_instance":                                   mongodb.DataSourceInstance(),
 				"scaleway_opensearch_deployment":                              opensearch.DataSourceDeployment(),
 				"scaleway_object_bucket":                                      object.DataSourceBucket(),
