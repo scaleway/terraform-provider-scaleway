@@ -73,11 +73,11 @@ The following arguments are supported:
 
 -> Note: The minimal volume size of a node is 20GB.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
@@ -86,6 +86,12 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `security_group_id` - The ID of the security group
+
+- `labels` - The list of Kubernetes labels applied and reconciled on the nodes.
+
+- `taints` - The list of Kubernetes taints applied and reconciled on the nodes.
+
+- `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
 
 ## Attributes Reference
 

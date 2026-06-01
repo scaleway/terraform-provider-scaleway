@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
@@ -118,4 +119,45 @@ func flattenKubeconfig(ctx context.Context, k8sAPI *k8s.API, region scw.Region, 
 	kubeconf["token"] = kubeconfigToken
 
 	return kubeconf, nil
+}
+
+func flattenLabels(labels map[string]string) map[string]any {
+	labelsFlat := map[string]any{}
+
+	for key, value := range labels {
+		labelsFlat[key] = value
+	}
+
+	return labelsFlat
+}
+
+func expandCoreV1Taints(taintsRaw any) []*k8s.CoreV1Taint {
+	taintsList := taintsRaw.(*schema.Set).List()
+	coreV1Taints := make([]*k8s.CoreV1Taint, 0, len(taintsList))
+
+	for _, taintElem := range taintsList {
+		taintFlat := taintElem.(map[string]any)
+
+		coreV1Taints = append(coreV1Taints, &k8s.CoreV1Taint{
+			Key:    taintFlat["key"].(string),
+			Value:  taintFlat["value"].(string),
+			Effect: k8s.CoreV1TaintEffect(taintFlat["effect"].(string)),
+		})
+	}
+
+	return coreV1Taints
+}
+
+func flattenCoreV1Taints(taints []*k8s.CoreV1Taint) any {
+	taintsFlat := make([]map[string]string, 0, len(taints))
+
+	for _, taint := range taints {
+		taintsFlat = append(taintsFlat, map[string]string{
+			"key":    taint.Key,
+			"value":  taint.Value,
+			"effect": taint.Effect.String(),
+		})
+	}
+
+	return taintsFlat
 }
