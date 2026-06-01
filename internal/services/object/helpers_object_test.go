@@ -119,6 +119,7 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 		"endpoints": {
 			Type:     schema.TypeMap,
 			Optional: true,
+			Elem:     &schema.Schema{Type: schema.TypeString},
 		},
 	}
 
@@ -134,11 +135,15 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 		{
 			name: "s3 valid endpoint",
 			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
-				"s3_use_path_style": "false",
-				"endpoints": map[string]string{
+				"s3_use_path_style": false,
+				"endpoints": map[string]any{
 					"s3": "https://mys3.endpoint.com",
 				},
 			}),
+			bucketName:          "",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "",
+			expectedAPIEndpoint: "",
 		},
 	}
 

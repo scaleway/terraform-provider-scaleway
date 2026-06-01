@@ -91,13 +91,25 @@ func ExtractS3UsePathStyle(d terraformResourceData, m any) bool {
 	return meta.S3UsePathStyle()
 }
 
+func convertEndpointsMap(endpointsAny map[string]any) (endpointsString map[string]string) {
+	endpointsString = map[string]string{}
+
+	for k, v := range endpointsAny {
+		if strVal, ok := v.(string); ok {
+			endpointsString[k] = strVal
+		}
+	}
+
+	return
+}
+
 // ExtractEndpoints will try to guess the endpoints from the following:
 //   - endpoints field of the resource data
 //   - endpoints from config
 func ExtractEndpoints(d terraformResourceData, m any) map[string]string {
 	rawConfigEndpoints, ok := d.GetOk("endpoints")
 	if ok && rawConfigEndpoints != nil {
-		return rawConfigEndpoints.(map[string]string)
+		return convertEndpointsMap(rawConfigEndpoints.(map[string]any))
 	}
 
 	meta, ok := m.(*Meta)
