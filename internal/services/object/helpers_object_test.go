@@ -133,17 +133,61 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 		expectedAPIEndpoint string
 	}{
 		{
-			name: "s3 valid endpoint",
+			name: "s3 valid endpoint without path style",
 			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
 				"s3_use_path_style": false,
 				"endpoints": map[string]any{
 					"s3": "https://mys3.endpoint.com",
 				},
 			}),
-			bucketName:          "",
+			bucketName:          "my-bucket",
 			region:              scw.RegionPlWaw,
-			expectedEndpoint:    "",
-			expectedAPIEndpoint: "",
+			expectedEndpoint:    "https://my-bucket.mys3.endpoint.com",
+			expectedAPIEndpoint: "https://mys3.endpoint.com",
+		},
+		{
+			name: "s3 valid endpoint with path style",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+				"endpoints": map[string]any{
+					"s3": "https://mys3.endpoint.com",
+				},
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://mys3.endpoint.com/my-bucket-hehe",
+			expectedAPIEndpoint: "https://mys3.endpoint.com",
+		},
+		{
+			name: "s3 empty endpoint with path style",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+				"endpoints": map[string]any{
+					"s3": "",
+				},
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://s3.pl-waw.scw.cloud/my-bucket-hehe",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
+		},
+		{
+			name: "s3 empty endpoint with path style, version 2",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://s3.pl-waw.scw.cloud/my-bucket-hehe",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
+		},
+		{
+			name:                "s3 empty endpoint without path style",
+			d:                   schema.TestResourceDataRaw(t, resourceSchema, map[string]any{}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://my-bucket-hehe.s3.pl-waw.scw.cloud",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
 		},
 	}
 
