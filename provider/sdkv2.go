@@ -133,7 +133,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 							"s3": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "Use this to override the default service endpoint URL",
+								Description: "Use this to override the default service endpoint URL.",
 							},
 						},
 					},

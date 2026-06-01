@@ -123,7 +123,7 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 					Attributes: map[string]schema.Attribute{
 						"s3": schema.StringAttribute{
 							Optional:    true,
-							Description: "Use this to override the default service endpoint URL",
+							Description: "Use this to override the default service endpoint URL.",
 						},
 					},
 				},
