@@ -14,7 +14,7 @@ func DataSourceCockpitConfig() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceCockpitConfigRead,
 		Schema: map[string]*schema.Schema{
-			"region": regional.Schema(),
+			"region":                    regional.Schema(),
 			"custom_metrics_retention":  retentionSchema("Retention limits and default for custom metrics data sources."),
 			"custom_logs_retention":     retentionSchema("Retention limits and default for custom logs data sources."),
 			"custom_traces_retention":   retentionSchema("Retention limits and default for custom traces data sources."),
