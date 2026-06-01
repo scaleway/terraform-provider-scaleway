@@ -9,8 +9,6 @@ Gets information about databases on a MongoDB® instance.
 
 For further information refer to the Managed Databases for MongoDB® [API documentation](https://developers.scaleway.com/en/products/mongodb/api/)
 
-
-
 ## Example Usage
 
 ```terraform
@@ -32,9 +30,6 @@ output "database_names" {
   value = [for database in data.scaleway_mongodb_databases.db.databases : database.name]
 }
 ```
-
-
-
 
 ## Argument Reference
 
