@@ -5,6 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
@@ -104,6 +106,47 @@ func TestFlattenObjectBucketVersioning(t *testing.T) {
 			assert.Contains(t, result[0], "enabled", "Result map should contain 'enabled' key")
 			_, ok := result[0]["enabled"].(bool)
 			assert.True(t, ok, "'enabled' value should be a boolean")
+		})
+	}
+}
+
+func TestComputeObjectBucketURLs(t *testing.T) {
+	resourceSchema := map[string]*schema.Schema{
+		"s3_use_path_style": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
+		"endpoints": {
+			Type:     schema.TypeMap,
+			Optional: true,
+		},
+	}
+
+	tests := []struct {
+		name                string
+		d                   *schema.ResourceData
+		m                   any
+		bucketName          string
+		region              scw.Region
+		expectedEndpoint    string
+		expectedAPIEndpoint string
+	}{
+		{
+			name: "s3 valid endpoint",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": "false",
+				"endpoints": map[string]string{
+					"s3": "https://mys3.endpoint.com",
+				},
+			}),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			endpoint, apiEndpoint := object.ComputeObjectBucketURLs(tt.d, tt.m, tt.bucketName, tt.region)
+			assert.Equal(t, tt.expectedEndpoint, endpoint)
+			assert.Equal(t, tt.expectedAPIEndpoint, apiEndpoint)
 		})
 	}
 }
