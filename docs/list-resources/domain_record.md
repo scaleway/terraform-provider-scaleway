@@ -7,7 +7,7 @@ description: |-
 
 # Resource: scaleway_domain_record
 
-
+Lists Scaleway DNS zone records across projects and DNS zones.
 
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
 
