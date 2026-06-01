@@ -806,10 +806,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	endpoint, apiEndpoint, err := computeObjectBucketURLs(d, m, bucketName, region)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	endpoint, apiEndpoint := ComputeObjectBucketURLs(d, m, bucketName, region)
 
 	_ = d.Set("endpoint", endpoint)
 	_ = d.Set("api_endpoint", apiEndpoint)
