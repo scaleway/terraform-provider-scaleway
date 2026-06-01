@@ -823,10 +823,7 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName stri
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	endpoint, apiEndpoint, err := computeObjectBucketURLs(d, m, bucketName, region)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	endpoint, apiEndpoint := ComputeObjectBucketURLs(d, m, bucketName, region)
 
 	_ = d.Set("endpoint", endpoint)
 	_ = d.Set("api_endpoint", apiEndpoint)
