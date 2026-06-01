@@ -55,7 +55,7 @@ func sourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntBetween(1, 365),
-			Description:  "The number of days to retain data, must be between 1 and 365.",
+			Description:  "The number of days to retain data. Use scaleway_cockpit_config data source to read allowed min, max, and default values for each data source type.",
 		},
 		// computed
 		"url": {
