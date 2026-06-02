@@ -105,10 +105,10 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 			},
 			"region": schema.StringAttribute{
 				Optional:    true,
-				Description: "The region you want to attach the resource to.",
+				Description: "The region you want to attach the resource to",
 			},
 			"zone": schema.StringAttribute{
-				Description: "The zone you want to attach the resource to.",
+				Description: "The zone you want to attach the resource to",
 				Optional:    true,
 			},
 			"s3_use_path_style": schema.BoolAttribute{
