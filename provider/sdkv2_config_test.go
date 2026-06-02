@@ -332,8 +332,9 @@ func generateProviderSchema(t *testing.T, m map[string]any) *schema.ResourceData
 			Description: "The Scaleway API URL for testing",
 		},
 		"endpoints": {
-			Type:     schema.TypeSet,
-			Optional: true,
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "The Scaleway endpoints for testing.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"s3": {
