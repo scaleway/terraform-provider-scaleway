@@ -193,6 +193,8 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 
 	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
 
+	poolID := ""
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -201,59 +203,91 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckK8SClusterConfigAutoscaler(latestK8SVersion),
+				Config: kapsuleClusterRepeatedConfig("autoscaling", "nl-ams", latestK8SVersion, `
+					autoscaler_config {
+						disable_scale_down = true
+						scale_down_delay_after_add = "20m"
+						scale_down_unneeded_time = "20m"
+						estimator = "binpacking"
+						expander = "most_pods"
+						ignore_daemonsets_utilization = true
+						balance_similar_node_groups = true
+						expendable_pods_priority_cutoff = 10
+						scale_down_utilization_threshold = 0.77
+						max_graceful_termination_sec = 1337
+						skip_nodes_with_local_storage = false
+						log_level = 4
+					}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.autoscaler"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "status", k8sSDK.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.disable_scale_down", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_delay_after_add", "20m"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_unneeded_time", "20m"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.estimator", "binpacking"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.expander", "most_pods"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.ignore_daemonsets_utilization", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.balance_similar_node_groups", "true"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.expendable_pods_priority_cutoff", "10"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_utilization_threshold", "0.77"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.max_graceful_termination_sec", "1337"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.2", "autoscaler-config"),
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "status", k8sSDK.ClusterStatusPoolRequired.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.disable_scale_down", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_delay_after_add", "20m"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_unneeded_time", "20m"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.estimator", "binpacking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.expander", "most_pods"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.ignore_daemonsets_utilization", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.balance_similar_node_groups", "true"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.expendable_pods_priority_cutoff", "10"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_utilization_threshold", "0.77"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.max_graceful_termination_sec", "1337"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.skip_nodes_with_local_storage", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.log_level", "4"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.2", "autoscaling"),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(poolID)),
 				),
 			},
 			{
-				Config: testAccCheckK8SClusterConfigAutoscalerChange(latestK8SVersion),
+				Config: kapsuleClusterRepeatedConfig("autoscaling", "nl-ams", latestK8SVersion, `
+					autoscaler_config {
+						disable_scale_down = false
+						scale_down_delay_after_add = "20m"
+						scale_down_unneeded_time = "5m"
+						estimator = "binpacking"
+						expander = "most_pods"
+						expendable_pods_priority_cutoff = 0
+						scale_down_utilization_threshold = 0.33
+						max_graceful_termination_sec = 2664
+						skip_nodes_with_local_storage = false
+						log_level = 4
+					}`),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.autoscaler"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "version", latestK8SVersion),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "cni", "calico"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "status", k8sSDK.ClusterStatusPoolRequired.String()),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.config_file"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.host"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.cluster_ca_certificate"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "kubeconfig.0.token"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "apiserver_url"),
-					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.autoscaler", "wildcard_dns"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.disable_scale_down", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_delay_after_add", "20m"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_unneeded_time", "5m"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.estimator", "binpacking"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.expander", "most_pods"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.ignore_daemonsets_utilization", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.balance_similar_node_groups", "false"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.expendable_pods_priority_cutoff", "0"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.scale_down_utilization_threshold", "0.33"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "autoscaler_config.0.max_graceful_termination_sec", "2664"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.0", "terraform-test"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.1", "scaleway_k8s_cluster"),
-					resource.TestCheckResourceAttr("scaleway_k8s_cluster.autoscaler", "tags.2", "autoscaler-config"),
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "cni", "cilium"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "status", k8sSDK.ClusterStatusPoolRequired.String()),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.config_file"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.host"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.cluster_ca_certificate"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "kubeconfig.0.token"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "apiserver_url"),
+					resource.TestCheckResourceAttrSet("scaleway_k8s_cluster.main", "wildcard_dns"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.disable_scale_down", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_delay_after_add", "20m"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_unneeded_time", "5m"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.estimator", "binpacking"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.expander", "most_pods"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.ignore_daemonsets_utilization", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.balance_similar_node_groups", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.expendable_pods_priority_cutoff", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.scale_down_utilization_threshold", "0.33"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.max_graceful_termination_sec", "2664"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.skip_nodes_with_local_storage", "false"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "autoscaler_config.0.log_level", "4"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.0", "terraform-test"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.1", "scaleway_k8s_cluster"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.2", "autoscaling"),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(poolID)),
 				),
 			},
 		},
@@ -274,7 +308,7 @@ func TestAccCluster_OIDC(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: kapsuleClusterRepeatedConfig("oidc-config", latestK8SVersion, `
+				Config: kapsuleClusterRepeatedConfig("oidc-config", "fr-par", latestK8SVersion, `
 					open_id_connect_config {
 						issuer_url = "https://accounts.google.com/"
 						client_id = "my-super-id"
@@ -305,7 +339,7 @@ func TestAccCluster_OIDC(t *testing.T) {
 				),
 			},
 			{
-				Config: kapsuleClusterRepeatedConfig("oidc-config", latestK8SVersion, `
+				Config: kapsuleClusterRepeatedConfig("oidc-config", "fr-par", latestK8SVersion, `
 					open_id_connect_config {
 						issuer_url = "https://gitlab.com"
 						client_id = "my-even-more-awesome-id"
@@ -662,76 +696,6 @@ func testAccCheckK8sClusterPrivateNetworkID(tt *acctest.TestTools, clusterName, 
 	}
 }
 
-func testAccCheckK8SClusterConfigAutoscaler(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  region = "nl-ams"
-  name = "testAccCheckK8SClusterConfigAutoscaler"
-}
-
-resource "scaleway_vpc_private_network" "autoscaler" {
-  name       = "test-autoscaler"
-  region 	 = "nl-ams"
-  vpc_id     = scaleway_vpc.main.id
-}
-
-resource "scaleway_k8s_cluster" "autoscaler" {
-	cni = "calico"
-	version = "%s"
-	name = "test-autoscaler-01"
-	region = "nl-ams"
-	autoscaler_config {
-		disable_scale_down = true
-		scale_down_delay_after_add = "20m"
-		scale_down_unneeded_time = "20m"
-		estimator = "binpacking"
-		expander = "most_pods"
-		ignore_daemonsets_utilization = true
-		balance_similar_node_groups = true
-		expendable_pods_priority_cutoff = 10
-		scale_down_utilization_threshold = 0.77
-		max_graceful_termination_sec = 1337
-	}
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.autoscaler.id
-}`, version)
-}
-
-func testAccCheckK8SClusterConfigAutoscalerChange(version string) string {
-	return fmt.Sprintf(`
-resource "scaleway_vpc" "main" {
-  region = "nl-ams"
-  name = "testAccCheckK8SClusterConfigAutoscalerChange"
-}
-
-resource "scaleway_vpc_private_network" "autoscaler" {
-  name       = "test-autoscaler"
-  region 	 = "nl-ams"
-  vpc_id     = scaleway_vpc.main.id
-}
-
-resource "scaleway_k8s_cluster" "autoscaler" {
-	cni = "calico"
-	version = "%s"
-	name = "test-autoscaler-02"
-	region = "nl-ams"
-	autoscaler_config {
-		disable_scale_down = false
-		scale_down_delay_after_add = "20m"
-		scale_down_unneeded_time = "5m"
-		estimator = "binpacking"
-		expander = "most_pods"
-		expendable_pods_priority_cutoff = 0
-		scale_down_utilization_threshold = 0.33
-		max_graceful_termination_sec = 2664
-	}
-	tags = [ "terraform-test", "scaleway_k8s_cluster", "autoscaler-config" ]
-	delete_additional_resources = false
-	private_network_id = scaleway_vpc_private_network.autoscaler.id
-}`, version)
-}
-
 func testAccCheckK8SClusterAutoUpgrade(enable bool, day string, hour uint64, version string) string {
 	return fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
@@ -986,24 +950,27 @@ func TestAccCluster_Networking(t *testing.T) {
 	})
 }
 
-func kapsuleClusterRepeatedConfig(testName string, version string, configPartToTest string) string {
+func kapsuleClusterRepeatedConfig(testName, region, version, configPartToTest string) string {
 	return fmt.Sprintf(`
 		resource "scaleway_vpc" "main" {
 			name = "test-cluster-%[1]s"
+			region = "%[2]s"
 		}
 
 		resource "scaleway_vpc_private_network" "main" {
 			name = "test-cluster-%[1]s"
+			region = "%[2]s"
 			vpc_id = scaleway_vpc.main.id
 		}
 
 		resource "scaleway_k8s_cluster" "main" {
 		    name = "test-cluster-%[1]s"
+			region = "%[2]s"
 			cni = "cilium"
-			version = "%[2]s"
+			version = "%[3]s"
 			tags = [ "terraform-test", "scaleway_k8s_cluster", "%[1]s" ]
 			delete_additional_resources = false
 			private_network_id = scaleway_vpc_private_network.main.id
-%[3]s
-		}`, testName, version, configPartToTest)
+%[4]s
+		}`, testName, region, version, configPartToTest)
 }
