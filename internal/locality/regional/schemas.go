@@ -10,7 +10,7 @@ import (
 func ComputedSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "The region of the resource.",
+		Description: "The region of the resource",
 		Computed:    true,
 	}
 }
@@ -19,7 +19,7 @@ func ComputedSchema() *schema.Schema {
 func Schema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
-		Description:      "The region you want to attach the resource to.",
+		Description:      "The region you want to attach the resource to",
 		Computed:         true,
 		Optional:         true,
 		ForceNew:         true,
@@ -35,7 +35,7 @@ func Schema() *schema.Schema {
 func ProviderSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
-		Description:      "The region you want to attach the resource to.",
+		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllRegions(), "region"),
