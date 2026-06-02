@@ -113,13 +113,15 @@ func TestFlattenObjectBucketVersioning(t *testing.T) {
 func TestComputeObjectBucketURLs(t *testing.T) {
 	resourceSchema := map[string]*schema.Schema{
 		"s3_use_path_style": {
-			Type:     schema.TypeBool,
-			Optional: true,
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "",
 		},
 		"endpoints": {
-			Type:     schema.TypeMap,
-			Optional: true,
-			Elem:     &schema.Schema{Type: schema.TypeString},
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "",
+			Elem:        &schema.Schema{Type: schema.TypeString},
 		},
 	}
 
