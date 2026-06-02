@@ -119,6 +119,7 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 		},
 		Blocks: map[string]schema.Block{
 			"endpoints": schema.SetNestedBlock{
+				Description: "Configuration block for customizing service endpoints.",
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"s3": schema.StringAttribute{
