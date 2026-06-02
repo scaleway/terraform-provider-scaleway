@@ -41,8 +41,7 @@ terraform {
 
 ## Configuring a Terraform Backend with PostgreSQL and State Locking
 
-> Using [Object Storage as a backend](#store-terraform-state-in-scaleway-object-storage-with-locking)
-> is now the recommended way.
+~> **Warning** Using [Object Storage as a backend](#store-terraform-state-in-scaleway-object-storage-with-locking) is now the recommended way.
 
 This guide explains how to configure a remote backend using the Terraform Scaleway Provider with PostgreSQL, enabling remote state management with locking.
 
