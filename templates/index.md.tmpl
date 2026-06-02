@@ -228,8 +228,8 @@ the following arguments are supported in the Scaleway provider block:
 - `endpoints` - (Optional) Configuration block for customizing service endpoints.
 See the [Custom Service Endpoints Guide](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/custom_service_endpoints_guide) for more information.
 - `s3_use_path_style` - (Optional) Whether to enable the request to use path-style addressing, i.e.,
-https://s3.fr-par.scw.cloud/BUCKET/KEY. By default, the S3 client will use virtual hosted bucket addressing,
-https://BUCKET.s3.fr-par.scw.cloud/KEY, when possible. Also compatible with Object Storage
+API_ENDPOINT/BUCKET/KEY. By default, the S3 client will use virtual hosted bucket addressing,
+BUCKET.API_ENDPOINT/KEY, when possible. Also compatible with Object Storage
 [custom endpoints](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/custom_service_endpoints_guide).
 
 ## Store terraform state
