@@ -436,6 +436,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 			}
 
 			var endpoints map[string]string
+
 			if rawEndpoints, ok := data.GetOk("endpoints"); ok {
 				endpointsSet := rawEndpoints.(*schema.Set)
 				endpoints = make(map[string]string)

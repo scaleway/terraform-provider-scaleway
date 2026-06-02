@@ -267,6 +267,7 @@ func TestFrameworkProviderMetaInitialization(t *testing.T) {
 	})
 	t.Run("Test that meta is properly initialized with filled config", func(t *testing.T) {
 		unsetEnv(true)
+
 		s3Endpoint := "https://my-s3-endpoint.com"
 
 		frameworkConfig := &meta.FrameworkProviderConfig{
