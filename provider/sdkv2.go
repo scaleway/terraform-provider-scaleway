@@ -126,8 +126,9 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Description: "The Scaleway API URL to use.",
 				},
 				"endpoints": {
-					Type:     schema.TypeSet,
-					Optional: true,
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: "Configuration block for customizing service endpoints.",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"s3": {
