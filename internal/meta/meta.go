@@ -226,13 +226,13 @@ func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 type Config struct {
 	ProviderSchema      *schema.ResourceData
 	HTTPClient          *http.Client
+	Endpoints           map[string]string
 	TerraformVersion    string
 	ForceZone           scw.Zone
 	ForceProjectID      string
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
-	Endpoints           map[string]string
 	S3UsePathStyle      bool
 }
 
@@ -247,6 +247,7 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 }
 
 type FrameworkProviderConfig struct {
+	Endpoints      map[string]string
 	AccessKey      string
 	SecretKey      string
 	ProfileName    string
@@ -255,7 +256,6 @@ type FrameworkProviderConfig struct {
 	Region         string
 	Zone           string
 	APIURL         string
-	Endpoints      map[string]string
 	S3UsePathStyle bool
 }
 

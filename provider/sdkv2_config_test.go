@@ -251,6 +251,7 @@ func TestSDKv2ProviderMetaInitialization(t *testing.T) {
 	})
 	t.Run("Test that meta is properly initialized with filled config", func(t *testing.T) {
 		unsetEnv(true)
+
 		s3Endpoint := "https://my-s3-endpoint.com"
 
 		sdkv2Config := &meta.Config{
@@ -292,6 +293,8 @@ func TestSDKv2ProviderMetaInitialization(t *testing.T) {
 }
 
 func generateProviderSchema(t *testing.T, m map[string]any) *schema.ResourceData {
+	t.Helper()
+
 	return schema.TestResourceDataRaw(t, map[string]*schema.Schema{
 		"access_key": {
 			Type:        schema.TypeString,
