@@ -137,7 +137,7 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 	}
 }
 
-func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
 	config := &meta.FrameworkProviderConfig{}
 
 	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
@@ -176,7 +176,8 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 		config.Endpoints = make(map[string]string)
 
 		var endpoints []EndpointModel
-		diags := model.Endpoints.ElementsAs(context.Background(), &endpoints, false)
+
+		diags := model.Endpoints.ElementsAs(ctx, &endpoints, false)
 		if diags.HasError() {
 			return config
 		}
@@ -215,7 +216,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	} else {
 		frameworkConfig := &meta.FrameworkProviderConfig{}
 		if data != nil {
-			frameworkConfig = modelToFrameworkConfig(data)
+			frameworkConfig = modelToFrameworkConfig(ctx, data)
 		}
 
 		var err error
