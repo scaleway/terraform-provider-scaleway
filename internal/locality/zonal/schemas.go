@@ -11,7 +11,7 @@ import (
 func ComputedSchema() *schema.Schema {
 	return &schema.Schema{
 		Type:        schema.TypeString,
-		Description: "The zone of the resource.",
+		Description: "The zone of the resource",
 		Computed:    true,
 	}
 }
@@ -29,7 +29,7 @@ func AllZones() []string {
 func Schema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
-		Description:      "The zone you want to attach the resource to.",
+		Description:      "The zone you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(AllZones(), "zone"),
