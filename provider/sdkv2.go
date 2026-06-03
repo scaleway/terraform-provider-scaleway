@@ -4,9 +4,11 @@ import (
 	"context"
 	"maps"
 	"os"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -135,6 +137,10 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 								Type:        schema.TypeString,
 								Optional:    true,
 								Description: "Use this to override the default service endpoint URL.",
+								ValidateFunc: validation.StringMatch(
+									regexp.MustCompile(`^https?://`),
+									"must start with 'https://' or 'http://'",
+								),
 							},
 						},
 					},
