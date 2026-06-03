@@ -52,10 +52,14 @@ func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.Endpoi
 	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
 }
 
+func DefaultS3Endpoint(region string) string {
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+}
+
 func newS3Client(ctx context.Context, region, accessKey, secretKey, customEndpoint string, usePathStyle bool, httpClient *http.Client) (*s3.Client, error) {
 	endpoint := customEndpoint
 	if endpoint == "" {
-		endpoint = "https://s3." + region + ".scw.cloud"
+		endpoint = DefaultS3Endpoint(region)
 	}
 
 	cfg, err := config.LoadDefaultConfig(ctx,
@@ -305,7 +309,7 @@ func objectBucketAPIEndpointURL(d *schema.ResourceData, m any, region scw.Region
 		return s3Endpoint
 	}
 
-	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+	return DefaultS3Endpoint(region.String())
 }
 
 // IsS3Err returns true if the error matches all these conditions:
