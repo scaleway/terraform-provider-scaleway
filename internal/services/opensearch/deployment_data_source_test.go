@@ -26,6 +26,7 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
     type       = "sbs_5k"
@@ -36,7 +37,7 @@ resource "scaleway_opensearch_deployment" "main" {
 data "scaleway_opensearch_deployment" "by_name" {
   name = scaleway_opensearch_deployment.main.name
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttrPair(
@@ -76,6 +77,7 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
     type       = "sbs_5k"
@@ -86,7 +88,7 @@ resource "scaleway_opensearch_deployment" "main" {
 data "scaleway_opensearch_deployment" "by_id" {
   deployment_id = scaleway_opensearch_deployment.main.id
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttrPair(

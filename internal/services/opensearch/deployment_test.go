@@ -33,13 +33,14 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "name", "tf-test-opensearch-basic"),
@@ -58,6 +59,7 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   tags        = ["tag1", "tag2"]
   volume {
@@ -65,7 +67,7 @@ resource "scaleway_opensearch_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.#", "2"),
@@ -104,6 +106,7 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
 
   volume {
@@ -111,7 +114,7 @@ resource "scaleway_opensearch_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
@@ -136,6 +139,7 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
 
   private_network {
@@ -147,7 +151,7 @@ resource "scaleway_opensearch_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
@@ -171,6 +175,7 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
 
   volume {
@@ -178,7 +183,7 @@ resource "scaleway_opensearch_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
