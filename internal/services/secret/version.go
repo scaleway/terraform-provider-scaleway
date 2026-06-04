@@ -2,7 +2,7 @@ package secret
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,7 +22,7 @@ func ResourceVersion() *schema.Resource {
 		ReadContext:   ResourceVersionRead,
 		UpdateContext: ResourceVersionUpdate,
 		DeleteContext: ResourceVersionDelete,
-		Identity:      identity.DefaultRegional(),
+		Identity:      secretVersionIdentity(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -100,6 +100,22 @@ func versionSchema() map[string]*schema.Schema {
 	}
 }
 
+func secretVersionIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region": identity.DefaultRegionAttribute(),
+		"secret_id": {
+			Type:              schema.TypeString,
+			Description:       "The secret ID",
+			RequiredForImport: true,
+		},
+		"revision": {
+			Type:              schema.TypeString,
+			Description:       "The revision of the secret version",
+			RequiredForImport: true,
+		},
+	})
+}
+
 func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newAPIWithRegion(d, m)
 	if err != nil {
@@ -139,7 +155,11 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision))
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": secretResponse.SecretID,
+		"revision":  strconv.FormatUint(uint64(secretResponse.Revision), 10),
+	}, "region", "secret_id", "revision")
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -170,7 +190,11 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 
 	setVersionState(d, secretResponse)
 
-	err = identity.SetRegionalIdentity(d, region, fmt.Sprintf("%s/%s", id, revision))
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": id,
+		"revision":  revision,
+	}, "region", "secret_id", "revision")
 	if err != nil {
 		return diag.FromErr(err)
 	}

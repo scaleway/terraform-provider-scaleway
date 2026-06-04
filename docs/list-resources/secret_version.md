@@ -14,11 +14,12 @@ For more information, see [the main documentation](https://www.scaleway.com/en/d
 ## Example Usage
 
 ```terraform
-// List all versions of all secrets in a region
+// List all versions of all secrets in all regions
 list "scaleway_secret_version" "all_secrets" {
   provider = scaleway
 
   config {
+    regions    = ["*"]
     secret_ids = ["*"]
   }
 }

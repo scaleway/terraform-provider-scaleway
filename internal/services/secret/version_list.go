@@ -161,7 +161,11 @@ func (r *VersionListResource) List(ctx context.Context, req list.ListRequest, st
 			versionResource := ResourceVersion()
 			resourceData := versionResource.Data(&terraform.InstanceState{})
 
-			err := identity.SetRegionalIdentity(resourceData, version.Region, fmt.Sprintf("%s/%d", version.SecretID, version.Revision))
+			err := identity.SetMultiPartIdentity(resourceData, map[string]string{
+				"region":    version.Region.String(),
+				"secret_id": version.SecretID,
+				"revision":  strconv.FormatUint(uint64(version.Revision), 10),
+			}, "region", "secret_id", "revision")
 			if err != nil {
 				result.Diagnostics.AddError("Retrieving identity data",
 					"An error was encountered when retrieving the identity data: "+err.Error(),
