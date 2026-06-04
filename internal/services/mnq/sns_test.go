@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	mnqtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq/testfuncs"
 )
 
 func TestAccSNS_Basic(t *testing.T) {
@@ -56,12 +56,12 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), mnqtestfuncs.NamespaceReadRetryTimeout)
 		defer cancel()
 
 		var snsInfo *mnqSDK.SnsInfo
 
-		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
+		retryErr := retry.RetryContext(ctx, mnqtestfuncs.NamespaceReadRetryTimeout, func() *retry.RetryError {
 			snsInfo, err = api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
 				ProjectID: id,
 				Region:    region,

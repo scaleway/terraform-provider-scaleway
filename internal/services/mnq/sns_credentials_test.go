@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	mnqtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq/testfuncs"
 )
 
 func TestAccSNSCredentials_Basic(t *testing.T) {
@@ -117,10 +117,10 @@ func isSNSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), mnqtestfuncs.NamespaceReadRetryTimeout)
 		defer cancel()
 
-		return retry.RetryContext(ctx, 15*time.Second, func() *retry.RetryError {
+		return retry.RetryContext(ctx, mnqtestfuncs.NamespaceReadRetryTimeout, func() *retry.RetryError {
 			_, err = api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
 				SnsCredentialsID: id,
 				Region:           region,
@@ -130,6 +130,10 @@ func isSNSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			}
 
 			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
+				return retry.RetryableError(err)
+			}
+
+			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
 				return retry.RetryableError(err)
 			}
 

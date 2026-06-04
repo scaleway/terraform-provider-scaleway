@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	mnqtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq/testfuncs"
 )
 
 func TestAccSQS_Basic(t *testing.T) {
@@ -96,12 +96,12 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), mnqtestfuncs.NamespaceReadRetryTimeout)
 		defer cancel()
 
 		var sqsInfo *mnqSDK.SqsInfo
 
-		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
+		retryErr := retry.RetryContext(ctx, mnqtestfuncs.NamespaceReadRetryTimeout, func() *retry.RetryError {
 			sqsInfo, err = api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
 				ProjectID: id,
 				Region:    region,

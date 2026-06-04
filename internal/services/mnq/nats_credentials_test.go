@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -14,31 +13,30 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
+	mnqtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq/testfuncs"
 )
 
 func TestAccNatsCredentials_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	projectID := mnqtestfuncs.ListProjectID(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_account_project main {
-						name = "tf_tests_mnq_nats_credential_basic"
-					}
-
+				Config: fmt.Sprintf(`
 					resource scaleway_mnq_nats_account main {
-						project_id = scaleway_account_project.main.id
+						project_id = %q
 						name = "test-mnq-nats-credentials-basic-test"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
 						account_id = scaleway_mnq_nats_account.main.id
 					}
-				`,
+				`, projectID),
 				Check: resource.ComposeTestCheckFunc(
 					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
@@ -52,38 +50,32 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	projectID := mnqtestfuncs.ListProjectID(tt)
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isNatsCredentialsDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource scaleway_account_project main {
-						name = "tf_tests_mnq_nats_credential_update"
-					}
-
+				Config: fmt.Sprintf(`
 					resource scaleway_mnq_nats_account main {
-						project_id = scaleway_account_project.main.id
+						project_id = %q
 						name = "test-mnq-nats-credentials-update"
 					}
 
 					resource scaleway_mnq_nats_credentials main {
 						account_id = scaleway_mnq_nats_account.main.id
 					}
-				`,
+				`, projectID),
 				Check: resource.ComposeTestCheckFunc(
 					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
 				),
 			},
 			{
-				Config: `
-					resource scaleway_account_project main {
-						name = "tf_tests_mnq_nats_credential_update"
-					}
-
+				Config: fmt.Sprintf(`
 					resource scaleway_mnq_nats_account main {
-						project_id = scaleway_account_project.main.id
+						project_id = %q
 						name = "test-mnq-nats-credentials-update"
 					}
 
@@ -91,7 +83,7 @@ func TestAccNatsCredentials_UpdateName(t *testing.T) {
 						account_id = scaleway_mnq_nats_account.main.id
 						name="toto"
 					}
-				`,
+				`, projectID),
 				Check: resource.ComposeTestCheckFunc(
 					isNatsCredentialsPresent(tt, "scaleway_mnq_nats_credentials.main"),
 					resource.TestCheckResourceAttrSet("scaleway_mnq_nats_credentials.main", "file"),
@@ -113,10 +105,10 @@ func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestChec
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), mnqtestfuncs.NamespaceReadRetryTimeout)
 		defer cancel()
 
-		return retry.RetryContext(ctx, 15*time.Second, func() *retry.RetryError {
+		return retry.RetryContext(ctx, mnqtestfuncs.NamespaceReadRetryTimeout, func() *retry.RetryError {
 			_, err = api.GetNatsCredentials(&mnqSDK.NatsAPIGetNatsCredentialsRequest{
 				NatsCredentialsID: id,
 				Region:            region,
@@ -126,6 +118,10 @@ func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestChec
 			}
 
 			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
+				return retry.RetryableError(err)
+			}
+
+			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
 				return retry.RetryableError(err)
 			}
 
