@@ -183,7 +183,7 @@ func (a *DatabaseBackupRestoreAction) Invoke(ctx context.Context, req action.Inv
 	}
 
 	if !data.DatabaseName.IsNull() && !data.DatabaseName.IsUnknown() && data.DatabaseName.ValueString() != "" {
-		restoreReq.DatabaseName = scw.StringPtr(data.DatabaseName.ValueString())
+		restoreReq.DatabaseName = new(data.DatabaseName.ValueString())
 	}
 
 	_, err := a.rdbAPI.RestoreDatabaseBackup(restoreReq, scw.WithContext(ctx))

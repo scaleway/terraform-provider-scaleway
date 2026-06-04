@@ -225,18 +225,15 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateReq.Name = &name
+		updateReq.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("description") {
-		desc := d.Get("description").(string)
-		updateReq.Description = &desc
+		updateReq.Description = new(d.Get("description").(string))
 	}
 
 	if d.HasChange("tags") {
-		tags := types.ExpandStrings(d.Get("tags"))
-		updateReq.Tags = &tags
+		updateReq.Tags = new(types.ExpandStrings(d.Get("tags")))
 	}
 
 	if d.HasChange("rotation_policy") {
@@ -286,19 +283,13 @@ func validateUsageAlgorithmCombination() schema.CustomizeDiffFunc {
 func expandUsageAlgorithm(usage, algorithm string) (*key_manager.KeyUsage, error) {
 	switch usage {
 	case usageSymmetricEncryption:
-		typedAlgo := key_manager.KeyAlgorithmSymmetricEncryption(algorithm)
-
-		return &key_manager.KeyUsage{SymmetricEncryption: &typedAlgo}, nil
+		return &key_manager.KeyUsage{SymmetricEncryption: new(key_manager.KeyAlgorithmSymmetricEncryption(algorithm))}, nil
 
 	case usageAsymmetricEncryption:
-		typedAlgo := key_manager.KeyAlgorithmAsymmetricEncryption(algorithm)
-
-		return &key_manager.KeyUsage{AsymmetricEncryption: &typedAlgo}, nil
+		return &key_manager.KeyUsage{AsymmetricEncryption: new(key_manager.KeyAlgorithmAsymmetricEncryption(algorithm))}, nil
 
 	case usageAsymmetricSigning:
-		typedAlgo := key_manager.KeyAlgorithmAsymmetricSigning(algorithm)
-
-		return &key_manager.KeyUsage{AsymmetricSigning: &typedAlgo}, nil
+		return &key_manager.KeyUsage{AsymmetricSigning: new(key_manager.KeyAlgorithmAsymmetricSigning(algorithm))}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown usage type: %s", usage)

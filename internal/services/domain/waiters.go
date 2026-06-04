@@ -24,8 +24,8 @@ func waitForDNSZone(ctx context.Context, domainAPI *domain.API, dnsZone string, 
 
 	return domainAPI.WaitForDNSZone(&domain.WaitForDNSZoneRequest{
 		DNSZone:       dnsZone,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: scw.TimeDurationPtr(retryInterval),
+		Timeout:       new(timeout),
+		RetryInterval: new(retryInterval),
 	}, scw.WithContext(ctx))
 }
 
@@ -39,8 +39,8 @@ func waitForDNSRecordExist(ctx context.Context, domainAPI *domain.API, dnsZone, 
 		DNSZone:       dnsZone,
 		RecordName:    recordName,
 		RecordType:    recordType,
-		Timeout:       scw.TimeDurationPtr(timeout),
-		RetryInterval: scw.TimeDurationPtr(retryInterval),
+		Timeout:       new(timeout),
+		RetryInterval: new(retryInterval),
 	}, scw.WithContext(ctx))
 }
 
@@ -52,7 +52,7 @@ func waitForDomainsRegistration(ctx context.Context, api *domain.RegistrarAPI, d
 
 	return api.WaitForOrderDomain(&domain.WaitForOrderDomainRequest{
 		Domain:        domainName,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
@@ -65,7 +65,7 @@ func waitForAutoRenewStatus(ctx context.Context, api *domain.RegistrarAPI, domai
 
 	return api.WaitForAutoRenewStatus(&domain.WaitForAutoRenewStatusRequest{
 		Domain:        domainName,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }
@@ -78,7 +78,7 @@ func waitForDNSSECStatus(ctx context.Context, api *domain.RegistrarAPI, domainNa
 
 	return api.WaitForDNSSECStatus(&domain.WaitForDNSSECStatusRequest{
 		Domain:        domainName,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

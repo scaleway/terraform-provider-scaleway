@@ -63,6 +63,11 @@ func TestAccLBPrivateNetwork_Basic(t *testing.T) {
 						"scaleway_lb_private_network.lbpn01", "ipam_ip_ids.0"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_lb_private_network.lbpn01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

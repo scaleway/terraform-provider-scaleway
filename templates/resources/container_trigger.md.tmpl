@@ -14,57 +14,58 @@ Refer to the Containers triggers [documentation](https://www.scaleway.com/en/doc
 
 ### SQS
 
-```terraform
-resource "scaleway_container_trigger" "main" {
-  container_id = scaleway_container.main.id
-  name         = "my-trigger"
-  sqs {
-    project_id = scaleway_mnq_sqs.main.project_id
-    queue      = "MyQueue"
-    # If region is different
-    region = scaleway_mnq_sqs.main.region
-  }
-}
-```
+{{ tffile "examples/resources/scaleway_container_trigger/resource-sqs-config.tf" }}
 
 ### NATS
 
-```terraform
-resource "scaleway_container_trigger" "main" {
-  container_id = scaleway_container.main.id
-  name         = "my-trigger"
-  nats {
-    account_id = scaleway_mnq_nats_account.main.id
-    subject    = "MySubject"
-    # If region is different
-    region = scaleway_mnq_nats_account.main.region
-  }
-}
-```
+{{ tffile "examples/resources/scaleway_container_trigger/resource-nats-config.tf" }}
+
+### Cron
+
+{{ tffile "examples/resources/scaleway_container_trigger/resource-cron-config.tf" }}
 
 ## Argument Reference
 
 The following arguments are supported:
 
-- `container_id` (Required) The unique identifier of the container to create a trigger for.
+- `container_id` - (Required) The unique identifier of the container to create a trigger for.
+
+~> **Important:** Updates to this field will recreate the resource.
 
 - `name` - (Optional) The unique name of the trigger. If not provided, a random name is generated.
 
-- `description` (Optional) The description of the trigger.
+- `description` - (Optional) The description of the trigger.
 
-- `sqs` The configuration of the Scaleway SQS queue used by the trigger
-    - `namespace_id` (Deprecated) ID of the Messaging and Queuing namespace. This argument is deprecated.
-    - `queue` (Required) The name of the SQS queue.
-    - `project_id` (Optional) The ID of the project in which SQS is enabled, (defaults to [provider](../index.md#project_id) `project_id`)
-    - `region` (Optional) Region where SQS is enabled (defaults to [provider](../index.md#project_id) `region`)
+- `tags` - (Optional) The list of tags associated with the trigger.
 
-- `nats` The configuration for the Scaleway NATS account used by the trigger
-    - `account_id` (Required) unique identifier of the Messaging and Queuing NATS account.
-    - `subject` (Required) The subject to listen to.
-    - `project_id` (Optional) THe ID of the project that contains the Messaging and Queuing NATS account (defaults to [provider](../index.md#project_id) `project_id`)
-    - `region` (Optional) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#project_id) `region`)
+- `destination_config` - (Required) The configuration of the destination to trigger.
+    - `http_path` - (Required) The HTTP path to send the request to (e.g., "/my-webhook-endpoint").
+    - `http_method` - (Required) The HTTP method to use when sending the request (e.g., get, post, put, patch, delete).
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `sqs` - The configuration of the Scaleway SQS queue used by the trigger
+    - `endpoint` - (Required) Endpoint URL to use to access SQS (e.g., "https://sqs.mnq.fr-par.scaleway.com").
+    - `queue_url` - (Required) The URL of the SQS queue to monitor for messages.
+    - `access_key` - (Required, Sensitive) The access key for accessing the SQS queue.
+    - `secret_key` - (Required, Sensitive) The secret key for accessing the SQS queue.
+    - `project_id` - (Optional) The ID of the project in which SQS is enabled, (defaults to [provider](../index.md#arguments-reference) `project_id`)
+    - `region` - (Optional) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `queue` - (Deprecated) The name of the SQS queue.  This argument is no longer supported.
+
+- `nats` - The configuration for the Scaleway NATS account used by the trigger
+    - `subject` - (Required) NATS subject to subscribe to (e.g., \"my-subject\")."
+    - `server_urls` - (Required) The list of URLs of the NATS server (e.g., "nats://nats.mnq.fr-par.scaleway.com:4222").
+    - `credentials_file_content` - (Required, Sensitive) The content of the NATS credentials file that will be used to authenticate with the NATS server and subscribe to the specified subject.
+    - `project_id` - (Optional) The ID of the project that contains the Messaging and Queuing NATS account (defaults to [provider](../index.md#arguments-reference) `project_id`)
+    - `region` - (Optional) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `account_id` - (Deprecated) unique identifier of the Messaging and Queuing NATS account  .
+
+- `cron` - The configuration for the cron source of the trigger
+    - `schedule` - (Required) UNIX cron schedule to run job (e.g., "* * * * *").
+    - `timezone` - (Required) Timezone for the cron schedule, in tz database format (e.g., "Europe/Paris").
+    - `body` - (Optional) Body to send to the container when the trigger is invoked.
+    - `headers` - (Optional) Additional headers to send to the container when the trigger is invoked.
+
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 ## Attributes Reference
 

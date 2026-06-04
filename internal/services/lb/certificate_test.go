@@ -225,6 +225,12 @@ EOF
 					resource.TestCheckResourceAttr("scaleway_lb_certificate.cert01", "custom_certificate.#", "1"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_lb_certificate.cert01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"custom_certificate.#", "custom_certificate.0.%", "custom_certificate.0.certificate_chain"},
+			},
 		},
 	})
 }

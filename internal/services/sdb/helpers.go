@@ -51,7 +51,7 @@ func waitForDatabase(ctx context.Context, sdbAPI *sdbSDK.API, region scw.Region,
 		Region:        region,
 		DatabaseID:    id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return database, err

@@ -99,6 +99,65 @@ func IsVPCPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 	}
 }
 
+func IsConnectorPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", n)
+		}
+
+		vpcAPI, region, ID, err := vpc.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+
+		_, err = vpcAPI.GetVPCConnector(&vpc2.GetVPCConnectorRequest{
+			VpcConnectorID: ID,
+			Region:         region,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func CheckConnectorDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		ctx := context.Background()
+
+		return retry.RetryContext(ctx, DestroyWaitTimeout, func() *retry.RetryError {
+			for _, rs := range state.RootModule().Resources {
+				if rs.Type != "scaleway_vpc_connector" {
+					continue
+				}
+
+				vpcAPI, region, id, err := vpc.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
+				if err != nil {
+					return retry.NonRetryableError(err)
+				}
+
+				_, err = vpcAPI.GetVPCConnector(&vpc2.GetVPCConnectorRequest{
+					Region:         region,
+					VpcConnectorID: id,
+				})
+
+				switch {
+				case err == nil:
+					return retry.RetryableError(fmt.Errorf("VPC connector (%s) still exists", rs.Primary.ID))
+				case httperrors.Is404(err):
+					continue
+				default:
+					return retry.NonRetryableError(err)
+				}
+			}
+
+			return nil
+		})
+	}
+}
+
 func CheckVPCDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()

@@ -11,7 +11,9 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -27,7 +29,15 @@ func ResourceCockpitAlertManager() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaFunc: alertManagerSchema,
+		Identity:   alertManagerIdentity(),
 	}
+}
+
+func alertManagerIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+	})
 }
 
 func alertManagerSchema() map[string]*schema.Schema {
@@ -71,20 +81,15 @@ func alertManagerSchema() map[string]*schema.Schema {
 	}
 }
 
-func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	api, region, err := cockpitAPIWithRegion(d, meta)
+func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, err := cockpitAPIWithRegion(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		projectID, err = getDefaultProjectID(ctx, meta)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_ = d.Set("project_id", projectID)
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	contactPoints, _ := d.Get("contact_points").([]any)
@@ -163,9 +168,11 @@ func ResourceCockpitAlertManagerCreate(ctx context.Context, d *schema.ResourceDa
 		}
 	}
 
-	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+	if err := setCockpitAlertManagerIdentity(d, region, projectID); err != nil {
+		return diag.FromErr(err)
+	}
 
-	return ResourceCockpitAlertManagerRead(ctx, d, meta)
+	return ResourceCockpitAlertManagerRead(ctx, d, m)
 }
 
 func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -195,12 +202,16 @@ func ResourceCockpitAlertManagerRead(ctx context.Context, d *schema.ResourceData
 	_ = d.Set("alert_manager_url", alertManager.AlertManagerURL)
 	_ = d.Set("project_id", projectID)
 
+	if err := setCockpitAlertManagerIdentity(d, alertManager.Region, projectID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	var userRequestedIDs []string
 
 	alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
 		ProjectID:       projectID,
-		IsPreconfigured: scw.BoolPtr(true),
+		IsPreconfigured: new(true),
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)
@@ -462,6 +473,25 @@ func ResourceCockpitAlertManagerDelete(ctx context.Context, d *schema.ResourceDa
 // The resource identifier format is "Region/ProjectID/1"
 func ResourceCockpitAlertManagerID(region scw.Region, projectID string) (resourceID string) {
 	return fmt.Sprintf("%s/%s/1", region, projectID)
+}
+
+func setCockpitAlertManagerIdentity(d *schema.ResourceData, region scw.Region, projectID string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("region", region.String()); err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	d.SetId(ResourceCockpitAlertManagerID(region, projectID))
+
+	return nil
 }
 
 func shouldEnableLegacyManagedAlerts(d *schema.ResourceData) bool {

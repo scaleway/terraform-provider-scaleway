@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/stretchr/testify/assert"
 )
@@ -24,25 +23,25 @@ func TestIsEqualPrivateNetwork(t *testing.T) {
 		},
 		{
 			name:     "isEqualStatic",
-			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.100", "172.16.0.101"})}},
-			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.100", "172.16.0.101"})}},
+			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.100", "172.16.0.101"})}},
+			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.100", "172.16.0.101"})}},
 			expected: true,
 		},
 		{
 			name:     "areNotEqualStatic",
-			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.100", "172.16.0.101"})}},
-			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.101", "172.16.0.101"})}},
+			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.100", "172.16.0.101"})}},
+			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.101", "172.16.0.101"})}},
 			expected: false,
 		},
 		{
 			name:     "areNotEqualDHCPToStatic",
 			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
-			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.101", "172.16.0.101"})}},
+			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.101", "172.16.0.101"})}},
 			expected: false,
 		},
 		{
 			name:     "areNotEqualDHCPToStatic",
-			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"172.16.0.101", "172.16.0.101"})}},
+			A:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"172.16.0.101", "172.16.0.101"})}},
 			B:        &lbSDK.PrivateNetwork{PrivateNetworkID: "6ba7b810-9dad-11d1-80b4-00c04fd430c8", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			expected: false,
 		},
@@ -65,11 +64,11 @@ func TestPrivateNetworksCompare(t *testing.T) {
 		{
 			name: "no changes",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork(nil),
@@ -78,11 +77,11 @@ func TestPrivateNetworksCompare(t *testing.T) {
 		{
 			name: "private network removed",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork{
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
@@ -92,10 +91,10 @@ func TestPrivateNetworksCompare(t *testing.T) {
 		{
 			name: "private network added",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork(nil),
@@ -106,28 +105,28 @@ func TestPrivateNetworksCompare(t *testing.T) {
 		{
 			name: "private network static configuration changed",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.2"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.2"})}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			expectedToAttach: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.2"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.2"})}},
 			},
 		},
 		{
 			name: "private network configuration changed from static to DHCP",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
 				{PrivateNetworkID: "pn1", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			expectedToAttach: []*lbSDK.PrivateNetwork{
 				{PrivateNetworkID: "pn1", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
@@ -136,16 +135,16 @@ func TestPrivateNetworksCompare(t *testing.T) {
 		{
 			name: "multiple private networks removed",
 			oldPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
-				{PrivateNetworkID: "pn3", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.3"})}},
+				{PrivateNetworkID: "pn3", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.3"})}},
 			},
 			newPNs: []*lbSDK.PrivateNetwork{
-				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.1"})}},
+				{PrivateNetworkID: "pn1", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.1"})}},
 			},
 			expectedToDetach: []*lbSDK.PrivateNetwork{
 				{PrivateNetworkID: "pn2", DHCPConfig: &lbSDK.PrivateNetworkDHCPConfig{}},
-				{PrivateNetworkID: "pn3", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: scw.StringsPtr([]string{"192.168.1.3"})}},
+				{PrivateNetworkID: "pn3", StaticConfig: &lbSDK.PrivateNetworkStaticConfig{IPAddress: new([]string{"192.168.1.3"})}},
 			},
 			expectedToAttach: []*lbSDK.PrivateNetwork(nil),
 		},

@@ -1,10 +1,14 @@
 package mnq_test
 
 import (
+	"context"
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
@@ -92,16 +96,36 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		sqs, err := api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
-			ProjectID: id,
-			Region:    region,
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+
+		var sqsInfo *mnqSDK.SqsInfo
+
+		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
+			sqsInfo, err = api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
+				ProjectID: id,
+				Region:    region,
+			})
+			if err == nil {
+				return nil
+			}
+
+			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
+				return retry.RetryableError(err)
+			}
+
+			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
+				return retry.RetryableError(err)
+			}
+
+			return retry.NonRetryableError(err)
 		})
-		if err != nil {
-			return err
+		if retryErr != nil {
+			return retryErr
 		}
 
-		if sqs.Status != mnqSDK.SqsInfoStatusEnabled {
-			return fmt.Errorf("sqs status should be enabled, got: %s", sqs.Status)
+		if sqsInfo.Status != mnqSDK.SqsInfoStatusEnabled {
+			return fmt.Errorf("sqs status should be enabled, got: %s", sqsInfo.Status)
 		}
 
 		return nil

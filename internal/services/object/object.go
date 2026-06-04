@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -178,7 +177,7 @@ func resourceObjectCreate(ctx context.Context, d *schema.ResourceData, m any) di
 			return diag.FromErr(err)
 		}
 
-		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerAlgorithm = new("AES256")
 		req.SSECustomerKeyMD5 = &digestMD5
 		req.SSECustomerKey = encryption
 	}
@@ -277,7 +276,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 				return diag.FromErr(err)
 			}
 
-			req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.SSECustomerAlgorithm = new("AES256")
 			req.SSECustomerKeyMD5 = &digestMD5
 			req.SSECustomerKey = encryption
 		}
@@ -299,7 +298,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 			Bucket:       types.ExpandStringPtr(bucketUpdated),
 			Key:          types.ExpandStringPtr(keyUpdated),
 			StorageClass: s3Types.StorageClass(d.Get("storage_class").(string)),
-			CopySource:   scw.StringPtr(fmt.Sprintf("%s/%s", bucket, key)),
+			CopySource:   new(fmt.Sprintf("%s/%s", bucket, key)),
 			Metadata:     types.ExpandMapStringString(d.Get("metadata")),
 			ACL:          s3Types.ObjectCannedACL(d.Get("visibility").(string)),
 		}
@@ -314,7 +313,7 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 				return diag.FromErr(err)
 			}
 
-			req.CopySourceSSECustomerAlgorithm = scw.StringPtr("AES256")
+			req.CopySourceSSECustomerAlgorithm = new("AES256")
 			req.CopySourceSSECustomerKeyMD5 = &digestMD5
 			req.CopySourceSSECustomerKey = encryption
 		}
@@ -328,8 +327,8 @@ func resourceObjectUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	if d.HasChanges("key", "bucket") {
 		_, err := s3Client.DeleteObject(ctx, &s3.DeleteObjectInput{
-			Key:    scw.StringPtr(key),
-			Bucket: scw.StringPtr(bucket),
+			Key:    new(key),
+			Bucket: new(bucket),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -370,7 +369,7 @@ func resourceObjectRead(ctx context.Context, d *schema.ResourceData, m any) diag
 
 	if encryption, ok := d.GetOk("sse_customer_key"); ok {
 		req.SSECustomerKey = aws.String(base64.StdEncoding.EncodeToString([]byte(encryption.(string))))
-		req.SSECustomerAlgorithm = scw.StringPtr("AES256")
+		req.SSECustomerAlgorithm = new("AES256")
 	}
 
 	obj, err := s3Client.HeadObject(ctx, req)

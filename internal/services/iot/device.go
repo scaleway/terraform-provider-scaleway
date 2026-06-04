@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -33,6 +34,7 @@ func ResourceDevice() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    deviceSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
 	}
 }
@@ -206,7 +208,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if description, ok := d.GetOk("description"); ok {
-		req.Description = scw.StringPtr(description.(string))
+		req.Description = new(description.(string))
 	}
 
 	if _, ok := d.GetOk("message_filters"); ok {
@@ -222,7 +224,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnS + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Publish = &mfSet
@@ -237,7 +239,7 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 			}
 
 			if topics, ok := d.GetOk(fqfnP + iotTopicsSuffix); ok {
-				mfSet.Topics = scw.StringsPtr(types.ExpandStringsOrEmpty(topics))
+				mfSet.Topics = new(types.ExpandStringsOrEmpty(topics))
 			}
 
 			mf.Subscribe = &mfSet
@@ -251,7 +253,9 @@ func ResourceIotDeviceCreate(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.Device.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.Device.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	// If user certificate is provided.
 	if devCrt, ok := d.GetOk("certificate.0.crt"); ok {
@@ -297,6 +301,39 @@ func ResourceIotDeviceRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, deviceID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setDeviceState(ctx, d, iotAPI, region, deviceID, device)
+}
+
+// readDeviceIntoState fetches the device and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readDeviceIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	iotAPI, region, deviceID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	device, err := iotAPI.GetDevice(&iot.GetDeviceRequest{
+		Region:   region,
+		DeviceID: deviceID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setDeviceState(ctx, d, iotAPI, region, deviceID, device)
+}
+
+func setDeviceState(ctx context.Context, d *schema.ResourceData, iotAPI *iot.API, region scw.Region, deviceID string, device *iot.Device) diag.Diagnostics {
 	_ = d.Set("name", device.Name)
 	_ = d.Set("status", device.Status)
 	_ = d.Set("hub_id", regional.NewID(region, device.HubID).String())
@@ -377,7 +414,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	if d.HasChange("allow_insecure") {
-		updateRequest.AllowInsecure = scw.BoolPtr(d.Get("allow_insecure").(bool))
+		updateRequest.AllowInsecure = new(d.Get("allow_insecure").(bool))
 	}
 
 	if d.HasChange("message_filters") {
@@ -393,7 +430,7 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
 				d.Get(fqfnS + iotPolicySuffix).(string))
 
-			mfSet.Topics = scw.StringsPtr(
+			mfSet.Topics = new(
 				types.ExpandStringsOrEmpty(d.Get(fqfnS + iotTopicsSuffix)))
 		}
 
@@ -405,17 +442,17 @@ func ResourceIotDeviceUpdate(ctx context.Context, d *schema.ResourceData, m any)
 			mfSet.Policy = iot.DeviceMessageFiltersRulePolicy(
 				d.Get(fqfnP + iotPolicySuffix).(string))
 
-			mfSet.Topics = scw.StringsPtr(
+			mfSet.Topics = new(
 				types.ExpandStringsOrEmpty(d.Get(fqfnP + iotTopicsSuffix)))
 		}
 	}
 
 	if d.HasChange("hub_id") {
-		updateRequest.HubID = scw.StringPtr(d.Get("hub_id").(string))
+		updateRequest.HubID = new(d.Get("hub_id").(string))
 	}
 
 	if d.HasChange("allow_multiple_connections") {
-		updateRequest.AllowMultipleConnections = scw.BoolPtr(d.Get("allow_multiple_connections").(bool))
+		updateRequest.AllowMultipleConnections = new(d.Get("allow_multiple_connections").(bool))
 	}
 
 	if d.HasChange("description") {

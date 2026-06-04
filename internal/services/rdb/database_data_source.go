@@ -46,5 +46,5 @@ func DataSourceDatabaseRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbDatabaseRead(ctx, d, m)
+	return readDatabaseIntoState(ctx, d, m)
 }

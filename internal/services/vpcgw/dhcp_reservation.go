@@ -2,27 +2,20 @@ package vpcgw
 
 import (
 	"context"
-	"errors"
-	"net"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func ResourceDHCPReservation() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: ResourceVPCPublicGatewayDHCPCReservationCreate,
-		ReadContext:   ResourceVPCPublicGatewayDHCPReservationRead,
-		UpdateContext: ResourceVPCPublicGatewayDHCPReservationUpdate,
-		DeleteContext: ResourceVPCPublicGatewayDHCPReservationDelete,
+		CreateContext: resourceVPCPublicGatewayDHCPReservationCreate,
+		ReadContext:   resourceVPCPublicGatewayDHCPReservationRead,
+		UpdateContext: resourceVPCPublicGatewayDHCPReservationUpdate,
+		DeleteContext: resourceVPCPublicGatewayDHCPReservationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -35,7 +28,7 @@ func ResourceDHCPReservation() *schema.Resource {
 		SchemaVersion:      0,
 		SchemaFunc:         dhcpReservation,
 		CustomizeDiff:      cdf.LocalityCheck("gateway_network_id"),
-		DeprecationMessage: "The 'dhcp_reservation' resource is deprecated. In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed. You can use IPAM to manage your IPs. For more information, please refer to the dedicated guide: https://github.com/scaleway/terraform-provider-scaleway/blob/master/docs/guides/migration_guide_vpcgw_v2.md",
+		DeprecationMessage: dhcpDeprecationMessage,
 	}
 }
 
@@ -83,146 +76,26 @@ func dhcpReservation() map[string]*schema.Schema {
 	}
 }
 
-func ResourceVPCPublicGatewayDHCPCReservationCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	ip := net.ParseIP(d.Get("ip_address").(string))
-	if ip == nil {
-		return diag.FromErr(errors.New("could not parse ip_address"))
-	}
-
-	macAddress, err := net.ParseMAC(d.Get("mac_address").(string))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
-
-	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	res, err := api.CreateDHCPEntry(&vpcgw.CreateDHCPEntryRequest{
-		Zone:             zone,
-		MacAddress:       macAddress.String(),
-		IPAddress:        ip,
-		GatewayNetworkID: gatewayNetworkID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(zonal.NewIDString(zone, res.ID))
-
-	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutCreate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceVPCPublicGatewayDHCPReservationRead(ctx, d, m)
+func resourceVPCPublicGatewayDHCPReservationCreate(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_vpc_public_gateway_dhcp_reservation is no longer supported",
+		Detail:   dhcpDeprecationMessage,
+	}}
 }
 
-func ResourceVPCPublicGatewayDHCPReservationRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	entry, err := api.GetDHCPEntry(&vpcgw.GetDHCPEntryRequest{
-		DHCPEntryID: ID,
-		Zone:        zone,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("ip_address", entry.IPAddress.String())
-	_ = d.Set("mac_address", entry.MacAddress)
-	_ = d.Set("hostname", entry.Hostname)
-	_ = d.Set("type", entry.Type.String())
-	_ = d.Set("gateway_network_id", zonal.NewIDString(zone, entry.GatewayNetworkID))
-	_ = d.Set("created_at", entry.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("updated_at", entry.UpdatedAt.Format(time.RFC3339))
-	_ = d.Set("zone", zone)
+func resourceVPCPublicGatewayDHCPReservationRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
 	return nil
 }
 
-func ResourceVPCPublicGatewayDHCPReservationUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func resourceVPCPublicGatewayDHCPReservationUpdate(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
-	if d.HasChanges("ip_address") {
-		ip := net.ParseIP(d.Get("ip_address").(string))
-		if ip == nil {
-			return diag.FromErr(errors.New("could not parse ip_address"))
-		}
-
-		gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
-
-		_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		req := &vpcgw.UpdateDHCPEntryRequest{
-			DHCPEntryID: ID,
-			Zone:        zone,
-			IPAddress:   scw.IPPtr(ip),
-		}
-
-		_, err = api.UpdateDHCPEntry(req, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return ResourceVPCPublicGatewayDHCPReservationRead(ctx, d, m)
+	return nil
 }
 
-func ResourceVPCPublicGatewayDHCPReservationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	gatewayNetworkID := locality.ExpandID(d.Get("gateway_network_id"))
-
-	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteDHCPEntry(&vpcgw.DeleteDHCPEntryRequest{
-		DHCPEntryID: ID,
-		Zone:        zone,
-	}, scw.WithContext(ctx))
-
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForVPCGatewayNetwork(ctx, api, zone, gatewayNetworkID, d.Timeout(schema.TimeoutDelete))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func resourceVPCPublicGatewayDHCPReservationDelete(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	return nil
 }

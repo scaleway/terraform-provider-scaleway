@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	containerSDK "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
@@ -27,13 +27,13 @@ func AddTestSweepers() {
 }
 
 func testSweepTrigger(_ string) error {
-	return acctest.SweepRegions((&containerSDK.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
-		containerAPI := containerSDK.NewAPI(scwClient)
+	return acctest.SweepRegions((&container.API{}).Regions(), func(scwClient *scw.Client, region scw.Region) error {
+		containerAPI := container.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the container triggers in (%s)", region)
 
 		listTriggers, err := containerAPI.ListTriggers(
-			&containerSDK.ListTriggersRequest{
+			&container.ListTriggersRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -41,7 +41,7 @@ func testSweepTrigger(_ string) error {
 		}
 
 		for _, trigger := range listTriggers.Triggers {
-			_, err := containerAPI.DeleteTrigger(&containerSDK.DeleteTriggerRequest{
+			_, err := containerAPI.DeleteTrigger(&container.DeleteTriggerRequest{
 				TriggerID: trigger.ID,
 				Region:    region,
 			})
@@ -58,12 +58,12 @@ func testSweepTrigger(_ string) error {
 
 func testSweepContainer(_ string) error {
 	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
-		containerAPI := containerSDK.NewAPI(scwClient)
+		containerAPI := container.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the container in (%s)", region)
 
 		listNamespaces, err := containerAPI.ListContainers(
-			&containerSDK.ListContainersRequest{
+			&container.ListContainersRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -71,7 +71,7 @@ func testSweepContainer(_ string) error {
 		}
 
 		for _, cont := range listNamespaces.Containers {
-			_, err := containerAPI.DeleteContainer(&containerSDK.DeleteContainerRequest{
+			_, err := containerAPI.DeleteContainer(&container.DeleteContainerRequest{
 				ContainerID: cont.ID,
 				Region:      region,
 			})
@@ -88,12 +88,12 @@ func testSweepContainer(_ string) error {
 
 func testSweepNamespace(_ string) error {
 	return acctest.SweepRegions([]scw.Region{scw.RegionFrPar}, func(scwClient *scw.Client, region scw.Region) error {
-		containerAPI := containerSDK.NewAPI(scwClient)
+		containerAPI := container.NewAPI(scwClient)
 
 		logging.L.Debugf("sweeper: destroying the container namespaces in (%s)", region)
 
 		listNamespaces, err := containerAPI.ListNamespaces(
-			&containerSDK.ListNamespacesRequest{
+			&container.ListNamespacesRequest{
 				Region: region,
 			}, scw.WithAllPages())
 		if err != nil {
@@ -101,7 +101,7 @@ func testSweepNamespace(_ string) error {
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
-			_, err := containerAPI.DeleteNamespace(&containerSDK.DeleteNamespaceRequest{
+			_, err := containerAPI.DeleteNamespace(&container.DeleteNamespaceRequest{
 				NamespaceID: ns.ID,
 				Region:      region,
 			})

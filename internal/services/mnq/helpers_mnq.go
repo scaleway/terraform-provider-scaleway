@@ -92,10 +92,6 @@ func NewSNSAPIWithRegionAndID(m any, regionalID string) (*mnq.SnsAPI, scw.Region
 	return api, region, ID, nil
 }
 
-func composeMNQID(region scw.Region, projectID string, queueName string) string {
-	return fmt.Sprintf("%s/%s/%s", region, projectID, queueName)
-}
-
 func DecomposeMNQID(id string) (region scw.Region, projectID string, name string, err error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 3 {
@@ -370,8 +366,7 @@ func awsAttributesToResourceData(attributes map[string]string, resourceSchemas m
 }
 
 func IsAWSErrorCode(err error, code string) bool {
-	var apiErr *smithy.GenericAPIError
-	if errors.As(err, &apiErr) && apiErr.Code == code {
+	if apiErr, ok := errors.AsType[*smithy.GenericAPIError](err); ok && apiErr.Code == code {
 		return true
 	}
 

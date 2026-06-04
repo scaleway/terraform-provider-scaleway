@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "IAM"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `content` (Required, String) The content of the SAML certificate
+- `type` (Required, String) The type of the SAML certificate. Possible values are: `signing`, `encryption`.
+- `organization_id` (Optional, String) The organization ID. If not provided, the default organization configured in the provider is used.
+- `saml_id` (Optional, String) The ID of the SAML configuration. If not provided, the organization's SAML configuration is used.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `expires_at` (String) The expiration date and time of the SAML certificate
+- `id` (String) The ID of the SAML certificate
+- `origin` (String) The origin of the SAML certificate. Possible values are: `scaleway`, `identity_provider`.

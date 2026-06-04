@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -31,6 +32,7 @@ func ResourceSnapshot() *schema.Resource {
 		},
 		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -121,7 +123,9 @@ func ResourceRdbSnapshotCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRdbSnapshotRead(ctx, d, meta)
 }
@@ -146,8 +150,17 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	// Set resource data fields
-	_ = d.Set("instance_id", regional.NewIDString(region, res.InstanceID))
+	setSnapshotState(d, res)
+
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+func setSnapshotState(d *schema.ResourceData, res *rdb.Snapshot) {
+	_ = d.Set("instance_id", regional.NewIDString(res.Region, res.InstanceID))
 	_ = d.Set("name", res.Name)
 	_ = d.Set("expires_at", res.ExpiresAt.Format(time.RFC3339))
 	_ = d.Set("created_at", res.CreatedAt.Format(time.RFC3339))
@@ -164,9 +177,7 @@ func ResourceRdbSnapshotRead(ctx context.Context, d *schema.ResourceData, meta a
 		_ = d.Set("size", int(*res.Size))
 	}
 
-	_ = d.Set("region", region)
-
-	return nil
+	_ = d.Set("region", string(res.Region))
 }
 
 func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -195,8 +206,7 @@ func ResourceRdbSnapshotUpdate(ctx context.Context, d *schema.ResourceData, meta
 	needsUpdate := false
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		snapshotUpdateRequest.Name = &name
+		snapshotUpdateRequest.Name = new(d.Get("name").(string))
 		needsUpdate = true
 	}
 

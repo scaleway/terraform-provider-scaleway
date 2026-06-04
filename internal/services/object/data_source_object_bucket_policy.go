@@ -65,7 +65,7 @@ func DataSourceObjectBucketPolicyRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	policyString := "{}"
-	if err == nil && policy.Policy != nil {
+	if policy.Policy != nil {
 		policyString = aws.ToString(policy.Policy)
 	}
 

@@ -2,7 +2,6 @@ package s2svpn
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -10,6 +9,7 @@ import (
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +24,7 @@ func ResourceRoutingPolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaVersion: 0,
 		SchemaFunc:    routingPolicySchema,
 	}
@@ -121,7 +122,10 @@ func ResourceRoutingPolicyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceRoutingPolicyRead(ctx, d, m)
 }
@@ -146,6 +150,17 @@ func ResourceRoutingPolicyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
+	diags := setRoutingPolicyState(d, policy)
+
+	err = identity.SetRegionalIdentity(d, policy.Region, policy.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setRoutingPolicyState(d *schema.ResourceData, policy *s2s_vpn.RoutingPolicy) diag.Diagnostics {
 	prefixFilterIn, err := FlattenPrefixFilters(policy.PrefixFilterIn)
 	if err != nil {
 		return diag.FromErr(err)

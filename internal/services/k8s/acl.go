@@ -223,6 +223,10 @@ func ResourceACLDelete(ctx context.Context, d *schema.ResourceData, m any) diag.
 				IP:          &allowedIPs,
 				Description: "Automatically generated after scaleway_k8s_acl resource deletion",
 			},
+			{
+				ScalewayRanges: new(true),
+				Description:    "Automatically generated after scaleway_k8s_acl resource deletion",
+			},
 		},
 	}
 
@@ -260,7 +264,7 @@ func expandACL(data any) ([]*k8s.ACLRuleRequest, error) {
 		}
 
 		if scwRangesRaw, ok := r["scaleway_ranges"]; ok && scwRangesRaw.(bool) {
-			expandedRule.ScalewayRanges = scw.BoolPtr(true)
+			expandedRule.ScalewayRanges = new(true)
 		}
 
 		if descriptionRaw, ok := r["description"]; ok && descriptionRaw.(string) != "" {

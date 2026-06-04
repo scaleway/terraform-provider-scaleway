@@ -8,6 +8,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -19,6 +20,7 @@ func ResourceRoute() *schema.Resource {
 		ReadContext:   resourceLbRouteRead,
 		UpdateContext: resourceLbRouteUpdate,
 		DeleteContext: resourceLbRouteDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -86,29 +88,63 @@ func routeSchema() map[string]*schema.Schema {
 }
 
 func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	lbAPI, _, err := lbAPIWithZone(d, m)
+	lbAPI, configZone, err := lbAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	frontZone, frontID, err := zonal.ParseID(d.Get("frontend_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	frontExpand := zonal.ExpandID(d.Get("frontend_id").(string))
+
+	frontZone := frontExpand.Zone
+	if frontZone == "" {
+		frontZone = configZone
 	}
 
-	backZone, backID, err := zonal.ParseID(d.Get("backend_id").(string))
-	if err != nil {
-		return diag.FromErr(err)
+	frontID := frontExpand.ID
+
+	backExpand := zonal.ExpandID(d.Get("backend_id").(string))
+
+	backZone := backExpand.Zone
+	if backZone == "" {
+		backZone = configZone
 	}
 
-	if frontZone != backZone {
-		return diag.Errorf("Frontend and Backend must be in the same zone (got %s and %s)", frontZone, backZone)
-	}
+	backID := backExpand.ID
 
-	createReq := &lbSDK.ZonedAPICreateRouteRequest{
+	frontend, err := lbAPI.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
 		Zone:       frontZone,
 		FrontendID: frontID,
-		BackendID:  backID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return diag.Errorf("frontend %s not found in zone %s", d.Get("frontend_id"), frontZone)
+		}
+
+		return diag.FromErr(err)
+	}
+
+	backend, err := lbAPI.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
+		Zone:      backZone,
+		BackendID: backID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return diag.Errorf("backend %s not found in zone %s", d.Get("backend_id"), backZone)
+		}
+
+		return diag.FromErr(err)
+	}
+
+	if frontend.LB.Zone != backend.LB.Zone {
+		return diag.Errorf("frontend and backend must be in the same zone (frontend in %s, backend in %s)", frontend.LB.Zone, backend.LB.Zone)
+	}
+
+	zone := frontend.LB.Zone
+
+	createReq := &lbSDK.ZonedAPICreateRouteRequest{
+		Zone:       zone,
+		FrontendID: frontend.ID,
+		BackendID:  backend.ID,
 		Match: &lbSDK.RouteMatch{
 			Sni:             types.ExpandStringPtr(d.Get("match_sni")),
 			HostHeader:      types.ExpandStringPtr(d.Get("match_host_header")),
@@ -122,7 +158,10 @@ func resourceLbRouteCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(frontZone, route.ID))
+	err = identity.SetZonalIdentity(d, zone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbRouteRead(ctx, d, m)
 }
@@ -147,6 +186,17 @@ func resourceLbRouteRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
+	diags := setRouteState(d, route, zone)
+
+	err = identity.SetZonalIdentity(d, zone, route.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setRouteState(d *schema.ResourceData, route *lbSDK.Route, zone scw.Zone) diag.Diagnostics {
 	_ = d.Set("frontend_id", zonal.NewIDString(zone, route.FrontendID))
 	_ = d.Set("backend_id", zonal.NewIDString(zone, route.BackendID))
 	_ = d.Set("match_sni", types.FlattenStringPtr(route.Match.Sni))

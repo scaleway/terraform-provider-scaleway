@@ -144,7 +144,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 						  		days = 365
 							}
 							transition {
-								days          = 30
+								days          = 90
 								storage_class = "GLACIER"
 							}
 						}
@@ -158,7 +158,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
-						"days":          "30",
+						"days":          "90",
 						"storage_class": "GLACIER",
 					}),
 				),
@@ -199,7 +199,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-						resource "scaleway_object_bucket" "main-bucket-lifecycle"{
+						resource "scaleway_object_bucket" "main-bucket-lifecycle" {
 							name = "%s"
 							region = "%s"
 							acl = "private"
@@ -247,7 +247,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								  	"terraform" = "hashicorp"
 								}
 								transition {
-								  	days          = 1
+								  	days          = 101
 								  	storage_class = "GLACIER"
 								}
 							}
@@ -259,7 +259,7 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 								  	"tagKey" = "tagValue"
 								}
 								transition {
-								  	days          = 1
+								  	days          = 102
 								  	storage_class = "GLACIER"
 								}
 							}
@@ -287,13 +287,13 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.3.transition.*", map[string]string{
-						"days":          "1",
+						"days":          "101",
 						"storage_class": "GLACIER",
 					}),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
 					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
-						"days":          "1",
+						"days":          "102",
 						"storage_class": "GLACIER",
 					}),
 				),
@@ -374,8 +374,8 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 						resource "scaleway_object_bucket" "main-bucket-lifecycle" {
-							name                = "%s"
-							region = "%s"
+							name           		= "%s"
+							region 				= "%s"
 							object_lock_enabled = true
 
 							lifecycle_rule {
@@ -399,6 +399,253 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "2"),
 					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.abort_incomplete_multipart_upload_days", "30"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+					name = "%s"
+					region = "%s"
+
+					lifecycle_rule {
+						id      = "id1"
+						prefix  = "path1/"
+						enabled = true
+
+						expiration {
+							days = 365
+						}
+
+						transition {
+							days          = 30
+							storage_class = "ONEZONE_IA"
+						}
+
+						transition {
+							days          = 95
+							storage_class = "GLACIER"
+						}
+
+						transition {
+							days          = 90
+							storage_class = "ONEZONE_IA"
+						}
+
+						transition {
+							days          = 120
+							storage_class = "GLACIER"
+						}
+
+						transition {
+							days          = 210
+							storage_class = "ONEZONE_IA"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id2"
+						prefix  = "path2/"
+						enabled = true
+
+						expiration {
+							date = "2016-01-12"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id3"
+						prefix  = "path3/"
+						enabled = true
+
+						transition {
+							days          = 130
+							storage_class = "GLACIER"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id4"
+						prefix  = "path4/"
+						enabled = true
+
+						tags = {
+							"tagKey"    = "tagValue"
+							"terraform" = "hashicorp"
+						}
+
+						expiration {
+							date = "2016-01-12"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id5"
+						enabled = true
+
+						tags = {
+							"tagKey"    = "tagValue"
+							"terraform" = "hashicorp"
+						}
+
+						transition {
+							days          = 155
+							storage_class = "GLACIER"
+						}
+					}
+
+					lifecycle_rule {
+						id      = "id6"
+						enabled = true
+
+						tags = {
+							"tagKey" = "tagValue"
+						}
+
+						transition {
+							days          = 156
+							storage_class = "GLACIER"
+						}
+					}
+				}`, bucketLifecycle, objectTestsMainRegion),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.#", "6"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "id1"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "path1/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "365"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.date", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "30",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "95",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "90",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "120",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.0.transition.*", map[string]string{
+						"date":          "",
+						"days":          "210",
+						"storage_class": "ONEZONE_IA",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "id2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.prefix", "path2/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.date", "2016-01-12"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.days", "0"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.expired_object_delete_marker", "false"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.id", "id3"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.2.prefix", "path3/"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.2.transition.*", map[string]string{
+						"days":          "130",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.id", "id4"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.prefix", "path4/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.3.tags.terraform", "hashicorp"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.id", "id5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.tagKey", "tagValue"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.4.tags.terraform", "hashicorp"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.4.transition.*", map[string]string{
+						"days":          "155",
+						"storage_class": "GLACIER",
+					}),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.id", "id6"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.5.tags.tagKey", "tagValue"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceNameLifecycle, "lifecycle_rule.5.transition.*", map[string]string{
+						"days":          "156",
+						"storage_class": "GLACIER",
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_Lifecycle_removeRule(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-lifecycle")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketLifecycleConfigurationConfig_removeRule_Setup(bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "to delete"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", "prefix/"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.days", "1"),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.id", "expire delete markers"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.1.expiration.0.expired_object_delete_marker", "true"),
+				),
+			},
+			{
+				Config: testAccBucketLifecycleConfigurationConfig_removeRule(bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.main-bucket-lifecycle", true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.main-bucket-lifecycle", "name", bucketLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "expire delete markers"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.expiration.0.expired_object_delete_marker", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccObjectBucket_Lifecycle_EmptyFilter_NonCurrentVersions(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketLifecycle := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket")
+	resourceNameLifecycle := "scaleway_object_bucket.main-bucket-lifecycle"
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketLifecycleConfigurationConfig_emptyFilterNonCurrentVersions(bucketLifecycle),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, resourceNameLifecycle, true),
+					testAccCheckObjectBucketLifecycleConfigurationExists(tt, resourceNameLifecycle),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "name", bucketLifecycle),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.id", "noncurrent_versions_rule"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.prefix", ""),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.object_size_greater_than", "30"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.object_size_less_than", "500"),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.newer_noncurrent_versions", "2"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_expiration.0.noncurrent_days", "30"),
+
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.newer_noncurrent_versions", "5"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.noncurrent_days", "40"),
+					resource.TestCheckResourceAttr(resourceNameLifecycle, "lifecycle_rule.0.noncurrent_version_transition.0.storage_class", "ONEZONE_IA"),
 				),
 			},
 		},
@@ -502,7 +749,7 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 								AllowedMethods: []string{"PUT", "POST"},
 								AllowedOrigins: []string{"https://www.example.com"},
 								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
-								MaxAgeSeconds:  scw.Int32Ptr(3000),
+								MaxAgeSeconds:  new(int32(3000)),
 							},
 						},
 					),
@@ -531,7 +778,7 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 								AllowedMethods: []string{"PUT", "POST", "GET"},
 								AllowedOrigins: []string{"https://www.example.com"},
 								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
-								MaxAgeSeconds:  scw.Int32Ptr(3000),
+								MaxAgeSeconds:  new(int32(3000)),
 							},
 						},
 					),
@@ -560,7 +807,7 @@ func TestAccObjectBucket_Cors_Update(t *testing.T) {
 								AllowedMethods: []string{"PUT", "POST"},
 								AllowedOrigins: []string{"https://www.example.com"},
 								ExposeHeaders:  []string{"x-amz-server-side-encryption", "ETag"},
-								MaxAgeSeconds:  scw.Int32Ptr(3000),
+								MaxAgeSeconds:  new(int32(3000)),
 							},
 						},
 					),
@@ -593,7 +840,7 @@ func TestAccObjectBucket_Cors_Delete(t *testing.T) {
 			}
 
 			_, err = conn.DeleteBucketCors(ctx, &s3.DeleteBucketCorsInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
+				Bucket: new(rs.Primary.Attributes["name"]),
 			})
 			if err != nil && !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
 				return err
@@ -672,14 +919,14 @@ func testAccCheckObjectBucketCors(tt *acctest.TestTools, n string, corsRules []s
 		}
 
 		_, err = s3Client.HeadBucket(ctx, &s3.HeadBucketInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			return err
 		}
 
 		out, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
-			Bucket: scw.StringPtr(bucketName),
+			Bucket: new(bucketName),
 		})
 		if err != nil {
 			if !object.IsS3Err(err, object.ErrCodeNoSuchCORSConfiguration, "") {
@@ -723,8 +970,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			req := s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("test-file"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("test-file"),
 				Body:   strings.NewReader("test content"),
 			}
 
@@ -734,8 +981,8 @@ func TestAccObjectBucket_DestroyForce(t *testing.T) {
 			}
 
 			_, err = conn.PutObject(ctx, &s3.PutObjectInput{
-				Bucket: scw.StringPtr(rs.Primary.Attributes["name"]),
-				Key:    scw.StringPtr("folder/test-file-in-folder"),
+				Bucket: new(rs.Primary.Attributes["name"]),
+				Key:    new("folder/test-file-in-folder"),
 				Body:   strings.NewReader("folder test content"), // Example body content
 			})
 			if err != nil {
@@ -818,4 +1065,85 @@ func testAccCheckObjectBucketLifecycleConfigurationExists(tt *acctest.TestTools,
 
 		return nil
 	}
+}
+
+func testAccBucketLifecycleConfigurationConfig_removeRule_Setup(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+	name = "%s"
+	region = "%s"
+	acl = "private"
+
+  lifecycle_rule {
+    id     = "to delete"
+	enabled = true
+    prefix = "prefix/"
+
+    expiration {
+      days = 1
+    }
+  }
+
+  lifecycle_rule {
+    id     = "expire delete markers"
+	enabled = true
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketLifecycleConfigurationConfig_removeRule(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+	name = "%s"
+	region = "%s"
+	acl = "private"
+
+  lifecycle_rule {
+    id      = "expire delete markers"
+    enabled = true
+
+    expiration {
+      expired_object_delete_marker = true
+    }
+  }
+}
+`, rName, objectTestsMainRegion)
+}
+
+func testAccBucketLifecycleConfigurationConfig_emptyFilterNonCurrentVersions(rName string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+  name = "%s"
+  region = "%s"
+
+  lifecycle_rule {
+    id = "noncurrent_versions_rule"
+    object_size_greater_than = 30
+    object_size_less_than = 500
+
+    noncurrent_version_expiration {
+      newer_noncurrent_versions = 2
+      noncurrent_days           = 30
+    }
+
+    noncurrent_version_transition {
+      newer_noncurrent_versions = 5
+      noncurrent_days           = 40
+      storage_class            	= "ONEZONE_IA"
+    }
+
+    enabled = true
+  }
+}
+
+resource "scaleway_object_bucket_acl" "main" {
+  bucket = scaleway_object_bucket.main-bucket-lifecycle.id
+  acl    = "private"
+}
+`, rName, objectTestsMainRegion)
 }

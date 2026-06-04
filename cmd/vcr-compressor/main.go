@@ -22,9 +22,9 @@ func main() {
 	)
 
 	if acctest.FolderUsesVCRv4(folder) {
-		report, err = acctest.CompressCassetteV4(path)
+		report, err = acctest.CompressCassetteV4(path, true)
 	} else {
-		report, err = acctest.CompressCassetteV3(path)
+		report, err = acctest.CompressCassetteV3(path, true)
 	}
 
 	if err != nil {

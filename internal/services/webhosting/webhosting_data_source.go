@@ -82,7 +82,7 @@ func DataSourceWebhostingRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := resourceWebhostingRead(ctx, d, m)
+	diags := readWebhostingIntoState(ctx, d, m)
 	if diags != nil {
 		return append(diags, diag.Errorf("failed to read hosting")...)
 	}

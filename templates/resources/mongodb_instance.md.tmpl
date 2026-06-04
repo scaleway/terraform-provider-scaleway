@@ -27,7 +27,11 @@ The following arguments are supported:
 - `version` - (Optional) MongoDB® version of the instance.
 - `node_type` - (Required) The type of MongoDB® instance to create.
 - `user_name` - (Optional) Name of the user created when the instance is created.
-- `password` - (Optional) Password of the user.
+- `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 - `name` - (Optional) Name of the MongoDB® instance.
 - `tags` - (Optional) List of tags attached to the MongoDB® instance.
 - `volume_type` - (Optional) Volume type of the instance.

@@ -2,14 +2,15 @@ package mongodb
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mongodb "github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -40,8 +41,17 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	instanceID, ok := d.GetOk("instance_id")
-	if !ok {
+	var instanceID string
+
+	if id, ok := d.GetOk("instance_id"); ok {
+		parsedRegion, parsedID, parseErr := regional.ParseID(id.(string))
+		if parseErr != nil {
+			instanceID = locality.ExpandID(id.(string))
+		} else {
+			region = parsedRegion
+			instanceID = parsedID
+		}
+	} else {
 		instanceName := d.Get("name").(string)
 
 		res, err := mongodbAPI.ListInstances(&mongodb.ListInstancesRequest{
@@ -65,44 +75,22 @@ func DataSourceInstanceRead(ctx context.Context, d *schema.ResourceData, m any) 
 		instanceID = foundInstance.ID
 	}
 
-	regionalID := datasource.NewRegionalID(instanceID, region)
-	d.SetId(regionalID)
+	d.SetId(regional.NewIDString(region, instanceID))
+	_ = d.Set("instance_id", regional.NewIDString(region, instanceID))
 
-	err = d.Set("instance_id", regionalID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	getReq := &mongodb.GetInstanceRequest{
+	instance, err := mongodbAPI.GetInstance(&mongodb.GetInstanceRequest{
 		Region:     region,
-		InstanceID: locality.ExpandID(instanceID.(string)),
-	}
-
-	instance, err := mongodbAPI.GetInstance(getReq, scw.WithContext(ctx))
+		InstanceID: instanceID,
+	}, scw.WithContext(ctx))
 	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", instance.Name)
-	_ = d.Set("version", instance.Version)
-	_ = d.Set("node_number", int(instance.NodeAmount))
-	_ = d.Set("node_type", instance.NodeType)
-	_ = d.Set("project_id", instance.ProjectID)
-	_ = d.Set("tags", instance.Tags)
-	_ = d.Set("created_at", instance.CreatedAt.Format(time.RFC3339))
-	_ = d.Set("region", instance.Region.String())
-
-	if instance.Volume != nil {
-		_ = d.Set("volume_type", instance.Volume.Type)
-		_ = d.Set("volume_size_in_gb", int(instance.Volume.SizeBytes/scw.GB))
-	}
-
-	publicNetworkEndpoint, publicNetworkExists := flattenPublicNetwork(instance.Endpoints)
-	if publicNetworkExists {
-		_ = d.Set("public_network", publicNetworkEndpoint)
-	}
-
-	_ = d.Set("settings", map[string]string{})
-
-	return nil
+	return setInstanceState(ctx, d, m, mongodbAPI, region, instance)
 }

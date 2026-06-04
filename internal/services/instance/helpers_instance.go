@@ -11,7 +11,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -23,28 +23,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
-)
-
-const (
-	// InstanceServerStateStopped transient state of the instance event stop
-	InstanceServerStateStopped = "stopped"
-	// InstanceServerStateStarted transient state of the instance event start
-	InstanceServerStateStarted = "started"
-	// InstanceServerStateStandby transient state of the instance event waiting third action or rescue mode
-	InstanceServerStateStandby = "standby"
-
-	DefaultInstanceServerWaitTimeout        = 20 * time.Minute
-	defaultInstancePrivateNICWaitTimeout    = 10 * time.Minute
-	defaultInstanceVolumeDeleteTimeout      = 10 * time.Minute
-	defaultInstanceSecurityGroupTimeout     = 1 * time.Minute
-	defaultInstanceSecurityGroupRuleTimeout = 1 * time.Minute
-	defaultInstancePlacementGroupTimeout    = 1 * time.Minute
-	defaultInstanceIPTimeout                = 1 * time.Minute
-	defaultInstanceIPReverseDNSTimeout      = 10 * time.Minute
-
-	defaultInstanceSnapshotWaitTimeout = 1 * time.Hour
-
-	defaultInstanceImageTimeout = 1 * time.Hour
 )
 
 // newAPIWithZone returns a new instance API and the zone for a Create request
@@ -174,6 +152,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 		{instance.ServerStateRunning, instance.ServerStateStoppedInPlace}: {instance.ServerActionStopInPlace},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateRunning}: {instance.ServerActionPoweron},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateStopped}: {instance.ServerActionPoweron, instance.ServerActionPoweroff},
+		{instance.ServerStateStopping, instance.ServerStateStopped}:       {}, // Already stopping, just wait
 	}
 
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
@@ -209,7 +188,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 			ServerID:      serverID,
 			Action:        a,
 			Zone:          zone,
-			Timeout:       scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout),
+			Timeout:       new(DefaultInstanceServerWaitTimeout),
 			RetryInterval: transport.DefaultWaitRetryInterval,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -355,7 +334,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				PrivateNicID:  p.ID,
 				Zone:          ph.zone,
 				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
+				RetryInterval: new(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -527,9 +506,9 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		// Compute the rootVolumeSize so it will be valid against the local volume constraints
 		// It wouldn't be valid if another local volume is added, but in this case
 		// the user would be informed that it does not fulfill the local volume constraints
-		rootVolumeSize = scw.SizePtr(serverType.VolumesConstraint.MaxSize)
+		rootVolumeSize = new(serverType.VolumesConstraint.MaxSize)
 	} else if sizeInput > 0 {
-		rootVolumeSize = scw.SizePtr(scw.Size(uint64(sizeInput) * gb))
+		rootVolumeSize = new(scw.Size(uint64(sizeInput) * gb))
 	}
 
 	return &instancehelpers.UnknownVolume{
@@ -569,7 +548,7 @@ func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs
 				return fmt.Errorf("error attaching filesystem %s: %w", id, err)
 			}
 
-			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, DefaultInstanceServerWaitTimeout)
 			if err != nil {
 				return err
 			}
@@ -591,7 +570,7 @@ func detachOldFileSystem(ctx context.Context, oldIDs map[string]struct{}, newIDs
 				return fmt.Errorf("error detaching filesystem %s: %w", id, err)
 			}
 
-			_, err = waitForFilesystems(ctx, api, zone, server.ID, *scw.TimeDurationPtr(DefaultInstanceServerWaitTimeout))
+			_, err = waitForFilesystems(ctx, api, zone, server.ID, DefaultInstanceServerWaitTimeout)
 			if err != nil && !httperrors.Is404(err) {
 				return err
 			}
@@ -647,7 +626,7 @@ func DeleteASGServers(
 		_, err := api.WaitForServer(&instance.WaitForServerRequest{
 			Zone:     zone,
 			ServerID: srv.ID,
-			Timeout:  scw.TimeDurationPtr(timeout),
+			Timeout:  new(timeout),
 		}, scw.WithContext(ctx))
 		if err != nil && !httperrors.Is404(err) {
 			return err

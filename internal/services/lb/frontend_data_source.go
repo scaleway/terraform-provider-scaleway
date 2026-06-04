@@ -69,10 +69,25 @@ func DataSourceLbFrontendRead(ctx context.Context, d *schema.ResourceData, m any
 	zonedID := datasource.NewZonedID(frontID, zone)
 	d.SetId(zonedID)
 
-	err = d.Set("frontend_id", zonedID)
+	frontend, err := api.GetFrontend(&lbSDK.ZonedAPIGetFrontendRequest{
+		Zone:       zone,
+		FrontendID: locality.ExpandID(frontID.(string)),
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceLbFrontendRead(ctx, d, m)
+	var acls []*lbSDK.ACL
+
+	resACL, err := api.ListACLs(&lbSDK.ZonedAPIListACLsRequest{
+		Zone:       zone,
+		FrontendID: locality.ExpandID(frontID.(string)),
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	acls = resACL.ACLs
+
+	return setFrontendState(d, frontend, zone, acls, false)
 }
