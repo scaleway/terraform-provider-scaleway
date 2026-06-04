@@ -1,11 +1,14 @@
 package opensearch
 
 import (
+	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -40,4 +43,147 @@ func NewAPIWithRegionAndID(m any, id string) (*searchdbapi.API, scw.Region, stri
 	}
 
 	return api, region, id, nil
+}
+
+func deleteAllDeploymentEndpoints(
+	ctx context.Context,
+	api *searchdbapi.API,
+	region scw.Region,
+	deploymentID string,
+	timeout time.Duration,
+) error {
+	deployment, err := waitForDeployment(ctx, api, region, deploymentID, timeout)
+	if err != nil {
+		return err
+	}
+
+	for _, endpoint := range deployment.Endpoints {
+		if endpoint == nil {
+			continue
+		}
+
+		err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+			Region:     region,
+			EndpointID: endpoint.ID,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return err
+		}
+	}
+
+	return waitForDeploymentEndpointsCleared(ctx, api, region, deploymentID, timeout)
+}
+
+func waitForDeploymentEndpointsCleared(
+	ctx context.Context,
+	api *searchdbapi.API,
+	region scw.Region,
+	deploymentID string,
+	timeout time.Duration,
+) error {
+	deadline := time.Now().Add(timeout)
+
+	for {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timeout waiting for deployment %s endpoints to be cleared", deploymentID)
+		}
+
+		deployment, err := api.GetDeployment(&searchdbapi.GetDeploymentRequest{
+			Region:       region,
+			DeploymentID: deploymentID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+
+		if deploymentEndpointCount(deployment) == 0 {
+			return nil
+		}
+
+		time.Sleep(defaultWaitRetryInterval)
+	}
+}
+
+func deploymentEndpointCount(deployment *searchdbapi.Deployment) int {
+	count := 0
+
+	for _, endpoint := range deployment.Endpoints {
+		if endpoint != nil {
+			count++
+		}
+	}
+
+	return count
+}
+
+func waitForDeploymentEndpointState(
+	ctx context.Context,
+	api *searchdbapi.API,
+	region scw.Region,
+	deploymentID string,
+	timeout time.Duration,
+	desiredPrivate bool,
+	privateNetworkID string,
+) error {
+	deadline := time.Now().Add(timeout)
+
+	for {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timeout waiting for deployment %s endpoints to match desired connectivity", deploymentID)
+		}
+
+		deployment, err := api.GetDeployment(&searchdbapi.GetDeploymentRequest{
+			Region:       region,
+			DeploymentID: deploymentID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+
+		if deploymentEndpointStateMatches(deployment, desiredPrivate, privateNetworkID) {
+			return nil
+		}
+
+		time.Sleep(defaultWaitRetryInterval)
+	}
+}
+
+func deploymentEndpointStateMatches(
+	deployment *searchdbapi.Deployment,
+	desiredPrivate bool,
+	privateNetworkID string,
+) bool {
+	var hasPublic, hasPrivate bool
+
+	for _, endpoint := range deployment.Endpoints {
+		if endpoint == nil {
+			continue
+		}
+
+		if endpoint.Public != nil {
+			hasPublic = true
+		}
+
+		if endpoint.PrivateNetwork != nil {
+			hasPrivate = true
+
+			if desiredPrivate && endpoint.PrivateNetwork.PrivateNetworkID != privateNetworkID {
+				return false
+			}
+		}
+	}
+
+	if desiredPrivate {
+		return hasPrivate && !hasPublic
+	}
+
+	return hasPublic && !hasPrivate
 }

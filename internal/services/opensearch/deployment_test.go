@@ -109,6 +109,8 @@ resource "scaleway_opensearch_deployment" "pn" {
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
 
+  depends_on = [scaleway_vpc_private_network.main]
+
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
@@ -141,6 +143,8 @@ resource "scaleway_opensearch_deployment" "pn" {
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
 
   private_network {
     private_network_id = scaleway_vpc_private_network.main.id
@@ -177,6 +181,8 @@ resource "scaleway_opensearch_deployment" "pn" {
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
 
   volume {
     type        = "sbs_5k"

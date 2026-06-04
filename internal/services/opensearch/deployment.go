@@ -439,7 +439,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		err = waitForDeploymentEndpointsCleared(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -487,6 +487,19 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		err = waitForDeploymentEndpointState(
+			ctx,
+			api,
+			region,
+			id,
+			d.Timeout(schema.TimeoutUpdate),
+			desiredPrivate,
+			pnID,
+		)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceDeploymentRead(ctx, d, meta)
@@ -499,6 +512,11 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
+	if err != nil && !httperrors.Is404(err) {
+		return diag.FromErr(err)
+	}
+
+	err = deleteAllDeploymentEndpoints(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
