@@ -106,13 +106,14 @@ jobs:
       - name: Upload JSON test results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ matrix.products }} test2json
+          name: ${{ matrix.products }}-test2json.jsonl
           path: ${{ matrix.products }}.jsonl
       - name: Upload JUnit test results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ${{ matrix.products }} JUnit XML
+          name: ${{ matrix.products }}-junit-xml.xml
           path: ${{ matrix.products }}.xml
+          retention-days: 30
       - name: Run acceptance test for cassettes
         if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
         run: go test -v github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest -run TestAccCassettes_Validator
