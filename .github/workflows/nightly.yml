@@ -104,12 +104,12 @@ jobs:
           SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
           FAILED_PRODUCT: ${{ matrix.products }}
       - name: Upload JSON test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.products }} test2json
           path: ${{ matrix.products }}.jsonl
       - name: Upload JUnit test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.products }} JUnit XML
           path: ${{ matrix.products }}.xml
