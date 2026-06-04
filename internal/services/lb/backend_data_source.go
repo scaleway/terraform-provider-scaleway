@@ -69,10 +69,13 @@ func DataSourceLbBackendRead(ctx context.Context, d *schema.ResourceData, m any)
 	zonedID := datasource.NewZonedID(backID, zone)
 	d.SetId(zonedID)
 
-	err = d.Set("backend_id", zonedID)
+	backend, err := api.GetBackend(&lbSDK.ZonedAPIGetBackendRequest{
+		Zone:      zone,
+		BackendID: locality.ExpandID(backID.(string)),
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceLbBackendRead(ctx, d, m)
+	return setBackendState(d, backend, zone)
 }

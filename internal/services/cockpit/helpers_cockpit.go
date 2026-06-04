@@ -9,21 +9,19 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	accountSDK "github.com/scaleway/scaleway-sdk-go/api/account/v3"
 	"github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
-	DefaultCockpitTimeout = 5 * time.Minute
-	pathMetricsURL        = "/api/v1/push"
-	pathLogsURL           = "/loki/api/v1/push"
-	pathTracesURL         = "/otlp/v1/traces"
+	DefaultCockpitTimeout       = 5 * time.Minute
+	defaultCockpitRetryInterval = 15 * time.Second
+	pathMetricsURL              = "/api/v1/push"
+	pathLogsURL                 = "/loki/api/v1/push"
+	pathTracesURL               = "/otlp/v1/traces"
 )
 
 // NewGlobalAPI returns a new global cockpit API.
@@ -53,6 +51,21 @@ func NewAPIWithRegionAndID(m any, id string) (*cockpit.RegionalAPI, scw.Region, 
 	}
 
 	return api, region, id, nil
+}
+
+func waitForExporter(
+	ctx context.Context,
+	api *cockpit.RegionalAPI,
+	region scw.Region,
+	exporterID string,
+	timeout time.Duration,
+) (*cockpit.Exporter, error) {
+	return api.WaitForExporter(&cockpit.WaitForExporterRequest{
+		Region:        region,
+		ExporterID:    exporterID,
+		Timeout:       new(timeout),
+		RetryInterval: new(defaultCockpitRetryInterval),
+	}, scw.WithContext(ctx))
 }
 
 // NewAPIWithRegionAndProjectID returns a new cockpit API with region and project ID extracted from composite ID.
@@ -126,17 +139,4 @@ func cockpitTokenV1UpgradeFunc(_ context.Context, rawState map[string]any, _ any
 	}
 
 	return rawState, nil
-}
-
-func getDefaultProjectID(ctx context.Context, m any) (string, error) {
-	accountAPI := account.NewProjectAPI(m)
-
-	res, err := accountAPI.ListProjects(&accountSDK.ProjectAPIListProjectsRequest{
-		Name: types.ExpandStringPtr("default"),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return "", err
-	}
-
-	return res.Projects[0].ID, nil
 }

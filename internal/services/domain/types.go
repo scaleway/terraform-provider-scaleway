@@ -9,7 +9,7 @@ import (
 )
 
 // FlattenDomainData normalizes domain record data based on record type
-func FlattenDomainData(data string, recordType domain.RecordType) any {
+func FlattenDomainData(data string, recordType domain.RecordType, dnsZone string) any {
 	switch recordType {
 	case domain.RecordTypeMX: // API return this format: "{priority} {data}"
 		dataSplit := strings.SplitN(data, " ", 2)
@@ -19,25 +19,26 @@ func FlattenDomainData(data string, recordType domain.RecordType) any {
 	case domain.RecordTypeTXT:
 		return strings.Trim(data, "\"")
 	case domain.RecordTypeSRV:
-		return NormalizeSRVData(data)
+		return NormalizeSRVData(data, dnsZone)
 	}
 
 	return data
 }
 
 // NormalizeSRVData normalizes SRV record data by handling weight field and zone domain suffixes
-func NormalizeSRVData(data string) string {
+func NormalizeSRVData(data, dnsZone string) string {
 	parts := strings.Fields(data)
 
 	if len(parts) >= 4 {
 		priority, weight, port, target := parts[0], parts[1], parts[2], parts[3]
-		target = RemoveZoneDomainSuffix(target)
+		target = RemoveZoneDomainSuffix(target, dnsZone)
 
 		return strings.Join([]string{priority, weight, port, target}, " ")
 	}
 
 	if len(parts) == 3 {
 		priority, port, target := parts[0], parts[1], parts[2]
+		target = RemoveZoneDomainSuffix(target, dnsZone)
 
 		return strings.Join([]string{priority, "0", port, target}, " ")
 	}
@@ -46,26 +47,16 @@ func NormalizeSRVData(data string) string {
 }
 
 // RemoveZoneDomainSuffix removes the zone domain suffix from a target
-func RemoveZoneDomainSuffix(target string) string {
-	if !strings.Contains(target, ".") {
+func RemoveZoneDomainSuffix(target, dnsZone string) string {
+	targetNoDot, isAbsolute := strings.CutSuffix(target, ".")
+	if !isAbsolute {
 		return target
 	}
 
-	hadTrailingDot := strings.HasSuffix(target, ".")
-
-	targetParts := strings.Split(strings.TrimSuffix(target, "."), ".")
-
-	switch {
-	case len(targetParts) > 4:
-		target = strings.Join(targetParts[:len(targetParts)-3], ".")
-	case len(targetParts) > 3:
-		target = strings.Join(targetParts[:len(targetParts)-2], ".")
-	default:
-		target = strings.TrimSuffix(target, ".")
-	}
-
-	if hadTrailingDot {
-		target += "."
+	// Check if target ends with ".dnsZone"
+	suffix := "." + dnsZone
+	if stripped, ok := strings.CutSuffix(targetNoDot, suffix); ok {
+		return stripped
 	}
 
 	return target

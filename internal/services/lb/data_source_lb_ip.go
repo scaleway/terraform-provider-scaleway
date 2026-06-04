@@ -9,6 +9,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -74,10 +75,13 @@ func DataSourceLbIPRead(ctx context.Context, d *schema.ResourceData, m any) diag
 	zoneID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zoneID)
 
-	err = d.Set("ip_id", zoneID)
+	ip, err := api.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+		Zone: zone,
+		IPID: locality.ExpandID(ipID.(string)),
+	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return resourceLbIPRead(ctx, d, m)
+	return setIPState(d, ip, zone)
 }

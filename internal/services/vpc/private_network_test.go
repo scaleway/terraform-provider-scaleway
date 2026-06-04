@@ -84,6 +84,11 @@ func TestAccVPCPrivateNetwork_Basic(t *testing.T) {
 					),
 				),
 			},
+			{
+				ResourceName:      "scaleway_vpc_private_network.pn01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

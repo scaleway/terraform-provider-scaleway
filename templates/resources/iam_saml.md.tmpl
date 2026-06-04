@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "IAM"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# Resource: {{ .Name }}
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `organization_id` - (Optional) The organization ID. If not provided, the default organization ID will be used.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the SAML configuration.
+- `entity_id` - (Computed) The entity ID of the SAML Identity Provider.
+- `single_sign_on_url` - (Computed) The single sign-on URL of the SAML Identity Provider.
+- `status` - (Computed) The status of the SAML configuration.
+- `service_provider` - (Computed) The Service Provider information. It contains:
+    - `entity_id` - (Computed) The entity ID of the Service Provider.
+    - `assertion_consumer_service_url` - (Computed) The assertion consumer service URL of the Service Provider.

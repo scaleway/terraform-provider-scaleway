@@ -23,7 +23,7 @@ func waitForAppleSiliconServer(ctx context.Context, api *applesilicon.API, zone 
 	server, err := api.WaitForServer(&applesilicon.WaitForServerRequest{
 		ServerID:      serverID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -39,7 +39,7 @@ func waitForAppleSiliconPrivateNetworkServer(ctx context.Context, api *applesili
 	privateNetwork, err := api.WaitForServerPrivateNetworks(&applesilicon.WaitForServerRequest{
 		ServerID:      serverID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 
@@ -55,7 +55,7 @@ func waitForTerminalVPCState(ctx context.Context, api *applesilicon.API, zone sc
 	err := api.WaitForServerVPCOptionTerminalState(&applesilicon.WaitForServerRequest{
 		ServerID:      serverID,
 		Zone:          zone,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 	if err != nil {

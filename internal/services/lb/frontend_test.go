@@ -90,6 +90,12 @@ func TestAccFrontend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_lb_frontend.frt01", "enable_access_logs", "true"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_lb_frontend.frt01",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"external_acls"},
+			},
 		},
 	})
 }
@@ -390,7 +396,7 @@ func TestAccFrontend_ACLBasic(t *testing.T) {
 								IPSubnet:         scw.StringSlicePtr([]string{"0.0.0.0/0"}),
 								HTTPFilter:       lbSDK.ACLHTTPFilterHTTPHeaderMatch,
 								HTTPFilterValue:  scw.StringSlicePtr([]string{"example.com"}),
-								HTTPFilterOption: scw.StringPtr("host"),
+								HTTPFilterOption: new("host"),
 							},
 							Action: &lbSDK.ACLAction{Type: lbSDK.ACLActionTypeAllow},
 						},

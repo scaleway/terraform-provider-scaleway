@@ -12,15 +12,26 @@ func TestAccCockpit_Simple(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	config := `
+		resource scaleway_cockpit main {
+		}
+	`
+
+	_, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		config = `
+			resource scaleway_cockpit main {
+				project_id = "105bdce1-64c0-48ab-899d-868455867ecf"
+			}
+		`
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCockpitDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource scaleway_cockpit main {
-				}
-				`,
+				Config: config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("scaleway_cockpit.main", "plan"),
 					resource.TestCheckResourceAttr("scaleway_cockpit.main", "plan", "free"),

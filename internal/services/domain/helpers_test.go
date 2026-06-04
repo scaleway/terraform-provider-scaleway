@@ -4,10 +4,16 @@ import (
 	"testing"
 
 	domainSDK "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/stretchr/testify/assert"
 )
+
+// testAccDomainRegistrationProjectID is the project ID used in domain registration cassettes (VCR).
+const testAccDomainRegistrationProjectID = "2efde44b-c582-4939-be07-6e3f62b3d71e"
+
+// testAccDomainZoneVCRProjectID is the anonymized project id in domain DNS zone VCR cassettes, used when
+// ScwClient has no default project (e.g. CI replay with placeholder credentials).
+const testAccDomainZoneVCRProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
 
 func TestExpandContact(t *testing.T) {
 	tests := []struct {
@@ -156,13 +162,13 @@ func TestExpandNewContact(t *testing.T) {
 				Zip:                       "10001",
 				City:                      "New York",
 				Country:                   "US",
-				CompanyName:               scw.StringPtr("Acme Inc."),
-				EmailAlt:                  scw.StringPtr("jane.alt@example.com"),
-				FaxNumber:                 scw.StringPtr("+123456789"),
-				AddressLine2:              scw.StringPtr("Suite 101"),
-				VatIDentificationCode:     scw.StringPtr("VAT123"),
-				CompanyIDentificationCode: scw.StringPtr("C123"),
-				State:                     scw.StringPtr("NY"),
+				CompanyName:               new("Acme Inc."),
+				EmailAlt:                  new("jane.alt@example.com"),
+				FaxNumber:                 new("+123456789"),
+				AddressLine2:              new("Suite 101"),
+				VatIDentificationCode:     new("VAT123"),
+				CompanyIDentificationCode: new("C123"),
+				State:                     new("NY"),
 				WhoisOptIn:                true,
 				Resale:                    true,
 			},

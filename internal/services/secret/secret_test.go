@@ -84,6 +84,11 @@ func TestAccSecret_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_secret.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

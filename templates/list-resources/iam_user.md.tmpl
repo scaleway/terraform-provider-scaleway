@@ -1,0 +1,53 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "IAM"
+description: |-
+  Lists Scaleway IAM Users.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway IAM Users.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/iam/concepts/).
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+{{ end -}}
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `organization_id` - (Optional) Organization ID to filter for. If not specified, the provider default organization is used.
+- `tag` - (Optional) Filter by tags containing a given string.
+- `mfa` - (Optional) Filter by MFA status.
+- `type` - (Optional) Filter by user type.
+- `user_ids` - (Optional) Filter users by user IDs.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each User:
+
+- `id` - The ID of the user.
+- `organization_id` - The organization ID the user belongs to.
+- `email` - The email of the user.
+- `username` - The member's username.
+- `tags` - The tags associated with the user.
+- `first_name` - The member's first name.
+- `last_name` - The member's last name.
+- `phone_number` - The member's phone number.
+- `locale` - The member's locale.
+- `created_at` - The date and time of the creation of the iam user.
+- `updated_at` - The date and time of the last update of the iam user.
+- `deletable` - Whether or not the iam user is editable.
+- `last_login_at` - The date and time of last login of the iam user.
+- `type` - The type of the iam user.
+- `status` - The status of user invitation.
+- `mfa` - Whether or not the MFA is enabled.
+- `account_root_user_id` - The ID of the account root user associated with the iam user.
+- `locked` - Defines whether the user is locked.

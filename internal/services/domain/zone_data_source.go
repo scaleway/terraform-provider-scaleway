@@ -21,7 +21,8 @@ func DataSourceZone() *schema.Resource {
 }
 
 func DataSourceZoneRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	d.SetId(BuildZoneName(d.Get("subdomain").(string), d.Get("domain").(string)))
+	zoneName := BuildZoneName(d.Get("subdomain").(string), d.Get("domain").(string))
+	d.SetId(zoneName)
 
-	return resourceDomainZoneRead(ctx, d, m)
+	return readZoneIntoState(ctx, d, NewDomainAPI(m), zoneName)
 }

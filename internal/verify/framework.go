@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -23,6 +24,21 @@ func IsStringUUIDOrUUIDWithLocality() validator.String {
 		regexp.MustCompile(`^([a-zA-Z]{2}-[a-zA-Z]{3}/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`),
 		"must be a valid UUID or UUID with locality prefix (format: aa-aaa-<uuid>)",
 	)
+}
+
+// MutuallyExclusiveStringConflicts builds a ConflictsWith validator listing every attribute in the group except `self`
+func MutuallyExclusiveStringConflicts(self string, group ...string) []validator.String {
+	conflicts := make([]path.Expression, 0, len(group))
+
+	for _, name := range group {
+		if name == self {
+			continue
+		}
+
+		conflicts = append(conflicts, path.MatchRoot(name))
+	}
+
+	return []validator.String{stringvalidator.ConflictsWith(conflicts...)}
 }
 
 // IsStringOneOfWithWarning only raises a warning if the string is not oneOf validValues

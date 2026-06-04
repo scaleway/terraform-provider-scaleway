@@ -7,16 +7,19 @@ import (
 
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
+	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
+	kafkaapi "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/mongodb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/redis/v1"
+	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	tem "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"go.yaml.in/yaml/v4"
 	cassetteV3 "gopkg.in/dnaeon/go-vcr.v3/cassette"
@@ -41,9 +44,20 @@ var transientStates = map[string]bool{
 	block.VolumeStatusResizing.String():     true,
 	block.VolumeStatusSnapshotting.String(): true,
 
-	container.ContainerStatusCreating.String(): true,
-	container.ContainerStatusDeleting.String(): true,
-	container.ContainerStatusPending.String():  true,
+	container.ContainerStatusCreating.String():  true,
+	container.ContainerStatusDeleting.String():  true,
+	container.ContainerStatusLocking.String():   true,
+	container.ContainerStatusUpdating.String():  true,
+	container.ContainerStatusUpgrading.String(): true,
+
+	datawarehouseapi.DeploymentStatusCreating.String():    true,
+	datawarehouseapi.DeploymentStatusConfiguring.String(): true,
+	datawarehouseapi.DeploymentStatusDeleting.String():    true,
+	datawarehouseapi.DeploymentStatusDeploying.String():   true,
+	datawarehouseapi.DeploymentStatusLocking.String():     true,
+	datawarehouseapi.DeploymentStatusUnlocking.String():   true,
+	datawarehouseapi.DeploymentStatusStopping.String():    true,
+	datawarehouseapi.DeploymentStatusStarting.String():    true,
 
 	domain.DNSZoneStatusPending.String(): true,
 
@@ -62,6 +76,9 @@ var transientStates = map[string]bool{
 	k8s.PoolStatusDeleting.String():    true,
 	k8s.PoolStatusScaling.String():     true,
 	k8s.PoolStatusUpgrading.String():   true,
+
+	kafkaapi.ClusterStatusCreating.String(): true,
+	kafkaapi.ClusterStatusDeleting.String(): true,
 
 	mongodb.InstanceStatusDeleting.String():     true,
 	mongodb.InstanceStatusSnapshotting.String(): true,
@@ -87,6 +104,10 @@ var transientStates = map[string]bool{
 	redis.ClusterStatusProvisioning.String(): true,
 	redis.ClusterStatusDeleting.String():     true,
 	redis.ClusterStatusInitializing.String(): true,
+
+	searchdbapi.DeploymentStatusCreating.String():  true,
+	searchdbapi.DeploymentStatusDeleting.String():  true,
+	searchdbapi.DeploymentStatusUpgrading.String(): true,
 
 	tem.DomainStatusPending.String(): true,
 }
@@ -115,7 +136,10 @@ func (report *CompressReport) Print() {
 	}
 }
 
-func CompressCassetteV3(path string) (CompressReport, error) {
+// CompressCassetteV3 reads the input go-vcr.v3 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV3(path string, saveCompressed bool) (CompressReport, error) {
 	inputCassette, err := cassetteV3.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
@@ -195,15 +219,20 @@ func CompressCassetteV3(path string) (CompressReport, error) {
 		}
 	}
 
-	err = outputCassette.Save()
-	if err != nil {
-		return report, fmt.Errorf("error while saving file: %w", err)
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
 	}
 
 	return report, nil
 }
 
-func CompressCassetteV4(path string) (CompressReport, error) {
+// CompressCassetteV4 reads the input go-vcr.v4 cassette at the given path and looks for skippable interactions.
+// It writes a compression report and a new compressed cassette. If saveCompressed is set to true, the new cassette will
+// be saved at the same path, therefore modifying the input file.
+func CompressCassetteV4(path string, saveCompressed bool) (CompressReport, error) {
 	inputCassette, err := cassetteV4.Load(path)
 	if err != nil {
 		log.Fatalf("Error while reading file : %v\n", err)
@@ -284,9 +313,11 @@ func CompressCassetteV4(path string) (CompressReport, error) {
 		}
 	}
 
-	err = outputCassette.Save()
-	if err != nil {
-		return report, fmt.Errorf("error while saving file: %w", err)
+	if saveCompressed {
+		err = outputCassette.Save()
+		if err != nil {
+			return report, fmt.Errorf("error while saving file: %w", err)
+		}
 	}
 
 	return report, nil

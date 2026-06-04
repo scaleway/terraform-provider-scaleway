@@ -50,6 +50,11 @@ func TestAccEdgeServicesBackend_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_edge_services_backend_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -214,6 +219,117 @@ func TestAccEdgeServicesBackend_LB(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccEdgeServicesBackend_Container(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_container_namespace" "main" {
+					  name = "tf-tests-es-backend-container"
+					}
+
+					resource "scaleway_container" "main" {
+					  namespace_id = scaleway_container_namespace.main.id
+					  name         = "tf-tests-es-backend-container"
+					  image        = "nginx:1.29.4-alpine"
+					  port         = 80
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge_services-pipeline"
+					  description = "pipeline description"
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  container_backend_config {
+					    container_id = scaleway_container.main.id
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_pipeline.main", "id",
+						"scaleway_edge_services_backend_stage.main", "pipeline_id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "container_backend_config.0.container_id",
+						"scaleway_container.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "container_backend_config.0.region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_backend_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccEdgeServicesBackend_Function(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesBackendDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_function_namespace" "main" {
+					  name = "tf-tests-es-backend-function"
+					}
+
+					resource "scaleway_function" "main" {
+					  namespace_id = scaleway_function_namespace.main.id
+					  name         = "tf-tests-es-backend-function"
+					  runtime      = "node22"
+					  privacy      = "private"
+					  handler      = "handler.handle"
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge_services-pipeline"
+					  description = "pipeline description"
+					}
+
+					resource "scaleway_edge_services_backend_stage" "main" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  function_backend_config {
+					    function_id = scaleway_function.main.id
+					  }
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					edgeservicestestfuncs.CheckEdgeServicesBackendExists(tt, "scaleway_edge_services_backend_stage.main"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_pipeline.main", "id",
+						"scaleway_edge_services_backend_stage.main", "pipeline_id"),
+					resource.TestCheckResourceAttrPair(
+						"scaleway_edge_services_backend_stage.main", "function_backend_config.0.function_id",
+						"scaleway_function.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_edge_services_backend_stage.main", "function_backend_config.0.region", "fr-par"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "created_at"),
+					resource.TestCheckResourceAttrSet("scaleway_edge_services_backend_stage.main", "updated_at"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_edge_services_backend_stage.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -73,7 +73,7 @@ func waitForHosting(ctx context.Context, api *webhosting.HostingAPI, region scw.
 	return api.WaitForHosting(&webhosting.WaitForHostingRequest{
 		HostingID:     hostingID,
 		Region:        region,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 		RetryInterval: &retryInterval,
 	}, scw.WithContext(ctx))
 }

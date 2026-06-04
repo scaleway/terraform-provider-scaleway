@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -32,21 +33,18 @@ func DataSourceCockpit() *schema.Resource {
 }
 
 func dataSourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		_, err := getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	diags := diag.Diagnostics{}
-
-	diags = append(diags, diag.Diagnostic{
-		Severity: diag.Warning,
-		Summary:  "Deprecated attribute: 'plan'",
-		Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
-	})
+	diags := diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deprecated attribute: 'plan'",
+			Detail:   "The 'plan' attribute is deprecated and will be removed in a future version. Any changes to this attribute will have no effect.",
+		},
+	}
 
 	_ = d.Set("plan", d.Get("plan"))
 	_ = d.Set("project_id", projectID)

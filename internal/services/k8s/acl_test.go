@@ -341,6 +341,42 @@ func testAccCheckK8SClusterAllowedIPs(tt *acctest.TestTools, n string, expected 
 			return err
 		}
 
+		// Check if this is the case where ACL resource was deleted (expected = "0.0.0.0/0")
+		if expected == "0.0.0.0/0" {
+			// When ACL is deleted, we should have exactly 2 rules:
+			// 1. One with IP = 0.0.0.0/0 and Description = "Automatically generated after scaleway_k8s_acl resource deletion"
+			// 2. One with ScalewayRanges = true and Description = "Automatically generated after scaleway_k8s_acl resource deletion"
+			if acls.TotalCount != 2 {
+				return fmt.Errorf("expected 2 ACL rules after deletion, got %d rules: %+v", acls.TotalCount, acls.Rules)
+			}
+
+			// Check that we have exactly one rule with IP and one with ScalewayRanges
+			hasIPRule := false
+			hasScalewayRangesRule := false
+
+			for _, rule := range acls.Rules {
+				if rule.IP != nil && rule.IP.String() == "0.0.0.0/0" &&
+					rule.Description == "Automatically generated after scaleway_k8s_acl resource deletion" {
+					hasIPRule = true
+				}
+
+				if rule.ScalewayRanges != nil && *rule.ScalewayRanges &&
+					rule.Description == "Automatically generated after scaleway_k8s_acl resource deletion" {
+					hasScalewayRangesRule = true
+				}
+			}
+
+			if !hasIPRule {
+				return fmt.Errorf("expected rule with IP=0.0.0.0/0 after ACL deletion, but not found in: %+v", acls.Rules)
+			}
+
+			if !hasScalewayRangesRule {
+				return fmt.Errorf("expected rule with ScalewayRanges=true after ACL deletion, but not found in: %+v", acls.Rules)
+			}
+
+			return nil
+		}
+
 		switch {
 		case expected == "" && acls.TotalCount == 0:
 			return nil

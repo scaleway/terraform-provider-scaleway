@@ -1,0 +1,133 @@
+---
+subcategory: "Kafka"
+page_title: "Scaleway: scaleway_kafka_cluster"
+---
+
+# Resource: scaleway_kafka_cluster
+
+Creates and manages Scaleway Kafka clusters.
+For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-services/kafka/).
+
+~> **Important:** The Kafka product is currently in Public Beta.
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "my-vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn" {
+  name   = "my-private-network"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_kafka_cluster" "main" {
+  name              = "my-kafka-cluster"
+  version           = "3.9.0"
+  node_amount       = 1
+  node_type         = "KAFK-PLAY-NANO"
+  volume_type       = "sbs_5k"
+  volume_size_in_gb = 10
+  user_name         = "admin"
+  password          = "thiZ_is_v&ry_s3cret"
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
+### With Tags
+
+```terraform
+resource "scaleway_vpc" "main" {
+  region = "fr-par"
+  name   = "my-vpc"
+}
+
+resource "scaleway_vpc_private_network" "pn" {
+  name   = "my-private-network"
+  region = "fr-par"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_kafka_cluster" "main" {
+  name              = "my-kafka-cluster"
+  version           = "3.9.0"
+  node_amount       = 1
+  node_type         = "KAFK-PLAY-NANO"
+  volume_type       = "sbs_5k"
+  volume_size_in_gb = 10
+  user_name         = "admin"
+  password          = "thiZ_is_v&ry_s3cret"
+  tags              = ["production", "messaging"]
+
+  private_network {
+    pn_id = scaleway_vpc_private_network.pn.id
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `name` - (Required) Name of the Kafka cluster.
+- `version` - (Required, Forces new resource) Kafka version to use (e.g., "3.9.0"). Changing this forces recreation of the cluster.
+- `node_amount` - (Required, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the cluster.
+- `node_type` - (Required, Forces new resource) Node type to use for the cluster. Changing this forces recreation of the cluster.
+- `volume_type` - (Required, Forces new resource) Type of volume where data is stored (e.g., "sbs_5k", "sbs_15k"). Changing this forces recreation of the cluster.
+- `volume_size_in_gb` - (Required, Forces new resource) Volume size in GB. Changing this forces recreation of the cluster.
+- `user_name` - (Optional, Forces new resource) Username for the Kafka user. If not specified, no user will be created. Changing this forces recreation of the cluster.
+- `password` - (Optional, Forces new resource, Sensitive) Password for the Kafka user. Required if `user_name` is specified. Changing this forces recreation of the cluster.
+- `tags` - (Optional) List of tags to apply to the cluster.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the cluster is associated with.
+
+### Private Network
+
+- `private_network` - (Optional, Forces new resource) Private network to expose your Kafka cluster. Changing this forces recreation of the cluster.
+    - `pn_id` - (Required, Forces new resource) The private network ID. Changing this forces recreation of the cluster.
+
+~> **Important:** Public endpoints are not yet supported by the Kafka API. You must configure a private network to expose your cluster.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the cluster.
+- `status` - The status of the cluster (e.g., "ready", "creating", "configuring").
+- `created_at` - Date and time of cluster creation (RFC 3339 format).
+- `updated_at` - Date and time of cluster last update (RFC 3339 format).
+
+### Public Network (Computed)
+
+~> **Note:** Public endpoints are not yet supported and this block will be empty until the feature is available.
+
+- `public_network` - Public endpoint information.
+    - `id` - The ID of the public endpoint.
+    - `dns_records` - List of DNS records for the public endpoint.
+    - `port` - TCP port number.
+
+### Private Network (Computed)
+
+When `private_network` is configured, the following computed attributes are available:
+
+- `private_network` - Private network endpoint information.
+    - `pn_id` - The private network ID (same as input).
+    - `id` - The ID of the private endpoint.
+    - `dns_records` - List of DNS records for the private endpoint.
+    - `port` - TCP port number.
+
+## Import
+
+Kafka clusters can be imported using the `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_kafka_cluster.main fr-par/11111111-1111-1111-1111-111111111111
+```

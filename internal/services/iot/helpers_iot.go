@@ -47,7 +47,7 @@ func waitIotHub(ctx context.Context, api *iot.API, region scw.Region, id string,
 		HubID:         id,
 		Region:        region,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return hub, err

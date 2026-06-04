@@ -29,7 +29,7 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					resource "scaleway_vpc_private_network" "pn01" {
 					  name = "tf-pn-vpn"
 					  ipv4_subnet {
-						subnet = "172.16.64.0/22"
+						subnet = "172.16.32.0/22"
 					  }
 					  vpc_id = scaleway_vpc.vpc01.id
 					}
@@ -46,11 +46,12 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					}
 					
 					resource "scaleway_vpc_route" "rt01" {
-					  vpc_id              = scaleway_vpc.vpc01.id
-					  description         = "tf-route-vpn"
-					  tags                = ["tf", "route"]
-					  destination         = "10.0.0.0/24"
-					  nexthop_resource_id = scaleway_instance_private_nic.pnic01.id
+					  vpc_id             		 = scaleway_vpc.vpc01.id
+					  description         		 = "tf-route-vpn"
+					  tags             		     = ["tf", "route"]
+					  destination        		 = "10.0.0.0/24"
+					  nexthop_resource_id 		 = scaleway_instance_private_nic.pnic01.id
+					  nexthop_private_network_id = scaleway_vpc_private_network.pn01.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -72,6 +73,14 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					
 					resource "scaleway_vpc_private_network" "pn01" {
 					  name = "tf-pn-vpn"
+					  ipv4_subnet {
+						subnet = "172.16.32.0/22"
+					  }
+					  vpc_id = scaleway_vpc.vpc01.id
+					}
+
+					resource "scaleway_vpc_private_network" "pn02" {
+					  name = "tf-pn-vpn-2"
 					  ipv4_subnet {
 						subnet = "172.16.64.0/22"
 					  }
@@ -101,11 +110,12 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					}
 					
 					resource "scaleway_vpc_route" "rt01" {
-					  vpc_id              = scaleway_vpc.vpc01.id
-					  description         = "tf-route-vpn-updated"
-					  tags                = ["tf", "route", "updated"]
-					  destination         = "10.0.0.0/24"
-					  nexthop_resource_id = scaleway_instance_private_nic.pnic02.id
+					  vpc_id             		 = scaleway_vpc.vpc01.id
+					  description         		 = "tf-route-vpn-updated"
+					  tags             		     = ["tf", "route", "updated"]
+					  destination        		 = "10.0.0.0/24"
+					  nexthop_resource_id        = scaleway_instance_private_nic.pnic02.id
+					  nexthop_private_network_id = scaleway_vpc_private_network.pn02.id
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -119,6 +129,62 @@ func TestAccVPCRoute_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "tags.2", "updated"),
 					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "region", "fr-par"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_route.rt01",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccVPCRoute_WithVPCConnector(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isRouteDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_vpc" "vpc01" {
+					  name = "tf-vpcsrc"
+					}
+
+					resource "scaleway_vpc" "vpc02" {
+					  name = "tf-vpcdst"
+					}
+
+					resource "scaleway_vpc_connector" "main" {
+					  name          = "tf-conn-route"
+					  vpc_id        = scaleway_vpc.vpc01.id
+					  target_vpc_id = scaleway_vpc.vpc02.id
+					}
+
+					resource "scaleway_vpc_route" "rt01" {
+					  vpc_id                   = scaleway_vpc.vpc01.id
+					  description              = "tf-route-connector"
+					  tags                     = ["tf", "route", "connector"]
+					  destination              = "10.0.0.0/24"
+					  nexthop_vpc_connector_id = scaleway_vpc_connector.main.id
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isRoutePresent(tt, "scaleway_vpc_route.rt01"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_route.rt01", "vpc_id", "scaleway_vpc.vpc01", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "destination", "10.0.0.0/24"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "description", "tf-route-connector"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "tags.#", "3"),
+					resource.TestCheckResourceAttrPair("scaleway_vpc_route.rt01", "nexthop_vpc_connector_id", "scaleway_vpc_connector.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_vpc_route.rt01", "region", "fr-par"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_vpc_route.rt01",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

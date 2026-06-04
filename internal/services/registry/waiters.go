@@ -20,7 +20,7 @@ func WaitForNamespace(ctx context.Context, api *registry.API, region scw.Region,
 		Region:        region,
 		NamespaceID:   id,
 		RetryInterval: &retryInterval,
-		Timeout:       scw.TimeDurationPtr(timeout),
+		Timeout:       new(timeout),
 	}, scw.WithContext(ctx))
 
 	return ns, err

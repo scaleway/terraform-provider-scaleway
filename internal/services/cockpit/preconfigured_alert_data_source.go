@@ -8,6 +8,7 @@ import (
 	cockpit "github.com/scaleway/scaleway-sdk-go/api/cockpit/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -110,29 +111,23 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		return diag.FromErr(err)
 	}
 
-	projectID := d.Get("project_id").(string)
-	if projectID == "" {
-		defaultProjectID, err := getDefaultProjectID(ctx, m)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		projectID = defaultProjectID
+	projectID, _, err := meta.ExtractProjectID(d, m)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	req := &cockpit.RegionalAPIListAlertsRequest{
 		Region:          region,
 		ProjectID:       projectID,
-		IsPreconfigured: scw.BoolPtr(true),
+		IsPreconfigured: new(true),
 	}
 
 	if dataSourceID, ok := d.GetOk("data_source_id"); ok {
-		req.DataSourceID = scw.StringPtr(dataSourceID.(string))
+		req.DataSourceID = new(dataSourceID.(string))
 	}
 
 	if ruleStatus, ok := d.GetOk("rule_status"); ok {
-		status := cockpit.AlertStatus(ruleStatus.(string))
-		req.RuleStatus = &status
+		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
 	response, err := api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())

@@ -1,0 +1,46 @@
+---
+page_title: "scaleway_object_bucket_server_side_encryption_configuration Data Source - terraform-provider-scaleway"
+subcategory: "Object"
+description: |-
+  Get information about a bucket server side encryption configuration.
+---
+
+# scaleway_object_bucket_server_side_encryption_configuration (Data Source)
+
+Get information about a bucket server side encryption configuration. This data source allows you to retrieve information about the server-side encryption configuration of a bucket.
+
+
+
+
+## Example Usage
+
+```terraform
+# Get by ID
+data "scaleway_object_bucket_server_side_encryption_configuration" "by_id" {
+  bucket_server_side_encryption_configuration_id = scaleway_object_bucket_server_side_encryption_configuration.main.id
+}
+```
+
+```terraform
+# Get by Bucket Name
+data "scaleway_object_bucket_server_side_encryption_configuration" "by_bucket" {
+  bucket = scaleway_object_bucket.main.name
+}
+```
+
+
+
+
+## Arguments Reference
+
+- `bucket_server_side_encryption_configuration_id` - (Optional, String) The ID of the bucket server side encryption configuration. Conflicts with `bucket`.
+
+- `bucket` - (Optional, String) The bucket's name or regional ID. Conflicts with `bucket_server_side_encryption_configuration_id`.
+
+## Attributes Reference
+
+- `bucket` - (String) The bucket's name or regional ID.
+
+- `rule` - (Set of Object) Set of server-side encryption configuration rules.
+    - `apply_server_side_encryption_by_default` - (List of Object) Single object for setting server-side encryption by default.
+        - `sse_algorithm` - (String) Server-side encryption algorithm to use. Valid values are AES256.

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
 
 func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
@@ -17,6 +18,10 @@ func TestAccEncryptEphemeralResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			secrettestfuncs.CheckSecretDestroy(tt),
+			IsKeyManagerKeyDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `

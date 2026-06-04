@@ -1,0 +1,38 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Interlink"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+
+{{ end -}}
+
+## Argument Reference
+
+- `pop_id` - (Optional) The ID of the PoP. Can be a plain UUID or a regional ID. Conflicts with `name`.
+- `name` - (Optional) The name of the PoP to filter for. Conflicts with `pop_id`.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the PoP exists.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the PoP.
+- `hosting_provider_name` - Name of the PoP's hosting provider (e.g., Telehouse, OpCore).
+- `address` - Physical address of the PoP.
+- `city` - City where the PoP is located.
+- `logo_url` - URL of the PoP's logo.
+- `available_link_bandwidths_mbps` - List of available bandwidth options in Mbps for hosted links.
+- `display_name` - Human-readable display name including location information.

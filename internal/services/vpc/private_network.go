@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -32,6 +33,7 @@ func ResourcePrivateNetwork() *schema.Resource {
 			{Version: 0, Type: vpcPrivateNetworkUpgradeV1SchemaType(), Upgrade: vpcPrivateNetworkV1SUpgradeFunc},
 		},
 		SchemaFunc: privateNetworkSchema,
+		Identity:   identity.DefaultRegional(),
 	}
 }
 
@@ -232,7 +234,10 @@ func ResourceVPCPrivateNetworkCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, pn.ID))
+	err = identity.SetRegionalIdentity(d, region, pn.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCPrivateNetworkRead(ctx, d, m)
 }
@@ -257,20 +262,31 @@ func ResourceVPCPrivateNetworkRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	diags := setPrivateNetworkState(d, m, pn)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwork) diag.Diagnostics {
 	zone, err := meta.ExtractZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	_ = d.Set("name", pn.Name)
-	_ = d.Set("vpc_id", regional.NewIDString(region, pn.VpcID))
+	_ = d.Set("vpc_id", regional.NewIDString(pn.Region, pn.VpcID))
 	_ = d.Set("organization_id", pn.OrganizationID)
 	_ = d.Set("project_id", pn.ProjectID)
 	_ = d.Set("created_at", types.FlattenTime(pn.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(pn.UpdatedAt))
 	_ = d.Set("tags", pn.Tags)
 	_ = d.Set("enable_default_route_propagation", pn.DefaultRoutePropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", pn.Region.String())
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
 
@@ -290,7 +306,7 @@ func ResourceVPCPrivateNetworkUpdate(ctx context.Context, d *schema.ResourceData
 	_, err = vpcAPI.UpdatePrivateNetwork(&vpc.UpdatePrivateNetworkRequest{
 		PrivateNetworkID:               ID,
 		Region:                         region,
-		Name:                           scw.StringPtr(d.Get("name").(string)),
+		Name:                           new(d.Get("name").(string)),
 		Tags:                           types.ExpandUpdatedStringsPtr(d.Get("tags")),
 		DefaultRoutePropagationEnabled: types.ExpandBoolPtr(d.Get("enable_default_route_propagation").(bool)),
 	}, scw.WithContext(ctx))

@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -75,7 +75,7 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
 					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
-						Size: scw.SizePtr(20 * scw.GB),
+						Size: new(20 * scw.GB),
 						Type: &localVolumeType,
 					}),
 				),
@@ -119,8 +119,8 @@ func TestAccAction_InstanceCreateSnapshot_Local(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
 					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
-						Name: scw.StringPtr("custom-name-for-snapshot"),
-						Size: scw.SizePtr(20 * scw.GB),
+						Name: new("custom-name-for-snapshot"),
+						Size: new(20 * scw.GB),
 						Tags: []string{"add", "tags", "to", "trigger", "update"},
 						Type: &localVolumeType,
 					}),
@@ -201,7 +201,7 @@ func TestAccAction_InstanceCreateSnapshot_SBS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "data.scaleway_block_volume.main"),
 					checkBlockSnapshot(tt, "data.scaleway_block_volume.main", snapshotSpecsCheck{
-						Size: scw.SizePtr(20 * scw.GB),
+						Size: new(20 * scw.GB),
 						Type: &sbsVolumeType,
 					}),
 				),
@@ -245,8 +245,8 @@ func TestAccAction_InstanceCreateSnapshot_SBS(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					blocktestfuncs.IsVolumePresent(tt, "data.scaleway_block_volume.main"),
 					checkBlockSnapshot(tt, "data.scaleway_block_volume.main", snapshotSpecsCheck{
-						Name: scw.StringPtr("custom-name-for-snapshot"),
-						Size: scw.SizePtr(20 * scw.GB),
+						Name: new("custom-name-for-snapshot"),
+						Size: new(20 * scw.GB),
 						Tags: []string{"add", "tags", "to", "trigger", "update"},
 					}),
 				),
@@ -370,7 +370,7 @@ func TestAccAction_InstanceCreateSnapshot_Zone(t *testing.T) {
 					instancechecks.IsVolumePresent(tt, "data.scaleway_instance_volume.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "zone", "fr-par-2"),
 					checkInstanceSnapshot(tt, "data.scaleway_instance_volume.main", snapshotSpecsCheck{
-						Size: scw.SizePtr(20 * scw.GB),
+						Size: new(20 * scw.GB),
 						Type: &localVolumeType,
 					}),
 				),

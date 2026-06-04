@@ -1,0 +1,35 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Edge Services"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+One of `tls_stage_id` or filter arguments must be specified.
+
+- `tls_stage_id` - (Optional) The ID of the TLS stage. Conflicts with all filter arguments below.
+
+The following filter arguments are supported (cannot be used with `tls_stage_id`):
+
+- `pipeline_id` - (Required when `tls_stage_id` is not set) The ID of the pipeline.
+- `secret_id` - (Optional) Secret ID to filter for.
+- `secret_region` - (Optional) Secret region to filter for.
+
+## Attributes Reference
+
+Exported attributes are the ones from `scaleway_edge_services_tls_stage` [resource](../resources/edge_services_tls_stage.md).

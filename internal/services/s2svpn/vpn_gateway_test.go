@@ -56,6 +56,11 @@ func TestAccVPNGateway_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_gateway.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_gateway.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

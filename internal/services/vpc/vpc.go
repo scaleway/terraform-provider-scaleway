@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -20,11 +21,10 @@ func ResourceVPC() *schema.Resource {
 		ReadContext:   ResourceVPCRead,
 		UpdateContext: ResourceVPCUpdate,
 		DeleteContext: ResourceVPCDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		SchemaVersion: 0,
 		SchemaFunc:    vpcSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 			before, after := diff.GetChange("enable_routing")
 			if before != nil && before.(bool) && after != nil && !after.(bool) {
@@ -113,7 +113,10 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 		}
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVPCRead(ctx, d, m)
 }
@@ -138,6 +141,17 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 		return diag.FromErr(err)
 	}
 
+	diags := setVPCState(d, res)
+
+	err = identity.SetRegionalIdentity(d, region, ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setVPCState(d *schema.ResourceData, res *vpc.VPC) diag.Diagnostics {
 	_ = d.Set("name", res.Name)
 	_ = d.Set("organization_id", res.OrganizationID)
 	_ = d.Set("project_id", res.ProjectID)
@@ -146,7 +160,7 @@ func ResourceVPCRead(ctx context.Context, d *schema.ResourceData, m any) diag.Di
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
 	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
-	_ = d.Set("region", region)
+	_ = d.Set("region", res.Region)
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)

@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -40,6 +41,8 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	var volume *instance.Volume
+
 	volumeID, ok := d.GetOk("volume_id")
 	if !ok { // Get volumes by zone and name.
 		volumeName := d.Get("name").(string)
@@ -62,7 +65,23 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
+		volume = foundVolume
 		volumeID = foundVolume.ID
+	} else {
+		id, err := locality.ExtractUUID(volumeID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		res, err := instanceAPI.GetVolume(&instance.GetVolumeRequest{
+			Zone:     zone,
+			VolumeID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		volume = res.Volume
 	}
 
 	zonedID := datasource.NewZonedID(volumeID, zone)
@@ -73,5 +92,5 @@ func DataSourceInstanceVolumeRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return ResourceInstanceVolumeRead(ctx, d, m)
+	return setVolumeState(d, volume)
 }

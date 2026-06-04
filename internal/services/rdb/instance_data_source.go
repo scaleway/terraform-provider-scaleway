@@ -45,7 +45,7 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m an
 
 		res, err := api.ListInstances(&rdb.ListInstancesRequest{
 			Region:    region,
-			Name:      scw.StringPtr(instanceName),
+			Name:      new(instanceName),
 			ProjectID: types.ExpandStringPtr(d.Get("project_id")),
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -72,5 +72,5 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbInstanceRead(ctx, d, m)
+	return readInstanceIntoState(ctx, d, m)
 }

@@ -6,7 +6,10 @@ page_title: "Scaleway: scaleway_mongodb_instance"
 # Resource: scaleway_mongodb_instance
 
 Creates and manages Scaleway MongoDB® instance.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
 
 
@@ -250,7 +253,11 @@ The following arguments are supported:
 - `version` - (Optional) MongoDB® version of the instance.
 - `node_type` - (Required) The type of MongoDB® instance to create.
 - `user_name` - (Optional) Name of the user created when the instance is created.
-- `password` - (Optional) Password of the user.
+- `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 - `name` - (Optional) Name of the MongoDB® instance.
 - `tags` - (Optional) List of tags attached to the MongoDB® instance.
 - `volume_type` - (Optional) Volume type of the instance.

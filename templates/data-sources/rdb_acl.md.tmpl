@@ -33,5 +33,5 @@ In addition to all above arguments, the following attributes are exported:
 
 The `acl_rules` block supports:
 
-- `ip` - The ip range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation)
+- `ip` - The IPv4 address or range to whitelist in [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#CIDR_notation). IPv6 is not supported by the Scaleway API.
 - `description` - A simple text describing this rule

@@ -9,6 +9,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -23,6 +24,7 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   resourceIamUserRead,
 		UpdateContext: resourceIamUserUpdate,
 		DeleteContext: resourceIamUserDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -71,7 +73,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "The member's password for first access in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:   "The member's password for first access in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:     true,
 			ConflictsWith: []string{"password"},
 			RequiredWith:  []string{"password_wo_version"},
@@ -79,7 +81,7 @@ func userSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{"password_wo"},
 		},
 		"first_name": {
@@ -184,7 +186,10 @@ func resourceIamUserCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	d.SetId(user.ID)
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamUserRead(ctx, d, m)
 }
@@ -205,25 +210,12 @@ func resourceIamUserRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("organization_id", user.OrganizationID)
-	// User input data
-	_ = d.Set("email", user.Email)
-	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
-	_ = d.Set("username", user.Username)
-	_ = d.Set("first_name", user.FirstName)
-	_ = d.Set("last_name", user.LastName)
-	_ = d.Set("phone_number", user.PhoneNumber)
-	_ = d.Set("locale", user.Locale)
-	// Computed data
-	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
-	_ = d.Set("deletable", user.Deletable)
-	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
-	_ = d.Set("type", user.Type)
-	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
-	_ = d.Set("mfa", user.Mfa)
-	_ = d.Set("account_root_user_id", user.AccountRootUserID)
-	_ = d.Set("locked", user.Locked)
+	setUserState(d, user)
+
+	err = identity.SetGlobalIdentity(d, user.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -245,23 +237,23 @@ func resourceIamUserUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if d.HasChange("email") {
-		req.Email = scw.StringPtr(d.Get("email").(string))
+		req.Email = new(d.Get("email").(string))
 	}
 
 	if d.HasChange("first_name") {
-		req.FirstName = scw.StringPtr(d.Get("first_name").(string))
+		req.FirstName = new(d.Get("first_name").(string))
 	}
 
 	if d.HasChanges("last_name") {
-		req.LastName = scw.StringPtr(d.Get("last_name").(string))
+		req.LastName = new(d.Get("last_name").(string))
 	}
 
 	if d.HasChange("phone_number") {
-		req.PhoneNumber = scw.StringPtr(d.Get("phone_number").(string))
+		req.PhoneNumber = new(d.Get("phone_number").(string))
 	}
 
 	if d.HasChange("locale") {
-		req.Locale = scw.StringPtr(d.Get("locale").(string))
+		req.Locale = new(d.Get("locale").(string))
 	}
 
 	_, err = api.UpdateUser(req, scw.WithContext(ctx))
@@ -293,4 +285,24 @@ func resourceIamUserDelete(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	return nil
+}
+
+func setUserState(d *schema.ResourceData, user *iam.User) {
+	_ = d.Set("organization_id", user.OrganizationID)
+	_ = d.Set("email", user.Email)
+	_ = d.Set("tags", types.FlattenSliceString(user.Tags))
+	_ = d.Set("username", user.Username)
+	_ = d.Set("first_name", user.FirstName)
+	_ = d.Set("last_name", user.LastName)
+	_ = d.Set("phone_number", user.PhoneNumber)
+	_ = d.Set("locale", user.Locale)
+	_ = d.Set("created_at", types.FlattenTime(user.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(user.UpdatedAt))
+	_ = d.Set("deletable", user.Deletable)
+	_ = d.Set("last_login_at", types.FlattenTime(user.LastLoginAt))
+	_ = d.Set("type", user.Type)
+	_ = d.Set("status", user.Status.String()) //nolint:staticcheck // convert enum to string for schema compatibility
+	_ = d.Set("mfa", user.Mfa)
+	_ = d.Set("account_root_user_id", user.AccountRootUserID)
+	_ = d.Set("locked", user.Locked)
 }

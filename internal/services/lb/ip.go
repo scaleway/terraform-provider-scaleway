@@ -10,6 +10,7 @@ import (
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -22,6 +23,7 @@ func ResourceIP() *schema.Resource {
 		ReadContext:   resourceLbIPRead,
 		UpdateContext: resourceLbIPUpdate,
 		DeleteContext: resourceLbIPDelete,
+		Identity:      identity.DefaultZonal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -104,7 +106,10 @@ func resourceLbIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewIDString(zone, res.ID))
+	err = identity.SetZonalIdentity(d, res.Zone, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceLbIPRead(ctx, d, m)
 }
@@ -143,12 +148,18 @@ func resourceLbIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		}
 	}
 
-	// set the region from zone
-	region, err := zone.Region()
+	diags := setIPState(d, ip, zone)
+
+	err = identity.SetZonalIdentity(d, ip.Zone, ip.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	return diags
+}
+
+func setIPState(d *schema.ResourceData, ip *lbSDK.IP, zone scw.Zone) diag.Diagnostics {
+	region, _ := zone.Region()
 	_ = d.Set("region", string(region))
 	_ = d.Set("zone", ip.Zone.String())
 	_ = d.Set("organization_id", ip.OrganizationID)
