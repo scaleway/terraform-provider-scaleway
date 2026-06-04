@@ -109,6 +109,8 @@ jobs:
         with:
           name: ${{ matrix.products }} gotestsum JSONL
           path: ${{ matrix.products }}.jsonl
+      - name: Upload JUnit XML test results
+        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ matrix.products }}-junit-xml.xml
