@@ -85,12 +85,26 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, "project_id", res.ID)
-	if err != nil {
+	if err := setProjectIdentity(d, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return resourceAccountProjectRead(ctx, d, m)
+}
+
+func setProjectIdentity(d *schema.ResourceData, projectID string) error {
+	resourceIdentity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := resourceIdentity.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	d.SetId(projectID)
+
+	return nil
 }
 
 func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -109,8 +123,7 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetFlatIdentity(d, "project_id", res.ID)
-	if err != nil {
+	if err := setProjectIdentity(d, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
