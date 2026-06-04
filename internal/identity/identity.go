@@ -36,7 +36,6 @@ func DefaultRegional() *schema.ResourceIdentity {
 	})
 }
 
-
 // DefaultGlobal should be used as the default identity schema for global/flat resources.
 // For instance if you want an id with the form 11111111-1111-1111-1111-111111111111 (UUID only)
 func DefaultGlobal() *schema.ResourceIdentity {
@@ -48,7 +47,6 @@ func DefaultGlobal() *schema.ResourceIdentity {
 		},
 	})
 }
-
 
 func WrapSchemaMap(m map[string]*schema.Schema) *schema.ResourceIdentity {
 	return &schema.ResourceIdentity{
