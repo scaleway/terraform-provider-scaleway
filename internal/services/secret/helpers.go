@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -201,4 +202,15 @@ func setSecretState(d *schema.ResourceData, secret *secret.Secret) {
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secret.EphemeralPolicy))
 	_ = d.Set("type", secret.Type)
 	_ = d.Set("tags", types.FlattenSliceString(secret.Tags))
+}
+
+func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {
+	revisionStr := strconv.Itoa(int(version.Revision))
+	_ = d.Set("revision", revisionStr)
+	_ = d.Set("secret_id", regional.NewIDString(version.Region, version.SecretID))
+	_ = d.Set("description", types.FlattenStringPtr(version.Description))
+	_ = d.Set("created_at", types.FlattenTime(version.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(version.UpdatedAt))
+	_ = d.Set("status", version.Status.String())
+	_ = d.Set("region", string(version.Region))
 }

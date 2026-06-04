@@ -57,8 +57,8 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 									Optional: true,
 									Computed: true,
 									Description: "Scaleway KMS master key ID used for the SSE-KMS encryption. " +
-										"This can only be used when you set the value of sse_algorithm as aws:kms. " +
-										"Will return an error if not this element is absent while the sse_algorithm is aws:kms.",
+										"This can only be used when you set the value of sse_algorithm as 'aws:kms'. " +
+										"Will return an error if this element is absent while the sse_algorithm is 'aws:kms'.",
 								},
 								"sse_algorithm": {
 									Type:        schema.TypeString,
