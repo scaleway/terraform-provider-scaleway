@@ -604,6 +604,7 @@ func TestAccPool_ValidateRootVolume(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						size = 1
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-root-volume" ]
+						wait_for_pool_ready = false
 
 						node_type = "PRO2_XXS"
 						root_volume_size_in_gb = 20
@@ -622,6 +623,7 @@ func TestAccPool_ValidateRootVolume(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						size = 1
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-root-volume" ]
+						wait_for_pool_ready = false
 
 						node_type = "PRO2_XXS"
 						root_volume_size_in_gb = 15
@@ -645,6 +647,7 @@ func TestAccPool_ValidateRootVolume(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						size = 1
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-root-volume" ]
+						wait_for_pool_ready = false
 
 						node_type = "PRO2-XXS"   	# supports only block volumes
 						root_volume_type = "l_ssd"
@@ -669,6 +672,7 @@ func TestAccPool_ValidateRootVolume(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						size = 1
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-root-volume" ]
+						wait_for_pool_ready = false
 
 						node_type = "dev1-m"
 						root_volume_type = "l_ssd"
@@ -711,6 +715,7 @@ func TestAccPool_ValidateSizeMutualized(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						node_type = "pro2_xxs"
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-size-mutu" ]
+						wait_for_pool_ready = false
 
 						size = 0
 					}`,
@@ -739,6 +744,7 @@ func TestAccPool_ValidateSizeMutualized(t *testing.T) {
 						node_type = "pro2_xxs"
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-size-mutu" ]
 						depends_on = [ scaleway_k8s_pool.other ]
+						wait_for_pool_ready = false
 
 						size = 0
 					}`,
@@ -776,6 +782,7 @@ func TestAccPool_ValidateSizeDedicated(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						node_type = "pro2_xxs"
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-size-dedi" ]
+						wait_for_pool_ready = false
 
 						size = 0
 					}`,
@@ -789,6 +796,7 @@ func TestAccPool_ValidateSizeDedicated(t *testing.T) {
 						cluster_id = scaleway_k8s_cluster.main.id
 						node_type = "pro2_xxs"
 						tags = [ "terraform-test", "scaleway_k8s_pool", "validate-size-dedi" ]
+						wait_for_pool_ready = false
 
 						size     = 0
 						max_size = 1
@@ -798,6 +806,145 @@ func TestAccPool_ValidateSizeDedicated(t *testing.T) {
 					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
 					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "size", "0"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "type", "kapsule-dedicated-4"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPool_TaintsAndLabels(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SPoolDestroy(tt, "scaleway_k8s_pool.main"),
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: kapsuleClusterConfigForPoolTests("taints-and-labels", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-taints-and-labels"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "taints-and-labels" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+
+						labels = {
+							"foo" = "bar"
+							"goo" = "car"
+							"hoo" = "dar"
+						}
+
+						taints {
+							key = "key1"
+							value = "value1"
+							effect = "NoSchedule"
+						}
+						taints {
+							key = "key2"
+							value = "value2"
+							effect = "NoExecute"
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.%", "3"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.goo", "car"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.hoo", "dar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "taints.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "taints.*", map[string]string{
+						"key":    "key1",
+						"value":  "value1",
+						"effect": "NoSchedule",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "taints.*", map[string]string{
+						"key":    "key2",
+						"value":  "value2",
+						"effect": "NoExecute",
+					}),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "0"),
+				),
+			},
+			{
+				Config: kapsuleClusterConfigForPoolTests("taints-and-labels", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-taints-and-labels"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "taints-and-labels" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+
+						labels = {
+							"foo" = "bar"
+						}
+
+						taints {
+							key = "new-key1"
+							value = "value1"
+							effect = "NoSchedule"
+						}
+						taints {
+							key = "key2"
+							value = "new-value2"
+							effect = "NoExecute"
+						}
+
+						startup_taints {
+							key = "startup-key1"
+							value = "startup-value1"
+							effect = "NoSchedule"
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.%", "1"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.foo", "bar"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "taints.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "taints.*", map[string]string{
+						"key":    "new-key1",
+						"value":  "value1",
+						"effect": "NoSchedule",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "taints.*", map[string]string{
+						"key":    "key2",
+						"value":  "new-value2",
+						"effect": "NoExecute",
+					}),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "startup_taints.*", map[string]string{
+						"key":    "startup-key1",
+						"value":  "startup-value1",
+						"effect": "NoSchedule",
+					}),
+				),
+			},
+			{
+				Config: kapsuleClusterConfigForPoolTests("taints-and-labels", latestK8SVersion) + `
+					resource "scaleway_k8s_pool" "main" {
+					    name = "test-pool-taints-and-labels"
+						cluster_id = scaleway_k8s_cluster.main.id
+						size = 1
+						tags = [ "terraform-test", "scaleway_k8s_pool", "taints-and-labels" ]
+						node_type = "PRO2_XXS"
+						wait_for_pool_ready = false
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "labels.%", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "taints.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "0"),
 				),
 			},
 		},
