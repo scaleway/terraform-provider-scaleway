@@ -11,11 +11,9 @@ bucket policies for [Scaleway Object storage][1].
 Refer to the [dedicated documentation][2] for more information on Object Storage
 bucket policies.
 
-~> **Warning:** While using AWS provider's `aws_iam_policy_document` to define
-a `scaleway_object_bucket_policy` is possible, it is only compatible with the
-deprecated `2012-10-17` version. The safer and advised `2023-04-17` is
-Scaleway-specific. It is therefore advised against, in favor of a `jsonencode`
-bloc. See examples below.
+~> **Warning:** The `aws_iam_policy_document` resource is only compatible with
+the deprecated `2012-10-17` version. Use the Scaleway-specific `2023-04-17`
+recommended version, with a `jsonencode` bloc instead. See examples below.
 
 ## Example Usage
 
