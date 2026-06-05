@@ -28,6 +28,10 @@ provider "scaleway" {
 }
 ```
 
+~> **Important**: When using `localhost` as an S3 endpoint, make sure to enable
+[`s3_use_path_style`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs#s3_use_path_style-1),
+so that your buckets are accessed without DNS errors.
+
 ## Available Endpoint Customizations
 
 | Service        | Provider Parameter |
