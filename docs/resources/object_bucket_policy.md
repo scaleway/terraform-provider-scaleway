@@ -5,9 +5,17 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 
 # Resource: scaleway_object_bucket_policy
 
-The `scaleway_object_bucket_policy` resource allows you to create and manage bucket policies for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
+The `scaleway_object_bucket_policy` resource allows you to create and manage
+bucket policies for [Scaleway Object storage][1].
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
+Refer to the [dedicated documentation][2] for more information on Object Storage
+bucket policies.
+
+~> **Warning:** While using AWS provider's `aws_iam_policy_document` to define
+a `scaleway_object_bucket_policy` is possible, it is only compatible with the
+deprecated `2012-10-17` version. The safer and advised `2023-04-17` is
+Scaleway-specific. It is therefore advised against, in favor of a `jsonencode`
+bloc. See examples below.
 
 ## Example Usage
 
@@ -257,3 +265,8 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket_policy.some_bucket fr-par/some-bucket@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
+
+<!--- Links, invisible in the final document --->
+
+[1]: https://www.scaleway.com/en/docs/object-storage/
+[2]: https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/
