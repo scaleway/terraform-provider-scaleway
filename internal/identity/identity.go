@@ -104,6 +104,27 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 	return nil
 }
 
+func SetRegionalIdentityWithProjectId(d *schema.ResourceData, region scw.Region, id, projectId string) error {
+	identity, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("region", region.String())
+	if err != nil {
+		return err
+	}
+
+	err = identity.Set("id", id)
+	if err != nil {
+		return err
+	}
+
+	d.SetId(regional.NewIDStringWithProjectId(region, id, projectId))
+
+	return nil
+}
+
 // SetRegionalCompositeIdentity sets identity attributes for regional resources with a composite ID.
 // The composite ID is built from idParts joined by "/" (e.g., instanceID/databaseName or instanceID/databaseName/userName).
 // Use this for resources whose identity schema is DefaultRegional but whose id is multi-part.

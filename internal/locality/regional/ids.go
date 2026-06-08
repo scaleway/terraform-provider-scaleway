@@ -58,6 +58,11 @@ func NewIDString(region scw.Region, id string) string {
 	return fmt.Sprintf("%s/%s", region, id)
 }
 
+// NewIDStringWithProjectId constructs a unique identifier based on resource region, id and project id
+func NewIDStringWithProjectId(region scw.Region, id, projectId string) string {
+	return fmt.Sprintf("%s/%s@%s", region, id, projectId)
+}
+
 // ParseNestedID parses a regionalNestedID and extracts the resource region, inner and outer ID.
 func ParseNestedID(regionalNestedID string) (region scw.Region, outerID, innerID string, err error) {
 	loc, innerID, outerID, err := locality.ParseLocalizedNestedID(regionalNestedID)

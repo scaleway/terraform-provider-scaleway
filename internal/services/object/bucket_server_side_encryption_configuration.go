@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -38,7 +39,8 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The bucket's name or regional ID.",
 		},
-		"region": regional.Schema(),
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 		"rule": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -104,7 +106,13 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 		return diag.FromErr(fmt.Errorf("creating S3 Bucket (%s) Server-side Encryption Configuration: %w", bucketName, err))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
+	projectId := d.Get("project_id").(string)
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentityWithProjectId(d, region, bucketName, projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -137,7 +145,27 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 		return diag.FromErr(fmt.Errorf("reading S3 Bucket Server-side Encryption Configuration (%s): %w", d.Id(), err))
 	}
 
-	err = identity.SetRegionalIdentity(d, region, bucketName)
+	projectId := d.Get("project_id").(string)
+
+	if projectId == "" {
+		acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+			Bucket: aws.String(bucketName),
+		})
+		if err != nil {
+			if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+				return diags
+			}
+		} else if acl != nil && acl.Owner != nil {
+			projectId = *NormalizeOwnerID(acl.Owner.ID)
+			_ = d.Set("project_id", projectId)
+		}
+	}
+
+	if projectId != "" {
+		err = identity.SetRegionalIdentityWithProjectId(d, region, bucketName, projectId)
+	} else {
+		err = identity.SetRegionalIdentity(d, region, bucketName)
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
