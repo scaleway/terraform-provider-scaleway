@@ -52,3 +52,11 @@ func TestParseRegionID(t *testing.T) {
 		})
 	}
 }
+
+func TestNewIDStringWithProjectId(t *testing.T) {
+	assert.Equal(
+		t,
+		"fr-par/my-id@my-project-id",
+		regional.NewIDStringWithProjectId(scw.RegionFrPar, "my-id", "my-project-id",
+	))
+}
