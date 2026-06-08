@@ -113,6 +113,7 @@ func resourceBucketServerSideEncryptionConfigurationCreate(ctx context.Context, 
 	} else {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -166,6 +167,7 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 	} else {
 		err = identity.SetRegionalIdentity(d, region, bucketName)
 	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
