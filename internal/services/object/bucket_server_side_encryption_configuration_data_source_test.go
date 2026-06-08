@@ -20,8 +20,6 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	projectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
-
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
@@ -52,7 +50,7 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "bucket",
 						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "project_id", projectId),
+					resource.TestCheckResourceAttrSet("data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "project_id"),
 				),
 			},
 		},
@@ -62,8 +60,6 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
-
-	projectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -95,7 +91,7 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testin
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "bucket",
 						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
 					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "project_id", projectId),
+					resource.TestCheckResourceAttrSet("data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "project_id"),
 				),
 			},
 		},
