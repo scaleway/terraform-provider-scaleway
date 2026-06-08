@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
@@ -27,7 +29,7 @@ func DataSourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 		ConflictsWith: filterFields,
 	}
 
-	datasource.AddOptionalFieldsToSchema(dsSchema, "bucket")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "bucket", "project_id")
 
 	dsSchema["bucket"].ConflictsWith = []string{"bucket_server_side_encryption_configuration_id"}
 
@@ -65,6 +67,13 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err == nil && acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	}
+
 	return nil
 }
 
@@ -89,6 +98,13 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByFilters(ctx context.
 	_ = d.Set("bucket", bucketName)
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName.(string)),
+	})
+	if err == nil && acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 	}
 
 	return nil
