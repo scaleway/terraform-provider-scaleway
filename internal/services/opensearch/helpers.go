@@ -2,9 +2,9 @@ package opensearch
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	searchdbapi "github.com/scaleway/scaleway-sdk-go/api/searchdb/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -53,31 +53,37 @@ func waitForDeploymentEndpointState(
 	desiredPrivate bool,
 	privateNetworkID string,
 ) error {
-	deadline := time.Now().Add(timeout)
+	const (
+		endpointStateReady    = "ready"
+		endpointStateNotReady = "not_ready"
+	)
 
-	for {
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
+	_, err := (&retry.StateChangeConf{
+		Pending:      []string{endpointStateNotReady},
+		Target:       []string{endpointStateReady},
+		Timeout:      timeout,
+		PollInterval: defaultWaitRetryInterval,
+		Refresh: func() (any, string, error) {
+			deployment, err := api.GetDeployment(&searchdbapi.GetDeploymentRequest{
+				Region:       region,
+				DeploymentID: deploymentID,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return nil, "", err
+			}
 
-		if time.Now().After(deadline) {
-			return fmt.Errorf("timeout waiting for deployment %s endpoints to match desired connectivity", deploymentID)
-		}
+			if deploymentEndpointStateMatches(deployment, desiredPrivate, privateNetworkID) {
+				return deployment, endpointStateReady, nil
+			}
 
-		deployment, err := api.GetDeployment(&searchdbapi.GetDeploymentRequest{
-			Region:       region,
-			DeploymentID: deploymentID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return err
-		}
-
-		if deploymentEndpointStateMatches(deployment, desiredPrivate, privateNetworkID) {
-			return nil
-		}
-
-		time.Sleep(defaultWaitRetryInterval)
+			return deployment, endpointStateNotReady, nil
+		},
+	}).WaitForStateContext(ctx)
+	if err != nil {
+		return err
 	}
+
+	return nil
 }
 
 func deploymentEndpointStateMatches(
