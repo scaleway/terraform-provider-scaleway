@@ -519,19 +519,6 @@ func updateDeploymentPrivateNetwork(
 		return diag.FromErr(err)
 	}
 
-	err = waitForDeploymentEndpointState(
-		ctx,
-		api,
-		region,
-		id,
-		d.Timeout(schema.TimeoutUpdate),
-		desiredPrivate,
-		pnID,
-	)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	return nil
 }
 
