@@ -424,26 +424,6 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		// SearchDB endpoints are additive: when switching connectivity mode we must explicitly remove
-		// the endpoints that no longer match the desired private/public state.
-		for _, endpoint := range deployment.Endpoints {
-			if endpoint == nil {
-				continue
-			}
-
-			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		err = waitForDeploymentEndpointsCleared(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		desiredPrivate := false
 
 		var pnID string
@@ -457,29 +437,69 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
+		endpointsChanged := false
+
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil || endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			if !desiredPrivate || endpoint.PrivateNetwork.PrivateNetworkID != pnID {
+				err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+					Region:     region,
+					EndpointID: endpoint.ID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+
+				endpointsChanged = true
+			}
+		}
+
+		if endpointsChanged {
+			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
 		if desiredPrivate {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+			deployment, err = api.GetDeployment(&searchdbapi.GetDeploymentRequest{
 				Region:       region,
 				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
 			}, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					Public: &searchdbapi.EndpointSpecPublicDetails{},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
+
+			hasDesiredPrivate := false
+
+			for _, endpoint := range deployment.Endpoints {
+				if endpoint == nil || endpoint.PrivateNetwork == nil {
+					continue
+				}
+
+				if endpoint.PrivateNetwork.PrivateNetworkID == pnID {
+					hasDesiredPrivate = true
+
+					break
+				}
+			}
+
+			if !hasDesiredPrivate {
+				_, err = api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+					Region:       region,
+					DeploymentID: id,
+					EndpointSpec: &searchdbapi.EndpointSpec{
+						PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+							PrivateNetworkID: pnID,
+						},
+					},
+				}, scw.WithContext(ctx))
+				if err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 
@@ -512,11 +532,6 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
-	err = deleteAllDeploymentEndpoints(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
