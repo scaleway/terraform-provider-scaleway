@@ -138,7 +138,7 @@ func TestAccDatalabResource_Update(t *testing.T) {
 	})
 }
 
-func TestAccDatalabResource_Import(t *testing.T) {
+func TestAccDatalabResource_StateImport(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
