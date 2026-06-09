@@ -285,6 +285,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		domain.NewZoneListResource,
 		secret.NewSecretListResource,
 		secret.NewVersionListResource,
+		keymanager.NewKeyListResource,
 	}
 }
 
