@@ -26,7 +26,6 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 
 	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
-	defaultProjectId, _ := tt.Meta.ScwClient().GetDefaultProjectID()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -40,7 +39,8 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "project_id", defaultProjectId),
+					// Cannot test specific value for project ID since the default project ID is "" from the CI
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 				),
 			},
 			{
