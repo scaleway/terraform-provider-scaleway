@@ -1,0 +1,89 @@
+---
+subcategory: "Datalab"
+page_title: "Scaleway: scaleway_datalab"
+---
+
+# Resource: scaleway_datalab
+
+Manages a Scaleway Datalab instance.
+
+## Example Usage
+
+### Basic
+
+```terraform
+resource "scaleway_vpc" "main" {
+  name = "my-vpc"
+}
+
+resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+  region = "fr-par"
+}
+
+resource "scaleway_datalab" "main" {
+  name               = "my-datalab"
+  spark_version      = "4.0.0"
+  private_network_id = scaleway_vpc_private_network.main.id
+  region             = "fr-par"
+
+  main = {
+    node_type = "DATALAB-SHARED-4C-8G"
+  }
+
+  worker = {
+    node_type  = "DATALAB-DEDICATED2-2C-8G"
+    node_count = 1
+  }
+}
+```
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `spark_version` - (Required, Forces new resource) The Spark version to use for the Datalab instance. Available versions can be retrieved from `ListClusterVersions`.
+- `private_network_id` - (Required, Forces new resource) The ID of the private network to attach the Datalab to.
+- `name` - (Optional) The name of the Datalab instance. If not provided, a random name is generated.
+- `description` - (Optional) A description for the Datalab instance.
+- `tags` - (Optional) Tags associated with the Datalab instance.
+- `has_notebook` - (Optional, Forces new resource) Whether a JupyterLab notebook is associated with the Datalab.
+- `main` - (Optional) The Spark main node configuration.
+    - `node_type` - (Required, Forces new resource) The node type for the main node.
+- `worker` - (Optional) The Spark worker nodes configuration.
+    - `node_type` - (Required, Forces new resource) The node type for worker nodes.
+    - `node_count` - (Required) The number of worker nodes.
+- `total_storage` - (Optional, Forces new resource) Persistent volume storage configuration.
+    - `type` - (Optional, Forces new resource) The volume type. Defaults to `sbs_5k`.
+    - `size` - (Optional, Forces new resource) The volume size in bytes.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The region the Datalab is in. Only `fr-par` is currently supported.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The project ID the Datalab belongs to.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the Datalab instance, in the `{region}/{id}` format.
+- `status` - The current status of the Datalab instance.
+- `created_at` - The creation timestamp of the Datalab instance.
+- `updated_at` - The last update timestamp of the Datalab instance.
+- `notebook_url` - The URL of the JupyterLab notebook, if available.
+- `notebook_master_url` - The URL used to reach the cluster from the notebook.
+- `main` - The Spark main node configuration.
+    - `spark_ui_url` - The Spark UI URL.
+    - `spark_master_url` - The Spark master URL within the VPC.
+    - `root_volume` - Volume details for the main node.
+        - `type` - The volume type.
+        - `size` - The volume size in bytes.
+- `worker` - The Spark worker nodes configuration.
+    - `root_volume` - Volume details for worker nodes.
+        - `type` - The volume type.
+        - `size` - The volume size in bytes.
+
+## Import
+
+Datalab instances can be imported using the `{region}/{id}`, e.g.
+
+```bash
+terraform import scaleway_datalab.main fr-par/11111111-1111-1111-1111-111111111111
+```
