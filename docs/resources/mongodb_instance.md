@@ -11,8 +11,6 @@ For more information, see the [product documentation](https://www.scaleway.com/e
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -28,7 +26,6 @@ resource "scaleway_mongodb_instance" "main" {
   volume_size_in_gb = 5
 }
 ```
-
 ```terraform
 ### Create and instance with a Write Only password (not stored in state), update and rollback the password while ensuring the password is not stored in the state
 
@@ -119,7 +116,6 @@ resource "scaleway_secret_version" "renewed" {
 #   password_wo_version = 1
 # }
 ```
-
 ```terraform
 ### Creating a MongoDB instance using a Write Only password (not stored in state)
 
@@ -148,7 +144,6 @@ resource "scaleway_mongodb_instance" "password_wo_instance" {
   password_wo_version = 1
 }
 ```
-
 ```terraform
 ### MongoDB instance with Private Network
 
@@ -171,7 +166,6 @@ resource "scaleway_mongodb_instance" "main" {
   }
 }
 ```
-
 ```terraform
 ### MongoDB instance with Private Network and Public Network
 
@@ -196,7 +190,6 @@ resource "scaleway_mongodb_instance" "main" {
   public_network {}
 }
 ```
-
 ```terraform
 ### MongoDB instance restored from Snapshot
 
@@ -222,7 +215,6 @@ resource "scaleway_mongodb_instance" "restored_instance" {
   node_number = 1
 }
 ```
-
 ```terraform
 ### MongoDB instance with Snapshot Scheduling
 
@@ -241,10 +233,6 @@ resource "scaleway_mongodb_instance" "main" {
   is_snapshot_schedule_enabled      = true
 }
 ```
-
-
-
-
 
 ## Argument Reference
 

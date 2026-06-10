@@ -28,7 +28,6 @@ variable "domain_name" {
   type = string
 }
 
-
 resource "scaleway_mnq_sns" "sns" {
 }
 

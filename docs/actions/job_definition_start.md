@@ -25,5 +25,4 @@ Refer to the Jobs [documentation](https://www.scaleway.com/en/docs/serverless/jo
 - `replicas` (Number) Number of jobs to run.
 - `startup_command` (List of String) Contextual startup command for this specific job run (in list of strings format).
 
-
 ~> **Important:** If both command and startup_command are provided, only startup_command will be used.

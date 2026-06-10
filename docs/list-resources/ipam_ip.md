@@ -24,7 +24,6 @@ list "scaleway_ipam_ip" "all" {
   }
 }
 ```
-
 ```terraform
 # List only IPAM IPs that are attached to a resource
 list "scaleway_ipam_ip" "attached" {
@@ -36,7 +35,6 @@ list "scaleway_ipam_ip" "attached" {
   }
 }
 ```
-
 ```terraform
 # List IPAM IPs belonging to a specific Private Network
 list "scaleway_ipam_ip" "by_pn" {
@@ -48,7 +46,6 @@ list "scaleway_ipam_ip" "by_pn" {
   }
 }
 ```
-
 ```terraform
 # List IPAM IPs filtered by tag
 list "scaleway_ipam_ip" "by_tag" {
@@ -60,7 +57,6 @@ list "scaleway_ipam_ip" "by_tag" {
   }
 }
 ```
-
 
 ## Argument Reference
 

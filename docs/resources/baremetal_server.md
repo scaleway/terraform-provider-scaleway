@@ -5,9 +5,6 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
-
-
-
 ## Example Usage
 
 ```terraform
@@ -36,7 +33,6 @@ resource "scaleway_baremetal_server" "my_server" {
   ssh_key_ids = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 }
 ```
-
 ```terraform
 ### With cloud-init
 
@@ -65,7 +61,6 @@ resource "scaleway_baremetal_server" "my_server_ci" {
   cloud_init = file("userdata.yaml")
 }
 ```
-
 ```terraform
 ### With custom partitioning
 
@@ -175,7 +170,6 @@ resource "scaleway_baremetal_server" "my_server" {
   ssh_key_ids  = [data.scaleway_iam_ssh_key.my_ssh_key.id]
 }
 ```
-
 ```terraform
 ### With IPAM IP IDs
 
@@ -234,7 +228,6 @@ resource "scaleway_baremetal_server" "my_server" {
   }
 }
 ```
-
 ```terraform
 ### Migrate from hourly to monthly plan
 
@@ -268,7 +261,6 @@ resource "scaleway_baremetal_server" "my_server" {
   install_config_afterward = true
 }
 ```
-
 ```terraform
 ### With option
 
@@ -313,7 +305,6 @@ resource "scaleway_baremetal_server" "base" {
   }
 }
 ```
-
 ```terraform
 ### Creating a Baremetal server using a Write Only password (not stored in state)
 
@@ -364,7 +355,6 @@ resource "scaleway_baremetal_server" "password_wo_server" {
   ssh_key_ids                 = [scaleway_iam_ssh_key.main.id]
 }
 ```
-
 ```terraform
 ### With private network
 
@@ -407,7 +397,6 @@ resource "scaleway_baremetal_server" "my_server" {
   }
 }
 ```
-
 ```terraform
 ### Without install config
 
@@ -422,9 +411,6 @@ resource "scaleway_baremetal_server" "my_server" {
   install_config_afterward = true
 }
 ```
-
-
-
 
 ## Argument Reference
 

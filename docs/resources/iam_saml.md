@@ -8,8 +8,6 @@ Manages SAML activation for an organization. SAML (Security Assertion Markup Lan
 
 For configuring SAML parameters (`entity_id` and `single_sign_on_url`), use the [`scaleway_iam_update_saml_configuration`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/actions/iam_update_saml_configuration) action.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -19,8 +17,6 @@ resource "scaleway_iam_saml" "main" {
   organization_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
-
 
 ## Argument Reference
 

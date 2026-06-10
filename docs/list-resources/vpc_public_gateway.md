@@ -24,7 +24,6 @@ list "scaleway_vpc_public_gateway" "all" {
   }
 }
 ```
-
 ```terraform
 # List Public Gateways filtered by tag
 list "scaleway_vpc_public_gateway" "by_tag" {
@@ -36,7 +35,6 @@ list "scaleway_vpc_public_gateway" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List Public Gateways filtered by gateway type
 list "scaleway_vpc_public_gateway" "by_type" {
@@ -48,7 +46,6 @@ list "scaleway_vpc_public_gateway" "by_type" {
   }
 }
 ```
-
 ```terraform
 # List Public Gateways in a specific zone
 list "scaleway_vpc_public_gateway" "by_zone" {
@@ -59,7 +56,6 @@ list "scaleway_vpc_public_gateway" "by_zone" {
   }
 }
 ```
-
 
 ## Argument Reference
 

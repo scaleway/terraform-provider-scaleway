@@ -24,7 +24,6 @@ list "scaleway_lb_frontend" "by_lb" {
   }
 }
 ```
-
 ```terraform
 # List frontends filtered by name
 list "scaleway_lb_frontend" "by_name" {
@@ -37,7 +36,6 @@ list "scaleway_lb_frontend" "by_name" {
   }
 }
 ```
-
 
 ## Argument Reference
 
