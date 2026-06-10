@@ -131,7 +131,7 @@ The following arguments are supported:
     - `organization_id` - ID of organization scoped to the rule, this can be used to create a rule for all projects in an organization.
     - `project_ids` - List of project IDs scoped to the rule.
 
-    ~> **Important** One `organization_id` or `project_ids` must be set per rule.
+  ~> **Important** One `organization_id` or `project_ids` must be set per rule.
 
     - `permission_set_names` - Names of permission sets bind to the rule.
     - `condition` - (Optional) The condition of the rule.
