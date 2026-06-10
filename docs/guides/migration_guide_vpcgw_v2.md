@@ -114,14 +114,14 @@ After triggering the move, update your Terraform configuration as follows:
 
 1. **Remove the DHCP and DHCP Reservation Resources**
 
-    Since DHCP functionality is built directly into Private Networks, you no longer need the DHCP configuration resources. Delete the following from your config:
+   Since DHCP functionality is built directly into Private Networks, you no longer need the DHCP configuration resources. Delete the following from your config:
 
-    `scaleway_vpc_public_gateway_dhcp`
-    `scaleway_vpc_public_gateway_dhcp_reservation`
+   `scaleway_vpc_public_gateway_dhcp`
+   `scaleway_vpc_public_gateway_dhcp_reservation`
 
 2. **Update the Gateway Network**
 
-    Replace the DHCP related attributes with an `ipam_config` block. For example
+   Replace the DHCP related attributes with an `ipam_config` block. For example
 
     ```hcl
     resource "scaleway_vpc_gateway_network" "main" {

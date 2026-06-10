@@ -85,20 +85,19 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The region of the IPs.
 - `ips` - List of found IPs.
-    - `id` - The ID of the IP.
+  - `id` - The ID of the IP.
 
     ~> **Important:** IPAM IP IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-    - `address` - The Scaleway internal IP address of the resource.
-    - `resource` - The list of public IPs attached to the resource.
-        - `id` - The ID of the resource.
-        - `type` - The type of resource.
-        - `mac_address` - The associated MAC address.
-        - `name` - The name of the resource.
-    - `tags` - The tags associated with the IP.
-    - `created_at` - The date and time of the creation of the IP.
-    - `updated_at` - The date and time of the last update of the IP.
-    - `zone` - The [zone](../guides/regions_and_zones.md#zones) of the IP.
-    - `region` - The [region](../guides/regions_and_zones.md#regions) of the IP.
-    - `project_id` - The ID of the Project the resource is associated with.
-  
+  - `address` - The Scaleway internal IP address of the resource.
+  - `resource` - The list of public IPs attached to the resource.
+    - `id` - The ID of the resource.
+    - `type` - The type of resource.
+    - `mac_address` - The associated MAC address.
+    - `name` - The name of the resource.
+  - `tags` - The tags associated with the IP.
+  - `created_at` - The date and time of the creation of the IP.
+  - `updated_at` - The date and time of the last update of the IP.
+  - `zone` - The [zone](../guides/regions_and_zones.md#zones) of the IP.
+  - `region` - The [region](../guides/regions_and_zones.md#regions) of the IP.
+  - `project_id` - The ID of the Project the resource is associated with.
