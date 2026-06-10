@@ -23,5 +23,3 @@ Refer to the Instances [documentation](https://www.scaleway.com/en/docs/compute/
 
 - `wait` (Boolean) Wait for exporting operation to be completed
 - `zone` (String) Zone of the snapshot to export
-
-

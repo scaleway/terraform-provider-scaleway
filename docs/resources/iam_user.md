@@ -12,8 +12,6 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -27,7 +25,6 @@ resource "scaleway_iam_user" "user" {
   last_name  = "Bar"
 }
 ```
-
 ```terraform
 ### Multiple IAM user creation
 
@@ -50,7 +47,6 @@ resource "scaleway_iam_user" "users" {
   username = local.users[count.index].username
 }
 ```
-
 ```terraform
 ### Creating a user using a Write Only password (not stored in state)
 
@@ -76,8 +72,6 @@ resource "scaleway_iam_user" "password_wo_user" {
   password_wo_version = 1
 }
 ```
-
-
 
 ## Argument Reference
 

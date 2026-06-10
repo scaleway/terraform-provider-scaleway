@@ -21,6 +21,3 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 
 - `region` (String) The region you want to attach the resource to
 - `wait` (Boolean) Wait for the certificate renewal to complete before returning.
-
-
-

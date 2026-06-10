@@ -9,7 +9,6 @@ description: |-
 
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
 
-
 ## Example Usage
 
 ```terraform
@@ -22,7 +21,6 @@ list "scaleway_vpc_route" "all" {
   }
 }
 ```
-
 ```terraform
 # List VPC routes filtered by nexthop resource type
 list "scaleway_vpc_route" "by_nexthop_type" {
@@ -34,7 +32,6 @@ list "scaleway_vpc_route" "by_nexthop_type" {
   }
 }
 ```
-
 ```terraform
 # List VPC routes filtered by tag
 list "scaleway_vpc_route" "by_tag" {
@@ -46,7 +43,6 @@ list "scaleway_vpc_route" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List VPC routes for a specific VPC
 list "scaleway_vpc_route" "by_vpc" {
@@ -58,8 +54,6 @@ list "scaleway_vpc_route" "by_vpc" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

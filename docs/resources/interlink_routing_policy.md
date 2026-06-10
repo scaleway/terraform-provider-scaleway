@@ -8,10 +8,7 @@ page_title: "Scaleway: scaleway_interlink_routing_policy"
 Creates and manages Scaleway Interlink Routing Policies.
 
 A routing policy defines IP prefix filters that control which routes are accepted from and advertised to a peer via BGP on an Interlink connection. All routes across a link are blocked by default, so you must attach a routing policy to enable traffic flow.
-
-
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
-
 
 ## Example Usage
 
@@ -22,7 +19,6 @@ resource "scaleway_interlink_routing_policy" "main" {
   prefix_filter_out = ["10.0.1.0/24"]
 }
 ```
-
 ```terraform
 resource "scaleway_interlink_routing_policy" "main" {
   name              = "my-routing-policy-v6"
@@ -31,7 +27,6 @@ resource "scaleway_interlink_routing_policy" "main" {
   prefix_filter_out = ["2001:db8:2::/48"]
 }
 ```
-
 ```terraform
 resource "scaleway_interlink_routing_policy" "main" {
   name              = "my-routing-policy"
@@ -39,9 +34,6 @@ resource "scaleway_interlink_routing_policy" "main" {
   prefix_filter_out = ["10.0.1.0/24", "172.16.0.0/16"]
 }
 ```
-
-
-
 
 ## Argument Reference
 

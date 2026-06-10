@@ -24,7 +24,6 @@ list "scaleway_secret_version" "all_secrets" {
   }
 }
 ```
-
 ```terraform
 // List all versions of a secret
 list "scaleway_secret_version" "all" {
@@ -35,7 +34,6 @@ list "scaleway_secret_version" "all" {
   }
 }
 ```
-
 ```terraform
 // List enabled versions of a secret
 list "scaleway_secret_version" "enabled" {
@@ -47,7 +45,6 @@ list "scaleway_secret_version" "enabled" {
   }
 }
 ```
-
 
 ## Argument Reference
 

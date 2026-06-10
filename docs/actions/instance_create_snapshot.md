@@ -23,5 +23,3 @@ Refer to the Instances [documentation](https://www.scaleway.com/en/docs/compute/
 - `tags` (List of String) List of tags associated with the snapshot
 - `wait` (Boolean) Wait for snapshotting operation to be completed
 - `zone` (String) Zone of the volume to snapshot
-
-

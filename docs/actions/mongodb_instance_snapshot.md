@@ -23,5 +23,3 @@ Refer to the MongoDB [documentation](https://www.scaleway.com/en/docs/managed-da
 - `name` (String) Name of the snapshot. If not set, a name will be generated.
 - `region` (String) Region of the MongoDB instance. If not set, the region is derived from the instance_id when possible or from the provider configuration.
 - `wait` (Boolean) Wait for the snapshot to reach a terminal state before returning.
-
-

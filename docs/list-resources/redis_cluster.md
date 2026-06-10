@@ -7,10 +7,7 @@ description: |-
 
 # Resource: scaleway_redis_cluster
 
-
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/redis/).
-
 
 ## Example Usage
 
@@ -25,7 +22,6 @@ list "scaleway_redis_cluster" "all" {
   }
 }
 ```
-
 ```terraform
 # List Redis clusters filtered by name prefix
 list "scaleway_redis_cluster" "by_name" {
@@ -37,7 +33,6 @@ list "scaleway_redis_cluster" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List Redis clusters filtered by tag
 list "scaleway_redis_cluster" "by_tag" {
@@ -49,7 +44,6 @@ list "scaleway_redis_cluster" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List Redis clusters filtered by engine version
 list "scaleway_redis_cluster" "by_version" {
@@ -62,7 +56,6 @@ list "scaleway_redis_cluster" "by_version" {
   }
 }
 ```
-
 ```terraform
 # List Redis clusters in a specific zone for a specific project
 list "scaleway_redis_cluster" "zone" {
@@ -74,8 +67,6 @@ list "scaleway_redis_cluster" "zone" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

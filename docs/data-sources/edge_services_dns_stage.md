@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_dns_stage"
 Gets information about an Edge Services DNS stage.
 
 A DNS stage defines the Fully Qualified Domain Names (FQDNs) attached to an Edge Services pipeline and links them to the next processing stage.
-
 ## Example Usage
 
 ```terraform
@@ -17,7 +16,6 @@ data "scaleway_edge_services_dns_stage" "by_id" {
   dns_stage_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services DNS stage by pipeline ID and FQDN
 data "scaleway_edge_services_dns_stage" "by_fqdn" {
@@ -25,8 +23,6 @@ data "scaleway_edge_services_dns_stage" "by_fqdn" {
   fqdn        = "cdn.example.com"
 }
 ```
-
-
 
 ## Argument Reference
 

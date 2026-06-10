@@ -23,7 +23,6 @@ list "scaleway_account_project" "all" {
   }
 }
 ```
-
 ```terraform
 // List projects filtered by name
 list "scaleway_account_project" "by_name" {
@@ -34,7 +33,6 @@ list "scaleway_account_project" "by_name" {
   }
 }
 ```
-
 ```terraform
 // List projects filtered by project IDs
 list "scaleway_account_project" "by_project_ids" {
@@ -48,7 +46,6 @@ list "scaleway_account_project" "by_project_ids" {
   }
 }
 ```
-
 
 ## Argument Reference
 
