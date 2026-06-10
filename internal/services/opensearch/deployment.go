@@ -377,151 +377,6 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	return nil
 }
 
-func desiredPrivateNetworkFromState(d *schema.ResourceData) (desiredPrivate bool, pnID string) {
-	if v, ok := d.GetOk("private_network"); ok {
-		pnList := v.([]any)
-		if len(pnList) > 0 {
-			pnMap := pnList[0].(map[string]any)
-
-			return true, locality.ExpandID(pnMap["private_network_id"].(string))
-		}
-	}
-
-	return false, ""
-}
-
-func updateDeploymentMetadata(
-	ctx context.Context,
-	d *schema.ResourceData,
-	api *searchdbapi.API,
-	region scw.Region,
-	id string,
-) diag.Diagnostics {
-	if !d.HasChanges("name", "tags") {
-		return nil
-	}
-
-	req := &searchdbapi.UpdateDeploymentRequest{
-		Region:       region,
-		DeploymentID: id,
-	}
-	changed := false
-
-	if d.HasChange("name") {
-		req.Name = types.ExpandStringPtr(d.Get("name"))
-		changed = true
-	}
-
-	if d.HasChange("tags") {
-		req.Tags = new(types.ExpandStrings(d.Get("tags")))
-		changed = true
-	}
-
-	if !changed {
-		return nil
-	}
-
-	_, err := api.UpdateDeployment(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
-func updateDeploymentPrivateNetwork(
-	ctx context.Context,
-	d *schema.ResourceData,
-	api *searchdbapi.API,
-	region scw.Region,
-	id string,
-) diag.Diagnostics {
-	deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	desiredPrivate, pnID := desiredPrivateNetworkFromState(d)
-
-	endpointsChanged := false
-
-	for _, endpoint := range deployment.Endpoints {
-		if endpoint == nil || endpoint.PrivateNetwork == nil {
-			continue
-		}
-
-		if !desiredPrivate || endpoint.PrivateNetwork.PrivateNetworkID != pnID {
-			err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			endpointsChanged = true
-		}
-	}
-
-	if endpointsChanged {
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if desiredPrivate {
-		deployment, err = api.GetDeployment(&searchdbapi.GetDeploymentRequest{
-			Region:       region,
-			DeploymentID: id,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		hasDesiredPrivate := false
-
-		for _, endpoint := range deployment.Endpoints {
-			if endpoint == nil || endpoint.PrivateNetwork == nil {
-				continue
-			}
-
-			if endpoint.PrivateNetwork.PrivateNetworkID == pnID {
-				hasDesiredPrivate = true
-
-				break
-			}
-		}
-
-		if !hasDesiredPrivate {
-			_, err = api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
-	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
-}
-
 func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	api, region, id, err := NewAPIWithRegionAndID(meta, d.Id())
 	if err != nil {
@@ -533,13 +388,104 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if diags := updateDeploymentMetadata(ctx, d, api, region, id); diags != nil {
-		return diags
+	if d.HasChanges("name", "tags") {
+		req := &searchdbapi.UpdateDeploymentRequest{
+			Region:       region,
+			DeploymentID: id,
+		}
+		changed := false
+
+		if d.HasChange("name") {
+			req.Name = types.ExpandStringPtr(d.Get("name"))
+			changed = true
+		}
+
+		if d.HasChange("tags") {
+			req.Tags = new(types.ExpandStrings(d.Get("tags")))
+			changed = true
+		}
+
+		if changed {
+			_, err := api.UpdateDeployment(req, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if d.HasChange("private_network") {
-		if diags := updateDeploymentPrivateNetwork(ctx, d, api, region, id); diags != nil {
-			return diags
+		deployment, err := waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		// SearchDB endpoints are additive: when switching connectivity mode we must explicitly remove
+		// the endpoints that no longer match the desired private/public state.
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil {
+				continue
+			}
+
+			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		desiredPrivate := false
+
+		var pnID string
+
+		if v, ok := d.GetOk("private_network"); ok {
+			pnList := v.([]any)
+			if len(pnList) > 0 {
+				desiredPrivate = true
+				pnMap := pnList[0].(map[string]any)
+				pnID = locality.ExpandID(pnMap["private_network_id"].(string))
+			}
+		}
+
+		if desiredPrivate {
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: &searchdbapi.EndpointSpec{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				},
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		} else {
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: &searchdbapi.EndpointSpec{
+					Public: &searchdbapi.EndpointSpecPublicDetails{},
+				},
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
