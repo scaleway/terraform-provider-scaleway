@@ -226,9 +226,13 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the bucket.
 
+* `object_lock_enabled` - (Optional, Forces new resource) Enables the usage of a
+[scaleway_object_bucket_lock_configuration](object_bucket_lock_configuration.md)
+for this bucket.
+
 * `tags` - (Optional) A list of tags (key/value) for the bucket.
 
-* ~> **Important:** The Scaleway console does not support `key/value` tags yet, so only the tags' values will be displayed.
+~> **Important:** The Scaleway console does not support `key/value` tags yet, so only the tags' values will be displayed.
 If you make any change to your bucket's tags using the console, it will overwrite them with the format `value/value`.
 
 * `acl` - (Optional)(Deprecated) The canned ACL you want to apply to the bucket.
@@ -255,29 +259,93 @@ If you make any change to your bucket's tags using the console, it will overwrit
 
 * `lifecycle_rule` (Optional) - A set of rules that defines actions applied to a group of objects. The `lifecycle_rule` object supports the following:
 
-    * `id` - (Optional) Unique identifier for the rule. Must be less than or equal to 255 characters in length.
-    * `prefix` - (Optional) Object key prefix identifying one or more objects to which the rule applies.
+    * `id` - (Optional) Unique identifier for the rule. Must be less than or
+    equal to 255 characters in length.
+
+    * `prefix` - (Optional) Object key prefix identifying one or more objects
+    to which the rule applies.
+
     * `tags` - (Optional) Specifies object tags key and value.
-    * `enabled` - (Required) The element value can be either Enabled or Disabled. If a rule is disabled, Scaleway Object Storage does not perform any of the actions defined in the rule.
 
-* `abort_incomplete_multipart_upload_days` (Optional) Specifies the number of days after initiating a multipart upload when the multipart upload must be completed.
+    * `enabled` - (Required) The element value can be either Enabled or
+    Disabled. If a rule is disabled, Scaleway Object Storage does not perform
+    any of the actions defined in the rule.
 
-    ~> **Important:** Avoid using `prefix` for `AbortIncompleteMultipartUpload`, as any incomplete multipart upload will be billed
+    * `object_size_greater_than` - (Optional) Minimum object size (in bytes) to
+    which the rule applies.
 
-* `expiration` - (Optional) Specifies a period of expiration for the object. The `expiration` object supports the following:
+    * `object_size_less_than` - (Optional) Maximum object size (in bytes) to
+    which the rule applies.
 
-    * `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
+    * `abort_incomplete_multipart_upload_days` - (Optional) Specifies the number
+    of days after initiating a multipart upload when the multipart upload must
+    be completed.
+
+    ~> **Important:** Avoid using `prefix` for `AbortIncompleteMultipartUpload`,
+    as any incomplete multipart upload will be billed.
+
+    * `expiration` - (Optional) Specifies a period of expiration for the object.
+    The `expiration` object supports the following:
+
+        * `date` - (Optional) Specifies the date the object is to be moved or
+        deleted. The date value must be in RFC3339 full-date format e.g.
+        `2023-08-22`.
+
+        * `days` - (Optional) Specifies the number of days after object creation
+        when the specific rule action takes effect.
+
+        * `expired_object_delete_marker` - (Optional) Specifies whether Scaleway
+        Object will remove a delete marker with no noncurrent versions. If set
+        to `true`, the delete marker will be expired; if set to `false` the
+        policy takes no action.
+
     * `transition` - (Optional) Specifies a period in the object's transitions.
+    The `transition` object supports the following:
 
-At least one of `abort_incomplete_multipart_upload_days`, `expiration`, `transition` must be specified. The `transition` object supports the following:
+        * `date` - (Optional) Specifies the date objects are transitioned to the
+        specified storage class. The date value must be in RFC3339 full-date
+        format e.g. `2023-08-22`.
 
-* `days` (Optional) Specifies the number of days after object creation when the specific rule action takes effect.
+        * `days` - (Optional) Specifies the number of days after object creation
+        when the specific rule action takes effect.
 
-* `storage_class` (Required) Specifies the Scaleway [storage class](https://www.scaleway.com/en/docs/object-storage/concepts/#storage-class) `STANDARD`, `GLACIER`, `ONEZONE_IA`  to which you want the object to transition.
+        * `storage_class` - (Required) Specifies the Scaleway [storage class][1]
+        `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
+        transition.
 
-~> **Important:**  If versioning is enabled, this rule only deletes the current version of an object.
+        ~> **Important:** `ONEZONE_IA` is only available in `fr-par` region. The
+        storage class `GLACIER` is not available in `pl-waw` region.
 
-~> **Important:**  `ONEZONE_IA` is only available in `fr-par` region. The storage class `GLACIER` is not available in `pl-waw` region.
+    ~> **Important:** At least one of `abort_incomplete_multipart_upload_days`,
+    `expiration`, `transition` must be specified.
+
+    * `noncurrent_version_expiration` - (Optional) Configuration block that
+    specifies when noncurrent object versions expire. Supports the following:
+
+        * `newer_noncurrent_versions` - (Optional) Number of noncurrent versions
+        Scaleway Object Storage will retain. Must be a non-zero positive integer.
+
+        * `noncurrent_days` - (Optional) Number of days an object is noncurrent
+        before Scaleway Object Storage can perform the associated action. Must
+        be a positive integer.
+
+    * `noncurrent_version_transition` - (Optional) Set of configuration blocks
+    that specify the transition rule for the lifecycle rule that describes when
+    noncurrent objects transition to a specific storage class. Supports the
+    following:
+
+        * `newer_noncurrent_versions` - (Optional) Number of noncurrent versions
+        Scaleway Object Storage will retain. Must be a non-zero positive integer.
+
+        * `noncurrent_days` - (Optional) Number of days an object is noncurrent
+        before Scaleway Object Storage can perform the associated action.
+
+        * `storage_class` - (Required) Specifies the Scaleway [storage class][1]
+        `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
+        transition.
+
+~> **Important:**  If versioning is enabled, this rule only deletes the current
+version of an object.
 
 ## Attributes Reference
 
@@ -305,3 +373,7 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket@11111111-1111-1111-1111-111111111111
 ```
+
+<!--- Links, invisible in the final document --->
+
+[1]: https://www.scaleway.com/en/docs/object-storage/concepts/#storage-class

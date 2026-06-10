@@ -30,7 +30,7 @@ func ResourceProject() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    projectSchema,
-		Identity:      identity.DefaultProjectID(),
+		Identity:      identity.DefaultGlobal(),
 	}
 }
 
@@ -85,26 +85,11 @@ func resourceAccountProjectCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if err := setProjectIdentity(d, res.ID); err != nil {
+	if err := identity.SetGlobalIdentity(d, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return resourceAccountProjectRead(ctx, d, m)
-}
-
-func setProjectIdentity(d *schema.ResourceData, projectID string) error {
-	resourceIdentity, err := d.Identity()
-	if err != nil {
-		return err
-	}
-
-	if err := resourceIdentity.Set("project_id", projectID); err != nil {
-		return err
-	}
-
-	d.SetId(projectID)
-
-	return nil
 }
 
 func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -123,7 +108,7 @@ func resourceAccountProjectRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	if err := setProjectIdentity(d, res.ID); err != nil {
+	if err := identity.SetGlobalIdentity(d, res.ID); err != nil {
 		return diag.FromErr(err)
 	}
 
