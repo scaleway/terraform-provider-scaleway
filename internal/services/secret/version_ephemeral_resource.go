@@ -98,7 +98,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 			},
 			"secret_name": schema.StringAttribute{
 				Optional:    true,
-				Description: "The name of the secret.  Either secret_id or secret_name must be specified.",
+				Description: "The name of the secret. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),

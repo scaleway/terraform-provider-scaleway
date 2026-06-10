@@ -41,7 +41,7 @@ data "scaleway_key_manager_key" "byID" {
 
 ## Argument Reference
 
-- `key_id` -  ID of the key to target. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
+- `key_id` - ID of the key to target. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
 
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the key was created.
 

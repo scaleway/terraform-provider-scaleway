@@ -62,7 +62,7 @@ Keep in mind that this is a sensitive attribute. For more information, see [Sens
 
 To update the `data_wo` and trigger a new version creation, you must also update the `data_wo_version` attribute.
 
-~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
+~> **Important:** This property will not be displayed in the Terraform plan, for security reasons.
 
 ## Attributes Reference
 
