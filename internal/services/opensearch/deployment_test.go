@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -33,13 +34,14 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "name", "tf-test-opensearch-basic"),
@@ -58,6 +60,7 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   tags        = ["tag1", "tag2"]
   volume {
@@ -65,7 +68,7 @@ resource "scaleway_opensearch_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.#", "2"),
@@ -86,7 +89,10 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isDeploymentDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isDeploymentDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -104,14 +110,17 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
 
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
@@ -136,7 +145,10 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
 
   private_network {
     private_network_id = scaleway_vpc_private_network.main.id
@@ -147,7 +159,7 @@ resource "scaleway_opensearch_deployment" "pn" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
@@ -171,14 +183,17 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
 
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
