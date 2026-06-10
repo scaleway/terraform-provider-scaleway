@@ -7,10 +7,7 @@ description: |-
 
 # Resource: scaleway_mongodb_instance
 
-
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
-
 
 ## Example Usage
 
@@ -25,7 +22,6 @@ list "scaleway_mongodb_instance" "all" {
   }
 }
 ```
-
 ```terraform
 # List MongoDB instances filtered by name prefix
 list "scaleway_mongodb_instance" "by_name" {
@@ -37,7 +33,6 @@ list "scaleway_mongodb_instance" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List MongoDB instances in a specific region for a specific project
 list "scaleway_mongodb_instance" "region" {
@@ -49,7 +44,6 @@ list "scaleway_mongodb_instance" "region" {
   }
 }
 ```
-
 ```terraform
 # List MongoDB instances filtered by tag
 list "scaleway_mongodb_instance" "by_tag" {
@@ -61,8 +55,6 @@ list "scaleway_mongodb_instance" "by_tag" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

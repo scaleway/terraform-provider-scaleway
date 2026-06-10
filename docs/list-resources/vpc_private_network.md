@@ -7,10 +7,7 @@ description: |-
 
 # Resource: scaleway_vpc_private_network
 
-
-
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/#private-networks).
-
 
 ## Example Usage
 
@@ -25,7 +22,6 @@ list "scaleway_vpc_private_network" "all" {
   }
 }
 ```
-
 ```terraform
 # List Private Networks across all regions filtered by name prefix
 list "scaleway_vpc_private_network" "by_name" {
@@ -37,7 +33,6 @@ list "scaleway_vpc_private_network" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List Private Networks in a specific region (fr-par) for a specific project
 list "scaleway_vpc_private_network" "region" {
@@ -49,7 +44,6 @@ list "scaleway_vpc_private_network" "region" {
   }
 }
 ```
-
 ```terraform
 # List Private Networks filtered by a specific tag
 list "scaleway_vpc_private_network" "by_tag" {
@@ -61,7 +55,6 @@ list "scaleway_vpc_private_network" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List all Private Networks belonging to a specific VPC
 list "scaleway_vpc_private_network" "by_vpc" {
@@ -73,8 +66,6 @@ list "scaleway_vpc_private_network" "by_vpc" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

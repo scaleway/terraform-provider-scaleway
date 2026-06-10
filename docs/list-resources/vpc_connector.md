@@ -9,7 +9,6 @@ description: |-
 
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
 
-
 ## Example Usage
 
 ```terraform
@@ -23,7 +22,6 @@ list "scaleway_vpc_connector" "all" {
   }
 }
 ```
-
 ```terraform
 # List VPC connectors filtered by name (matches connectors whose name contains "prod")
 list "scaleway_vpc_connector" "by_name" {
@@ -35,7 +33,6 @@ list "scaleway_vpc_connector" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List VPC connectors attached to a specific source VPC
 list "scaleway_vpc_connector" "by_vpc" {
@@ -47,8 +44,6 @@ list "scaleway_vpc_connector" "by_vpc" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -9,7 +9,6 @@ The `scaleway_object_bucket_server_side_encryption_configuration` resource allow
 
 Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/enable-sse-one/) for more information on server-side encryption.
 
-
 ## Example Usage
 
 ```terraform
@@ -39,7 +38,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name   = "my-bucket"
@@ -59,7 +57,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name   = "my-unique-bucket-name"
@@ -77,7 +74,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name = "my-unique-bucket-name"
@@ -93,9 +89,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
-
-
 
 ## Argument Reference
 

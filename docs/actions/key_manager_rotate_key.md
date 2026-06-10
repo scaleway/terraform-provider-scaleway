@@ -19,5 +19,3 @@ Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-ma
 ### Optional
 
 - `region` (String) Region of the key. If not set, the region is derived from the key_id when possible or from the provider configuration.
-
-

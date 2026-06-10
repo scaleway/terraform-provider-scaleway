@@ -7,7 +7,6 @@ page_title: "Scaleway: scaleway_vpc_acl"
 
 Gets information about a VPC ACL (Access Control List).
 
-
 ## Example Usage
 
 ```terraform
@@ -17,7 +16,6 @@ data "scaleway_vpc_acl" "my_acl" {
   is_ipv6 = false
 }
 ```
-
 ```terraform
 # Get the IPv6 ACL for a VPC
 data "scaleway_vpc_acl" "my_acl_v6" {
@@ -25,8 +23,6 @@ data "scaleway_vpc_acl" "my_acl_v6" {
   is_ipv6 = true
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -20,6 +20,3 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 
 - `wait` (Boolean) Wait for server to finish action
 - `zone` (String) Zone of server to send the action to
-
-
-

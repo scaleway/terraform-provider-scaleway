@@ -4,11 +4,7 @@ page_title: "Scaleway: scaleway_s2s_vpn_connection"
 ---
 
 # scaleway_s2s_vpn_connection
-
-
-
 For further information refer to the Site-to-Site VPN [API documentation](https://www.scaleway.com/en/developers/api/site-to-site-vpn/).
-
 
 ## Example Usage
 
@@ -18,16 +14,12 @@ data "scaleway_s2s_vpn_connection" "my_connection" {
   connection_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Get info by name
 data "scaleway_s2s_vpn_connection" "my_connection" {
   name = "foobar"
 }
 ```
-
-
-
 
 ## Argument Reference
 
