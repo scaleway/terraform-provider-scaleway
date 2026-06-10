@@ -190,8 +190,8 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		if ok && err == nil {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
