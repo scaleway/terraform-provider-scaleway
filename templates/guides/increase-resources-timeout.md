@@ -9,7 +9,7 @@ When deploying resources with the Scaleway Terraform provider, operations like c
 
 Most Scaleway Terraform resources support a timeouts block where you can specify how long Terraform should wait for each operation.
 
-#### Timeout keywords supported
+## Timeout keywords supported
 
 - `create` — Timeout duration for creating the resource.
 - `update` — Timeout duration for updating the resource.
