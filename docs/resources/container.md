@@ -312,8 +312,8 @@ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-11111111
 
 The following protocols are supported:
 
-* `h2c`: HTTP/2 over TCP.
-* `http1`: Hypertext Transfer Protocol.
+- `h2c`: HTTP/2 over TCP.
+- `http1`: Hypertext Transfer Protocol.
 
 ~> **Important:** Refer to the official [Apache documentation](https://httpd.apache.org/docs/2.4/howto/http2.html) for more information.
 
