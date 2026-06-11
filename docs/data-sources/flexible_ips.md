@@ -44,9 +44,9 @@ data "scaleway_flexible_ips" "fips_by_server_id" {
 
 ## Argument Reference
 
-- `server_ids` - (Optional)  List of server IDs used as filter. IPs with these exact server IDs are listed.
+- `server_ids` - (Optional) List of server IDs used as filter. IPs with these exact server IDs are listed.
 
-- `tags` - (Optional)  List of tags used as filter. IPs with these exact tags are listed.
+- `tags` - (Optional) List of tags used as filter. IPs with these exact tags are listed.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
 

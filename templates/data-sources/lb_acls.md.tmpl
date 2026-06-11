@@ -46,9 +46,9 @@ In addition to all arguments above, the following attributes are exported:
     - `action` - The action to be undertaken when an ACL filter matches.
         - `type` - The action type.
         - `redirect` - Redirect parameters when using an ACL with `redirect` action.
-            - `type`  - The redirect type.
-            - `target`  - The URL used in case of a location redirect, or the scheme name that replaces the request's original scheme.
-            - `code`  - The HTTP redirect code to use.
+            - `type` - The redirect type.
+            - `target` - The URL used in case of a location redirect, or the scheme name that replaces the request's original scheme.
+            - `code` - The HTTP redirect code to use.
     - `match` - The ACL match rule.
         - `ip_subnet` - A list of IPs, or CIDR v4/v6 addresses of the session client, to match.
         - `http_filter` - The HTTP filter to match.

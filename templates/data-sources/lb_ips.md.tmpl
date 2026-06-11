@@ -33,7 +33,7 @@ data "scaleway_lb_ips" "ips_by_tags_and_type" {
 
 - `ip_cidr_range` - (Optional) The IP CIDR range to filter for. IPs within a matching CIDR block are listed.
 
-- `tags` - (Optional)  List of tags used as filter. IPs with these exact tags are listed.
+- `tags` - (Optional) List of tags used as filter. IPs with these exact tags are listed.
 
 - `ip_type` - (Optional) The IP type used as a filter.
 

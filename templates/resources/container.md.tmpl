@@ -130,7 +130,7 @@ The following arguments are supported:
 
 - `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
 
-- `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
+- `args` - (Optional) Arguments passed to the command specified in the `command` field. These override the default arguments from the container image, and behave like command-line parameters.
 
 - `private_network_id` (Optional) The ID of the Private Network the container is connected to.
 
@@ -146,9 +146,7 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 
-- `status` - The container status.
-
-- `cron_status` - The cron status of the container.
+- `status` - The container status. In case the status is different from `ready`, a warning will be displayed when Terraform reads the resource.
 
 - `error_message` - The error message of the container.
 
