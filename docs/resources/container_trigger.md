@@ -99,7 +99,7 @@ The following arguments are supported:
     - `secret_key` - (Required, Sensitive) The secret key for accessing the SQS queue.
     - `project_id` - (Optional) The ID of the project in which SQS is enabled, (defaults to [provider](../index.md#arguments-reference) `project_id`)
     - `region` - (Optional) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
-    - `queue` - (Deprecated) The name of the SQS queue.  This argument is no longer supported.
+    - `queue` - (Deprecated) The name of the SQS queue. This argument is no longer supported.
 
 - `nats` - The configuration for the Scaleway NATS account used by the trigger
     - `subject` - (Required) NATS subject to subscribe to (e.g., \"my-subject\")."
@@ -107,7 +107,7 @@ The following arguments are supported:
     - `credentials_file_content` - (Required, Sensitive) The content of the NATS credentials file that will be used to authenticate with the NATS server and subscribe to the specified subject.
     - `project_id` - (Optional) The ID of the project that contains the Messaging and Queuing NATS account (defaults to [provider](../index.md#arguments-reference) `project_id`)
     - `region` - (Optional) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
-    - `account_id` - (Deprecated) unique identifier of the Messaging and Queuing NATS account  .
+    - `account_id` - (Deprecated) unique identifier of the Messaging and Queuing NATS account.
 
 - `cron` - The configuration for the cron source of the trigger
     - `schedule` - (Required) UNIX cron schedule to run job (e.g., "* * * * *").
