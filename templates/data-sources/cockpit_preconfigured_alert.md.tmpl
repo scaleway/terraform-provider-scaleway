@@ -57,7 +57,7 @@ data "scaleway_cockpit_preconfigured_alert" "all" {
 
 resource "scaleway_cockpit_alert_manager" "main" {
   project_id = scaleway_cockpit.main.project_id
-  
+
   # Enable specific alerts by their preconfigured_rule_id
   preconfigured_alert_ids = [
     for alert in data.scaleway_cockpit_preconfigured_alert.all.alerts :
