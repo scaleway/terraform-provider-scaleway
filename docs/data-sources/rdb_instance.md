@@ -39,9 +39,9 @@ output "load_balancer_ip_addr" {
 
 - `project_id` - (Optional) The ID of the project the Database Instance is in. Can be used to filter instances when using `name`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the Database Instance exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which the Database Instance exists.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the RDB instance is in.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the RDB instance is in.
 
 ## Attributes Reference
 

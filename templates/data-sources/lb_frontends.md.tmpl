@@ -29,7 +29,7 @@ data "scaleway_lb_frontends" "byLBID_and_name" {
 
 - `name` - (Optional) The frontend name to filter for. Frontends with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the frontends exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the frontends exist.
 
 ## Attributes Reference
 

@@ -37,7 +37,7 @@ data "scaleway_lb_ips" "ips_by_tags_and_type" {
 
 - `ip_type` - (Optional) The IP type used as a filter.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IPs exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IPs exist.
 
 ## Attributes Reference
 

@@ -29,9 +29,9 @@ data "scaleway_tem_domain" "my_domain" {
 - `domain_id` - (Optional) The domain id.
   Only one of `name` and `domain_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain exists.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the domain is associated with.
 
 ## Attributes Reference
 

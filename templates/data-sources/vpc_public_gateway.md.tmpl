@@ -29,7 +29,7 @@ data "scaleway_vpc_public_gateway" "pg_test_by_id" {
 ## Argument Reference
 
 - `name` - (Required) Exact name of the Public Gateway.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The Public Gateway's [zone](../guides/regions_and_zones.md#zones).
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The Public Gateway's [zone](../guides/regions_and_zones.md#zones).
 - `project_id` - (Optional) The ID of the Project the Public Gateway is associated with.
 
 ## Attributes Reference

@@ -80,8 +80,8 @@ This section lists the arguments that are supported:
 
 - `volume_id` - (Optional) The ID of the volume to take a snapshot from.
 - `name` - (Optional) The name of the snapshot. If not provided, a name will be randomly generated.
-- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Scaleway Project the snapshot is associated with.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)). The ID of the Scaleway Project the snapshot is associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
 - `import` - (Optional) Use this block to import a QCOW image from Object Storage to create a volume.
       - `bucket` – (Required) The name of the bucket containing the QCOW file.

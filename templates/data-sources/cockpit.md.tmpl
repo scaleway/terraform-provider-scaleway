@@ -38,7 +38,7 @@ data "scaleway_cockpit" "main" {
 
 This section lists the arguments that you can provide to the `scaleway_cockpit` data source to filter and retrieve the desired Cockpit.
 
-- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
+- `project_id` - Specifies the ID of the Scaleway Project that the Cockpit is associated with. If not specified, it defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference).
 
 - `plan` - (Optional) Specifies the name or ID of the pricing plan to use.
 

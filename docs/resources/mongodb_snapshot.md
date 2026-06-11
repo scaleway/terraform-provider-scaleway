@@ -31,7 +31,7 @@ The following arguments are supported:
 
 ~> **Important:** Once set, `expires_at` cannot be removed.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
 
 ## Attributes Reference
 

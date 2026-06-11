@@ -37,7 +37,7 @@ This section lists the arguments that you can provide to the `scaleway_account_s
 
   -> **Note** You must specify at least one: `name` and/or `ssh_key_id`.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the SSH key is associated.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The unique identifier of the project with which the SSH key is associated.
 
 ## Attributes Reference
 

@@ -50,8 +50,8 @@ The following arguments are supported:
 - `public_ips_v6_count` - (Optional) The number of flexible IPv6 addresses to attach to the new Instance.
 - `private_network_ids` - (Optional) The private Network IDs to attach to the new Instance.
 - `cloud_init` - (Optional) The instance image ID. Can be an ID of a marketplace or personal image. This image must be compatible with `volume` and `commercial_type` template.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance template exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Instance template is associated with.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance template exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Instance template is associated with.
 
 ## Attributes Reference
 

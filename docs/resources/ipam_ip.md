@@ -118,8 +118,8 @@ The following arguments are supported:
 - `custom_resource` - (Optional) The custom resource to attach to the IP being reserved. An example of a custom resource is a virtual machine hosted on an Elastic Metal server.
     - `mac_address` - The MAC address of the custom resource.
     - `name` - When the resource is in a Private Network, a DNS record is available to resolve the resource name.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the IP is associated with.
 
 ## Attributes Reference
 

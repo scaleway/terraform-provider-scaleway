@@ -83,8 +83,8 @@ The following arguments are supported:
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `private_network` - (Optional, Forces new resource) Private network configuration to expose your deployment. Changing this forces recreation of the deployment.
     - `pn_id` - (Required) The ID of the private network. Format: `{region}/{id}` or just `{id}`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ~> **Note:** A public endpoint is always created automatically alongside any private network configuration.
 

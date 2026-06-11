@@ -29,7 +29,7 @@ data "scaleway_instance_volume" "my_volume" {
 - `volume_id` - (Optional) The volume id.
   Only one of `name` and `volume_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the volume exists.
 
 - `project_id` - (Optional) The ID of the project the volume is associated with.
 

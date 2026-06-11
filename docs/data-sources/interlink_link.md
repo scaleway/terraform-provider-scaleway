@@ -40,7 +40,7 @@ data "scaleway_interlink_link" "my_link" {
 
   -> **Note** You must specify at least one: `name` and/or `link_id`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the link exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the link exists.
 
 - `project_id` - (Optional) Project ID.
 

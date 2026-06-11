@@ -151,9 +151,9 @@ The following arguments are supported:
 
 - `sandbox` - (Optional) Execution environment of the function.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the functions namespace is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the functions namespace is associated with.
 
 - `private_network_id` (Optional) The ID of the Private Network the function is connected to.
 

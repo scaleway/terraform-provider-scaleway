@@ -87,8 +87,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the connection.
 - `tags` - (Optional) The list of tags to apply to the connection.
 - `is_ipv6` - (Optional) Defines IP version of the IPSec Tunnel. Defaults to `false` (IPv4).
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the connection is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the connection is associated with.
 
 ### BGP Config
 

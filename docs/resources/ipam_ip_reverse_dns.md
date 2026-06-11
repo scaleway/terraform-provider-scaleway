@@ -56,7 +56,7 @@ The following arguments are supported:
 - `ipam_ip_id` - (Required) The IPAM IP ID.
 - `hostname` - (Required) The reverse domain name.
 - `address` - (Required) The IP corresponding to the hostname.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP reverse DNS.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP reverse DNS.
 
 ## Attributes Reference
 

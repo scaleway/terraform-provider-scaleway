@@ -135,7 +135,7 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
 ~> Only one of `reservation_id` or `mac_address` with `gateway_network_id` should be specified.
 
 - `wait_for_dhcp` (Optional) Whether to wait for `mac_address` to exist in DHCP.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`). The [zone](../guides/regions_and_zones.md#zones) in which the reservation exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`). The [zone](../guides/regions_and_zones.md#zones) in which the reservation exists.
 
 ## Attributes Reference
 

@@ -33,7 +33,7 @@ The following arguments are supported:
 - `ip_id` - (Optional) The IP ID.
   Only one of `ip_address` and `ip_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP was reserved.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP was reserved.
 
 - `project_id` - (Optional) The ID of the Project the Load Balancer IP is associated with.
 
@@ -51,4 +51,4 @@ In addition to all above arguments, the following attributes are exported:
 
 - `tags` - The tags associated with this IP.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the Organization the Load Balancer IP is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the Organization the Load Balancer IP is associated with.

@@ -32,9 +32,9 @@ data "scaleway_registry_image" "my_image" {
 
 - `namespace_id` - (Optional) The namespace ID in which the image is.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the image exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the image exists.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the image is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the image is associated with.
 
 ## Attributes Reference
 

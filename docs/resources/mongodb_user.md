@@ -270,7 +270,7 @@ The following arguments are supported:
     - `database_name` - (Optional) The database name for the role. Cannot be used with `any_database`.
     - `any_database` - (Optional) Apply the role to all databases. Cannot be used with `database_name`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® user should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® user should be created.
 
 ## Attributes Reference
 
