@@ -10,8 +10,6 @@ The scaleway_inference_model resource allows you to upload and manage inference 
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`secret_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `secret` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -23,7 +21,6 @@ resource "scaleway_inference_model" "test" {
   secret = "my-secret-token"
 }
 ```
-
 ```terraform
 ### Deploy your own model on your managed inference
 
@@ -45,7 +42,6 @@ resource "scaleway_inference_deployment" "my_deployment" {
   accept_eula = true
 }
 ```
-
 ```terraform
 ### Create a model using your model's secret token without storing it in the state
 
@@ -56,10 +52,6 @@ resource "scaleway_inference_model" "my_model_wo" {
   secret_wo_version = 1
 }
 ```
-
-
-
-
 
 ## Argument Reference
 

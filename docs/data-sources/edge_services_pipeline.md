@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_pipeline"
 Gets information about an Edge Services pipeline.
 
 A pipeline is the top-level resource that groups together all the stages (DNS, TLS, cache, backend, etc.) of an Edge Services configuration.
-
 ## Example Usage
 
 ```terraform
@@ -17,15 +16,12 @@ data "scaleway_edge_services_pipeline" "by_id" {
   pipeline_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services pipeline by name
 data "scaleway_edge_services_pipeline" "by_name" {
   name = "my-pipeline"
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_route_stage"
 Gets information about an Edge Services route stage.
 
 A route stage defines HTTP request routing rules that forward requests to different backend stages based on method and path matching.
-
 ## Example Usage
 
 ```terraform
@@ -17,15 +16,12 @@ data "scaleway_edge_services_route_stage" "by_id" {
   route_stage_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services route stage by pipeline ID
 data "scaleway_edge_services_route_stage" "by_pipeline" {
   pipeline_id = scaleway_edge_services_pipeline.main.id
 }
 ```
-
-
 
 ## Argument Reference
 

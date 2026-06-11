@@ -9,7 +9,6 @@ The [`scaleway_key_manager_verify`](https://registry.terraform.io/providers/scal
 
 Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/key-manager/) for more information.
 
-
 ## Example Usage
 
 ```terraform
@@ -59,9 +58,6 @@ data "scaleway_key_manager_verify" "main" {
   signature = data.scaleway_secret_version.signature.data
 }
 ```
-
-
-
 
 ## Argument Reference
 

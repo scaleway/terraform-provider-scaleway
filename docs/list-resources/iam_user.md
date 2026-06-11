@@ -23,7 +23,6 @@ list "scaleway_iam_user" "all" {
   }
 }
 ```
-
 ```terraform
 // List users filtered by MFA status
 list "scaleway_iam_user" "by_mfa" {
@@ -34,7 +33,6 @@ list "scaleway_iam_user" "by_mfa" {
   }
 }
 ```
-
 ```terraform
 // List users filtered by tag
 list "scaleway_iam_user" "by_tag" {
@@ -45,7 +43,6 @@ list "scaleway_iam_user" "by_tag" {
   }
 }
 ```
-
 ```terraform
 // List users filtered by user IDs
 list "scaleway_iam_user" "by_user_ids" {
@@ -59,7 +56,6 @@ list "scaleway_iam_user" "by_user_ids" {
   }
 }
 ```
-
 
 ## Argument Reference
 
