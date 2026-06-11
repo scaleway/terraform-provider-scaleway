@@ -143,7 +143,7 @@ resource "scaleway_edge_services_route_stage" "main" {
         - `host_filter` (Optional) Host to filter for. A request whose host matches the given filter will be considered to match the rule. All hosts will match if none is provided.
             - `host_filter_type` (Required) The type of filter to match for the host. Use the `regex` type.
             - `value` (Required) The value to be matched for the host.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the route stage is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the route stage is associated with.
 
 ## Attributes Reference
 

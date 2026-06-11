@@ -25,7 +25,7 @@ resource "scaleway_edge_services_waf_stage" "main" {
 - `paranoia_level` - (Required) The sensitivity level (`1`,`2`,`3`,`4`) to use when classifying requests as malicious. With a high level, requests are more likely to be classed as malicious, and false positives are expected. With a lower level, requests are more likely to be classed as benign.
 - `backend_stage_id` - (Optional) The ID of the backend stage to forward requests to after the WAF stage.
 - `mode` - (Optional) The mode defining WAF behavior (`disable`/`log_only`/`enable`).
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the WAF stage is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the WAF stage is associated with.
 
 ## Attributes Reference
 

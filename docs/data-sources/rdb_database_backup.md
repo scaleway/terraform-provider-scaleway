@@ -34,7 +34,7 @@ data "scaleway_rdb_database_backup" "find_by_id" {
 
   -> **Note** You must specify at least one: `name` and/or `backup_id`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Backup is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Backup is associated with.
 
 - `project_id` - (Optional) The ID of the project the Database Backup is associated with.
 

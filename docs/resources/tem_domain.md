@@ -112,10 +112,10 @@ The following arguments are supported:
 - `accept_tos` - (Required) Acceptation of the [Term of Service](https://tem.s3.fr-par.scw.cloud/antispam_policy.pdf).
   ~> **Important:** This attribute must be set to `true`.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the domain should be created.
   ~> **Important:** Currently, only fr-par is supported. Specifying any other region will cause an error.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the domain is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the domain is associated with.
 
 - `autoconfig` - (Defaults to `false`) Automatically configures DNS settings for the domain, simplifying the setup process by applying predefined configurations.
 

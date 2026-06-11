@@ -70,8 +70,8 @@ The following arguments are supported:
 - `secret` - (Optional, Sensitive) Authentication token used to pull the model from a private or gated URL (e.g., a Hugging Face access token with read permission). Conflicts with `secret_wo`.
 - `secret_wo` - (Optional) Authentication token used to pull the model from a private or gated URL in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. `secret_wo` will not be stored in the Terraform state. Only one of `secret` or `secret_wo` should be specified. Requires `secret_wo_version` to be set.
 - `secret_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) secret. Required when using `secret_wo`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ## Attributes Reference
 

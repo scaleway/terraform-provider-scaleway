@@ -52,9 +52,9 @@ This section lists the arguments that you can provide to the `scaleway_secret` d
 
 - `organization_id` - (Optional) The ID of the Scaleway Organization the Project is associated with. If no default `organization_id` is set, it must be set explicitly in this data source.
 
-- `region` - (Defaults to the region specified in the [provider's configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) in which the secret exists.
+- `region` - (Defaults to the region specified in the [provider's configuration](../index.md#arguments-reference)). The [region](../guides/regions_and_zones.md#regions) in which the secret exists.
 
-- `project_id` - (Optional. Defaults to the Project specified in [provider's configuration](../index.md#project_id)). The ID of the
+- `project_id` - (Optional. Defaults to the Project specified in [provider's configuration](../index.md#arguments-reference)). The ID of the
   Project the secret is associated with.
 
 ## Attributes Reference

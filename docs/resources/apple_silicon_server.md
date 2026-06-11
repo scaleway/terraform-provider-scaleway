@@ -75,10 +75,10 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the server.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the server should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
   associated with.
 
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.

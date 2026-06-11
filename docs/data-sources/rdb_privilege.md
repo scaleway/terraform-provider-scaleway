@@ -26,7 +26,7 @@ data "scaleway_rdb_privilege" "main" {
 
 - `database_name` - (Required) The database name.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Attributes Reference
 

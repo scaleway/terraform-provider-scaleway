@@ -16,8 +16,8 @@ data "scaleway_tem_offer_subscription" "test" {}
 
 ## Argument Reference
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) where the offer subscription exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the offer subscription is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) where the offer subscription exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the offer subscription is associated with.
 
 ## Attributes Reference
 

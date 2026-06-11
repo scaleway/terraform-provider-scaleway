@@ -81,7 +81,7 @@ resource "scaleway_iam_user" "password_wo_user" {
 
 ## Argument Reference
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the user is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the user is associated with.
 
 - `email` - (Required) The email of the IAM user. For Guest users, this argument is not editable.
 

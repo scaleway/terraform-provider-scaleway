@@ -29,7 +29,7 @@ data "scaleway_lb_backends" "byLBID_and_name" {
 
 - `name` - (Optional) The backend name to filter for. Backends with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
 
 ## Attributes Reference
 

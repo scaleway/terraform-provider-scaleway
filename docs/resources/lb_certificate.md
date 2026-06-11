@@ -72,7 +72,7 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `custom_certificate` will recreate the Load Balancer certificate.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the certificate.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the certificate.
 
 ## Attributes Reference
 

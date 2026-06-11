@@ -255,7 +255,7 @@ If you make any change to your bucket's tags using the console, it will overwrit
 
 * `force_destroy` - (Optional) Boolean that, when set to true, allows the deletion of all objects (including locked objects) when the bucket is destroyed. This operation is irreversible, and the objects cannot be recovered. The default is false.
 
-* `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the bucket is associated with.
+* `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 * `lifecycle_rule` (Optional) - A set of rules that defines actions applied to a group of objects. The `lifecycle_rule` object supports the following:
 
