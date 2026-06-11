@@ -55,7 +55,7 @@ func sourceSchema() map[string]*schema.Schema {
 			Type:         schema.TypeInt,
 			Required:     true,
 			ValidateFunc: validation.IntBetween(1, 365),
-			Description:  "The number of days to retain data, must be between 1 and 365.",
+			Description:  "The number of days to retain data. Use scaleway_cockpit_config data source to read allowed min, max, and default values for each data source type.",
 		},
 		// computed
 		"url": {
@@ -99,14 +99,12 @@ func ResourceCockpitSourceCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	retentionDays := uint32(d.Get("retention_days").(int))
-
 	res, err := api.CreateDataSource(&cockpit.RegionalAPICreateDataSourceRequest{
 		Region:        region,
 		ProjectID:     d.Get("project_id").(string),
 		Name:          d.Get("name").(string),
 		Type:          cockpit.DataSourceType(d.Get("type").(string)),
-		RetentionDays: &retentionDays,
+		RetentionDays: new(uint32(d.Get("retention_days").(int))),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -175,13 +173,11 @@ func ResourceCockpitSourceUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		updateRequest.Name = &name
+		updateRequest.Name = new(d.Get("name").(string))
 	}
 
 	if d.HasChange("retention_days") {
-		retentionDays := uint32(d.Get("retention_days").(int))
-		updateRequest.RetentionDays = &retentionDays
+		updateRequest.RetentionDays = new(uint32(d.Get("retention_days").(int)))
 	}
 
 	if d.HasChanges("retention_days", "name") {

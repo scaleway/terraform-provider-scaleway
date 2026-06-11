@@ -14,7 +14,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/scaleway-sdk-go/vcr"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/env"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -96,7 +95,7 @@ func NewRecordedClient(t *testing.T, pkgFolder string, update bool) (client *htt
 
 	retryOptions := transport.RetryableTransportOptions{}
 	if !update {
-		retryOptions.RetryWaitMax = scw.TimeDurationPtr(0)
+		retryOptions.RetryWaitMax = new(time.Duration(0))
 	}
 
 	return &http.Client{
@@ -140,8 +139,7 @@ func NewTestTools(t *testing.T) *TestTools {
 
 	if !*UpdateCassettes {
 		// If no recording is happening, the delay to retry interactions should be 0
-		tmp := 0 * time.Second
-		transport.DefaultWaitRetryInterval = &tmp
+		transport.DefaultWaitRetryInterval = new(0 * time.Second)
 	} else if os.Getenv(env.RetryDelay) != "" {
 		// Overriding the delay interval is helpful to reduce the amount of requests performed while waiting for a resource to be available
 		tmp, err := time.ParseDuration(os.Getenv(env.RetryDelay))

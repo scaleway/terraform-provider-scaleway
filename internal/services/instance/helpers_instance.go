@@ -11,7 +11,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -152,6 +152,7 @@ func reachState(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, z
 		{instance.ServerStateRunning, instance.ServerStateStoppedInPlace}: {instance.ServerActionStopInPlace},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateRunning}: {instance.ServerActionPoweron},
 		{instance.ServerStateStoppedInPlace, instance.ServerStateStopped}: {instance.ServerActionPoweron, instance.ServerActionPoweroff},
+		{instance.ServerStateStopping, instance.ServerStateStopped}:       {}, // Already stopping, just wait
 	}
 
 	actions, exist := transitionMap[[2]instance.ServerState{fromState, toState}]
@@ -333,7 +334,7 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 				PrivateNicID:  p.ID,
 				Zone:          ph.zone,
 				Timeout:       &timeout,
-				RetryInterval: scw.TimeDurationPtr(instancehelpers.DefaultInstanceRetryInterval),
+				RetryInterval: new(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err

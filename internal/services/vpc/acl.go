@@ -166,13 +166,19 @@ func ResourceVPCACLRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("rules", flattenACLRules(acl.Rules))
-	_ = d.Set("default_policy", acl.DefaultPolicy.String())
+	diags := setACLState(d, acl)
 
 	err = identity.SetRegionalIdentity(d, region, ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	return diags
+}
+
+func setACLState(d *schema.ResourceData, acl *vpc.GetACLResponse) diag.Diagnostics {
+	_ = d.Set("rules", flattenACLRules(acl.Rules))
+	_ = d.Set("default_policy", acl.DefaultPolicy.String())
 
 	return nil
 }

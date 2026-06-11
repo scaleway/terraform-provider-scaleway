@@ -48,7 +48,7 @@ func TestAccModel_WithSecretWO(t *testing.T) {
 	defer tt.Cleanup()
 
 	modelName := "TestAccModel_WithSecretWO"
-	secretValue := "test-secret-token"
+	secretValue := acctest.SensitiveFields["secret"].(string)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

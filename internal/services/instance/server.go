@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
@@ -438,8 +438,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if bootType, ok := d.GetOk("boot_type"); ok {
-		bootType := instanceSDK.BootType(bootType.(string))
-		req.BootType = &bootType
+		req.BootType = new(instanceSDK.BootType(bootType.(string)))
 	}
 
 	if ipID, ok := d.GetOk("ip_id"); ok {
@@ -982,8 +981,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("ip_id") && !instanceIPHasMigrated(d) {
 		ipID := zonal.ExpandID(d.Get("ip_id")).ID
 		if ipID == "" {
-			emptyIPList := make([]string, 0)
-			updateRequest.PublicIPs = &emptyIPList
+			updateRequest.PublicIPs = new(make([]string, 0))
 			serverShouldUpdate = true
 		} else {
 			err := ResourceInstanceServerUpdateIPs(ctx, d, api.API, zone, id, "ip_id")
@@ -1001,9 +999,8 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if d.HasChanges("boot_type") {
-		bootType := instanceSDK.BootType(d.Get("boot_type").(string))
 		serverShouldUpdate = true
-		updateRequest.BootType = &bootType
+		updateRequest.BootType = new(instanceSDK.BootType(d.Get("boot_type").(string)))
 
 		if !isStopped {
 			warnings = append(warnings, diag.Diagnostic{
@@ -1683,19 +1680,17 @@ func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone,
 		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
 			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
 		},
+		APIIDs: []string{commercialType},
 	}, scw.WithAllPages(), scw.WithContext(ctx))
 	if err != nil {
 		return "", fmt.Errorf("could not list product catalog entries: %w", err)
 	}
 
-	for _, product := range products.Products {
-		if product.Properties != nil && product.Properties.Instance != nil &&
-			product.Properties.Instance.OfferID == commercialType {
-			return product.EndOfLifeAt.Format(time.DateOnly), nil
-		}
+	if products.TotalCount != 1 {
+		return "", fmt.Errorf("expected exactly 1 PCU entry for %q, got %d", commercialType, products.TotalCount)
 	}
 
-	return "", fmt.Errorf("could not find product catalog entry for %q in %s", commercialType, zone)
+	return products.Products[0].EndOfLifeAt.Format(time.DateOnly), nil
 }
 
 func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instanceSDK.VolumeServer) error {

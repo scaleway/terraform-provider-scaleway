@@ -8,6 +8,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -35,7 +36,7 @@ func DataSourceVPCPublicGateway() *schema.Resource {
 }
 
 func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZoneV2(d, m)
+	api, zone, err := newAPIWithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,5 +76,12 @@ func DataSourceVPCPublicGatewayRead(ctx context.Context, d *schema.ResourceData,
 	d.SetId(zonedID)
 	_ = d.Set("public_gateway_id", zonedID)
 
-	return ResourceVPCPublicGatewayRead(ctx, d, m)
+	parsedID := zonal.ExpandID(zonedID)
+
+	gateway, err := waitForVPCPublicGateway(ctx, api, parsedID.Zone, parsedID.ID, defaultTimeout)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPublicGatewayState(d, gateway)
 }

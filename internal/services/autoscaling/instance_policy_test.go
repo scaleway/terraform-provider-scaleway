@@ -125,6 +125,11 @@ func TestAccInstancePolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_autoscaling_instance_policy.main", "metric.0.threshold", "40"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_autoscaling_instance_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

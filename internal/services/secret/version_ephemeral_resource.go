@@ -214,15 +214,13 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		var organizationID *string
 
 		if !data.OrganizationID.IsNull() && !data.OrganizationID.IsUnknown() {
-			orgID := data.OrganizationID.ValueString()
-			organizationID = &orgID
+			organizationID = new(data.OrganizationID.ValueString())
 		}
 
 		var projectID *string
 
 		if !data.ProjectID.IsNull() && !data.ProjectID.IsUnknown() {
-			projID := data.ProjectID.ValueString()
-			projectID = &projID
+			projectID = new(data.ProjectID.ValueString())
 		}
 
 		secrets, err := r.secretAPI.ListSecrets(&secret.ListSecretsRequest{

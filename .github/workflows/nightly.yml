@@ -33,16 +33,19 @@ jobs:
           - iam
           - inference
           - instance
+          - interlink
           - iot
           - ipam
           - jobs
           - k8s
+          - kafka
           - keymanager
           - lb
           - marketplace
           - mnq
           - mongodb
           - object
+          - opensearch
           - rdb
           - redis
           - registry
@@ -53,19 +56,19 @@ jobs:
           - vpc
           - vpcgw
           - webhosting
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     steps:
       # Checkout should always be before setup-go to ensure caching is working
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - name: Install Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
       - name: Run Acceptance Tests
-        run: go tool gotestsum --format github-actions -- -v ./internal/services/${{ matrix.products }} -timeout=4h
+        run: go tool gotestsum --format github-actions --jsonfile ${{ matrix.products }}.jsonl --junitfile ${{ matrix.products }}.xml -- -v ./internal/services/${{ matrix.products }} -timeout=4h
         env:
           TF_LOG: DEBUG
           # https://www.terraform.io/docs/extend/testing/acceptance-tests/index.html#running-acceptance-tests
@@ -100,6 +103,19 @@ jobs:
         env:
           SLACK_WEBHOOK_NIGHTLY: ${{ secrets.SLACK_WEBHOOK_NIGHTLY }}
           FAILED_PRODUCT: ${{ matrix.products }}
+      - name: Upload JSON test results
+        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.products }} gotestsum JSONL
+          path: ${{ matrix.products }}.jsonl
+      - name: Upload JUnit XML test results
+        if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ matrix.products }}-junit-xml.xml
+          path: ${{ matrix.products }}.xml
+          retention-days: 30
       - name: Run acceptance test for cassettes
         if: success() || failure() # If the job is not cancelled, run it regardless of the result of the previous step
         run: go test -v github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest -run TestAccCassettes_Validator
@@ -107,7 +123,7 @@ jobs:
   # sweeper needs to run after nightly completed
   # no matter what are the results of the jobs
   sweeper:
-    runs-on: ubuntu-latest
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
     needs: nightly
     if: always()
     steps:
@@ -115,11 +131,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Install Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - name: Run sweepers
         run: make sweep
         env:

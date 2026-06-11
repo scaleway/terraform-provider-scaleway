@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceRoute() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    routeSchema,
+		Identity:      identity.DefaultRegional(),
 		CustomizeDiff: cdf.LocalityCheck("hub_id"),
 	}
 }
@@ -244,7 +246,9 @@ func ResourceIotRouteCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, hubID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -274,9 +278,13 @@ func ResourceIotRouteRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, routeID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	_ = d.Set("region", string(region))
 	_ = d.Set("name", response.Name)
-	_ = d.Set("hub_id", response.HubID)
+	_ = d.Set("hub_id", regional.NewID(region, response.HubID).String())
 	_ = d.Set("topic", response.Topic)
 	_ = d.Set("created_at", response.CreatedAt.String())
 

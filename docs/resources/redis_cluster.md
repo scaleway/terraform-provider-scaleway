@@ -6,7 +6,11 @@ page_title: "Scaleway: scaleway_redis_cluster"
 # Resource: scaleway_redis_cluster
 
 Creates and manages Scaleway Redis™ clusters.
-For more information refer to the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-redis).
+For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-redis).
+
+-> **Security Best Practice:**
+For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
+
 
 
 ## Example Usage
@@ -125,9 +129,9 @@ you cannot downgrade a Redis™ cluster.
 
 - `password` - (Optional) Password for the first user of the Redis™ cluster. Only one of `password` or `password_wo` should be specified.
 
-- `password_wo` - (Optional) Password for the first user of the Redis™ cluster in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+- `password_wo` - (Optional) Password for the first user of the Redis™ cluster in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
 
-- `password_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `name` - (Optional) The name of the Redis™ cluster.
 
@@ -187,7 +191,7 @@ The `private_network` block supports :
   scale your cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
   ~> **Important:** When IPAM is enabled, the IPs specified here will be ignored and should not be provided.
-  
+
 ~> The `private_network` conflicts with `acl`. Only one should be specified.
 
 ~> **Important:** The way to use Private Networks differs whether you are using Redis™ in Standalone or cluster mode.

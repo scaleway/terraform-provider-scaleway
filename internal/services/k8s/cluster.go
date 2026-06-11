@@ -453,15 +453,22 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 
+	autoscalerReq.SkipNodesWithLocalStorage = new(d.Get("autoscaler_config.0.skip_nodes_with_local_storage").(bool))
+
+	if logLevel, ok := d.GetOk("autoscaler_config.0.log_level"); ok {
+		autoscalerReq.LogLevel = new(int32(logLevel.(int)))
+	}
+
 	req.AutoscalerConfig = autoscalerReq
 
 	// OpenIDConnect configuration
 
 	createClusterRequestOpenIDConnectConfig := &k8s.CreateClusterRequestOpenIDConnectConfig{}
 
-	if issuerURL, ok := d.GetOk("open_id_connect_config.0.issuer_url"); ok {
+	issuerURL, issuerURLOK := d.GetOk("open_id_connect_config.0.issuer_url")
+	if issuerURLOK {
 		req.OpenIDConnectConfig = createClusterRequestOpenIDConnectConfig
-		createClusterRequestOpenIDConnectConfig.IssuerURL = issuerURL.(string)
+		createClusterRequestOpenIDConnectConfig.IssuerURL = strings.TrimSuffix(issuerURL.(string), "/")
 	}
 
 	if clientID, ok := d.GetOk("open_id_connect_config.0.client_id"); ok {
@@ -560,8 +567,7 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 	}
 
 	if serviceDNSIP, ok := d.GetOk("service_dns_ip"); ok {
-		serviceDNSIPNetIP := net.ParseIP(serviceDNSIP.(string))
-		req.ServiceDNSIP = &serviceDNSIPNetIP
+		req.ServiceDNSIP = new(net.ParseIP(serviceDNSIP.(string)))
 	}
 
 	// Cluster creation
@@ -583,6 +589,19 @@ func ResourceK8SClusterCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	if err != nil {
 		return append(diag.FromErr(err), diags...)
+	}
+
+	if issuerURLOK && strings.HasSuffix(issuerURL.(string), "/") {
+		_, err = k8sAPI.UpdateCluster(&k8s.UpdateClusterRequest{
+			Region:    region,
+			ClusterID: res.ID,
+			OpenIDConnectConfig: &k8s.UpdateClusterRequestOpenIDConnectConfig{
+				IssuerURL: new(issuerURL.(string)),
+			},
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return append(diag.FromErr(err), diags...)
+		}
 	}
 
 	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
@@ -847,6 +866,16 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 		autoscalerReq.MaxGracefulTerminationSec = new(uint32(d.Get("autoscaler_config.0.max_graceful_termination_sec").(int)))
 	}
 
+	// Changes for "autoscaler_config.0.skip_nodes_with_local_storage" are not properly picked up by Terraform since the attribute is a bool nested in an Optional/Computed block
+	skipNodesWithLocalStorage, skipNodesWithLocalStorageSet := meta.GetRawConfigForKey(d, "autoscaler_config.0.skip_nodes_with_local_storage", cty.Bool)
+	if skipNodesWithLocalStorageSet {
+		autoscalerReq.SkipNodesWithLocalStorage = new(skipNodesWithLocalStorage.(bool))
+	}
+
+	if d.HasChange("autoscaler_config.0.log_level") {
+		autoscalerReq.LogLevel = new(int32(d.Get("autoscaler_config.0.log_level").(int)))
+	}
+
 	updateRequest.AutoscalerConfig = autoscalerReq
 
 	////
@@ -1053,6 +1082,20 @@ func autoscalerConfigSchema() *schema.Resource {
 				Optional:    true,
 				Default:     600,
 				Description: "Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node",
+			},
+			"skip_nodes_with_local_storage": {
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath, defaults to true.",
+			},
+			"log_level": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     2,
+				ForceNew:    true,
+				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose), defaults to 2.",
 			},
 		},
 	}

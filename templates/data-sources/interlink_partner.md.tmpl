@@ -1,0 +1,36 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Interlink"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }} (Data Source)
+
+{{ .Description -}}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+- `partner_id` - (Optional) The ID of the partner. Can be a plain UUID or a regional ID. Conflicts with `name`.
+- `name` - (Optional) The name of the partner to filter for. Conflicts with `partner_id`.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the partner operates.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the partner.
+- `contact_email` - Contact email address of the partner.
+- `logo_url` - URL of the partner's logo.
+- `portal_url` - URL of the partner's portal.
+- `created_at` - Creation date of the partner.
+- `updated_at` - Last update date of the partner.

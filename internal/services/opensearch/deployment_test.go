@@ -3,6 +3,7 @@ package opensearch_test
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -32,13 +34,14 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "name", "tf-test-opensearch-basic"),
@@ -57,6 +60,7 @@ resource "scaleway_opensearch_deployment" "main" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
   tags        = ["tag1", "tag2"]
   volume {
@@ -64,7 +68,7 @@ resource "scaleway_opensearch_deployment" "main" {
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "tags.#", "2"),
@@ -85,7 +89,10 @@ func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isDeploymentDestroyed(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isDeploymentDestroyed(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -103,29 +110,145 @@ resource "scaleway_opensearch_deployment" "pn" {
   version     = "%s"
   node_amount = 1
   node_type   = "%s"
+  user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
-  
-  private_network {
-    private_network_id = scaleway_vpc_private_network.main.id
-  }
-  
+
+  depends_on = [scaleway_vpc_private_network.main]
+
   volume {
     type        = "sbs_5k"
     size_in_gb = 5
   }
 }
-`, latestVersion, nodeType),
+`, latestVersion, nodeType, deploymentTestUserName),
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "name", "tf-test-opensearch-pn"),
-					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "private_network.0.private_network_id"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.0.public", "false"),
-					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "endpoints.0.private_network_id"),
+					testAccCheckOpenSearchHasNoPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "tf-test-opensearch-vpc"
+}
+
+resource "scaleway_vpc_private_network" "main" {
+  name   = "tf-test-opensearch-pn"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_opensearch_deployment" "pn" {
+  name        = "tf-test-opensearch-pn"
+  version     = "%s"
+  node_amount = 1
+  node_type   = "%s"
+  user_name   = "%s"
+  password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
+
+  private_network {
+    private_network_id = scaleway_vpc_private_network.main.id
+  }
+
+  volume {
+    type        = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					testAccCheckOpenSearchHasPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_vpc" "main" {
+  name = "tf-test-opensearch-vpc"
+}
+
+resource "scaleway_vpc_private_network" "main" {
+  name   = "tf-test-opensearch-pn"
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_opensearch_deployment" "pn" {
+  name        = "tf-test-opensearch-pn"
+  version     = "%s"
+  node_amount = 1
+  node_type   = "%s"
+  user_name   = "%s"
+  password    = "ThisIsASecurePassword123!"
+
+  depends_on = [scaleway_vpc_private_network.main]
+
+  volume {
+    type        = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.pn", "endpoints.#", "1"),
+					testAccCheckOpenSearchHasNoPrivateNetworkEndpoint("scaleway_opensearch_deployment.pn"),
+					resource.TestCheckResourceAttrSet("scaleway_opensearch_deployment.pn", "public_dashboard_url"),
 				),
 			},
 		},
 	})
+}
+
+func testAccCheckOpenSearchHasPrivateNetworkEndpoint(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		n, err := strconv.Atoi(rs.Primary.Attributes["endpoints.#"])
+		if err != nil {
+			return fmt.Errorf("parse endpoints.#: %w", err)
+		}
+
+		for i := range n {
+			if rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.public", i)] == "false" &&
+				rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.private_network_id", i)] != "" {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("expected a private network endpoint among %d endpoints", n)
+	}
+}
+
+func testAccCheckOpenSearchHasNoPrivateNetworkEndpoint(resourceName string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+
+		n, err := strconv.Atoi(rs.Primary.Attributes["endpoints.#"])
+		if err != nil {
+			return fmt.Errorf("parse endpoints.#: %w", err)
+		}
+
+		for i := range n {
+			if rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.public", i)] == "false" &&
+				rs.Primary.Attributes[fmt.Sprintf("endpoints.%d.private_network_id", i)] != "" {
+				return fmt.Errorf("unexpected private network endpoint among %d endpoints", n)
+			}
+		}
+
+		return nil
+	}
 }
 
 func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {

@@ -40,6 +40,11 @@ func TestAccRoutingPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_routing_policy.main", "updated_at"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_s2s_vpn_routing_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

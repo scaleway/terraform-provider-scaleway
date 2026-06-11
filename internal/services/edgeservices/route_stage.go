@@ -37,9 +37,16 @@ func routeSchema() map[string]*schema.Schema {
 			Description: "The ID of the pipeline",
 		},
 		"waf_stage_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Description: "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The ID of the WAF stage HTTP requests should be forwarded to when no rules are matched",
+			ConflictsWith: []string{"backend_stage_id"},
+		},
+		"backend_stage_id": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			Description:   "The ID of the backend stage HTTP requests should be forwarded to when no rules are matched",
+			ConflictsWith: []string{"waf_stage_id"},
 		},
 		"rule": {
 			Type:        schema.TypeList,
@@ -49,8 +56,13 @@ func routeSchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"backend_stage_id": {
 						Type:        schema.TypeString,
-						Required:    true,
+						Optional:    true,
 						Description: "ID of the backend stage that requests matching the rule should be forwarded to",
+					},
+					"waf_stage_id": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "ID of the WAF stage that requests matching the rule should be forwarded to",
 					},
 					"rule_http_match": {
 						Type:        schema.TypeList,
@@ -90,6 +102,27 @@ func routeSchema() map[string]*schema.Schema {
 										},
 									},
 								},
+								"host_filter": {
+									Type:        schema.TypeList,
+									Optional:    true,
+									MaxItems:    1,
+									Description: "Host to filter for. A request whose host matches the given filter will be considered to match the rule. All hosts will match if none is provided",
+									Elem: &schema.Resource{
+										Schema: map[string]*schema.Schema{
+											"host_filter_type": {
+												Type:             schema.TypeString,
+												Required:         true,
+												ValidateDiagFunc: verify.ValidateEnum[edgeservices.RuleHTTPMatchHostFilterHostFilterType](),
+												Description:      "The type of filter to match for the host path",
+											},
+											"value": {
+												Type:        schema.TypeString,
+												Required:    true,
+												Description: "The value to be matched for the host path",
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -114,8 +147,9 @@ func ResourceRouteStageCreate(ctx context.Context, d *schema.ResourceData, m any
 	api := NewEdgeServicesAPI(m)
 
 	routeStage, err := api.CreateRouteStage(&edgeservices.CreateRouteStageRequest{
-		PipelineID: d.Get("pipeline_id").(string),
-		WafStageID: types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
+		PipelineID:     d.Get("pipeline_id").(string),
+		WafStageID:     types.ExpandStringPtr(d.Get("waf_stage_id").(string)),
+		BackendStageID: types.ExpandStringPtr(d.Get("backend_stage_id").(string)),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -152,11 +186,6 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("pipeline_id", routeStage.PipelineID)
-	_ = d.Set("waf_stage_id", types.FlattenStringPtr(routeStage.WafStageID))
-	_ = d.Set("created_at", types.FlattenTime(routeStage.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(routeStage.UpdatedAt))
-
 	routeRules, err := api.ListRouteRules(&edgeservices.ListRouteRulesRequest{
 		RouteStageID: routeStage.ID,
 	}, scw.WithContext(ctx))
@@ -164,11 +193,23 @@ func ResourceRouteStageRead(ctx context.Context, d *schema.ResourceData, m any) 
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("rule", flattenRouteRules(routeRules.RouteRules))
+	diags := setRouteStageState(d, routeStage, routeRules.RouteRules)
 
-	if err = identity.SetGlobalIdentity(d, routeStage.ID); err != nil {
+	err = identity.SetGlobalIdentity(d, routeStage.ID)
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	return diags
+}
+
+func setRouteStageState(d *schema.ResourceData, routeStage *edgeservices.RouteStage, routeRules []*edgeservices.RouteRule) diag.Diagnostics {
+	_ = d.Set("pipeline_id", routeStage.PipelineID)
+	_ = d.Set("waf_stage_id", types.FlattenStringPtr(routeStage.WafStageID))
+	_ = d.Set("backend_stage_id", types.FlattenStringPtr(routeStage.BackendStageID))
+	_ = d.Set("created_at", types.FlattenTime(routeStage.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(routeStage.UpdatedAt))
+	_ = d.Set("rule", flattenRouteRules(routeRules))
 
 	return nil
 }
@@ -184,6 +225,11 @@ func ResourceRouteStageUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("waf_stage_id") {
 		updateRequest.WafStageID = types.ExpandStringPtr(d.Get("waf_stage_id").(string))
+		hasChanged = true
+	}
+
+	if d.HasChange("backend_stage_id") {
+		updateRequest.BackendStageID = types.ExpandStringPtr(d.Get("backend_stage_id").(string))
 		hasChanged = true
 	}
 

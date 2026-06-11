@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -221,8 +221,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	if d.HasChange("size_in_gb") {
-		volumeSizeInBytes := scw.Size(uint64(d.Get("size_in_gb").(int)) * gb)
-		req.Size = &volumeSizeInBytes
+		req.Size = new(scw.Size(uint64(d.Get("size_in_gb").(int)) * gb))
 	}
 
 	if d.HasChange("tags") {

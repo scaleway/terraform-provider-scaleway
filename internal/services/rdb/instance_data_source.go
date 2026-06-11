@@ -72,5 +72,5 @@ func DataSourceRDBInstanceRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	return ResourceRdbInstanceRead(ctx, d, m)
+	return readInstanceIntoState(ctx, d, m)
 }

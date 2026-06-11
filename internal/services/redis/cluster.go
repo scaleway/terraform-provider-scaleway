@@ -90,7 +90,7 @@ func clusterSchema() map[string]*schema.Schema {
 		"password_wo": {
 			Type:          schema.TypeString,
 			Optional:      true,
-			Description:   "Password of the user in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:   "Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
 			WriteOnly:     true,
 			ConflictsWith: []string{"password"},
 			RequiredWith:  []string{"password_wo_version"},
@@ -98,7 +98,7 @@ func clusterSchema() map[string]*schema.Schema {
 		"password_wo_version": {
 			Type:         schema.TypeInt,
 			Optional:     true,
-			Description:  "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
 			RequiredWith: []string{"password_wo"},
 		},
 		"tags": {
@@ -268,6 +268,12 @@ func clusterSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "public TLS certificate used by redis cluster, empty if tls is disabled",
+		},
+		"connection_string": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Sensitive:   true,
+			Description: "Redis connection URI for the first reachable endpoint (public is preferred over private). Uses scheme `rediss` when TLS is enabled. Database index is always `0`. When a password is available in state, userinfo includes `user_name` and the password (Redis ACL). When `password_wo` is used, the password is omitted because it is not stored in state.",
 		},
 		"created_at": {
 			Type:        schema.TypeString,
@@ -523,6 +529,13 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, redisAPI *redi
 	} else {
 		_ = d.Set("certificate", "")
 	}
+
+	connPassword := ""
+	if _, ok := d.GetOk("password_wo_version"); !ok {
+		connPassword = d.Get("password").(string)
+	}
+
+	_ = d.Set("connection_string", redisConnectionString(cluster.Endpoints, userName, connPassword, cluster.TLSEnabled))
 
 	return diags
 }

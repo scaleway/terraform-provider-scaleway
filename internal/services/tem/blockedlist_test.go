@@ -31,6 +31,7 @@ func TestAccBlockedList_Basic(t *testing.T) {
 				resource "scaleway_domain_zone" "test" {
   						domain    = "%s"
   						subdomain = "%s"
+						project_id = "%s"
 					}
 
 					resource scaleway_tem_domain cr01 {
@@ -55,7 +56,7 @@ func TestAccBlockedList_Basic(t *testing.T) {
     						scaleway_tem_domain_validation.valid
   						]
 					}
-				`, domainNameValidation, subDomainName, blockedEmail),
+				`, domainNameValidation, subDomainName, testAccTEMProjectID, blockedEmail),
 				Check: resource.ComposeTestCheckFunc(
 					isBlockedEmailPresent(tt, "scaleway_tem_blocked_list.test"),
 					resource.TestCheckResourceAttr("scaleway_tem_blocked_list.test", "email", blockedEmail),
@@ -85,7 +86,7 @@ func isBlockedEmailPresent(tt *acctest.TestTools, n string) resource.TestCheckFu
 		blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
 			Region:   region,
 			DomainID: domainID,
-			Email:    new(blockedEmail),
+			Email:    &blockedEmail,
 		}, scw.WithContext(context.Background()))
 		if err != nil {
 			return err
@@ -116,7 +117,7 @@ func isBlockedEmailDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			blocklists, err := api.ListBlocklists(&temSDK.ListBlocklistsRequest{
 				Region:   region,
 				DomainID: domainID,
-				Email:    new(blockedEmail),
+				Email:    &blockedEmail,
 			}, scw.WithContext(context.Background()))
 			if err != nil {
 				return err

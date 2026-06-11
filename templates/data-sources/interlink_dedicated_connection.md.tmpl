@@ -1,0 +1,43 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Interlink"
+page_title: "Scaleway: {{ .Name }}"
+---
+
+# {{ .Name }}
+
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+
+{{ end -}}
+
+## Argument Reference
+
+- `connection_id` - (Optional) The ID of the dedicated connection. Can be a plain UUID or a regional ID. Conflicts with `name`.
+- `name` - (Optional) The name of the dedicated connection to filter for. Conflicts with `connection_id`.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the dedicated connection exists.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the dedicated connection.
+- `status` - Status of the dedicated connection.
+- `tags` - List of tags associated with the dedicated connection.
+- `pop_id` - ID of the PoP where the dedicated connection is located.
+- `bandwidth_mbps` - Bandwidth size of the dedicated connection in Mbps.
+- `available_link_bandwidths` - Sizes of the links supported on this dedicated connection.
+- `demarcation_info` - Demarcation details required by the data center to set up the Cross Connect.
+- `vlan_range` - VLAN range for self-hosted links. Contains `start` and `end`.
+- `project_id` - The ID of the project the dedicated connection belongs to.
+- `organization_id` - The ID of the organization the dedicated connection belongs to.
+- `created_at` - Creation date of the dedicated connection (RFC 3339 format).
+- `updated_at` - Last modification date of the dedicated connection (RFC 3339 format).

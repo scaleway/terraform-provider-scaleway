@@ -114,9 +114,7 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {
 	t, err := action()
 
-	var transientStateError *scw.TransientStateError
-
-	if errors.As(err, &transientStateError) {
+	if _, ok := errors.AsType[*scw.TransientStateError](err); ok {
 		_, err := waiter()
 		if err != nil {
 			return t, err

@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -21,6 +22,7 @@ func ResourceSNS() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    snsSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -50,7 +52,9 @@ func ResourceMNQSNSCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, sns.ProjectID))
+	if err := identity.SetRegionalIdentity(d, sns.Region, sns.ProjectID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSNSRead(ctx, d, m)
 }
@@ -65,10 +69,59 @@ func ResourceMNQSNSRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sns, err = api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setSNSState(d, sns)
+}
+
+// readSNSIntoState fetches the SNS info and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readSNSIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, region, id, err := NewSNSAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	sns, err := api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+		Region:    region,
+		ProjectID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sns, err = api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setSNSState(d, sns)
+}
+
+func setSNSState(d *schema.ResourceData, sns *mnq.SnsInfo) diag.Diagnostics {
 	_ = d.Set("endpoint", sns.SnsEndpointURL)
 	_ = d.Set("region", sns.Region)
 	_ = d.Set("project_id", sns.ProjectID)
@@ -86,6 +139,17 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:    region,
 		ProjectID: id,
 	}, scw.WithContext(ctx))
+	if err != nil && isMNQNamespaceReadRetryableError(err) {
+		err = retryMNQNamespaceRead(ctx, func() error {
+			sns, err = api.GetSnsInfo(&mnq.SnsAPIGetSnsInfoRequest{
+				Region:    region,
+				ProjectID: id,
+			}, scw.WithContext(ctx))
+
+			return err
+		})
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,10 +160,14 @@ func ResourceMNQSNSDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return nil
 	}
 
-	_, err = api.DeactivateSns(&mnq.SnsAPIDeactivateSnsRequest{
-		Region:    region,
-		ProjectID: id,
-	}, scw.WithContext(ctx))
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.DeactivateSns(&mnq.SnsAPIDeactivateSnsRequest{
+			Region:    region,
+			ProjectID: id,
+		}, scw.WithContext(ctx))
+
+		return e
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

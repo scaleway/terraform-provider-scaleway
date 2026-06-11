@@ -103,6 +103,32 @@ resource "scaleway_vpc_route" "rt01" {
 }
 ```
 
+### With VPC Connector
+
+```terraform
+resource "scaleway_vpc" "vpc01" {
+  name = "tf-vpc-source"
+}
+
+resource "scaleway_vpc" "vpc02" {
+  name = "tf-vpc-target"
+}
+
+resource "scaleway_vpc_connector" "main" {
+  name          = "tf-conn-route"
+  vpc_id        = scaleway_vpc.vpc01.id
+  target_vpc_id = scaleway_vpc.vpc02.id
+}
+
+resource "scaleway_vpc_route" "rt01" {
+  vpc_id                   = scaleway_vpc.vpc01.id
+  description              = "tf-route-connector"
+  tags                     = ["tf", "route"]
+  destination              = "10.0.0.0/24"
+  nexthop_vpc_connector_id = scaleway_vpc_connector.main.id
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -113,6 +139,7 @@ The following arguments are supported:
 - `destination` - (Optional) The destination of the route.
 - `nexthop_resource_id` - (Optional) The ID of the nexthop resource.
 - `nexthop_private_network_id` - (Optional) The ID of the nexthop private network.
+- `nexthop_vpc_connector_id` - (Optional) The ID of the nexthop VPC Connector.
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the route.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the route is associated with.
 

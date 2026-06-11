@@ -163,7 +163,7 @@ func (a *RefreshSSHKeysAction) Invoke(ctx context.Context, req action.InvokeRequ
 	}
 
 	if data.Wait.ValueBool() {
-		_, err = waitForVPCPublicGatewayV2(ctx, a.vpcgwAPI, zone, gatewayID, defaultTimeout)
+		_, err = waitForVPCPublicGateway(ctx, a.vpcgwAPI, zone, gatewayID, defaultTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error waiting for vpcgw SSH keys refresh completion",

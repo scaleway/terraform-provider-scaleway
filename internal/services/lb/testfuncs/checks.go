@@ -43,7 +43,7 @@ func IsIPDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					_, waitErr := lbAPI.WaitForLbInstances(&lb2.ZonedAPIWaitForLBInstancesRequest{
 						Zone:          zone,
 						LBID:          lbID,
-						Timeout:       scw.TimeDurationPtr(instance.DefaultInstanceServerWaitTimeout),
+						Timeout:       new(instance.DefaultInstanceServerWaitTimeout),
 						RetryInterval: &retryInterval,
 					}, scw.WithContext(ctx))
 

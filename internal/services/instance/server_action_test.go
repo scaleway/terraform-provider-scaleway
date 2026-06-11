@@ -418,11 +418,10 @@ func checkImage(tt *acctest.TestTools, serverTFName string, expectedSpecs imageS
 		}
 
 		serverName := rs.Primary.Attributes["name"]
-		imageNamePrefix := "image_" + serverName
 
 		images, err := api.ListImages(&instanceSDK.ListImagesRequest{
 			Zone: zone,
-			Name: &imageNamePrefix,
+			Name: new("image_" + serverName),
 		}, scw.WithAllPages())
 		if err != nil {
 			return err
@@ -461,11 +460,10 @@ func destroyUntrackedImagesAndSnapshots(tt *acctest.TestTools, serverTFName stri
 		}
 
 		serverName := rs.Primary.Attributes["name"]
-		imageNamePrefix := "image_" + serverName
 
 		images, err := api.ListImages(&instanceSDK.ListImagesRequest{
 			Zone: zone,
-			Name: &imageNamePrefix,
+			Name: new("image_" + serverName),
 		}, scw.WithAllPages())
 		if err != nil {
 			return err

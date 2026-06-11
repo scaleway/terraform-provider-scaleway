@@ -7,8 +7,9 @@ import (
 
 	applesilicon "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
-	block "github.com/scaleway/scaleway-sdk-go/api/block/v1alpha1"
-	container "github.com/scaleway/scaleway-sdk-go/api/container/v1beta1"
+	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
+	"github.com/scaleway/scaleway-sdk-go/api/container/v1"
+	datawarehouseapi "github.com/scaleway/scaleway-sdk-go/api/datawarehouse/v1beta1"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	file "github.com/scaleway/scaleway-sdk-go/api/file/v1alpha1"
 	function "github.com/scaleway/scaleway-sdk-go/api/function/v1beta1"
@@ -43,9 +44,20 @@ var transientStates = map[string]bool{
 	block.VolumeStatusResizing.String():     true,
 	block.VolumeStatusSnapshotting.String(): true,
 
-	container.ContainerStatusCreating.String(): true,
-	container.ContainerStatusDeleting.String(): true,
-	container.ContainerStatusPending.String():  true,
+	container.ContainerStatusCreating.String():  true,
+	container.ContainerStatusDeleting.String():  true,
+	container.ContainerStatusLocking.String():   true,
+	container.ContainerStatusUpdating.String():  true,
+	container.ContainerStatusUpgrading.String(): true,
+
+	datawarehouseapi.DeploymentStatusCreating.String():    true,
+	datawarehouseapi.DeploymentStatusConfiguring.String(): true,
+	datawarehouseapi.DeploymentStatusDeleting.String():    true,
+	datawarehouseapi.DeploymentStatusDeploying.String():   true,
+	datawarehouseapi.DeploymentStatusLocking.String():     true,
+	datawarehouseapi.DeploymentStatusUnlocking.String():   true,
+	datawarehouseapi.DeploymentStatusStopping.String():    true,
+	datawarehouseapi.DeploymentStatusStarting.String():    true,
 
 	domain.DNSZoneStatusPending.String(): true,
 

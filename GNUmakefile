@@ -25,6 +25,9 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
 
+test-update-cassettes: fmtcheck
+	TF_ACC=1 TF_UPDATE_CASSETTES=true go test $(TEST) -run $(TESTARGS) -timeout=120m -parallel=10
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
@@ -58,13 +61,13 @@ website:
 .PHONY: build test testacc vet fmt fmtcheck errcheck test-compile website docs
 
 tfproviderlint:
-	go tool tfproviderlint -S013=false -R014=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
+	go tool tfproviderlint -S013=false -R014=false -R019=false -AT001.ignored-filename-suffixes=_data_source_test.go ./...
 
 tfproviderdocs:
 	go tool tfproviderdocs check -provider-name scaleway -enable-contents-check
 
 tfproviderlintx:
-	go tool tfproviderlintx -S013=false -XR001=false -XS002=false ./...
+	go tool tfproviderlintx -S013=false -XR001=false -XS002=false -R019=false ./...
 
 gopaniccheck:
 	go tool gopaniccheck ./...

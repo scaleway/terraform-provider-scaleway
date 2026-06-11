@@ -2,7 +2,6 @@ package secret
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -22,6 +22,7 @@ func ResourceVersion() *schema.Resource {
 		ReadContext:   ResourceVersionRead,
 		UpdateContext: ResourceVersionUpdate,
 		DeleteContext: ResourceVersionDelete,
+		Identity:      secretVersionIdentity(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -39,6 +40,7 @@ func versionSchema() map[string]*schema.Schema {
 			Type:             schema.TypeString,
 			Required:         true,
 			Description:      "The secret ID associated with this version",
+			ForceNew:         true,
 			DiffSuppressFunc: dsf.Locality,
 		},
 		"data": {
@@ -55,7 +57,7 @@ func versionSchema() map[string]*schema.Schema {
 		"data_wo": {
 			Type:        schema.TypeString,
 			Optional:    true,
-			Description: "The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Description: "The raw data payload of your secret version in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Only one of `data` or `data_wo` should be specified. `data_wo` will not be set in the Terraform state. To update the `data_wo`, you must also update the `data_wo_version`.",
 			Sensitive:   true,
 			WriteOnly:   true,
 			StateFunc: func(i any) string {
@@ -67,7 +69,7 @@ func versionSchema() map[string]*schema.Schema {
 			Type:        schema.TypeInt,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.",
+			Description: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) data. To update the `data_wo`, you must also update the `data_wo_version`.",
 		},
 		"description": {
 			Type:        schema.TypeString,
@@ -96,6 +98,22 @@ func versionSchema() map[string]*schema.Schema {
 		},
 		"region": regional.Schema(),
 	}
+}
+
+func secretVersionIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region": identity.DefaultRegionAttribute(),
+		"secret_id": {
+			Type:              schema.TypeString,
+			Description:       "The secret ID",
+			RequiredForImport: true,
+		},
+		"revision": {
+			Type:              schema.TypeString,
+			Description:       "The revision of the secret version",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -137,7 +155,14 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("data", Base64Encoded(payloadSecretRaw))
 	}
 
-	d.SetId(regional.NewIDString(region, fmt.Sprintf("%s/%d", secretResponse.SecretID, secretResponse.Revision)))
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": secretResponse.SecretID,
+		"revision":  strconv.FormatUint(uint64(secretResponse.Revision), 10),
+	}, "region", "secret_id", "revision")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceVersionRead(ctx, d, m)
 }
@@ -163,14 +188,16 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	revisionStr := strconv.Itoa(int(secretResponse.Revision))
-	_ = d.Set("revision", revisionStr)
-	_ = d.Set("secret_id", regional.NewIDString(region, id))
-	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
-	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("region", string(region))
+	setVersionState(d, secretResponse)
+
+	err = identity.SetMultiPartIdentity(d, map[string]string{
+		"region":    region.String(),
+		"secret_id": id,
+		"revision":  revision,
+	}, "region", "secret_id", "revision")
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

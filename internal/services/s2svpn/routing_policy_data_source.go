@@ -8,6 +8,7 @@ import (
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -67,14 +68,13 @@ func DataSourceS2SRoutingPolicyRead(ctx context.Context, d *schema.ResourceData,
 	d.SetId(regionalID)
 	_ = d.Set("routing_policy_id", regionalID)
 
-	diags := ResourceRoutingPolicyRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read routing policy state")...)
+	policy, err := api.GetRoutingPolicy(&s2svpn.GetRoutingPolicyRequest{
+		RoutingPolicyID: locality.ExpandID(routingPolicyID),
+		Region:          region,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("routing policy (%s) not found", regionalID)
-	}
-
-	return nil
+	return setRoutingPolicyState(d, policy)
 }

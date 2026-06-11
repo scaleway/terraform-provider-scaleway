@@ -28,7 +28,11 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the MongoDB® user.
 
-- `password` - (Required) The password of the MongoDB® user.
+- `password` - (Optional) The password of the MongoDB® user. Only one of `password` or `password_wo` should be specified.
+
+- `password_wo` - (Optional) The password of the MongoDB® user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
+
+- `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 
 - `roles` - (Optional) List of roles assigned to the user. Each role block supports:
     - `role` - (Required) The role name. Valid values are `read`, `read_write`, `db_admin`, `sync`.

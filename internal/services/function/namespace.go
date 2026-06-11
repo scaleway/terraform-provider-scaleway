@@ -91,13 +91,6 @@ func namespaceSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The ID of the registry namespace",
 		},
-		"activate_vpc_integration": {
-			Type:        schema.TypeBool,
-			Deprecated:  "VPC integration is now available on all namespaces, so this field is not configurable anymore and its value will always be \"true\".",
-			Optional:    true,
-			Default:     true,
-			Description: "Activate VPC integration for the namespace",
-		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -117,7 +110,6 @@ func ResourceFunctionNamespaceCreate(ctx context.Context, d *schema.ResourceData
 		Name:                       types.ExpandOrGenerateString(d.Get("name").(string), "func"),
 		ProjectID:                  d.Get("project_id").(string),
 		Region:                     region,
-		ActivateVpcIntegration:     new(true),
 	}
 
 	rawTag, tagExist := d.GetOk("tags")
@@ -167,7 +159,6 @@ func ResourceFunctionNamespaceRead(ctx context.Context, d *schema.ResourceData, 
 	_ = d.Set("registry_endpoint", ns.RegistryEndpoint)
 	_ = d.Set("registry_namespace_id", ns.RegistryNamespaceID)
 	_ = d.Set("secret_environment_variables", flattenFunctionSecrets(ns.SecretEnvironmentVariables))
-	_ = d.Set("activate_vpc_integration", types.FlattenBoolPtr(ns.VpcIntegrationActivated)) //nolint:staticcheck
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	iot "github.com/scaleway/scaleway-sdk-go/api/iot/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -31,6 +32,7 @@ func ResourceHub() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    hubSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -158,7 +160,9 @@ func ResourceIotHubCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitIotHub(ctx, iotAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -233,6 +237,39 @@ func ResourceIotHubRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
+	if err := identity.SetRegionalIdentity(d, region, hubID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setHubState(ctx, d, m, response, region)
+}
+
+// readHubIntoState fetches the hub and sets state without calling identity.SetRegionalIdentity.
+// Use this for data sources which do not have Identity schema.
+func readHubIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	iotAPI, region, hubID, err := NewAPIWithRegionAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	response, err := iotAPI.GetHub(&iot.GetHubRequest{
+		Region: region,
+		HubID:  hubID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setHubState(ctx, d, m, response, region)
+}
+
+func setHubState(ctx context.Context, d *schema.ResourceData, m any, response *iot.Hub, region scw.Region) diag.Diagnostics {
 	_ = d.Set("region", string(region))
 	_ = d.Set("organization_id", response.OrganizationID)
 	_ = d.Set("project_id", response.ProjectID)

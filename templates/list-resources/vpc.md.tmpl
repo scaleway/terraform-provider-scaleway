@@ -1,0 +1,51 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "VPC"
+description: |-
+  Lists Scaleway Virtual Private Clouds (VPCs) across regions and projects.
+---
+
+# Resource: {{ .Name }}
+
+{{ .Description }}
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `name` - (Optional) Name of the VPC to filter for.
+- `tags` - (Optional) Tags to filter for.
+- `is_default` - (Optional) Whether to filter for the default VPC only.
+- `routing_enabled` - (Optional) Whether to filter for VPCs with routing enabled.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `project_ids` - (Optional) Project IDs to filter for. Use `["*"]` to list across all projects.
+- `regions` - (Optional) Regions to filter for. Use `["*"]` to list from all regions.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each VPC:
+
+- `id` - The ID of the VPC.
+- `name` - The name of the VPC.
+- `created_at` - The date and time of the creation of the VPC.
+- `updated_at` - The date and time of the last update of the VPC.
+- `organization_id` - The ID of the organization the VPC is associated with.
+- `project_id` - The ID of the project the VPC is associated with.
+- `region` - The region of the VPC.
+- `is_default` - Whether the VPC is the default VPC.
+- `tags` - The tags associated with the VPC.
+- `enable_routing` - Whether routing is enabled for the VPC.
+- `enable_custom_routes_propagation` - Whether custom routes propagation is enabled for the VPC.

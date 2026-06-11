@@ -47,7 +47,7 @@ func testSweepLB(_ string) error {
 			_, err := lbAPI.WaitForLbInstances(&lbSDK.ZonedAPIWaitForLBInstancesRequest{
 				Zone:          zone,
 				LBID:          l.ID,
-				Timeout:       scw.TimeDurationPtr(instance.DefaultInstanceServerWaitTimeout),
+				Timeout:       new(instance.DefaultInstanceServerWaitTimeout),
 				RetryInterval: &retryInterval,
 			})
 			if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -34,6 +35,7 @@ func ResourceSQSQueue() *schema.Resource {
 		SchemaVersion: 1,
 		SchemaFunc:    sqsQueueSchema,
 		CustomizeDiff: resourceMNQQueueCustomizeDiff,
+		Identity:      sqsQueueIdentity(),
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
@@ -42,6 +44,18 @@ func ResourceSQSQueue() *schema.Resource {
 			},
 		},
 	}
+}
+
+func sqsQueueIdentity() *schema.ResourceIdentity {
+	return identity.WrapSchemaMap(map[string]*schema.Schema{
+		"region":     identity.DefaultRegionAttribute(),
+		"project_id": identity.DefaultProjectIDAttribute(),
+		"name": {
+			Type:              schema.TypeString,
+			Description:       "The queue name",
+			RequiredForImport: true,
+		},
+	})
 }
 
 func sqsQueueSchema() map[string]*schema.Schema {
@@ -171,16 +185,16 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	sqsInfo, err := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
-		Region:    region,
-		ProjectID: projectID,
+	err = retryMNQNamespaceRead(ctx, func() error {
+		_, e := api.GetSqsInfo(&mnq.SqsAPIGetSqsInfoRequest{
+			Region:    region,
+			ProjectID: projectID,
+		})
+
+		return e
 	})
 	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if sqsInfo.Status != mnq.SqsInfoStatusEnabled {
-		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project, got: %q", sqsInfo.Status))
+		return diag.FromErr(fmt.Errorf("expected sqs to be enabled for given project: %w", err))
 	}
 
 	sqsClient, _, err := SQSClientWithRegion(ctx, d, m)
@@ -212,7 +226,13 @@ func ResourceMNQSQSQueueCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.Errorf("failed to create SQS Queue: %s", err)
 	}
 
-	d.SetId(composeMNQID(region, projectID, queueName))
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       queueName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceMNQSQSQueueRead(ctx, d, m)
 }
@@ -247,6 +267,14 @@ func ResourceMNQSQSQueueRead(ctx context.Context, d *schema.ResourceData, m any)
 	})
 	if err != nil {
 		return diag.Errorf("failed to get the SQS Queue attributes: %s", err)
+	}
+
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":     string(region),
+		"project_id": projectID,
+		"name":       queueName,
+	}, "region", "project_id", "name"); err != nil {
+		return diag.FromErr(err)
 	}
 
 	values, err := awsAttributesToResourceData(queueAttributes.Attributes, ResourceSQSQueue().SchemaFunc(), SQSAttributesToResourceMap)

@@ -161,14 +161,12 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("policy_mode") {
-		policyMode := instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string))
-		req.PolicyMode = &policyMode
+		req.PolicyMode = new(instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)))
 		hasChanged = true
 	}
 
 	if d.HasChange("policy_type") {
-		policyType := instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
-		req.PolicyType = &policyType
+		req.PolicyType = new(instance.PlacementGroupPolicyType(d.Get("policy_type").(string)))
 		hasChanged = true
 	}
 
