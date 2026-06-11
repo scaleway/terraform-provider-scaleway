@@ -9,14 +9,20 @@ Retrieves information about a Scaleway Datalab instance.
 
 ## Example Usage
 
+### By ID
+
 ```terraform
 data "scaleway_datalab" "by_id" {
   datalab_id = scaleway_datalab.main.id
 }
+```
 
+### By Name
+
+```terraform
 data "scaleway_datalab" "by_name" {
-  name    = "my-datalab"
-  region  = "fr-par"
+  name   = "my-datalab"
+  region = "fr-par"
 }
 ```
 

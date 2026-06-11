@@ -9,11 +9,17 @@ Lists Scaleway Datalab instances.
 
 ## Example Usage
 
+### List All
+
 ```terraform
 data "scaleway_datalabs" "all" {
   region = "fr-par"
 }
+```
 
+### Filtered
+
+```terraform
 data "scaleway_datalabs" "filtered" {
   region = "fr-par"
   name   = "my-datalab"

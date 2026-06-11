@@ -220,7 +220,7 @@ func (d *DatalabDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	region, err := resolveRegion(config.Region, d.meta.ScwClient())
+	region, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 

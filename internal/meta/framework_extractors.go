@@ -1,13 +1,13 @@
-package datalab
+package meta
 
 import (
-	"errors"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-func resolveRegion(regionAttr types.String, client *scw.Client) (scw.Region, error) {
+// ExtractFrameworkRegion resolves the region from a Plugin Framework attribute or the client default.
+func ExtractFrameworkRegion(regionAttr types.String, client *scw.Client) (scw.Region, error) {
 	if !regionAttr.IsNull() && !regionAttr.IsUnknown() && regionAttr.ValueString() != "" {
 		return scw.ParseRegion(regionAttr.ValueString())
 	}
@@ -17,10 +17,11 @@ func resolveRegion(regionAttr types.String, client *scw.Client) (scw.Region, err
 		return region, nil
 	}
 
-	return "", errors.New("region is required; set it on the resource or configure a default region on the provider")
+	return "", regional.ErrRegionNotFound
 }
 
-func resolveProjectID(projectIDAttr types.String, client *scw.Client) (string, error) {
+// ExtractFrameworkProjectID resolves the project ID from a Plugin Framework attribute or the client default.
+func ExtractFrameworkProjectID(projectIDAttr types.String, client *scw.Client) (string, error) {
 	if !projectIDAttr.IsNull() && !projectIDAttr.IsUnknown() && projectIDAttr.ValueString() != "" {
 		return projectIDAttr.ValueString(), nil
 	}
@@ -30,5 +31,5 @@ func resolveProjectID(projectIDAttr types.String, client *scw.Client) (string, e
 		return projectID, nil
 	}
 
-	return "", errors.New("project_id is required; set it on the resource or configure a default project on the provider")
+	return "", ErrProjectIDNotFound
 }

@@ -22,7 +22,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -343,14 +342,14 @@ func (r *DatalabResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	region, err := resolveRegion(data.Region, r.meta.ScwClient())
+	region, err := meta.ExtractFrameworkRegion(data.Region, r.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
 		return
 	}
 
-	projectID, err := resolveProjectID(data.ProjectID, r.meta.ScwClient())
+	projectID, err := meta.ExtractFrameworkProjectID(data.ProjectID, r.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve project ID", err.Error())
 
@@ -663,7 +662,7 @@ func flattenDatalab(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagno
 		Status:           types.StringValue(string(dl.Status)),
 	}
 
-	tagList, d := scwtypes.FlattenFrameworkStringList(ctx, dl.Tags)
+	tagList, d := flattenStringList(ctx, dl.Tags)
 	diags.Append(d...)
 
 	model.Tags = tagList
@@ -763,4 +762,12 @@ func expandTags(ctx context.Context, tags types.List, diags *diag.Diagnostics) [
 	diags.Append(tags.ElementsAs(ctx, &result, false)...)
 
 	return result
+}
+
+func flattenStringList(ctx context.Context, items []string) (types.List, diag.Diagnostics) {
+	if len(items) == 0 {
+		return types.ListNull(types.StringType), nil
+	}
+
+	return types.ListValueFrom(ctx, types.StringType, items)
 }

@@ -12,7 +12,6 @@ import (
 	datalab "github.com/scaleway/scaleway-sdk-go/api/datalab/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -167,7 +166,7 @@ func (d *DatalabsDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	region, err := resolveRegion(config.Region, d.meta.ScwClient())
+	region, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
@@ -227,7 +226,7 @@ func flattenDatalabsList(ctx context.Context, datalabs []*datalab.Datalab, diags
 	items := make([]attr.Value, len(datalabs))
 
 	for i, dl := range datalabs {
-		tagList, d := scwtypes.FlattenFrameworkStringList(ctx, dl.Tags)
+		tagList, d := flattenStringList(ctx, dl.Tags)
 		diags.Append(d...)
 
 		createdAt := types.StringNull()
@@ -240,10 +239,15 @@ func flattenDatalabsList(ctx context.Context, datalabs []*datalab.Datalab, diags
 			updatedAt = types.StringValue(dl.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"))
 		}
 
+		description := types.StringNull()
+		if dl.Description != "" {
+			description = types.StringValue(dl.Description)
+		}
+
 		attrValues := map[string]attr.Value{
 			"id":            types.StringValue(dl.ID),
 			"name":          types.StringValue(dl.Name),
-			"description":   scwtypes.FlattenFrameworkStringValue(dl.Description),
+			"description":   description,
 			"status":        types.StringValue(string(dl.Status)),
 			"tags":          tagList,
 			"region":        types.StringValue(dl.Region.String()),
