@@ -1,6 +1,6 @@
 ---
 page_title: "Scaleway: scaleway_secret"
-subcategory: "Secret"
+subcategory: "Secrets"
 description: |-
   Lists Scaleway Secrets.
 ---
