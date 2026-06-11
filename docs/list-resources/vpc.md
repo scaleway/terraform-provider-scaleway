@@ -7,10 +7,7 @@ description: |-
 
 # Resource: scaleway_vpc
 
-
-
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
-
 
 ## Example Usage
 
@@ -25,7 +22,6 @@ list "scaleway_vpc" "all" {
   }
 }
 ```
-
 ```terraform
 # List VPCs across all regions filtered by name prefix (matches VPCs with names starting with "test-vpc")
 list "scaleway_vpc" "by_name" {
@@ -37,7 +33,6 @@ list "scaleway_vpc" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List VPCs in a specific region (fr-par) for a specific project
 list "scaleway_vpc" "region" {
@@ -49,7 +44,6 @@ list "scaleway_vpc" "region" {
   }
 }
 ```
-
 ```terraform
 # List VPCs in all regions for the default project filtered by a specific tag
 list "scaleway_vpc" "by_tag" {
@@ -61,8 +55,6 @@ list "scaleway_vpc" "by_tag" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

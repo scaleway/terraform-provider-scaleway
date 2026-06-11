@@ -8,8 +8,6 @@ SCIM (System for Cross-domain Identity Management) resource allows you to enable
 
 SCIM is a standard for automating the exchange of user identity information between identity domains, or IT systems. When enabled, it allows for automated provisioning and deprovisioning of user accounts.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -19,8 +17,6 @@ resource "scaleway_iam_scim" "main" {
   organization_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
-
 
 ## Argument Reference
 

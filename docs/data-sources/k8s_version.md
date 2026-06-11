@@ -11,8 +11,6 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 
 You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) with `scw k8s version list` to list all available versions.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -21,15 +19,12 @@ data "scaleway_k8s_version" "latest" {
   name = "latest"
 }
 ```
-
 ```terraform
 # Use a specific version
 data "scaleway_k8s_version" "by_name" {
   name = "1.26.0"
 }
 ```
-
-
 
 ## Argument Reference
 

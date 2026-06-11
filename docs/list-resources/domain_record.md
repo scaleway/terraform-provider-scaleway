@@ -11,7 +11,6 @@ Lists Scaleway DNS zone records across projects and DNS zones.
 
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
 
-
 ## Example Usage
 
 ```terraform
@@ -25,7 +24,6 @@ list "scaleway_domain_record" "all_zones" {
   }
 }
 ```
-
 ```terraform
 // List DNS zone records in a specific zone
 list "scaleway_domain_record" "by_dns_zone" {
@@ -37,7 +35,6 @@ list "scaleway_domain_record" "by_dns_zone" {
   }
 }
 ```
-
 ```terraform
 // List DNS zone records filtered by name
 list "scaleway_domain_record" "by_name" {
@@ -50,8 +47,6 @@ list "scaleway_domain_record" "by_name" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -24,7 +24,6 @@ list "scaleway_lb" "all" {
   }
 }
 ```
-
 ```terraform
 # List Load Balancers across all zones filtered by name
 list "scaleway_lb" "by_name" {
@@ -36,7 +35,6 @@ list "scaleway_lb" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List Load Balancers filtered by tag
 list "scaleway_lb" "by_tag" {
@@ -48,7 +46,6 @@ list "scaleway_lb" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List Load Balancers in a specific zone
 list "scaleway_lb" "by_zone" {
@@ -59,7 +56,6 @@ list "scaleway_lb" "by_zone" {
   }
 }
 ```
-
 
 ## Argument Reference
 

@@ -24,7 +24,6 @@ list "scaleway_keymanager_key" "all" {
   }
 }
 ```
-
 ```terraform
 # List keys filtered by name
 list "scaleway_keymanager_key" "by_name" {
@@ -35,7 +34,6 @@ list "scaleway_keymanager_key" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List keys in specific projects
 list "scaleway_keymanager_key" "by_projects" {
@@ -49,7 +47,6 @@ list "scaleway_keymanager_key" "by_projects" {
   }
 }
 ```
-
 
 ## Argument Reference
 

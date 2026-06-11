@@ -9,8 +9,6 @@ The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/sc
 
 Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -31,7 +29,6 @@ resource "scaleway_k8s_pool" "pool" {
   size       = 1
 }
 ```
-
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
@@ -66,7 +63,6 @@ resource "scaleway_k8s_pool" "pool" {
   max_size    = 5
 }
 ```
-
 ```terraform
 # Example with an Helm provider
 
@@ -152,7 +148,6 @@ resource "helm_release" "nginx_ingress" {
   //}
 }
 ```
-
 ```terraform
 # Example with the kubernetes provider 
 
@@ -192,7 +187,6 @@ provider "kubernetes" {
   )
 }
 ```
-
 ```terraform
 # Multicloud Kubernetes Cluster Example
 # For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
@@ -213,9 +207,6 @@ resource "scaleway_k8s_pool" "pool" {
   min_size   = 0
 }
 ```
-
-
-
 
 ## Argument Reference
 

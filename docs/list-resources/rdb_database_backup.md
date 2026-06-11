@@ -7,10 +7,7 @@ description: |-
 
 # Resource: scaleway_rdb_database_backup
 
-
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/).
-
 
 ## Example Usage
 
@@ -26,7 +23,6 @@ list "scaleway_rdb_database_backup" "by_instance" {
   }
 }
 ```
-
 ```terraform
 # List database backups filtered by name
 list "scaleway_rdb_database_backup" "by_name" {
@@ -40,7 +36,6 @@ list "scaleway_rdb_database_backup" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List database backups on all RDB instances in a region and project
 list "scaleway_rdb_database_backup" "all_instances" {
@@ -53,8 +48,6 @@ list "scaleway_rdb_database_backup" "all_instances" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 
