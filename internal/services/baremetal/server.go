@@ -853,8 +853,7 @@ func ResourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) di
 
 	var diags diag.Diagnostics
 
-	if d.HasChanges("ssh_key_ids", "user", "password", "reinstall_on_config_changes", "partitioning") {
-	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "reinstall_on_config_changes") {
+	if d.HasChanges("ssh_key_ids", "user", "password", "password_wo_version", "service_password", "service_password_wo_version", "partition", "reinstall_on_config_changes") {
 		if !d.Get("reinstall_on_config_changes").(bool) && !d.HasChange("os") {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Warning,
