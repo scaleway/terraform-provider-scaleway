@@ -2,6 +2,7 @@
 subcategory: "Cockpit"
 page_title: "Scaleway: scaleway_cockpit"
 ---
+
 # scaleway_cockpit
 
 ~> **Important:**  The data source `scaleway_cockpit` has been deprecated and will no longer be supported. Instead, use resource `scaleway_cockpit`.
