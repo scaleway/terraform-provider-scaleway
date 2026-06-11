@@ -105,21 +105,20 @@ resource "scaleway_ipam_ip" "ip01" {
 
 The following arguments are supported:
 
+- `tags` - (Optional) The tags associated with the IP.
+- `source` - (Required) The source in which to book the IP.
+  - `zonal` - The zone of the IP (if the IP is public and zoned, rather than private and/or regional)
+  - `private_network_id` - The Private Network of the IP (if the IP is a private IP).
+  - `subnet_id` - The Private Network subnet of the IP (if the IP is a private IP).
+- `is_ipv6` - (Optional) Defines whether to request an IPv6 address instead of IPv4.
+- `custom_resource` - (Optional) The custom resource to attach to the IP being reserved. An example of a custom resource is a virtual machine hosted on an Elastic Metal server.
+  - `mac_address` - The MAC address of the custom resource.
+  - `name` - When the resource is in a Private Network, a DNS record is available to resolve the resource name.
+- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
 - `address` - (Optional) Request a specific IP in the specified source pool.
 
   ~> **Important:** when requesting specific IP addresses, it is best ensure these are created before any other resource in the Private Network. This can be achieved by using `depends_on` relations, or moving the declarations to another Terraform module. Otherwise, other resources may take the requested address first, blocking the whole Terraform setup. Static IPs should be avoided unless necessary, as we cannot guarantee full automation. We recommend to use DNS, or to not request a specific IP.
-
-- `tags` - (Optional) The tags associated with the IP.
-- `source` - (Required) The source in which to book the IP.
-    - `zonal` - The zone of the IP (if the IP is public and zoned, rather than private and/or regional)
-    - `private_network_id` - The Private Network of the IP (if the IP is a private IP).
-    - `subnet_id` - The Private Network subnet of the IP (if the IP is a private IP).
-- `is_ipv6` - (Optional) Defines whether to request an IPv6 address instead of IPv4.
-- `custom_resource` - (Optional) The custom resource to attach to the IP being reserved. An example of a custom resource is a virtual machine hosted on an Elastic Metal server.
-    - `mac_address` - The MAC address of the custom resource.
-    - `name` - When the resource is in a Private Network, a DNS record is available to resolve the resource name.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
 
 ## Attributes Reference
 

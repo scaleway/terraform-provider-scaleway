@@ -32,12 +32,11 @@ data "scaleway_account_ssh_key" "my_key" {
 
 This section lists the arguments that you can provide to the `scaleway_account_ssh_key` data source to filter and retrieve the desired SSH key. Each argument has a specific purpose:
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the SSH key is associated.
 - `name` - The name of the SSH key.
 - `ssh_key_id` - The unique identifier of the SSH key.
 
   -> **Note** You must specify at least one: `name` and/or `ssh_key_id`.
-
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the SSH key is associated.
 
 ## Attributes Reference
 

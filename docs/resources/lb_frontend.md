@@ -180,6 +180,7 @@ The following arguments are supported:
 ## acl
 
 - `name` - (Optional) The ACL name. If not provided it will be randomly generated.
+
 - `action` - (Required) Action to undertake when an ACL filter matches.
     - `type` - (Required) The action type. Possible values are: `allow` or `deny` or `redirect`.
     - `redirect` - (Optional) Redirect parameters when using an ACL with `redirect` action.

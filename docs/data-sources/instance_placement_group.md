@@ -36,7 +36,6 @@ data "scaleway_instance_placement_group" "my_key" {
 In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the placement group.
-
 - `policy_type` - The [policy type](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) of the placement group.
 - `policy_mode` -The [policy mode](https://developers.scaleway.com/en/products/instance/api/#placement-groups-d8f653) of the placement group.
 - `tags` - A list of tags to apply to the placement group.
