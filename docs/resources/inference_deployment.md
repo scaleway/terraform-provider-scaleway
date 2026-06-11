@@ -43,7 +43,6 @@ resource "scaleway_inference_deployment" "deployment" {
 - `public_endpoint` - (Optional) Configuration of the deployment's public endpoint.
     - `is_enabled` - (Optional) Enable or disable public endpoint.
     - `disable_auth` - (Optional) Disable the authentication on the endpoint.
-
 - `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
 
