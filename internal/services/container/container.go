@@ -2,8 +2,10 @@ package container
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -341,6 +343,7 @@ func containerSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Description: "The cron status",
 			Computed:    true,
+			Deprecated:  "Please refer to the scaleway_container_trigger resource instead.",
 		},
 		"error_message": {
 			Type:        schema.TypeString,
@@ -460,7 +463,6 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 	_ = d.Set("public_endpoint", co.PublicEndpoint)
 	_ = d.Set("domain_name", strings.TrimPrefix(co.PublicEndpoint, "https://"))
 	_ = d.Set("protocol", co.Protocol.String())
-	_ = d.Set("cron_status", co.Status.String())
 	_ = d.Set("port", int(co.Port))
 	_ = d.Set("https_connections_only", co.HTTPSConnectionsOnly)
 
@@ -487,6 +489,20 @@ func ResourceContainerRead(ctx context.Context, d *schema.ResourceData, m any) d
 		_ = d.Set("private_network_id", regional.NewID(region, types.FlattenStringPtr(co.PrivateNetworkID).(string)).String())
 	} else {
 		_ = d.Set("private_network_id", nil)
+	}
+
+	if co.Status != container.ContainerStatusReady {
+		statusWarning := diag.Diagnostic{
+			Severity:      diag.Warning,
+			Summary:       fmt.Sprintf("Container is not ready, but has status %q", co.Status.String()),
+			AttributePath: cty.GetAttrPath("status"),
+		}
+
+		if co.ErrorMessage != nil {
+			statusWarning.Detail = fmt.Sprintf("Container error message: %q", *co.ErrorMessage)
+		}
+
+		return diag.Diagnostics{statusWarning}
 	}
 
 	return nil
