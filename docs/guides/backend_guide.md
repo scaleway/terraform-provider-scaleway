@@ -161,7 +161,6 @@ AND TABLE_NAME = 'states';
     |         |   "outputs": {},                                        +
     |         |   "resources": [                                        +
     |         |     {
-    
     ....
 ```
 

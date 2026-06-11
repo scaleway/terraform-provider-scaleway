@@ -103,7 +103,7 @@ In addition to all arguments above, the following attributes are exported:
     - `services` - List of services exposed on the endpoint.
         - `name` - Service name (e.g., "opensearch", "dashboards").
         - `port` - Service port number.
-        - `url` - Full URL to access the service (e.g., "https://abc-123.searchdb.fr-par.scw.cloud:9200").
+        - `url` - Full URL to access the service (e.g., <https://abc-123.searchdb.fr-par.scw.cloud:9200>).
     - `public` - Whether the endpoint is public (true) or private (false).
     - `private_network_id` - Private network ID if the endpoint is private.
 

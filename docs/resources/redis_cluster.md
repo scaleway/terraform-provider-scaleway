@@ -191,7 +191,7 @@ The `private_network` block supports :
   scale your cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
   ~> **Important:** When IPAM is enabled, the IPs specified here will be ignored and should not be provided.
-  
+
 ~> The `private_network` conflicts with `acl`. Only one should be specified.
 
 ~> **Important:** The way to use Private Networks differs whether you are using Redis™ in Standalone or cluster mode.
