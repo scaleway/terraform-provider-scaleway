@@ -33,7 +33,7 @@ data "scaleway_lbs" "lbs_by_tags" {
 
 - `name` - (Optional) The Load Balancer name to filter for. Load Balancers with a matching name are listed.
 
-- `tags` - (Optional)  List of tags to filter for. Load Balancers with these exact tags are listed.
+- `tags` - (Optional) List of tags to filter for. Load Balancers with these exact tags are listed.
 
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancers exist.
 
