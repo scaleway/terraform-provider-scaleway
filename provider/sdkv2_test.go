@@ -142,7 +142,6 @@ func TestAccProvider_SSHKeys(t *testing.T) {
 
 func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 	exceptions := []string{
-		"scaleway_account_project",
 		"scaleway_account_ssh_key",
 		"scaleway_autoscaling_instance_group",
 		"scaleway_autoscaling_instance_policy",
@@ -167,7 +166,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_function_namespace",
 		"scaleway_function_token",
 		"scaleway_function_trigger",
-		"scaleway_iam_api_key",
 		"scaleway_iam_group_membership",
 		"scaleway_iam_policy",
 		"scaleway_inference_deployment",
@@ -207,8 +205,6 @@ func TestSDKProvider_ResourceIdentityNotEmpty(t *testing.T) {
 		"scaleway_rdb_snapshot",
 		"scaleway_registry_namespace",
 		"scaleway_sdb_sql_database",
-		"scaleway_secret",
-		"scaleway_secret_version",
 		"scaleway_vpc_public_gateway_dhcp",
 		"scaleway_vpc_public_gateway_dhcp_reservation",
 	}
