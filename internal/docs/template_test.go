@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	gotypeRE      = regexp.MustCompile(`{{\.*gotype:.*}}`)
+	gotypeRE      = regexp.MustCompile(`{{\s*\-?\s*/\*\s*\.?gotype:.*\*/\s*\-?\s*}}`)
 	subcategoryRE = regexp.MustCompile(`subcategory:\s*"([^"]+)"`)
 )
 
