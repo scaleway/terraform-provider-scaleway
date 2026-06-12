@@ -61,7 +61,7 @@ In addition to all arguments above, the following attributes are exported:
         - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.
         - `code` - The expected HTTP status code.
-        - `host_header` -  The HTTP host header to use for health check requests.
+        - `host_header` - The HTTP host header to use for health check requests.
     - `health_check_https` - This block enables HTTPS health checks.
         - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.

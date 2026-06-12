@@ -3,7 +3,6 @@
 page_title: "scaleway_kafka_cluster Data Source - terraform-provider-scaleway"
 subcategory: ""
 description: |-
-  
 ---
 
 # scaleway_kafka_cluster (Data Source)

@@ -30,6 +30,7 @@ var UpdateCassettes = flag.Bool("cassettes", os.Getenv(env.UpdateCassettes) == "
 // QueryMatcherIgnore contains the list of query value that should be ignored when matching requests with cassettes
 var QueryMatcherIgnore = []string{
 	"organization_id",
+	"access_keys",
 }
 
 // BodyMatcherIgnore contains the list of json body keys that should be ignored when matching requests with cassettes

@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 
 # scaleway_vpc_public_gateway_dhcp_reservation
 
-~> **Important:**  The data source `scaleway_vpc_public_gateway_dhcp_reservation` has been deprecated and will no longer be supported.
+~> **Important:** The data source `scaleway_vpc_public_gateway_dhcp_reservation` has been deprecated and will no longer be supported.
 In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
 You can use IPAM to manage your IPs. For more information, please refer to the [dedicated guide](../guides/migration_guide_vpcgw_v2.md).
 
@@ -128,8 +128,8 @@ data "scaleway_vpc_public_gateway_dhcp_reservation" "by_id" {
 
 ## Argument Reference
 
-- `reservation_id`  (Optional) The ID of the reservation (DHCP entry) to retrieve.
-- `mac_address`  (Optional) The MAC address of the reservation to retrieve.
+- `reservation_id` (Optional) The ID of the reservation (DHCP entry) to retrieve.
+- `mac_address` (Optional) The MAC address of the reservation to retrieve.
 - `gateway_network_id` (Optional) The ID of the owning GatewayNetwork.
 
 ~> Only one of `reservation_id` or `mac_address` with `gateway_network_id` should be specified.

@@ -25,7 +25,7 @@ data "scaleway_registry_image_tag" "my_image_tag" {
 
 ## Argument Reference
 
-- `tag_id` -  The ID of the registry image tag.
+- `tag_id` - The ID of the registry image tag.
 
 - `image_id` - The ID of the registry image.
 

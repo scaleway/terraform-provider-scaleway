@@ -91,7 +91,7 @@ ephemeral "scaleway_secret_version" "data_latest" {
 - `region` (String) The region of the secret version. If not set, the region is derived from the secret_id when possible or from the provider configuration.
 - `revision` (String) The revision of the secret version. Defaults to `latest`
 - `secret_id` (String) The ID of the secret associated with the version. Either secret_id or secret_name must be specified.
-- `secret_name` (String) The name of the secret.  Either secret_id or secret_name must be specified.
+- `secret_name` (String) The name of the secret. Either secret_id or secret_name must be specified.
 
 ### Read-Only
 

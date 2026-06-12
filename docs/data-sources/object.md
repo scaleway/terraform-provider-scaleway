@@ -45,6 +45,6 @@ The `scaleway_object` data source exports certain attributes once the object inf
 
 In addition to all above arguments, the following attribute is exported:
 
-* `id` - The unique identifier of the object.
+- `id` - The unique identifier of the object.
 
 ~> **Important**: Object IDs are regional, and follow the format {region}/{bucket}/{key}, e.g. fr-par/bucket-name/example.txt.
