@@ -111,7 +111,7 @@ In addition to all arguments above, the following attributes are exported:
     - `failure_threshold` - Number of consecutive health check failures before considering the container unhealthy.
     - `interval`- Period between health checks (in seconds).
 
-- ` startup_probe` - Defines how to check if the container has started successfully.
+- `startup_probe` - Defines how to check if the container has started successfully.
     - `tcp` - When set to `true`, performs TCP checks on the container.
     - `http` - Perform HTTP check on the container with the specified path.
         - `path` - Path to use for the HTTP health check.

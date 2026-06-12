@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -20,6 +21,7 @@ func ResourceAPIKey() *schema.Resource {
 		ReadContext:   resourceIamAPIKeyRead,
 		UpdateContext: resourceIamAPIKeyUpdate,
 		DeleteContext: resourceIamAPIKeyDelete,
+		Identity:      identity.DefaultGlobal(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -109,7 +111,10 @@ func resourceIamAPIKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 
 	_ = d.Set("secret_key", res.SecretKey)
 
-	d.SetId(res.AccessKey)
+	err = identity.SetGlobalIdentity(d, res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceIamAPIKeyRead(ctx, d, m)
 }
@@ -130,23 +135,12 @@ func resourceIamAPIKeyRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("description", res.Description)
-	_ = d.Set("created_at", types.FlattenTime(res.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
-	_ = d.Set("expires_at", types.FlattenTime(res.ExpiresAt))
-	_ = d.Set("access_key", res.AccessKey)
+	setAPIKeyState(d, res)
 
-	if res.ApplicationID != nil {
-		_ = d.Set("application_id", res.ApplicationID)
+	err = identity.SetGlobalIdentity(d, res.AccessKey)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	if res.UserID != nil {
-		_ = d.Set("user_id", res.UserID)
-	}
-
-	_ = d.Set("editable", res.Editable)
-	_ = d.Set("creation_ip", res.CreationIP)
-	_ = d.Set("default_project_id", res.DefaultProjectID)
 
 	return nil
 }
@@ -191,4 +185,25 @@ func resourceIamAPIKeyDelete(ctx context.Context, d *schema.ResourceData, m any)
 	}
 
 	return nil
+}
+
+// setAPIKeyState sets the state for an API key resource
+func setAPIKeyState(d *schema.ResourceData, apiKey *iam.APIKey) {
+	_ = d.Set("description", apiKey.Description)
+	_ = d.Set("created_at", types.FlattenTime(apiKey.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(apiKey.UpdatedAt))
+	_ = d.Set("expires_at", types.FlattenTime(apiKey.ExpiresAt))
+	_ = d.Set("access_key", apiKey.AccessKey)
+
+	if apiKey.ApplicationID != nil {
+		_ = d.Set("application_id", apiKey.ApplicationID)
+	}
+
+	if apiKey.UserID != nil {
+		_ = d.Set("user_id", apiKey.UserID)
+	}
+
+	_ = d.Set("editable", apiKey.Editable)
+	_ = d.Set("creation_ip", apiKey.CreationIP)
+	_ = d.Set("default_project_id", apiKey.DefaultProjectID)
 }
