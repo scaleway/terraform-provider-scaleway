@@ -12,6 +12,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1

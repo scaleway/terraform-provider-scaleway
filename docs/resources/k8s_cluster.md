@@ -26,6 +26,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -57,6 +58,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id  = scaleway_k8s_cluster.cluster.id
+  version     = scaleway_k8s_cluster.cluster.version
   name        = "tf-pool"
   node_type   = "DEV1-M"
   size        = 3
@@ -82,6 +84,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -168,6 +171,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -207,6 +211,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "external"
   size       = 0
@@ -327,6 +332,11 @@ unsetting it to go back to the default value will not have any effect.
 
 ~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
 unsetting it to go back to the default value will not have any effect.
+
+- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
+  If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
+  If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
+  In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 

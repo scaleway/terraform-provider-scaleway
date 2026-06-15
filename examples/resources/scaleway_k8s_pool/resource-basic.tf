@@ -5,6 +5,7 @@ resource "scaleway_k8s_cluster" "main" {
 
 resource "scaleway_k8s_pool" "main" {
   cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
   node_type          = "DEV1-M"
   size               = 3
   min_size           = 0

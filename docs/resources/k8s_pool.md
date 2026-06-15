@@ -21,6 +21,7 @@ resource "scaleway_k8s_cluster" "main" {
 
 resource "scaleway_k8s_pool" "main" {
   cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
   node_type          = "DEV1-M"
   size               = 3
   min_size           = 0
@@ -68,6 +69,11 @@ The following arguments are supported:
 - `size` - (Required) The size of the pool.
 
 ~> **Important:** This field will only be used at creation if autoscaling is enabled.
+
+- `version` - (Optional) The version of the pool. If not explicitly set, the version of the pool will be equal to the version of the cluster.
+For the field to be properly taken into account, the `upgrade_pools` field of the cluster must be set to `false` in order to decouple the version of the pool from the cluster.
+
+~> **Important:** This field is only taken into account when updating/upgrading the resource. At creation, the pool's version is always the cluster's version.
 
 - `min_size` - (Defaults to `1` if `size` > 0, or `0` otherwise) The minimum size of the pool, used by the autoscaling feature.
 
@@ -144,7 +150,6 @@ In addition to all arguments above, the following attributes are exported:
     - `status` - The status of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
-- `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
 
 ## Zone
@@ -168,6 +173,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "pool" {
   name               = "placement_group"
   cluster_id         = scaleway_k8s_cluster.cluster.id
+  version            = scaleway_k8s_cluster.cluster.version
   node_type          = "gp1_xs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
   size               = 1
