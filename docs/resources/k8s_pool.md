@@ -15,7 +15,7 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 
 ```terraform
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.32.3"
+  version = "1.35.3"
   cni     = "cilium"
 }
 
@@ -178,7 +178,7 @@ resource "scaleway_k8s_pool" "pool" {
 resource "scaleway_k8s_cluster" "cluster" {
   name    = "placement_group"
   cni     = "kilo"
-  version = "1.32.3"
+  version = "1.35.3"
   tags    = ["terraform-test", "scaleway_k8s_cluster", "placement_group"]
   region  = "fr-par"
   type    = "multicloud"

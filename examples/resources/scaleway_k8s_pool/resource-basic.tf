@@ -1,5 +1,5 @@
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.32.3"
+  version = "1.35.3"
   cni     = "cilium"
 }
 

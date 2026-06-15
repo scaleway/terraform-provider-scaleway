@@ -4,7 +4,7 @@
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   type                        = "multicloud"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "kilo"
   delete_additional_resources = false
 }

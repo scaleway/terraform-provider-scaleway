@@ -18,7 +18,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
@@ -38,7 +38,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   description                 = "cluster made in terraform"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "calico"
   tags                        = ["terraform"]
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -74,7 +74,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.29.1"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = false
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -160,7 +160,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.29.1"
+  version                     = "1.35.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
@@ -200,7 +200,7 @@ provider "kubernetes" {
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   type                        = "multicloud"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "kilo"
   delete_additional_resources = false
 }

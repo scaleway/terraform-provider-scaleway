@@ -3,7 +3,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   description                 = "cluster made in terraform"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "calico"
   tags                        = ["terraform"]
   private_network_id          = scaleway_vpc_private_network.pn.id
