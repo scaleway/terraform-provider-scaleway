@@ -3,6 +3,7 @@ package keymanager
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -168,10 +169,20 @@ func (r *DecryptEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 		associatedData = []byte(assocDataModel.Value.ValueString())
 	}
 
+	ciphertextBytes, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Invalid ciphertext",
+			fmt.Sprintf("Ciphertext must be base64-encoded: %s", err),
+		)
+
+		return
+	}
+
 	decryptReq := &key_manager.DecryptRequest{
 		Region:         region,
 		KeyID:          keyID,
-		Ciphertext:     []byte(ciphertext),
+		Ciphertext:     ciphertextBytes,
 		AssociatedData: &associatedData,
 	}
 

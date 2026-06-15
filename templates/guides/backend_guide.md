@@ -1,6 +1,7 @@
 ---
 page_title: "Using Backend Guide"
 ---
+
 # Configuring Terraform Backends: PostgreSQL vs Object Storage
 
 ## Store Terraform State in Scaleway Object Storage (with locking)
@@ -161,7 +162,6 @@ AND TABLE_NAME = 'states';
     |         |   "outputs": {},                                        +
     |         |   "resources": [                                        +
     |         |     {
-    
     ....
 ```
 
