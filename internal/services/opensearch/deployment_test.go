@@ -32,7 +32,7 @@ func TestAccDeployment_Basic(t *testing.T) {
 resource "scaleway_opensearch_deployment" "main" {
   name        = "tf-test-opensearch-basic"
   version     = "%s"
-  node_amount = 1
+  node_count = 1
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
@@ -46,7 +46,7 @@ resource "scaleway_opensearch_deployment" "main" {
 					isDeploymentPresent(tt, "scaleway_opensearch_deployment.main"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "name", "tf-test-opensearch-basic"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "version", latestVersion),
-					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_amount", "1"),
+					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_count", "1"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "node_type", nodeType),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "volume.0.type", "sbs_5k"),
 					resource.TestCheckResourceAttr("scaleway_opensearch_deployment.main", "volume.0.size_in_gb", "5"),
@@ -58,7 +58,7 @@ resource "scaleway_opensearch_deployment" "main" {
 resource "scaleway_opensearch_deployment" "main" {
   name        = "tf-test-opensearch-basic"
   version     = "%s"
-  node_amount = 1
+  node_count = 1
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
@@ -108,7 +108,7 @@ resource "scaleway_vpc_private_network" "main" {
 resource "scaleway_opensearch_deployment" "pn" {
   name        = "tf-test-opensearch-pn"
   version     = "%s"
-  node_amount = 1
+  node_count = 1
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
@@ -143,7 +143,7 @@ resource "scaleway_vpc_private_network" "main" {
 resource "scaleway_opensearch_deployment" "pn" {
   name        = "tf-test-opensearch-pn"
   version     = "%s"
-  node_amount = 1
+  node_count = 1
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"
@@ -181,7 +181,7 @@ resource "scaleway_vpc_private_network" "main" {
 resource "scaleway_opensearch_deployment" "pn" {
   name        = "tf-test-opensearch-pn"
   version     = "%s"
-  node_amount = 1
+  node_count = 1
   node_type   = "%s"
   user_name   = "%s"
   password    = "ThisIsASecurePassword123!"

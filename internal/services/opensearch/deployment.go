@@ -32,8 +32,10 @@ func ResourceDeployment() *schema.Resource {
 			Update: schema.DefaultTimeout(30 * time.Minute),
 			Delete: schema.DefaultTimeout(30 * time.Minute),
 		},
-		SchemaFunc: deploymentSchema,
-		Identity:   identity.DefaultRegional(),
+		SchemaVersion:  deploymentSchemaVersion(),
+		StateUpgraders: deploymentStateUpgraders(),
+		SchemaFunc:     deploymentSchema,
+		Identity:       identity.DefaultRegional(),
 	}
 }
 
@@ -59,7 +61,7 @@ func deploymentSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "OpenSearch version to use",
 		},
-		"node_amount": {
+		"node_count": {
 			Type:        schema.TypeInt,
 			Required:    true,
 			ForceNew:    true,
@@ -205,7 +207,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		ProjectID:  d.Get("project_id").(string),
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
 		Version:    d.Get("version").(string),
-		NodeAmount: uint32(d.Get("node_amount").(int)),
+		NodeCount: uint32(d.Get("node_count").(int)),
 		NodeType:   d.Get("node_type").(string),
 	}
 
@@ -306,7 +308,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
-	_ = d.Set("node_amount", int(deployment.NodeAmount))
+	_ = d.Set("node_count", deploymentNodeCountForState(d, deployment))
 	_ = d.Set("node_type", deployment.NodeType)
 	_ = d.Set("status", string(deployment.Status))
 

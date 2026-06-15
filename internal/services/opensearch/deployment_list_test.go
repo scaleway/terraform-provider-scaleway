@@ -33,7 +33,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					  project_id  = scaleway_account_project.main.id
 					  name        = "tf-test-opensearch-list-1"
 					  version     = "%s"
-					  node_amount = 1
+					  node_count = 1
 					  node_type   = "%s"
 					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"
@@ -48,7 +48,7 @@ func TestAccListOpenSearchDeployments_Basic(t *testing.T) {
 					  project_id  = scaleway_account_project.main.id
 					  name        = "tf-test-opensearch-list-2"
 					  version     = "%s"
-					  node_amount = 1
+					  node_count = 1
 					  node_type   = "%s"
 					  user_name   = "%s"
 					  password    = "ThisIsASecurePassword123!"

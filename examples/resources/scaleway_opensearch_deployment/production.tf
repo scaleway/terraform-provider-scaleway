@@ -1,7 +1,7 @@
 resource "scaleway_opensearch_deployment" "prod" {
   name        = "logs-prod-cluster"
   version     = "2.0"
-  node_amount = 3 # High availability with 3 nodes
+  node_count = 3 # High availability with 3 nodes
   node_type   = "SEARCHDB-DEDICATED-2C-8G"
   password    = var.opensearch_password
   tags        = ["production", "logs"]

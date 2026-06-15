@@ -16,7 +16,7 @@ For more information refer to the [product documentation](https://www.scaleway.c
 resource "scaleway_opensearch_deployment" "main" {
   name        = "my-opensearch-cluster"
   version     = "2.0"
-  node_amount = 1
+  node_count = 1
   node_type   = "SEARCHDB-SHARED-2C-8G"
   password    = "ThisIsASecurePassword123!"
 
@@ -33,7 +33,7 @@ resource "scaleway_opensearch_deployment" "main" {
 resource "scaleway_opensearch_deployment" "prod" {
   name        = "logs-prod-cluster"
   version     = "2.0"
-  node_amount = 3 # High availability with 3 nodes
+  node_count = 3 # High availability with 3 nodes
   node_type   = "SEARCHDB-DEDICATED-2C-8G"
   password    = var.opensearch_password
   tags        = ["production", "logs"]
@@ -56,7 +56,7 @@ output "opensearch_url" {
 resource "scaleway_opensearch_deployment" "analytics" {
   name        = "analytics-cluster"
   version     = "2.0"
-  node_amount = 1
+  node_count = 1
   node_type   = "SEARCHDB-SHARED-4C-16G"
   password    = var.opensearch_password
   tags        = ["analytics", "dev", "team-data"]
@@ -83,7 +83,7 @@ resource "scaleway_vpc_private_network" "pn" {
 resource "scaleway_opensearch_deployment" "main" {
   name        = "my-opensearch-cluster"
   version     = "2.0"
-  node_amount = 1
+  node_count = 1
   node_type   = "SEARCHDB-DEDICATED-2C-8G"
   password    = "ThisIsASecurePassword123!"
 
@@ -103,7 +103,7 @@ resource "scaleway_opensearch_deployment" "main" {
 The following arguments are supported:
 
 - `version` - (Required, Forces new resource) OpenSearch version to use (e.g., "2.0"). Changing this forces recreation of the deployment.
-- `node_amount` - (Required, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the deployment.
+- `node_count` - (Required, Forces new resource) Number of nodes in the cluster. Changing this forces recreation of the deployment.
 - `node_type` - (Required, Forces new resource) Type of node to use (e.g., "SEARCHDB-SHARED-2C-8G", "SEARCHDB-DEDICATED-2C-8G"). Changing this forces recreation of the deployment.
 - `volume` - (Required) Volume configuration for the cluster.
     - `type` - (Required, Forces new resource) Volume type. Valid values are `sbs_5k` (5K IOPS) or `sbs_15k` (15K IOPS). Changing this forces recreation of the deployment.
