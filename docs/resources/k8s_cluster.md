@@ -10,8 +10,9 @@ The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/sc
 Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
 
 
-
 ## Example Usage
+
+### Basic
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -32,6 +33,8 @@ resource "scaleway_k8s_pool" "pool" {
   size       = 1
 }
 ```
+
+### Using autoscaler_config
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -69,9 +72,9 @@ resource "scaleway_k8s_pool" "pool" {
 }
 ```
 
-```terraform
-# Example with an Helm provider
+### With the Helm provider
 
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -156,9 +159,9 @@ resource "helm_release" "nginx_ingress" {
 }
 ```
 
-```terraform
-# Example with the kubernetes provider 
+### With the Kubernetes provider
 
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -197,8 +200,9 @@ provider "kubernetes" {
 }
 ```
 
+### Multicloud
+
 ```terraform
-# Multicloud Kubernetes Cluster Example
 # For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
 
 resource "scaleway_k8s_cluster" "cluster" {
@@ -218,9 +222,6 @@ resource "scaleway_k8s_pool" "pool" {
   min_size   = 0
 }
 ```
-
-
-
 
 ## Argument Reference
 
@@ -296,6 +297,11 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
     - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
 
+- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
+If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
+If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
+In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
+
 - `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
 
 - `admission_plugins` - (Optional) The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) to enable on the cluster.
@@ -332,11 +338,6 @@ unsetting it to go back to the default value will not have any effect.
 
 ~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
 unsetting it to go back to the default value will not have any effect.
-
-- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
-  If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
-  If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
-  In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 

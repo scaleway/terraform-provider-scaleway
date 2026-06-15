@@ -1,5 +1,3 @@
-# Example with the kubernetes provider 
-
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {

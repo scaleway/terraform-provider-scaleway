@@ -8,16 +8,27 @@ page_title: "Scaleway: scaleway_k8s_cluster"
 
 {{ .Description }}
 
-{{ if .HasExamples }}
 ## Example Usage
 
-{{ range .ExampleFiles -}}
-{{ tffile . }}
+### Basic
 
-{{ end }}
+{{ tffile "examples/resources/scaleway_k8s_cluster/resource-basic.tf" }}
 
+### Using autoscaler_config
 
-{{ end -}}
+{{ tffile "examples/resources/scaleway_k8s_cluster/resource-autoscaler.tf" }}
+
+### With the Helm provider
+
+{{ tffile "examples/resources/scaleway_k8s_cluster/resource-helm.tf" }}
+
+### With the Kubernetes provider
+
+{{ tffile "examples/resources/scaleway_k8s_cluster/resource-kubernetes-provider.tf" }}
+
+### Multicloud
+
+{{ tffile "examples/resources/scaleway_k8s_cluster/resource-multicloud.tf" }}
 
 ## Argument Reference
 
@@ -93,6 +104,11 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
     - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
 
+- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
+If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
+If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
+In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
+
 - `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
 
 - `admission_plugins` - (Optional) The list of [admission plugins](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/) to enable on the cluster.
@@ -129,11 +145,6 @@ unsetting it to go back to the default value will not have any effect.
 
 ~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
 unsetting it to go back to the default value will not have any effect.
-
-- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
-If `false` (cluster and pool version are independent from each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
-If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
-In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
