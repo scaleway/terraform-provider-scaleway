@@ -297,6 +297,12 @@ func clusterSchema() map[string]*schema.Schema {
 			Description:  "The IP used for the DNS Service.",
 			ValidateFunc: validation.IsIPAddress,
 		},
+		"upgrade_pools": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.",
+		},
 		"region":          regional.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
 		"project_id":      account.ProjectIDSchema(),
@@ -940,12 +946,14 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 	////
 	// Upgrade if needed
 	////
+	upgradePools := d.Get("upgrade_pools").(bool)
+
 	if canUpgrade {
 		upgradeRequest := &k8s.UpgradeClusterRequest{
 			Region:       region,
 			ClusterID:    clusterID,
 			Version:      version,
-			UpgradePools: true,
+			UpgradePools: upgradePools,
 		}
 
 		_, err = k8sAPI.UpgradeCluster(upgradeRequest)
@@ -983,7 +991,7 @@ func ResourceK8SClusterUpdate(ctx context.Context, d *schema.ResourceData, m any
 		}
 	}
 
-	return append(ResourceK8SClusterRead(ctx, d, m), diags...)
+	return append(diags, ResourceK8SClusterRead(ctx, d, m)...)
 }
 
 func ResourceK8SClusterDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

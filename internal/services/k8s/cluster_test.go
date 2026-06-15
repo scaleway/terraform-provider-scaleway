@@ -20,76 +20,6 @@ import (
 
 var DestroyWaitTimeout = 3 * time.Minute
 
-func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
-	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
-
-	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
-	if err != nil {
-		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
-	}
-
-	if len(versions.Versions) > 1 {
-		latestK8SVersion := versions.Versions[0].Name
-
-		return latestK8SVersion
-	}
-
-	return ""
-}
-
-func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
-	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
-
-	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
-	if err != nil {
-		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
-	}
-
-	if len(versions.Versions) > 1 {
-		latestK8SVersion := versions.Versions[0].Name
-		latestK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(latestK8SVersion)
-
-		return latestK8SVersionMinor
-	}
-
-	return ""
-}
-
-func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
-	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
-
-	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
-	if err != nil {
-		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
-	}
-
-	if len(versions.Versions) > 1 {
-		previousK8SVersion := versions.Versions[1].Name
-
-		return previousK8SVersion
-	}
-
-	return ""
-}
-
-func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
-	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
-
-	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
-	if err != nil {
-		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
-	}
-
-	if len(versions.Versions) > 1 {
-		previousK8SVersion := versions.Versions[1].Name
-		previousK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(previousK8SVersion)
-
-		return previousK8SVersionMinor
-	}
-
-	return ""
-}
-
 func TestAccCluster_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -591,6 +521,204 @@ func TestAccCluster_TypeChange(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccCluster_UpgradeClusterOnly(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
+	clusterID := ""
+	poolID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// STEP 1: Pool's version not set, defaults to cluster's version (both previous)
+				Config: kapsuleClusterRepeatedConfig("upgrade-cluster-only", previousK8SVersion, `
+			upgrade_pools = false
+`) + `
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-cluster-upgrade-cluster-only"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade-cluster-only" ]
+			node_type = "PRO2_XXS"
+		}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", previousK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", previousK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+			{
+				// STEP 2: Upgrade cluster only, pool should stays in previous version.
+				Config: kapsuleClusterRepeatedConfig("upgrade-cluster-only", latestK8SVersion, `
+			upgrade_pools = false
+`) + `
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-cluster-upgrade-cluster-only"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade-cluster-only" ]
+			node_type = "PRO2_XXS"
+		}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", previousK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccCluster_UpgradePoolsWithCluster(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestK8SVersion := testAccK8SClusterGetLatestK8SVersion(tt)
+	previousK8SVersion := testAccK8SClusterGetPreviousK8SVersion(tt)
+	clusterID := ""
+	poolID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckK8SClusterDestroy(tt),
+			vpcchecks.CheckPrivateNetworkDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				// STEP 1: Pool's version not set, defaults to cluster's version (both previous)
+				Config: kapsuleClusterRepeatedConfig("upgrade-pools-with-cluster", previousK8SVersion, `
+			upgrade_pools = true
+`) + `
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-cluster-upgrade-pools-with-cluster"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade-pools-with-cluster" ]
+			node_type = "PRO2_XXS"
+		}`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", previousK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", previousK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+			{
+				// STEP 2: Upgrade cluster, pool is also upgraded in the API but Terraform does not see it yet (because it doesn't detect any change in the pool resource)
+				Config: kapsuleClusterRepeatedConfig("upgrade-pools-with-cluster", latestK8SVersion, `
+			upgrade_pools = true
+`) + `
+		resource "scaleway_k8s_pool" "main" {
+			name = "test-cluster-upgrade-pools-with-cluster"
+			cluster_id = scaleway_k8s_cluster.main.id
+			size = 1
+			tags = [ "terraform-test", "scaleway_k8s_cluster", "upgrade-pools-with-cluster" ]
+			node_type = "PRO2_XXS"
+		}`,
+			},
+			{
+				// STEP 3: Refreshing the state should make Terraform aware of the changes of the pool.
+				RefreshState: true,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
+					testAccCheckK8SPoolExists(tt, "scaleway_k8s_pool.main"),
+					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "version", latestK8SVersion),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "version", latestK8SVersion),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(clusterID)),
+					acctest.CheckResourceIDPersisted("scaleway_k8s_pool.main", new(poolID)),
+				),
+			},
+		},
+	})
+}
+
+func testAccK8SClusterGetLatestK8SVersion(tt *acctest.TestTools) string {
+	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
+	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+
+	if len(versions.Versions) > 1 {
+		latestK8SVersion := versions.Versions[0].Name
+
+		return latestK8SVersion
+	}
+
+	return ""
+}
+
+func testAccK8SClusterGetLatestK8SVersionMinor(tt *acctest.TestTools) string {
+	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
+	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+
+	if len(versions.Versions) > 1 {
+		latestK8SVersion := versions.Versions[0].Name
+		latestK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(latestK8SVersion)
+
+		return latestK8SVersionMinor
+	}
+
+	return ""
+}
+
+func testAccK8SClusterGetPreviousK8SVersion(tt *acctest.TestTools) string {
+	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
+	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+
+	if len(versions.Versions) > 1 {
+		previousK8SVersion := versions.Versions[1].Name
+
+		return previousK8SVersion
+	}
+
+	return ""
+}
+
+func testAccK8SClusterGetPreviousK8SVersionMinor(tt *acctest.TestTools) string {
+	api := k8sSDK.NewAPI(tt.Meta.ScwClient())
+
+	versions, err := api.ListVersions(&k8sSDK.ListVersionsRequest{})
+	if err != nil {
+		tt.T.Fatalf("Could not get latestK8SVersion: %s", err)
+	}
+
+	if len(versions.Versions) > 1 {
+		previousK8SVersion := versions.Versions[1].Name
+		previousK8SVersionMinor, _ := k8s.GetMinorVersionFromFull(previousK8SVersion)
+
+		return previousK8SVersionMinor
+	}
+
+	return ""
 }
 
 func testAccCheckK8SClusterDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
