@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -16,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
-	schemaSDK "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -476,25 +474,4 @@ func (r *SnapshotListResource) fetchSnapshotRowsForVolume(
 	}
 
 	return rows, nil
-}
-
-func setSnapshotState(resourceData *schemaSDK.ResourceData, snapshot *blockSDK.Snapshot) {
-	_ = resourceData.Set("name", snapshot.Name)
-	_ = resourceData.Set("project_id", snapshot.ProjectID)
-	_ = resourceData.Set("tags", snapshot.Tags)
-	_ = resourceData.Set("size", int(snapshot.Size))
-
-	if snapshot.CreatedAt != nil {
-		_ = resourceData.Set("created_at", snapshot.CreatedAt.Format(time.RFC3339))
-	}
-
-	if snapshot.UpdatedAt != nil {
-		_ = resourceData.Set("updated_at", snapshot.UpdatedAt.Format(time.RFC3339))
-	}
-
-	if snapshot.ParentVolume != nil {
-		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
-	} else {
-		_ = resourceData.Set("volume_id", "")
-	}
 }
