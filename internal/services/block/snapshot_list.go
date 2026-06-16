@@ -349,83 +349,32 @@ func (r *SnapshotListResource) fetchSnapshotRows(ctx context.Context, target sna
 		return r.fetchSnapshotRowsForAllVolumes(ctx, target, data)
 	}
 
-	return r.fetchSnapshotRowsForVolume(ctx, target.Zone, target.ProjectID, target.VolumeID, data)
+	return r.fetchSnapshotRowsForProject(ctx, target.Zone, target.ProjectID, &target.VolumeID, data)
 }
 
-func (r *SnapshotListResource) fetchSnapshotRowsForAllVolumes(ctx context.Context, target snapshotListTarget, data SnapshotListResourceModel) ([]blockSnapshotRow, error) {
+func (r *SnapshotListResource) fetchSnapshotRowsForAllVolumes(
+	ctx context.Context,
+	target snapshotListTarget,
+	data SnapshotListResourceModel,
+) (
+	[]blockSnapshotRow, error,
+) {
 	// Block API doesn't have a ListVolumesRequest, so we fetch snapshots directly
 	// by project and zone without volume filtering
-	return r.fetchSnapshotRowsForProject(ctx, target.Zone, target.ProjectID, data)
+	return r.fetchSnapshotRowsForProject(ctx, target.Zone, target.ProjectID, nil, data)
 }
 
 func (r *SnapshotListResource) fetchSnapshotRowsForProject(
 	ctx context.Context,
 	zone scw.Zone,
 	projectID string,
+	volumeID *string,
 	data SnapshotListResourceModel,
 ) ([]blockSnapshotRow, error) {
 	listReq := &blockSDK.ListSnapshotsRequest{
 		Zone:      zone,
 		ProjectID: &projectID,
-	}
-
-	if !data.Name.IsNull() && !data.Name.IsUnknown() {
-		n := strings.TrimSpace(data.Name.ValueString())
-		if n != "" {
-			listReq.Name = &n
-		}
-	}
-
-	if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
-		var tagStrings []string
-		data.Tags.ElementsAs(ctx, &tagStrings, false)
-
-		if len(tagStrings) > 0 {
-			listReq.Tags = tagStrings
-		}
-	}
-
-	if !data.OrganizationID.IsNull() && !data.OrganizationID.IsUnknown() {
-		orgID := data.OrganizationID.ValueString()
-		listReq.OrganizationID = &orgID
-	}
-
-	if !data.IncludeDeleted.IsNull() && !data.IncludeDeleted.IsUnknown() {
-		listReq.IncludeDeleted = data.IncludeDeleted.ValueBool()
-	}
-
-	resp, err := r.blockAPI.ListSnapshots(listReq, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return nil, err
-	}
-
-	rows := make([]blockSnapshotRow, 0, len(resp.Snapshots))
-	for _, snapshot := range resp.Snapshots {
-		if snapshot == nil {
-			continue
-		}
-
-		rows = append(rows, blockSnapshotRow{
-			Zone:      zone,
-			ProjectID: projectID,
-			Snapshot:  snapshot,
-		})
-	}
-
-	return rows, nil
-}
-
-func (r *SnapshotListResource) fetchSnapshotRowsForVolume(
-	ctx context.Context,
-	zone scw.Zone,
-	projectID string,
-	volumeID string,
-	data SnapshotListResourceModel,
-) ([]blockSnapshotRow, error) {
-	listReq := &blockSDK.ListSnapshotsRequest{
-		Zone:      zone,
-		ProjectID: &projectID,
-		VolumeID:  &volumeID,
+		VolumeID:  volumeID,
 	}
 
 	if !data.Name.IsNull() && !data.Name.IsUnknown() {
