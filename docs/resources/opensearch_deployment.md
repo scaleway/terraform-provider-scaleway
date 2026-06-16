@@ -14,11 +14,11 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ```terraform
 resource "scaleway_opensearch_deployment" "main" {
-  name        = "my-opensearch-cluster"
-  version     = "2.0"
+  name       = "my-opensearch-cluster"
+  version    = "2.0"
   node_count = 1
-  node_type   = "SEARCHDB-SHARED-2C-8G"
-  password    = "ThisIsASecurePassword123!"
+  node_type  = "SEARCHDB-SHARED-2C-8G"
+  password   = "ThisIsASecurePassword123!"
 
   volume {
     type       = "sbs_5k"
@@ -31,12 +31,12 @@ resource "scaleway_opensearch_deployment" "main" {
 
 ```terraform
 resource "scaleway_opensearch_deployment" "prod" {
-  name        = "logs-prod-cluster"
-  version     = "2.0"
+  name       = "logs-prod-cluster"
+  version    = "2.0"
   node_count = 3 # High availability with 3 nodes
-  node_type   = "SEARCHDB-DEDICATED-2C-8G"
-  password    = var.opensearch_password
-  tags        = ["production", "logs"]
+  node_type  = "SEARCHDB-DEDICATED-2C-8G"
+  password   = var.opensearch_password
+  tags       = ["production", "logs"]
 
   volume {
     type       = "sbs_15k" # High IOPS for production
@@ -54,12 +54,12 @@ output "opensearch_url" {
 
 ```terraform
 resource "scaleway_opensearch_deployment" "analytics" {
-  name        = "analytics-cluster"
-  version     = "2.0"
+  name       = "analytics-cluster"
+  version    = "2.0"
   node_count = 1
-  node_type   = "SEARCHDB-SHARED-4C-16G"
-  password    = var.opensearch_password
-  tags        = ["analytics", "dev", "team-data"]
+  node_type  = "SEARCHDB-SHARED-4C-16G"
+  password   = var.opensearch_password
+  tags       = ["analytics", "dev", "team-data"]
 
   volume {
     type       = "sbs_5k"
@@ -81,11 +81,11 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_opensearch_deployment" "main" {
-  name        = "my-opensearch-cluster"
-  version     = "2.0"
+  name       = "my-opensearch-cluster"
+  version    = "2.0"
   node_count = 1
-  node_type   = "SEARCHDB-DEDICATED-2C-8G"
-  password    = "ThisIsASecurePassword123!"
+  node_type  = "SEARCHDB-DEDICATED-2C-8G"
+  password   = "ThisIsASecurePassword123!"
 
   private_network {
     private_network_id = scaleway_vpc_private_network.pn.id
