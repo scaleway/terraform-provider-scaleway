@@ -18,9 +18,14 @@ func TestAccDataSourceTLSStage_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-tls-id"
 					  description = "pipeline for TLS data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
@@ -68,9 +73,14 @@ func TestAccDataSourceTLSStage_ByPipelineID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-tls-filter"
 					  description = "pipeline for TLS filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {

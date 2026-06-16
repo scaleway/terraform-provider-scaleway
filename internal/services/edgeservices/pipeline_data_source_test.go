@@ -18,9 +18,14 @@ func TestAccDataSourcePipeline_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-pipeline-id"
 					  description = "pipeline for data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					data "scaleway_edge_services_pipeline" "by_id" {
@@ -56,9 +61,14 @@ func TestAccDataSourcePipeline_ByName(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-pipeline-name"
 					  description = "pipeline for name filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					data "scaleway_edge_services_pipeline" "by_name" {
