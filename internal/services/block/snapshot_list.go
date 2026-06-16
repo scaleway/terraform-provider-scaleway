@@ -6,10 +6,13 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -19,6 +22,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -63,15 +67,15 @@ func (r *SnapshotListResource) ListResourceConfigSchema(_ context.Context, _ lis
 				Description: "Volume IDs to list snapshots from. Use [\"*\"] only to include " +
 					"all volumes in each selected zone and project. Otherwise each value must " +
 					"be a zonal ID (`zone/uuid`) or a bare volume UUID.",
-				// Validators: []validator.List{
-				// 	listvalidator.SizeAtLeast(1),
-				// 	listvalidator.ValueStringsAre(
-				// 		stringvalidator.Any(
-				// 			stringvalidator.OneOf("*"),
-				// 			verify.IsStringUUIDOrUUIDWithLocality(),
-				// 		),
-				// 	),
-				// },
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+					listvalidator.ValueStringsAre(
+						stringvalidator.Any(
+							stringvalidator.OneOf("*"),
+							verify.IsStringUUIDOrUUIDWithZone(),
+						),
+					),
+				},
 			},
 			"name":            listscw.NameAttribute("Name of the snapshot to filter on"),
 			"tags":            listscw.TagsAttribute("Tags of the snapshot to filter on"),
