@@ -1,0 +1,120 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Mailbox"
+page_title: "Scaleway: scaleway_mailbox_mailbox"
+---
+
+# Resource: scaleway_mailbox_mailbox
+
+Creates and manages a [Scaleway Mailbox](https://www.scaleway.com/en/developers/api/mailbox/) mailbox.
+
+A **mailbox** is a hosted email address (`local_part@domain`) that belongs to a
+`scaleway_mailbox_domain`. The password is write-only: it is accepted on creation and
+update but is never read back from the API and will not appear in plan output or state files.
+
+~> **Note** This resource is in **alpha** and the API is subject to change.
+
+## Example Usage
+
+### Basic mailbox
+
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+
+resource "scaleway_mailbox_mailbox" "john" {
+  domain_id           = scaleway_mailbox_domain.main.id
+  local_part          = "john.doe"
+  password            = var.mailbox_password
+  subscription_period = "monthly"
+}
+```
+
+### Mailbox with display name and recovery email
+
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+
+resource "scaleway_mailbox_mailbox" "support" {
+  domain_id           = scaleway_mailbox_domain.main.id
+  local_part          = "support"
+  password            = var.mailbox_password
+  display_name        = "Support Team"
+  recovery_email      = "admin@other-domain.com"
+  subscription_period = "yearly"
+}
+
+output "support_email" {
+  value = scaleway_mailbox_mailbox.support.email
+}
+```
+
+### Multiple mailboxes on one domain
+
+```terraform
+resource "scaleway_mailbox_domain" "corp" {
+  name = "corp.example.com"
+}
+
+locals {
+  mailboxes = {
+    alice = { display_name = "Alice" }
+    bob   = { display_name = "Bob" }
+  }
+}
+
+resource "scaleway_mailbox_mailbox" "employees" {
+  for_each = local.mailboxes
+
+  domain_id           = scaleway_mailbox_domain.corp.id
+  local_part          = each.key
+  password            = var.mailbox_password
+  display_name        = each.value.display_name
+  subscription_period = "monthly"
+}
+```
+
+## Argument Reference
+
+- `domain_id` - (Required, Forces new resource) UUID of the `scaleway_mailbox_domain` to which this mailbox belongs.
+- `local_part` - (Required, Forces new resource) Local part of the email address (part before the `@`). Must be 1–64 characters. Changing this value forces a new mailbox to be created.
+- `password` - (Required, **Sensitive**, Write-only) Password for the mailbox. This value is never returned by the API. Changing it triggers an in-place update.
+- `subscription_period` - (Required) Billing period for the mailbox. Accepted values: `monthly`, `yearly`.
+- `display_name` - (Optional) Display name shown in email clients (e.g. `"John Doe"`).
+- `recovery_email` - (Optional) External email address used for account recovery.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - Unique identifier of the mailbox (UUID).
+- `email` - Full email address of the mailbox (`local_part@domain`).
+- `status` - Current status of the mailbox:
+  - `creating` – mailbox is being provisioned.
+  - `waiting_payment` – awaiting payment confirmation.
+  - `waiting_domain` – domain is not yet ready.
+  - `ready` – mailbox is active and ready to use.
+  - `deletion_scheduled` – mailbox is scheduled for deletion.
+  - `locked` – mailbox is locked (e.g. billing issue).
+  - `renewing` – subscription renewal is in progress.
+  - `deleting` – mailbox is being deleted.
+  - `restoring` – mailbox is being restored.
+  - `payment_failed` – the latest payment failed.
+- `subscription_period_started_at` - Start date of the current billing period (RFC 3339 format).
+- `next_subscription_period` - Next renewal period (`monthly`, `yearly`, or `canceled`).
+- `next_subscription_period_starts_at` - Date when the next billing period begins (RFC 3339 format).
+- `deletion_scheduled_at` - Scheduled deletion date when status is `deletion_scheduled` (RFC 3339 format).
+- `created_at` - Date and time of mailbox creation (RFC 3339 format).
+- `updated_at` - Date and time of last update (RFC 3339 format).
+
+## Import
+
+Mailboxes can be imported using their UUID. The `password` field cannot be recovered and will
+show as an empty diff after import.
+
+```bash
+terraform import scaleway_mailbox_mailbox.john 11111111-1111-1111-1111-111111111111
+```
