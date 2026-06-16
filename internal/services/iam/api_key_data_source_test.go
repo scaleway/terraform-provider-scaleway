@@ -20,7 +20,7 @@ func TestAccDataSourceApiKey_Basic(t *testing.T) {
 			{
 				Config: `
 						resource "scaleway_iam_application" "main" {
-							name = "tf_tests_app_key_basic"
+							name = "tf_tests_app_key_ds_basic"
 						}
 
 						resource "scaleway_iam_api_key" "main" {
