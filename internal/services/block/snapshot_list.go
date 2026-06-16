@@ -306,7 +306,7 @@ func (r *SnapshotListResource) buildSnapshotListTargets(
 			continue
 		}
 
-		if !slices.Contains(zones, scw.Zone(zone)) {
+		if !slices.Contains(zones, zone) {
 			diags.AddError(
 				"Invalid volume_ids",
 				fmt.Sprintf("Volume %q is in zone %q which is not included in the configured zones for this list.", rawID, zone),
@@ -316,7 +316,7 @@ func (r *SnapshotListResource) buildSnapshotListTargets(
 		}
 
 		vol, err := r.blockAPI.GetVolume(&blockSDK.GetVolumeRequest{
-			Zone:     scw.Zone(zone),
+			Zone:     zone,
 			VolumeID: volumeUUID,
 		}, scw.WithContext(ctx))
 		if err != nil {
@@ -335,7 +335,7 @@ func (r *SnapshotListResource) buildSnapshotListTargets(
 		}
 
 		targets = append(targets, snapshotListTarget{
-			Zone:      scw.Zone(zone),
+			Zone:      zone,
 			ProjectID: vol.ProjectID,
 			VolumeID:  volumeUUID,
 		})
@@ -379,6 +379,7 @@ func (r *SnapshotListResource) fetchSnapshotRowsForProject(
 	if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
 		var tagStrings []string
 		data.Tags.ElementsAs(ctx, &tagStrings, false)
+
 		if len(tagStrings) > 0 {
 			listReq.Tags = tagStrings
 		}
@@ -437,6 +438,7 @@ func (r *SnapshotListResource) fetchSnapshotRowsForVolume(
 	if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
 		var tagStrings []string
 		data.Tags.ElementsAs(ctx, &tagStrings, false)
+
 		if len(tagStrings) > 0 {
 			listReq.Tags = tagStrings
 		}
