@@ -203,12 +203,12 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	req := &searchdbapi.CreateDeploymentRequest{
-		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
-		Version:    d.Get("version").(string),
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
+		Version:   d.Get("version").(string),
 		NodeCount: uint32(d.Get("node_count").(int)),
-		NodeType:   d.Get("node_type").(string),
+		NodeType:  d.Get("node_type").(string),
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
