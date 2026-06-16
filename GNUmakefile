@@ -77,5 +77,12 @@ format_examples:
 
 docs: format_examples
 	go tool tfplugindocs validate
+	cp -r ./docs ./docs.backup
 	rm -fr ./docs
 	go tool tfplugindocs generate
+	@if ! diff -r ./docs.backup ./docs; then \
+		echo ""; \
+		echo "ERROR: Documentation mismatch - templates contain content not present in generated docs"; \
+		exit 1; \
+	fi
+	rm -rf ./docs.backup
