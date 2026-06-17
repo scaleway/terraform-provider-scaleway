@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -171,32 +170,9 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", volume.Name)
+	setVolumeState(d, volume)
 
-	if volume.Specs != nil {
-		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
-	}
-
-	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
-	_ = d.Set("zone", volume.Zone)
-	_ = d.Set("project_id", volume.ProjectID)
-	_ = d.Set("tags", volume.Tags)
-	snapshotID := ""
-
-	if volume.ParentSnapshotID != nil {
-		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       volume.Zone,
-		})
-
-		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
-			snapshotID = zonal.NewIDString(zone, *volume.ParentSnapshotID)
-		}
-	}
-
-	_ = d.Set("snapshot_id", snapshotID)
-
-	err = identity.SetZonalIdentity(d, zone, id)
+	err = identity.SetZonalIdentity(d, volume.Zone, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -291,7 +267,7 @@ func setVolumeState(resourceData *schema.ResourceData, volume *block.Volume) {
 	_ = resourceData.Set("name", volume.Name)
 	_ = resourceData.Set("project_id", volume.ProjectID)
 	_ = resourceData.Set("tags", volume.Tags)
-	_ = resourceData.Set("size_in_gb", strconv.Itoa(int(volume.Size/scw.GB)))
+	_ = resourceData.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = resourceData.Set("zone", volume.Zone)
 
 	if volume.ParentSnapshotID != nil {
@@ -300,7 +276,7 @@ func setVolumeState(resourceData *schema.ResourceData, volume *block.Volume) {
 		_ = resourceData.Set("snapshot_id", "")
 	}
 
-	if volume.Specs != nil && volume.Specs.PerfIops != nil {
-		_ = resourceData.Set("iops", strconv.Itoa(int(*volume.Specs.PerfIops)))
+	if volume.Specs != nil {
+		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
 }
