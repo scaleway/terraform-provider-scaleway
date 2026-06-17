@@ -305,6 +305,7 @@ func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapsho
 	_ = resourceData.Set("name", snapshot.Name)
 	_ = resourceData.Set("project_id", snapshot.ProjectID)
 	_ = resourceData.Set("tags", snapshot.Tags)
+	_ = resourceData.Set("zone", snapshot.Zone)
 
 	if snapshot.ParentVolume != nil {
 		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
