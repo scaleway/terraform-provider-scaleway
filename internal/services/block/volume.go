@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -290,13 +291,16 @@ func setVolumeState(resourceData *schema.ResourceData, volume *block.Volume) {
 	_ = resourceData.Set("name", volume.Name)
 	_ = resourceData.Set("project_id", volume.ProjectID)
 	_ = resourceData.Set("tags", volume.Tags)
-	_ = resourceData.Set("iops", volume.Specs.PerfIops)
-	_ = resourceData.Set("size_in_gb", volume.Size/scw.GB)
+	_ = resourceData.Set("size_in_gb", strconv.Itoa(int(volume.Size/scw.GB)))
 	_ = resourceData.Set("zone", volume.Zone)
 
 	if volume.ParentSnapshotID != nil {
 		_ = resourceData.Set("snapshot_id", volume.ParentSnapshotID)
 	} else {
 		_ = resourceData.Set("snapshot_id", "")
+	}
+
+	if volume.Specs != nil && volume.Specs.PerfIops != nil {
+		_ = resourceData.Set("iops", strconv.Itoa(int(*volume.Specs.PerfIops)))
 	}
 }
