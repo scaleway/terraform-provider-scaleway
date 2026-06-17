@@ -105,7 +105,7 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	} else {
 		req := &block.CreateVolumeRequest{
-			Zone:      zone,
+			Zone:      volume.Zone,
 			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
 			ProjectID: d.Get("project_id").(string),
 			Tags:      types.ExpandStrings(d.Get("tags")),
@@ -185,7 +185,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 	if volume.ParentSnapshotID != nil {
 		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
 			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       zone,
+			Zone:       volume.Zone,
 		})
 
 		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
@@ -221,7 +221,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	req := &block.UpdateVolumeRequest{
-		Zone:     zone,
+		Zone:     volume.Zone,
 		VolumeID: volume.ID,
 		Name:     types.ExpandUpdatedStringPtr(volume.Name),
 	}
@@ -255,7 +255,7 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBlockVolumeToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	volume, err := waitForBlockVolumeToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -267,8 +267,8 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	err = api.DeleteVolume(&block.DeleteVolumeRequest{
-		Zone:     zone,
-		VolumeID: id,
+		Zone:     volume.Zone,
+		VolumeID: volume.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
