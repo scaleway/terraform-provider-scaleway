@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -287,5 +288,9 @@ func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *b
 
 	if volume.Specs != nil {
 		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
+	}
+
+	if volume.Specs != nil && volume.Specs.PerfIops != nil {
+		_ = resourceData.Set("iops", strconv.Itoa(int(*volume.Specs.PerfIops)))
 	}
 }
