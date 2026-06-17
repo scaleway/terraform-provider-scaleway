@@ -41,3 +41,45 @@ func NewAPIWithRegionAndID(m any, id string) (*searchdbapi.API, scw.Region, stri
 
 	return api, region, id, nil
 }
+
+func deploymentNodeCountFromConfig(d *schema.ResourceData) int {
+	if value, ok := d.GetOk("node_count"); ok {
+		return value.(int)
+	}
+
+	if value, ok := d.GetOk("node_amount"); ok {
+		return value.(int)
+	}
+
+	return 0
+}
+
+func deploymentNodeCountForState(d *schema.ResourceData, deployment *searchdbapi.Deployment) int {
+	if deployment.NodeCount != 0 {
+		return int(deployment.NodeCount)
+	}
+
+	// The API may return 0 for node_count while the deployment is ready (notably on shared tiers).
+	// Preserve the configured value to avoid spurious ForceNew drift.
+	for _, key := range []string{"node_count", "node_amount"} {
+		if value, ok := d.GetOk(key); ok {
+			if configured := value.(int); configured != 0 {
+				return configured
+			}
+		}
+	}
+
+	return 0
+}
+
+func setDeploymentNodeCountState(d *schema.ResourceData, deployment *searchdbapi.Deployment) {
+	nodeCount := deploymentNodeCountForState(d, deployment)
+
+	if _, ok := d.GetOk("node_amount"); ok {
+		_ = d.Set("node_amount", nodeCount)
+
+		return
+	}
+
+	_ = d.Set("node_count", nodeCount)
+}
