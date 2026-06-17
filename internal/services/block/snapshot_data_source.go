@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -72,14 +74,14 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceBlockSnapshotRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read snapshot state")...)
+	res, err := api.GetSnapshot(&block.GetSnapshotRequest{
+		Zone:       zone,
+		SnapshotID: zonal.ExpandID(snapshotID).ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("snapshot (%s) not found", zoneID)
-	}
-
+	setSnapshotState(d, res)
 	return nil
 }

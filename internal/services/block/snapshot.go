@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -33,6 +34,7 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
+		Identity:      identity.DefaultZonal(),
 		SchemaFunc:    snapshotSchema,
 	}
 }
@@ -153,7 +155,10 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, snapshot.ID))
+	err = identity.SetZonalIdentity(d, zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -205,6 +210,11 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	_ = d.Set("tags", snapshot.Tags)
+
+	err = identity.SetZonalIdentity(d, zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -285,4 +295,20 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	return nil
+}
+
+func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapshot) {
+	if snapshot == nil {
+		return
+	}
+
+	_ = resourceData.Set("name", snapshot.Name)
+	_ = resourceData.Set("project_id", snapshot.ProjectID)
+	_ = resourceData.Set("tags", snapshot.Tags)
+
+	if snapshot.ParentVolume != nil {
+		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
+	} else {
+		_ = resourceData.Set("volume_id", "")
+	}
 }
