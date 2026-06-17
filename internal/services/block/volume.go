@@ -170,7 +170,7 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	setVolumeState(d, volume)
+	setVolumeState(api, d, volume)
 
 	err = identity.SetZonalIdentity(d, volume.Zone, id)
 	if err != nil {
@@ -259,7 +259,7 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 	return nil
 }
 
-func setVolumeState(resourceData *schema.ResourceData, volume *block.Volume) {
+func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *block.Volume) {
 	if volume == nil {
 		return
 	}
@@ -270,11 +270,19 @@ func setVolumeState(resourceData *schema.ResourceData, volume *block.Volume) {
 	_ = resourceData.Set("size_in_gb", int(volume.Size/scw.GB))
 	_ = resourceData.Set("zone", volume.Zone)
 
+	var snapshotID string
 	if volume.ParentSnapshotID != nil {
-		_ = resourceData.Set("snapshot_id", volume.ParentSnapshotID)
-	} else {
-		_ = resourceData.Set("snapshot_id", "")
+		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: *volume.ParentSnapshotID,
+			Zone:       volume.Zone,
+		})
+
+		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+			snapshotID = zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID)
+		}
 	}
+
+	_ = resourceData.Set("snapshot_id", snapshotID)
 
 	if volume.Specs != nil {
 		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))

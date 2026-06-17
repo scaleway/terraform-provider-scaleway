@@ -80,7 +80,7 @@ func DataSourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	setVolumeState(d, res)
+	setVolumeState(api, d, res)
 
 	return nil
 }
