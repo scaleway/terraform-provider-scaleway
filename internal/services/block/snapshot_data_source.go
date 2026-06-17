@@ -83,5 +83,6 @@ func DataSourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	setSnapshotState(d, res)
+
 	return nil
 }
