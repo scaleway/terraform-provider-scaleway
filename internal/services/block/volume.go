@@ -105,7 +105,7 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	} else {
 		req := &block.CreateVolumeRequest{
-			Zone:      zone,
+			Zone:      volume.Zone,
 			Name:      types.ExpandOrGenerateString(d.Get("name").(string), "volume"),
 			ProjectID: d.Get("project_id").(string),
 			Tags:      types.ExpandStrings(d.Get("tags")),
