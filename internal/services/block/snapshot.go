@@ -199,17 +199,7 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", snapshot.Name)
-	_ = d.Set("zone", snapshot.Zone)
-	_ = d.Set("project_id", snapshot.ProjectID)
-
-	if snapshot.ParentVolume != nil {
-		_ = d.Set("volume_id", snapshot.ParentVolume.ID)
-	} else {
-		_ = d.Set("volume_id", "")
-	}
-
-	_ = d.Set("tags", snapshot.Tags)
+	setSnapshotState(d, snapshot)
 
 	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
 	if err != nil {
