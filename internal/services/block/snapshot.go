@@ -211,7 +211,7 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("tags", snapshot.Tags)
 
-	err = identity.SetZonalIdentity(d, zone, snapshot.ID)
+	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -255,7 +255,7 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if shouldExport := d.HasChange("export"); shouldExport {
 		req := block.ExportSnapshotToObjectStorageRequest{
-			Zone:       zone,
+			Zone:       snapshot.Zone,
 			SnapshotID: snapshot.ID,
 			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
 			Key:        d.Get("export.0.key").(string),
@@ -276,14 +276,14 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	snapshot, err := waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = api.DeleteSnapshot(&block.DeleteSnapshotRequest{
-		Zone:       zone,
-		SnapshotID: id,
+		Zone:       snapshot.Zone,
+		SnapshotID: snapshot.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
