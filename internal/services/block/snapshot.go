@@ -237,7 +237,7 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	req := &block.UpdateSnapshotRequest{
-		Zone:       zone,
+		Zone:       snapshot.Zone,
 		SnapshotID: snapshot.ID,
 	}
 
