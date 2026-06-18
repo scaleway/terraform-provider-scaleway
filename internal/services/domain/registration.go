@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -41,9 +42,9 @@ func ResourceRegistration() *schema.Resource {
 func registrationIdentity() *schema.ResourceIdentity {
 	return identity.WrapSchemaMap(map[string]*schema.Schema{
 		"project_id": identity.DefaultProjectIDAttribute(),
-		"task_id": {
+		"domain_name": {
 			Type:              schema.TypeString,
-			Description:       "The ID of the registration task",
+			Description:       "The primary domain name of the registration",
 			RequiredForImport: true,
 		},
 	})
@@ -494,13 +495,14 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		}
 	}
 
-	// Use API response project_id for ID consistency (API may return different project than requested)
 	apiProjectID := resp.ProjectID
 	if apiProjectID == "" {
 		apiProjectID = projectID
 	}
 
-	if err := setRegistrationIdentity(d, apiProjectID, resp.TaskID); err != nil {
+	_ = d.Set("task_id", resp.TaskID)
+
+	if err := setRegistrationIdentity(d, apiProjectID, domainNames); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -518,24 +520,40 @@ func resourceRegistrationsRead(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	projectID := d.Get("project_id").(string)
-	taskID := d.Get("task_id").(string)
 
-	if err := setRegistrationIdentity(d, projectID, taskID); err != nil {
+	var domainNames []string
+
+	for _, v := range d.Get("domain_names").([]any) {
+		if s, ok := v.(string); ok && s != "" {
+			domainNames = append(domainNames, s)
+		}
+	}
+
+	if err := setRegistrationIdentity(d, projectID, domainNames); err != nil {
 		return diag.FromErr(err)
 	}
 
 	return diags
 }
 
-// readRegistrationIntoState fetches the registration and sets state without calling setRegistrationIdentity.
-// Use this for data sources which do not have Identity schema.
+// readRegistrationIntoState fetches the registration state from the API and populates the schema.
 func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
 	id := d.Id()
 
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
-		return diag.FromErr(err)
+		// Task purged from ListTasks — fall back to domain_names already in state.
+		rawNames := d.Get("domain_names").([]any)
+		for _, v := range rawNames {
+			if s, ok := v.(string); ok && s != "" {
+				domainNames = append(domainNames, s)
+			}
+		}
+
+		if len(domainNames) == 0 {
+			return diag.FromErr(err)
+		}
 	}
 
 	if len(domainNames) == 0 {
@@ -590,17 +608,36 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 	parts := strings.Split(id, "/")
 
 	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/taskID', got: %s", id))
+		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domain.tld', got: %s", id))
 	}
 
-	// Use API response as source of truth for project_id (API may return different project than requested)
 	projectID := firstResp.ProjectID
 	if projectID == "" {
 		projectID = parts[0]
 	}
 
 	_ = d.Set("project_id", projectID)
-	_ = d.Set("task_id", parts[1])
+
+	// Resolve task_id informationally; may be empty if the task has been archived.
+	taskOrDomain := parts[1]
+
+	var taskID string
+
+	if strings.Contains(taskOrDomain, ".") {
+		// For multi-domain IDs (e.g. "foo.com,bar.com"), use only the first domain to look up the task.
+		firstDomainInID := strings.SplitN(taskOrDomain, ",", 2)[0]
+		if task, taskErr := FindTaskByDomain(ctx, registrarAPI, firstDomainInID, nil); taskErr == nil && task.ID != "" {
+			taskID = task.ID
+		}
+	} else {
+		taskID = taskOrDomain
+	}
+
+	_ = d.Set("task_id", taskID)
+
+	// The stable resource ID stores all domain names comma-separated so multi-domain
+	// registrations survive refresh without losing any domain name.
+	d.SetId(projectID + "/" + strings.Join(domainNames, ","))
 
 	return nil
 }
@@ -735,9 +772,27 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	return nil
 }
 
-func setRegistrationIdentity(d *schema.ResourceData, projectID, taskID string) error {
-	return identity.SetMultiPartIdentity(d, map[string]string{
-		"project_id": projectID,
-		"task_id":    taskID,
-	}, "project_id", "task_id")
+// setRegistrationIdentity sets the resource identity using the first domain name (stable, globally unique)
+// and stores all domain names comma-separated in d.SetId() so multi-domain registrations survive refresh.
+func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNames []string) error {
+	if len(domainNames) == 0 {
+		return errors.New("cannot set registration identity: no domain names provided")
+	}
+
+	ident, err := d.Identity()
+	if err != nil {
+		return err
+	}
+
+	if err := ident.Set("project_id", projectID); err != nil {
+		return err
+	}
+
+	if err := ident.Set("domain_name", domainNames[0]); err != nil {
+		return err
+	}
+
+	d.SetId(projectID + "/" + strings.Join(domainNames, ","))
+
+	return nil
 }

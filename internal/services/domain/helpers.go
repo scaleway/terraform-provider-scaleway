@@ -421,16 +421,51 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 		}
 	}
 
-	return nil, fmt.Errorf("no domain registration task found for domain %q", domainName)
+	// No task found in history. This happens for domains transferred to Scaleway or registered
+	// outside Terraform where no create/transfer task exists in ListTasks (tasks are archived
+	// after some time and disappear from the active table).
+	// Fall back to GetDomain to confirm the domain is actually managed by this account.
+	domainResp, domainErr := registrarAPI.GetDomain(&domain.RegistrarAPIGetDomainRequest{
+		Domain: domainName,
+	}, scw.WithContext(ctx))
+	if domainErr != nil {
+		return nil, fmt.Errorf("no domain registration task found for domain %q", domainName)
+	}
+
+	// Return a synthetic task: the domain exists but has no task history.
+	// task_id will be empty; the resource stays readable but the ID encodes the domain name.
+	return &domain.Task{
+		ProjectID: domainResp.ProjectID,
+		Domain:    &domainName,
+	}, nil
 }
 
+// ExtractDomainsFromTaskID resolves domain names from a resource ID.
+//
+// It accepts two formats:
+//   - "projectID/task-uuid"   — looks up the task in ListTasks (standard case)
+//   - "projectID/a.com"       — uses the domain name directly (import when task is archived)
+//   - "projectID/a.com,b.com" — comma-separated domain names for multi-domain registrations
+//
+// The second and third formats are detected by the presence of a dot in the second segment.
 func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
 	parts := strings.Split(id, "/")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid ID format, expected 'projectID/domainName', got: %s", id)
+		return nil, fmt.Errorf("invalid ID format, expected 'projectID/taskID' or 'projectID/domain.tld', got: %s", id)
 	}
 
-	taskID := parts[1]
+	taskOrDomains := parts[1]
+
+	// If the second segment contains a dot it is a domain name (or comma-separated list),
+	// not a task UUID. Return domain names directly without hitting ListTasks.
+	if strings.Contains(taskOrDomains, ".") {
+		names := SplitDomains(&taskOrDomains)
+		if len(names) == 0 {
+			return nil, fmt.Errorf("invalid domain format in ID: %s", id)
+		}
+
+		return names, nil
+	}
 
 	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
@@ -438,12 +473,12 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 	}
 
 	for _, task := range listTasksResponse.Tasks {
-		if task.ID == taskID {
+		if task.ID == taskOrDomains {
 			return SplitDomains(task.Domain), nil
 		}
 	}
 
-	return nil, fmt.Errorf("task with ID '%s' not found", taskID)
+	return nil, fmt.Errorf("task with ID '%s' not found in ListTasks — if the task was archived, re-import using the domain name: terraform import <resource> %s/<domain.tld>", taskOrDomains, parts[0])
 }
 
 func flattenContact(contact *domain.Contact) []map[string]any {
