@@ -271,6 +271,7 @@ func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *b
 	_ = resourceData.Set("zone", volume.Zone)
 
 	var snapshotID string
+
 	if volume.ParentSnapshotID != nil {
 		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
 			SnapshotID: *volume.ParentSnapshotID,
