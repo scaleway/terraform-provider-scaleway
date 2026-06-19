@@ -147,10 +147,6 @@ func ResourceInstanceVolumeCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func setVolumeState(d *schema.ResourceData, volume *instanceSDK.Volume) diag.Diagnostics {
-	if volume == nil {
-		return nil
-	}
-
 	_ = d.Set("name", volume.Name)
 	_ = d.Set("organization_id", volume.Organization)
 	_ = d.Set("project_id", volume.Project)
