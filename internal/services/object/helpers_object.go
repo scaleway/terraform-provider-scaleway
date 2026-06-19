@@ -782,6 +782,33 @@ func addReadBucketErrorDiagnostic(diags *diag.Diagnostics, err error, resource s
 	}
 }
 
+func setProjectIDFromACL(
+	ctx context.Context,
+	s3Client *s3.Client,
+	d *schema.ResourceData,
+	bucketName string,
+	diags diag.Diagnostics,
+) (
+	diag.Diagnostics, bool,
+) {
+	if s3Client == nil || d == nil || bucketName == "" {
+		return diags, false
+	}
+
+	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
+		Bucket: aws.String(bucketName),
+	})
+	if err != nil {
+		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
+			return diags, false
+		}
+	} else if acl != nil && acl.Owner != nil {
+		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	}
+
+	return diags, true
+}
+
 func findServerSideEncryptionConfiguration(ctx context.Context, conn *s3.Client, bucketName string) (*s3Types.ServerSideEncryptionConfiguration, error) {
 	input := s3.GetBucketEncryptionInput{
 		Bucket: aws.String(bucketName),

@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
@@ -67,14 +65,10 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName),
-	})
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diag.Diagnostics{})
+	if !ok {
+		return diags
 	}
-
-	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	return nil
 }
@@ -102,14 +96,12 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByFilters(ctx context.
 		return diag.FromErr(err)
 	}
 
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName.(string)),
-	})
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("couldn't read bucket acl: %w", err))
+	diags, ok := setProjectIDFromACL(
+		ctx, s3Client, d, bucketName.(string), diag.Diagnostics{},
+	)
+	if !ok {
+		return diags
 	}
-
-	_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
 
 	return nil
 }

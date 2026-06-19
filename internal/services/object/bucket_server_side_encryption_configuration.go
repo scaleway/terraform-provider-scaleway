@@ -151,15 +151,9 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 		return diag.FromErr(err)
 	}
 
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
-			return diags
-		}
-	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
+	if !ok {
+		return diags
 	}
 
 	return diags
