@@ -3,27 +3,3 @@ The [`scaleway_cockpit_grafana_sync_data_sources`](https://registry.terraform.io
 Grafana must be provisioned for the project before running this action. With IAM authentication, access Grafana at least once for the project; the legacy `scaleway_cockpit_grafana_user` resource also provisions Grafana.
 
 Refer to the Cockpit [documentation](https://www.scaleway.com/en/docs/managed-services/cockpit/) and [API documentation](https://www.scaleway.com/en/docs/observability/cockpit/api-cli/) for more information.
-
-## Example Usage
-
-```terraform
-resource "scaleway_cockpit_source" "metrics" {
-  project_id     = var.project_id
-  name           = "prod-metrics"
-  type           = "metrics"
-  retention_days = 31
-
-  lifecycle {
-    action_trigger {
-      events  = [after_create, after_update]
-      actions = [action.scaleway_cockpit_grafana_sync_data_sources.sync]
-    }
-  }
-}
-
-action "scaleway_cockpit_grafana_sync_data_sources" "sync" {
-  config {
-    project_id = var.project_id
-  }
-}
-```
