@@ -39,8 +39,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
-					// Cannot test specific value for project ID since the default project ID is "" from the CI
-					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -80,11 +79,12 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketServerSideEncryptionConfigurationConfig_sideProject(bucketName, project.ID),
+				Config: testAccBucketServerSideEncryptionConfigurationConfigSideProject(bucketName, project.ID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccCheckBucketServerSideEncryptionConfigurationExistsInProject(tt, resourceName, project.ID),
 					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
 					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
@@ -123,6 +123,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "the-key-id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -154,6 +155,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "my-kms-key-tf-test"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -175,7 +177,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_wrongAlgo(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(
+				Config: testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(
 					bucketName, "hehehe-wait-i-dont-exist",
 				),
 				ExpectError: regexp.MustCompile(`to be one of`),
@@ -233,7 +235,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
+				Config: testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
@@ -436,7 +438,7 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
 `, rName, objectTestsMainRegion)
 }
 
-func testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
+func testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
@@ -456,7 +458,7 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
 `, rName, sseAlgorithm, objectTestsMainRegion)
 }
 
-func testAccBucketServerSideEncryptionConfigurationConfig_sideProject(rName, projectId string) string {
+func testAccBucketServerSideEncryptionConfigurationConfigSideProject(rName, projectID string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name       = %[1]q
@@ -475,5 +477,5 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
     }
   }
 }
-`, rName, objectTestsMainRegion, projectId)
+`, rName, objectTestsMainRegion, projectID)
 }
