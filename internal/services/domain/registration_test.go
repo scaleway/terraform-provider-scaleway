@@ -23,7 +23,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-single-updates50" + ".com"
+	singleDomain := "test-single-updates51" + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -104,9 +104,9 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName1 := "test-multiple-1241.com"
-	domainName2 := "test-multiple-1251.com"
-	domainName3 := "test-multiple-1261.com"
+	domainName1 := "test-multiple-1242.com"
+	domainName2 := "test-multiple-1252.com"
+	domainName3 := "test-multiple-1262.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -259,7 +259,7 @@ func TestAccDomainRegistration_ByTaskID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-import-by-task-id1.com"
+	singleDomain := "test-import-by-task-id2.com"
 
 	config := fmt.Sprintf(`
 		resource "scaleway_domain_registration" "test" {
@@ -312,7 +312,7 @@ func TestAccDomainRegistration_ByDomainName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-import-by-domain-name2.com"
+	singleDomain := "test-import-by-domain-name3.com"
 
 	config := fmt.Sprintf(`
 		resource "scaleway_domain_registration" "test" {
