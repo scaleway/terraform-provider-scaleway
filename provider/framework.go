@@ -207,6 +207,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		billing.NewBudgetResource,
+		billing.NewBudgetAlertResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
@@ -229,6 +230,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		billing.NewBudgetDataSource,
+		billing.NewBudgetAlertDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
