@@ -208,6 +208,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		billing.NewBudgetResource,
 		billing.NewBudgetAlertResource,
+		billing.NewBudgetAlertNotificationResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
@@ -231,6 +232,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		billing.NewBudgetDataSource,
 		billing.NewBudgetAlertDataSource,
+		billing.NewBudgetAlertNotificationDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
