@@ -26,7 +26,7 @@ func TestAccListIAMAPIKeys_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "main" {
-						name = "tf_tests_app_key_basic"
+						name = "tf_tests_app_key_list_basic"
 					}
 
 					resource "scaleway_iam_api_key" "key1" {
@@ -38,7 +38,7 @@ func TestAccListIAMAPIKeys_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_application" "main" {
-						name = "tf_tests_app_key_basic"
+						name = "tf_tests_app_key_list_basic"
 					}
 
 					resource "scaleway_iam_api_key" "key1" {
