@@ -618,22 +618,13 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 
 	_ = d.Set("project_id", projectID)
 
-	// Resolve task_id informationally; may be empty if the task has been archived.
+	// When the ID is in UUID format (projectID/taskUUID), set task_id from the UUID.
+	// When in domain format (projectID/domain.com), task_id is set during create and preserved.
 	taskOrDomain := parts[1]
 
-	var taskID string
-
-	if strings.Contains(taskOrDomain, ".") {
-		// For multi-domain IDs (e.g. "foo.com,bar.com"), use only the first domain to look up the task.
-		firstDomainInID := strings.SplitN(taskOrDomain, ",", 2)[0]
-		if task, taskErr := FindTaskByDomain(ctx, registrarAPI, firstDomainInID, nil); taskErr == nil && task.ID != "" {
-			taskID = task.ID
-		}
-	} else {
-		taskID = taskOrDomain
+	if !strings.Contains(taskOrDomain, ".") {
+		_ = d.Set("task_id", taskOrDomain)
 	}
-
-	_ = d.Set("task_id", taskID)
 
 	// The stable resource ID stores all domain names comma-separated so multi-domain
 	// registrations survive refresh without losing any domain name.
