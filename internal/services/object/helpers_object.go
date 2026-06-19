@@ -92,6 +92,26 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
 }
 
+func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, region, projectID string) (*s3.Client, error) {
+	accessKey, _ := meta.ScwClient().GetAccessKey()
+	secretKey, _ := meta.ScwClient().GetSecretKey()
+
+	if projectID == "" {
+		projectID, _ = meta.ScwClient().GetDefaultProjectID()
+	}
+
+	if projectID != "" {
+		accessKey = accessKeyWithProjectID(accessKey, projectID)
+	}
+
+	if region == "" {
+		defaultRegion, _ := meta.ScwClient().GetDefaultRegion()
+		region = defaultRegion.String()
+	}
+
+	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
+}
+
 func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
 	region, err := meta.ExtractRegion(d, m)
 	if err != nil {
