@@ -91,14 +91,10 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
 				),
 			},
-			// This check uses an "import" block, which doesn't work because our bucket
-			// ID doesn't contain the project ID.
-			//
-			// {
-			// 	ResourceName:      resourceName,
-			// 	ImportState:       true,
-			// 	ImportStateVerify: true,
-			// },
+
+			// This test cannot use "ImportState" and "ImportStateVerify" checks, because
+			// they rely on an "import" block. This block breaks for this specific test
+			// because our buckets don't have their project ID inside their ID.
 		},
 	})
 }
