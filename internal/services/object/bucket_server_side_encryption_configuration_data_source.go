@@ -65,7 +65,9 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
-	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diag.Diagnostics{})
+	var diags diag.Diagnostics
+
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
 	if !ok {
 		return diags
 	}
@@ -96,9 +98,9 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByFilters(ctx context.
 		return diag.FromErr(err)
 	}
 
-	diags, ok := setProjectIDFromACL(
-		ctx, s3Client, d, bucketName.(string), diag.Diagnostics{},
-	)
+	var diags diag.Diagnostics
+
+	diags, ok = setProjectIDFromACL(ctx, s3Client, d, bucketName.(string), diags)
 	if !ok {
 		return diags
 	}
