@@ -37,6 +37,8 @@ data "scaleway_object_bucket_server_side_encryption_configuration" "by_bucket" {
 
 - `bucket` - (Optional, String) The bucket's name or regional ID. Conflicts with `bucket_server_side_encryption_configuration_id`.
 
+- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
+
 ## Attributes Reference
 
 - `bucket` - (String) The bucket's name or regional ID.
