@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
@@ -26,6 +27,7 @@ func ResourceVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity: identity.DefaultZonal(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultBlockTimeout),
 			Read:    schema.DefaultTimeout(defaultBlockTimeout),
@@ -138,7 +140,10 @@ func ResourceBlockVolumeCreate(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, volume.ID))
+	err = identity.SetZonalIdentity(d, zone, volume.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForBlockVolume(ctx, api.BlockAPI, zone, volume.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -165,30 +170,12 @@ func ResourceBlockVolumeRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", volume.Name)
+	setVolumeState(api, d, volume)
 
-	if volume.Specs != nil {
-		_ = d.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
+	err = identity.SetZonalIdentity(d, volume.Zone, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	_ = d.Set("size_in_gb", int(volume.Size/scw.GB))
-	_ = d.Set("zone", volume.Zone)
-	_ = d.Set("project_id", volume.ProjectID)
-	_ = d.Set("tags", volume.Tags)
-	snapshotID := ""
-
-	if volume.ParentSnapshotID != nil {
-		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
-			SnapshotID: *volume.ParentSnapshotID,
-			Zone:       zone,
-		})
-
-		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
-			snapshotID = zonal.NewIDString(zone, *volume.ParentSnapshotID)
-		}
-	}
-
-	_ = d.Set("snapshot_id", snapshotID)
 
 	return nil
 }
@@ -211,7 +198,7 @@ func ResourceBlockVolumeUpdate(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	req := &block.UpdateVolumeRequest{
-		Zone:     zone,
+		Zone:     volume.Zone,
 		VolumeID: volume.ID,
 		Name:     types.ExpandUpdatedStringPtr(volume.Name),
 	}
@@ -245,7 +232,7 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBlockVolumeToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	volume, err := waitForBlockVolumeToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -257,8 +244,8 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	err = api.DeleteVolume(&block.DeleteVolumeRequest{
-		Zone:     zone,
-		VolumeID: id,
+		Zone:     volume.Zone,
+		VolumeID: volume.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -270,4 +257,35 @@ func ResourceBlockVolumeDelete(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	return nil
+}
+
+func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *block.Volume) {
+	if volume == nil {
+		return
+	}
+
+	_ = resourceData.Set("name", volume.Name)
+	_ = resourceData.Set("project_id", volume.ProjectID)
+	_ = resourceData.Set("tags", volume.Tags)
+	_ = resourceData.Set("size_in_gb", int(volume.Size/scw.GB))
+	_ = resourceData.Set("zone", volume.Zone)
+
+	var snapshotID string
+
+	if volume.ParentSnapshotID != nil {
+		_, err := api.GetSnapshot(&block.GetSnapshotRequest{
+			SnapshotID: *volume.ParentSnapshotID,
+			Zone:       volume.Zone,
+		})
+
+		if err == nil || (!httperrors.Is403(err) && !httperrors.Is404(err)) {
+			snapshotID = zonal.NewIDString(volume.Zone, *volume.ParentSnapshotID)
+		}
+	}
+
+	_ = resourceData.Set("snapshot_id", snapshotID)
+
+	if volume.Specs != nil {
+		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
+	}
 }
