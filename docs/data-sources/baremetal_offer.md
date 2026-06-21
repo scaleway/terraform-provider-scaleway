@@ -33,7 +33,7 @@ data "scaleway_baremetal_offer" "my_offer" {
 
 - `include_disabled` - (Optional, default `false`) Include disabled offers.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the offer should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the offer should be created.
 
 ## Attributes Reference
 

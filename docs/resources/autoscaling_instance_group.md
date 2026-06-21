@@ -155,8 +155,8 @@ The following arguments are supported:
     - `backend_ids` - The Load Balancer backend IDs.
     - `private_network_id` - The ID of the Private Network attached to the Load Balancer.
 - `delete_servers_on_destroy` - (Optional) Whether to delete all instances in this group when the group is destroyed. Set to `true` to tear them down, `false` (the default) leaves them running.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance group exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Instance group is associated with.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance group exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Instance group is associated with.
 
 ## Attributes Reference
 

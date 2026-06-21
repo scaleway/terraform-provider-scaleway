@@ -71,7 +71,7 @@ resource "scaleway_iam_group" "with_users" {
 
 - `external_membership` - (Optional) Manage membership externally. This make the resource ignore user_ids and application_ids. Should be used when using [iam_group_membership](iam_group_membership.md)
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the group is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the group is associated with.
 
 ## Attributes Reference
 

@@ -28,7 +28,7 @@ data "scaleway_iam_application" "find_by_id" {
 
   -> **Note** You must specify at least one: `name` and/or `application_id`.
 
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the
   Organization the application is associated with.
 
 ## Attribute Reference

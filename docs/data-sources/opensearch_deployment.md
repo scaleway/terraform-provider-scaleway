@@ -27,7 +27,7 @@ data "scaleway_opensearch_deployment" "by_id" {
 
 - `name` - (Optional) The name of the OpenSearch deployment. Only one of `name` and `deployment_id` should be specified.
 - `deployment_id` - (Optional) The ID of the OpenSearch deployment. Only one of `name` and `deployment_id` should be specified.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment exists.
 - `project_id` - (Optional) The ID of the project the OpenSearch deployment is associated with.
 
 ## Attributes Reference

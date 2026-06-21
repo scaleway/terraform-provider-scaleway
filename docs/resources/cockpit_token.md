@@ -66,8 +66,8 @@ This section lists the arguments that are supported:
     - `setup_alerts` - (Defaults to `false`) Permission to set up alerts.
     - `query_traces` - (Defaults to `false`) Permission to query traces.
     - `write_traces` - (Defaults to `false`) Permission to write traces.
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)) The [region](../guides/regions_and_zones.md#regions) where the Cockpit token is located.
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)) The ID of the Project the Cockpit is associated with.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the Cockpit token is located.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)) The ID of the Project the Cockpit is associated with.
 
 ## Attributes Reference
 

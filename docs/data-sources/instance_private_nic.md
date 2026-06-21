@@ -39,7 +39,7 @@ data "scaleway_instance_private_nic" "by_tags" {
 - `private_network_id` - (Optional) The ID of the private network
   Only one of `private_nic_id` and `private_network_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private nic exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private nic exists.
 
 ## Attributes Reference
 

@@ -83,7 +83,7 @@ The following arguments are supported:
 - `public_port` - (Required) The public port to listen on.
 - `private_port` - (Required) The private port to translate to.
 - `protocol` - (Defaults to both) The protocol the rule should apply to. Possible values are `both`, `tcp` and `udp`.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
 
 ## Attributes Reference
 
