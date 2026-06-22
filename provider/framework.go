@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
@@ -191,8 +192,8 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		if ok && err == nil {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
@@ -207,6 +208,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		datalab.NewDatalabResource,
+		billing.NewBudgetResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
@@ -230,6 +232,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
+		billing.NewBudgetDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,

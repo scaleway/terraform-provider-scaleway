@@ -37,6 +37,9 @@ data "scaleway_object_bucket_server_side_encryption_configuration" "by_bucket" {
 
 - `bucket` - (Optional, String) The bucket's name or regional ID. Conflicts with `bucket_server_side_encryption_configuration_id`.
 
+- `project_id` - (Defaults to [provider's `project_id`][1]) The ID of the
+project the bucket is associated with.
+
 ## Attributes Reference
 
 - `bucket` - (String) The bucket's name or regional ID.
@@ -44,3 +47,7 @@ data "scaleway_object_bucket_server_side_encryption_configuration" "by_bucket" {
 - `rule` - (Set of Object) Set of server-side encryption configuration rules.
     - `apply_server_side_encryption_by_default` - (List of Object) Single object for setting server-side encryption by default.
         - `sse_algorithm` - (String) Server-side encryption algorithm to use. Valid values are AES256.
+
+<!--- Links, invisible in the final document --->
+
+[1]: ../index.md#project_id
