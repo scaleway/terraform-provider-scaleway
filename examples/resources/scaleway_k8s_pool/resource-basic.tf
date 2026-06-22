@@ -1,10 +1,11 @@
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.32.3"
+  version = "1.35.3"
   cni     = "cilium"
 }
 
 resource "scaleway_k8s_pool" "main" {
   cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
   node_type          = "DEV1-M"
   size               = 3
   min_size           = 0
