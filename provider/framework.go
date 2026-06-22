@@ -241,6 +241,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
+		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
