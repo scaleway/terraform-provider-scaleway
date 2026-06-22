@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -302,13 +301,5 @@ func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapsho
 		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
 	} else {
 		_ = resourceData.Set("volume_id", "")
-	}
-
-	if snapshot.CreatedAt != nil {
-		_ = resourceData.Set("created_at", snapshot.CreatedAt.Format(time.RFC3339))
-	}
-
-	if snapshot.UpdatedAt != nil {
-		_ = resourceData.Set("updated_at", snapshot.UpdatedAt.Format(time.RFC3339))
 	}
 }
