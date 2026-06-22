@@ -728,11 +728,15 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	registrarAPI := NewRegistrarDomainAPI(m)
-	id := d.Id()
 
-	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
-	if err != nil {
-		return diag.FromErr(err)
+	domainNames := registrationDomainNamesFromState(d)
+	if len(domainNames) == 0 {
+		var err error
+
+		domainNames, err = ExtractDomainsFromTaskID(ctx, d.Id(), registrarAPI)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	for _, domainName := range domainNames {
@@ -761,6 +765,20 @@ func resourceRegistrationDelete(ctx context.Context, d *schema.ResourceData, m a
 	d.SetId("")
 
 	return nil
+}
+
+func registrationDomainNamesFromState(d *schema.ResourceData) []string {
+	rawNames := d.Get("domain_names").([]any)
+
+	var domainNames []string
+
+	for _, v := range rawNames {
+		if s, ok := v.(string); ok && s != "" {
+			domainNames = append(domainNames, s)
+		}
+	}
+
+	return domainNames
 }
 
 // setRegistrationIdentity sets the resource identity using the first domain name (stable, globally unique)

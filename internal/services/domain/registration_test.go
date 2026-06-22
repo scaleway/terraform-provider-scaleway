@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -104,9 +106,9 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName1 := "test-multiple-1242.com"
-	domainName2 := "test-multiple-1252.com"
-	domainName3 := "test-multiple-1262.com"
+	domainName1 := "test-multiple-1243.com"
+	domainName2 := "test-multiple-1253.com"
+	domainName3 := "test-multiple-1263.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -220,9 +222,14 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
 
-			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
-			if err != nil {
-				return err
+			domainNames := extractDomainNamesFromResourceState(rs)
+			if len(domainNames) == 0 {
+				var err error
+
+				domainNames, err = domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
+				if err != nil {
+					return err
+				}
 			}
 
 			for _, domainName := range domainNames {
@@ -260,6 +267,7 @@ func TestAccDomainRegistration_ByTaskID(t *testing.T) {
 	defer tt.Cleanup()
 
 	singleDomain := "test-import-by-task-id2.com"
+	taskID := "9fb6c780-6d10-44f8-8515-977b3765496a"
 
 	config := fmt.Sprintf(`
 		resource "scaleway_domain_registration" "test" {
@@ -297,6 +305,7 @@ func TestAccDomainRegistration_ByTaskID(t *testing.T) {
 			{
 				ResourceName:            "scaleway_domain_registration.test",
 				ImportState:             true,
+				ImportStateId:           testAccDomainRegistrationProjectID + "/" + taskID,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"duration_in_years"},
 			},
@@ -355,6 +364,20 @@ func TestAccDomainRegistration_ByDomainName(t *testing.T) {
 			},
 		},
 	})
+}
+
+func extractDomainNamesFromResourceState(rs *terraform.ResourceState) []string {
+	var domainNames []string
+
+	for key, value := range rs.Primary.Attributes {
+		if strings.HasPrefix(key, "domain_names.") && value != "" {
+			domainNames = append(domainNames, value)
+		}
+	}
+
+	sort.Strings(domainNames)
+
+	return domainNames
 }
 
 // shouldBeSkipped returns true when cassette recording is active but TF_ACC_DOMAIN_REGISTRATION is
