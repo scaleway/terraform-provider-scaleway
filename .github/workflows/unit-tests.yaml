@@ -1,4 +1,4 @@
-name: Tests
+name: Build and unit testing
 
 permissions:
   contents: read
@@ -16,19 +16,33 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1
+
       - name: Install Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: stable
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+
       - name: Build binaries
         run: make build
+
       - name: Verify go.mod is tidy
         run: |
           go mod tidy
           git diff --exit-code
+
+      - name: Test cross-platform builds with GoReleaser
+        uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+        with:
+          version: 2.13.3
+          args: release --snapshot --clean --skip sign --skip archive
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run unit tests
         run: make test
+
       - name: Check with go vet
         run: make vet
