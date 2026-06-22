@@ -745,15 +745,9 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
-			return diags
-		}
-	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
+	if !ok {
+		return diags
 	}
 
 	// Get object_lock_enabled
