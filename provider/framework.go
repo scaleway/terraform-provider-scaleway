@@ -209,6 +209,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		datalab.NewDatalabResource,
 		billing.NewBudgetResource,
+		billing.NewBudgetAlertResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
@@ -233,6 +234,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
 		billing.NewBudgetDataSource,
+		billing.NewBudgetAlertDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
