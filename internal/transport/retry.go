@@ -10,15 +10,18 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 )
 
 const (
 	// MaxRetriesOnForbidden is the number of retries when a request fails with HTTP 403.
+	//
+	// For a 2s RetryOn403WaitTime, timeout will occur at most after 62s, enabling the
+	// retries to go over IAM's 60s cache.
+	// (Current exponential backoff: 2s/4s/8s/16s/32s, max total time 62s)
 	MaxRetriesOnForbidden = 5
 
-	// RetryOn403WaitTime is the delay between retries on HTTP 403.
+	// RetryOn403WaitTime is the initial delay between retries on HTTP 403.
 	RetryOn403WaitTime = 2 * time.Second
 )
 
@@ -124,17 +127,20 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 func RetryOn403(ctx context.Context, fn func() error) error {
 	var lastErr error
 
-	for range MaxRetriesOnForbidden {
+	for i := range MaxRetriesOnForbidden {
 		lastErr = fn()
 		if lastErr == nil {
 			return nil
 		}
 
-		if httperrors.Is403(lastErr) {
+		var respErr *scw.ResponseError
+		if errors.As(lastErr, &respErr) && respErr.StatusCode == http.StatusForbidden {
+			wait := RetryOn403WaitTime * time.Duration(1<<i) // exponential backoff
+
 			select {
 			case <-ctx.Done():
 				return ctx.Err()
-			case <-time.After(RetryOn403WaitTime):
+			case <-time.After(wait):
 				continue
 			}
 		}
@@ -152,17 +158,20 @@ func RetryOn403Value[T any](ctx context.Context, fn func() (T, error)) (T, error
 		lastErr error
 	)
 
-	for range MaxRetriesOnForbidden {
+	for i := range MaxRetriesOnForbidden {
 		result, lastErr = fn()
 		if lastErr == nil {
 			return result, nil
 		}
 
-		if httperrors.Is403(lastErr) {
+		var respErr *scw.ResponseError
+		if errors.As(lastErr, &respErr) && respErr.StatusCode == http.StatusForbidden {
+			wait := RetryOn403WaitTime * time.Duration(1<<i) // exponential backoff
+
 			select {
 			case <-ctx.Done():
 				return result, ctx.Err()
-			case <-time.After(RetryOn403WaitTime):
+			case <-time.After(wait):
 				continue
 			}
 		}
