@@ -18,8 +18,8 @@ func TestAccDataSourceVersion_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	version := "1.32.2"
-	versionWithoutPatch := "1.32"
+	version := "1.35.3"
+	versionWithoutPatch := "1.35"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -35,23 +35,19 @@ func TestAccDataSourceVersion_Basic(t *testing.T) {
 					testAccCheckK8SVersionExists(tt, "data.scaleway_k8s_version.by_name"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "name", version),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "major_minor_only", versionWithoutPatch),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.#", "4"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.#", "5"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.0", "cilium"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.1", "calico"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.2", "kilo"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.3", "none"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.1", "cilium_native"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.2", "calico"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.3", "kilo"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_cnis.4", "none"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.#", "1"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_container_runtimes.0", "containerd"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.#", "9"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.#", "4"),
 					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.0", "HPAScaleToZero"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.1", "InPlacePodVerticalScaling"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.2", "SidecarContainers"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.3", "DRAAdminAccess"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.4", "DRAResourceClaimDeviceStatus"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.5", "DynamicResourceAllocation"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.6", "PodLevelResources"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.7", "CPUManagerPolicyAlphaOptions"),
-					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.8", "ImageVolume"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.1", "CPUManagerPolicyAlphaOptions"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.2", "ImageVolume"),
+					resource.TestCheckResourceAttr("data.scaleway_k8s_version.by_name", "available_feature_gates.3", "MutatingAdmissionPolicy"),
 				),
 			},
 		},

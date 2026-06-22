@@ -256,6 +256,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"version": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "The Kubernetes version of the pool",
 		},
@@ -721,6 +722,31 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if poolVersion, poolVersionSet := meta.GetRawConfigForKey(d, "version", cty.String); poolVersionSet {
+		if d.HasChange("version") {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: poolVersion.(string),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		poolVersion = d.Get("version") // read computed value in state
+		if poolVersion != cluster.Version {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: cluster.Version,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
