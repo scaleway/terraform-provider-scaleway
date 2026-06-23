@@ -65,6 +65,7 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "maintenances.#", "0"),
 				),
 			},
 			{
@@ -1460,6 +1461,10 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "tags.1", "restored_instance"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "private_network.0.pn_id"),
 					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "endpoint_ip", ""),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "endpoint_port", "0"),
+					rdbchecks.HasNoPublicEndpoint(tt, "scaleway_rdb_instance.from_snapshot"),
 				),
 			},
 		},
