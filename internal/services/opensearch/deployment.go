@@ -60,10 +60,21 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "OpenSearch version to use",
 		},
 		"node_amount": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Number of nodes",
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			Deprecated:    "Please use node_count instead",
+			ConflictsWith: []string{"node_count"},
+			ExactlyOneOf:  []string{"node_count"},
+			Description:   "Number of nodes",
+		},
+		"node_count": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"node_amount"},
+			ExactlyOneOf:  []string{"node_amount"},
+			Description:   "Number of nodes",
 		},
 		"node_type": {
 			Type:        schema.TypeString,
@@ -201,12 +212,12 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	req := &searchdbapi.CreateDeploymentRequest{
-		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
-		Version:    d.Get("version").(string),
-		NodeAmount: uint32(d.Get("node_amount").(int)),
-		NodeType:   d.Get("node_type").(string),
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
+		Version:   d.Get("version").(string),
+		NodeCount: uint32(deploymentNodeCountFromConfig(d)),
+		NodeType:  d.Get("node_type").(string),
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -306,7 +317,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
-	_ = d.Set("node_amount", int(deployment.NodeAmount))
+	setDeploymentNodeCountState(d, deployment)
 	_ = d.Set("node_type", deployment.NodeType)
 	_ = d.Set("status", string(deployment.Status))
 

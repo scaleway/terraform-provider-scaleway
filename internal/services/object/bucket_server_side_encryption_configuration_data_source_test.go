@@ -45,11 +45,22 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, "scaleway_object_bucket_server_side_encryption_configuration.main"),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(
+						tt, "scaleway_object_bucket_server_side_encryption_configuration.main",
+					),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "bucket",
-						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "project_id",
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "project_id",
+					),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id",
+						"rule.0.apply_server_side_encryption_by_default.0.sse_algorithm",
+						"AES256",
+					),
 				),
 			},
 		},
@@ -86,10 +97,22 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testin
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExists(
+						tt, "scaleway_object_bucket_server_side_encryption_configuration.main",
+					),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "bucket",
-						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "project_id",
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "project_id",
+					),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket",
+						"rule.0.apply_server_side_encryption_by_default.0.sse_algorithm",
+						"AES256",
+					),
 				),
 			},
 		},

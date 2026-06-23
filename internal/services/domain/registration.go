@@ -94,7 +94,7 @@ func registrationSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: contactSchema(),
 			},
-			Description: "Details of the administrative contact.",
+			Description: "Details of the administrative contact (read-only, set by the API).",
 		},
 		"technical_contact": {
 			Type:     schema.TypeList,
@@ -102,7 +102,7 @@ func registrationSchema() map[string]*schema.Schema {
 			Elem: &schema.Resource{
 				Schema: contactSchema(),
 			},
-			Description: "Details of the technical contact.",
+			Description: "Details of the technical contact (read-only, set by the API).",
 		},
 		"auto_renew": {
 			Type:        schema.TypeBool,
@@ -268,12 +268,14 @@ func contactSchema() map[string]*schema.Schema {
 		},
 		"vat_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "VAT identification code of the contact, if applicable.",
 		},
 		"company_identification_code": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
+			Computed:    true,
 			Description: "Company identification code (e.g., SIREN/SIRET in France) for the contact.",
 		},
 		"lang": {
@@ -721,6 +723,18 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 				return diag.FromErr(err)
 			}
 		}
+	}
+
+	if d.HasChanges("owner_contact_id", "owner_contact") {
+		// Changing the registrant (owner) requires a domain trade, which is a sensitive
+		// ownership-transfer operation that may involve payment or legal validation.
+		// This must be done via the Scaleway console or API, then followed by
+		// `terraform apply -refresh-only` to sync the state.
+		return diag.Diagnostics{{
+			Severity: diag.Error,
+			Summary:  "owner_contact cannot be changed via Terraform",
+			Detail:   "Changing the registrant contact requires a domain trade (TradeDomain). Please update the owner contact via the Scaleway console or API, then run `terraform apply -refresh-only` to sync the Terraform state.",
+		}}
 	}
 
 	return resourceRegistrationsRead(ctx, d, m)

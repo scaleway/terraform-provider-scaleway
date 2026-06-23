@@ -47,9 +47,11 @@ func dataSourceCockpitGrafanaRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	grafana, err := retryOn403Value(ctx, func() (*cockpit.Grafana, error) {
+		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			return diag.Errorf("Grafana instance not found for project %s. Ensure that Cockpit is activated for this project.", projectID)

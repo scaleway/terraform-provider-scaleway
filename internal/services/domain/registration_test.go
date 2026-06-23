@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -256,6 +257,59 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 		return nil
 	}
+}
+
+func TestAccDomainRegistration_OwnerContactChangeError(t *testing.T) {
+	if shouldBeSkipped() {
+		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	singleDomain := "test-owner-contact-error1.com"
+
+	ownerContactConfig := func(firstname string) string {
+		return fmt.Sprintf(`
+			resource "scaleway_domain_registration" "test" {
+			  project_id        = "%s"
+			  domain_names      = ["%s"]
+			  duration_in_years = 1
+
+			  owner_contact {
+			    firstname                   = "%s"
+			    lastname                    = "DOE"
+			    email                       = "john.doe@example.com"
+			    phone_number                = "+1.23456789"
+			    address_line_1              = "123 Main Street"
+			    city                        = "Paris"
+			    zip                         = "75001"
+			    country                     = "FR"
+			    legal_form                  = "individual"
+			    vat_identification_code     = "FR12345678901"
+			    company_identification_code = "123456789"
+			  }
+			}
+		`, testAccDomainRegistrationProjectID, singleDomain, firstname)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: ownerContactConfig("John"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "owner_contact.0.firstname", "John"),
+				),
+			},
+			{
+				// Changing owner_contact must return an explicit provider error.
+				Config:      ownerContactConfig("Jane"),
+				ExpectError: regexp.MustCompile(`owner_contact cannot be changed via Terraform`),
+			},
+		},
+	})
 }
 
 func TestAccDomainRegistration_ByTaskID(t *testing.T) {

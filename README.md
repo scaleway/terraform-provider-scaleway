@@ -9,8 +9,8 @@
 
 ## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 1.0
--	[Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
+- [Terraform](https://www.terraform.io/downloads.html) 1.0
+- [Go](https://golang.org/doc/install) 1.25 (to build the provider plugin)
 
 ## Building The Provider
 

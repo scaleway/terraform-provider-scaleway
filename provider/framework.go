@@ -15,8 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
@@ -189,8 +191,8 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		if ok && err == nil {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
@@ -204,9 +206,11 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		billing.NewBudgetResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
+		iam.NewScimTokenResource,
 	}
 }
 
@@ -224,9 +228,11 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		billing.NewBudgetDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
+		iam.NewScimTokenDataSource,
 	}
 }
 
@@ -235,6 +241,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
+		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
@@ -281,7 +288,14 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		iam.NewGroupListResource,
 		iam.NewUserListResource,
 		iam.NewApplicationListResource,
+		iam.NewPolicyListResource,
+		account.NewProjectListResource,
+		iam.NewAPIKeyListResource,
+		domain.NewRecordListResource,
 		domain.NewZoneListResource,
+		secret.NewSecretListResource,
+		secret.NewVersionListResource,
+		keymanager.NewKeyListResource,
 	}
 }
 

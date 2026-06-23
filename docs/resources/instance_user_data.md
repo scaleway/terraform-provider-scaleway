@@ -62,7 +62,7 @@ The following arguments are required:
 - `value` - (Required) Value associated with your key
 - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
-~> **Important:**   Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
+~> **Important:** Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
   You can define values using:
     - string
     - UTF-8 encoded file content using [file](https://www.terraform.io/language/functions/file)

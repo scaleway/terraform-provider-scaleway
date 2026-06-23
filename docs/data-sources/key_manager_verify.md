@@ -10,6 +10,7 @@ The [`scaleway_key_manager_verify`](https://registry.terraform.io/providers/scal
 Refer to the Key Manager [documentation](https://www.scaleway.com/en/docs/key-manager/) and [API documentation](https://www.scaleway.com/en/developers/api/key-manager/) for more information.
 
 
+
 ## Example Usage
 
 ```terraform
@@ -65,7 +66,7 @@ data "scaleway_key_manager_verify" "main" {
 
 ## Argument Reference
 
-- `key_id` -  ID of the key to use for signature verification. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
+- `key_id` - ID of the key to use for signature verification. Can be a plain UUID or a [regional](../guides/regions_and_zones.md#resource-ids) ID.
 
 - `region` - The [region](../guides/regions_and_zones.md#regions) of the key. If not set, the region is derived from the key_id when possible or from the [provider](../index.md#region) `region` configuration.
 
