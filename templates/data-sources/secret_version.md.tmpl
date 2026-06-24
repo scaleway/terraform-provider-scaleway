@@ -81,7 +81,7 @@ Note: This data source provides you with access to the secret payload, which is 
 Keep in mind that this is a sensitive attribute. For more information,
 see [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data).
 
-~> **Important:**  This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
+~> **Important:** This property is sensitive and will not be displayed in the Terraform plan, for security reasons.
 
 ## Attributes Reference
 

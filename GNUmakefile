@@ -25,6 +25,9 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
 
+test-update-cassettes: fmtcheck
+	TF_ACC=1 TF_UPDATE_CASSETTES=true go test $(TEST) -run $(TESTARGS) -timeout=120m -parallel=10
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \

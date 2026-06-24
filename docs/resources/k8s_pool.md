@@ -15,12 +15,13 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 
 ```terraform
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.32.3"
+  version = "1.35.3"
   cni     = "cilium"
 }
 
 resource "scaleway_k8s_pool" "main" {
   cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
   node_type          = "DEV1-M"
   size               = 3
   min_size           = 0
@@ -29,6 +30,17 @@ resource "scaleway_k8s_pool" "main" {
   autohealing        = true
   container_runtime  = "containerd"
   placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
+
+  labels = {
+    "key" = "value"
+    "foo" = "bar"
+  }
+
+  taints {
+    key    = "taint-key"
+    value  = "taint-value"
+    effect = "NoSchedule"
+  }
 
   # Make sure that the new resource is created before destroying the old one on changes that require replacement
   lifecycle {
@@ -57,6 +69,11 @@ The following arguments are supported:
 - `size` - (Required) The size of the pool.
 
 ~> **Important:** This field will only be used at creation if autoscaling is enabled.
+
+- `version` - (Optional) The version of the pool. If not explicitly set, the version of the pool will be equal to the version of the cluster.
+For the field to be properly taken into account, the `upgrade_pools` field of the cluster must be set to `false` in order to decouple the version of the pool from the cluster.
+
+~> **Important:** This field is only taken into account when updating/upgrading the resource. At creation, the pool's version is always the cluster's version.
 
 - `min_size` - (Defaults to `1` if `size` > 0, or `0` otherwise) The minimum size of the pool, used by the autoscaling feature.
 
@@ -94,11 +111,11 @@ The following arguments are supported:
 
 -> Note: The minimal volume size of a node is 20GB.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
@@ -107,6 +124,12 @@ The following arguments are supported:
 ~> **Important:** Updates to this field will recreate a new resource.
 
 - `security_group_id` - The ID of the security group
+
+- `labels` - The list of Kubernetes labels applied and reconciled on the nodes.
+
+- `taints` - The list of Kubernetes taints applied and reconciled on the nodes.
+
+- `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
 
 ## Attributes Reference
 
@@ -127,7 +150,6 @@ In addition to all arguments above, the following attributes are exported:
     - `status` - The status of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
-- `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
 
 ## Zone
@@ -151,6 +173,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "pool" {
   name               = "placement_group"
   cluster_id         = scaleway_k8s_cluster.cluster.id
+  version            = scaleway_k8s_cluster.cluster.version
   node_type          = "gp1_xs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
   size               = 1
@@ -161,7 +184,7 @@ resource "scaleway_k8s_pool" "pool" {
 resource "scaleway_k8s_cluster" "cluster" {
   name    = "placement_group"
   cni     = "kilo"
-  version = "1.32.3"
+  version = "1.35.3"
   tags    = ["terraform-test", "scaleway_k8s_cluster", "placement_group"]
   region  = "fr-par"
   type    = "multicloud"

@@ -20,7 +20,8 @@ func TestAccVPC_Basic(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_vpc" "vpc01" {
-					  name = "test-vpc"
+					  name 				  = "test-vpc"
+ 					  enable_transitivity = true	
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
@@ -31,6 +32,7 @@ func TestAccVPC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_vpc.vpc01", "updated_at"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_routing", "true"),
 					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_custom_routes_propagation", "true"),
+					resource.TestCheckResourceAttr("scaleway_vpc.vpc01", "enable_transitivity", "true"),
 				),
 			},
 			{

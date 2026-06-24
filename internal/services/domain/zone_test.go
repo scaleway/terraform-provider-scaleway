@@ -127,7 +127,7 @@ func testAccCheckDomainZoneDestroy(tt *acctest.TestTools) resource.TestCheckFunc
 				DNSZones: []string{domain.BuildZoneName(rs.Primary.Attributes["subdomain"], rs.Primary.Attributes["domain"])},
 			})
 
-			if httperrors.Is403(err) { // forbidden: subdomain not found
+			if httperrors.Is404(err) || httperrors.Is403(err) {
 				return nil
 			}
 

@@ -50,10 +50,12 @@ func fetchDataSourceByID(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	d.SetId(id)
 
-	res, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: id,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -95,7 +97,9 @@ func fetchDataSourceByFilters(ctx context.Context, d *schema.ResourceData, m any
 		req.Origin = cockpit.DataSourceOrigin(v.(string))
 	}
 
-	res, err := api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	res, err := retryOn403Value(ctx, func() (*cockpit.ListDataSourcesResponse, error) {
+		return api.ListDataSources(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

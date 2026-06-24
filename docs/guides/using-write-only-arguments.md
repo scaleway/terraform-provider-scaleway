@@ -1,6 +1,7 @@
 ---
 page_title: "Using Write-Only Arguments Guide"
 ---
+
 # Using Write-Only Arguments with the Terraform Scaleway Provider
 
 Write-only arguments in Terraform allow you to handle sensitive data that should not be stored in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use write-only arguments in the Scaleway Terraform Provider.

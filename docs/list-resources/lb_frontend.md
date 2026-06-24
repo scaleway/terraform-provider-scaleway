@@ -1,6 +1,6 @@
 ---
 page_title: "Scaleway: scaleway_lb_frontend"
-subcategory: "Load Balancer"
+subcategory: "Load Balancers"
 description: |-
   Lists Scaleway Load Balancer Frontends for one or more Load Balancers.
 ---

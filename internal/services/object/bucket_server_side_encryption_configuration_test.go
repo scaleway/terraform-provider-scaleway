@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
@@ -27,6 +29,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic(bucketName),
@@ -37,6 +40,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -44,6 +48,54 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+		},
+	})
+}
+
+func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
+
+	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
+		tt,
+		"ObjectStorageObjectsRead",
+		"ObjectStorageBucketsRead",
+		"ObjectStorageObjectsWrite",
+		"ObjectStorageBucketsWrite",
+	)
+	require.NoError(t, err)
+
+	ctx := t.Context()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			func(_ *terraform.State) error {
+				return terminateFakeSideProject()
+			},
+			objectchecks.IsBucketDestroyedFromProject(tt, project.ID),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: testAccBucketServerSideEncryptionConfigurationConfigSideProject(bucketName, project.ID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExistsInProject(tt, resourceName, project.ID),
+					resource.TestCheckResourceAttrPair(resourceName, "bucket", "scaleway_object_bucket.test", "name"),
+					resource.TestCheckResourceAttr(resourceName, "project_id", project.ID),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
+					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "false"),
+				),
+			},
+
+			// This test cannot use "ImportState" and "ImportStateVerify" checks, because
+			// they rely on an "import" block. This block breaks for this specific test
+			// because our buckets don't have their project ID inside their ID.
 		},
 	})
 }
@@ -57,6 +109,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_basic_withKMS(bucketName),
@@ -68,6 +121,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "the-key-id"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -88,6 +142,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_KMS_withKey(bucketName),
@@ -99,6 +154,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.kms_master_key_id", "my-kms-key-tf-test"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "aws:kms"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.bucket_key_enabled", "true"),
+					resource.TestCheckResourceAttrPair(resourceName, "project_id", "scaleway_object_bucket.test", "project_id"),
 				),
 			},
 			{
@@ -118,9 +174,10 @@ func TestAccS3BucketServerSideEncryptionConfiguration_wrongAlgo(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(
+				Config: testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(
 					bucketName, "hehehe-wait-i-dont-exist",
 				),
 				ExpectError: regexp.MustCompile(`to be one of`),
@@ -137,6 +194,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KeyID_withoutKMS(t *testin
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_KeyID_withoutKMS(bucketName),
@@ -156,6 +214,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withoutBucketKey(t *te
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: testAccBucketServerSideEncryptionConfigurationConfig_KMS_withoutBucketKey(bucketName),
@@ -176,9 +235,10 @@ func TestAccS3BucketServerSideEncryptionConfiguration_ApplySSEByDefault_AES256(t
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
+				Config: testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(rName, string(awstypes.ServerSideEncryptionAes256)),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, resourceName),
 					resource.TestCheckResourceAttr(resourceName, "rule.#", "1"),
@@ -211,6 +271,28 @@ func testAccCheckBucketServerSideEncryptionConfigurationExists(tt *acctest.TestT
 		bucketRegion := rs.Primary.Attributes["region"]
 
 		conn, err := object.NewS3ClientFromMeta(ctx, tt.Meta, bucketRegion)
+		if err != nil {
+			return err
+		}
+
+		_, err = findServerSideEncryptionConfiguration(ctx, conn, rs.Primary.Attributes["bucket"])
+
+		return err
+	}
+}
+
+func testAccCheckBucketServerSideEncryptionConfigurationExistsInProject(tt *acctest.TestTools, n string, projectId string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		ctx := context.Background()
+
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		bucketRegion := rs.Primary.Attributes["region"]
+
+		conn, err := object.NewS3ClientFromMetaWithProjectID(ctx, tt.Meta, bucketRegion, projectId)
 		if err != nil {
 			return err
 		}
@@ -359,7 +441,7 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
 `, rName, objectTestsMainRegion)
 }
 
-func testAccBucketServerSideEncryptionConfigurationConfig_applySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
+func testAccBucketServerSideEncryptionConfigurationConfigApplySSEByDefaultSSEAlgorithm(rName, sseAlgorithm string) string {
 	return fmt.Sprintf(`
 resource "scaleway_object_bucket" "test" {
   name = %[1]q
@@ -377,4 +459,26 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 `, rName, sseAlgorithm, objectTestsMainRegion)
+}
+
+func testAccBucketServerSideEncryptionConfigurationConfigSideProject(rName, projectID string) string {
+	return fmt.Sprintf(`
+resource "scaleway_object_bucket" "test" {
+  name       = %[1]q
+  region     = "%[2]s"
+  project_id = "%[3]s"
+}
+
+resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
+  bucket = scaleway_object_bucket.test.name
+  region     = "%[2]s"
+  project_id = "%[3]s"
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+`, rName, objectTestsMainRegion, projectID)
 }

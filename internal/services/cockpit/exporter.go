@@ -238,7 +238,9 @@ func ResourceCockpitExporterCreate(ctx context.Context, d *schema.ResourceData, 
 		req.OtlpDestination = dest
 	}
 
-	res, err := api.CreateExporter(req, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+		return api.CreateExporter(req, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -261,10 +263,12 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	res, err := api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
-		Region:     region,
-		ExporterID: id,
-	}, scw.WithContext(ctx))
+	res, err := retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+		return api.GetExporter(&cockpit.RegionalAPIGetExporterRequest{
+			Region:     region,
+			ExporterID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -288,10 +292,12 @@ func ResourceCockpitExporterRead(ctx context.Context, d *schema.ResourceData, me
 	_ = d.Set("updated_at", types.FlattenTime(res.UpdatedAt))
 	_ = d.Set("exported_products", types.FlattenSliceString(res.ExportedProducts))
 
-	ds, err := api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
-		Region:       region,
-		DataSourceID: res.DatasourceID,
-	}, scw.WithContext(ctx))
+	ds, err := retryOn403Value(ctx, func() (*cockpit.DataSource, error) {
+		return api.GetDataSource(&cockpit.RegionalAPIGetDataSourceRequest{
+			Region:       region,
+			DataSourceID: res.DatasourceID,
+		}, scw.WithContext(ctx))
+	})
 	if err == nil {
 		_ = d.Set("project_id", ds.ProjectID)
 	}
@@ -382,7 +388,9 @@ func ResourceCockpitExporterUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if d.HasChangesExcept("datasource_id", "status", "created_at", "updated_at", "project_id", "region") {
-		_, err = api.UpdateExporter(req, scw.WithContext(ctx))
+		_, err = retryOn403Value(ctx, func() (*cockpit.Exporter, error) {
+			return api.UpdateExporter(req, scw.WithContext(ctx))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -407,10 +415,12 @@ func ResourceCockpitExporterDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteExporter(&cockpit.RegionalAPIDeleteExporterRequest{
-		Region:     region,
-		ExporterID: id,
-	}, scw.WithContext(ctx))
+	err = retryOn403(ctx, func() error {
+		return api.DeleteExporter(&cockpit.RegionalAPIDeleteExporterRequest{
+			Region:     region,
+			ExporterID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
