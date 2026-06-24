@@ -8,13 +8,12 @@ page_title: "Scaleway: {{ .Name }}"
 
 {{ .Description }}
 
-{{ if .HasExamples }}
+{{ if .HasExamples -}}
 ## Example Usage
 
 {{ range .ExampleFiles -}}
 {{ tffile . }}
+{{- end }}
 
-{{ end }}
-{{ end -}}
-
+{{- end }}
 {{ .SchemaMarkdown }}
