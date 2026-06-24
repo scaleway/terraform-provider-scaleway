@@ -467,7 +467,11 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 		return names, nil
 	}
 
-	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{}, scw.WithContext(ctx), scw.WithAllPages())
+	pageSize := uint32(1000)
+
+	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
+		PageSize: &pageSize,
+	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving tasks: %w", err)
 	}

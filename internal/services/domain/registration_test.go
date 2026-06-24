@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -424,9 +425,20 @@ func extractDomainNamesFromResourceState(rs *terraform.ResourceState) []string {
 	var domainNames []string
 
 	for key, value := range rs.Primary.Attributes {
-		if strings.HasPrefix(key, "domain_names.") && value != "" {
-			domainNames = append(domainNames, value)
+		if !strings.HasPrefix(key, "domain_names.") || value == "" {
+			continue
 		}
+
+		suffix := strings.TrimPrefix(key, "domain_names.")
+		if suffix == "#" {
+			continue
+		}
+
+		if _, err := strconv.Atoi(suffix); err != nil {
+			continue
+		}
+
+		domainNames = append(domainNames, value)
 	}
 
 	sort.Strings(domainNames)
