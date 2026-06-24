@@ -34,7 +34,7 @@ func TestAccToken_Basic(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_project" "project" {
 						name = "%[1]s"

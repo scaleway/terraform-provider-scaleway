@@ -34,7 +34,7 @@ func TestAccListRDBInstances_Basic(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.main", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForRDBProjectIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForRDBProjectIAM(tt, &projectID),
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_project" "main" {}
 
@@ -53,7 +53,7 @@ func TestAccListRDBInstances_Basic(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_rdb_instance.main", &instanceID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForRDBInstanceIAM(tt, instanceID),
+				PreConfig: acctest.PreCheckWaitForRDBInstanceIAM(tt, &instanceID),
 				Query:     true,
 				Config: `
 					list "scaleway_rdb_instance" "all" {

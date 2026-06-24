@@ -67,43 +67,43 @@ func RDBReadInstanceProbe(tt *TestTools, regionalInstanceID string) func(context
 }
 
 // PreCheckWaitForCockpitIAM waits for cockpit read permissions before creating cockpit resources.
-func PreCheckWaitForCockpitIAM(tt *TestTools, projectID string) func() {
+func PreCheckWaitForCockpitIAM(tt *TestTools, projectID *string) func() {
 	return func() {
-		if projectID == "" {
+		if projectID == nil || *projectID == "" {
 			tt.T.Fatal("projectID is empty: use StoreResourceID in the previous test step")
 		}
 
-		err := WaitForProjectIAM(tt.T.Context(), CockpitReadProbe(tt, projectID, scw.RegionFrPar))
+		err := WaitForProjectIAM(tt.T.Context(), CockpitReadProbe(tt, *projectID, scw.RegionFrPar))
 		if err != nil {
-			tt.T.Fatalf("wait for cockpit IAM on project %s: %v", projectID, err)
+			tt.T.Fatalf("wait for cockpit IAM on project %s: %v", *projectID, err)
 		}
 	}
 }
 
 // PreCheckWaitForRDBProjectIAM waits for RDB list permissions on a new project.
-func PreCheckWaitForRDBProjectIAM(tt *TestTools, projectID string) func() {
+func PreCheckWaitForRDBProjectIAM(tt *TestTools, projectID *string) func() {
 	return func() {
-		if projectID == "" {
+		if projectID == nil || *projectID == "" {
 			tt.T.Fatal("projectID is empty: use StoreResourceID in the previous test step")
 		}
 
-		err := WaitForProjectIAM(tt.T.Context(), RDBReadProjectProbe(tt, projectID, scw.RegionFrPar))
+		err := WaitForProjectIAM(tt.T.Context(), RDBReadProjectProbe(tt, *projectID, scw.RegionFrPar))
 		if err != nil {
-			tt.T.Fatalf("wait for RDB IAM on project %s: %v", projectID, err)
+			tt.T.Fatalf("wait for RDB IAM on project %s: %v", *projectID, err)
 		}
 	}
 }
 
 // PreCheckWaitForRDBInstanceIAM waits for RDB read permissions on a created instance.
-func PreCheckWaitForRDBInstanceIAM(tt *TestTools, regionalInstanceID string) func() {
+func PreCheckWaitForRDBInstanceIAM(tt *TestTools, regionalInstanceID *string) func() {
 	return func() {
-		if regionalInstanceID == "" {
+		if regionalInstanceID == nil || *regionalInstanceID == "" {
 			tt.T.Fatal("instanceID is empty: use StoreResourceID in the previous test step")
 		}
 
-		err := WaitForProjectIAM(tt.T.Context(), RDBReadInstanceProbe(tt, regionalInstanceID))
+		err := WaitForProjectIAM(tt.T.Context(), RDBReadInstanceProbe(tt, *regionalInstanceID))
 		if err != nil {
-			tt.T.Fatalf("wait for RDB IAM on instance %s: %v", regionalInstanceID, err)
+			tt.T.Fatalf("wait for RDB IAM on instance %s: %v", *regionalInstanceID, err)
 		}
 	}
 }

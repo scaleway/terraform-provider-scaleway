@@ -36,7 +36,7 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"
@@ -87,7 +87,7 @@ func TestAccCockpitSource_Basic_logs(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"
@@ -138,7 +138,7 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"

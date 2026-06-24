@@ -61,7 +61,7 @@ func TestAccCockpit_Basic(t *testing.T) {
 				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
 			},
 			{
-				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_project_basic"
