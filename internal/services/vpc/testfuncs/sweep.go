@@ -32,6 +32,11 @@ func AddTestSweepers() {
 		Name: "scaleway_vpc_connector",
 		F:    testSweepVPCConnector,
 	})
+
+	resource.AddTestSweepers("scaleway_vpc_ingress_rule", &resource.Sweeper{
+		Name: "scaleway_vpc_ingress_rule",
+		F:    testSweepVPCIngressRule,
+	})
 }
 
 func testSweepVPC(_ string) error {
@@ -115,6 +120,33 @@ func testSweepVPCConnector(_ string) error {
 			})
 			if err != nil {
 				logging.L.Warningf("error deleting VPC connector %s in sweeper: %w", c.ID, err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepVPCIngressRule(_ string) error {
+	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		vpcAPI := vpcSDK.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: deleting the VPC ingress rules in (%s)", region)
+
+		listRules, err := vpcAPI.ListIngressRules(&vpcSDK.ListIngressRulesRequest{
+			Region: region,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("error listing VPC ingress rules in (%s) in sweeper: %w", region, err)
+		}
+
+		for _, rule := range listRules.Rules {
+			err := vpcAPI.DeleteIngressRule(&vpcSDK.DeleteIngressRuleRequest{
+				RuleID: rule.ID,
+				Region: region,
+			})
+			if err != nil {
+				logging.L.Warningf("error deleting VPC ingress rule %s in sweeper: %w", rule.ID, err)
 			}
 		}
 
