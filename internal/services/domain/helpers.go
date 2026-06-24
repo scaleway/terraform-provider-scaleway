@@ -355,6 +355,7 @@ func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string
 		listTasksResponse, err := api.ListTasks(&domain.RegistrarAPIListTasksRequest{
 			Page:     &page,
 			PageSize: &pageSize,
+			OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return "", fmt.Errorf("error retrieving tasks: %w", err)
@@ -403,6 +404,7 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 	req := &domain.RegistrarAPIListTasksRequest{
 		Domain:    &domainName,
 		ProjectID: projectID,
+		OrderBy:   domain.ListTasksRequestOrderByDomainDesc,
 	}
 
 	listTasksResponse, err := registrarAPI.ListTasks(req, scw.WithContext(ctx), scw.WithAllPages())
@@ -471,6 +473,7 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 
 	listTasksResponse, err := registrarAPI.ListTasks(&domain.RegistrarAPIListTasksRequest{
 		PageSize: &pageSize,
+		OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving tasks: %w", err)
