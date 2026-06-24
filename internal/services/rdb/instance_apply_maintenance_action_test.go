@@ -3,6 +3,9 @@ package rdb_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,30 +18,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const testAccRDBApplyMaintenanceRegion = "fr-par"
-
-// testAccRDBApplyMaintenanceInstancePool lists pre-provisioned HashiCorp RDB instances with scheduled maintenance.
-// When re-recording cassettes, rotate to the next ID if the current one no longer has applicable maintenance.
-var testAccRDBApplyMaintenanceInstancePool = []string{
-	"8aaa73d9-e7ea-4f4a-9287-83162b19e8a2",
-	"908e1b46-24ef-4182-b2e8-77f379d309b5",
-	"1489b5e5-b54f-4f6c-a38e-911e9bfd3cb3",
-	"256656ff-4840-4857-b5ed-27a6b722d18c",
-	"c6c5e5f1-882f-4691-a2c6-8533ade1ce36",
-	"47c063f4-5d92-45b4-9b00-6daa78a6805b",
-	"ea607df7-f6af-442c-acbc-b3a4c17b7070",
-	"4472df44-f34d-44ca-b428-c26e6a13de8d",
-}
+var applyMaintenanceCassetteInstanceID = regexp.MustCompile(`/rdb/v1/regions/([^/]+)/instances/([0-9a-f-]+)`)
 
 func TestAccActionRDBInstanceApplyMaintenance_Basic(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
 		t.Skip("Skipping TestAccActionRDBInstanceApplyMaintenance_Basic because action are not yet supported on OpenTofu")
 	}
 
+	if *acctest.UpdateCassettes {
+		t.Skip("Skipping TestAccActionRDBInstanceApplyMaintenance_Basic: requires manual recording with a pre-provisioned instance")
+	}
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	instanceRegionalID := testAccRDBApplyMaintenanceInstanceRegionalID(tt)
+	instanceRegionalID := testAccRDBApplyMaintenanceInstanceRegionalID(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -100,17 +94,23 @@ func TestAccActionRDBInstanceApplyMaintenance_Basic(t *testing.T) {
 	})
 }
 
-func testAccRDBApplyMaintenanceInstanceRegionalID(tt *acctest.TestTools) string {
-	region := scw.Region(testAccRDBApplyMaintenanceRegion)
+func testAccRDBApplyMaintenanceInstanceRegionalID(t *testing.T) string {
+	t.Helper()
 
-	if *acctest.UpdateCassettes {
-		regionalID, err := rdbchecks.FirstInstanceWithApplicableMaintenance(tt, region, testAccRDBApplyMaintenanceInstancePool)
-		require.NoError(tt.T, err)
-
-		return regionalID
+	if id := os.Getenv("TF_TEST_RDB_MAINTENANCE_INSTANCE_ID"); id != "" {
+		return id
 	}
 
-	return regional.NewIDString(region, testAccRDBApplyMaintenanceInstancePool[0])
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	data, err := os.ReadFile(filepath.Join(wd, "testdata/action-rdb-instance-apply-maintenance-basic.cassette.yaml"))
+	require.NoError(t, err)
+
+	matches := applyMaintenanceCassetteInstanceID.FindSubmatch(data)
+	require.NotNil(t, matches, "instance id not found in cassette")
+
+	return fmt.Sprintf("%s/%s", matches[1], matches[2])
 }
 
 func isInstanceMaintenanceApplied(tt *acctest.TestTools, instanceResourceName string) resource.TestCheckFunc {

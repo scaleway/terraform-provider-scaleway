@@ -18,9 +18,7 @@ import (
 )
 
 var (
-	DestroyWaitTimeout = 3 * time.Minute
-
-	// ApplicableMaintenanceWaitTimeout is the max time to wait for a pending applicable maintenance when recording cassettes.
+	DestroyWaitTimeout               = 3 * time.Minute
 	ApplicableMaintenanceWaitTimeout = 30 * time.Minute
 )
 
@@ -145,29 +143,6 @@ func WaitForApplicableMaintenance(tt *acctest.TestTools, regionalID string) erro
 			len(instance.Maintenances),
 		))
 	})
-}
-
-func FirstInstanceWithApplicableMaintenance(tt *acctest.TestTools, region scw.Region, instanceIDs []string) (string, error) {
-	api := rdbSDK.NewAPI(tt.Meta.ScwClient())
-	ctx := context.Background()
-
-	for _, instanceID := range instanceIDs {
-		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
-			Region:     region,
-			InstanceID: instanceID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			continue
-		}
-
-		for _, maintenance := range instance.Maintenances {
-			if maintenance.Status == rdbSDK.MaintenanceStatusPending && maintenance.IsApplicable {
-				return regional.NewIDString(region, instanceID), nil
-			}
-		}
-	}
-
-	return "", fmt.Errorf("no instance with pending applicable maintenance in pool of %d instances", len(instanceIDs))
 }
 
 func GetLatestEngineVersion(tt *acctest.TestTools, engineName string) string {

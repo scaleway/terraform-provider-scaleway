@@ -630,15 +630,14 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 	}
-	// Configure Instance settings using AddInstanceSettings to preserve
-	// engine-tuned defaults (e.g. shared_buffers sized for the node RAM).
+	// Configure Instance settings
 	if settings, ok := d.GetOk("settings"); ok {
 		res, err := waitForRDBInstance(ctx, rdbAPI, region, id, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		_, err = rdbAPI.AddInstanceSettings(&rdb.AddInstanceSettingsRequest{
+		_, err = rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
 			InstanceID: res.ID,
 			Region:     region,
 			Settings:   expandInstanceSettings(settings),
@@ -1240,40 +1239,13 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			return diag.FromErr(err)
 		}
 
-		oldRaw, newRaw := d.GetChange("settings")
-		oldSettings := oldRaw.(map[string]any)
-		newSettings := newRaw.(map[string]any)
-
-		// Delete keys that were explicitly removed from the config so the engine
-		// resets them to its own defaults (RAM-tuned values are never wiped).
-		var removedKeys []string
-		for key := range oldSettings {
-			if _, stillPresent := newSettings[key]; !stillPresent {
-				removedKeys = append(removedKeys, key)
-			}
-		}
-		if len(removedKeys) > 0 {
-			_, err := rdbAPI.DeleteInstanceSettings(&rdb.DeleteInstanceSettingsRequest{
-				InstanceID:   ID,
-				Region:       region,
-				SettingNames: removedKeys,
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		// Add or override only the settings declared in the config, leaving all
-		// other engine-tuned settings untouched.
-		if len(newSettings) > 0 {
-			_, err := rdbAPI.AddInstanceSettings(&rdb.AddInstanceSettingsRequest{
-				InstanceID: ID,
-				Region:     region,
-				Settings:   expandInstanceSettings(newSettings),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		_, err := rdbAPI.SetInstanceSettings(&rdb.SetInstanceSettingsRequest{
+			InstanceID: ID,
+			Region:     region,
+			Settings:   expandInstanceSettings(d.Get("settings")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
