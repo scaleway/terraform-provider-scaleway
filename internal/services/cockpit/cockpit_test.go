@@ -46,11 +46,22 @@ func TestAccCockpit_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	var projectID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isCockpitDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_project_basic"
+				  	}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_project_basic"

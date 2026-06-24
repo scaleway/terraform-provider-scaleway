@@ -23,11 +23,20 @@ func TestAccListRDBDatabaseBackups_Basic(t *testing.T) {
 	instanceName := "tf-test-rdb-backup-list-4823616331525728375"
 	backupName := "tf_backup_list_2078923807392667811"
 
+	var projectID, instanceID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "main" {}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.main", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForRDBProjectIAM(tt, projectID),
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_project" "main" {}
 
@@ -54,9 +63,11 @@ func TestAccListRDBDatabaseBackups_Basic(t *testing.T) {
 					  name          = "%s"
 					}
 				`, instanceName, latestEngineVersion, backupName),
+				Check: acctest.StoreResourceID("scaleway_rdb_instance.main", &instanceID),
 			},
 			{
-				Query: true,
+				PreConfig: acctest.PreCheckWaitForRDBInstanceIAM(tt, instanceID),
+				Query:     true,
 				Config: fmt.Sprintf(`
 					list "scaleway_rdb_database_backup" "by_instance" {
 					  provider = scaleway
