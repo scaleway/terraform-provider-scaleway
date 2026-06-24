@@ -72,6 +72,63 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	return "", regional.ErrRegionNotFound
 }
 
+func ExtractS3UsePathStyle(d terraformResourceData, m any) bool {
+	rawConfigS3UsePathStyle, ok := GetRawConfigForKey(d, "s3_use_path_style", cty.Bool)
+	if ok && rawConfigS3UsePathStyle != "" {
+		return rawConfigS3UsePathStyle.(bool)
+	}
+
+	rawConfigS3UsePathStyle, ok = d.GetOk("s3_use_path_style")
+	if ok && rawConfigS3UsePathStyle != "" {
+		return rawConfigS3UsePathStyle.(bool)
+	}
+
+	meta, ok := m.(*Meta)
+	if !ok {
+		return false
+	}
+
+	return meta.S3UsePathStyle()
+}
+
+func convertEndpointsMap(endpointsAny map[string]any) (endpointsString map[string]string) {
+	endpointsString = map[string]string{}
+
+	for k, v := range endpointsAny {
+		if strVal, ok := v.(string); ok {
+			endpointsString[k] = strVal
+		}
+	}
+
+	return
+}
+
+// ExtractEndpoints will try to guess the endpoints from the following:
+//   - endpoints field of the resource data
+//   - endpoints from config
+func ExtractEndpoints(d terraformResourceData, m any) map[string]string {
+	rawConfigEndpoints, ok := d.GetOk("endpoints")
+	if ok && rawConfigEndpoints != nil {
+		return convertEndpointsMap(rawConfigEndpoints.(map[string]any))
+	}
+
+	meta, ok := m.(*Meta)
+	if !ok {
+		return nil
+	}
+
+	return meta.Endpoints()
+}
+
+func ExtractS3Endpoint(d terraformResourceData, m any) string {
+	endpoints := ExtractEndpoints(d, m)
+	if endpoints == nil {
+		return ""
+	}
+
+	return endpoints["s3"] // Will be "" if the key doesn't exist
+}
+
 // ExtractRegionWithDefault will try to guess the region from the following:
 //   - region field of the resource data
 //   - default region given in argument

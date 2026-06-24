@@ -5,6 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
@@ -104,6 +106,98 @@ func TestFlattenObjectBucketVersioning(t *testing.T) {
 			assert.Contains(t, result[0], "enabled", "Result map should contain 'enabled' key")
 			_, ok := result[0]["enabled"].(bool)
 			assert.True(t, ok, "'enabled' value should be a boolean")
+		})
+	}
+}
+
+func TestComputeObjectBucketURLs(t *testing.T) {
+	resourceSchema := map[string]*schema.Schema{
+		"s3_use_path_style": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Description: "",
+		},
+		"endpoints": {
+			Type:        schema.TypeMap,
+			Optional:    true,
+			Description: "",
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		},
+	}
+
+	tests := []struct {
+		name                string
+		d                   *schema.ResourceData
+		m                   any
+		bucketName          string
+		region              scw.Region
+		expectedEndpoint    string
+		expectedAPIEndpoint string
+	}{
+		{
+			name: "s3 valid endpoint without path style",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": false,
+				"endpoints": map[string]any{
+					"s3": "https://mys3.endpoint.com",
+				},
+			}),
+			bucketName:          "my-bucket",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://my-bucket.mys3.endpoint.com",
+			expectedAPIEndpoint: "https://mys3.endpoint.com",
+		},
+		{
+			name: "s3 valid endpoint with path style",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+				"endpoints": map[string]any{
+					"s3": "https://mys3.endpoint.com",
+				},
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://mys3.endpoint.com/my-bucket-hehe",
+			expectedAPIEndpoint: "https://mys3.endpoint.com",
+		},
+		{
+			name: "s3 empty endpoint with path style",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+				"endpoints": map[string]any{
+					"s3": "",
+				},
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://s3.pl-waw.scw.cloud/my-bucket-hehe",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
+		},
+		{
+			name: "s3 empty endpoint with path style, version 2",
+			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
+				"s3_use_path_style": true,
+			}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://s3.pl-waw.scw.cloud/my-bucket-hehe",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
+		},
+		{
+			name:                "s3 empty endpoint without path style",
+			d:                   schema.TestResourceDataRaw(t, resourceSchema, map[string]any{}),
+			bucketName:          "my-bucket-hehe",
+			region:              scw.RegionPlWaw,
+			expectedEndpoint:    "https://my-bucket-hehe.s3.pl-waw.scw.cloud",
+			expectedAPIEndpoint: "https://s3.pl-waw.scw.cloud",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			endpoint, apiEndpoint := object.ComputeObjectBucketURLs(tt.d, tt.m, tt.bucketName, tt.region)
+			assert.Equal(t, tt.expectedEndpoint, endpoint)
+			assert.Equal(t, tt.expectedAPIEndpoint, apiEndpoint)
 		})
 	}
 }

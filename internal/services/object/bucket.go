@@ -806,8 +806,10 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
-	_ = d.Set("api_endpoint", objectBucketAPIEndpointURL(region))
+	endpoint, apiEndpoint := ComputeObjectBucketURLs(d, m, bucketName, region)
+
+	_ = d.Set("endpoint", endpoint)
+	_ = d.Set("api_endpoint", apiEndpoint)
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{

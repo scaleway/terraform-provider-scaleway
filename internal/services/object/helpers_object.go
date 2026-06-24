@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -52,8 +53,15 @@ func (r *scalewayResolver) ResolveEndpoint(ctx context.Context, params s3.Endpoi
 	return s3.NewDefaultEndpointResolverV2().ResolveEndpoint(ctx, params)
 }
 
-func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpClient *http.Client) (*s3.Client, error) {
-	endpoint := "https://s3." + region + ".scw.cloud"
+func DefaultS3Endpoint(region string) string {
+	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+}
+
+func newS3Client(ctx context.Context, region, accessKey, secretKey, customEndpoint string, usePathStyle bool, httpClient *http.Client) (*s3.Client, error) {
+	endpoint := customEndpoint
+	if endpoint == "" {
+		endpoint = DefaultS3Endpoint(region)
+	}
 
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
@@ -67,6 +75,7 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(endpoint)
 		o.EndpointResolverV2 = &scalewayResolver{region: region}
+		o.UsePathStyle = usePathStyle
 		o.APIOptions = append(o.APIOptions, func(stack *middleware.Stack) error {
 			return awsmiddleware.AddUserAgentKeyValue("terraform-provider-scaleway", version.Version)(stack)
 		})
@@ -78,6 +87,11 @@ func newS3Client(ctx context.Context, region, accessKey, secretKey string, httpC
 func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*s3.Client, error) {
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
+	s3UsePathStyle := meta.S3UsePathStyle()
+	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
+	if err != nil {
+		return nil, err
+	}
 
 	projectID, _ := meta.ScwClient().GetDefaultProjectID()
 	if projectID != "" {
@@ -89,12 +103,17 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 		region = defaultRegion.String()
 	}
 
-	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
+	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
 }
 
 func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, region, projectID string) (*s3.Client, error) {
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
+	s3UsePathStyle := meta.S3UsePathStyle()
+	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
+	if err != nil {
+		return nil, err
+	}
 
 	if projectID == "" {
 		projectID, _ = meta.ScwClient().GetDefaultProjectID()
@@ -109,7 +128,7 @@ func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, regi
 		region = defaultRegion.String()
 	}
 
-	return newS3Client(ctx, region, accessKey, secretKey, meta.HTTPClient())
+	return newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.HTTPClient())
 }
 
 func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3.Client, scw.Region, error) {
@@ -124,8 +143,13 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", err
+	}
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", err
 	}
@@ -160,7 +184,13 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", err
 	}
@@ -180,8 +210,13 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
+	if err != nil {
+		return nil, "", "", "", err
+	}
 
-	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Client, err := newS3Client(ctx, region.String(), accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -201,8 +236,13 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
+	if err != nil {
+		return nil, "", name, "", err
+	}
 
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, "", "", "", err
 	}
@@ -217,13 +257,66 @@ func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, reg
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
+	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
+	if err != nil {
+		return nil, err
+	}
 
-	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, meta.ExtractHTTPClient(m))
+	s3Client, err := newS3Client(ctx, region, accessKey, secretKey, s3Endpoint, s3UsePathStyle, meta.ExtractHTTPClient(m))
 	if err != nil {
 		return nil, err
 	}
 
 	return s3Client, err
+}
+
+// retrieveS3Endpoint retrieves the S3 API URL according to various
+// configuration sources. The order priority follows is as follow:
+// - "provider" block
+// - SCW environment variable
+// - AWS configuration
+// - Profile field value
+// - Default value, built with the provided region
+func retrieveS3Endpoint(
+	ctx context.Context,
+	metaStruct *meta.Meta,
+	d *schema.ResourceData,
+	m any,
+	region string,
+) (string, error) {
+	// Provider block
+	if metaStruct != nil {
+		return metaStruct.Endpoints()["s3"], nil
+	}
+
+	if d != nil && m != nil {
+		return meta.ExtractS3Endpoint(d, m), nil
+	}
+
+	// SCW environment variable
+	if ep := os.Getenv(scw.ScwS3EndpointEnv); ep != "" {
+		return ep, nil
+	}
+
+	// AWS configuration
+	ep, err := scw.GetS3EndpointFromAWSConf(ctx)
+	if err != nil {
+		return "", fmt.Errorf("could not get API endpoint from AWS conf: %w", err)
+	} else if ep != "" {
+		return ep, nil
+	}
+
+	// Profile field value
+	scwClient := meta.ExtractScwClient(ctx)
+	profileS3Endpoint, s3EndpointOk := scwClient.GetS3Endpoint()
+
+	if s3EndpointOk && profileS3Endpoint != "" {
+		return profileS3Endpoint, nil
+	}
+
+	// Default value, built with the provided region
+	return DefaultS3Endpoint(region), nil
 }
 
 func accessKeyWithProjectID(accessKey string, projectID string) string {
@@ -264,12 +357,31 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 	return tagsSet
 }
 
-func objectBucketEndpointURL(bucketName string, region scw.Region) string {
-	return fmt.Sprintf("https://%s.s3.%s.scw.cloud", bucketName, region)
+func ComputeObjectBucketURLs(
+	d *schema.ResourceData, m any, bucketName string, region scw.Region,
+) (endpoint, apiEndpoint string) {
+	usePathStyle := meta.ExtractS3UsePathStyle(d, m)
+	apiEndpoint = objectBucketAPIEndpointURL(d, m, region)
+
+	if usePathStyle {
+		return fmt.Sprintf("%s/%s", apiEndpoint, bucketName), apiEndpoint
+	}
+
+	tab := strings.Split(apiEndpoint, "//")
+	if len(tab) == 2 {
+		return fmt.Sprintf("%s//%s.%s", tab[0], bucketName, tab[1]), apiEndpoint
+	}
+
+	return fmt.Sprintf("%s.%s", bucketName, apiEndpoint), apiEndpoint
 }
 
-func objectBucketAPIEndpointURL(region scw.Region) string {
-	return fmt.Sprintf("https://s3.%s.scw.cloud", region)
+func objectBucketAPIEndpointURL(d *schema.ResourceData, m any, region scw.Region) string {
+	s3Endpoint := meta.ExtractS3Endpoint(d, m)
+	if s3Endpoint != "" {
+		return s3Endpoint
+	}
+
+	return DefaultS3Endpoint(region.String())
 }
 
 // IsS3Err returns true if the error matches all these conditions:
