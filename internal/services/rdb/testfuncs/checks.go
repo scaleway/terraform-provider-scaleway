@@ -10,19 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 )
 
-var (
-	DestroyWaitTimeout               = 3 * time.Minute
-	ApplicableMaintenanceWaitTimeout = 30 * time.Minute
-)
-
-const applicableMaintenancePollInterval = 30 * time.Second
+var DestroyWaitTimeout = 3 * time.Minute
 
 // testAccRDBListVCRProjectID is the default project ID in RDB list VCR cassettes.
 const testAccRDBListVCRProjectID = "105bdce1-64c0-48ab-899d-868455867ecf"
@@ -109,40 +102,6 @@ func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 			return nil
 		})
 	}
-}
-
-func WaitForApplicableMaintenance(tt *acctest.TestTools, regionalID string) error {
-	region, instanceID, err := regional.ParseID(regionalID)
-	if err != nil {
-		return fmt.Errorf("failed to parse instance ID %q: %w", regionalID, err)
-	}
-
-	api := rdbSDK.NewAPI(tt.Meta.ScwClient())
-	ctx := context.Background()
-
-	return retry.RetryContext(ctx, ApplicableMaintenanceWaitTimeout, func() *retry.RetryError {
-		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
-			Region:     region,
-			InstanceID: instanceID,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return retry.NonRetryableError(fmt.Errorf("failed to get instance: %w", err))
-		}
-
-		for _, maintenance := range instance.Maintenances {
-			if maintenance.Status == rdbSDK.MaintenanceStatusPending && maintenance.IsApplicable {
-				return nil
-			}
-		}
-
-		time.Sleep(applicableMaintenancePollInterval)
-
-		return retry.RetryableError(fmt.Errorf(
-			"instance %s has no pending applicable maintenance yet (maintenances: %d)",
-			regionalID,
-			len(instance.Maintenances),
-		))
-	})
 }
 
 func GetLatestEngineVersion(tt *acctest.TestTools, engineName string) string {

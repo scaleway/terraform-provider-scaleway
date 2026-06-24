@@ -783,7 +783,7 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 	}
 
 	_ = d.Set("upgradable_versions", upgradableVersions)
-	_ = d.Set("maintenances", flattenInstanceMaintenances(res.Maintenances))
+	_ = d.Set("maintenances", FlattenInstanceMaintenances(res.Maintenances))
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {

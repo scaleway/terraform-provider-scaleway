@@ -14,7 +14,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,9 +55,6 @@ func TestAccActionRDBInstanceApplyMaintenance_Basic(t *testing.T) {
 				),
 			},
 			{
-				PreConfig: func() {
-					require.NoError(t, rdbchecks.WaitForApplicableMaintenance(tt, instanceRegionalID))
-				},
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
 						node_type      = "db-dev-s"

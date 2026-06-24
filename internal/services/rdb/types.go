@@ -264,7 +264,7 @@ func expandInstanceLogsPolicy(i any) *rdb.LogsPolicy {
 	return nil
 }
 
-func flattenInstanceMaintenances(maintenances []*rdb.Maintenance) any {
+func FlattenInstanceMaintenances(maintenances []*rdb.Maintenance) any {
 	res := make([]map[string]any, 0, len(maintenances))
 	for _, maintenance := range maintenances {
 		res = append(res, map[string]any{
