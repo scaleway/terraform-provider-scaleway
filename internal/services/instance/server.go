@@ -654,6 +654,7 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 	return append(diags, setServerState(ctx, d, m, api, res.Server.Zone, res.Server.ID)...)
 }
 
+//gocyclo:ignore
 func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) diag.Diagnostics {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
@@ -906,7 +907,6 @@ You can check the full list of compatible server types:
 	return diags
 }
 
-//gocyclo:ignore
 func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
 	if err != nil {

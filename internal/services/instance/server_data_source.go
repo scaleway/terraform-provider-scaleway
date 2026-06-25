@@ -49,7 +49,7 @@ func DataSourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m
 	if !ok {
 		serverName := d.Get("name").(string)
 
-		res, err := api.API.ListServers(&instance.ListServersRequest{
+		res, err := api.ListServers(&instance.ListServersRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(serverName),
 			Project: types.ExpandStringPtr(d.Get("project_id")),
