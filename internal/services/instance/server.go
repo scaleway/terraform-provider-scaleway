@@ -1197,7 +1197,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return append(warnings, setServerState(ctx, d, m, api, zone, id)...)
+	return append(warnings, ResourceInstanceServerRead(ctx, d, m)...)
 }
 
 func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
