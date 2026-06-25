@@ -2,12 +2,10 @@ package domain
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/std"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -346,37 +344,6 @@ func mapToStruct(data map[string]any, target any) {
 	}
 }
 
-func getStatusTasks(ctx context.Context, api *domain.RegistrarAPI, taskID string) (domain.TaskStatus, error) {
-	var page int32 = 1
-
-	var pageSize uint32 = 1000
-
-	for {
-		listTasksResponse, err := api.ListTasks(&domain.RegistrarAPIListTasksRequest{
-			Page:     &page,
-			PageSize: &pageSize,
-			OrderBy:  domain.ListTasksRequestOrderByDomainDesc,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return "", fmt.Errorf("error retrieving tasks: %w", err)
-		}
-
-		for _, task := range listTasksResponse.Tasks {
-			if task.ID == taskID {
-				return task.Status, nil
-			}
-		}
-
-		if len(listTasksResponse.Tasks) == 0 || uint32(len(listTasksResponse.Tasks)) < pageSize {
-			break
-		}
-
-		page++
-	}
-
-	return "", fmt.Errorf("task with ID '%s' not found", taskID)
-}
-
 func SplitDomains(input *string) []string {
 	if input == nil || strings.TrimSpace(*input) == "" {
 		return nil
@@ -632,31 +599,6 @@ func flattenContactExtensionNL(ext *domain.ContactExtensionNL) []map[string]any 
 			"legal_form_registration_number": ext.LegalFormRegistrationNumber,
 		},
 	}
-}
-
-func waitForTaskCompletion(ctx context.Context, registrarAPI *domain.RegistrarAPI, taskID string, duration int) error {
-	timeout := time.Duration(duration) * time.Second
-
-	return retry.RetryContext(ctx, timeout, func() *retry.RetryError {
-		status, err := getStatusTasks(ctx, registrarAPI, taskID)
-		if err != nil {
-			return retry.NonRetryableError(fmt.Errorf("failed to retrieve task status: %w", err))
-		}
-
-		if status == domain.TaskStatusPending || status == domain.TaskStatusWaitingPayment || status == domain.TaskStatusNew {
-			return retry.RetryableError(errors.New("task is not yet complete, retrying"))
-		}
-
-		if status == domain.TaskStatusSuccess {
-			return nil
-		}
-
-		if status == domain.TaskStatusError {
-			return retry.NonRetryableError(fmt.Errorf("task failed for domain: %s", taskID))
-		}
-
-		return retry.NonRetryableError(fmt.Errorf("unexpected task status: %v", status))
-	})
 }
 
 func FlattenDSRecord(dsRecords []*domain.DSRecord) []any {

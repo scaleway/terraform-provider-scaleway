@@ -467,11 +467,6 @@ func resourceRegistrationCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	err = waitForTaskCompletion(ctx, registrarAPI, resp.TaskID, 3600)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	for _, domainName := range domainNames {
 		_, err = waitForDomainsRegistration(ctx, registrarAPI, domainName, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
