@@ -40,7 +40,6 @@ func TestAccActionRDBInstanceApplyMaintenance_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
 						node_type      = "db-dev-s"
-						disable_backup = true
 						tags           = ["terraform-test", "apply-maintenance"]
 					}
 
@@ -58,7 +57,6 @@ func TestAccActionRDBInstanceApplyMaintenance_Basic(t *testing.T) {
 				Config: fmt.Sprintf(`
 					resource "scaleway_rdb_instance" "main" {
 						node_type      = "db-dev-s"
-						disable_backup = true
 						tags           = ["terraform-test", "apply-maintenance", "trigger"]
 
 						lifecycle {
