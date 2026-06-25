@@ -136,10 +136,22 @@ Each contact block supports the following attributes:
 
 ## Import
 
-To import an existing domain registration, use:
+To import an existing domain registration, use the domain name:
+
+```bash
+terraform import scaleway_domain_registration.test <project_id>/<domain_name>
+```
+
+For a multi-domain registration, list every domain name separated by commas:
+
+```bash
+terraform import scaleway_domain_registration.test <project_id>/<domain1.com>,<domain2.com>
+```
+
+Importing by task ID is also supported, as long as the registration task still exists:
 
 ```bash
 terraform import scaleway_domain_registration.test <project_id>/<task_id>
 ```
 
-You can use the [scaleway_domain_registration](../data-sources/domain_registration.md) data source to look up the `task_id` and `project_id` by domain name.
+Registration tasks are archived after some time; once archived, import by domain name instead. You can use the [scaleway_domain_registration](../data-sources/domain_registration.md) data source to look up the `project_id` and `task_id` by domain name.
