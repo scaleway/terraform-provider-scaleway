@@ -1095,13 +1095,13 @@ func autoscalerConfigSchema() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath, defaults to true.",
+				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.",
 			},
 			"log_level": {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
-				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose), defaults to 2.",
+				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose).",
 			},
 		},
 	}
