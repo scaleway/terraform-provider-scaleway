@@ -383,7 +383,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
 						name = "filesystem-instance-terraform-test-2"
-						size_in_gb = 100
+						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
@@ -425,7 +425,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
 						name = "filesystem-instance-terraform-test-2"
-						size_in_gb = 100
+						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
@@ -468,7 +468,7 @@ func TestAccServer_AttachDetachFileSystem(t *testing.T) {
 
 					resource "scaleway_file_filesystem" "terraform_instance_filesystem_2" {
 						name = "filesystem-instance-terraform-test-2"
-						size_in_gb = 100
+						size_in_gb = 110
 						tags  = [ "terraform-test", "scaleway_instance_server", "attach_detach_file_system", "fs02" ]
 					}
 
