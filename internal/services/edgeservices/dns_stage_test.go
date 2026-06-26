@@ -64,15 +64,10 @@ func TestAccEdgeServicesDNS_Wildcard(t *testing.T) {
 					data "scaleway_secret" "main" {
 					  secret_id = "d023fa93-eb36-44b5-91b8-13b998e2e630"
 					}
-
-					resource "scaleway_edge_services_plan" "main" {
-					  name = "professional"
-					}
 	
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-edge-dns-wildcard"
 					  description = "pipeline for wildcard DNS test"
-					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_object_bucket" "main" {
