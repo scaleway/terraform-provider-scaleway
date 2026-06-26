@@ -19,11 +19,22 @@ func TestAccToken_Basic(t *testing.T) {
 	projectName := "tf_tests_cockpit_token_basic"
 	tokenName := projectName
 
+	var projectID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isTokenDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_account_project" "project" {
+						name = "%[1]s"
+				  	}
+				`, projectName),
+				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_project" "project" {
 						name = "%[1]s"

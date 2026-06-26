@@ -21,11 +21,22 @@ func TestAccCockpitSource_Basic_metrics(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	var projectID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_datasource_basic"
+				  	}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"
@@ -61,11 +72,22 @@ func TestAccCockpitSource_Basic_logs(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	var projectID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_datasource_basic"
+				  	}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"
@@ -101,11 +123,22 @@ func TestAccCockpitSource_retention_days(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	var projectID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSourceDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "project" {
+						name = "tf_tests_cockpit_datasource_basic"
+				  	}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.project", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForCockpitIAM(tt, &projectID),
 				Config: `
 					resource "scaleway_account_project" "project" {
 						name = "tf_tests_cockpit_datasource_basic"

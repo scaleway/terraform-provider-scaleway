@@ -22,11 +22,20 @@ func TestAccListRDBDatabases_Basic(t *testing.T) {
 	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
 	instanceName := "tf-test-rdb-db-list-4823616331525728375"
 
+	var projectID, instanceID string
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
+				Config: `
+					resource "scaleway_account_project" "main" {}
+				`,
+				Check: acctest.StoreResourceID("scaleway_account_project.main", &projectID),
+			},
+			{
+				PreConfig: acctest.PreCheckWaitForRDBProjectIAM(tt, &projectID),
 				Config: fmt.Sprintf(`
 					resource "scaleway_account_project" "main" {}
 
@@ -47,9 +56,11 @@ func TestAccListRDBDatabases_Basic(t *testing.T) {
 					  name        = "tfdb_list_2078923807392667811"
 					}
 				`, instanceName, latestEngineVersion),
+				Check: acctest.StoreResourceID("scaleway_rdb_instance.main", &instanceID),
 			},
 			{
-				Query: true,
+				PreConfig: acctest.PreCheckWaitForRDBInstanceIAM(tt, &instanceID),
+				Query:     true,
 				Config: `
 					list "scaleway_rdb_database" "by_instance" {
 					  provider = scaleway
