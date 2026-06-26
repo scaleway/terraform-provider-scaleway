@@ -31,7 +31,7 @@ func ResourceRegistration() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultDomainRegistrationTimeout),
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceRegistrationImport,
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    registrationSchema,
@@ -47,7 +47,44 @@ func registrationIdentity() *schema.ResourceIdentity {
 			Description:       "The primary domain name of the registration",
 			RequiredForImport: true,
 		},
+		// task_id is kept in the identity schema for backward compatibility with
+		// states created before the domain_name identity. Existing states still
+		// decode their stored task_id, and legacy imports by task ID keep working.
+		"task_id": {
+			Type:              schema.TypeString,
+			Description:       "Legacy task ID of the registration, kept for backward compatibility",
+			OptionalForImport: true,
+		},
 	})
+}
+
+// resourceRegistrationImport supports importing by ID string
+// (projectID/domain.tld or projectID/taskID) and by resource identity
+// (project_id + domain_name, or the legacy project_id + task_id).
+func resourceRegistrationImport(ctx context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
+	if d.Id() != "" {
+		return []*schema.ResourceData{d}, nil
+	}
+
+	ident, err := d.Identity()
+	if err != nil {
+		return nil, fmt.Errorf("error getting identity: %w", err)
+	}
+
+	projectID, _ := ident.Get("project_id").(string)
+	domainName, _ := ident.Get("domain_name").(string)
+	taskID, _ := ident.Get("task_id").(string)
+
+	switch {
+	case domainName != "":
+		d.SetId(projectID + "/" + domainName)
+	case taskID != "":
+		d.SetId(projectID + "/" + taskID)
+	default:
+		return nil, errors.New("import requires either domain_name or task_id in the resource identity")
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func registrationSchema() map[string]*schema.Schema {
@@ -807,6 +844,13 @@ func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNam
 	}
 
 	if err := ident.Set("domain_name", domainNames[0]); err != nil {
+		return err
+	}
+
+	// Preserve the task ID in the identity for backward compatibility. It may be
+	// empty when the registration was imported by domain name and the task was
+	// already archived.
+	if err := ident.Set("task_id", d.Get("task_id").(string)); err != nil {
 		return err
 	}
 
