@@ -62,7 +62,7 @@ func TestAccEdgeServicesDNS_Wildcard(t *testing.T) {
 				// The certificate is provided through a pre-existing secret created manually in the recording project.
 				Config: `
 					data "scaleway_secret" "main" {
-					  name = "tf-tests-edge-dns-wildcard-cert"
+					  secret_id = "d023fa93-eb36-44b5-91b8-13b998e2e630"
 					}
 
 					resource "scaleway_edge_services_plan" "main" {
