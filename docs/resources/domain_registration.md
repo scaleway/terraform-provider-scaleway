@@ -115,7 +115,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status`: Status of the domain registration.
 - `dns_zones`: List of DNS zones associated with the domain.
 - `ds_record`: DNSSEC DS record configuration.
-- `task_id`: ID of the task that created the domain.
+- `task_id`: ID of the task that created the domain. This attribute may be empty when the registration was imported by domain name and the original task has already been archived.
 
 ## Contact Blocks
 
