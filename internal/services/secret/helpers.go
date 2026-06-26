@@ -189,7 +189,7 @@ func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]any {
 	return []map[string]any{policyElem}
 }
 
-func setSecretState(d *schema.ResourceData, secret *secret.Secret) {
+func setSecretState(d *schema.ResourceData, secret *secret.Secret, versions *secret.ListSecretVersionsResponse) {
 	_ = d.Set("name", secret.Name)
 	_ = d.Set("description", types.FlattenStringPtr(secret.Description))
 	_ = d.Set("created_at", types.FlattenTime(secret.CreatedAt))
@@ -202,6 +202,25 @@ func setSecretState(d *schema.ResourceData, secret *secret.Secret) {
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secret.EphemeralPolicy))
 	_ = d.Set("type", secret.Type)
 	_ = d.Set("tags", types.FlattenSliceString(secret.Tags))
+
+	// versions is not populated for list secret
+	if versions != nil {
+		versionsList := make([]map[string]any, 0, len(versions.Versions))
+		for _, version := range versions.Versions {
+			versionsList = append(versionsList, map[string]any{
+				"revision":    strconv.Itoa(int(version.Revision)),
+				"secret_id":   version.SecretID,
+				"status":      version.Status.String(),
+				"created_at":  types.FlattenTime(version.CreatedAt),
+				"updated_at":  types.FlattenTime(version.UpdatedAt),
+				"description": types.FlattenStringPtr(version.Description),
+				"latest":      types.FlattenBoolPtr(&version.Latest),
+			})
+		}
+
+		_ = d.Set("version_count", int(versions.TotalCount))
+		_ = d.Set("versions", versionsList)
+	}
 }
 
 func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {

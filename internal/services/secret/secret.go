@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -255,7 +254,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
-	versions, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+	versionsResponse, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
 		Region:   region,
 		SecretID: id,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -269,28 +268,12 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	setSecretState(d, secretResponse)
+	setSecretState(d, secretResponse, versionsResponse)
 
 	err = identity.SetRegionalIdentity(d, region, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	versionsList := make([]map[string]any, 0, len(versions.Versions))
-	for _, version := range versions.Versions {
-		versionsList = append(versionsList, map[string]any{
-			"revision":    strconv.Itoa(int(version.Revision)),
-			"secret_id":   version.SecretID,
-			"status":      version.Status.String(),
-			"created_at":  types.FlattenTime(version.CreatedAt),
-			"updated_at":  types.FlattenTime(version.UpdatedAt),
-			"description": types.FlattenStringPtr(version.Description),
-			"latest":      types.FlattenBoolPtr(&version.Latest),
-		})
-	}
-
-	_ = d.Set("version_count", int(versions.TotalCount))
-	_ = d.Set("versions", versionsList)
 
 	return nil
 }

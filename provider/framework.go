@@ -21,6 +21,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -206,6 +207,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		datalab.NewDatalabResource,
 		billing.NewBudgetResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
@@ -228,6 +230,8 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		datalab.NewDatalabDataSource,
+		datalab.NewDatalabsDataSource,
 		billing.NewBudgetDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
