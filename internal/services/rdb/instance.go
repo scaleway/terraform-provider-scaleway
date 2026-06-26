@@ -384,6 +384,50 @@ func instanceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"maintenances": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of scheduled maintenance events on the database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"starts_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Start date of the maintenance window",
+					},
+					"stops_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "End date of the maintenance window",
+					},
+					"closed_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Closed maintenance date",
+					},
+					"reason": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Maintenance information message",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the maintenance",
+					},
+					"forced_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Time when Scaleway-side maintenance will be applied",
+					},
+					"is_applicable": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether the maintenance can be applied by the user",
+					},
+				},
+			},
+		},
 		"private_ip": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -739,6 +783,7 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 	}
 
 	_ = d.Set("upgradable_versions", upgradableVersions)
+	_ = d.Set("maintenances", FlattenInstanceMaintenances(res.Maintenances))
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {

@@ -65,6 +65,7 @@ func TestAccInstance_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "load_balancer.0.port"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.max_age_retention"),
 					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.main", "logs_policy.0.total_disk_retention"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "maintenances.#", "0"),
 				),
 			},
 			{
