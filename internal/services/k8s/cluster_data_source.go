@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/api/k8s/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -75,5 +76,16 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
 
-	return ResourceK8SClusterRead(ctx, d, m)
+	cluster, err := waitCluster(ctx, k8sAPI, region, clusterID.(string), d.Timeout(schema.TimeoutRead))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	return setClusterState(ctx, d, cluster, k8sAPI)
 }
