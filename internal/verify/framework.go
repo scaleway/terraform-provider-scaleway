@@ -22,7 +22,14 @@ func IsStringUUID() validator.String {
 func IsStringUUIDOrUUIDWithLocality() validator.String {
 	return stringvalidator.RegexMatches(
 		regexp.MustCompile(`^([a-zA-Z]{2}-[a-zA-Z]{3}/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`),
-		"must be a valid UUID or UUID with locality prefix (format: aa-aaa-<uuid>)",
+		"must be a valid UUID or UUID with region prefix (format: aa-aaa/<uuid>)",
+	)
+}
+
+func IsStringUUIDOrUUIDWithZone() validator.String {
+	return stringvalidator.RegexMatches(
+		regexp.MustCompile(`^([a-zA-Z]{2}-[a-zA-Z]{3}-[0-9]/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`),
+		"must be a valid UUID or UUID with zone prefix (format: aa-aaa-00/<uuid>)",
 	)
 }
 
