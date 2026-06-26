@@ -1,0 +1,740 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 100
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","consumption_limit":10000,"enabled":false}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 281
+        uncompressed: false
+        body: '{"alerts":[],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}'
+        headers:
+            Content-Length:
+                - "281"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6f65f5f4-2a90-48ab-99c8-0761fce6698e
+        status: 200 OK
+        code: 200
+        duration: 193.309186ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 67
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"budget_id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","threshold":50}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budget-alerts
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 165
+        uncompressed: false
+        body: '{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}'
+        headers:
+            Content-Length:
+                - "165"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c950e994-99c1-4bfd-b336-9ae44a615245
+        status: 200 OK
+        code: 200
+        duration: 216.482585ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 476
+        uncompressed: false
+        body: '{"budgets":[{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 5c6f2e1b-f92e-45d5-8fc6-4dc161fc8311
+        status: 200 OK
+        code: 200
+        duration: 489.052914ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets/eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 446
+        uncompressed: false
+        body: '{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}'
+        headers:
+            Content-Length:
+                - "446"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:04 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - af7afc93-a2ce-4c9c-8393-2adbdc7b5392
+        status: 200 OK
+        code: 200
+        duration: 236.831341ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets?organization_id=105bdce1-64c0-48ab-899d-868455867ecf
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 476
+        uncompressed: false
+        body: '{"budgets":[{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 51f3439c-84c6-4d54-a176-0fa631936885
+        status: 200 OK
+        code: 200
+        duration: 99.804937ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets/eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 446
+        uncompressed: false
+        body: '{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}'
+        headers:
+            Content-Length:
+                - "446"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - dcbeb2cf-5e53-416b-879e-e5a33000a090
+        status: 200 OK
+        code: 200
+        duration: 245.22193ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets?organization_id=105bdce1-64c0-48ab-899d-868455867ecf
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 476
+        uncompressed: false
+        body: '{"budgets":[{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":50,"updated_at":"2026-06-24T15:19:03.791902Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c01a6794-ed1e-4602-92d6-dfd0664dc41b
+        status: 200 OK
+        code: 200
+        duration: 78.271423ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 16
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"threshold":90}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budget-alerts/02019f82-1e2d-42f1-995e-9924c1124ddc
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 165
+        uncompressed: false
+        body: '{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":90,"updated_at":"2026-06-24T15:19:06.027577Z"}'
+        headers:
+            Content-Length:
+                - "165"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 8d6fe18d-f334-4227-9f25-5353d2c74cf1
+        status: 200 OK
+        code: 200
+        duration: 289.058596ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 476
+        uncompressed: false
+        body: '{"budgets":[{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":90,"updated_at":"2026-06-24T15:19:06.027577Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 71267201-8ce9-48bc-96e9-97d2d7ac2483
+        status: 200 OK
+        code: 200
+        duration: 293.396143ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets/eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 446
+        uncompressed: false
+        body: '{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":90,"updated_at":"2026-06-24T15:19:06.027577Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}'
+        headers:
+            Content-Length:
+                - "446"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 9454bf86-f9e1-430b-bd76-b191c9b30e1c
+        status: 200 OK
+        code: 200
+        duration: 227.805758ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets?organization_id=105bdce1-64c0-48ab-899d-868455867ecf
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 476
+        uncompressed: false
+        body: '{"budgets":[{"alerts":[{"created_at":"2026-06-24T15:19:03.791902Z","id":"02019f82-1e2d-42f1-995e-9924c1124ddc","notifications":[],"threshold":90,"updated_at":"2026-06-24T15:19:06.027577Z"}],"consumption_limit":{"currency_code":"","nanos":0,"units":10000},"created_at":"2026-06-24T15:19:03.569330Z","enabled":false,"id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","updated_at":"2026-06-24T15:19:03.569330Z"}],"total_count":1}'
+        headers:
+            Content-Length:
+                - "476"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 40b5071f-e4a9-44f2-9db2-2081eaeed2b5
+        status: 200 OK
+        code: 200
+        duration: 106.36255ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budget-alerts/02019f82-1e2d-42f1-995e-9924c1124ddc
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 3649cf0b-d791-4eaa-9e84-9cbe6f1f75c3
+        status: 204 No Content
+        code: 204
+        duration: 236.124581ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets/eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 2972675d-c681-4c3b-8b45-7300c7ce5f56
+        status: 204 No Content
+        code: 204
+        duration: 215.582131ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets/eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 159
+        uncompressed: false
+        body: '{"message":"Budget eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9 not found","resource":"Budget","resource_id":"eb7f1d39-f8d4-4b0e-81f7-19b9dac27da9","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "159"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 794e6d4f-1d09-4ddb-a7da-98f1030f08e7
+        status: 404 Not Found
+        code: 404
+        duration: 215.253313ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/billing/v2/budgets
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 30
+        uncompressed: false
+        body: '{"budgets":[],"total_count":0}'
+        headers:
+            Content-Length:
+                - "30"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 24 Jun 2026 15:19:08 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - becc4fd2-9405-4735-a469-e6b2f8f4405e
+        status: 200 OK
+        code: 200
+        duration: 68.605164ms
