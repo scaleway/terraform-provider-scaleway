@@ -66,6 +66,12 @@ func dnsStageSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 		},
+		"wildcard_domain": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			Description: "Defines whether wildcard (subdomains) is supported for the given domain. A wildcard certificate is required to make it work",
+		},
 		"type": {
 			Type:        schema.TypeString,
 			Computed:    true,
@@ -99,6 +105,7 @@ func ResourceDNSStageCreate(ctx context.Context, d *schema.ResourceData, m any) 
 		CacheStageID:   types.ExpandStringPtr(d.Get("cache_stage_id").(string)),
 		TLSStageID:     types.ExpandStringPtr(d.Get("tls_stage_id").(string)),
 		Fqdns:          types.ExpandStringsPtr(d.Get("fqdns")),
+		WildcardDomain: types.ExpandBoolPtr(d.Get("wildcard_domain")),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -176,6 +183,7 @@ func setDNSStageState(d *schema.ResourceData, dnsStage *edgeservices.DNSStage) d
 	_ = d.Set("type", dnsStage.Type.String())
 	_ = d.Set("default_fqdn", dnsStage.DefaultFqdn)
 	_ = d.Set("fqdns", dnsStage.Fqdns)
+	_ = d.Set("wildcard_domain", dnsStage.WildcardDomain)
 
 	return nil
 }
@@ -206,6 +214,11 @@ func ResourceDNSStageUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if d.HasChange("fqdns") {
 		updateRequest.Fqdns = types.ExpandUpdatedStringsPtr(d.Get("fqdns"))
+		hasChanged = true
+	}
+
+	if d.HasChange("wildcard_domain") {
+		updateRequest.WildcardDomain = types.ExpandBoolPtr(d.Get("wildcard_domain"))
 		hasChanged = true
 	}
 
