@@ -33,42 +33,6 @@ func ListProjectID(tt *acctest.TestTools) string {
 	return testAccRDBListVCRProjectID
 }
 
-func HasNoPublicEndpoint(tt *acctest.TestTools, resourceName string) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		rs, ok := state.RootModule().Resources[resourceName]
-		if !ok {
-			return fmt.Errorf("resource %s not found in state", resourceName)
-		}
-
-		api, region, id, err := rdb.NewAPIWithRegionAndID(tt.Meta, rs.Primary.ID)
-		if err != nil {
-			return err
-		}
-
-		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
-			Region:     region,
-			InstanceID: id,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to get instance %s: %w", rs.Primary.ID, err)
-		}
-
-		for _, endpoint := range instance.Endpoints {
-			if endpoint.LoadBalancer != nil {
-				return fmt.Errorf(
-					"instance %s has unexpected public endpoint %s (ip=%v, port=%d)",
-					resourceName,
-					endpoint.ID,
-					endpoint.IP,
-					endpoint.Port,
-				)
-			}
-		}
-
-		return nil
-	}
-}
-
 func IsInstanceDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		ctx := context.Background()

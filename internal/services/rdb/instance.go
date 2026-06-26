@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -515,12 +514,6 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		_, wantPrivateNetwork := d.GetOk("private_network")
 		_, wantLoadBalancer := d.GetOk("load_balancer")
 
-		if !wantLoadBalancer {
-			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
-				return diags
-			}
-		}
-
 		if wantPrivateNetwork || wantLoadBalancer {
 			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
 				return diag.FromErr(err)
@@ -691,29 +684,6 @@ func createLoadBalancerEndpoint(ctx context.Context, rdbAPI *rdb.API, region scw
 			Region:       region,
 			InstanceID:   instanceID,
 			EndpointSpec: expandLoadBalancer(),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return nil
-}
-
-func deleteLoadBalancerEndpoints(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, timeout time.Duration) diag.Diagnostics {
-	res, err := waitForRDBInstance(ctx, rdbAPI, region, instanceID, timeout)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	for _, endpoint := range res.Endpoints {
-		if endpoint.LoadBalancer == nil {
-			continue
-		}
-
-		err := rdbAPI.DeleteEndpoint(&rdb.DeleteEndpointRequest{
-			EndpointID: endpoint.ID,
-			Region:     region,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
