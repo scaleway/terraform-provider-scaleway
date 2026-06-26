@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,7 +27,7 @@ func TestAccDomainRegistration_SingleDomainWithUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	singleDomain := "test-single-updates37" + ".com"
+	singleDomain := "test-single-updates52" + ".com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -105,9 +108,9 @@ func TestAccDomainRegistration_MultipleDomainsUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	domainName1 := "test-multiple-121.com"
-	domainName2 := "test-multiple-122.com"
-	domainName3 := "test-multiple-123.com"
+	domainName1 := "test-multiple-1243.com"
+	domainName2 := "test-multiple-1253.com"
+	domainName3 := "test-multiple-1263.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -221,9 +224,14 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
 
-			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
-			if err != nil {
-				return err
+			domainNames := extractDomainNamesFromResourceState(rs)
+			if len(domainNames) == 0 {
+				var err error
+
+				domainNames, err = domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
+				if err != nil {
+					return err
+				}
 			}
 
 			for _, domainName := range domainNames {
@@ -303,6 +311,139 @@ func TestAccDomainRegistration_OwnerContactChangeError(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccDomainRegistration_ByTaskID(t *testing.T) {
+	if shouldBeSkipped() {
+		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	singleDomain := "test-import-by-task-id2.com"
+	taskID := "9fb6c780-6d10-44f8-8515-977b3765496a"
+
+	config := fmt.Sprintf(`
+		resource "scaleway_domain_registration" "test" {
+		  project_id        = "%s"
+		  domain_names      = ["%s"]
+		  duration_in_years = 1
+
+		  owner_contact {
+		    firstname                   = "John"
+		    lastname                    = "DOE"
+		    email                       = "john.doe@example.com"
+		    phone_number                = "+1.23456789"
+		    address_line_1              = "123 Main Street"
+		    city                        = "Paris"
+		    zip                         = "75001"
+		    country                     = "FR"
+		    legal_form                  = "individual"
+		    vat_identification_code     = "FR12345678901"
+		    company_identification_code = "123456789"
+		  }
+		}
+	`, testAccDomainRegistrationProjectID, singleDomain)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "domain_names.0", singleDomain),
+					resource.TestCheckResourceAttrSet("scaleway_domain_registration.test", "task_id"),
+				),
+			},
+			{
+				ResourceName:            "scaleway_domain_registration.test",
+				ImportState:             true,
+				ImportStateId:           testAccDomainRegistrationProjectID + "/" + taskID,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"duration_in_years"},
+			},
+		},
+	})
+}
+
+func TestAccDomainRegistration_ByDomainName(t *testing.T) {
+	if shouldBeSkipped() {
+		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	singleDomain := "test-import-by-domain-name3.com"
+
+	config := fmt.Sprintf(`
+		resource "scaleway_domain_registration" "test" {
+		  project_id        = "%s"
+		  domain_names      = ["%s"]
+		  duration_in_years = 1
+
+		  owner_contact {
+		    firstname                   = "John"
+		    lastname                    = "DOE"
+		    email                       = "john.doe@example.com"
+		    phone_number                = "+1.23456789"
+		    address_line_1              = "123 Main Street"
+		    city                        = "Paris"
+		    zip                         = "75001"
+		    country                     = "FR"
+		    legal_form                  = "individual"
+		    vat_identification_code     = "FR12345678901"
+		    company_identification_code = "123456789"
+		  }
+		}
+	`, testAccDomainRegistrationProjectID, singleDomain)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "domain_names.0", singleDomain),
+				),
+			},
+			{
+				ResourceName:            "scaleway_domain_registration.test",
+				ImportState:             true,
+				ImportStateId:           testAccDomainRegistrationProjectID + "/" + singleDomain,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"duration_in_years", "task_id"},
+			},
+		},
+	})
+}
+
+func extractDomainNamesFromResourceState(rs *terraform.ResourceState) []string {
+	var domainNames []string
+
+	for key, value := range rs.Primary.Attributes {
+		if !strings.HasPrefix(key, "domain_names.") || value == "" {
+			continue
+		}
+
+		suffix := strings.TrimPrefix(key, "domain_names.")
+		if suffix == "#" {
+			continue
+		}
+
+		if _, err := strconv.Atoi(suffix); err != nil {
+			continue
+		}
+
+		domainNames = append(domainNames, value)
+	}
+
+	sort.Strings(domainNames)
+
+	return domainNames
 }
 
 // shouldBeSkipped returns true when cassette recording is active but TF_ACC_DOMAIN_REGISTRATION is
