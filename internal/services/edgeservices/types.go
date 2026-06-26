@@ -141,7 +141,7 @@ func flattenTLSSecrets(secrets []*edge_services.TLSSecret) any {
 
 	for _, secret := range secrets {
 		secretMap := map[string]any{
-			"secret_id": secret.SecretID,
+			"secret_id": regional.NewIDString(secret.Region, secret.SecretID),
 			"region":    secret.Region.String(),
 		}
 		secretsI = append(secretsI, secretMap)
