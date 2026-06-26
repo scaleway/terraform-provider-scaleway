@@ -26,6 +26,7 @@ resource "scaleway_edge_services_dns_stage" "main" {
 - `tls_stage_id` - (Optional) The TLS stage ID the DNS stage will be linked to. Only one of `backend_stage_id`, `cache_stage_id` and `tls_stage_id` should be specified.
 - `cache_stage_id` - (Optional) The cache stage ID the DNS stage will be linked to. Only one of `backend_stage_id`, `cache_stage_id` and `tls_stage_id` should be specified.
 - `fqdns` - (Optional) Fully Qualified Domain Name (in the format subdomain.example.com) to attach to the stage.
+- `wildcard_domain` - (Optional) Defines whether wildcard (subdomains) is supported for the given domain. A wildcard certificate is required to make it work.
 - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the DNS stage is associated with.
 
 ## Attributes Reference
