@@ -287,11 +287,15 @@ func retrieveS3Endpoint(
 ) (string, error) {
 	// Provider block
 	if metaStruct != nil {
-		return metaStruct.Endpoints()["s3"], nil
+		if ep := metaStruct.Endpoints()["s3"]; ep != "" {
+			return ep, nil
+		}
 	}
 
 	if d != nil && m != nil {
-		return meta.ExtractS3Endpoint(d, m), nil
+		if ep := meta.ExtractS3Endpoint(d, m); ep != "" {
+			return ep, nil
+		}
 	}
 
 	// SCW environment variable
@@ -308,7 +312,7 @@ func retrieveS3Endpoint(
 	}
 
 	// Profile field value
-	scwClient := meta.ExtractScwClient(ctx)
+	scwClient := meta.ExtractScwClient(m)
 	profileS3Endpoint, s3EndpointOk := scwClient.GetS3Endpoint()
 
 	if s3EndpointOk && profileS3Endpoint != "" {
