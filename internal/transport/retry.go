@@ -15,8 +15,16 @@ import (
 )
 
 const (
-	// MaxRetriesOnForbidden is the number of retries when a request fails with HTTP 403.
-	MaxRetriesOnForbidden = 5
+	// IAMPropagationTimeout bounds how long RetryOn403 keeps retrying a request that fails with a
+	// transient HTTP 403 while IAM permissions propagate. IAM is eventually consistent and its cache
+	// is per-instance, so a freshly granted permission can intermittently 403 even after a prior 200
+	// (a request can be load-balanced onto an instance whose cache is still cold).
+	//
+	// The 2 minute value mirrors the Terraform AWS provider's propagationTimeout, derived from years
+	// of operational experience: long enough to absorb real propagation windows, short enough to
+	// surface genuine misconfigurations reasonably fast.
+	// Reference: https://github.com/hashicorp/terraform-provider-aws/blob/main/internal/service/iam/consts.go
+	IAMPropagationTimeout = 2 * time.Minute
 
 	// RetryOn403WaitTime is the delay between retries on HTTP 403.
 	RetryOn403WaitTime = 2 * time.Second
@@ -120,57 +128,50 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	return c.Do(req)
 }
 
-// RetryOn403 retries fn when it returns a transient HTTP 403 caused by IAM permission propagation.
+// RetryOn403 retries fn while it returns a transient HTTP 403 caused by IAM permission propagation,
+// up to IAMPropagationTimeout. Any non-403 error (including a legitimate, persistent 403 that
+// outlives the propagation window) is returned to the caller without further retries.
 func RetryOn403(ctx context.Context, fn func() error) error {
-	var lastErr error
+	_, err := RetryOn403Value(ctx, func() (struct{}, error) {
+		return struct{}{}, fn()
+	})
 
-	for range MaxRetriesOnForbidden {
-		lastErr = fn()
-		if lastErr == nil {
-			return nil
-		}
-
-		if httperrors.Is403(lastErr) {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-time.After(RetryOn403WaitTime):
-				continue
-			}
-		}
-
-		return lastErr
-	}
-
-	return lastErr
+	return err
 }
 
-// RetryOn403Value retries fn when it returns a transient HTTP 403 caused by IAM permission propagation.
+// RetryOn403Value behaves like RetryOn403 for a function returning a value.
 func RetryOn403Value[T any](ctx context.Context, fn func() (T, error)) (T, error) {
 	var (
 		result  T
 		lastErr error
 	)
 
-	for range MaxRetriesOnForbidden {
+	wait := RetryOn403WaitTime
+	if DefaultWaitRetryInterval != nil {
+		wait = *DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(IAMPropagationTimeout)
+
+	for {
 		result, lastErr = fn()
 		if lastErr == nil {
 			return result, nil
 		}
 
-		if httperrors.Is403(lastErr) {
-			select {
-			case <-ctx.Done():
-				return result, ctx.Err()
-			case <-time.After(RetryOn403WaitTime):
-				continue
-			}
+		// Stop as soon as the error is not a transient permission error, or once the propagation
+		// window has elapsed: a 403 lasting longer than IAMPropagationTimeout is treated as a real
+		// permission problem rather than eventual-consistency lag.
+		if !httperrors.Is403(lastErr) || time.Now().After(deadline) {
+			return result, lastErr
 		}
 
-		return result, lastErr
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-time.After(wait):
+		}
 	}
-
-	return result, lastErr
 }
 
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {
