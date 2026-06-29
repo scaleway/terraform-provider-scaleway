@@ -2,8 +2,6 @@ package rdb
 
 import (
 	"context"
-	"errors"
-	"net/http"
 	"time"
 
 	"github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -11,36 +9,11 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
-var (
-	maxRetriesOnForbidden = 3
-	waitTime              = 1 * time.Second
-)
-
-// Mitigate transient permission issue during provisioning,
-// caused by IAM permissions propagation delta.
+// retryOn403 mitigates transient permission issues during provisioning caused by IAM permission
+// propagation. It delegates to transport.RetryOn403, which retries only on HTTP 403 and is bounded
+// by transport.IAMPropagationTimeout (AWS-style), so a genuinely persistent 403 still surfaces.
 func retryOn403(ctx context.Context, fn func() error) error {
-	var lastErr error
-
-	for range maxRetriesOnForbidden {
-		lastErr = fn()
-		if lastErr == nil {
-			return nil
-		}
-
-		var respErr *scw.ResponseError
-		if errors.As(lastErr, &respErr) && respErr.StatusCode == http.StatusForbidden {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			case <-time.After(waitTime):
-				continue
-			}
-		}
-
-		return lastErr
-	}
-
-	return lastErr
+	return transport.RetryOn403(ctx, fn)
 }
 
 func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.Instance, error) {
