@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -12,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -24,6 +24,7 @@ func ResourceSecret() *schema.Resource {
 		ReadContext:   ResourceSecretRead,
 		UpdateContext: ResourceSecretUpdate,
 		DeleteContext: ResourceSecretDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -221,7 +222,10 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, secretResponse.ID))
+	err = identity.SetRegionalIdentity(d, region, secretResponse.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return ResourceSecretRead(ctx, d, m)
 }
@@ -250,7 +254,7 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
-	versions, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+	versionsResponse, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
 		Region:   region,
 		SecretID: id,
 	}, scw.WithAllPages(), scw.WithContext(ctx))
@@ -264,33 +268,12 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", secretResponse.Name)
-	_ = d.Set("description", types.FlattenStringPtr(secretResponse.Description))
-	_ = d.Set("created_at", types.FlattenTime(secretResponse.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(secretResponse.UpdatedAt))
-	_ = d.Set("status", secretResponse.Status.String())
-	_ = d.Set("version_count", int(versions.TotalCount))
-	_ = d.Set("region", string(region))
-	_ = d.Set("project_id", secretResponse.ProjectID)
-	_ = d.Set("path", secretResponse.Path)
-	_ = d.Set("protected", secretResponse.Protected)
-	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secretResponse.EphemeralPolicy))
-	_ = d.Set("type", secretResponse.Type)
+	setSecretState(d, secretResponse, versionsResponse)
 
-	versionsList := make([]map[string]any, 0, len(versions.Versions))
-	for _, version := range versions.Versions {
-		versionsList = append(versionsList, map[string]any{
-			"revision":    strconv.Itoa(int(version.Revision)),
-			"secret_id":   version.SecretID,
-			"status":      version.Status.String(),
-			"created_at":  types.FlattenTime(version.CreatedAt),
-			"updated_at":  types.FlattenTime(version.UpdatedAt),
-			"description": types.FlattenStringPtr(version.Description),
-			"latest":      types.FlattenBoolPtr(&version.Latest),
-		})
+	err = identity.SetRegionalIdentity(d, region, id)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	_ = d.Set("versions", versionsList)
 
 	return nil
 }

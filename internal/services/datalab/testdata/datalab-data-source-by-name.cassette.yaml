@@ -1,0 +1,919 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 123
+        host: api.scaleway.com
+        body: '{"name":"tf_tests_datalab_ds_by_name","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","tags":[],"enable_routing":false}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 425
+        body: '{"id":"ec271068-9bba-4654-bc41-f43eb3140675", "name":"tf_tests_datalab_ds_by_name", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:49.812229Z", "updated_at":"2026-06-10T04:21:49.812229Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "is_default":false, "private_network_count":0, "routing_enabled":true, "custom_routes_propagation_enabled":true, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "425"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 37734309-a675-4fb8-a7e6-b54cd21418c0
+        status: 200 OK
+        code: 200
+        duration: 574.574667ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs/ec271068-9bba-4654-bc41-f43eb3140675
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 425
+        body: '{"id":"ec271068-9bba-4654-bc41-f43eb3140675", "name":"tf_tests_datalab_ds_by_name", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:49.812229Z", "updated_at":"2026-06-10T04:21:49.812229Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "is_default":false, "private_network_count":0, "routing_enabled":true, "custom_routes_propagation_enabled":true, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "425"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 59de8a23-02c2-411e-acf1-3a520d6aa775
+        status: 200 OK
+        code: 200
+        duration: 80.847333ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 193
+        host: api.scaleway.com
+        body: '{"name":"tf-pn-busy-kare","project_id":"105bdce1-64c0-48ab-899d-868455867ecf","tags":[],"subnets":null,"vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675","default_route_propagation_enabled":false}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1086
+        body: '{"id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "name":"tf-pn-busy-kare", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "subnets":[{"id":"b2b43697-af37-47c7-a4f6-6a4af2186dc1", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"172.30.100.0/22", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}, {"id":"6cbdb33a-43bf-4177-a7e6-1b43295043da", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"fd5f:519c:6d46:816e::/64", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}], "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675", "dhcp_enabled":true, "default_route_propagation_enabled":false, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "1086"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:51 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 63d2ca59-4d48-4fab-b7f2-8cf911a9a2a0
+        status: 200 OK
+        code: 200
+        duration: 2.059398583s
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks/f1b00b42-6bc0-4d58-a108-afbee3f288d5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1086
+        body: '{"id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "name":"tf-pn-busy-kare", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "subnets":[{"id":"b2b43697-af37-47c7-a4f6-6a4af2186dc1", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"172.30.100.0/22", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}, {"id":"6cbdb33a-43bf-4177-a7e6-1b43295043da", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"fd5f:519c:6d46:816e::/64", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}], "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675", "dhcp_enabled":true, "default_route_propagation_enabled":false, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "1086"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:52 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - f6d51f28-41a1-4a6b-8a8a-f5081c462f61
+        status: 200 OK
+        code: 200
+        duration: 32.801709ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 369
+        host: api.scaleway.com
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf_tests_datalab_ds_by_name","description":"test datalab for data source by name","tags":null,"main":{"node_type":"DATALAB-SHARED-4C-8G"},"worker":{"node_type":"DATALAB-DEDICATED2-2C-8G","node_count":1},"has_notebook":false,"spark_version":"4.0.0","private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 973
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"creating", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:21:52.620886Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "973"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:52 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 44ad4c1c-a7ae-4eba-94f0-62dbf75f642a
+        status: 200 OK
+        code: 200
+        duration: 685.201208ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 973
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"creating", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:21:52.620886Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "973"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:21:53 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 7b43f074-81a1-4696-a19c-361d4027c14b
+        status: 200 OK
+        code: 200
+        duration: 316.036625ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 89279abc-3e2c-42ce-a5e6-b5b93faec681
+        status: 200 OK
+        code: 200
+        duration: 106.338417ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 7ed54680-a132-4686-b944-d9cb0743238c
+        status: 200 OK
+        code: 200
+        duration: 39.334541ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs/ec271068-9bba-4654-bc41-f43eb3140675
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 425
+        body: '{"id":"ec271068-9bba-4654-bc41-f43eb3140675", "name":"tf_tests_datalab_ds_by_name", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:49.812229Z", "updated_at":"2026-06-10T04:21:49.812229Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "is_default":false, "private_network_count":1, "routing_enabled":true, "custom_routes_propagation_enabled":true, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "425"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - d36f534b-05c1-4afb-ae0e-a5077490e4c0
+        status: 200 OK
+        code: 200
+        duration: 50.707542ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks/f1b00b42-6bc0-4d58-a108-afbee3f288d5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1086
+        body: '{"id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "name":"tf-pn-busy-kare", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "subnets":[{"id":"b2b43697-af37-47c7-a4f6-6a4af2186dc1", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"172.30.100.0/22", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}, {"id":"6cbdb33a-43bf-4177-a7e6-1b43295043da", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"fd5f:519c:6d46:816e::/64", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}], "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675", "dhcp_enabled":true, "default_route_propagation_enabled":false, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "1086"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 143003be-7d44-4044-b520-5b33e394b6cf
+        status: 200 OK
+        code: 200
+        duration: 29.915417ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 38e6d032-e95c-4c72-b574-8ec1aef32bc5
+        status: 200 OK
+        code: 200
+        duration: 45.34125ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs/ec271068-9bba-4654-bc41-f43eb3140675
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 425
+        body: '{"id":"ec271068-9bba-4654-bc41-f43eb3140675", "name":"tf_tests_datalab_ds_by_name", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:49.812229Z", "updated_at":"2026-06-10T04:21:49.812229Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "is_default":false, "private_network_count":1, "routing_enabled":true, "custom_routes_propagation_enabled":true, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "425"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - dd2af36c-2859-416d-8326-d589a5fc2092
+        status: 200 OK
+        code: 200
+        duration: 37.775542ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks/f1b00b42-6bc0-4d58-a108-afbee3f288d5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1086
+        body: '{"id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "name":"tf-pn-busy-kare", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "subnets":[{"id":"b2b43697-af37-47c7-a4f6-6a4af2186dc1", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"172.30.100.0/22", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}, {"id":"6cbdb33a-43bf-4177-a7e6-1b43295043da", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"fd5f:519c:6d46:816e::/64", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}], "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675", "dhcp_enabled":true, "default_route_propagation_enabled":false, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "1086"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - bf5eff3f-8bab-4199-8260-011aab3b2128
+        status: 200 OK
+        code: 200
+        duration: 30.493292ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - e52d8905-37c6-48c8-982e-6fb1d7457aa3
+        status: 200 OK
+        code: 200
+        duration: 119.165708ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            name:
+                - tf_tests_datalab_ds_by_name
+            order_by:
+                - name_asc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs?name=tf_tests_datalab_ds_by_name&order_by=name_asc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1002
+        body: '{"datalabs":[{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "1002"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 2029ab1f-6b01-4212-91d2-893b407dec01
+        status: 200 OK
+        code: 200
+        duration: 108.365375ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 954de428-e125-4ef0-9756-de0a44cae55e
+        status: 200 OK
+        code: 200
+        duration: 43.423416ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            name:
+                - tf_tests_datalab_ds_by_name
+            order_by:
+                - name_asc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs?name=tf_tests_datalab_ds_by_name&order_by=name_asc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1002
+        body: '{"datalabs":[{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "1002"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 014d1465-a19d-47fe-a591-ec76b66d9658
+        status: 200 OK
+        code: 200
+        duration: 52.792167ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs/ec271068-9bba-4654-bc41-f43eb3140675
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 425
+        body: '{"id":"ec271068-9bba-4654-bc41-f43eb3140675", "name":"tf_tests_datalab_ds_by_name", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:49.812229Z", "updated_at":"2026-06-10T04:21:49.812229Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "is_default":false, "private_network_count":1, "routing_enabled":true, "custom_routes_propagation_enabled":true, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "425"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - e58cda9c-33ae-46e0-bec5-26bf2d20aef8
+        status: 200 OK
+        code: 200
+        duration: 26.486459ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks/f1b00b42-6bc0-4d58-a108-afbee3f288d5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1086
+        body: '{"id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "name":"tf-pn-busy-kare", "tags":[], "organization_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "subnets":[{"id":"b2b43697-af37-47c7-a4f6-6a4af2186dc1", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"172.30.100.0/22", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}, {"id":"6cbdb33a-43bf-4177-a7e6-1b43295043da", "created_at":"2026-06-10T04:21:51.145027Z", "updated_at":"2026-06-10T04:21:51.145027Z", "subnet":"fd5f:519c:6d46:816e::/64", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675"}], "vpc_id":"ec271068-9bba-4654-bc41-f43eb3140675", "dhcp_enabled":true, "default_route_propagation_enabled":false, "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "1086"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 34e276d5-af2d-4820-901c-4d90ba7d194f
+        status: 200 OK
+        code: 200
+        duration: 30.017583ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 970
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "970"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 87c9ad60-afc5-40b7-b9cb-23f1c7f1ca54
+        status: 200 OK
+        code: 200
+        duration: 38.809541ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            name:
+                - tf_tests_datalab_ds_by_name
+            order_by:
+                - name_asc
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs?name=tf_tests_datalab_ds_by_name&order_by=name_asc
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 1002
+        body: '{"datalabs":[{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"ready", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:44.284129Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}], "total_count":1}'
+        headers:
+            Content-Length:
+                - "1002"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 3e9754ef-29a0-48ec-bd23-6da8065c0e5a
+        status: 200 OK
+        code: 200
+        duration: 56.561875ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 973
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"deleting", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:57.570353Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "973"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 42e66f8a-b7ed-489a-86e7-7b8b63d2c72c
+        status: 200 OK
+        code: 200
+        duration: 108.835084ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 973
+        body: '{"id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e", "status":"deleting", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf_tests_datalab_ds_by_name", "description":"test datalab for data source by name", "tags":[], "created_at":"2026-06-10T04:21:52.620886Z", "updated_at":"2026-06-10T04:27:57.570353Z", "main":{"node_type":"DATALAB-SHARED-4C-8G", "spark_ui_url":"https://f3785f10-42fc-49e8-af36-ac9f5d6a823e.ddl.fr-par.scw.cloud:4040", "spark_master_url":"spark://master-datalab-f3785f10-42fc-49e8-af36-ac9f5d6a823e.f1b00b42-6bc0-4d58-a108-afbee3f288d5.internal:7077", "root_volume":{"type":"sbs_5k", "size":50000000000}}, "worker":{"node_type":"DATALAB-DEDICATED2-2C-8G", "node_count":1, "root_volume":{"type":"sbs_5k", "size":50000000000}}, "has_notebook":false, "notebook_url":"", "spark_version":"4.0.0", "total_storage":{"type":"unknown_type", "size":0}, "private_network_id":"f1b00b42-6bc0-4d58-a108-afbee3f288d5", "notebook_master_url":"", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "973"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:27:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - adbb9842-e869-4a9e-aba0-9a585bcc9979
+        status: 200 OK
+        code: 200
+        duration: 35.646375ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 128
+        body: '{"message":"resource is not found","resource":"datalab","resource_id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "128"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:31:43 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 3fd7370f-1cb4-4edf-b486-7e0569705a67
+        status: 404 Not Found
+        code: 404
+        duration: 30.050375ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/private-networks/f1b00b42-6bc0-4d58-a108-afbee3f288d5
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:31:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 26a9f5a3-d7f2-4afe-b58c-fad9a45f92e0
+        status: 204 No Content
+        code: 204
+        duration: 1.523631125s
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/vpc/v2/regions/fr-par/vpcs/ec271068-9bba-4654-bc41-f43eb3140675
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:31:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 1f74f09b-a725-4444-b79c-94a4436e1cf5
+        status: 204 No Content
+        code: 204
+        duration: 363.699625ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 128
+        body: '{"message":"resource is not found","resource":"datalab","resource_id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "128"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:31:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 13c71c95-d54c-43d7-a6d2-0366206557b8
+        status: 404 Not Found
+        code: 404
+        duration: 86.926542ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; darwin; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/datalab/v1beta1/regions/fr-par/datalabs/f3785f10-42fc-49e8-af36-ac9f5d6a823e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 128
+        body: '{"message":"resource is not found","resource":"datalab","resource_id":"f3785f10-42fc-49e8-af36-ac9f5d6a823e","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "128"
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 10 Jun 2026 04:31:45 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge01)
+            X-Request-Id:
+                - 0b6b2fb7-b38d-41d5-abcc-dc98d887d283
+        status: 404 Not Found
+        code: 404
+        duration: 62.857541ms

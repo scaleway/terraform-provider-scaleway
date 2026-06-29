@@ -767,10 +767,13 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	////
 	// Read server user data
 	////
-	allUserData, _ := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
+	allUserData, err := api.GetAllServerUserData(&instanceSDK.GetAllServerUserDataRequest{
 		Zone:     zone,
 		ServerID: id,
 	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	userData := make(map[string]any)
 

@@ -27,7 +27,7 @@ func DataSourceBucketServerSideEncryptionConfiguration() *schema.Resource {
 		ConflictsWith: filterFields,
 	}
 
-	datasource.AddOptionalFieldsToSchema(dsSchema, "bucket")
+	datasource.AddOptionalFieldsToSchema(dsSchema, "bucket", "project_id")
 
 	dsSchema["bucket"].ConflictsWith = []string{"bucket_server_side_encryption_configuration_id"}
 
@@ -65,6 +65,13 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByID(ctx context.Conte
 		return diag.FromErr(err)
 	}
 
+	var diags diag.Diagnostics
+
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
+	if !ok {
+		return diags
+	}
+
 	return nil
 }
 
@@ -89,6 +96,13 @@ func dataSourceBucketServerSideEncryptionConfigurationReadByFilters(ctx context.
 	_ = d.Set("bucket", bucketName)
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	var diags diag.Diagnostics
+
+	diags, ok = setProjectIDFromACL(ctx, s3Client, d, bucketName.(string), diags)
+	if !ok {
+		return diags
 	}
 
 	return nil

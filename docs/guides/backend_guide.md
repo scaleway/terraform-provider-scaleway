@@ -1,9 +1,48 @@
 ---
 page_title: "Using Backend Guide"
 ---
+
 # Configuring Terraform Backends: PostgreSQL vs Object Storage
 
+## Store Terraform State in Scaleway Object Storage (with locking)
+
+[Scaleway Object Storage](https://www.scaleway.com/en/object-storage/) can be
+used to store your Terraform state.
+
+[Since May of 2026](https://www.scaleway.com/en/docs/changelog/#conditional-writes-and-terraform-state-locking-are-now-supported),
+Scaleway Object Storage supports the "conditional writes" feature, which is the
+requirement for the native locking mechanism of Terraform to work. You can
+enable it using the `use_lockfile` flag, as per
+[the official documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
+
+See [this pull request](https://github.com/hashicorp/terraform/pull/35661) for
+more details on the implementation.
+
+Configure your backend as:
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket                      = "terraform-state"
+    key                         = "my_state.tfstate"
+    region                      = "fr-par"
+    endpoint                    = "https://s3.fr-par.scw.cloud"
+    access_key                  = "my-access-key"
+    secret_key                  = "my-secret-key"
+    skip_credentials_validation = true
+    force_path_style            = true
+    skip_region_validation      = true
+    # Need terraform>=1.6.1
+    skip_requesting_account_id  = true
+    # Enable locking
+    use_lockfile                = true
+  }
+}
+```
+
 ## Configuring a Terraform Backend with PostgreSQL and State Locking
+
+~> **Warning** Using [Object Storage as a backend](#store-terraform-state-in-scaleway-object-storage-with-locking) is now the recommended way.
 
 This guide explains how to configure a remote backend using the Terraform Scaleway Provider with PostgreSQL, enabling remote state management with locking.
 
@@ -16,9 +55,9 @@ it makes it possible for a team to work with ease, or, for instance, to run Terr
 
 ### Create your database
 
-You can create your database resource using terraform itself .
+You can create your database resource using Terraform itself.
 
-If you have already one database running you can step over to [Configuring your Connection string](#configuring-the-postgresql-connection-string)
+If you have already one database running, you can step over to [Configuring your Connection string](#configuring-the-postgresql-connection-string).
 
 ```hcl
 terraform {
@@ -35,7 +74,7 @@ provider "scaleway" {
 }
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CREATE AN DATABASE INSTANCE TO USE IT AS A TERRAFORM BACKEND
+# CREATE A DATABASE INSTANCE TO USE IT AS A TERRAFORM BACKEND
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 resource "scaleway_rdb_database" "database" {
@@ -77,7 +116,7 @@ Hashicorp offers several methods to keep your secrets. Please check the Terrafor
 
 ```hcl
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# CREATE AN BACKEND TYPE PG
+# CREATE A BACKEND TYPE PG
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 terraform {
   backend "pg" {
@@ -108,7 +147,7 @@ rdb=> SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND sc
  terraform_remote_state | states    | my_initial_user |            | t          | f        | f           | f
 ```
 
-After running terraform `apply`, to terraform.tfstate on the database will look something like this:
+After running `terraform apply`, to terraform.tfstate on the database will look something like this:
 
 ```text
 rdb=> SELECT * FROM information_schema.columns
@@ -123,7 +162,6 @@ AND TABLE_NAME = 'states';
     |         |   "outputs": {},                                        +
     |         |   "resources": [                                        +
     |         |     {
-    
     ....
 ```
 
@@ -148,7 +186,7 @@ terraform {
 
 ### Migrating the state
 
-Considering you have already running infrastructure you want to use the `backend` option.
+Considering you have already running infrastructure, you want to use the `backend` option.
 
 All we need to do is initialize Terraform passing the backend configuration.
 
@@ -163,8 +201,8 @@ terraform init -backend-config="conn_str=${PG_CONN_STR}" -migrate-state
 ### What about locking?
 
 Most of the remote [backends](https://developer.hashicorp.com/terraform/language/backend#backend-types) natively support locking. To run terraform apply, Terraform will automatically acquire a lock;
-if someone else is already running apply, they will already have the lock, and you will have to wait.
-You can run apply with the `-lock-timeout=<TIME>` parameter to tell Terraform to wait up to TIME for a lock to be released (e.g., `-lock-timeout=10m` will wait for 10 minutes).
+if someone else is already running `apply`, they will already have the lock, and you will have to wait.
+You can run `apply` with the `-lock-timeout=<TIME>` parameter to tell Terraform to wait up to TIME for a lock to be released (e.g., `-lock-timeout=10m` will wait for 10 minutes).
 
 The Lock method prevents opening the state file while already in use.
 
@@ -176,43 +214,6 @@ This is useful when working on the same infrastructure or the same team.
 ```hcl
 data "scaleway_rdb_instance" "mybackend" {
   name = "your-database-name"
-}
-```
-
-## Alternative: Store Terraform State in Scaleway Object Storage (With Locking)
-
-[Scaleway Object Storage](https://www.scaleway.com/en/object-storage/) can be
-used to store your Terraform state.
-
-Since May of 2026, Scaleway Object Storage supports the "conditional writes"
-feature, which is the requirement for the native locking mechanism of Terraform
-to work.
-
-You can now enable it using the `use_lockfile` flag, as per
-[the official documentation](https://developer.hashicorp.com/terraform/language/backend/s3).
-
-See [this pull request](https://github.com/hashicorp/terraform/pull/35661) for
-more details of the implementation.
-
-Configure your backend as:
-
-```hcl
-terraform {
-  backend "s3" {
-    bucket                      = "terraform-state"
-    key                         = "my_state.tfstate"
-    region                      = "fr-par"
-    endpoint                    = "https://s3.fr-par.scw.cloud"
-    access_key                  = "my-access-key"
-    secret_key                  = "my-secret-key"
-    skip_credentials_validation = true
-    force_path_style            = true
-    skip_region_validation      = true
-    # Need terraform>=1.6.1
-    skip_requesting_account_id  = true
-    # Enable locking
-    use_lockfile                = true
-  }
 }
 ```
 
@@ -252,4 +253,4 @@ Both methods are compatible with Terraform’s S3 backend, which also works with
 
 For full details, see the official [Terraform S3 backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3#access_key)
 
-For example configuration files, refer to the [Object Storage documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/)
+For configuration file examples, refer to the [Object Storage documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/object-storage-aws-cli/)

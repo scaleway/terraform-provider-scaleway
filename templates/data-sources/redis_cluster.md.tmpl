@@ -41,7 +41,7 @@ In addition to all above arguments, the following attributes are exported:
 
 - `id` - The ID of the Redis cluster.
 - `version` - Redis's Cluster version (e.g. `6.2.7`).
-- `user_name` -  The first user of the Redis Cluster.
+- `user_name` - The first user of the Redis Cluster.
 - `password` - Password of the first user of the Redis Cluster.
 - `created_at` - The date and time of creation of the Redis Cluster.
 - `updated_at` - The date and time of the last update of the Redis Cluster.
@@ -52,9 +52,9 @@ In addition to all above arguments, the following attributes are exported:
 - `endpoint_id` - The ID of the endpoint.
 - `port` - TCP port of the endpoint.
 - `ips` - List of IPv4 addresses of the endpoint.
-- `tls_enabled` -  Whether TLS is enabled or not.
+- `tls_enabled` - Whether TLS is enabled or not.
 - `acl` - List of acl rules.
-- `settings` -  Map of settings for redis cluster.
+- `settings` - Map of settings for redis cluster.
 - `certificate` - The PEM of the certificate used by redis, only when `tls_enabled` is true.
 - `tags` - The tags associated with the Redis Cluster.
 

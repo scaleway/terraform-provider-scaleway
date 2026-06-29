@@ -6,9 +6,15 @@ page_title: "Scaleway: scaleway_object_bucket_policy"
 
 # Resource: scaleway_object_bucket_policy
 
-The `scaleway_object_bucket_policy` resource allows you to create and manage bucket policies for [Scaleway Object storage](https://www.scaleway.com/en/docs/object-storage/).
+The `scaleway_object_bucket_policy` resource allows you to create and manage
+bucket policies for [Scaleway Object storage][1].
 
-Refer to the [dedicated documentation](https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/) for more information on Object Storage bucket policies.
+Refer to the [dedicated documentation][2] for more information on Object Storage
+bucket policies.
+
+~> **Warning:** The `aws_iam_policy_document` resource is only compatible with
+the deprecated `2012-10-17` version. Use the Scaleway-specific `2023-04-17`
+recommended version, with a `jsonencode` bloc instead. See examples below.
 
 ## Example Usage
 
@@ -238,11 +244,11 @@ like bucket policies. Otherwise, Terraform will try to create the child resource
 
 The `scaleway_object_bucket_policy` resource exports certain attributes once the bucket policy is retrieved. These attributes can be referenced in other parts of your Terraform configuration.
 
-* `id` - The unique identifier of the policy, which is the ID of the bucket.
+- `id` - The unique identifier of the policy, which is the ID of the bucket.
 
 ~> **Important:** Object Storage bucket IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
 
-* `region` - The Scaleway region this bucket resides in.
+- `region` - The Scaleway region this bucket resides in.
 
 ## Import
 
@@ -258,3 +264,8 @@ If you are using a project different from the default one, you have to specify t
 ```bash
 terraform import scaleway_object_bucket_policy.some_bucket fr-par/some-bucket@xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx
 ```
+
+<!--- Links, invisible in the final document --->
+
+[1]: https://www.scaleway.com/en/docs/object-storage/
+[2]: https://www.scaleway.com/en/docs/object-storage/api-cli/bucket-policy/

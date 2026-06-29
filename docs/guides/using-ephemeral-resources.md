@@ -1,6 +1,7 @@
 ---
 page_title: "Using Ephemeral Resources Guide"
 ---
+
 # Using Ephemeral Resources with the Terraform Scaleway Provider
 
 Ephemeral resources in Terraform allow you to access sensitive data during Terraform operations without storing that data in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use ephemeral resources in the Scaleway Terraform Provider.

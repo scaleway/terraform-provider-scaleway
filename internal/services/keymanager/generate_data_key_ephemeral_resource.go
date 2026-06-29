@@ -3,6 +3,7 @@ package keymanager
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -178,7 +179,7 @@ func (r *GenerateDataKeyEphemeralResource) Open(ctx context.Context, req ephemer
 	}
 
 	data.Plaintext = types.StringValue(plaintext)
-	data.Ciphertext = types.StringValue(string(generateDataKeyResp.Ciphertext))
+	data.Ciphertext = types.StringValue(base64.StdEncoding.EncodeToString(generateDataKeyResp.Ciphertext))
 	data.CreatedAt = types.StringValue(generateDataKeyResp.CreatedAt.Format(time.RFC3339))
 
 	resp.Result.Set(ctx, &data)

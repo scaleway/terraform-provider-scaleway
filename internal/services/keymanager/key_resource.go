@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	key_manager "github.com/scaleway/scaleway-sdk-go/api/key_manager/v1alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -23,6 +24,7 @@ func ResourceKeyManagerKey() *schema.Resource {
 		ReadContext:   resourceKeyManagerKeyRead,
 		UpdateContext: resourceKeyManagerKeyUpdate,
 		DeleteContext: resourceKeyManagerKeyDelete,
+		Identity:      identity.DefaultRegional(),
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -171,7 +173,10 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(key.Region, key.ID))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceKeyManagerKeyRead(ctx, d, m)
 }
@@ -190,25 +195,12 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", key.Name)
-	_ = d.Set("project_id", key.ProjectID)
-	_ = d.Set("region", key.Region.String())
+	setKeyState(d, key)
 
-	usageType := UsageToString(key.Usage)
-	algorithm := AlgorithmFromKeyUsage(key.Usage)
-
-	_ = d.Set("usage", usageType)
-	_ = d.Set("algorithm", algorithm)
-
-	_ = d.Set("description", key.Description)
-	_ = d.Set("tags", key.Tags)
-	_ = d.Set("rotation_count", int(key.RotationCount))
-	_ = d.Set("created_at", types.FlattenTime(key.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(key.UpdatedAt))
-	_ = d.Set("protected", key.Protected)
-	_ = d.Set("locked", key.Locked)
-	_ = d.Set("rotated_at", types.FlattenTime(key.RotatedAt))
-	_ = d.Set("rotation_policy", FlattenKeyRotationPolicy(key.RotationPolicy))
+	err = identity.SetRegionalIdentity(d, key.Region, key.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }

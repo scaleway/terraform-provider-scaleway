@@ -143,11 +143,13 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("plan", d.Get("plan"))
 	_ = d.Set("plan_id", "")
 
-	dataSourcesRes, err := regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
-		Region:    region,
-		ProjectID: projectID,
-		Origin:    "custom",
-	}, scw.WithContext(ctx), scw.WithAllPages())
+	dataSourcesRes, err := retryOn403Value(ctx, func() (*cockpit.ListDataSourcesResponse, error) {
+		return regionalAPI.ListDataSources(&cockpit.RegionalAPIListDataSourcesRequest{
+			Region:    region,
+			ProjectID: projectID,
+			Origin:    "custom",
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,9 +159,11 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	grafana, err := api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
-		ProjectID: projectID,
-	}, scw.WithContext(ctx))
+	grafana, err := retryOn403Value(ctx, func() (*cockpit.Grafana, error) {
+		return api.GetGrafana(&cockpit.GlobalAPIGetGrafanaRequest{
+			ProjectID: projectID,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -168,8 +172,10 @@ func ResourceCockpitRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		grafana.GrafanaURL = createGrafanaURL(projectID, region)
 	}
 
-	alertManager, err := regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-		ProjectID: projectID,
+	alertManager, err := retryOn403Value(ctx, func() (*cockpit.AlertManager, error) {
+		return regionalAPI.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+			ProjectID: projectID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)

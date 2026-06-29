@@ -9,6 +9,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -33,6 +34,7 @@ func ResourceSnapshot() *schema.Resource {
 			Default: schema.DefaultTimeout(defaultBlockTimeout),
 		},
 		SchemaVersion: 0,
+		Identity:      identity.DefaultZonal(),
 		SchemaFunc:    snapshotSchema,
 	}
 }
@@ -153,7 +155,10 @@ func ResourceBlockSnapshotCreate(ctx context.Context, d *schema.ResourceData, m 
 		}
 	}
 
-	d.SetId(zonal.NewIDString(zone, snapshot.ID))
+	err = identity.SetZonalIdentity(d, zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForBlockSnapshot(ctx, api, zone, snapshot.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -194,17 +199,12 @@ func ResourceBlockSnapshotRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("name", snapshot.Name)
-	_ = d.Set("zone", snapshot.Zone)
-	_ = d.Set("project_id", snapshot.ProjectID)
+	setSnapshotState(d, snapshot)
 
-	if snapshot.ParentVolume != nil {
-		_ = d.Set("volume_id", snapshot.ParentVolume.ID)
-	} else {
-		_ = d.Set("volume_id", "")
+	err = identity.SetZonalIdentity(d, snapshot.Zone, snapshot.ID)
+	if err != nil {
+		return diag.FromErr(err)
 	}
-
-	_ = d.Set("tags", snapshot.Tags)
 
 	return nil
 }
@@ -227,7 +227,7 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	req := &block.UpdateSnapshotRequest{
-		Zone:       zone,
+		Zone:       snapshot.Zone,
 		SnapshotID: snapshot.ID,
 	}
 
@@ -245,7 +245,7 @@ func ResourceBlockSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if shouldExport := d.HasChange("export"); shouldExport {
 		req := block.ExportSnapshotToObjectStorageRequest{
-			Zone:       zone,
+			Zone:       snapshot.Zone,
 			SnapshotID: snapshot.ID,
 			Bucket:     regional.ExpandID(d.Get("export.0.bucket")).ID,
 			Key:        d.Get("export.0.key").(string),
@@ -266,14 +266,14 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
+	snapshot, err := waitForBlockSnapshotToBeAvailable(ctx, api, zone, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	err = api.DeleteSnapshot(&block.DeleteSnapshotRequest{
-		Zone:       zone,
-		SnapshotID: id,
+		Zone:       snapshot.Zone,
+		SnapshotID: snapshot.ID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -285,4 +285,21 @@ func ResourceBlockSnapshotDelete(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	return nil
+}
+
+func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapshot) {
+	if snapshot == nil {
+		return
+	}
+
+	_ = resourceData.Set("name", snapshot.Name)
+	_ = resourceData.Set("project_id", snapshot.ProjectID)
+	_ = resourceData.Set("tags", snapshot.Tags)
+	_ = resourceData.Set("zone", snapshot.Zone)
+
+	if snapshot.ParentVolume != nil {
+		_ = resourceData.Set("volume_id", snapshot.ParentVolume.ID)
+	} else {
+		_ = resourceData.Set("volume_id", "")
+	}
 }

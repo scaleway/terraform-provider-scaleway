@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -186,4 +187,49 @@ func flattenEphemeralPolicy(policy *secret.EphemeralPolicy) []map[string]any {
 	policyElem["action"] = policy.Action
 
 	return []map[string]any{policyElem}
+}
+
+func setSecretState(d *schema.ResourceData, secret *secret.Secret, versions *secret.ListSecretVersionsResponse) {
+	_ = d.Set("name", secret.Name)
+	_ = d.Set("description", types.FlattenStringPtr(secret.Description))
+	_ = d.Set("created_at", types.FlattenTime(secret.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(secret.UpdatedAt))
+	_ = d.Set("status", secret.Status.String())
+	_ = d.Set("region", string(secret.Region))
+	_ = d.Set("project_id", secret.ProjectID)
+	_ = d.Set("path", secret.Path)
+	_ = d.Set("protected", secret.Protected)
+	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secret.EphemeralPolicy))
+	_ = d.Set("type", secret.Type)
+	_ = d.Set("tags", types.FlattenSliceString(secret.Tags))
+
+	// versions is not populated for list secret
+	if versions != nil {
+		versionsList := make([]map[string]any, 0, len(versions.Versions))
+		for _, version := range versions.Versions {
+			versionsList = append(versionsList, map[string]any{
+				"revision":    strconv.Itoa(int(version.Revision)),
+				"secret_id":   version.SecretID,
+				"status":      version.Status.String(),
+				"created_at":  types.FlattenTime(version.CreatedAt),
+				"updated_at":  types.FlattenTime(version.UpdatedAt),
+				"description": types.FlattenStringPtr(version.Description),
+				"latest":      types.FlattenBoolPtr(&version.Latest),
+			})
+		}
+
+		_ = d.Set("version_count", int(versions.TotalCount))
+		_ = d.Set("versions", versionsList)
+	}
+}
+
+func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {
+	revisionStr := strconv.Itoa(int(version.Revision))
+	_ = d.Set("revision", revisionStr)
+	_ = d.Set("secret_id", regional.NewIDString(version.Region, version.SecretID))
+	_ = d.Set("description", types.FlattenStringPtr(version.Description))
+	_ = d.Set("created_at", types.FlattenTime(version.CreatedAt))
+	_ = d.Set("updated_at", types.FlattenTime(version.UpdatedAt))
+	_ = d.Set("status", version.Status.String())
+	_ = d.Set("region", string(version.Region))
 }
