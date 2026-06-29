@@ -1,6 +1,7 @@
 package block_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,6 +17,8 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	testDefaultZone, _ := tt.Meta.ScwClient().GetDefaultZone()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -35,6 +38,13 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 						iops       = 5000
 					}
 
+					resource "scaleway_block_volume" "vol3" {
+						name       = "test-vol-snapshot-list-3"
+						size_in_gb = 10
+						iops       = 5000
+						zone       = "pl-waw-2"
+					}
+
 					resource "scaleway_block_snapshot" "snap1" {
 						name      = "test-snapshot-list-1"
 						volume_id = scaleway_block_volume.vol1.id
@@ -45,8 +55,16 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 						volume_id = scaleway_block_volume.vol2.id
 						tags      = ["test-tag"]
 					}
+
+					resource "scaleway_block_snapshot" "snap3" {
+						name      = "test-snapshot-list-3"
+						volume_id = scaleway_block_volume.vol3.id
+						tags      = ["test-tag"]
+						zone      = "pl-waw-2"
+					}
 				`,
 			},
+
 			{
 				Query: true,
 				Config: `
@@ -61,9 +79,10 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLengthAtLeast("list.scaleway_block_snapshot.all", 2),
+					querycheck.ExpectLengthAtLeast("list.scaleway_block_snapshot.all", 3),
 				},
 			},
+
 			{
 				Query: true,
 				Config: `
@@ -81,6 +100,41 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					querycheck.ExpectLength("list.scaleway_block_snapshot.by_volume", 1),
 				},
 			},
+
+			{
+				Query: true,
+				Config: `
+					list "scaleway_block_snapshot" "by_zone_pl_waw_2" {
+						provider = scaleway
+
+						config {
+							volume_ids  = ["*"]
+							zones       = ["pl-waw-2"]
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_block_snapshot.by_zone_pl_waw_2", 1),
+				},
+			},
+
+			{
+				Query: true,
+				Config: fmt.Sprintf(`
+					list "scaleway_block_snapshot" "by_zone_default" {
+						provider = scaleway
+
+						config {
+							volume_ids  = ["*"]
+							zones       = ["%s"]
+						}
+					}
+				`, testDefaultZone),
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_block_snapshot.by_zone_default", 2),
+				},
+			},
+
 			{
 				Query: true,
 				Config: `
@@ -99,6 +153,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					querycheck.ExpectLength("list.scaleway_block_snapshot.by_name", 1),
 				},
 			},
+
 			{
 				Query: true,
 				Config: `
@@ -114,7 +169,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_block_snapshot.by_tag", 1),
+					querycheck.ExpectLength("list.scaleway_block_snapshot.by_tag", 2),
 				},
 			},
 		},
