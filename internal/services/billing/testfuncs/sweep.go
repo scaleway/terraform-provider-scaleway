@@ -20,6 +20,10 @@ func AddTestSweepers() {
 		Name: "scaleway_billing_budget_alert",
 		F:    testSweepBillingBudgetAlert,
 	})
+	resource.AddTestSweepers("scaleway_billing_budget_alert_notification", &resource.Sweeper{
+		Name: "scaleway_billing_budget_alert_notification",
+		F:    testSweepBillingBudgetAlertNotification,
+	})
 }
 
 func testSweepBillingBudget(_ string) error {
@@ -78,6 +82,41 @@ func testSweepBillingBudgetAlert(_ string) error {
 				})
 				if err != nil {
 					return fmt.Errorf("failed to delete budget alert: %w", err)
+				}
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepBillingBudgetAlertNotification(_ string) error {
+	return acctest.Sweep(func(scwClient *scw.Client) error {
+		api := billingSDK.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: destroying the billing budget alert notifications")
+
+		orgID, exists := scwClient.GetDefaultOrganizationID()
+		if !exists {
+			return errors.New("missing organizationID")
+		}
+
+		listBudgets, err := api.ListBudgets(&billingSDK.ListBudgetsRequest{
+			OrganizationID: &orgID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to list budgets: %w", err)
+		}
+
+		for _, budget := range listBudgets.Budgets {
+			for _, alert := range budget.Alerts {
+				for _, notification := range alert.Notifications {
+					err = api.DeleteBudgetAlertNotification(&billingSDK.DeleteBudgetAlertNotificationRequest{
+						BudgetAlertNotificationID: notification.ID,
+					})
+					if err != nil {
+						return fmt.Errorf("failed to delete budget alert notification: %w", err)
+					}
 				}
 			}
 		}
