@@ -109,6 +109,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							volume_ids  = ["*"]
+							project_ids = ["*"]
 							zones       = ["pl-waw-2"]
 						}
 					}
@@ -126,6 +127,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 
 						config {
 							volume_ids  = ["*"]
+							project_ids = ["*"]
 							zones       = ["%s"]
 						}
 					}
