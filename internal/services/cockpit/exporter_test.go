@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const defaultOrgIDPlaceholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -287,9 +288,13 @@ func isExporterPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetExporter(&cockpitSDK.RegionalAPIGetExporterRequest{
-			Region:     region,
-			ExporterID: id,
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err := api.GetExporter(&cockpitSDK.RegionalAPIGetExporterRequest{
+				Region:     region,
+				ExporterID: id,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

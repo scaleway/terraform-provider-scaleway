@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccActionRDBInstanceLogPrepare_Basic(t *testing.T) {
@@ -72,10 +73,18 @@ func isInstanceLogPrepared(tt *acctest.TestTools, instanceResourceName string) r
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
-			Region:     region,
-			InstanceID: id,
-		}, scw.WithContext(context.Background()))
+		var instance *rdbSDK.Instance
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
+				Region:     region,
+				InstanceID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to get instance: %w", err)
 		}

@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const (
@@ -1797,9 +1799,13 @@ func TestAccInstance_EngineUpgrade(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-							Region:     region,
-							InstanceID: oldInstanceID,
+						err = transport.RetryOn403(context.Background(), func() error {
+							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: oldInstanceID,
+							})
+
+							return err
 						})
 						if err == nil {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
@@ -1902,9 +1908,17 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 							return fmt.Errorf("expected new instance ID after upgrade, but got same ID: %s", newInstanceID)
 						}
 
-						instance, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-							Region:     region,
-							InstanceID: newInstanceID,
+						var instance *rdbSDK.Instance
+
+						err = transport.RetryOn403(context.Background(), func() error {
+							var err error
+
+							instance, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: newInstanceID,
+							})
+
+							return err
 						})
 						if err != nil {
 							return err
@@ -1914,9 +1928,13 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 							return fmt.Errorf("expected upgraded instance %s to keep HA enabled", newInstanceID)
 						}
 
-						_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-							Region:     region,
-							InstanceID: oldInstanceID,
+						err = transport.RetryOn403(context.Background(), func() error {
+							_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+								Region:     region,
+								InstanceID: oldInstanceID,
+							})
+
+							return err
 						})
 						if err == nil {
 							return fmt.Errorf("expected old instance %s to be destroyed, but it still exists", oldInstanceID)
@@ -2072,10 +2090,18 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 			return err
 		}
 
-		res, err := rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
-			Region:     region,
-			InstanceID: instanceID,
-		}, scw.WithAllPages())
+		var res *rdbSDK.ListInstanceACLRulesResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			res, err = rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
+				Region:     region,
+				InstanceID: instanceID,
+			}, scw.WithAllPages())
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("listing ACL rules: %w", err)
 		}
@@ -2107,9 +2133,13 @@ func isInstancePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
-			InstanceID: ID,
-			Region:     region,
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err := rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
+				InstanceID: ID,
+				Region:     region,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
