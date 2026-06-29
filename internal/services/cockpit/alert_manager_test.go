@@ -275,8 +275,15 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 		projectID := rs.Primary.Attributes["project_id"]
 
-		contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
-			ProjectID: projectID,
+		var contactPoints *cockpit.ListContactPointsResponse
+
+		err := acctest.RetryCheckOn403(func() error {
+			var err error
+			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
@@ -532,11 +539,18 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 			}
 		}
 
-		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
-			Region:          region,
-			ProjectID:       projectID,
-			IsPreconfigured: new(true),
-		}, scw.WithAllPages())
+		var alerts *cockpit.ListAlertsResponse
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
+				Region:          region,
+				ProjectID:       projectID,
+				IsPreconfigured: new(true),
+			}, scw.WithAllPages())
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %w", err)
 		}
@@ -573,9 +587,16 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 		projectID := rs.Primary.Attributes["project_id"]
 		region := scw.Region(rs.Primary.Attributes["region"])
 
-		alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-			Region:    region,
-			ProjectID: projectID,
+		var alertManager *cockpit.AlertManager
+
+		err := acctest.RetryCheckOn403(func() error {
+			var err error
+			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

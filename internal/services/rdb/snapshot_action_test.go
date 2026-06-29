@@ -75,11 +75,18 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		snapshots, err := api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
-			Region:     region,
-			InstanceID: new(id),
-			Name:       new(snapshotName),
-		}, scw.WithContext(context.Background()))
+		var snapshots *rdbSDK.ListSnapshotsResponse
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			snapshots, err = api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
+				Region:     region,
+				InstanceID: new(id),
+				Name:       new(snapshotName),
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list snapshots: %w", err)
 		}

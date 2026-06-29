@@ -287,9 +287,13 @@ func isExporterPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetExporter(&cockpitSDK.RegionalAPIGetExporterRequest{
-			Region:     region,
-			ExporterID: id,
+		err = acctest.RetryCheckOn403(func() error {
+			_, err := api.GetExporter(&cockpitSDK.RegionalAPIGetExporterRequest{
+				Region:     region,
+				ExporterID: id,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

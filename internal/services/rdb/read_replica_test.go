@@ -598,9 +598,13 @@ func isReadReplicaPresent(tt *acctest.TestTools, readReplica string) resource.Te
 			return err
 		}
 
-		_, err = rdbAPI.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
-			Region:        region,
-			ReadReplicaID: ID,
+		err = acctest.RetryCheckOn403(func() error {
+			_, err := rdbAPI.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
+				Region:        region,
+				ReadReplicaID: ID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

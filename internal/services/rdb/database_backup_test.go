@@ -171,9 +171,13 @@ func isBackupPresent(tt *acctest.TestTools, databaseBackup string) resource.Test
 			return err
 		}
 
-		_, err = rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
-			Region:           region,
-			DatabaseBackupID: id,
+		err = acctest.RetryCheckOn403(func() error {
+			_, err := rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
+				Region:           region,
+				DatabaseBackupID: id,
+			})
+
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get database backup: %w", err)

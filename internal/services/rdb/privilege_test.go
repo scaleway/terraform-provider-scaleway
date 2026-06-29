@@ -283,11 +283,18 @@ func isPrivilegePresent(tt *acctest.TestTools, instance string, database string,
 			return err
 		}
 
-		databases, err := rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
-			Region:       region,
-			InstanceID:   instanceID,
-			DatabaseName: &databaseName,
-			UserName:     &userName,
+		var databases *rdbSDK.ListPrivilegesResponse
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			databases, err = rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
+				Region:       region,
+				InstanceID:   instanceID,
+				DatabaseName: &databaseName,
+				UserName:     &userName,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

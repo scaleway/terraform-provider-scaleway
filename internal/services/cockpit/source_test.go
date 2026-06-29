@@ -218,9 +218,13 @@ func isSourcePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
-			Region:       region,
-			DataSourceID: ID,
+		err = acctest.RetryCheckOn403(func() error {
+			_, err := api.GetDataSource(&cockpitSDK.RegionalAPIGetDataSourceRequest{
+				Region:       region,
+				DataSourceID: ID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

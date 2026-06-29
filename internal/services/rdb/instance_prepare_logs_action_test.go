@@ -72,10 +72,17 @@ func isInstanceLogPrepared(tt *acctest.TestTools, instanceResourceName string) r
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		instance, err := api.GetInstance(&rdbSDK.GetInstanceRequest{
-			Region:     region,
-			InstanceID: id,
-		}, scw.WithContext(context.Background()))
+		var instance *rdbSDK.Instance
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
+				Region:     region,
+				InstanceID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to get instance: %w", err)
 		}

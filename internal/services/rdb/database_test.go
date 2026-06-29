@@ -125,13 +125,20 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 			return err
 		}
 
-		databases, err := rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
-			Region:     region,
-			InstanceID: instanceID,
-			Name:       &databaseName,
-			Managed:    nil,
-			Owner:      nil,
-			OrderBy:    "",
+		var databases *rdbSDK.ListDatabasesResponse
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			databases, err = rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
+				Region:     region,
+				InstanceID: instanceID,
+				Name:       &databaseName,
+				Managed:    nil,
+				Owner:      nil,
+				OrderBy:    "",
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

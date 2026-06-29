@@ -100,11 +100,18 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		databases, err := api.ListDatabases(&rdbSDK.ListDatabasesRequest{
-			Region:     region,
-			InstanceID: id,
-			Name:       new(databaseName),
-		}, scw.WithContext(context.Background()))
+		var databases *rdbSDK.ListDatabasesResponse
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			databases, err = api.ListDatabases(&rdbSDK.ListDatabasesRequest{
+				Region:     region,
+				InstanceID: id,
+				Name:       new(databaseName),
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list databases: %w", err)
 		}

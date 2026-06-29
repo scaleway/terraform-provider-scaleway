@@ -77,10 +77,17 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		readReplica, err := api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
-			Region:        region,
-			ReadReplicaID: id,
-		}, scw.WithContext(context.Background()))
+		var readReplica *rdbSDK.ReadReplica
+
+		err = acctest.RetryCheckOn403(func() error {
+			var err error
+			readReplica, err = api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
+				Region:        region,
+				ReadReplicaID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to get read replica: %w", err)
 		}
