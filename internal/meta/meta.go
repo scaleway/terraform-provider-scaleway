@@ -191,6 +191,7 @@ func (m Meta) HasMultipleVariableSources() (bool, string, error) {
 		scw.ScwDefaultOrganizationIDEnv,
 		scw.ScwDefaultRegionEnv,
 		scw.ScwDefaultZoneEnv,
+		scw.ScwS3EndpointEnv,
 	}
 
 	w := new(tabwriter.Writer)
