@@ -304,10 +304,7 @@ func retrieveS3Endpoint(
 	}
 
 	// AWS configuration
-	ep, err := scw.GetS3EndpointFromAWSConf(ctx)
-	if err != nil {
-		return "", fmt.Errorf("could not get API endpoint from AWS conf: %w", err)
-	} else if ep != "" {
+	if ep := scw.GetS3EndpointFromAWSConf(); ep != "" {
 		return ep, nil
 	}
 
