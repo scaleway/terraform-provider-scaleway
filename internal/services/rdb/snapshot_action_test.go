@@ -79,6 +79,7 @@ func isSnapshotCreated(tt *acctest.TestTools, instanceResourceName, snapshotName
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			snapshots, err = api.ListSnapshots(&rdbSDK.ListSnapshotsRequest{
 				Region:     region,
 				InstanceID: new(id),

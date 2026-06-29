@@ -76,6 +76,7 @@ func isInstanceRestarted(tt *acctest.TestTools, instanceResourceName string) res
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
 				Region:     region,
 				InstanceID: id,

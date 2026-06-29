@@ -279,6 +279,7 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 
 		err := acctest.RetryCheckOn403(func() error {
 			var err error
+
 			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
 				ProjectID: projectID,
 			})
@@ -543,6 +544,7 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
 				Region:          region,
 				ProjectID:       projectID,
@@ -591,6 +593,7 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 
 		err := acctest.RetryCheckOn403(func() error {
 			var err error
+
 			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
 				Region:    region,
 				ProjectID: projectID,

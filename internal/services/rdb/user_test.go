@@ -206,6 +206,7 @@ func isUserPresent(tt *acctest.TestTools, instance string, user string) resource
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			users, err = rdbAPI.ListUsers(&rdbSDK.ListUsersRequest{
 				InstanceID: instanceID,
 				Region:     region,

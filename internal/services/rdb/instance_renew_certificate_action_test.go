@@ -76,6 +76,7 @@ func isInstanceCertificateRenewed(tt *acctest.TestTools, instanceResourceName st
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			instance, err = api.GetInstance(&rdbSDK.GetInstanceRequest{
 				Region:     region,
 				InstanceID: id,

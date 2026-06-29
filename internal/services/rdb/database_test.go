@@ -129,6 +129,7 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			databases, err = rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
 				Region:     region,
 				InstanceID: instanceID,

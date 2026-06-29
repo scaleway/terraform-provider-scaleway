@@ -90,6 +90,7 @@ func isBackupExported(tt *acctest.TestTools, resourceName string) resource.TestC
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			backup, err = api.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
 				Region:           region,
 				DatabaseBackupID: id,

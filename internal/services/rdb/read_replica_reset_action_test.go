@@ -81,6 +81,7 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			readReplica, err = api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
 				Region:        region,
 				ReadReplicaID: id,

@@ -136,6 +136,7 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			res, err = api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
 				ProjectID: projectID,
 			}, scw.WithAllPages())

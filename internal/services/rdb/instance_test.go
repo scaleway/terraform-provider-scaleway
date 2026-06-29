@@ -1910,6 +1910,7 @@ func TestAccInstance_EngineUpgradeKeepsHA(t *testing.T) {
 
 						err = acctest.RetryCheckOn403(func() error {
 							var err error
+
 							instance, err = rdbAPI.GetInstance(&rdbSDK.GetInstanceRequest{
 								Region:     region,
 								InstanceID: newInstanceID,
@@ -2091,6 +2092,7 @@ func checkInstanceACLRules(tt *acctest.TestTools, instanceResource string, expec
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			res, err = rdbAPI.ListInstanceACLRules(&rdbSDK.ListInstanceACLRulesRequest{
 				Region:     region,
 				InstanceID: instanceID,

@@ -104,6 +104,7 @@ func isDatabaseRestored(tt *acctest.TestTools, instanceResourceName, databaseNam
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			databases, err = api.ListDatabases(&rdbSDK.ListDatabasesRequest{
 				Region:     region,
 				InstanceID: id,

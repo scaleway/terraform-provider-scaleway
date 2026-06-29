@@ -287,6 +287,7 @@ func isPrivilegePresent(tt *acctest.TestTools, instance string, database string,
 
 		err = acctest.RetryCheckOn403(func() error {
 			var err error
+
 			databases, err = rdbAPI.ListPrivileges(&rdbSDK.ListPrivilegesRequest{
 				Region:       region,
 				InstanceID:   instanceID,
