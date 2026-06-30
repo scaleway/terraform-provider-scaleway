@@ -1064,7 +1064,9 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if d.HasChange("node_type") {
 		// Upgrading the node_type with block storage is not allowed when the disk is full, so if we are in this case,
 		// we can only allow this action if an increase of the size of the volume is also scheduled before it.
-		if !diskIsFull || len(upgradeInstanceRequests) > 0 {
+		// With local storage (lssd), the volume size is tied to the node_type, so bumping the node_type is the only
+		// way to increase storage and must therefore be allowed even when the disk is full.
+		if !diskIsFull || len(upgradeInstanceRequests) > 0 || volType == rdb.VolumeTypeLssd {
 			upgradeInstanceRequests = append(upgradeInstanceRequests,
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
