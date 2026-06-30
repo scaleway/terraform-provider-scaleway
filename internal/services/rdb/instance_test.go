@@ -973,6 +973,67 @@ func TestAccInstance_ChangeNodeType(t *testing.T) {
 	})
 }
 
+// TestAccInstance_ChangeNodeTypeLssdDiskFull ensures that the node_type of a local-storage (lssd)
+// instance can be upgraded even when the instance is in the disk_full state. For lssd, the volume
+// size is tied to the node_type, so bumping the node_type is the only way to grow storage and must
+// not be blocked by the disk_full guard (which only makes sense for block storage). The cassette
+// reports a disk_full status during the update phase to exercise this path.
+func TestAccInstance_ChangeNodeTypeLssdDiskFull(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             rdbchecks.IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-dev-s"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance" ]
+						volume_type = "lssd"
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-s"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource scaleway_rdb_instance main {
+						name = "test-rdb-instance-volume"
+						node_type = "db-dev-m"
+						engine = %q
+						is_ha_cluster = false
+						disable_backup = true
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+						region= "nl-ams"
+						tags = [ "terraform-test", "scaleway_rdb_instance" ]
+						volume_type = "lssd"
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					isInstancePresent(tt, "scaleway_rdb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "node_type", "db-dev-m"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.main", "volume_type", "lssd"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_Endpoints(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
