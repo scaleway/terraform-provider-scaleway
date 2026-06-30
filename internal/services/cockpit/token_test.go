@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccToken_Basic(t *testing.T) {
@@ -185,9 +187,13 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetToken(&cockpitSDK.RegionalAPIGetTokenRequest{
-			TokenID: ID,
-			Region:  region,
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err := api.GetToken(&cockpitSDK.RegionalAPIGetTokenRequest{
+				TokenID: ID,
+				Region:  region,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
