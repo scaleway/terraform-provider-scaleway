@@ -274,6 +274,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		block.NewSnapshotListResource,
 		mongodb.NewInstanceListResource,
 		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
