@@ -88,7 +88,7 @@ The following arguments are supported:
 - `nexthop_private_network_id` - (Required) The ID of the private network used as nexthop for traffic matched by this rule.
 - `description` - (Optional) The description of the ingress rule.
 - `tags` - (Optional) The tags to associate with the ingress rule.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the ingress rule.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the ingress rule.
 
 ## Attributes Reference
 
