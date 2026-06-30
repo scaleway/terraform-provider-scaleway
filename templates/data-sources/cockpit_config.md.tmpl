@@ -39,22 +39,22 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The region ID (same as `region`).
 - `custom_metrics_retention` - Retention limits and default for custom metrics data sources.
-  - `min_days` - Minimum retention in days.
-  - `max_days` - Maximum retention in days.
-  - `default_days` - Default retention in days.
+    - `min_days` - Minimum retention in days.
+    - `max_days` - Maximum retention in days.
+    - `default_days` - Default retention in days.
 - `custom_logs_retention` - Retention limits and default for custom logs data sources.
-  - `min_days` - Minimum retention in days.
-  - `max_days` - Maximum retention in days.
-  - `default_days` - Default retention in days.
+    - `min_days` - Minimum retention in days.
+    - `max_days` - Maximum retention in days.
+    - `default_days` - Default retention in days.
 - `custom_traces_retention` - Retention limits and default for custom traces data sources.
-  - `min_days` - Minimum retention in days.
-  - `max_days` - Maximum retention in days.
-  - `default_days` - Default retention in days.
+    - `min_days` - Minimum retention in days.
+    - `max_days` - Maximum retention in days.
+    - `default_days` - Default retention in days.
 - `product_metrics_retention` - Retention limits and default for Scaleway product metrics data sources.
-  - `min_days` - Minimum retention in days.
-  - `max_days` - Maximum retention in days.
-  - `default_days` - Default retention in days.
+    - `min_days` - Minimum retention in days.
+    - `max_days` - Maximum retention in days.
+    - `default_days` - Default retention in days.
 - `product_logs_retention` - Retention limits and default for Scaleway product logs data sources.
-  - `min_days` - Minimum retention in days.
-  - `max_days` - Maximum retention in days.
-  - `default_days` - Default retention in days.
+    - `min_days` - Minimum retention in days.
+    - `max_days` - Maximum retention in days.
+    - `default_days` - Default retention in days.
