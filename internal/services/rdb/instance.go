@@ -208,11 +208,11 @@ func instanceSchema() map[string]*schema.Schema {
 						Description: "The endpoint ID",
 					},
 					"ip_net": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						Computed:     true,
-						ValidateFunc: validation.IsCIDR,
-						Description:  "The IP with the given mask within the private subnet",
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: validateRdbPrivateNetworkIPNet,
+						Description:      "The IP with the given mask within the private subnet",
 					},
 					"ip": {
 						Type:        schema.TypeString,
@@ -721,6 +721,22 @@ func deleteLoadBalancerEndpoints(ctx context.Context, rdbAPI *rdb.API, region sc
 	}
 
 	return nil
+}
+
+// validateRdbPrivateNetworkIPNet validates that ip_net is a valid CIDR and warns that setting it
+// provisions the endpoint in `static` mode, which is not registered in the VPC IPAM and DNS.
+func validateRdbPrivateNetworkIPNet(v any, path cty.Path) diag.Diagnostics {
+	diags := validation.ToDiagFunc(validation.IsCIDR)(v, path)
+	if diags.HasError() {
+		return diags
+	}
+
+	return append(diags, diag.Diagnostic{
+		Severity:      diag.Warning,
+		Summary:       "Private Network endpoint will use `static` provisioning mode",
+		Detail:        "Setting `ip_net` creates a static service IP that is not registered in the VPC IPAM and DNS. The endpoint may be unreachable from other resources in the same VPC (no dataplane routing, no `.internal` DNS record). Reserved IPs (`scaleway_ipam_ip`) are not supported for Managed Databases. Use `enable_ipam = true` instead for an IPAM-managed endpoint with working VPC routing and DNS.",
+		AttributePath: path,
+	})
 }
 
 // collectEndpointSpecs collects all endpoint specifications for instance creation

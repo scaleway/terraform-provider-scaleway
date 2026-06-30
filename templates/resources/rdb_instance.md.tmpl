@@ -106,6 +106,8 @@ interruption.
 
 ~> **Important** One of `ip_net` or `enable_ipam=true` must be set.
 
+~> **Warning** Setting `ip_net` provisions the endpoint in `static` mode. A static service IP is **not** registered in the VPC IPAM and DNS, so the endpoint may be unreachable from other resources in the same VPC (no dataplane routing, no `.internal` DNS record). Reserved IPs created with `scaleway_ipam_ip` are **not** supported for Managed Databases: passing such an address to `ip_net` does not consume the reservation, it only forces `static` mode. For working VPC routing and DNS, use `enable_ipam = true` instead.
+
 ~> **Important** Updates to `private_network` will recreate the Instance's endpoint
 
 ~> **Note** You can calculate your host IP using [cidrhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, let IPAM service
