@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 const deploymentTestUserName = "my_initial_user"
@@ -68,10 +69,14 @@ func isDeploymentPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return err
 		}
 
-		_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
-			Region:       region,
-			DeploymentID: id,
-		}, scw.WithContext(context.Background()))
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
+				Region:       region,
+				DeploymentID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 
 		return err
 	}

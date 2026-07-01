@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
@@ -263,10 +264,14 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
-				Region:       region,
-				DeploymentID: id,
-			}, scw.WithContext(context.Background()))
+			err = transport.RetryOn403(context.Background(), func() error {
+				_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
+					Region:       region,
+					DeploymentID: id,
+				}, scw.WithContext(context.Background()))
+
+				return err
+			})
 			if err == nil {
 				return fmt.Errorf("deployment %s still exists", id)
 			}
