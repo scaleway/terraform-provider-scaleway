@@ -23,7 +23,7 @@ To select the server type which information should be fetched, the following arg
 - `name` - (Required) The name of the server type.
   Only one of `name` and `snapshot_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the server type (to check the availability of the server type for example).
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the server type (to check the availability of the server type for example).
 
 ## Attributes Reference
 

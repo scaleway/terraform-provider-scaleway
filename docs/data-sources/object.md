@@ -36,8 +36,8 @@ This section lists the arguments that you can provide to the `scaleway_object` d
 
 - `bucket` - (Required) The name of the bucket, or its terraform ID (`{region}/{name}`)
 - `key` - (Required) The key (path or filename) of the object within the bucket.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project with which the bucket is associated.
 
 ## Attributes Reference
 

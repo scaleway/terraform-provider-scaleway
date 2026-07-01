@@ -18,8 +18,8 @@ data "scaleway_billing_consumptions" "my-consumption" {
 
 ## Argument Reference
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the organization the consumption list is associated with.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the consumption list is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the consumption list is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the consumption list is associated with.
 
 ## Attributes Reference
 

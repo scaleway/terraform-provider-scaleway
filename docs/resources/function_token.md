@@ -52,7 +52,7 @@ The following arguments are supported:
 
 - `expires_at` (Optional) The expiration date of the token.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 ~> **Important** Updating any of the arguments above will recreate the token.
 

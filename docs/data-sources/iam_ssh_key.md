@@ -28,7 +28,7 @@ data "scaleway_iam_ssh_key" "my_key" {
 
   -> **Note** You must specify at least one: `name` and/or `ssh_key_id`.
 
-- `project_id` (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH
+- `project_id` (Optional. Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the SSH
   key is associated with.
 
 ## Attributes Reference

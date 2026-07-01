@@ -36,9 +36,9 @@ This section lists the arguments that you can provide to the `scaleway_function_
 
 - `namespace_id` - (Optional) The unique identifier of the namespace. Only one of `name` and `namespace_id` should be specified.
 
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the namespace exists.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The unique identifier of the project with which the namespace is associated.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The unique identifier of the project with which the namespace is associated.
 
 ## Attributes Reference
 

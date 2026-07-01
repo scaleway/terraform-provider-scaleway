@@ -77,8 +77,8 @@ The following arguments are supported:
 - `tags` - (Optional) A list of tags to apply to the flexible IP.
 - `reverse` - (Optional) The reverse domain associated with this flexible IP.
 - `is_ipv6` - (Optional) Defines whether the flexible IP has an IPv6 address.
-- `zone` -(Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Flexible IP.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Flexible IP is associated with.
+- `zone` -(Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Flexible IP.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Flexible IP is associated with.
 
 ## Attributes Reference
 

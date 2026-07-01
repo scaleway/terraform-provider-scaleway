@@ -59,7 +59,7 @@ The following arguments are supported:
 - `name` - (Required) Name of the ClickHouse user.
 - `password` - (Required) Password for the ClickHouse user.
 - `is_admin` - (Optional) Whether the user has administrator privileges. Defaults to `false`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the user should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the user should be created.
 
 ## Attributes Reference
 

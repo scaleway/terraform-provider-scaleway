@@ -35,7 +35,7 @@ output "database_names" {
 
 - `instance_id` - (Required) The MongoDB® instance ID. Can be a plain UUID or a regional ID.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance exists.
 
 ## Attributes Reference
 

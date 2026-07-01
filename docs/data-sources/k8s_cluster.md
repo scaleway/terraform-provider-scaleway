@@ -36,7 +36,7 @@ data "scaleway_k8s_cluster" "my_key" {
 
 - `cluster_id` - (Optional) The cluster ID. Only one of `name` and `cluster_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster exists.
 
 - `project_id` - (Optional) The ID of the project the cluster is associated with.
 

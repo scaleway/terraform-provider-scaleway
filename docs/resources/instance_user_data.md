@@ -60,7 +60,7 @@ The following arguments are required:
 - `server_id` - (Required) The ID of the server associated with.
 - `key` - (Required) Key of the user data.
 - `value` - (Required) Value associated with your key
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 ~> **Important:** Use the `cloud-init` key to use [cloud-init](https://cloudinit.readthedocs.io/en/latest/) on your instance.
   You can define values using:

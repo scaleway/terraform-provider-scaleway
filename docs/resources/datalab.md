@@ -56,8 +56,8 @@ The following arguments are supported:
 - `total_storage` - (Optional, Forces new resource) Persistent volume storage configuration.
     - `type` - (Optional, Forces new resource) The volume type. Defaults to `sbs_5k`.
     - `size` - (Optional, Forces new resource) The volume size in bytes.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The region the Datalab is in. Only `fr-par` is currently supported.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The project ID the Datalab belongs to.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The region the Datalab is in. Only `fr-par` is currently supported.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The project ID the Datalab belongs to.
 
 ## Attributes Reference
 

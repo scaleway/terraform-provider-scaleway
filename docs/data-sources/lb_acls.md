@@ -30,7 +30,7 @@ data "scaleway_lb_acls" "byFrontID_and_name" {
 
 - `name` - (Optional) The ACL name to filter for. ACLs with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the ACLs exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the ACLs exist.
 
 ## Attributes Reference
 

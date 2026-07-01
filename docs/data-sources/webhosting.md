@@ -26,8 +26,8 @@ data "scaleway_webhosting" "by_id" {
 * `domain` - (Optional) The hosting domain name. Only one of `domain` and `webhosting_id` should be specified.
 * `webhosting_id` - (Optional) The hosting id. Only one of `domain` and `webhosting_id` should be specified.
 * `organization_id` - The ID of the organization the hosting is associated with.
-* `project_id` - (Optional. Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the hosting is associated with.
-* `region` - (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which hosting exists.
+* `project_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the hosting is associated with.
+* `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which hosting exists.
 
 ## Attributes Reference
 

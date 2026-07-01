@@ -115,8 +115,8 @@ The following arguments are supported:
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `private_network` - (Optional) Private network configuration for the OpenSearch API endpoint. Can be added, updated, or removed on an existing deployment.
     - `private_network_id` - (Required) The ID of the private network. Format: `{region}/{id}` or just `{id}`.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the deployment is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ~> **Note:** Without `private_network`, a public endpoint is created for both the OpenSearch API and Dashboards. With `private_network`, the API is exposed on the private network; OpenSearch Dashboards may still be reachable on a public URL (see `public_dashboard_url`).
 

@@ -67,8 +67,8 @@ The following arguments are supported:
     - `cockpit_metric_name` - The custom metric to use for this policy. This must be stored in Scaleway Cockpit. The metric forms the basis of the condition that will be checked to determine whether a scaling action should be triggered
     - `sampling_range_min` - The Interval of time, in minutes, during which metric is sampled.
     - `threshold` - The threshold value to measure the aggregated sampled `metric` value against. Combined with the `operator` field, determines whether a scaling action should be triggered.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance policy exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the Instance policy is associated with.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance policy exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Instance policy is associated with.
 
 ## Attributes Reference
 

@@ -25,7 +25,7 @@ data "scaleway_autoscaling_instance_group" "by_id" {
 
 - `name` - (Optional) The name of the Instance group. Only one of `name` and `instance_group_id` should be specified.
 - `instance_group_id` - (Optional) The ID of the Instance group. Only one of `name` and `instance_group_id` should be specified.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance group exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance group exists.
 
 ## Attributes Reference
 
