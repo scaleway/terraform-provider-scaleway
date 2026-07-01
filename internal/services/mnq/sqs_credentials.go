@@ -2,10 +2,8 @@ package mnq
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	mnq "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -89,8 +87,6 @@ func sqsCredentialsSchema() map[string]*schema.Schema {
 	}
 }
 
-const sqsCredentialsCreateRetryTimeout = 30 * time.Second
-
 func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api, region, err := newSQSAPI(d, m)
 	if err != nil {
@@ -108,19 +104,8 @@ func ResourceMNQSQSCredentialsCreate(ctx context.Context, d *schema.ResourceData
 		},
 	}
 
-	var credentials *mnq.SqsCredentials
-
-	err = retry.RetryContext(ctx, sqsCredentialsCreateRetryTimeout, func() *retry.RetryError {
-		credentials, err = api.CreateSqsCredentials(req, scw.WithContext(ctx))
-		if err == nil {
-			return nil
-		}
-
-		if isMNQNamespaceReadRetryableError(err) {
-			return retry.RetryableError(err)
-		}
-
-		return retry.NonRetryableError(err)
+	credentials, err := RetryMNQNamespaceReadValue(ctx, func() (*mnq.SqsCredentials, error) {
+		return api.CreateSqsCredentials(req, scw.WithContext(ctx))
 	})
 	if err != nil {
 		return diag.FromErr(err)
