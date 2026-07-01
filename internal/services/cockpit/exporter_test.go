@@ -19,6 +19,10 @@ import (
 const defaultOrgIDPlaceholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 func TestAccCockpitExporter_Basic_Datadog(t *testing.T) {
+	if *acctest.UpdateCassettes && os.Getenv("TF_TEST_DATADOG_API_KEY") == "" {
+		t.Skip("Skipping TestAccCockpitExporter_Basic_Datadog: TF_TEST_DATADOG_API_KEY is required for live acceptance tests")
+	}
+
 	if *acctest.UpdateCassettes {
 		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
 	}
