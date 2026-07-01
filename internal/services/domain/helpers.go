@@ -411,21 +411,25 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 
 // ExtractDomainsFromTaskID resolves domain names from a resource ID.
 //
-// It accepts two formats:
-//   - "projectID/task-uuid"   — looks up the task in ListTasks (standard case)
-//   - "projectID/a.com"       — uses the domain name directly (import when task is archived)
-//   - "projectID/a.com,b.com" — comma-separated domain names for multi-domain registrations
+// It accepts the following formats:
+//   - "task-uuid"   — looks up the task in ListTasks (standard case)
+//   - "a.com"       — uses the domain name directly (import when task is archived)
+//   - "a.com,b.com" — comma-separated domain names for multi-domain registrations
 //
-// The second and third formats are detected by the presence of a dot in the second segment.
+// A legacy "projectID/..." prefix is still tolerated: only the segment after the last
+// "/" is used, since domain names and task IDs are globally unique and the project is
+// resolved from the API. Domain formats are detected by the presence of a dot.
 func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *domain.RegistrarAPI) ([]string, error) {
-	parts := strings.Split(id, "/")
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("invalid ID format, expected 'projectID/taskID' or 'projectID/domain.tld', got: %s", id)
+	taskOrDomains := id
+	if i := strings.LastIndex(id, "/"); i != -1 {
+		taskOrDomains = id[i+1:]
 	}
 
-	taskOrDomains := parts[1]
+	if taskOrDomains == "" {
+		return nil, fmt.Errorf("invalid ID format, expected 'domain.tld' or 'taskID', got: %s", id)
+	}
 
-	// If the second segment contains a dot it is a domain name (or comma-separated list),
+	// If the segment contains a dot it is a domain name (or comma-separated list),
 	// not a task UUID. Return domain names directly without hitting ListTasks.
 	if strings.Contains(taskOrDomains, ".") {
 		names := SplitDomains(&taskOrDomains)
@@ -452,7 +456,7 @@ func ExtractDomainsFromTaskID(ctx context.Context, id string, registrarAPI *doma
 		}
 	}
 
-	return nil, fmt.Errorf("task with ID '%s' not found in ListTasks — if the task was archived, re-import using the domain name: terraform import <resource> %s/<domain.tld>", taskOrDomains, parts[0])
+	return nil, fmt.Errorf("task with ID '%s' not found in ListTasks — if the task was archived, re-import using the domain name: terraform import <resource> <domain.tld>", taskOrDomains)
 }
 
 func flattenContact(contact *domain.Contact) []map[string]any {

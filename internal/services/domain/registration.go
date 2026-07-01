@@ -41,7 +41,13 @@ func ResourceRegistration() *schema.Resource {
 
 func registrationIdentity() *schema.ResourceIdentity {
 	return identity.WrapSchemaMap(map[string]*schema.Schema{
-		"project_id": identity.DefaultProjectIDAttribute(),
+		// project_id is optional for import: the domain name is globally unique and the
+		// project is resolved from the API, so it does not need to be provided.
+		"project_id": {
+			Type:              schema.TypeString,
+			Description:       "The ID of the project (UUID format)",
+			OptionalForImport: true,
+		},
 		"domain_name": {
 			Type:              schema.TypeString,
 			Description:       "The primary domain name of the registration",
@@ -58,10 +64,10 @@ func registrationIdentity() *schema.ResourceIdentity {
 	})
 }
 
-// resourceRegistrationImport supports importing by ID string
-// (projectID/domain.tld or projectID/taskID) and by resource identity
-// (project_id + domain_name, or the legacy project_id + task_id).
-func resourceRegistrationImport(ctx context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
+// resourceRegistrationImport supports importing by ID string (domain.tld, a.com,b.com
+// or a task ID, with an optional legacy projectID/ prefix) and by resource identity
+// (domain_name, or the legacy task_id).
+func resourceRegistrationImport(_ context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
 	if d.Id() != "" {
 		return []*schema.ResourceData{d}, nil
 	}
@@ -71,15 +77,14 @@ func resourceRegistrationImport(ctx context.Context, d *schema.ResourceData, _ a
 		return nil, fmt.Errorf("error getting identity: %w", err)
 	}
 
-	projectID, _ := ident.Get("project_id").(string)
 	domainName, _ := ident.Get("domain_name").(string)
 	taskID, _ := ident.Get("task_id").(string)
 
 	switch {
 	case domainName != "":
-		d.SetId(projectID + "/" + domainName)
+		d.SetId(domainName)
 	case taskID != "":
-		d.SetId(projectID + "/" + taskID)
+		d.SetId(taskID)
 	default:
 		return nil, errors.New("import requires either domain_name or task_id in the resource identity")
 	}
@@ -639,30 +644,32 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("auto_renew", computedAutoRenew)
 	_ = d.Set("dnssec", computedDnssec)
 	_ = d.Set("ds_record", computedDSRecord)
-	parts := strings.Split(id, "/")
-
-	if len(parts) != 2 {
-		return diag.FromErr(fmt.Errorf("invalid ID format, expected 'projectID/domain.tld', got: %s", id))
-	}
-
+	// project_id is resolved from the API response; the import ID no longer carries it.
+	// A legacy "projectID/..." prefix is still tolerated as a fallback.
 	projectID := firstResp.ProjectID
 	if projectID == "" {
-		projectID = parts[0]
+		if i := strings.Index(id, "/"); i != -1 {
+			projectID = id[:i]
+		}
 	}
 
 	_ = d.Set("project_id", projectID)
 
-	// When the ID is in UUID format (projectID/taskUUID), set task_id from the UUID.
-	// When in domain format (projectID/domain.com), task_id is set during create and preserved.
-	taskOrDomain := parts[1]
+	// When the ID segment is a task UUID (no dot), preserve it as task_id.
+	// In domain format, task_id is set during create and preserved.
+	idSegment := id
+	if i := strings.LastIndex(id, "/"); i != -1 {
+		idSegment = id[i+1:]
+	}
 
-	if !strings.Contains(taskOrDomain, ".") {
-		_ = d.Set("task_id", taskOrDomain)
+	if idSegment != "" && !strings.Contains(idSegment, ".") {
+		_ = d.Set("task_id", idSegment)
 	}
 
 	// The stable resource ID stores all domain names comma-separated so multi-domain
-	// registrations survive refresh without losing any domain name.
-	d.SetId(projectID + "/" + strings.Join(domainNames, ","))
+	// registrations survive refresh without losing any domain name. The project ID is
+	// no longer part of the ID since the domain name is globally unique.
+	d.SetId(strings.Join(domainNames, ","))
 
 	return nil
 }
@@ -829,6 +836,7 @@ func registrationDomainNamesFromState(d *schema.ResourceData) []string {
 
 // setRegistrationIdentity sets the resource identity using the first domain name (stable, globally unique)
 // and stores all domain names comma-separated in d.SetId() so multi-domain registrations survive refresh.
+// The project ID is recorded in the identity but is not part of the resource ID.
 func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNames []string) error {
 	if len(domainNames) == 0 {
 		return errors.New("cannot set registration identity: no domain names provided")
@@ -854,7 +862,7 @@ func setRegistrationIdentity(d *schema.ResourceData, projectID string, domainNam
 		return err
 	}
 
-	d.SetId(projectID + "/" + strings.Join(domainNames, ","))
+	d.SetId(strings.Join(domainNames, ","))
 
 	return nil
 }

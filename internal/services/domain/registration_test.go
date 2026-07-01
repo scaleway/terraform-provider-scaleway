@@ -360,7 +360,7 @@ func TestAccDomainRegistration_ByTaskID(t *testing.T) {
 			{
 				ResourceName:            "scaleway_domain_registration.test",
 				ImportState:             true,
-				ImportStateId:           testAccDomainRegistrationProjectID + "/" + taskID,
+				ImportStateId:           taskID,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"duration_in_years"},
 			},
@@ -413,7 +413,7 @@ func TestAccDomainRegistration_ByDomainName(t *testing.T) {
 			{
 				ResourceName:            "scaleway_domain_registration.test",
 				ImportState:             true,
-				ImportStateId:           testAccDomainRegistrationProjectID + "/" + singleDomain,
+				ImportStateId:           singleDomain,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"duration_in_years", "task_id"},
 			},
