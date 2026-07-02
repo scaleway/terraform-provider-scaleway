@@ -28,6 +28,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -58,11 +59,13 @@ func ResourceServer() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    serverSchema,
+		Identity:      identity.DefaultZonal(),
 		CustomizeDiff: customdiff.All(
 			cdf.LocalityCheck(
 				"placement_group_id",
 				"additional_volume_ids.#",
 				"ip_id",
+				"ip_ids.#",
 			),
 			customDiffInstanceServerType,
 			customDiffInstanceServerImage,
@@ -515,7 +518,10 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(zonal.NewID(zone, res.Server.ID).String())
+	err = identity.SetZonalIdentity(d, res.Server.Zone, res.Server.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	_, err = waitForServer(ctx, api.API, zone, res.Server.ID, d.Timeout(schema.TimeoutCreate))
 	if err != nil {
@@ -645,16 +651,11 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	return append(diags, ResourceInstanceServerRead(ctx, d, m)...)
+	return append(diags, setServerState(ctx, d, m, api, res.Server.Zone, res.Server.ID)...)
 }
 
 //gocyclo:ignore
-func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func setServerState(ctx context.Context, d *schema.ResourceData, m any, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) diag.Diagnostics {
 	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if errorCheck(err, "is not found") {
@@ -667,9 +668,6 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	////
-	// Read Server
-	////
 	state, err := serverStateFlatten(server.State)
 	if err != nil {
 		return diag.FromErr(err)
@@ -709,32 +707,46 @@ func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m a
 	////
 	// Read server's public IPs
 	////
-	if ipID, hasIPID := d.GetOk("ip_id"); hasIPID {
-		publicIP := FindIPInList(ipID.(string), server.PublicIPs)
-		if publicIP != nil && !publicIP.Dynamic {
-			_ = d.Set("ip_id", zonal.NewID(zone, publicIP.ID).String())
-		} else {
-			_ = d.Set("ip_id", "")
-		}
-	} else {
-		_ = d.Set("ip_id", "")
-	}
-
 	if len(server.PublicIPs) > 0 {
 		_ = d.Set("public_ips", flattenServerPublicIPs(server.Zone, server.PublicIPs))
+
+		var ipIDToSet string
+
+		var ipIDsToSet []any
+
+		ipID, hasIPID := d.GetOk("ip_id")
+		_, hasIPIDs := d.GetOk("ip_ids")
+
+		switch {
+		case hasIPID:
+			publicIP := FindIPInList(ipID.(string), server.PublicIPs)
+			if publicIP != nil && !publicIP.Dynamic {
+				ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+			}
+		case hasIPIDs:
+			ipIDsToSet = flattenServerIPIDs(server.PublicIPs, server.Zone)
+		default:
+			// In import context, we don't know if the field that was used is 'ip_id' or 'ip_ids', so we set them both
+			for _, publicIP := range server.PublicIPs {
+				if !publicIP.Dynamic {
+					ipIDToSet = zonal.NewID(zone, publicIP.ID).String()
+					ipIDsToSet = append(ipIDsToSet, zonal.NewID(zone, publicIP.ID).String())
+				}
+			}
+		}
+
+		_ = d.Set("ip_id", ipIDToSet)
+		_ = d.Set("ip_ids", ipIDsToSet)
+
 		d.SetConnInfo(map[string]string{
 			"type": "ssh",
 			"host": server.PublicIPs[0].Address.String(),
 		})
 	} else {
 		_ = d.Set("public_ips", []any{})
-		d.SetConnInfo(nil)
-	}
-
-	if _, hasIPIDs := d.GetOk("ip_ids"); hasIPIDs {
-		_ = d.Set("ip_ids", flattenServerIPIDs(server.PublicIPs))
-	} else {
 		_ = d.Set("ip_ids", []any{})
+		_ = d.Set("ip_id", "")
+		d.SetConnInfo(nil)
 	}
 
 	if server.AdminPasswordEncryptionSSHKeyID != nil {
@@ -893,6 +905,20 @@ You can check the full list of compatible server types:
 	_ = d.Set("private_ips", allPrivateIPs)
 
 	return diags
+}
+
+func ResourceInstanceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	api, zone, id, err := instancehelpers.InstanceAndBlockAPIWithZoneAndID(m, d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	err = identity.SetZonalIdentity(d, zone, id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setServerState(ctx, d, m, api, zone, id)
 }
 
 //gocyclo:ignore
