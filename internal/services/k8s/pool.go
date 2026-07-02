@@ -63,7 +63,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
 			Description: "The name of the pool",
 		},
