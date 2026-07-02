@@ -51,7 +51,7 @@ The following arguments are supported:
     - `dst_port_high` - (Optional) The ending port of the destination port range to which this rule applies (inclusive).
     - `action` - (Optional) The policy to apply to the packet.
     - `description` - (Optional) The rule description.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the ACL.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the ACL.
 
 ## Attributes Reference
 

@@ -29,7 +29,7 @@ data "scaleway_lb_backends" "byLBID_and_name" {
 
 - `name` - (Optional) The backend name to filter for. Backends with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
 
 ## Attributes Reference
 
@@ -61,7 +61,7 @@ In addition to all arguments above, the following attributes are exported:
         - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.
         - `code` - The expected HTTP status code.
-        - `host_header` -  The HTTP host header to use for health check requests.
+        - `host_header` - The HTTP host header to use for health check requests.
     - `health_check_https` - This block enables HTTPS health checks.
         - `uri` - The path of health check requests.
         - `method` - The HTTP method to use for health check requests.

@@ -27,7 +27,7 @@ data "scaleway_autoscaling_instance_policy" "by_id" {
 - `name` - (Optional) The name of the Instance policy. Only one of `name` and `instance_policy_id` should be specified. When using `name`, `instance_group_id` is required.
 - `instance_group_id` - (Optional) The ID of the Instance group the policy belongs to. Required when looking up by `name`.
 - `instance_policy_id` - (Optional) The ID of the Instance policy. Only one of `name` and `instance_policy_id` should be specified.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance policy exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Instance policy exists.
 
 ## Attributes Reference
 

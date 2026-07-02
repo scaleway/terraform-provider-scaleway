@@ -55,7 +55,7 @@ The `scaleway_function_domain` resource exports certain attributes once the func
 
 ~> **Important:** Function domain IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain was created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the domain was created.
 
 - `url` - The URL used to query the function.
 

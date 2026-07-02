@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func init() {
@@ -171,9 +172,13 @@ func isBackupPresent(tt *acctest.TestTools, databaseBackup string) resource.Test
 			return err
 		}
 
-		_, err = rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
-			Region:           region,
-			DatabaseBackupID: id,
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err := rdbAPI.GetDatabaseBackup(&rdbSDK.GetDatabaseBackupRequest{
+				Region:           region,
+				DatabaseBackupID: id,
+			})
+
+			return err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to get database backup: %w", err)

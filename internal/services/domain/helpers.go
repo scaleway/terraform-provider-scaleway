@@ -711,6 +711,13 @@ func NormalizeTargetFQDN(target, dnsZone string) string {
 		return ""
 	}
 
+	// RFC 7505 "Null MX": the exchange "." is the DNS root and must be kept
+	// as-is instead of being qualified against the zone (which would produce
+	// ".<zone>." and corrupt the record).
+	if target == "." {
+		return "."
+	}
+
 	target = strings.ToLower(target)
 	dnsZone = strings.ToLower(strings.TrimSpace(dnsZone))
 

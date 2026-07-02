@@ -75,10 +75,10 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the server.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the server should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
   associated with.
 
 - `enable_vpc` - (Optional, Default: false): Enables the VPC option when set to true.
@@ -115,7 +115,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The organization ID the server is associated with.
 - `vpc_status` - The current status of the VPC option.
 - `private_network` - The private networks to attach to the server
-    - `vlan`  - The VLAN ID associated with the private network.
+    - `vlan` - The VLAN ID associated with the private network.
     - `status` - The current status of the private network.
     - `created_at` - The date and time the private network was created.
     - `updated_at` - The date and time the private network was last updated.

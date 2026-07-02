@@ -159,7 +159,7 @@ The following arguments are supported:
 
 - `inbound_port` - (Required) TCP port to listen to on the front side.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer was created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer was created.
 
 - `name` - (Optional) The name of the Load Balancer frontend.
 
@@ -175,23 +175,17 @@ The following arguments are supported:
 
 - `enable_access_logs` - (Default: `false`) Defines whether to enable access logs on the frontend.
 
-- `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend.  Defined below.
+- `acl` - (Optional) A list of ACL rules to apply to the Load Balancer frontend. Defined below.
 
 ## acl
 
 - `name` - (Optional) The ACL name. If not provided it will be randomly generated.
-  
 - `action` - (Required) Action to undertake when an ACL filter matches.
-  
     - `type` - (Required) The action type. Possible values are: `allow` or `deny` or `redirect`.
-
     - `redirect` - (Optional) Redirect parameters when using an ACL with `redirect` action.
-  
-        - `type`  - (Optional) The redirect type. Possible values are: `location` or `scheme`.
-
-        - `target`  - (Optional) A URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
-
-        - `code`  - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
+        - `type` - (Optional) The redirect type. Possible values are: `location` or `scheme`.
+        - `target` - (Optional) A URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
+        - `code` - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
 
 - `match` - (Required) The ACL match rule. At least `ip_subnet` or `ips_edge_services` or `http_filter` and `http_filter_value` are required.
 

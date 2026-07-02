@@ -101,4 +101,3 @@ In addition to all above arguments, the following attributes are exported:
     - `zone` - The [zone](../guides/regions_and_zones.md#zones) of the IP.
     - `region` - The [region](../guides/regions_and_zones.md#regions) of the IP.
     - `project_id` - The ID of the Project the resource is associated with.
-  

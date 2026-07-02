@@ -28,7 +28,7 @@ data "scaleway_vpcs" "my_key" {
 
 - `tags` - (Optional) List of tags to filter for. VPCs with these exact tags are listed.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the VPCs exist.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the VPCs exist.
 
 ## Attributes Reference
 

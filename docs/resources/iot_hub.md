@@ -34,9 +34,9 @@ The following arguments are supported:
 
 ~> **Important:** Updates to `enabled` will disconnect eventually connected devices.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IoT Hub Instance is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the IoT Hub Instance is associated with.
 
 ## Attributes Reference
 

@@ -119,7 +119,7 @@ The following arguments are supported:
 
 - `topic` - (Required) The topic the Route subscribes to, wildcards allowed (e.g. `thelab/+/temperature/#`).
 
-- `database` - (Optional) Configuration block for the database routes. See  [product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for a better understanding of the parameters.
+- `database` - (Optional) Configuration block for the database routes. See [product documentation](https://www.scaleway.com/en/docs/iot-hub/how-to/create-route/) for a better understanding of the parameters.
     - `query` - (Required) The SQL query that will be executed when receiving a message ($TOPIC and $PAYLOAD variables are available, see documentation, e.g. `INSERT INTO mytable(date, topic, value) VALUES (NOW(), $TOPIC, $PAYLOAD)`).
     - `host` - (Required) The database hostname. Can be an IP or a FQDN.
     - `port` - (Required) The database port (e.g. `5432`)
@@ -146,7 +146,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** IoT routes' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Route is attached to.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Route is attached to.
 - `created_at` - The date and time the Route was created.
 
 ## Import

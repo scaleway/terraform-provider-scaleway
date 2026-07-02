@@ -44,11 +44,11 @@ data "scaleway_flexible_ips" "fips_by_server_id" {
 
 ## Argument Reference
 
-- `server_ids` - (Optional)  List of server IDs used as filter. IPs with these exact server IDs are listed.
+- `server_ids` - (Optional) List of server IDs used as filter. IPs with these exact server IDs are listed.
 
-- `tags` - (Optional)  List of tags used as filter. IPs with these exact tags are listed.
+- `tags` - (Optional) List of tags used as filter. IPs with these exact tags are listed.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
 
 ## Attributes Reference
 
@@ -66,10 +66,10 @@ In addition to all above arguments, the following attributes are exported:
         - `status` - The status of virtual MAC.
         - `created_at` - The date on which the virtual MAC was created (RFC 3339 format).
         - `updated_at` - The date on which the virtual MAC was last updated (RFC 3339 format).
-        - `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
+        - `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
     - `created_at` - The date on which the flexible IP was created (RFC 3339 format).
     - `updated_at` - The date on which the flexible IP was last updated (RFC 3339 format).
     - `reverse` - The reverse domain associated with this IP.
     - `server_id` - The associated server ID if any.
-    - `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the IP is in.
-    - `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the IP is in.
+    - `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the IP is in.
+    - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the IP is in.

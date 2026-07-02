@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_vpc_public_gateway_dhcp_reservation"
 
 # Resource: scaleway_vpc_public_gateway_dhcp_reservation
 
-~> **Important:**  The resource `scaleway_vpc_public_gateway_dhcp_reservation` has been deprecated and will no longer be supported.
+~> **Important:** The resource `scaleway_vpc_public_gateway_dhcp_reservation` has been deprecated and will no longer be supported.
 In 2023, DHCP functionality was moved from Public Gateways to Private Networks, DHCP resources are now no longer needed.
 You can use IPAM to manage your IPs. For more information, please refer to the [dedicated guide](../guides/migration_guide_vpcgw_v2.md).
 
@@ -72,7 +72,7 @@ The following arguments are supported:
 - `gateway_network_id` - (Required) The ID of the owning GatewayNetwork.
 - `ip_address` - (Required) The IP address to give to the machine.
 - `mac_address` - (Required) The MAC address for the static entry.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the public gateway DHCP config should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the public gateway DHCP config should be created.
 
 ## Attributes Reference
 

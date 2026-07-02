@@ -58,8 +58,8 @@ The following arguments are supported:
 - `type` - (Required) The gateway type.
 - `name` - (Optional) The name for the Public Gateway. If not provided it will be randomly generated.
 - `tags` - (Optional) The tags to associate with the Public Gateway.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the public gateway is associated with.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the public gateway is associated with.
 - `upstream_dns_servers` - (Deprecated) Override the gateway's default recursive DNS servers, if DNS features are enabled.
 - `ip_id` - (Optional) Attach an existing flexible IP to the gateway.
 - `bastion_enabled` - (Optional) Enable SSH bastion on the gateway.

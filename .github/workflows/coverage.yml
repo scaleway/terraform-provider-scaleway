@@ -25,7 +25,7 @@ jobs:
           go-version: stable
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
 
       - name: Build binaries
         run: make build
@@ -39,7 +39,7 @@ jobs:
         run: go tool gotestsum --format github-actions --junitfile junit.xml -- -coverprofile=coverage.out -covermode=count ./...
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}

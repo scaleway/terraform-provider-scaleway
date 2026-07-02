@@ -29,10 +29,10 @@ resource scaleway_file_filesystem file {
       - Minimum: 100 GB (100000000000 bytes)
       - Maximum: 10 TB (10000000000000 bytes)
 - `tags` - (Optional) A list of tags associated with the filesystem.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The region where the filesystem will be created (e.g., fr-par, nl-ams).
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The region where the filesystem will be created (e.g., fr-par, nl-ams).
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
   associated with.
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the organization the user is associated with.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the organization the user is associated with.
 
 ## Attributes Reference
 

@@ -39,9 +39,9 @@ This section lists the arguments that are supported:
 
 - `id` - (Optional) The unique identifier of the Cockpit data source in the `{region}/{id}` format. If specified, other filters are ignored.
 
-- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) where the data source is located. Defaults to the region specified in the [provider configuration](../index.md#region).
+- `region` - (Optional) The [region](../guides/regions_and_zones.md#regions) where the data source is located. Defaults to the region specified in the [provider configuration](../index.md#arguments-reference).
 
-- `project_id` - (Required unless `id` is specified) The ID of the Project the data source is associated with. Defaults to the Project ID specified in the [provider configuration](../index.md#project_id).
+- `project_id` - (Required unless `id` is specified) The ID of the Project the data source is associated with. Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference).
 
 - `name` - (Optional) The name of the data source.
 

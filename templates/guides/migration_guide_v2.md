@@ -293,8 +293,7 @@ The [above example](#renamed-scaleway_volume---scaleway_instance_volume) shows h
 
 The `scaleway_bucket` was moved to the `object` product in the `storage` product category.
 
-It's behaviour remained the same, but we also added an [`acl` attribute](../resources/object_bucket.md#the-acl).
-This attribute takes canned ACLs.
+It's behaviour remained the same, but we also added an [`acl` resource](../resources/object_bucket_acl.md).
 
 ### LoadBalancer
 

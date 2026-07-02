@@ -9,7 +9,7 @@ The `scaleway_account_ssh_key` resource allows you to create and manage the Proj
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
-!> **Important:**  The resource `scaleway_account_ssh_key` has been deprecated and will no longer be supported. Instead, use `scaleway_iam_ssh_key`.
+!> **Important:** The resource `scaleway_account_ssh_key` has been deprecated and will no longer be supported. Instead, use `scaleway_iam_ssh_key`.
 
 ## Example Usage
 
@@ -26,7 +26,7 @@ The following arguments are supported:
 
 - `name` - (Required) The name of the SSH key.
 - `public_key` - (Required) The public SSH key to be added.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the SSH key is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the SSH key is associated with.
 
 ## Attributes Reference
 

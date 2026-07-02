@@ -79,8 +79,8 @@ data "scaleway_vpc_public_gateway_pat_rule" "main" {
 
 ## Argument Reference
 
-- `pat_rule_id`  (Required) The ID of the PAT rule to retrieve
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `pat_rule_id` (Required) The ID of the PAT rule to retrieve
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the rule exists.
 
 ## Attributes Reference

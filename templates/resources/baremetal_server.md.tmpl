@@ -28,7 +28,7 @@ The following arguments are supported:
   Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#path-servers-get-a-specific-elastic-metal-server) to find the right offer.
 
 ~> **Important:** Updates to `offer` will recreate the server.
-~> **Important**  If you migrate to a monthly subscription, you cannot downgrade back to an hourly plan. Ensure that the monthly plan meets your needs before making the switch.
+~> **Important** If you migrate to a monthly subscription, you cannot downgrade back to an hourly plan. Ensure that the monthly plan meets your needs before making the switch.
 
 - `os` - (Required) The UUID of the os to install on the server.
   Use [this endpoint](https://www.scaleway.com/en/developers/api/elastic-metal/#path-os-list-available-oses) to find the right OS ID.
@@ -56,11 +56,11 @@ The following arguments are supported:
 - `private_network` - (Required) The private networks to attach to the server. For more information, see [the documentation](https://www.scaleway.com/en/docs/compute/elastic-metal/how-to/use-private-networks/)
     - `id` - (Required) The id of the private network to attach.
     - `ipam_ip_ids` - (Optional) List of IPAM IP IDs to assign to the server in the requested private network.
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 - `partitioning` (Optional) The partitioning schema in JSON format
 - `cloud_init` - (Optional) Configuration data to pass to cloud-init such as a YAML cloud config or a user-data script. Accepts either a string containing the content or a path to a file (for example `file("cloud-init.yml")`). Max length: 127998 characters. Updates to `cloud_init` will update the server user-data via the API and do not trigger a reinstall; however, a reboot of the server is required for the OS to re-run cloud-init and apply the changes. Only supported for Offers that have cloud-init enabled. You can check available offers with `scw baremetal list offers` command.
 - `protected` - (Optional) Set to true to activate server protection option.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the server is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is associated with.
 
 ## Attributes Reference
 

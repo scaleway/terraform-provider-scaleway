@@ -9,6 +9,7 @@ The [`scaleway_account_project`](https://registry.terraform.io/providers/scalewa
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
+
 ## Example Usage
 
 ### Create a Scaleway Project
@@ -52,7 +53,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the Project.
 - `description` - (Optional) The description of the Project.
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_id) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`)The organization ID the Project is associated with. Any change made to the `organization_id` will recreate the resource.
 
 ## Attributes Reference
 

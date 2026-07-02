@@ -31,7 +31,7 @@ data "scaleway_instance_image" "my_image" {
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
 ## Attributes Reference
 

@@ -258,7 +258,7 @@ func readPrivilegeIntoState(ctx context.Context, d *schema.ResourceData, m any) 
 
 func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	diags := readPrivilegeIntoState(ctx, d, m)
-	if diags != nil {
+	if diags.HasError() {
 		return diags
 	}
 

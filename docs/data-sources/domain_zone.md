@@ -31,7 +31,7 @@ This section lists the arguments that you can provide to the `scaleway_domain_zo
 
 - `subdomain` - (Required) The subdomain (or zone name) within the primary domain. This is a mandatory field.
 
-- `project_id` - (Defaults to Project ID specified in [the provider configuration](../index.md#project_id)). The ID of the Scaleway Project associated with the domain. If not specified, it defaults to the `project_id` set in the provider configuration.
+- `project_id` - (Defaults to Project ID specified in [the provider configuration](../index.md#arguments-reference)). The ID of the Scaleway Project associated with the domain. If not specified, it defaults to the `project_id` set in the provider configuration.
 
 ## Attributes Reference
 

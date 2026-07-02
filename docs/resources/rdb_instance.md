@@ -285,6 +285,8 @@ interruption.
 
 ~> **Important** One of `ip_net` or `enable_ipam=true` must be set.
 
+~> **Warning** Setting `ip_net` provisions the endpoint in `static` mode. A static service IP is **not** registered in the VPC IPAM and DNS, so the endpoint may be unreachable from other resources in the same VPC (no dataplane routing, no `.internal` DNS record). Reserved IPs created with `scaleway_ipam_ip` are **not** supported for Managed Databases: passing such an address to `ip_net` does not consume the reservation, it only forces `static` mode. For working VPC routing and DNS, use `enable_ipam = true` instead.
+
 ~> **Important** Updates to `private_network` will recreate the Instance's endpoint
 
 ~> **Note** You can calculate your host IP using [cidrhost](https://developer.hashicorp.com/terraform/language/functions/cidrhost). Otherwise, let IPAM service
@@ -330,6 +332,14 @@ are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-1111111111
     - `name` - Engine version name (e.g., `PostgreSQL-15`).
     - `version` - Version string (e.g., `15.5`).
     - `minor_version` - Minor version string (e.g., `15.5.0`).
+- `maintenances` - List of scheduled maintenance events on the Database Instance.
+    - `starts_at` - Start date of the maintenance window.
+    - `stops_at` - End date of the maintenance window.
+    - `closed_at` - Closed maintenance date.
+    - `reason` - Maintenance information message.
+    - `status` - Status of the maintenance (`pending`, `ongoing`, `done`, `canceled`, `unknown`).
+    - `forced_at` - Time when Scaleway-side maintenance will be applied.
+    - `is_applicable` - Whether the maintenance can be applied by the user.
 
 ## Limitations
 

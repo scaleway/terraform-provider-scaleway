@@ -146,6 +146,11 @@ func TestAccPolicy_NoUpdate(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iam_policy.main", "rule.0.organization_id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_iam_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

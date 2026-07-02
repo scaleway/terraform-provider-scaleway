@@ -44,7 +44,7 @@ The following arguments are supported:
 - `data_wo` - (Optional) The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
 - `data_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#region)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
+- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
@@ -62,7 +62,7 @@ Keep in mind that this is a sensitive attribute. For more information, see [Sens
 
 To update the `data_wo` and trigger a new version creation, you must also update the `data_wo_version` attribute.
 
-~> **Important:**  This property will not be displayed in the Terraform plan, for security reasons.
+~> **Important:** This property will not be displayed in the Terraform plan, for security reasons.
 
 ## Attributes Reference
 

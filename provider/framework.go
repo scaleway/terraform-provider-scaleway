@@ -15,10 +15,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -26,6 +30,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
@@ -187,8 +192,8 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 		if ok && err == nil {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
@@ -202,9 +207,14 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		datalab.NewDatalabResource,
+		billing.NewBudgetResource,
+		billing.NewBudgetAlertResource,
+		billing.NewBudgetAlertNotificationResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
+		iam.NewScimTokenResource,
 	}
 }
 
@@ -222,9 +232,15 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		datalab.NewDatalabDataSource,
+		datalab.NewDatalabsDataSource,
+		billing.NewBudgetDataSource,
+		billing.NewBudgetAlertDataSource,
+		billing.NewBudgetAlertNotificationDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
+		iam.NewScimTokenDataSource,
 	}
 }
 
@@ -233,6 +249,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
+		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
@@ -244,6 +261,8 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewDatabaseBackupExportAction,
 		rdb.NewDatabaseBackupRestoreAction,
 		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceApplyMaintenanceAction,
+		rdb.NewInstanceRestartAction,
 		rdb.NewInstanceLogPrepareAction,
 		rdb.NewInstanceLogsPurgeAction,
 		rdb.NewInstanceSnapshotAction,
@@ -257,7 +276,9 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		block.NewSnapshotListResource,
 		mongodb.NewInstanceListResource,
+		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
@@ -277,6 +298,14 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		iam.NewGroupListResource,
 		iam.NewUserListResource,
 		iam.NewApplicationListResource,
+		iam.NewPolicyListResource,
+		account.NewProjectListResource,
+		iam.NewAPIKeyListResource,
+		domain.NewRecordListResource,
+		domain.NewZoneListResource,
+		secret.NewSecretListResource,
+		secret.NewVersionListResource,
+		keymanager.NewKeyListResource,
 	}
 }
 

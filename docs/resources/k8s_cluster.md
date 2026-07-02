@@ -10,15 +10,16 @@ The [`scaleway_k8s_cluster`](https://registry.terraform.io/providers/scaleway/sc
 Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute/kubernetes/) and [API documentation](https://www.scaleway.com/en/developers/api/kubernetes/) for more information.
 
 
-
 ## Example Usage
+
+### Basic
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
@@ -26,11 +27,14 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
 }
 ```
+
+### Using autoscaler_config
 
 ```terraform
 resource "scaleway_vpc_private_network" "pn" {}
@@ -38,7 +42,7 @@ resource "scaleway_vpc_private_network" "pn" {}
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   description                 = "cluster made in terraform"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "calico"
   tags                        = ["terraform"]
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -57,6 +61,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id  = scaleway_k8s_cluster.cluster.id
+  version     = scaleway_k8s_cluster.cluster.version
   name        = "tf-pool"
   node_type   = "DEV1-M"
   size        = 3
@@ -67,14 +72,14 @@ resource "scaleway_k8s_pool" "pool" {
 }
 ```
 
-```terraform
-# Example with an Helm provider
+### With the Helm provider
 
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.29.1"
+  version                     = "1.35.3"
   cni                         = "cilium"
   delete_additional_resources = false
   private_network_id          = scaleway_vpc_private_network.pn.id
@@ -82,6 +87,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -153,14 +159,14 @@ resource "helm_release" "nginx_ingress" {
 }
 ```
 
-```terraform
-# Example with the kubernetes provider 
+### With the Kubernetes provider
 
+```terraform
 resource "scaleway_vpc_private_network" "pn" {}
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
-  version                     = "1.29.1"
+  version                     = "1.35.3"
   cni                         = "cilium"
   private_network_id          = scaleway_vpc_private_network.pn.id
   delete_additional_resources = false
@@ -168,6 +174,7 @@ resource "scaleway_k8s_cluster" "cluster" {
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "DEV1-M"
   size       = 1
@@ -193,29 +200,28 @@ provider "kubernetes" {
 }
 ```
 
+### Multicloud
+
 ```terraform
-# Multicloud Kubernetes Cluster Example
 # For a detailed example of how to add or run Elastic Metal servers instead of Instances on your cluster, please refer to [this guide](../guides/multicloud_cluster_with_baremetal_servers.md).
 
 resource "scaleway_k8s_cluster" "cluster" {
   name                        = "tf-cluster"
   type                        = "multicloud"
-  version                     = "1.32.3"
+  version                     = "1.35.3"
   cni                         = "kilo"
   delete_additional_resources = false
 }
 
 resource "scaleway_k8s_pool" "pool" {
   cluster_id = scaleway_k8s_cluster.cluster.id
+  version    = scaleway_k8s_cluster.cluster.version
   name       = "tf-pool"
   node_type  = "external"
   size       = 0
   min_size   = 0
 }
 ```
-
-
-
 
 ## Argument Reference
 
@@ -273,14 +279,28 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
     - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
 
+    - `skip_nodes_with_local_storage` - If set to true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.
+
+    ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
+
+    - `log_level` - Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
+    Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
+
+    ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
+
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
     - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
-~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
+    ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
     - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
     - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
+
+- `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
+If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
+If `true`, upgrading a cluster also performs an upgrade on the pools, but this change is made outside of Terraform, as the config of the pool resource may stay the same.
+In that case, refreshing the state will be required for the pool to be read again and the version changes to be shown in the state.
 
 - `feature_gates` - (Optional) The list of [feature gates](https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/) to enable on the cluster.
 

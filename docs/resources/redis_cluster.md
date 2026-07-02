@@ -191,7 +191,7 @@ The `private_network` block supports :
   scale your cluster horizontally (adding nodes) later, you should provide more IPs than nodes.
   If not set, the IP network address within the private subnet is determined by the IP Address Management (IPAM) service.
   ~> **Important:** When IPAM is enabled, the IPs specified here will be ignored and should not be provided.
-  
+
 ~> The `private_network` conflicts with `acl`. Only one should be specified.
 
 ~> **Important:** The way to use Private Networks differs whether you are using Redis™ in Standalone or cluster mode.
@@ -224,15 +224,12 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** Redis™ cluster IDs are [zoned](../guides/regions_and_zones.md#resource-ids), which means they are of
 the form `{zone}/{id}`, e.g. `fr-par-1/11111111-1111-1111-1111-111111111111`
 
-- `public_network` - (Optional) Public network details. Only one of `private_network` and `public_network` may be set.
-  ~> The `public_network` block exports:
-
+- `public_network` - (Optional) Public network details. Only one of `private_network` and `public_network` may be set. The `public_network` block exports:
     - `id` - (Required) The UUID of the endpoint.
-    - `ips` - Lis of IPv4 address of the endpoint (IP address).
+    - `ips` - List of IPv4 addresses of the endpoint (IP addresses).
     - `port` - TCP port of the endpoint.
 
 - `private_network` - List of Private Networks endpoints of the Redis™ cluster.
-
     - `endpoint_id` - The ID of the endpoint.
     - `zone` - The zone of the Private Network.
     - `port` - TCP port of the endpoint.

@@ -30,7 +30,7 @@ data "scaleway_webhosting_offer" "by_id" {
 
 - `offer_id` - (Optional) The offer id. Only one of `name` and `offer_id` should be specified.
 
-- `region` - (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#zones) in which offer exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which offer exists.
 
 ## Attributes Reference
 

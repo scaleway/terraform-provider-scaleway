@@ -46,7 +46,7 @@ This section lists the arguments that you can provide to the `scaleway_domain_re
 
 - `record_id` - (Optional) The unique identifier of the record. Cannot be used with `name`, `type`, and `data`.
 
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Project associated with the domain.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)). The ID of the Project associated with the domain.
 
 ## Attributes Reference
 

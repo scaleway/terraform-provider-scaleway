@@ -9,6 +9,7 @@ The [`scaleway_account_projects`](https://registry.terraform.io/providers/scalew
 
 Refer to the Organizations and Projects [documentation](https://www.scaleway.com/en/docs/organizations-and-projects/) and [API documentation](https://www.scaleway.com/en/developers/api/account/project-api/) for more information.
 
+
 ## Retrieve a Scaleway Projects
 
 The following commands allow you to:

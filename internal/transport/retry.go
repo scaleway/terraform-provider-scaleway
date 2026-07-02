@@ -10,7 +10,18 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/logging"
+)
+
+const (
+	// IAMPropagationTimeout bounds how long RetryOn403 keeps retrying a transient HTTP 403 while IAM
+	// permissions propagate. IAM is eventually consistent and its cache is per-instance, so a freshly
+	// granted permission can intermittently 403 even after a prior 200.
+	IAMPropagationTimeout = 2 * time.Minute
+
+	// RetryOn403WaitTime is the delay between retries on HTTP 403.
+	RetryOn403WaitTime = 2 * time.Second
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
@@ -109,6 +120,51 @@ func (c *RetryableTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	}
 
 	return c.Do(req)
+}
+
+// RetryOn403 retries fn while it returns a transient HTTP 403 caused by IAM permission propagation,
+// up to IAMPropagationTimeout. Any non-403 error (including a legitimate, persistent 403 that
+// outlives the propagation window) is returned to the caller without further retries.
+func RetryOn403(ctx context.Context, fn func() error) error {
+	_, err := RetryOn403Value(ctx, func() (struct{}, error) {
+		return struct{}{}, fn()
+	})
+
+	return err
+}
+
+// RetryOn403Value behaves like RetryOn403 for a function returning a value.
+func RetryOn403Value[T any](ctx context.Context, fn func() (T, error)) (T, error) {
+	var (
+		result  T
+		lastErr error
+	)
+
+	wait := RetryOn403WaitTime
+	if DefaultWaitRetryInterval != nil {
+		wait = *DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(IAMPropagationTimeout)
+
+	for {
+		result, lastErr = fn()
+		if lastErr == nil {
+			return result, nil
+		}
+
+		// Stop on any non-403 error, or once the propagation window elapses: a 403 outliving
+		// IAMPropagationTimeout is treated as a real permission problem, not propagation lag.
+		if !httperrors.Is403(lastErr) || time.Now().After(deadline) {
+			return result, lastErr
+		}
+
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-time.After(wait):
+		}
+	}
 }
 
 func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter func() (U, error)) (T, error) {

@@ -45,6 +45,25 @@ resource "scaleway_container" "main" {
 }
 ```
 
+### VPC integration
+
+```terraform
+resource "scaleway_vpc" "vpc" {}
+
+resource "scaleway_vpc_private_network" "pn" {
+  vpc_id = scaleway_vpc.vpc.id
+}
+
+resource "scaleway_container_namespace" "with_pn" {}
+
+resource "scaleway_container" "with_pn" {
+  namespace_id       = scaleway_container_namespace.with_pn.id
+  name               = "container-with-private-network"
+  image              = "my-image:latest"
+  private_network_id = scaleway_vpc_private_network.pn.id
+}
+```
+
 ### Redeploy the container everytime an update is made
 
 ```terraform
@@ -226,7 +245,7 @@ The following arguments are supported:
 
 ~> **Important:** Only one of `liveness_probe` or `health_check` can be set at a time.
 
-- ` startup_probe` - (Optional) Defines how to check if the container has started successfully.
+- `startup_probe` - (Optional) Defines how to check if the container has started successfully.
     - `tcp` - When set to `true`, performs TCP checks on the container.
     - `http` - Perform HTTP check on the container with the specified path.
         - `path` - Path to use for the HTTP health check.
@@ -253,7 +272,7 @@ The following arguments are supported:
 
 - `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
 
-- `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
+- `args` - (Optional) Arguments passed to the command specified in the `command` field. These override the default arguments from the container image, and behave like command-line parameters.
 
 - `private_network_id` (Optional) The ID of the Private Network the container is connected to.
 
@@ -269,9 +288,7 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 
-- `status` - The container status.
-
-- `cron_status` - The cron status of the container.
+- `status` - The container status. In case the status is different from `ready`, a warning will be displayed when Terraform reads the resource.
 
 - `error_message` - The error message of the container.
 
@@ -293,8 +310,8 @@ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-11111111
 
 The following protocols are supported:
 
-* `h2c`: HTTP/2 over TCP.
-* `http1`: Hypertext Transfer Protocol.
+- `h2c`: HTTP/2 over TCP.
+- `http1`: Hypertext Transfer Protocol.
 
 ~> **Important:** Refer to the official [Apache documentation](https://httpd.apache.org/docs/2.4/howto/http2.html) for more information.
 
@@ -342,6 +359,7 @@ Example:
 resource "scaleway_container" "main" {
   name         = "my-container"
   namespace_id = scaleway_container_namespace.main.id
+  image        = "nginx:latest"
 
   liveness_probe {
     http {

@@ -27,9 +27,9 @@ data "scaleway_instance_placement_group" "my_key" {
 
 - `placement_group_id` - (Optional) The placement group id. Only one of `name` and `placement_group_id` should be specified.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the placement group is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the placement group is associated with.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group exists.
+- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group exists.
 
 ## Attributes Reference
 

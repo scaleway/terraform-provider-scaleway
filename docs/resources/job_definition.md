@@ -78,8 +78,8 @@ The following arguments are supported:
 - `cron` - (Optional) The cron configuration
     - `schedule` - Cron format string.
     - `timezone` - The timezone, must be a canonical TZ identifier as found in this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the Job is associated with.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Job.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the Job is associated with.
 - `secret_reference` - (Optional) A reference to a secret stored in [Secret Manager](../resources/secret.md).
     - `secret_id` - (Required) The secret unique identifier, it could be formatted as region/UUID or UUID. In case the region is passed, it must be the same as the job definition. You could reference the same secret multiple times in the same job definition.
     - `secret_version` - (Default: `latest`) The secret version.

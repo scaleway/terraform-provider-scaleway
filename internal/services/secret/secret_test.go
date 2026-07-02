@@ -84,6 +84,11 @@ func TestAccSecret_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
 				),
 			},
+			{
+				ResourceName:      "scaleway_secret.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }
@@ -285,6 +290,62 @@ func TestAccSecret_EphemeralPolicy(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.action", "delete"),
 					resource.TestCheckResourceAttr("scaleway_secret.main", "ephemeral_policy.0.expires_once_accessed", "true"),
 					acctest.CheckResourceAttrUUID("scaleway_secret.main", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSecret_WithVersions(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             secrettestfuncs.CheckSecretDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+						name = "test-secret-resource-versions"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "version-data"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "updated-version-data"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_secret" "main" {
+						name = "test-secret-resource-versions"
+					}
+
+					resource "scaleway_secret_version" "v1" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "version-data"
+					}
+
+					resource "scaleway_secret_version" "v2" {
+						secret_id = scaleway_secret.main.id
+						data_wo   = "updated-version-data"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckSecretExists(tt, "scaleway_secret.main"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "version_count", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.#", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.0.revision", "2"),
+					resource.TestCheckResourceAttr("scaleway_secret.main", "versions.1.revision", "1"),
 				),
 			},
 		},
