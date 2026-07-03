@@ -130,11 +130,15 @@ func flattenServerFileSystem(zone scw.Zone, fs []*instance.ServerFilesystem) []a
 	return filesystems
 }
 
-func flattenServerIPIDs(ips []*instance.ServerIP) []any {
+func flattenServerIPIDs(ips []*instance.ServerIP, zone scw.Zone) []any {
 	ipIDs := make([]any, len(ips))
 
 	for i, ip := range ips {
-		ipIDs[i] = ip.ID
+		if ip.Dynamic {
+			continue
+		}
+
+		ipIDs[i] = zonal.NewID(zone, ip.ID).String()
 	}
 
 	return ipIDs
