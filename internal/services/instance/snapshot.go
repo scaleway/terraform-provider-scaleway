@@ -161,7 +161,7 @@ func ResourceInstanceSnapshotCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, res.Snapshot.ID)
+	err = identity.SetZonalIdentity(d, res.Snapshot.Zone, res.Snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -217,7 +217,7 @@ func ResourceInstanceSnapshotRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, zone, snapshot.Snapshot.ID)
+	err = identity.SetZonalIdentity(d, snapshot.Snapshot.Zone, snapshot.Snapshot.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
