@@ -1,7 +1,6 @@
 package opensearch_test
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -264,11 +263,11 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			err = transport.RetryOn403(context.Background(), func() error {
+			err = transport.RetryOn403(tt.T.Context(), func() error {
 				_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
 					Region:       region,
 					DeploymentID: id,
-				}, scw.WithContext(context.Background()))
+				}, scw.WithContext(tt.T.Context()))
 
 				return err
 			})
