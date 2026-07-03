@@ -60,6 +60,12 @@ func TestAccACL_Basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_k8s_acl.acl_basic",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"no_ip_allowed"},
+			},
+			{
 				Config: fmt.Sprintf(`
 					resource "scaleway_vpc" "main" {
 						name = "TestAccACL_Basic"
