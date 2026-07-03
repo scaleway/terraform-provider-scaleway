@@ -648,8 +648,8 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 	// A legacy "projectID/..." prefix is still tolerated as a fallback.
 	projectID := firstResp.ProjectID
 	if projectID == "" {
-		if i := strings.Index(id, "/"); i != -1 {
-			projectID = id[:i]
+		if legacyProjectID, _, ok := strings.Cut(id, "/"); ok {
+			projectID = legacyProjectID
 		}
 	}
 
