@@ -36,7 +36,7 @@ func TestAccFunctionToken_Basic(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}
