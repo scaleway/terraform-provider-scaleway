@@ -76,6 +76,6 @@ format_examples:
 	terraform fmt -recursive examples
 
 docs: format_examples
-	go tool tfplugindocs validate
+	go tool tfplugindocs validate -provider-name scaleway
 	rm -fr ./docs
-	go tool tfplugindocs generate
+	go tool tfplugindocs generate -provider-name scaleway
