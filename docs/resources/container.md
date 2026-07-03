@@ -296,7 +296,7 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 - ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
 
-- `public_endpoint` - The native domain name of the container
+- `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`)
 
 ## Import
 
