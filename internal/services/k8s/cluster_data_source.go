@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -47,6 +48,8 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
+	var uuid string
+
 	clusterID, ok := d.GetOk("cluster_id")
 	if !ok {
 		clusterName := d.Get("name").(string)
@@ -69,14 +72,19 @@ func DataSourceK8SClusterRead(ctx context.Context, d *schema.ResourceData, m any
 			return diag.FromErr(err)
 		}
 
-		clusterID = foundCluster.ID
+		uuid = foundCluster.ID
+	} else {
+		uuid, err = locality.ExtractUUID(clusterID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	regionalizedID := datasource.NewRegionalID(clusterID, region)
+	regionalizedID := datasource.NewRegionalID(uuid, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("cluster_id", regionalizedID)
 
-	cluster, err := waitCluster(ctx, k8sAPI, region, clusterID.(string), d.Timeout(schema.TimeoutRead))
+	cluster, err := waitCluster(ctx, k8sAPI, region, uuid, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")

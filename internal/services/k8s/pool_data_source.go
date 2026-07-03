@@ -10,6 +10,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -49,6 +50,8 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
+	var uuid string
+
 	poolID, ok := d.GetOk("pool_id")
 	if !ok {
 		poolName := d.Get("name").(string)
@@ -72,19 +75,22 @@ func DataSourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) d
 			return diag.FromErr(err)
 		}
 
-		poolID = foundPool.ID
+		uuid = foundPool.ID
+	} else {
+		uuid, err = locality.ExtractUUID(poolID.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
-	regionalizedID := datasource.NewRegionalID(poolID, region)
+	regionalizedID := datasource.NewRegionalID(uuid, region)
 	d.SetId(regionalizedID)
 	_ = d.Set("pool_id", regionalizedID)
 
-	req := &k8s.GetPoolRequest{
+	pool, err := k8sAPI.GetPool(&k8s.GetPoolRequest{
 		Region: region,
-		PoolID: poolID.(string),
-	}
-
-	pool, err := k8sAPI.GetPool(req, scw.WithContext(ctx))
+		PoolID: uuid,
+	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
