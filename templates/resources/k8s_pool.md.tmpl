@@ -25,9 +25,11 @@ The following arguments are supported:
 
 - `cluster_id` - (Required) The ID of the Kubernetes cluster on which this pool will be created.
 
-- `name` - (Required) The name for the pool.
+- `name` - (Optional) The name for the pool. If not provided it will be generated.
 
 ~> **Important:** Updates to this field will recreate a new resource.
+
+~> Note: In order to use the `create_before_destroy` option of the `lifecycle` field, `name` has to be generated, otherwise Terraform will try to create the new pool with the same name and the API does not allow that.
 
 - `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
 

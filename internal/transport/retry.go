@@ -22,6 +22,13 @@ const (
 
 	// RetryOn403WaitTime is the delay between retries on HTTP 403.
 	RetryOn403WaitTime = 2 * time.Second
+
+	// RetryOn404WaitTimeout bounds how long RetryOn404 keeps retrying a transient HTTP 404, typically
+	// to wait for consistency resolution in Secret/KM APIs.
+	RetryOn404WaitTimeout = 30 * time.Second
+
+	// RetryOn404WaitTime is the delay between retries on HTTP 404.
+	RetryOn404WaitTime = 2 * time.Second
 )
 
 // DefaultWaitRetryInterval is used to set the retry interval to 0 during acceptance tests
@@ -180,4 +187,31 @@ func RetryOnTransientStateError[T any, U any](action func() (T, error), waiter f
 	}
 
 	return t, err
+}
+
+// Retries the specified function when it returns a 404 error.
+func RetryOn404[T any](ctx context.Context, f func(context.Context) (T, error)) (T, error) {
+	wait := RetryOn404WaitTime
+	if DefaultWaitRetryInterval != nil {
+		wait = *DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(RetryOn404WaitTimeout)
+
+	for {
+		result, err := f(ctx)
+		if err == nil {
+			return result, nil
+		}
+
+		if !httperrors.Is404(err) || time.Now().After(deadline) {
+			return result, err
+		}
+
+		select {
+		case <-ctx.Done():
+			return result, ctx.Err()
+		case <-time.After(wait):
+		}
+	}
 }

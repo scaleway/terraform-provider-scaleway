@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -217,7 +218,15 @@ func ResourceSecretCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		}
 	}
 
-	secretResponse, err := api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+	var secretResponse *secret.Secret
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		secretResponse, err = api.CreateSecret(secretCreateRequest, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -236,10 +245,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	secretResponse, err := api.GetSecret(&secret.GetSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	secretResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.Secret, error) {
+		return api.GetSecret(&secret.GetSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -254,10 +266,13 @@ func ResourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) diag
 		_ = d.Set("tags", types.FlattenSliceString(secretResponse.Tags))
 	}
 
-	versionsResponse, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithAllPages(), scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	versionsResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.ListSecretVersionsResponse, error) {
+		return api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithAllPages(), scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -343,10 +358,12 @@ func ResourceSecretDelete(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteSecret(&secret.DeleteSecretRequest{
-		Region:   region,
-		SecretID: id,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return api.DeleteSecret(&secret.DeleteSecretRequest{
+			Region:   region,
+			SecretID: id,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}

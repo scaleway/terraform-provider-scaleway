@@ -113,6 +113,12 @@ resource "scaleway_k8s_cluster" "minimal" {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.minimal", "service_dns_ip", k8s.NetworkingDefaultValues["service_dns_ip"]),
 				),
 			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.minimal",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
+			},
 		},
 	})
 }
@@ -220,6 +226,12 @@ func TestAccCluster_Autoscaling(t *testing.T) {
 					acctest.CheckResourceIDPersisted("scaleway_k8s_cluster.main", new(poolID)),
 				),
 			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
+			},
 		},
 	})
 }
@@ -297,6 +309,12 @@ func TestAccCluster_OIDC(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.1", "scaleway_k8s_cluster"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.main", "tags.2", "oidc-config"),
 				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
 			},
 		},
 	})
@@ -378,6 +396,12 @@ func TestAccCluster_AutoUpgrade(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.auto_upgrade", "auto_upgrade.0.maintenance_window_start_hour", "0"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.auto_upgrade",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
+			},
 		},
 	})
 }
@@ -416,6 +440,12 @@ func TestAccCluster_PrivateNetwork(t *testing.T) {
 					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.private_network", &clusterID),
 				),
 			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.private_network",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
+			},
 		},
 	})
 }
@@ -436,6 +466,12 @@ func TestAccCluster_Multicloud(t *testing.T) {
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.multicloud"),
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.multicloud", "version", latestK8SVersion),
 				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.multicloud",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
 			},
 		},
 	})
@@ -518,6 +554,12 @@ func TestAccCluster_TypeChange(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_k8s_cluster.type-change", "type", "multicloud"),
 					acctest.CheckResourceIDChanged("scaleway_k8s_cluster.type-change", &clusterID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_k8s_cluster.type-change",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"delete_additional_resources", "upgrade_pools"},
 			},
 		},
 	})
