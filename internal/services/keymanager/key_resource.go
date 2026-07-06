@@ -14,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -168,7 +169,15 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	createReq.Usage = keyUsage
 
-	key, err := api.CreateKey(createReq)
+	var key *key_manager.Key
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		key, err = api.CreateKey(createReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,9 +196,12 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	key, err := client.GetKey(&key_manager.GetKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	// Retry on 404 to handle eventual consistency issues
+	key, err := transport.RetryOn404(ctx, func(ctx context.Context) (*key_manager.Key, error) {
+		return client.GetKey(&key_manager.GetKeyRequest{
+			Region: region,
+			KeyID:  keyID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -253,9 +265,11 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = client.DeleteKey(&key_manager.DeleteKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	err = transport.RetryOn403(ctx, func() error {
+		return client.DeleteKey(&key_manager.DeleteKeyRequest{
+			Region: region,
+			KeyID:  keyID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
