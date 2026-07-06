@@ -32,17 +32,18 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 						iops       = 5000
 					}
 
-					resource "scaleway_block_volume" "vol2" {
-						name       = "test-vol-snapshot-list-2"
-						size_in_gb = 10
-						iops       = 5000
+					resource "scaleway_block_snapshot" "snap1" {
+						name      = "test-snapshot-list-1"
+						volume_id = scaleway_block_volume.vol1.id
 					}
-
-					resource "scaleway_block_volume" "vol3" {
-						name       = "test-vol-snapshot-list-3"
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "vol1" {
+						name       = "test-vol-snapshot-list-1"
 						size_in_gb = 10
 						iops       = 5000
-						zone       = "pl-waw-2"
 					}
 
 					resource "scaleway_block_snapshot" "snap1" {
@@ -50,10 +51,49 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 						volume_id = scaleway_block_volume.vol1.id
 					}
 
+					resource "scaleway_block_volume" "vol2" {
+						name       = "test-vol-snapshot-list-2"
+						size_in_gb = 10
+						iops       = 5000
+					}
+
 					resource "scaleway_block_snapshot" "snap2" {
 						name      = "test-snapshot-list-2"
 						volume_id = scaleway_block_volume.vol2.id
 						tags      = ["test-tag"]
+					}
+				`,
+			},
+			{
+				Config: `
+					resource "scaleway_block_volume" "vol1" {
+						name       = "test-vol-snapshot-list-1"
+						size_in_gb = 10
+						iops       = 5000
+					}
+
+					resource "scaleway_block_snapshot" "snap1" {
+						name      = "test-snapshot-list-1"
+						volume_id = scaleway_block_volume.vol1.id
+					}
+
+					resource "scaleway_block_volume" "vol2" {
+						name       = "test-vol-snapshot-list-2"
+						size_in_gb = 10
+						iops       = 5000
+					}
+
+					resource "scaleway_block_snapshot" "snap2" {
+						name      = "test-snapshot-list-2"
+						volume_id = scaleway_block_volume.vol2.id
+						tags      = ["test-tag"]
+					}
+
+					resource "scaleway_block_volume" "vol3" {
+						name       = "test-vol-snapshot-list-3"
+						size_in_gb = 10
+						iops       = 5000
+						zone       = "pl-waw-2"
 					}
 
 					resource "scaleway_block_snapshot" "snap3" {
