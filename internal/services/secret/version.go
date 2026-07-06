@@ -13,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
@@ -142,7 +143,15 @@ func ResourceVersionCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		Description: types.ExpandStringPtr(d.Get("description")),
 	}
 
-	secretResponse, err := api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
+	var secretResponse *secret.SecretVersion
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		secretResponse, err = api.CreateSecretVersion(secretCreateVersionRequest, scw.WithContext(ctx))
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,11 +182,14 @@ func ResourceVersionRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	secretResponse, err := api.GetSecretVersion(&secret.GetSecretVersionRequest{
-		Region:   region,
-		SecretID: id,
-		Revision: revision,
-	}, scw.WithContext(ctx))
+	// Retry on 404 to handle eventual consistency issues
+	secretResponse, err := transport.RetryOn404(ctx, func(ctx context.Context) (*secret.SecretVersion, error) {
+		return api.GetSecretVersion(&secret.GetSecretVersionRequest{
+			Region:   region,
+			SecretID: id,
+			Revision: revision,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -237,11 +249,13 @@ func ResourceVersionDelete(ctx context.Context, d *schema.ResourceData, m any) d
 		return diag.FromErr(err)
 	}
 
-	err = api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
-		Region:   region,
-		SecretID: id,
-		Revision: revision,
-	}, scw.WithContext(ctx))
+	err = transport.RetryOn403(ctx, func() error {
+		return api.DeleteSecretVersion(&secret.DeleteSecretVersionRequest{
+			Region:   region,
+			SecretID: id,
+			Revision: revision,
+		}, scw.WithContext(ctx))
+	})
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
 	}
