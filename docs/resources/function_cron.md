@@ -45,11 +45,8 @@ resource "scaleway_function_cron" "func" {
 The following arguments are supported:
 
 - `schedule` - (Required) CRON format string (refer to the [CRON schedule reference](https://www.scaleway.com/en/docs/serverless/functions/reference-content/cron-schedules/) for more information).
-
 - `function_id` - (Required) The unique identifier of the function to link to your CRON trigger.
-
 - `args` - (Required) The key-value mapping to define arguments that will be passed to your function’s event object
-
 - `name` - (Optional) The name of the function CRON trigger. If not provided, a random name is generated.
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions)
   in which the function was created.
