@@ -1,7 +1,6 @@
 package opensearch_test
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"testing"
@@ -14,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccDeployment_Basic(t *testing.T) {
@@ -263,10 +263,14 @@ func isDeploymentDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
-				Region:       region,
-				DeploymentID: id,
-			}, scw.WithContext(context.Background()))
+			err = transport.RetryOn403(tt.T.Context(), func() error {
+				_, err = api.GetDeployment(&searchdbSDK.GetDeploymentRequest{
+					Region:       region,
+					DeploymentID: id,
+				}, scw.WithContext(tt.T.Context()))
+
+				return err
+			})
 			if err == nil {
 				return fmt.Errorf("deployment %s still exists", id)
 			}
