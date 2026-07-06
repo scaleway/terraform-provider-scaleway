@@ -260,58 +260,58 @@ If you make any change to your bucket's tags using the console, it will overwrit
 * `lifecycle_rule` (Optional) - A set of rules that defines actions applied to a group of objects. The `lifecycle_rule` object supports the following:
 
     * `id` - (Optional) Unique identifier for the rule. Must be less than or
-  equal to 255 characters in length.
+      equal to 255 characters in length.
 
     * `prefix` - (Optional) Object key prefix identifying one or more objects
-  to which the rule applies.
+      to which the rule applies.
 
     * `tags` - (Optional) Specifies object tags key and value.
 
     * `enabled` - (Required) The element value can be either Enabled or
-  Disabled. If a rule is disabled, Scaleway Object Storage does not perform
-  any of the actions defined in the rule.
+      Disabled. If a rule is disabled, Scaleway Object Storage does not perform
+      any of the actions defined in the rule.
 
     * `object_size_greater_than` - (Optional) Minimum object size (in bytes) to
-  which the rule applies.
+      which the rule applies.
 
     * `object_size_less_than` - (Optional) Maximum object size (in bytes) to
-  which the rule applies.
+      which the rule applies.
 
     * `abort_incomplete_multipart_upload_days` - (Optional) Specifies the number
-  of days after initiating a multipart upload when the multipart upload must
-  be completed.
+      of days after initiating a multipart upload when the multipart upload must
+      be completed.
 
   ~> **Important:** Avoid using `prefix` for `AbortIncompleteMultipartUpload`,
   as any incomplete multipart upload will be billed.
 
     * `expiration` - (Optional) Specifies a period of expiration for the object.
-  The `expiration` object supports the following:
+      The `expiration` object supports the following:
 
         * `date` - (Optional) Specifies the date the object is to be moved or
-  deleted. The date value must be in RFC3339 full-date format e.g.
-  `2023-08-22`.
+          deleted. The date value must be in RFC3339 full-date format e.g.
+          `2023-08-22`.
 
         * `days` - (Optional) Specifies the number of days after object creation
-  when the specific rule action takes effect.
+          when the specific rule action takes effect.
 
         * `expired_object_delete_marker` - (Optional) Specifies whether Scaleway
-  Object will remove a delete marker with no noncurrent versions. If set
-  to `true`, the delete marker will be expired; if set to `false` the
-  policy takes no action.
+          Object will remove a delete marker with no noncurrent versions. If set
+          to `true`, the delete marker will be expired; if set to `false` the
+          policy takes no action.
 
     * `transition` - (Optional) Specifies a period in the object's transitions.
-  The `transition` object supports the following:
+      The `transition` object supports the following:
 
         * `date` - (Optional) Specifies the date objects are transitioned to the
-  specified storage class. The date value must be in RFC3339 full-date
-  format e.g. `2023-08-22`.
+          specified storage class. The date value must be in RFC3339 full-date
+          format e.g. `2023-08-22`.
 
         * `days` - (Optional) Specifies the number of days after object creation
-  when the specific rule action takes effect.
+          when the specific rule action takes effect.
 
         * `storage_class` - (Required) Specifies the Scaleway [storage class][1]
-  `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
-  transition.
+          `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
+          transition.
 
   ~> **Important:** `ONEZONE_IA` is only available in `fr-par` region. The
   storage class `GLACIER` is not available in `pl-waw` region.
@@ -320,32 +320,32 @@ If you make any change to your bucket's tags using the console, it will overwrit
   `expiration`, `transition` must be specified.
 
     * `noncurrent_version_expiration` - (Optional) Configuration block that
-  specifies when noncurrent object versions expire. Supports the following:
+      specifies when noncurrent object versions expire. Supports the following:
 
         * `newer_noncurrent_versions` - (Optional) Number of noncurrent versions
-  Scaleway Object Storage will retain. Must be a non-zero positive integer.
+          Scaleway Object Storage will retain. Must be a non-zero positive integer.
 
         * `noncurrent_days` - (Optional) Number of days an object is noncurrent
-  before Scaleway Object Storage can perform the associated action. Must
-  be a positive integer.
+          before Scaleway Object Storage can perform the associated action. Must
+          be a positive integer.
 
     * `noncurrent_version_transition` - (Optional) Set of configuration blocks
-  that specify the transition rule for the lifecycle rule that describes when
-  noncurrent objects transition to a specific storage class. Supports the
-  following:
+      that specify the transition rule for the lifecycle rule that describes when
+      noncurrent objects transition to a specific storage class. Supports the
+      following:
 
         * `newer_noncurrent_versions` - (Optional) Number of noncurrent versions
-  Scaleway Object Storage will retain. Must be a non-zero positive integer.
+          Scaleway Object Storage will retain. Must be a non-zero positive integer.
 
-    * `noncurrent_days` - (Optional) Number of days an object is noncurrent
-  before Scaleway Object Storage can perform the associated action.
+        * `noncurrent_days` - (Optional) Number of days an object is noncurrent
+          before Scaleway Object Storage can perform the associated action.
 
-    * `storage_class` - (Required) Specifies the Scaleway [storage class][1]
-  `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
-  transition.
+        * `storage_class` - (Required) Specifies the Scaleway [storage class][1]
+          `STANDARD`, `GLACIER`, `ONEZONE_IA` to which you want the object to
+          transition.
 
-~> **Important:** If versioning is enabled, this rule only deletes the current
-version of an object.
+  ~> **Important:** If versioning is enabled, this rule only deletes the current
+  version of an object.
 
 ## Attributes Reference
 
@@ -369,6 +369,7 @@ terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products because the s3 API is scoped by project.
 If you are using a project different from the default one, you have to specify the project ID at the end of the import command.
+
 
 ```bash
 terraform import scaleway_object_bucket.some_bucket fr-par/some-bucket@11111111-1111-1111-1111-111111111111

@@ -119,8 +119,8 @@ In addition to all arguments above, the following attributes are exported:
     - `server` - Description of the server containing the volume (in case the image is a backup from a server).
 
   -> The `server` block contains :
-      - `id` - ID of the server containing the volume.
-      - `name` - Name of the server containing the volume.
+    - `id` - ID of the server containing the volume.
+    - `name` - Name of the server containing the volume.
 
 ## Import
 
