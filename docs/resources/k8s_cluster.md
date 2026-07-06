@@ -231,11 +231,11 @@ The following arguments are supported:
 
 - `type` - (Optional) The type of Kubernetes cluster. Possible values are:
 
-  - for mutualized clusters: `kapsule` or `multicloud`
+    - for mutualized clusters: `kapsule` or `multicloud`
 
-  - for dedicated Kapsule clusters: `kapsule-dedicated-4`, `kapsule-dedicated-8` or `kapsule-dedicated-16`.
+    - for dedicated Kapsule clusters: `kapsule-dedicated-4`, `kapsule-dedicated-8` or `kapsule-dedicated-16`.
 
-  - for dedicated Kosmos clusters: `multicloud-dedicated-4`, `multicloud-dedicated-8` or `multicloud-dedicated-16`.
+    - for dedicated Kosmos clusters: `multicloud-dedicated-4`, `multicloud-dedicated-8` or `multicloud-dedicated-16`.
 
 - `description` - (Optional) A description for the Kubernetes cluster.
 
@@ -259,43 +259,41 @@ you can still set it now. In this case it will not destroy and recreate your clu
 
 - `autoscaler_config` - (Optional) The configuration options for the [Kubernetes cluster autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler).
 
-  - `disable_scale_down` - (Defaults to `false`) Disables the scale down feature of the autoscaler.
+    - `disable_scale_down` - (Defaults to `false`) Disables the scale down feature of the autoscaler.
 
-  - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
+    - `scale_down_delay_after_add` - (Defaults to `10m`) How long after scale up that scale down evaluation resumes.
 
-  - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
+    - `scale_down_unneeded_time` - (Default to `10m`) How long a node should be unneeded before it is eligible for scale down.
 
-  - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
+    - `estimator` - (Defaults to `binpacking`) Type of resource estimator to be used in scale up.
 
-  - `expander` - (Default to `random`) Type of node group expander to be used in scale up.
+    - `expander` - (Default to `random`) Type of node group expander to be used in scale up.
 
-  - `ignore_daemonsets_utilization` - (Defaults to `false`) Ignore DaemonSet pods when calculating resource utilization for scaling down.
+    - `ignore_daemonsets_utilization` - (Defaults to `false`) Ignore DaemonSet pods when calculating resource utilization for scaling down.
 
-  - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
+    - `balance_similar_node_groups` - (Defaults to `false`) Detect similar node groups and balance the number of nodes between them.
 
-  - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
+    - `expendable_pods_priority_cutoff` - (Defaults to `-10`) Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.
 
-  - `scale_down_utilization_threshold` - (Defaults to `0.5`) Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down
+    - `scale_down_utilization_threshold` - (Defaults to `0.5`) Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down
 
-  - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
+    - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
 
-  - `skip_nodes_with_local_storage` - If set to true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.
+    - `skip_nodes_with_local_storage` - If set to true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.
+      ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
 
-    ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
-
-  - `log_level` - Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
-    Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
-
-    ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
+    - `log_level` - Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
+      Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
+      ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
 
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
-  - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
-    ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
+    - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
+      ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
-  - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
+    - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
-  - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
+    - `maintenance_window_day` - (Optional) The day of the auto upgrade maintenance window (`monday` to `sunday`, or `any`).
 
 - `upgrade_pools` - (Optional, defaults to `true`) Whether the pools should be automatically upgraded alongside the cluster, or have to be upgraded separately.
 If `false` (cluster and pool version are independent of each other), pool upgrades can be conducted by setting the `version` field in the pool resource.
@@ -310,19 +308,19 @@ In that case, refreshing the state will be required for the pool to be read agai
 
 - `open_id_connect_config` - (Optional) The OpenID Connect configuration of the cluster
 
-  - `issuer_url` - (Required) URL of the provider which allows the API server to discover public signing keys
+    - `issuer_url` - (Required) URL of the provider which allows the API server to discover public signing keys
 
-  - `client_id` - (Required) A client id that all tokens must be issued for
+    - `client_id` - (Required) A client id that all tokens must be issued for
 
-  - `username_claim` - (Optional) JWT claim to use as the user name
+    - `username_claim` - (Optional) JWT claim to use as the user name
 
-  - `username_prefix` - (Optional) Prefix prepended to username
+    - `username_prefix` - (Optional) Prefix prepended to username
 
-  - `groups_claim` - (Optional) JWT claim to use as the user's group
+    - `groups_claim` - (Optional) JWT claim to use as the user's group
 
-  - `groups_prefix` - (Optional) Prefix prepended to group claims
+    - `groups_prefix` - (Optional) Prefix prepended to group claims
 
-  - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
+    - `required_claim` - (Optional) Multiple key=value pairs that describes a required claim in the ID Token
 
 - `pod_cidr` - (Optional) The subnet used for the Pod CIDR.
 
