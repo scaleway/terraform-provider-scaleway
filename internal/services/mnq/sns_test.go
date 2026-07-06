@@ -1,7 +1,6 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -55,7 +54,7 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		var snsInfo *mnqSDK.SnsInfo
 
-		snsInfo, err = mnq.RetryMNQNamespaceReadValue(context.Background(), func() (*mnqSDK.SnsInfo, error) {
+		snsInfo, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SnsInfo, error) {
 			return api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
 				ProjectID: id,
 				Region:    region,

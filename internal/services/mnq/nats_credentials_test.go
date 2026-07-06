@@ -1,7 +1,6 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -110,7 +109,7 @@ func isNatsCredentialsPresent(tt *acctest.TestTools, n string) resource.TestChec
 			return err
 		}
 
-		_, err = mnq.RetryMNQNamespaceReadValue(context.Background(), func() (*mnqSDK.NatsCredentials, error) {
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.NatsCredentials, error) {
 			return api.GetNatsCredentials(&mnqSDK.NatsAPIGetNatsCredentialsRequest{
 				NatsCredentialsID: id,
 				Region:            region,

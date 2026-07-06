@@ -1,7 +1,6 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
 
@@ -114,7 +113,7 @@ func isSQSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		_, err = mnq.RetryMNQNamespaceReadValue(context.Background(), func() (*mnqSDK.SqsCredentials, error) {
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SqsCredentials, error) {
 			return api.GetSqsCredentials(&mnqSDK.SqsAPIGetSqsCredentialsRequest{
 				SqsCredentialsID: id,
 				Region:           region,

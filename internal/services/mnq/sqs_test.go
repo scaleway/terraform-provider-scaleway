@@ -1,7 +1,6 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"testing"
@@ -95,7 +94,7 @@ func isSQSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		var sqsInfo *mnqSDK.SqsInfo
 
-		sqsInfo, err = mnq.RetryMNQNamespaceReadValue(context.Background(), func() (*mnqSDK.SqsInfo, error) {
+		sqsInfo, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SqsInfo, error) {
 			return api.GetSqsInfo(&mnqSDK.SqsAPIGetSqsInfoRequest{
 				ProjectID: id,
 				Region:    region,
