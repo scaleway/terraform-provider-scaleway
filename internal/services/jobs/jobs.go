@@ -130,6 +130,21 @@ func definitionSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"retry_policy": {
+			Type:        schema.TypeList,
+			MaxItems:    1,
+			Optional:    true,
+			Description: "Defines a retry policy for the job.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"max_retries": {
+						Type:        schema.TypeInt,
+						Optional:    true,
+						Description: "The maximum number of retries upon job failure.",
+					},
+				},
+			},
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"secret_reference": {
@@ -201,6 +216,7 @@ func ResourceJobDefinitionCreate(ctx context.Context, d *schema.ResourceData, m 
 		CronSchedule:         expandJobDefinitionCron(d.Get("cron")).ToCreateRequest(),
 		Args:                 types.ExpandStrings(d.Get("args")),
 		LocalStorageCapacity: uint32(d.Get("local_storage_capacity").(int)),
+		RetryPolicy:          expandJobDefinitionRetryPolicy(d.Get("retry_policy")).ToCreateRequest(),
 	}
 
 	if timeoutSeconds, ok := d.GetOk("timeout"); ok {
@@ -275,6 +291,7 @@ func ResourceJobDefinitionRead(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("cron", flattenJobDefinitionCron(definition.CronSchedule))
 	_ = d.Set("region", definition.Region)
 	_ = d.Set("project_id", definition.ProjectID)
+	_ = d.Set("retry_policy", flattenJobDefinitionRetryPolicy(definition.RetryPolicy))
 	_ = d.Set("secret_reference", flattenJobDefinitionSecret(rawSecretRefs.Secrets))
 
 	return nil
@@ -349,6 +366,10 @@ func ResourceJobDefinitionUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("cron") {
 		req.CronSchedule = expandJobDefinitionCron(d.Get("cron")).ToUpdateRequest()
+	}
+
+	if d.HasChange("retry_policy") {
+		req.RetryPolicy = expandJobDefinitionRetryPolicy(d.Get("retry_policy")).ToUpdateRequest()
 	}
 
 	if d.HasChange("secret_reference") {
