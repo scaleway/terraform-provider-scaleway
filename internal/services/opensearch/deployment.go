@@ -216,7 +216,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
 		Version:   d.Get("version").(string),
-		NodeCount: uint32(deploymentNodeCountFromConfig(d)),
+		NodeCount: new(uint32(deploymentNodeCountFromConfig(d))),
 		NodeType:  d.Get("node_type").(string),
 	}
 
