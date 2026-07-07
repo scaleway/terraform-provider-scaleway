@@ -74,6 +74,7 @@ The following arguments are supported:
 - `name` - (Required) Name of the Data Warehouse deployment.
 - `version` - (Required, Forces new resource) ClickHouse version to use (e.g., "v25"). Changing this forces recreation of the deployment.
 - `replica_count` - (Required) Number of replicas. Can be updated in place via the deployment configuration API.
+- `shard_count` - (Optional, Computed, Forces new resource) Number of shards for the deployment. This value is immutable and cannot be changed after creation.
 - `cpu_min` - (Required) Minimum CPU count (autoscaling lower bound). Must be less than or equal to `cpu_max`. Can be updated in place.
 - `cpu_max` - (Required) Maximum CPU count (autoscaling upper bound). Must be greater than or equal to `cpu_min`. Can be updated in place.
 - `ram_per_cpu` - (Required) RAM per CPU in GB.
