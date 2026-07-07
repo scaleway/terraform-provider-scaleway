@@ -110,7 +110,7 @@ In addition to all arguments above, the following attributes are exported:
     - `volume_type` - The type of volume, possible values are `l_ssd` and `sbs_snapshot`.
 - `additional_volumes` - The description of the extra volumes attached to the image.
 
-    -> The `additional_volumes` block contains :
+  -> The `additional_volumes` block contains :
     - `id` - The ID of the volume.
     - `name` - The name of the volume.
     - `size` - The size of the volume.
@@ -118,9 +118,9 @@ In addition to all arguments above, the following attributes are exported:
     - `tags` - List of tags associated with the volume.
     - `server` - Description of the server containing the volume (in case the image is a backup from a server).
 
-        -> The `server` block contains :
-        - `id` - ID of the server containing the volume.
-        - `name` - Name of the server containing the volume.
+  -> The `server` block contains :
+    - `id` - ID of the server containing the volume.
+    - `name` - Name of the server containing the volume.
 
 ## Import
 
