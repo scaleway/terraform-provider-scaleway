@@ -23,7 +23,15 @@ func testSweepSecret(_ string) error {
 
 		logging.L.Debugf("sweeper: deleting the secrets in (%s)", region)
 
-		listSecrets, err := secretAPI.ListSecrets(&secretSDK.ListSecretsRequest{Region: region}, scw.WithAllPages())
+		var projectID *string
+		if defaultProjectID, exists := scwClient.GetDefaultProjectID(); exists {
+			projectID = &defaultProjectID
+		}
+
+		listSecrets, err := secretAPI.ListSecrets(&secretSDK.ListSecretsRequest{
+			Region:    region,
+			ProjectID: projectID,
+		}, scw.WithAllPages())
 		if err != nil {
 			return fmt.Errorf("error listing secrets in (%s) in sweeper: %w", region, err)
 		}
