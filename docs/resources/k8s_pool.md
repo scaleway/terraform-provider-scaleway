@@ -180,6 +180,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the pool.
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
@@ -189,6 +190,7 @@ In addition to all arguments above, the following attributes are exported:
     - `public_ip` - The public IPv4. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `public_ip_v6` - The public IPv6. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `status` - The status of the node.
+    - `srn` - The Scaleway Resource Name (SRN) of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
