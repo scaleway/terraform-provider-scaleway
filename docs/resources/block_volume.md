@@ -65,6 +65,7 @@ In addition to all arguments above, the following attributes are exported:
 ~> **Important:** The IDs of Block Storage volumes are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the `{zone}/{id}` format. For example, a volume ID might look like the following: `fr-par-1/11111111-1111-1111-1111-111111111111`.
 
 - `organization_id` - The Organization ID the volume is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the volume.
 
 ## Import
 
