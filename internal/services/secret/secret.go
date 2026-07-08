@@ -176,6 +176,11 @@ func secretSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the secret",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}

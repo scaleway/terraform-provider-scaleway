@@ -125,6 +125,11 @@ func keySchema() map[string]*schema.Schema {
 		"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
 		"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
 		"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the key",
+		},
 	}
 }
 

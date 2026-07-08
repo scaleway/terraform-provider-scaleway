@@ -66,6 +66,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the secret.
 - `created_at` - Date and time of the secret's creation (in RFC 3339 format).
 - `updated_at` - Date and time of the secret's last update (in RFC 3339 format).
+- `srn` - The Scaleway Resource Name (SRN) of the secret.
 
 ## Import
 
