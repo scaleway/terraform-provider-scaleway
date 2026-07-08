@@ -98,6 +98,11 @@ func versionSchema() map[string]*schema.Schema {
 			Description: "Date and time of secret version's creation (RFC 3339 format)",
 		},
 		"region": regional.Schema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the secret version",
+		},
 	}
 }
 
