@@ -78,7 +78,7 @@ The following arguments are supported:
 
 - `vpn_gateway_id` - (Required) The ID of the VPN gateway to attach to the connection.
 - `customer_gateway_id` - (Required) The ID of the customer gateway to attach to the connection.
-- `initiation_policy` - (Optional) Defines who initiates the IPSec tunnel.
+- `initiation_policy` - (Optional) Defines who initiates the IPSec tunnel. Possible values are `vpn_gateway`, `customer_gateway` or `unknown_initiation_policy`. Defaults to `unknown_initiation_policy`.
 - `enable_route_propagation` - (Optional) Defines whether route propagation is enabled or not.
 - `bgp_config_ipv4` - (Optional) BGP configuration for IPv4. See [BGP Config](#bgp-config) below.
 - `bgp_config_ipv6` - (Optional) BGP configuration for IPv6. See [BGP Config](#bgp-config) below.
