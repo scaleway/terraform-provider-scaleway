@@ -92,6 +92,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
+					},
 				},
 			},
 		},
@@ -140,6 +145,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 						Type:        schema.TypeInt,
 						Computed:    true,
 						Description: "The length of the network prefix, e.g., 24 for a 255.255.255.0 mask",
+					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the subnet",
 					},
 				},
 			},
@@ -193,6 +203,11 @@ func privateNetworkSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date and time of the last update of the private network",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network",
 		},
 	}
 }
@@ -289,6 +304,7 @@ func setPrivateNetworkState(d *schema.ResourceData, m any, pn *vpc.PrivateNetwor
 	_ = d.Set("region", pn.Region.String())
 	_ = d.Set("is_regional", true)
 	_ = d.Set("zone", zone)
+	_ = d.Set("srn", pn.Srn)
 
 	ipv4Subnet, ipv6Subnets := FlattenAndSortSubnets(pn.Subnets)
 	_ = d.Set("ipv4_subnet", ipv4Subnet)
