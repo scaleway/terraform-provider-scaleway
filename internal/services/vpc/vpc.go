@@ -90,6 +90,11 @@ func vpcSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the private network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network",
+		},
 	}
 }
 
@@ -170,6 +175,7 @@ func setVPCState(d *schema.ResourceData, res *vpc.VPC) diag.Diagnostics {
 	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
 	_ = d.Set("enable_transitivity", res.TransitivityEnabled)
 	_ = d.Set("region", res.Region)
+	_ = d.Set("srn", res.Srn)
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
