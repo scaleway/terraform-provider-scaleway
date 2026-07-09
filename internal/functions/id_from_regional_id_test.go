@@ -125,23 +125,14 @@ func TestAccProviderFunction_ID_From_Regional_ID(t *testing.T) {
 			{
 				// Can get the ID without region from a resource's regional id in one step
 				Config: `
-# terraform block required for provider function to be found
-terraform {
-  required_providers {
-    scaleway = {
-      source = "scaleway/scaleway"
-    }
-  }
-}
+				resource "scaleway_secret" "main" {
+					name = "terraform_test_id_from_regional_id"
+				}
 
-resource "scaleway_secret" "main" {
-	name = "terraform_test_id_from_regional_id"
-}
-
-output "id" {
-  value = provider::scaleway::id_from_regional_id(scaleway_secret.main.id)
-}
-`,
+				output "id" {
+					value = provider::scaleway::id_from_regional_id(scaleway_secret.main.id, null)
+				}
+				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchOutput("id", acctest.UUIDRegex),
 				),
