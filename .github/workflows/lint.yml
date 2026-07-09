@@ -95,3 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: rvben/rumdl@c6fa6612be03d6dd87812a1e6eb904cbbf1d9dce # v0.2.27
+
+  editorconfig:
+    runs-on: "${{ vars.RUNS_ON || 'ubuntu-latest' }}"
+    steps:
+      - name: Set up editorconfig-checker
+      - uses: editorconfig-checker/action-editorconfig-checker@840e866d93b8e032123c23bac69dece044d4d84c # v2.2.0
+
+      - name: Run editorconfig-checker
+      - run: editorconfig-checker
