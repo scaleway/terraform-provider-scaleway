@@ -292,11 +292,11 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 - `error_message` - The error message of the container.
 
-- `domain_name` - The native domain name of the container
+- `domain_name` - The native domain name of the container.
 
 - ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
 
-- `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`)
+- `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`).
 
 ## Import
 
