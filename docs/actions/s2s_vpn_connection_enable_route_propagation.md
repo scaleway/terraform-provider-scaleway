@@ -64,3 +64,5 @@ action "scaleway_s2s_vpn_connection_enable_route_propagation" "main" {
 ### Optional
 
 - `region` (String) The region you want to attach the resource to
+
+

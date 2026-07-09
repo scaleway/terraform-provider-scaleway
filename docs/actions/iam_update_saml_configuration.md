@@ -40,3 +40,5 @@ action "scaleway_iam_update_saml_configuration" "main" {
 - `entity_id` (String) The entity ID of the SAML Identity Provider
 - `organization_id` (String) The organization ID. If not provided, the default organization configured in the provider is used.
 - `single_sign_on_url` (String) The single sign-on URL of the SAML Identity Provider
+
+

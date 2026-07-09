@@ -20,3 +20,5 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 ### Optional
 
 - `region` (String) The region you want to attach the resource to
+
+

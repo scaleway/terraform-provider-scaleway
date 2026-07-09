@@ -10,7 +10,6 @@ The [`scaleway_audit_trail_event`](https://registry.terraform.io/providers/scale
 Refer to the Audit Trail [documentation](https://www.scaleway.com/en/docs/audit-trail/) and [API documentation](https://www.scaleway.com/en/developers/api/audit-trail/) for more information.
 
 
-
 ## Example Usage
 
 ```terraform

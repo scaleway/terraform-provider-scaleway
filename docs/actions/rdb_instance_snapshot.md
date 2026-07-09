@@ -23,3 +23,5 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 - `name` (String) Name of the snapshot. If not set, a name will be generated.
 - `region` (String) The region you want to attach the resource to
 - `wait` (Boolean) Wait for the snapshot to reach a terminal state before returning.
+
+

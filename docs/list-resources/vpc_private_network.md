@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_vpc_private_network
 
+
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/#private-networks).
+
 
 ## Example Usage
 

@@ -23,3 +23,5 @@ Refer to the Baremetal [documentation](https://www.scaleway.com/en/docs/elastic-
 - `boot_type` (String) Boot type to use when rebooting the server. By default, set to `normal`
 - `wait` (Boolean) Wait for server to finish action
 - `zone` (String) Zone of server to send the action to
+
+

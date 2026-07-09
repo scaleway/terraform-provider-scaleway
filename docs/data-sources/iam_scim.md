@@ -30,3 +30,5 @@ data "scaleway_iam_scim" "main" {
 
 - `created_at` (String) The date and time of SCIM configuration creation
 - `id` (String) The ID of the SCIM configuration
+
+

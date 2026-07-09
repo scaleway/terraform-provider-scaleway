@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_redis_cluster
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/redis/).
+
 
 ## Example Usage
 

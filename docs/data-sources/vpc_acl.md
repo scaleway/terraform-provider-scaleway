@@ -7,6 +7,7 @@ page_title: "Scaleway: scaleway_vpc_acl"
 
 Gets information about a VPC ACL (Access Control List).
 
+
 ## Example Usage
 
 ```terraform

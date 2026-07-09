@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_mongodb_instance
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-mongodb-databases/).
+
 
 ## Example Usage
 

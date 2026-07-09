@@ -54,3 +54,5 @@ resource "scaleway_block_export_snapshot" "example" {
 
 - `wait` (Boolean) Wait for exporting operation to be completed
 - `zone` (String) Zone of the snapshot to export
+
+

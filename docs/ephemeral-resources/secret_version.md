@@ -95,3 +95,5 @@ ephemeral "scaleway_secret_version" "data_latest" {
 - `description` (String) Description of the secret version
 - `status` (String) Status of the secret version
 - `updated_at` (String) Date and time of secret version's last update (RFC 3339 format)
+
+

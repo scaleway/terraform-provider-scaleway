@@ -22,3 +22,5 @@ Refer to the Instances [documentation](https://www.scaleway.com/en/docs/compute/
 
 - `wait` (Boolean) Wait for server to finish action
 - `zone` (String) Zone of server to send the action to
+
+

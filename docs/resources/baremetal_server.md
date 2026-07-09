@@ -5,6 +5,8 @@ page_title: "Scaleway: scaleway_baremetal_server"
 
 # Resource: scaleway_baremetal_server
 
+
+
 ## Example Usage
 
 ```terraform

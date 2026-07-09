@@ -54,7 +54,6 @@ resource "scaleway_k8s_pool" "main" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_vpc" "main" {}
 

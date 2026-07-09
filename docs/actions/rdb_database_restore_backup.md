@@ -23,3 +23,5 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 - `database_name` (String) Name of the database to restore. If not set, the original database name will be used.
 - `region` (String) The region you want to attach the resource to
 - `wait` (Boolean) Wait for the restore operation to complete before returning.
+
+

@@ -23,3 +23,5 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 - `region` (String) The region you want to attach the resource to
 - `start_date` (String) Start datetime of the log in RFC3339 format (ISO 8601).
 - `wait` (Boolean) Wait for the log preparation to complete before returning.
+
+

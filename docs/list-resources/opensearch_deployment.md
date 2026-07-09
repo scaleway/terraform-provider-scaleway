@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_opensearch_deployment
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/opensearch/).
+
 
 ## Example Usage
 

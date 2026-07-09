@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_rdb_database_backup
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/).
+
 
 ## Example Usage
 

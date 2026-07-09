@@ -20,3 +20,5 @@ Refer to the VPC Public Gateways [documentation](https://www.scaleway.com/en/doc
 
 - `wait` (Boolean) Wait for the SSH keys refresh to complete before returning
 - `zone` (String) Zone of the gateway. If not set, the zone is derived from the gateway_id when possible or from the provider configuration
+
+

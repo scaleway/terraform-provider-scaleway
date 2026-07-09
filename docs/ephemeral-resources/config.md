@@ -36,3 +36,5 @@ ephemeral "scaleway_config" "main" {}
 - `secret_key_source` (String) Where the secret key definition comes from (Environment, configuration file, variable, ...)
 - `zone` (String) Zone used
 - `zone_source` (String) Where the zone definition comes from (Environment, configuration file, variable, ...)
+
+

@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_rdb_instance
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/).
+
 
 ## Example Usage
 

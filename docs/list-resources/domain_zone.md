@@ -7,7 +7,9 @@ description: |-
 
 # Resource: scaleway_domain_zone
 
+
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
+
 
 ## Example Usage
 

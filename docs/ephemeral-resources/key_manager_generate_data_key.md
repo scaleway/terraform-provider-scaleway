@@ -29,3 +29,5 @@ For more information, see [our guide to using Ephemeral Resources with Terraform
 - `ciphertext` (String) Data encryption key ciphertext. Your data encryption key's ciphertext can be stored safely. It can only be decrypted through the keys you create in Key Manager, using the relevant key ID.
 - `created_at` (String) Data encryption key creation date. (RFC 3339 format)
 - `plaintext` (String, Sensitive) Data encryption key plaintext. Your data encryption key's plaintext allows you to use the key immediately upon creation. It must neither be stored or shared.
+
+
