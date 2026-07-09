@@ -1,0 +1,424 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 234
+        host: api.scaleway.com
+        body: '{"project_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"tf-test-kms-key-material-salt","usage":{"symmetric_encryption":"aes_256_gcm"},"description":"Test key with salt","tags":["tf","test"],"unprotected":true,"origin":"external"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 564
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"pending_key_material", "rotation_count":0, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.749921Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":null, "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "564"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - aa7f226c-8e6b-488d-bdda-957ab89385a7
+        status: 200 OK
+        code: 200
+        duration: 90.206648ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 564
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"pending_key_material", "rotation_count":0, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.749921Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":null, "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "564"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 4eb594e1-0831-4b1a-92ae-73fb1bc8519b
+        status: 200 OK
+        code: 200
+        duration: 81.169886ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 97
+        host: api.scaleway.com
+        body: '{"key_material":"YTk4NzY1NDMyMWZlZGNiYTk4NzY1NDMyMWZlZGNiYQ==","salt":"c2FsdHZhbHVlMTZieXRlcw=="}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f/import-key-material
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - b38693b5-5f05-430a-b4b1-2638d4dc9bae
+        status: 200 OK
+        code: 200
+        duration: 86.62482ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - fc416a88-f36f-42b3-a201-77ebbb101639
+        status: 200 OK
+        code: 200
+        duration: 103.299355ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 62b0e514-89c8-4ac0-b528-634db1137982
+        status: 200 OK
+        code: 200
+        duration: 105.397686ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 88fa5627-2627-4bd6-b939-4a9b8fb5eb78
+        status: 200 OK
+        code: 200
+        duration: 39.704444ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - c6104710-b79c-4d8a-9bc1-426675324478
+        status: 200 OK
+        code: 200
+        duration: 78.179651ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 19bc7e78-ac97-40d1-9b48-fdfff28b9482
+        status: 200 OK
+        code: 200
+        duration: 37.350164ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 576
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"enabled", "rotation_count":1, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:54.918207Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":null, "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "576"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 568a35b3-7490-4c5f-a026-eb786d4244b3
+        status: 200 OK
+        code: 200
+        duration: 52.518159ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 2
+        host: api.scaleway.com
+        body: '{}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f/delete-key-material
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 87cf2560-a1c0-4b92-bfcb-93af21731fc8
+        status: 204 No Content
+        code: 204
+        duration: 116.721392ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - 46bc62cc-f70a-4514-83d6-70267fa01ab6
+        status: 204 No Content
+        code: 204
+        duration: 111.577332ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 616
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"scheduled_for_deletion", "rotation_count":0, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:56.494469Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":"2026-07-09T13:58:56.494469Z", "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "616"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - b2c17db4-af8d-444e-b3b6-6055a4def0d6
+        status: 200 OK
+        code: 200
+        duration: 40.987504ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/key-manager/v1alpha1/regions/fr-par/keys/67a8cf3b-f40d-4cf2-b747-b66c92ba898f
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 616
+        body: '{"id":"67a8cf3b-f40d-4cf2-b747-b66c92ba898f", "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "name":"tf-test-kms-key-material-salt", "usage":{"symmetric_encryption":"aes_256_gcm"}, "state":"scheduled_for_deletion", "rotation_count":0, "created_at":"2026-07-09T13:58:54.749921Z", "updated_at":"2026-07-09T13:58:56.494469Z", "protected":false, "locked":false, "description":"Test key with salt", "tags":["tf", "test"], "rotated_at":"2026-07-09T13:58:54.905699Z", "rotation_policy":null, "origin":"external", "deletion_requested_at":"2026-07-09T13:58:56.494469Z", "protection_level":"software", "region":"fr-par"}'
+        headers:
+            Content-Length:
+                - "616"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 09 Jul 2026 13:58:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Request-Id:
+                - ccc7051f-383a-4c3c-97b6-c10a30a9bf89
+        status: 200 OK
+        code: 200
+        duration: 57.738873ms

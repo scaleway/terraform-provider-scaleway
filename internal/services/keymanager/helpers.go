@@ -183,6 +183,7 @@ func setKeyState(d *schema.ResourceData, key *key_manager.Key) {
 
 	_ = d.Set("description", key.Description)
 	_ = d.Set("tags", key.Tags)
+	_ = d.Set("state", key.State.String())
 	_ = d.Set("rotation_count", int(key.RotationCount))
 	_ = d.Set("created_at", types.FlattenTime(key.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(key.UpdatedAt))
