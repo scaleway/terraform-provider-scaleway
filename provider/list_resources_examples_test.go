@@ -7,11 +7,13 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/action"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	providerFramework "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
@@ -26,6 +28,52 @@ func extractListResourceTypeName(t *testing.T, resourceFunc func() list.ListReso
 	}, resp)
 
 	return resp.TypeName
+}
+
+// extractResourceTypeName extracts the type name from a framework resource
+func extractResourceTypeName(t *testing.T, resourceFunc func() resource.Resource) string {
+	t.Helper()
+
+	r := resourceFunc()
+	resp := &resource.MetadataResponse{}
+	r.Metadata(t.Context(), resource.MetadataRequest{
+		ProviderTypeName: "scaleway",
+	}, resp)
+
+	return resp.TypeName
+}
+
+// extractDataSourceTypeName extracts the type name from a framework data source
+func extractDataSourceTypeName(t *testing.T, dataSourceFunc func() datasource.DataSource) string {
+	t.Helper()
+
+	d := dataSourceFunc()
+	resp := &datasource.MetadataResponse{}
+	d.Metadata(t.Context(), datasource.MetadataRequest{
+		ProviderTypeName: "scaleway",
+	}, resp)
+
+	return resp.TypeName
+}
+
+// extractSDKv2ResourceTypeNames extracts the type names from an SDKv2 provider resource map
+func extractSDKv2ResourceTypeNames(_ *testing.T, provider *schema.Provider) []string {
+	typeNames := make([]string, 0, len(provider.ResourcesMap))
+	for typeName := range provider.ResourcesMap {
+		typeNames = append(typeNames, typeName)
+	}
+
+	return typeNames
+}
+
+// extractSDKv2DataSourceTypeNames extracts the type names from an SDKv2 provider data source map
+func extractSDKv2DataSourceTypeNames(_ *testing.T, provider *schema.Provider) []string {
+	typeNames := make([]string, 0, len(provider.DataSourcesMap))
+	for typeName := range provider.DataSourcesMap {
+		typeNames = append(typeNames, typeName)
+	}
+
+	return typeNames
 }
 
 // extractActionTypeName extracts the type name from an action
@@ -184,11 +232,130 @@ func checkExampleDirectoryHasTfFiles(t *testing.T, examplesDir string, filePrefi
 }
 
 // TestProviderExamples validates that all provider components have examples:
-// 1. List resources have examples in examples/list-resources/
-// 2. Actions have examples in examples/actions/
-// 3. Ephemeral resources have examples in examples/ephemeral-resources/
-// 4. Functions have examples in examples/functions/
+// 1. Resources have examples in examples/resources/
+// 2. Data sources have examples in examples/data-sources/
+// 3. List resources have examples in examples/list-resources/
+// 4. Actions have examples in examples/actions/
+// 5. Ephemeral resources have examples in examples/ephemeral-resources/
+// 6. Functions have examples in examples/functions/
 func TestProviderExamples(t *testing.T) {
+	// Test Resources (SDKv2 + Framework)
+	t.Run("Resources", func(t *testing.T) {
+		examplesDir := filepath.Join("..", "examples", "resources")
+
+		// Get all existing example directories
+		existingExamples := make(map[string]bool)
+		entries, err := os.ReadDir(examplesDir)
+		if err != nil {
+			t.Fatalf("Failed to read examples directory: %v", err)
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				existingExamples[entry.Name()] = true
+			}
+		}
+
+		// Collect all resources missing examples
+		var missingExamples []string
+
+		// SDKv2 resources
+		sdkProvider := provider.SDKProvider(nil)()
+		for _, typeName := range extractSDKv2ResourceTypeNames(t, sdkProvider) {
+			exists, hasFiles := checkExamplesExist(t, typeName, examplesDir)
+
+			if !exists && !hasFiles {
+				missingExamples = append(missingExamples, typeName)
+			}
+		}
+
+		// Framework resources
+		pResource := provider.NewFrameworkProvider(nil)()
+		for _, resourceFunc := range pResource.Resources(t.Context()) {
+			typeName := extractResourceTypeName(t, resourceFunc)
+
+			exists, hasFiles := checkExamplesExist(t, typeName, examplesDir)
+
+			if !exists && !hasFiles {
+				missingExamples = append(missingExamples, typeName)
+			}
+		}
+
+		// Collect all example directories missing resource*.tf files
+		examplesWithoutFiles := checkExampleDirectoryHasTfFiles(t, examplesDir, "resource")
+
+		if len(missingExamples) > 0 {
+			t.Errorf("Found %d resource(s) without example files:\n%s\n"+
+				"Please add example .tf files in examples/resources/<resource-name>/ (e.g., resource-basic.tf)",
+				len(missingExamples), strings.Join(missingExamples, "\n"))
+		}
+
+		if len(examplesWithoutFiles) > 0 {
+			t.Errorf("Found %d resources example directory(ies) without resource*.tf files:\n%s\n"+
+				"Please add .tf files named resource*.tf to these directories",
+				len(examplesWithoutFiles), strings.Join(examplesWithoutFiles, "\n"))
+		}
+	})
+
+	// Test Data Sources (SDKv2 + Framework)
+	t.Run("DataSources", func(t *testing.T) {
+		examplesDir := filepath.Join("..", "examples", "data-sources")
+
+		// Get all existing example directories
+		existingExamples := make(map[string]bool)
+		entries, err := os.ReadDir(examplesDir)
+		if err != nil {
+			t.Fatalf("Failed to read examples directory: %v", err)
+		}
+
+		for _, entry := range entries {
+			if entry.IsDir() {
+				existingExamples[entry.Name()] = true
+			}
+		}
+
+		// Collect all data sources missing examples
+		var missingExamples []string
+
+		// SDKv2 data sources
+		sdkProvider := provider.SDKProvider(nil)()
+		for _, typeName := range extractSDKv2DataSourceTypeNames(t, sdkProvider) {
+			exists, hasFiles := checkExamplesExist(t, typeName, examplesDir)
+
+			if !exists && !hasFiles {
+				missingExamples = append(missingExamples, typeName)
+			}
+		}
+
+		// Framework data sources
+		pDataSource := provider.NewFrameworkProvider(nil)()
+		for _, dataSourceFunc := range pDataSource.DataSources(t.Context()) {
+			typeName := extractDataSourceTypeName(t, dataSourceFunc)
+
+			exists, hasFiles := checkExamplesExist(t, typeName, examplesDir)
+
+			if !exists && !hasFiles {
+				missingExamples = append(missingExamples, typeName)
+			}
+		}
+
+		// Collect all example directories missing data-source*.tf files
+		examplesWithoutFiles := checkExampleDirectoryHasTfFiles(t, examplesDir, "data-source")
+
+		if len(missingExamples) > 0 {
+			t.Errorf("Found %d data source(s) without example files:\n%s\n"+
+				"Please add example .tf files in examples/data-sources/<data-source-name>/ (e.g., data-source-basic.tf)",
+				len(missingExamples), strings.Join(missingExamples, "\n"))
+		}
+
+		if len(examplesWithoutFiles) > 0 {
+			t.Errorf("Found %d data-sources example directory(ies) without data-source*.tf files:\n%s\n"+
+				"Please add .tf files named data-source*.tf to these directories",
+				len(examplesWithoutFiles), strings.Join(examplesWithoutFiles, "\n"))
+		}
+	})
+
+	// Test List Resources
 	p := provider.NewFrameworkProvider(nil)().(providerFramework.ProviderWithListResources)
 
 	// Test List Resources
