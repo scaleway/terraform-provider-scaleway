@@ -39,7 +39,7 @@ The following attributes will be available:
 
 - `volumes` - The specifications of volumes allowed for the server type.
 
-    -> The `volumes` block contains:
+  -> The `volumes` block contains:
     - `min_size_total` - The minimum total size in bytes of volumes allowed on the server type.
     - `max_size_total` - The maximum total size in bytes of volumes allowed on the server type.
     - `min_size_per_local_volume` - The minimum size in bytes per local volume allowed on the server type.
@@ -49,13 +49,13 @@ The following attributes will be available:
 
 - `capabilities` - The specific capabilities of the server type.
 
-    -> The `capabilities` block contains:
+  -> The `capabilities` block contains:
     - `boot_types` - The boot types allowed for the server type.
     - `max_file_systems` - The maximum number of file systems that can be attached on the server type.
 
 - `network` - The network specifications of the server type.
 
-    -> The `network` block contains:
+  -> The `network` block contains:
     - `internal_bandwidth` - The internal bandwidth of the server type (in bytes/second).
     - `public_bandwidth` - The public bandwidth of the server type (in bytes/second).
     - `block_bandwidth` - The block bandwidth of the server type (in bytes/second).

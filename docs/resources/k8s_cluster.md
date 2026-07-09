@@ -280,18 +280,16 @@ you can still set it now. In this case it will not destroy and recreate your clu
     - `max_graceful_termination_sec` - (Defaults to `600`) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node
 
     - `skip_nodes_with_local_storage` - If set to true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.
-
-    ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
+      ~> **Important:** For now, it is not possible to change the value of `skip_nodes_with_local_storage` after creation. Changes to this field will recreate a new cluster resource.
 
     - `log_level` - Autoscaler logging level expressed from 0 (least verbose) to 4 (most verbose).
-    Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
-
-    ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
+      Check out the [autoscaler's FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-can-i-increase-the-information-that-the-ca-is-logging) for details.
+      ~> **Important:** For now, it is not possible to change the value of `log_level` after creation. Changes to this field will recreate a new cluster resource.
 
 - `auto_upgrade` - (Optional) The auto upgrade configuration.
 
     - `enable` - (Optional) Set to `true` to enable Kubernetes patch version auto upgrades.
-    ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
+      ~> **Important:** When enabling auto upgrades, the `version` field take a minor version like x.y (ie 1.18).
 
     - `maintenance_window_start_hour` - (Optional) The start hour (UTC) of the 2-hour auto upgrade maintenance window (0 to 23).
 
@@ -351,6 +349,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the cluster.
 - `created_at` - The creation date of the cluster.
 - `updated_at` - The last update date of the cluster.
 - `apiserver_url` - The URL of the Kubernetes API server.

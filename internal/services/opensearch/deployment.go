@@ -211,12 +211,14 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
 	req := &searchdbapi.CreateDeploymentRequest{
 		Region:    region,
 		ProjectID: d.Get("project_id").(string),
 		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
 		Version:   d.Get("version").(string),
-		NodeCount: uint32(deploymentNodeCountFromConfig(d)),
+		NodeCount: &nodeCount,
 		NodeType:  d.Get("node_type").(string),
 	}
 

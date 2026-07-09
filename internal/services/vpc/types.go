@@ -117,6 +117,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (any, any) {
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
 				"prefix_length": getPrefixLength(s.Subnet.Mask),
+				"srn":           s.Srn,
 			})
 		} else {
 			sub, err := types.FlattenIPNet(s.Subnet)
@@ -132,6 +133,7 @@ func flattenAndSortSubnetV2s(subnets []*vpc.Subnet) (any, any) {
 				"address":       s.Subnet.IP.String(),
 				"subnet_mask":   maskHexToDottedDecimal(s.Subnet.Mask),
 				"prefix_length": getPrefixLength(s.Subnet.Mask),
+				"srn":           s.Srn,
 			})
 		}
 	}

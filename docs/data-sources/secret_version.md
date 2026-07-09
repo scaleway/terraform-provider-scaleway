@@ -92,5 +92,6 @@ This section lists the attributes that are exported by the `scaleway_secret_vers
 - `status` - The status of the secret version.
 - `created_at` - The date and time of the secret version's creation in RFC 3339 format.
 - `updated_at` - The date and time of the secret version's last update in RFC 3339 format.
+- `srn` - The Scaleway Resource Name (SRN) of the secret version.
 
 Exported attributes are the ones from the `scaleway_secret_version` [resource](../resources/secret_version.md).

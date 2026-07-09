@@ -202,6 +202,7 @@ func setSecretState(d *schema.ResourceData, secret *secret.Secret, versions *sec
 	_ = d.Set("ephemeral_policy", flattenEphemeralPolicy(secret.EphemeralPolicy))
 	_ = d.Set("type", secret.Type)
 	_ = d.Set("tags", types.FlattenSliceString(secret.Tags))
+	_ = d.Set("srn", secret.Srn)
 
 	// versions is not populated for list secret
 	if versions != nil {
@@ -232,4 +233,5 @@ func setVersionState(d *schema.ResourceData, version *secret.SecretVersion) {
 	_ = d.Set("updated_at", types.FlattenTime(version.UpdatedAt))
 	_ = d.Set("status", version.Status.String())
 	_ = d.Set("region", string(version.Region))
+	_ = d.Set("srn", version.Srn)
 }

@@ -221,6 +221,8 @@ func (r *VersionEphemeralResource) Open(ctx context.Context, req ephemeral.OpenR
 
 		if !data.ProjectID.IsNull() && !data.ProjectID.IsUnknown() {
 			projectID = new(data.ProjectID.ValueString())
+		} else if defaultProjectID, exists := r.meta.ScwClient().GetDefaultProjectID(); exists {
+			projectID = &defaultProjectID
 		}
 
 		secrets, err := r.secretAPI.ListSecrets(&secret.ListSecretsRequest{

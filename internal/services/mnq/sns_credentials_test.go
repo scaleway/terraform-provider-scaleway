@@ -1,13 +1,9 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
-	"strings"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
@@ -117,24 +113,14 @@ func isSNSCredentialsPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-		defer cancel()
-
-		return retry.RetryContext(ctx, 15*time.Second, func() *retry.RetryError {
-			_, err = api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
+		_, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SnsCredentials, error) {
+			return api.GetSnsCredentials(&mnqSDK.SnsAPIGetSnsCredentialsRequest{
 				SnsCredentialsID: id,
 				Region:           region,
 			})
-			if err == nil {
-				return nil
-			}
-
-			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
-				return retry.RetryableError(err)
-			}
-
-			return retry.NonRetryableError(err)
 		})
+
+		return err
 	}
 }
 

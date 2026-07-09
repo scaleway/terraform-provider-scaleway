@@ -1,13 +1,9 @@
 package mnq_test
 
 import (
-	"context"
 	"fmt"
-	"strings"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mnqSDK "github.com/scaleway/scaleway-sdk-go/api/mnq/v1beta1"
@@ -56,32 +52,16 @@ func isSNSPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		defer cancel()
-
 		var snsInfo *mnqSDK.SnsInfo
 
-		retryErr := retry.RetryContext(ctx, 20*time.Second, func() *retry.RetryError {
-			snsInfo, err = api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
+		snsInfo, err = mnq.RetryMNQNamespaceReadValue(tt.T.Context(), func() (*mnqSDK.SnsInfo, error) {
+			return api.GetSnsInfo(&mnqSDK.SnsAPIGetSnsInfoRequest{
 				ProjectID: id,
 				Region:    region,
 			})
-			if err == nil {
-				return nil
-			}
-
-			if httperrors.Is404(err) && strings.Contains(err.Error(), "resource namespace") {
-				return retry.RetryableError(err)
-			}
-
-			if strings.Contains(err.Error(), "insufficient permissions: read namespace") {
-				return retry.RetryableError(err)
-			}
-
-			return retry.NonRetryableError(err)
 		})
-		if retryErr != nil {
-			return retryErr
+		if err != nil {
+			return err
 		}
 
 		if snsInfo.Status != mnqSDK.SnsInfoStatusEnabled {

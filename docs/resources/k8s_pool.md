@@ -14,22 +14,30 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 ## Example Usage
 
 ```terraform
+resource "scaleway_vpc" "main" {}
+
+resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+}
+
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.35.3"
-  cni     = "cilium"
+  version                     = "1.35.3"
+  cni                         = "cilium"
+  name                        = "example-cluster"
+  delete_additional_resources = true
+  private_network_id          = scaleway_vpc_private_network.main.id
 }
 
 resource "scaleway_k8s_pool" "main" {
-  cluster_id         = scaleway_k8s_cluster.main.id
-  version            = scaleway_k8s_cluster.main.version
-  node_type          = "DEV1-M"
-  size               = 3
-  min_size           = 0
-  max_size           = 10
-  autoscaling        = true
-  autohealing        = true
-  container_runtime  = "containerd"
-  placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
+  cluster_id        = scaleway_k8s_cluster.main.id
+  version           = scaleway_k8s_cluster.main.version
+  node_type         = "DEV1-M"
+  size              = 3
+  min_size          = 1
+  max_size          = 10
+  autoscaling       = true
+  autohealing       = true
+  container_runtime = "containerd"
 
   labels = {
     "key" = "value"
@@ -49,6 +57,37 @@ resource "scaleway_k8s_pool" "main" {
 }
 ```
 
+```terraform
+resource "scaleway_vpc" "main" {}
+
+resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_k8s_cluster" "main" {
+  version                     = "1.35.3"
+  cni                         = "cilium"
+  name                        = "example-cluster"
+  delete_additional_resources = true
+  private_network_id          = scaleway_vpc_private_network.main.id
+}
+
+resource "scaleway_instance_placement_group" "main" {}
+
+resource "scaleway_k8s_pool" "main" {
+  cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
+  node_type          = "DEV1-M"
+  size               = 3
+  placement_group_id = scaleway_instance_placement_group.main.id
+
+  # Make sure that the new resource is created before destroying the old one on changes that require replacement
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+```
+
 
 
 
@@ -58,9 +97,11 @@ The following arguments are supported:
 
 - `cluster_id` - (Required) The ID of the Kubernetes cluster on which this pool will be created.
 
-- `name` - (Required) The name for the pool.
+- `name` - (Optional) The name for the pool. If not provided it will be generated.
 
 ~> **Important:** Updates to this field will recreate a new resource.
+
+~> Note: In order to use the `create_before_destroy` option of the `lifecycle` field, `name` has to be generated, otherwise Terraform will try to create the new pool with the same name and the API does not allow that.
 
 - `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
 
@@ -139,6 +180,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the pool.
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
@@ -148,6 +190,7 @@ In addition to all arguments above, the following attributes are exported:
     - `public_ip` - The public IPv4. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `public_ip_v6` - The public IPv6. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `status` - The status of the node.
+    - `srn` - The Scaleway Resource Name (SRN) of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.

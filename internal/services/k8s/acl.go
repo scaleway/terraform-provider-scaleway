@@ -91,6 +91,11 @@ func aclSchema() map[string]*schema.Schema {
 						Computed:    true,
 						Description: "The ID of the ACL rule",
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the ACL rule",
+					},
 				},
 			},
 		},
@@ -298,6 +303,7 @@ func flattenACL(rules []*k8s.ACLRule) any {
 			"id":              rule.ID,
 			"scaleway_ranges": rule.ScalewayRanges,
 			"description":     rule.Description,
+			"srn":             rule.Srn,
 		}
 		if rule.IP != nil {
 			flattenedRule["ip"] = rule.IP.String()

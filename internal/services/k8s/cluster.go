@@ -369,6 +369,11 @@ func clusterSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The status of the cluster",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the cluster",
+		},
 	}
 }
 
@@ -695,6 +700,7 @@ func setClusterState(ctx context.Context, d *schema.ResourceData, cluster *k8s.C
 	_ = d.Set("pod_cidr", cluster.PodCidr.String())
 	_ = d.Set("service_cidr", cluster.ServiceCidr.String())
 	_ = d.Set("service_dns_ip", cluster.ServiceDNSIP.String())
+	_ = d.Set("srn", cluster.Srn)
 
 	////
 	// Read kubeconfig
@@ -1117,12 +1123,14 @@ func autoscalerConfigSchema() *schema.Resource {
 			"skip_nodes_with_local_storage": {
 				Type:        schema.TypeBool,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "If true, the autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath.",
 			},
 			"log_level": {
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Description: "Autoscaler logging level expressed from 0 to 4 (4 being the more verbose).",
 			},

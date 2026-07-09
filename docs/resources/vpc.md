@@ -49,6 +49,7 @@ In addition to all arguments above, the following attributes are exported:
 - `is_default` - Defines whether the VPC is the default one for its Project.
 - `created_at` - Date and time of VPC's creation (RFC 3339 format).
 - `updated_at` - Date and time of VPC's last update (RFC 3339 format).
+- `srn` - The Scaleway Resource Name (SRN) of the VPC.
 
 ~> **Important:** VPCs' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111
 
