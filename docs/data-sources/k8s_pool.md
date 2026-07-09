@@ -49,6 +49,8 @@ In addition to all above arguments, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the pool.
+
 - `status` - The status of the pool.
 
 - `nodes` - (List of) The nodes in the default pool.
@@ -60,6 +62,8 @@ In addition to all above arguments, the following attributes are exported:
     - `public_ip_v6` - The public IPv6.
 
     - `status` - The status of the node.
+
+    - `srn` - The Scaleway Resource Name (SRN) of the node.
 
 - `created_at` - The creation date of the pool.
 

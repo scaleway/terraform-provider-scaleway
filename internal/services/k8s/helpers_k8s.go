@@ -89,6 +89,7 @@ func convertNodes(res *k8s.ListNodesResponse) []map[string]any {
 		n["id"] = node.ID
 		n["name"] = node.Name
 		n["status"] = node.Status.String()
+		n["srn"] = node.Srn
 
 		if node.PublicIPV4 != nil && node.PublicIPV4.String() != types.NetIPNil { //nolint:staticcheck
 			n["public_ip"] = node.PublicIPV4.String() //nolint:staticcheck

@@ -320,6 +320,11 @@ func poolSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the node",
+					},
 				},
 			},
 		},
@@ -334,6 +339,11 @@ func poolSchema() map[string]*schema.Schema {
 			Optional:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the pool",
 		},
 	}
 }
@@ -562,6 +572,7 @@ func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.
 	_ = d.Set("labels", flattenLabels(pool.Labels))
 	_ = d.Set("taints", flattenCoreV1Taints(pool.Taints))
 	_ = d.Set("startup_taints", flattenCoreV1Taints(pool.StartupTaints))
+	_ = d.Set("srn", pool.Srn)
 
 	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}

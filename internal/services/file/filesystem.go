@@ -82,6 +82,11 @@ func fileSystemSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The last update date of the properties of the filesystem",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the filesystem",
+		},
 	}
 }
 
@@ -161,6 +166,7 @@ func setFileSystemState(d *schema.ResourceData, fileSystem *file.FileSystem) {
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("number_of_attachments", int64(fileSystem.NumberOfAttachments))
+	_ = d.Set("srn", fileSystem.Srn)
 }
 
 func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
