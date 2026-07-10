@@ -13,7 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 )
 
-func TestRegionFromIDFunctionRun(t *testing.T) {
+func TestIDFromRegionalIDFunctionRun(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -42,38 +42,38 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 				Result: function.NewResultData(types.StringUnknown()),
 			},
 		},
-		// Test valid ID format - extracts region from ID
-		"valid-id-format": {
+		// Test valid ID format - extracts ID without region
+		"valid-regional-id-format": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("fr-par/1111-1111-1111-1111-1111111111111111"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Result: function.NewResultData(types.StringValue("fr-par")),
+				Result: function.NewResultData(types.StringValue("1111-1111-1111-1111-1111111111111111")),
 			},
 		},
-		// Test another valid ID format
-		"valid-id-format-amsterdam": {
+		// Test another valid regional ID format
+		"valid-regional-id-format-amsterdam": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/1111-1111-1111-1111-1111111111111111"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Result: function.NewResultData(types.StringValue("nl-ams")),
+				Result: function.NewResultData(types.StringValue("1111-1111-1111-1111-1111111111111111")),
 			},
 		},
-		"valid-id-multi-part": {
+		"valid-regional-id-multi-part": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("nl-ams/foo/bar"), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Result: function.NewResultData(types.StringValue("nl-ams")),
+				Result: function.NewResultData(types.StringValue("foo/bar")),
 			},
 		},
-		"unknown-id-valid-format": {
+		"unknown-region-valid-format": {
 			request: function.RunRequest{
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue("xx-yyy/11111111-1111-1111-1111-111111111111"), types.BoolValue(true)}),
 			},
 			expected: function.RunResponse{
-				Result: function.NewResultData(types.StringValue("xx-yyy")),
+				Result: function.NewResultData(types.StringValue("11111111-1111-1111-1111-111111111111")),
 			},
 		},
 		// Test invalid format - empty string
@@ -82,7 +82,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 				Arguments: function.NewArgumentsData([]attr.Value{types.StringValue(""), types.BoolNull()}),
 			},
 			expected: function.RunResponse{
-				Error:  function.NewArgumentFuncError(0, "bad region format, available regions are: fr-par, nl-ams, pl-waw"),
+				Error:  function.NewArgumentFuncError(0, "bad regional ID format, expected format is: region/id"),
 				Result: function.NewResultData(types.StringUnknown()),
 			},
 		},
@@ -106,7 +106,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 				Result: function.NewResultData(types.StringUnknown()),
 			}
 
-			functions.NewRegionFromID().Run(context.Background(), testCase.request, &got)
+			functions.NewIDFromRegionalID().Run(context.Background(), testCase.request, &got)
 
 			if diff := cmp.Diff(got, testCase.expected); diff != "" {
 				t.Errorf("unexpected difference: %s", diff)
@@ -115,7 +115,7 @@ func TestRegionFromIDFunctionRun(t *testing.T) {
 	}
 }
 
-func TestAccProviderFunction_Region_From_ID(t *testing.T) {
+func TestAccProviderFunction_ID_From_Regional_ID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -123,18 +123,18 @@ func TestAccProviderFunction_Region_From_ID(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				// Can get the region from a resource's id in one step
+				// Can get the ID without region from a resource's regional id in one step
 				Config: `
 				resource "scaleway_secret" "main" {
-					name = "terraform_test_region_from_id"
+					name = "terraform_test_id_from_regional_id"
 				}
 
-				output "region" {
-				value = provider::scaleway::region_from_id(scaleway_secret.main.id, null)
+				output "id" {
+					value = provider::scaleway::id_from_regional_id(scaleway_secret.main.id, null)
 				}
-`,
+				`,
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckOutput("region", "fr-par"),
+					resource.TestMatchOutput("id", acctest.UUIDRegex),
 				),
 			},
 		},
