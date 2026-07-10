@@ -25,6 +25,10 @@ The Scaleway Terraform Provider supports write-only arguments in several resourc
 
 - [**`scaleway_secret_version`**: `data_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/secret_version#data_wo-1)
 
+### Key Manager Resources
+
+- [**`scaleway_key_manager_key_material`**: `key_material_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/key_manager_key_material#key_material_wo) and [`salt_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/key_manager_key_material#salt_wo)
+
 ### Database Resources
 
 - [**`scaleway_rdb_instance`**: `password_wo`](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/resources/rdb_instance#password_wo-2)
