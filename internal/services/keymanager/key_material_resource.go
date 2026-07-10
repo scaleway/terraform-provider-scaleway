@@ -107,9 +107,6 @@ func (r *KeyMaterialResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				WriteOnly:           true,
 				MarkdownDescription: "The key material to import in write-only mode. The key material is a random sequence of bytes used to derive a cryptographic key. Can be provided as raw bytes or a base64-encoded string (the provider will automatically normalize the input). The key material will not be stored in the Terraform state.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 				Validators: []validator.String{
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("key_material"),
@@ -136,6 +133,9 @@ func (r *KeyMaterialResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:            true,
 				Sensitive:           true,
 				MarkdownDescription: "Optional salt for key derivation. A salt is random data added to key material to ensure unique derived keys, even if the input is similar. It helps strengthen security when the key material has low randomness (low entropy). Can be provided as raw bytes or a base64-encoded string (the provider will automatically normalize the input).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(
 						path.MatchRoot("salt"),
