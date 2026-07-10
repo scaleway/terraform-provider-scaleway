@@ -303,7 +303,7 @@ func (r *KeyMaterialResource) Create(ctx context.Context, req resource.CreateReq
 		importReq.Salt = &saltBytes
 	}
 
-	_, err = r.keyManagerAPI.ImportKeyMaterial(importReq)
+	_, err = r.keyManagerAPI.ImportKeyMaterial(importReq, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to import key material",
@@ -373,7 +373,7 @@ func (r *KeyMaterialResource) Delete(ctx context.Context, req resource.DeleteReq
 		KeyID:  keyID,
 	}
 
-	err = r.keyManagerAPI.DeleteKeyMaterial(deleteReq)
+	err = r.keyManagerAPI.DeleteKeyMaterial(deleteReq, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
 			return
