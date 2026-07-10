@@ -14,6 +14,48 @@ import (
 	filetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file/testfuncs"
 )
 
+func TestFileSystemSizeInGBRangeValidation(t *testing.T) {
+	sizeSchema := file.ResourceFileSystem().SchemaFunc()["size_in_gb"]
+
+	tests := []struct {
+		name      string
+		sizeInGB  int
+		wantError bool
+	}{
+		{
+			name:     "minimum",
+			sizeInGB: 100,
+		},
+		{
+			name:     "five terabytes",
+			sizeInGB: 5000,
+		},
+		{
+			name:     "maximum",
+			sizeInGB: 10000,
+		},
+		{
+			name:      "below minimum",
+			sizeInGB:  99,
+			wantError: true,
+		},
+		{
+			name:      "above maximum",
+			sizeInGB:  10001,
+			wantError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, errors := sizeSchema.ValidateFunc(tt.sizeInGB, "size_in_gb")
+			if gotError := len(errors) > 0; gotError != tt.wantError {
+				t.Fatalf("size_in_gb validation returned errors %v, wantError %t", errors, tt.wantError)
+			}
+		})
+	}
+}
+
 func TestAccFileSystem_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
@@ -78,7 +120,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
+				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(100 - 10000\), got 10`),
 			},
 		},
 	})
