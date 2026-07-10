@@ -65,7 +65,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_SizeTooSmallFails"
-	sizeInGB := 10
+	sizeInGB := 24
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -78,13 +78,13 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size must be greater or equal to 100000000000"),
+				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 10000\)`),
 			},
 		},
 	})
 }
 
-func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
+func TestAccFileSystem_SizeGranularity(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -102,7 +102,35 @@ func TestAccFileSystem_InvalidSizeGranularityFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile("size does not respect constraint, size must be a multiple of 100000000000"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccFileSystem_SizeTooLargeFails(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	fileSystemName := "TestAccFileSystem_SizeTooLargeFails"
+	sizeInGB := 10100 // Above 10 TB limit
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             filetestfuncs.CheckFileDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemName, sizeInGB),
+				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 10000\)`),
 			},
 		},
 	})
