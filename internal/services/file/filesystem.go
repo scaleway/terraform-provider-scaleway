@@ -48,8 +48,8 @@ func fileSystemSchema() map[string]*schema.Schema {
 		"size_in_gb": {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ValidateFunc: validation.IntBetween(25, 10000),
-			Description:  "The filesystem size in GB. Minimum 25GB, maximum 10TB",
+			ValidateFunc: validation.IntBetween(25, 50000),
+			Description:  "The filesystem size in GB. Minimum 25GB, maximum 50TB",
 		},
 		"tags": {
 			Type: schema.TypeList,

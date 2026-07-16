@@ -25,9 +25,9 @@ resource scaleway_file_filesystem file {
 ## Argument Reference
 
 - `name` - (Optional) The name of the filesystem. If not provided, a random name will be generated.
-- `size_in_gb` - (Required) The size of the filesystem in bytes, with a granularity of 100 GB (10¹¹ bytes).
-      - Minimum: 100 GB (100000000000 bytes)
-      - Maximum: 10 TB (10000000000000 bytes)
+- `size_in_gb` - (Required) The size of the filesystem in bytes, with a granularity of 1 GB (10⁹ bytes).
+      - Minimum: 25 GB (25000000000 bytes)
+      - Maximum: 50 TB (50000000000000 bytes)
 - `tags` - (Optional) A list of tags associated with the filesystem.
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The region where the filesystem will be created (e.g., fr-par, nl-ams).
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is

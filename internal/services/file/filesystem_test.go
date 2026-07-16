@@ -78,7 +78,7 @@ func TestAccFileSystem_SizeTooSmallFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 10000\)`),
+				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 50000\)`),
 			},
 		},
 	})
@@ -117,7 +117,7 @@ func TestAccFileSystem_SizeTooLargeFails(t *testing.T) {
 	defer tt.Cleanup()
 
 	fileSystemName := "TestAccFileSystem_SizeTooLargeFails"
-	sizeInGB := 10100 // Above 10 TB limit
+	sizeInGB := 50100 // Above 50 TB limit
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -130,7 +130,7 @@ func TestAccFileSystem_SizeTooLargeFails(t *testing.T) {
 						size_in_gb = %d
 					}
 				`, fileSystemName, sizeInGB),
-				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 10000\)`),
+				ExpectError: regexp.MustCompile(`expected size_in_gb to be in the range \(25 - 50000\)`),
 			},
 		},
 	})
