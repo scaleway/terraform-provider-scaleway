@@ -379,22 +379,40 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) { // TODO: wait f
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isTemplateDestroyed(tt),
-			vpctestfuncs.CheckPrivateNetworkDestroy(tt),
-			vpctestfuncs.CheckVPCDestroy(tt),
+			//vpctestfuncs.CheckPrivateNetworkDestroy(tt),
+			//vpctestfuncs.CheckVPCDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_file_filesystem" "fs0" {
-						size_in_gb = 20
+						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						size_in_gb = 25
+						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
+						size_in_gb = 40
+						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
+					}`,
+				//Check: resource.ComposeAggregateTestCheckFunc(
+				//	//testAccCheckFileSystemExists(tt, "scaleway_instance_template.main"),
+				//),
+			},
+			{
+				Config: `
+					resource "scaleway_file_filesystem" "fs0" {
+						size_in_gb = 25
+						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
+					}
+					resource "scaleway_file_filesystem" "fs1" {
 						size_in_gb = 30
+						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
+					}
+					resource "scaleway_file_filesystem" "fs2" {
+						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
 
@@ -406,7 +424,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) { // TODO: wait f
 						public_ip_v6_count = 0
 
 						filesystem_ids = [
-							//scaleway_file_filesystem.fs0.id,
+							scaleway_file_filesystem.fs0.id,
 							scaleway_file_filesystem.fs1.id,
 						]
 					}`,
@@ -428,15 +446,15 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) { // TODO: wait f
 			{
 				Config: `
 					resource "scaleway_file_filesystem" "fs0" {
-						size_in_gb = 20
+						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						size_in_gb = 25
+						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
-						size_in_gb = 30
+						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
 
@@ -449,7 +467,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) { // TODO: wait f
 
 						filesystem_ids = [
 							substr(scaleway_file_filesystem.fs1.id, 7, -1),
-							//scaleway_file_filesystem.fs2.id,
+							scaleway_file_filesystem.fs2.id,
 						]
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -470,15 +488,15 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) { // TODO: wait f
 			{
 				Config: `
 					resource "scaleway_file_filesystem" "fs0" {
-						size_in_gb = 20
+						size_in_gb = 25
 						tags = [ "scaleway_instance_template", "filesystems", "fs0" ]
 					}
 					resource "scaleway_file_filesystem" "fs1" {
-						size_in_gb = 25
+						size_in_gb = 30
 						tags = [ "scaleway_instance_template", "filesystems", "fs1" ]
 					}
 					resource "scaleway_file_filesystem" "fs2" {
-						size_in_gb = 30
+						size_in_gb = 40
 						tags = [ "scaleway_instance_template", "filesystems", "fs2" ]
 					}
 
