@@ -437,26 +437,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		// SearchDB endpoints are additive: when switching connectivity mode we must explicitly remove
-		// the endpoints that no longer match the desired private/public state.
-		for _, endpoint := range deployment.Endpoints {
-			if endpoint == nil {
-				continue
-			}
-
-			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
+		// Determine the desired endpoint state from the Terraform config.
 		desiredPrivate := false
 
 		var pnID string
@@ -470,35 +451,78 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		if desiredPrivate {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
+		// Delete endpoints that don't match the desired state.
+		// Keep the endpoint that already matches to avoid unnecessary delete+create cycles.
+		var deletedEndpointIDs []string
+
+		hasDesiredEndpoint := false
+
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil {
+				continue
+			}
+
+			matches := false
+			if desiredPrivate && endpoint.PrivateNetwork != nil && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
+				matches = true
+				hasDesiredEndpoint = true
+			} else if !desiredPrivate && endpoint.Public != nil {
+				matches = true
+				hasDesiredEndpoint = true
+			}
+
+			if matches {
+				continue
+			}
+
+			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx)); err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					Public: &searchdbapi.EndpointSpecPublicDetails{},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
+
+			deletedEndpointIDs = append(deletedEndpointIDs, endpoint.ID)
+		}
+
+		// DeleteEndpoint returns 204 immediately but the removal is asynchronous.
+		// waitForDeployment only checks the deployment's top-level status, which stays
+		// "ready" during endpoint operations, so we must poll GetDeployment until the
+		// deleted endpoints are actually gone before creating new ones.
+		if len(deletedEndpointIDs) > 0 {
+			if err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
+		// Create the desired endpoint only if it doesn't already exist.
+		if !hasDesiredEndpoint {
+			var spec *searchdbapi.EndpointSpec
+			if desiredPrivate {
+				spec = &searchdbapi.EndpointSpec{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				}
+			} else {
+				spec = &searchdbapi.EndpointSpec{
+					Public: &searchdbapi.EndpointSpecPublicDetails{},
+				}
+			}
+
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: spec,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
