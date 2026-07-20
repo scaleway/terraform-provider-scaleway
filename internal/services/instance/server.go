@@ -47,9 +47,7 @@ func ResourceServer() *schema.Resource {
 		ReadContext:   ResourceInstanceServerRead,
 		UpdateContext: ResourceInstanceServerUpdate,
 		DeleteContext: ResourceInstanceServerDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultZonalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
 			Read:    schema.DefaultTimeout(DefaultInstanceServerWaitTimeout),
