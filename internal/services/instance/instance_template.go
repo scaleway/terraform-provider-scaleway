@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	types2 "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
@@ -37,17 +38,17 @@ type InstanceTemplateResource struct {
 }
 
 type instanceTemplateResourceModel struct {
-	ProjectID        types.String `tfsdk:"project_id"`
-	ID               types.String `tfsdk:"id"`
-	Name             types.String `tfsdk:"name"`
-	Tags             types.List   `tfsdk:"tags"`
-	ServerTags       types.List   `tfsdk:"server_tags"`
-	ServerType       types.String `tfsdk:"server_type"`
-	SecurityGroupID  types.String `tfsdk:"security_group_id"`
-	PlacementGroupID types.String `tfsdk:"placement_group_id"`
-	PublicIPV4Count  types.Int32  `tfsdk:"public_ip_v4_count"`
-	PublicIPV6Count  types.Int32  `tfsdk:"public_ip_v6_count"`
-	// Volumes            types.List   `tfsdk:"volumes"`
+	ProjectID          types.String `tfsdk:"project_id"`
+	ID                 types.String `tfsdk:"id"`
+	Name               types.String `tfsdk:"name"`
+	Tags               types.List   `tfsdk:"tags"`
+	ServerTags         types.List   `tfsdk:"server_tags"`
+	ServerType         types.String `tfsdk:"server_type"`
+	SecurityGroupID    types.String `tfsdk:"security_group_id"`
+	PlacementGroupID   types.String `tfsdk:"placement_group_id"`
+	PublicIPV4Count    types.Int32  `tfsdk:"public_ip_v4_count"`
+	PublicIPV6Count    types.Int32  `tfsdk:"public_ip_v6_count"`
+	Volumes            types.List   `tfsdk:"volumes"`
 	PrivateNetworks    types.List   `tfsdk:"private_networks"`
 	CreatedAt          types.String `tfsdk:"created_at"`
 	UpdatedAt          types.String `tfsdk:"updated_at"`
@@ -103,14 +104,8 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 				MarkdownDescription: "The tags that will be assigned to the servers created using the Instance Template.", // TODO: update desc + what happens if undefined ??
 			},
 			"security_group_id": schema.StringAttribute{
-				//CustomType: dsf.ZonedIDType{},
-				Optional: true,
-				// Computed: true,
+				Optional:            true,
 				MarkdownDescription: "The ID of the security group to attach to the servers created using the Instance Template.",
-				//PlanModifiers: []planmodifier.String{
-				//stringplanmodifier.UseStateForUnknown(),
-				//dsf.TransformIntoZonedID(),
-				//},
 			},
 			"placement_group_id": schema.StringAttribute{
 				Optional:            true,
@@ -124,15 +119,48 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 				Required:            true, // TODO: or optional + default=0 ?
 				MarkdownDescription: "The number of public IPv6 to attach to the servers created using the Instance Template.",
 			},
-			//"volumes": schema.SingleNestedAttribute{
-			//	Required: true,
-			//	MarkdownDescription: "The specs of the volumes of the servers created using the Instance Template.",
-			//	Attributes: map[string]schema.Attribute{ // TODO
-			//		"stuff": schema.StringAttribute{
-			//			Optional: true,
-			//		},
-			//	},
-			//},
+			"volumes": schema.ListNestedAttribute{ // schema.ListNestedBlock // TODO: name it 'volume' instead ??
+				Optional:            true,
+				MarkdownDescription: "The specs of the volumes of the servers created using the Instance Template.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"volume_type": schema.StringAttribute{
+							Optional:            true,
+							Computed:            true,
+							Default:             stringdefault.StaticString(instanceV2.CreateServerRequestServerVolumeVolumeTypeUnknownVolumeType.String()),
+							MarkdownDescription: "The type of volume, defaults to unknown_volume_type.",
+						},
+						"name": schema.StringAttribute{
+							Optional: true,
+							Computed: true,
+							// Default ?? generate ??
+						},
+						"tags": schema.ListAttribute{
+							Optional:            true,
+							ElementType:         types.StringType,
+							MarkdownDescription: "The tags associated with the volume.",
+						},
+						"size": schema.Int64Attribute{
+							Optional: true, // TODO: really ??
+						},
+						"base_snapshot_id": schema.StringAttribute{
+							Optional: true,
+							Validators: []validator.String{
+								stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("image_label")),
+							},
+						},
+						"image_label": schema.StringAttribute{
+							Optional: true,
+							Validators: []validator.String{
+								stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("base_snapshot_id")),
+							},
+						},
+						"perf_iops": schema.Int32Attribute{
+							Optional: true,
+						},
+					},
+				},
+			},
 			"private_networks": schema.ListAttribute{
 				Optional:            true,
 				MarkdownDescription: "The IDs of the private networks to attach to the servers created using the Instance Template.",
@@ -216,11 +244,10 @@ func (r *InstanceTemplateResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	createReq := &instanceV2.CreateTemplateRequest{
-		Zone:       zone,
-		ProjectID:  projectID,
-		Name:       types2.ExpandOrGenerateString(data.Name.ValueString(), "tmpl"),
-		ServerType: data.ServerType.ValueString(),
-		// Volumes:            nil, // TODO
+		Zone:            zone,
+		ProjectID:       projectID,
+		Name:            types2.ExpandOrGenerateString(data.Name.ValueString(), "tf-tmpl"),
+		ServerType:      data.ServerType.ValueString(),
 		PublicIPV4Count: uint32(data.PublicIPV4Count.ValueInt32()),
 		PublicIPV6Count: uint32(data.PublicIPV6Count.ValueInt32()),
 	}
@@ -246,6 +273,11 @@ func (r *InstanceTemplateResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	createReq.WindowsRdpSSHKeyID = expandRawID(data.WindowsRdpSSHKeyID, "windows_rdp_ssh_key_id", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createReq.Volumes = expandVolumes(ctx, data.Volumes, &resp.Diagnostics).ToCreateRequest()
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -280,8 +312,7 @@ func flattenInstanceTemplate(ctx context.Context, tmpl *instanceV2.Template, ref
 		ServerType:      types.StringValue(tmpl.ServerType),
 		PublicIPV4Count: types.Int32Value(int32(tmpl.PublicIPV4Count)),
 		PublicIPV6Count: types.Int32Value(int32(tmpl.PublicIPV6Count)),
-		// Volumes:            flattenVolumes(tmpl.Volumes), // TODO
-		Zone: types.StringValue(tmpl.Zone.String()),
+		Zone:            types.StringValue(tmpl.Zone.String()),
 	}
 
 	tagList, d := flattenStringList(ctx, tmpl.Tags)
@@ -313,6 +344,11 @@ func flattenInstanceTemplate(ctx context.Context, tmpl *instanceV2.Template, ref
 	} else {
 		model.PlacementGroupID = types.StringNull()
 	}
+
+	volumesList, d := flattenVolumes(ctx, tmpl.Volumes)
+	diags.Append(d...)
+
+	model.Volumes = volumesList
 
 	privateNetworkIDsList, d := flattenPrivateNetworks(ctx, tmpl.PrivateNetworks, tmpl.Zone)
 	diags.Append(d...)

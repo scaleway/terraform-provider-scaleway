@@ -46,6 +46,7 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_tags.0", "from-template"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "public_ip_v4_count", "1"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "public_ip_v6_count", "3"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "volumes.#", "0"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_template.main", "security_group_id"),
 					resource.TestCheckNoResourceAttr("scaleway_instance_template.main", "placement_group_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "private_networks.#", "0"),
@@ -90,6 +91,44 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 				ResourceName:      "scaleway_instance_template.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isTemplateDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_template" "main" {
+						name = "tf-test-acc-instance-tmpl-volumes"
+						tags = [ "terraform-test", "scaleway_instance_template", "volumes" ]
+						server_type = "GP1-L"
+						public_ip_v4_count = 0
+						public_ip_v6_count = 0
+
+						volumes = [{
+							image_label = "ubuntu_noble"
+						}]
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "name", "tf-test-acc-instance-tmpl-volumes"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "GP1-L"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "volumes.#", "1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "volumes.0.volume_type", "unknown_volume_type"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "volumes.0.image_label", "ubuntu_noble"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "volumes.0.name"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "volumes.0.size"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "volumes.0.perf_iops"),
+				),
 			},
 		},
 	})
