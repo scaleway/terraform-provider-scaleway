@@ -604,6 +604,29 @@ func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, regio
 	return nil
 }
 
+func handleVersionUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
+	_, newVersionInterface := d.GetChange("version")
+	newVersion := NormalizeMongoDBVersion(newVersionInterface.(string))
+
+	upgradeInstanceRequest := mongodb.UpgradeInstanceRequest{
+		InstanceID: id,
+		Region:     region,
+		Version:    types.ExpandStringPtr(newVersion),
+	}
+
+	_, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequest, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
 func handleInstanceUpdate(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
 	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
@@ -648,6 +671,12 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	////////////////////
 	if d.HasChange("volume_size_in_gb") {
 		if diag := handleVolumeSizeUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
+			return diag
+		}
+	}
+
+	if d.HasChange("version") {
+		if diag := handleVersionUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
 			return diag
 		}
 	}
