@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -31,6 +32,7 @@ func ResourceBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaFunc:    bucketSchema,
 		CustomizeDiff: validateBucket,
 	}
@@ -336,7 +338,10 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, bucketName))
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
@@ -853,6 +858,11 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 			Severity: diag.Error,
 			Summary:  fmt.Sprintf("error setting lifecycle_rule: %s", err),
 		})
+	}
+
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	return diags
