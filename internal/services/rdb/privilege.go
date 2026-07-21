@@ -25,9 +25,7 @@ func ResourcePrivilege() *schema.Resource {
 		ReadContext:   ResourceRdbPrivilegeRead,
 		DeleteContext: ResourceRdbPrivilegeDelete,
 		UpdateContext: ResourceRdbPrivilegeUpdate,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),

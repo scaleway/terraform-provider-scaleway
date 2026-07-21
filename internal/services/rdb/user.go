@@ -31,9 +31,7 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
 		DeleteContext: ResourceUserDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),

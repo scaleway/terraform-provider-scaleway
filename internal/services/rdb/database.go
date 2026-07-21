@@ -24,9 +24,7 @@ func ResourceDatabase() *schema.Resource {
 		CreateContext: ResourceRdbDatabaseCreate,
 		ReadContext:   ResourceRdbDatabaseRead,
 		DeleteContext: ResourceRdbDatabaseDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),

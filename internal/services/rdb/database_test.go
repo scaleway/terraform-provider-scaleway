@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkterraform "github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	rdbSDK "github.com/scaleway/scaleway-sdk-go/api/rdb/v1"
@@ -168,4 +169,70 @@ func TestDatabaseParseID(t *testing.T) {
 	assert.Equal(t, scw.Region("region"), region)
 	assert.Equal(t, "instanceid", instanceID)
 	assert.Equal(t, "dbname", dbname)
+}
+
+// TestDatabaseImportByID verifies that importing a database by its ID
+// passes the ID through unchanged, so the subsequent Read can populate
+// instance_id and other attributes.
+func TestDatabaseImportByID(t *testing.T) {
+	r := rdb.ResourceDatabase()
+	require.NotNil(t, r.Importer)
+	require.NotNil(t, r.Importer.StateContext)
+
+	resourceID := "fr-par/11111111-1111-1111-1111-111111111111/mydb"
+
+	data := r.Data(&sdkterraform.InstanceState{
+		ID: resourceID,
+	})
+
+	results, err := r.Importer.StateContext(t.Context(), data, nil)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+	assert.Equal(t, resourceID, results[0].Id())
+
+	// Verify the ID can be parsed by ResourceRdbDatabaseParseID
+	region, instanceID, dbName, err := rdb.ResourceRdbDatabaseParseID(results[0].Id())
+	require.NoError(t, err)
+	assert.Equal(t, scw.Region("fr-par"), region)
+	assert.Equal(t, "11111111-1111-1111-1111-111111111111", instanceID)
+	assert.Equal(t, "mydb", dbName)
+}
+
+// TestDatabaseImportByIdentity verifies that importing a database via its
+// resource identity (region + composite id) correctly constructs d.Id()
+// from the identity attributes. This is the fix for the issue where
+// ImportStatePassthroughContext left instance_id null after identity-based
+// import, causing a fatal in-place update on the next apply.
+//
+// See: https://github.com/scaleway/terraform-provider-scaleway/issues
+func TestDatabaseImportByIdentity(t *testing.T) {
+	r := rdb.ResourceDatabase()
+	require.NotNil(t, r.Importer)
+	require.NotNil(t, r.Importer.StateContext)
+
+	instanceUUID := "11111111-1111-1111-1111-111111111111"
+	dbName := "mydb"
+
+	// Simulate identity-based import: d.Id() is empty, identity has region + composite id
+	data := r.Data(&sdkterraform.InstanceState{
+		Identity: map[string]string{
+			"region": "fr-par",
+			"id":     instanceUUID + "/" + dbName,
+		},
+	})
+
+	results, err := r.Importer.StateContext(t.Context(), data, nil)
+	require.NoError(t, err)
+	require.Len(t, results, 1)
+
+	// The importer should construct d.Id() as "fr-par/<instance-uuid>/<db-name>"
+	expectedID := "fr-par/" + instanceUUID + "/" + dbName
+	assert.Equal(t, expectedID, results[0].Id())
+
+	// Verify the constructed ID can be parsed by ResourceRdbDatabaseParseID
+	region, instanceID, parsedDBName, err := rdb.ResourceRdbDatabaseParseID(results[0].Id())
+	require.NoError(t, err)
+	assert.Equal(t, scw.Region("fr-par"), region)
+	assert.Equal(t, instanceUUID, instanceID)
+	assert.Equal(t, dbName, parsedDBName)
 }
