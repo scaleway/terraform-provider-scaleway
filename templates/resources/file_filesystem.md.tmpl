@@ -6,9 +6,7 @@ page_title: "Scaleway: scaleway_file_filesystem"
 
 # Resource: scaleway_file_filesystem
 
--> **This product is currently in private beta. To request access, please contact your Technical Account Manager.**
-
-Creates and manages a Scaleway File Storage filesystem in a specific region. A filesystem is a scalable storage resource that can be mounted on Compute instances and is typically used for share persistent storage between multiple instances (RWX).
+Creates and manages a Scaleway File Storage filesystem in a specific region. A filesystem is a scalable storage resource that can be mounted on Compute instances and is typically used to share persistent storage between multiple instances (RWX).
 
 This resource allows you to define and manage the size, tags, and region of a filesystem, and track its creation and update timestamps, current status, and number of active attachments.
 
@@ -18,7 +16,7 @@ This resource allows you to define and manage the size, tags, and region of a fi
 
 ```terraform
 resource scaleway_file_filesystem file {
-  name = "my-nfs-filesystem"
+  name = "my-filesystem"
   size_in_gb = 100
 }
 ```
@@ -26,9 +24,9 @@ resource scaleway_file_filesystem file {
 ## Argument Reference
 
 - `name` - (Optional) The name of the filesystem. If not provided, a random name will be generated.
-- `size_in_gb` - (Required) The size of the filesystem in bytes, with a granularity of 1 GB (10⁹ bytes).
-      - Minimum: 25 GB (25000000000 bytes)
-      - Maximum: 50 TB (50000000000000 bytes)
+- `size_in_gb` - (Required) The size of the filesystem in gigabytes (10⁹ bytes), with a granularity of 1 GB.
+      - Minimum: 25 GB
+      - Maximum: 50 TB (50000 GB)
 - `tags` - (Optional) A list of tags associated with the filesystem.
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The region where the filesystem will be created (e.g., fr-par, nl-ams).
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
