@@ -199,10 +199,10 @@ func TestDatabaseImportByID(t *testing.T) {
 }
 
 // TestDatabaseImportByIdentity verifies that importing a database via its
-// resource identity (region + composite id) correctly constructs d.Id()
-// from the identity attributes. This is the fix for the issue where
-// ImportStatePassthroughContext left instance_id null after identity-based
-// import, causing a fatal in-place update on the next apply.
+// resource identity (region + instance_id + database_name) correctly
+// constructs d.Id() from the identity attributes. This is the fix for the
+// issue where ImportStatePassthroughContext left instance_id null after
+// identity-based import, causing a fatal in-place update on the next apply.
 //
 // See: https://github.com/scaleway/terraform-provider-scaleway/issues
 func TestDatabaseImportByIdentity(t *testing.T) {
@@ -213,11 +213,12 @@ func TestDatabaseImportByIdentity(t *testing.T) {
 	instanceUUID := "11111111-1111-1111-1111-111111111111"
 	dbName := "mydb"
 
-	// Simulate identity-based import: d.Id() is empty, identity has region + composite id
+	// Simulate identity-based import: d.Id() is empty, identity has region + instance_id + database_name
 	data := r.Data(&sdkterraform.InstanceState{
 		Identity: map[string]string{
-			"region": "fr-par",
-			"id":     instanceUUID + "/" + dbName,
+			"region":        "fr-par",
+			"instance_id":   instanceUUID,
+			"database_name": dbName,
 		},
 	})
 

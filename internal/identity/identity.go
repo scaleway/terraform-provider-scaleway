@@ -36,6 +36,26 @@ func DefaultRegional() *schema.ResourceIdentity {
 	})
 }
 
+// CompositeRegionalIdentity creates an identity schema for regional resources
+// with a composite ID (e.g., region/instanceID/databaseName). Unlike
+// DefaultRegional which has a single "id" field, this creates separate fields
+// for each part of the composite ID, plus a "region" field.
+// The partKeys specify the non-region identity fields (e.g., "instance_id",
+// "database_name"). All fields are RequiredForImport.
+func CompositeRegionalIdentity(partKeys ...string) *schema.ResourceIdentity {
+	m := map[string]*schema.Schema{
+		"region": DefaultRegionAttribute(),
+	}
+	for _, key := range partKeys {
+		m[key] = &schema.Schema{
+			Type:              schema.TypeString,
+			RequiredForImport: true,
+		}
+	}
+
+	return WrapSchemaMap(m)
+}
+
 // DefaultGlobal should be used as the default identity schema for global/flat resources.
 // For instance if you want an id with the form 11111111-1111-1111-1111-111111111111 (UUID only)
 func DefaultGlobal() *schema.ResourceIdentity {
@@ -107,6 +127,7 @@ func SetRegionalIdentity(d *schema.ResourceData, region scw.Region, id string) e
 // SetRegionalCompositeIdentity sets identity attributes for regional resources with a composite ID.
 // The composite ID is built from idParts joined by "/" (e.g., instanceID/databaseName or instanceID/databaseName/userName).
 // Use this for resources whose identity schema is DefaultRegional but whose id is multi-part.
+// For resources using CompositeRegionalIdentity, use SetMultiPartIdentity directly instead.
 func SetRegionalCompositeIdentity(d *schema.ResourceData, region scw.Region, idParts ...string) error {
 	compositeID := strings.Join(idParts, "/")
 
