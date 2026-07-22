@@ -6,20 +6,20 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 125
+        content_length: 129
         transfer_encoding: []
         trailer: {}
         host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: '{"project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","name":"my-edge_services-pipeline","description":"pipeline description"}'
+        body: '{"name":"tf_tests_edge_services_project_backend-basic","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","description":""}'
         form: {}
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/pipelines
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects
         method: POST
       response:
         proto: HTTP/2.0
@@ -27,20 +27,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 490
+        content_length: 286
         uncompressed: false
-        body: '{"created_at":"2026-02-18T16:18:55.783107405Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"dns","type":"config"}],"id":"a1497798-1b6f-4781-aab9-287e4c101a75","name":"my-edge_services-pipeline","organization_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","status":"warning","updated_at":"2026-02-18T16:18:55.783107405Z"}'
+        body: '{"created_at":"2026-07-22T09:22:09.615046Z","description":"","id":"96f24ee6-870c-43e7-b647-f783f8e945f5","name":"tf_tests_edge_services_project_backend-basic","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","qualification":null,"updated_at":"2026-07-22T09:22:09.615046Z"}'
         headers:
             Content-Length:
-                - "490"
+                - "286"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 18 Feb 2026 16:18:55 GMT
+                - Wed, 22 Jul 2026 09:22:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -48,10 +48,10 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 652c2497-ca69-4786-9317-148218d9d394
+                - 3c355d43-2c57-411c-88d7-5e613d114af5
         status: 200 OK
         code: 200
-        duration: 250.490833ms
+        duration: 309.174471ms
     - id: 1
       request:
         proto: HTTP/1.1
@@ -67,8 +67,8 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/a1497798-1b6f-4781-aab9-287e4c101a75
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/96f24ee6-870c-43e7-b647-f783f8e945f5
         method: GET
       response:
         proto: HTTP/2.0
@@ -76,20 +76,20 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 484
+        content_length: 331
         uncompressed: false
-        body: '{"created_at":"2026-02-18T16:18:55.783107Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"dns","type":"config"}],"id":"a1497798-1b6f-4781-aab9-287e4c101a75","name":"my-edge_services-pipeline","organization_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","status":"warning","updated_at":"2026-02-18T16:18:55.783107Z"}'
+        body: '{"created_at":"2026-07-22T09:22:09.615046Z","description":"","id":"96f24ee6-870c-43e7-b647-f783f8e945f5","name":"tf_tests_edge_services_project_backend-basic","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-07-22T09:22:09.615046Z"}'
         headers:
             Content-Length:
-                - "484"
+                - "331"
             Content-Security-Policy:
                 - default-src 'none'; frame-ancestors 'none'
             Content-Type:
                 - application/json
             Date:
-                - Wed, 18 Feb 2026 16:18:55 GMT
+                - Wed, 22 Jul 2026 09:22:09 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -97,114 +97,112 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - 2527aadb-ef26-4fd9-800e-57c99afc7744
+                - 2f55848e-406d-42dd-b280-090daaf544d3
         status: 200 OK
         code: 200
-        duration: 58.191333ms
+        duration: 59.876934ms
     - id: 2
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 0
+        content_length: 75
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: ""
+        body: '{"project_id":"96f24ee6-870c-43e7-b647-f783f8e945f5","plan_name":"starter"}'
         form: {}
         headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - 17ff461a-41cc-4588-8894-4bd99e509635
-            Amz-Sdk-Request:
-                - attempt=1; max=3
+            Content-Type:
+                - application/json
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161855Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/
-        method: PUT
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/current-plan
+        method: PATCH
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 0
+        content_length: 23
         uncompressed: false
-        body: ""
+        body: '{"plan_name":"starter"}'
         headers:
             Content-Length:
-                - "0"
+                - "23"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
             Date:
-                - Wed, 18 Feb 2026 16:18:55 GMT
-            Location:
-                - /test-acc-scaleway-object-bucket-basic-es
-            X-Amz-Id-2:
-                - txg12188a2def35487cae08-006995e66f
-            X-Amz-Request-Id:
-                - txg12188a2def35487cae08-006995e66f
+                - Wed, 22 Jul 2026 09:22:09 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - badd02b7-681b-4581-9c88-1d12a067b744
         status: 200 OK
         code: 200
-        duration: 4.712293541s
+        duration: 131.200961ms
     - id: 3
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 127
+        content_length: 125
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: api.scaleway.com
         remote_addr: ""
         request_uri: ""
-        body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+        body: '{"project_id":"96f24ee6-870c-43e7-b647-f783f8e945f5","name":"my-edge_services-pipeline","description":"pipeline description"}'
         form: {}
         headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - 9ba5b820-f8b9-485b-a18f-8f7c09984b77
-            Amz-Sdk-Request:
-                - attempt=1; max=3
             Content-Type:
-                - application/xml
+                - application/json
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,Z,e
-            X-Amz-Checksum-Crc32:
-                - Y9NeVA==
-            X-Amz-Content-Sha256:
-                - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
-            X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?tagging=
-        method: PUT
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines
+        method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 0
+        content_length: 523
         uncompressed: false
-        body: ""
+        body: '{"created_at":"2026-07-22T09:22:10.071419875Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"unknown_stage","type":"config"}],"id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","name":"my-edge_services-pipeline","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","project_id":"96f24ee6-870c-43e7-b647-f783f8e945f5","status":"warning","updated_at":"2026-07-22T09:22:10.071419875Z","vpc_endpoint_ids":[]}'
         headers:
             Content-Length:
-                - "0"
+                - "523"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
             Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
-            X-Amz-Id-2:
-                - txgb369b0196d9e44f2b2c0-006995e674
-            X-Amz-Request-Id:
-                - txgb369b0196d9e44f2b2c0-006995e674
+                - Wed, 22 Jul 2026 09:22:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4acf602b-065f-4690-8da0-d37d832ad726
         status: 200 OK
         code: 200
-        duration: 122.19325ms
+        duration: 120.751519ms
     - id: 4
       request:
         proto: HTTP/1.1
@@ -213,7 +211,56 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/07b906e0-eb53-48f5-a88e-ffe2a73cf1b2
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 517
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:10.071419Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"unknown_stage","type":"config"}],"id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","name":"my-edge_services-pipeline","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","project_id":"96f24ee6-870c-43e7-b647-f783f8e945f5","status":"warning","updated_at":"2026-07-22T09:22:10.071419Z","vpc_endpoint_ids":[]}'
+        headers:
+            Content-Length:
+                - "517"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:10 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - cad6168f-067e-4555-a262-ec5d727451d8
+        status: 200 OK
+        code: 200
+        duration: 67.694643ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -222,20 +269,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - a527d064-e7f1-4c6e-8f0b-d372f2c3d437
+                - c05645a4-b817-4e85-a6d2-6224c910a269
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,Z,e
-            X-Amz-Acl:
-                - private
-            X-Amz-Checksum-Crc32:
-                - AAAAAA==
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?acl=
+                - 20260722T092209Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/
         method: PUT
       response:
         proto: HTTP/2.0
@@ -250,15 +293,17 @@ interactions:
             Content-Length:
                 - "0"
             Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
+                - Wed, 22 Jul 2026 09:22:09 GMT
+            Location:
+                - /test-acc-scaleway-object-bucket-basic-edgeservices
             X-Amz-Id-2:
-                - txg5fa673457238472480e4-006995e674
+                - txga6a1e3afdbc94b40b6e1-006a608bc1
             X-Amz-Request-Id:
-                - txg5fa673457238472480e4-006995e674
+                - txga6a1e3afdbc94b40b6e1-006a608bc1
         status: 200 OK
         code: 200
-        duration: 205.21525ms
-    - id: 5
+        duration: 9.123598908s
+    - id: 6
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -266,7 +311,7 @@ interactions:
         content_length: 127
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
@@ -275,20 +320,20 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 67848566-5be1-43e3-a204-350cad69f944
+                - 6bea0e39-408c-4fb1-96e1-a81443a4c168
             Amz-Sdk-Request:
                 - attempt=1; max=3
             Content-Type:
                 - application/xml
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,Z,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,Z,e
             X-Amz-Checksum-Crc32:
                 - Y9NeVA==
             X-Amz-Content-Sha256:
                 - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
             X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?tagging=
+                - 20260722T092209Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?tagging=
         method: PUT
       response:
         proto: HTTP/2.0
@@ -303,67 +348,14 @@ interactions:
             Content-Length:
                 - "0"
             Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txga201df0169d64250a6e2-006995e674
+                - txgc724254210904c4793dd-006a608bcb
             X-Amz-Request-Id:
-                - txga201df0169d64250a6e2-006995e674
+                - txgc724254210904c4793dd-006a608bcb
         status: 200 OK
         code: 200
-        duration: 187.779375ms
-    - id: 6
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - d4595c46-0f0c-421e-b13d-bac7123bd91d
-            Amz-Sdk-Request:
-                - attempt=1; max=3
-            User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?acl=
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 698
-        uncompressed: false
-        body: |-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
-        headers:
-            Content-Length:
-                - "698"
-            Content-Type:
-                - text/xml; charset=utf-8
-            Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
-            X-Amz-Id-2:
-                - txgab5fcbb083e544b98020-006995e674
-            X-Amz-Request-Id:
-                - txgab5fcbb083e544b98020-006995e674
-        status: 200 OK
-        code: 200
-        duration: 50.840542ms
+        duration: 149.698403ms
     - id: 7
       request:
         proto: HTTP/1.1
@@ -372,7 +364,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -381,93 +373,95 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 8072d1a9-6ec2-4a38-afa6-92f4ef05ac89
+                - eb330252-68bc-4ace-8fca-1957460272e2
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,Z,e
+            X-Amz-Acl:
+                - private
+            X-Amz-Checksum-Crc32:
+                - AAAAAA==
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?object-lock=
-        method: GET
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?acl=
+        method: PUT
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 309
+        content_length: 0
         uncompressed: false
-        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txg5f702a12e8294fd991f4-006995e674</RequestId><HostId>txg5f702a12e8294fd991f4-006995e674</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource></Error>
+        body: ""
         headers:
             Content-Length:
-                - "309"
-            Content-Type:
-                - application/xml
+                - "0"
             Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txg5f702a12e8294fd991f4-006995e674
+                - txg52745ede4dc8484395fc-006a608bcb
             X-Amz-Request-Id:
-                - txg5f702a12e8294fd991f4-006995e674
-        status: 404 Not Found
-        code: 404
-        duration: 38.991084ms
+                - txg52745ede4dc8484395fc-006a608bcb
+        status: 200 OK
+        code: 200
+        duration: 154.087006ms
     - id: 8
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 0
+        content_length: 127
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
-        body: ""
+        body: <Tagging xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
         form: {}
         headers:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 493f526a-bcd8-4fca-bc19-e96680d98877
+                - 0b920a21-16c8-495f-b4d2-8c2442239621
             Amz-Sdk-Request:
                 - attempt=1; max=3
+            Content-Type:
+                - application/xml
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,Z,e
+            X-Amz-Checksum-Crc32:
+                - Y9NeVA==
             X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                - d68cba1a39d89eb72e49b2e5b04058846b60e88e6e32eae42901c4f57a4727a8
             X-Amz-Date:
-                - 20260218T161900Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/
-        method: GET
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?tagging=
+        method: PUT
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 266
+        content_length: 0
         uncompressed: false
-        body: |-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-es</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+        body: ""
         headers:
             Content-Length:
-                - "266"
-            Content-Type:
-                - application/xml
+                - "0"
             Date:
-                - Wed, 18 Feb 2026 16:19:00 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txg9dc1caeab0c845fea191-006995e674
+                - txg6f137a6ccaa44f1693fc-006a608bcb
             X-Amz-Request-Id:
-                - txg9dc1caeab0c845fea191-006995e674
+                - txg6f137a6ccaa44f1693fc-006a608bcb
         status: 200 OK
         code: 200
-        duration: 125.656334ms
+        duration: 151.099183ms
     - id: 9
       request:
         proto: HTTP/1.1
@@ -476,7 +470,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -485,422 +479,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 102aac7d-f230-49aa-a714-3a2d27b7fee0
+                - 9d040a2d-3977-42bb-933a-b639e828b872
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161901Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?tagging=
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 118
-        uncompressed: false
-        body: |-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <Tagging><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
-        headers:
-            Content-Length:
-                - "118"
-            Content-Type:
-                - text/xml; charset=utf-8
-            Date:
-                - Wed, 18 Feb 2026 16:19:01 GMT
-            X-Amz-Id-2:
-                - txg1cdc922cfa3a445ab1a6-006995e675
-            X-Amz-Request-Id:
-                - txg1cdc922cfa3a445ab1a6-006995e675
-        status: 200 OK
-        code: 200
-        duration: 80.844625ms
-    - id: 10
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - 1ef3ff54-fe59-4ba6-8d10-bb0c47ac336e
-            Amz-Sdk-Request:
-                - attempt=1; max=3
-            User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161901Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?cors=
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 277
-        uncompressed: false
-        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg90632f6132834d75bafd-006995e675</RequestId><HostId>txg90632f6132834d75bafd-006995e675</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource></Error>
-        headers:
-            Content-Length:
-                - "277"
-            Content-Type:
-                - application/xml
-            Date:
-                - Wed, 18 Feb 2026 16:19:01 GMT
-            X-Amz-Id-2:
-                - txg90632f6132834d75bafd-006995e675
-            X-Amz-Request-Id:
-                - txg90632f6132834d75bafd-006995e675
-        status: 404 Not Found
-        code: 404
-        duration: 34.9055ms
-    - id: 11
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - 532b9761-b478-4619-8f97-10a0960ae997
-            Amz-Sdk-Request:
-                - attempt=1; max=3
-            User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161901Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?versioning=
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 107
-        uncompressed: false
-        body: |-
-            <?xml version="1.0" encoding="UTF-8"?>
-            <VersioningConfiguration><Status></Status></VersioningConfiguration>
-        headers:
-            Content-Length:
-                - "107"
-            Content-Type:
-                - text/xml; charset=utf-8
-            Date:
-                - Wed, 18 Feb 2026 16:19:01 GMT
-            X-Amz-Id-2:
-                - txg38fe32df21f340dc9cdb-006995e675
-            X-Amz-Request-Id:
-                - txg38fe32df21f340dc9cdb-006995e675
-        status: 200 OK
-        code: 200
-        duration: 188.65925ms
-    - id: 12
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - be043b7e-0b62-4080-8ec1-2ebbc696995d
-            Amz-Sdk-Request:
-                - attempt=1; max=3
-            User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161901Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?lifecycle=
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 352
-        uncompressed: false
-        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txgb6c6c1ea062c418299b1-006995e675</RequestId><HostId>txgb6c6c1ea062c418299b1-006995e675</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource><BucketName>test-acc-scaleway-object-bucket-basic-es</BucketName></Error>
-        headers:
-            Content-Length:
-                - "352"
-            Content-Type:
-                - application/xml
-            Date:
-                - Wed, 18 Feb 2026 16:19:01 GMT
-            X-Amz-Id-2:
-                - txgb6c6c1ea062c418299b1-006995e675
-            X-Amz-Request-Id:
-                - txgb6c6c1ea062c418299b1-006995e675
-        status: 404 Not Found
-        code: 404
-        duration: 60.163917ms
-    - id: 13
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 118
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: '{"scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false}}'
-        form: {}
-        headers:
-            Content-Type:
-                - application/json
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/a1497798-1b6f-4781-aab9-287e4c101a75/backend-stages
-        method: POST
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 313
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:19:02.397043733Z","id":"68d36769-d375-47dc-9a4c-d97620418a56","pipeline_id":"a1497798-1b6f-4781-aab9-287e4c101a75","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false},"updated_at":"2026-02-18T16:19:02.397043733Z"}'
-        headers:
-            Content-Length:
-                - "313"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 8c69a234-0101-4637-a398-d31558c8206d
-        status: 200 OK
-        code: 200
-        duration: 1.026922958s
-    - id: 14
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 307
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:19:02.397043Z","id":"68d36769-d375-47dc-9a4c-d97620418a56","pipeline_id":"a1497798-1b6f-4781-aab9-287e4c101a75","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false},"updated_at":"2026-02-18T16:19:02.397043Z"}'
-        headers:
-            Content-Length:
-                - "307"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 851eca3a-5ef7-4516-99b1-8d07a6731eac
-        status: 200 OK
-        code: 200
-        duration: 80.037375ms
-    - id: 15
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 307
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:19:02.397043Z","id":"68d36769-d375-47dc-9a4c-d97620418a56","pipeline_id":"a1497798-1b6f-4781-aab9-287e4c101a75","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false},"updated_at":"2026-02-18T16:19:02.397043Z"}'
-        headers:
-            Content-Length:
-                - "307"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - da60a206-8845-4325-920a-07f7211285f0
-        status: 200 OK
-        code: 200
-        duration: 63.092416ms
-    - id: 16
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/a1497798-1b6f-4781-aab9-287e4c101a75
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 484
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:18:55.783107Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"dns","type":"config"}],"id":"a1497798-1b6f-4781-aab9-287e4c101a75","name":"my-edge_services-pipeline","organization_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","project_id":"564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5","status":"warning","updated_at":"2026-02-18T16:18:55.783107Z"}'
-        headers:
-            Content-Length:
-                - "484"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 5c758ff7-6235-4cce-a7f3-bab4a598ea97
-        status: 200 OK
-        code: 200
-        duration: 116.605083ms
-    - id: 17
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            Accept-Encoding:
-                - identity
-            Amz-Sdk-Invocation-Id:
-                - 7fb8e0a3-aa1b-4d77-a8d7-160474152c12
-            Amz-Sdk-Request:
-                - attempt=1; max=3
-            User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
-            X-Amz-Content-Sha256:
-                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-            X-Amz-Date:
-                - 20260218T161902Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?acl=
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?acl=
         method: GET
       response:
         proto: HTTP/2.0
@@ -912,22 +500,22 @@ interactions:
         uncompressed: false
         body: |-
             <?xml version="1.0" encoding="UTF-8"?>
-            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</ID><DisplayName>564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5:564aa517-68b0-4fd7-8c8c-d21c4bcdcbd5</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</DisplayName><ID>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</ID><DisplayName>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
         headers:
             Content-Length:
                 - "698"
             Content-Type:
                 - text/xml; charset=utf-8
             Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txgbdc55742ee7e4afd854f-006995e676
+                - txgde4dc188bed144099c6b-006a608bcb
             X-Amz-Request-Id:
-                - txgbdc55742ee7e4afd854f-006995e676
+                - txgde4dc188bed144099c6b-006a608bcb
         status: 200 OK
         code: 200
-        duration: 149.77125ms
-    - id: 18
+        duration: 116.754451ms
+    - id: 10
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -935,7 +523,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -944,16 +532,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 1aebf72c-9215-40ba-b743-d88ed1a87f30
+                - 58ec6f06-f92b-4032-9ce1-735172888d14
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161902Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?object-lock=
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?object-lock=
         method: GET
       response:
         proto: HTTP/2.0
@@ -961,24 +549,24 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 309
+        content_length: 319
         uncompressed: false
-        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txg45c057a2701b4c489e87-006995e676</RequestId><HostId>txg45c057a2701b4c489e87-006995e676</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource></Error>
+        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txgd84400a51ef64842ad75-006a608bcb</RequestId><HostId>txgd84400a51ef64842ad75-006a608bcb</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource></Error>
         headers:
             Content-Length:
-                - "309"
+                - "319"
             Content-Type:
                 - application/xml
             Date:
-                - Wed, 18 Feb 2026 16:19:02 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txg45c057a2701b4c489e87-006995e676
+                - txgd84400a51ef64842ad75-006a608bcb
             X-Amz-Request-Id:
-                - txg45c057a2701b4c489e87-006995e676
+                - txgd84400a51ef64842ad75-006a608bcb
         status: 404 Not Found
         code: 404
-        duration: 61.422209ms
-    - id: 19
+        duration: 139.654014ms
+    - id: 11
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -986,7 +574,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -995,16 +583,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 0b3c5a5a-e271-4a3e-93ef-909467d029af
+                - 02303310-5e3b-44f3-b18a-6f78d9921327
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161903Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/
         method: GET
       response:
         proto: HTTP/2.0
@@ -1012,26 +600,26 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 266
+        content_length: 276
         uncompressed: false
         body: |-
             <?xml version="1.0" encoding="UTF-8"?>
-            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-es</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
+            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-edgeservices</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
         headers:
             Content-Length:
-                - "266"
+                - "276"
             Content-Type:
                 - application/xml
             Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txgdf7c9bc93c034dc4aac3-006995e677
+                - txg2b3b8d6d814a4485ab0b-006a608bcb
             X-Amz-Request-Id:
-                - txgdf7c9bc93c034dc4aac3-006995e677
+                - txg2b3b8d6d814a4485ab0b-006a608bcb
         status: 200 OK
         code: 200
-        duration: 17.518125ms
-    - id: 20
+        duration: 146.956563ms
+    - id: 12
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1039,7 +627,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -1048,16 +636,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 93e1c59f-4c69-40dd-9273-b83622b93398
+                - 2673113d-9116-4d3b-bd9b-7872c831829b
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161903Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?tagging=
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?tagging=
         method: GET
       response:
         proto: HTTP/2.0
@@ -1076,15 +664,15 @@ interactions:
             Content-Type:
                 - text/xml; charset=utf-8
             Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txg95819b1f72e84e61a383-006995e677
+                - txg24c7c7018c8e49868368-006a608bcb
             X-Amz-Request-Id:
-                - txg95819b1f72e84e61a383-006995e677
+                - txg24c7c7018c8e49868368-006a608bcb
         status: 200 OK
         code: 200
-        duration: 64.873292ms
-    - id: 21
+        duration: 89.832834ms
+    - id: 13
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1092,7 +680,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -1101,16 +689,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 2b7ba695-0e46-40a4-b53d-4a1571d36383
+                - f3dcb47c-5585-40af-a4e4-081f2bcfb8cb
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161903Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?cors=
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?cors=
         method: GET
       response:
         proto: HTTP/2.0
@@ -1118,24 +706,24 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 277
+        content_length: 287
         uncompressed: false
-        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg23c5749e886041f3974a-006995e677</RequestId><HostId>txg23c5749e886041f3974a-006995e677</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource></Error>
+        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg9c6bb7e3145d4156851b-006a608bcb</RequestId><HostId>txg9c6bb7e3145d4156851b-006a608bcb</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource></Error>
         headers:
             Content-Length:
-                - "277"
+                - "287"
             Content-Type:
                 - application/xml
             Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
+                - Wed, 22 Jul 2026 09:22:19 GMT
             X-Amz-Id-2:
-                - txg23c5749e886041f3974a-006995e677
+                - txg9c6bb7e3145d4156851b-006a608bcb
             X-Amz-Request-Id:
-                - txg23c5749e886041f3974a-006995e677
+                - txg9c6bb7e3145d4156851b-006a608bcb
         status: 404 Not Found
         code: 404
-        duration: 189.82125ms
-    - id: 22
+        duration: 90.328057ms
+    - id: 14
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1143,7 +731,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -1152,16 +740,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 74351565-545e-4a1c-a09f-23ab35e31d10
+                - 118c9aa7-fa29-4910-b94c-2c4547d5be88
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161903Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?versioning=
+                - 20260722T092219Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?versioning=
         method: GET
       response:
         proto: HTTP/2.0
@@ -1180,14 +768,414 @@ interactions:
             Content-Type:
                 - text/xml; charset=utf-8
             Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
+                - Wed, 22 Jul 2026 09:22:20 GMT
             X-Amz-Id-2:
-                - txg9bd80b7e039a4ca69d4e-006995e677
+                - txg7ec46cf232914373aa0f-006a608bcc
             X-Amz-Request-Id:
-                - txg9bd80b7e039a4ca69d4e-006995e677
+                - txg7ec46cf232914373aa0f-006a608bcc
         status: 200 OK
         code: 200
-        duration: 169.949333ms
+        duration: 16.3304ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 3ecf68fb-2853-4009-9413-c60a0ce8cb1f
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092220Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?lifecycle=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 372
+        uncompressed: false
+        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txg0ef6625dbc7042bc9baf-006a608bcc</RequestId><HostId>txg0ef6625dbc7042bc9baf-006a608bcc</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource><BucketName>test-acc-scaleway-object-bucket-basic-edgeservices</BucketName></Error>
+        headers:
+            Content-Length:
+                - "372"
+            Content-Type:
+                - application/xml
+            Date:
+                - Wed, 22 Jul 2026 09:22:20 GMT
+            X-Amz-Id-2:
+                - txg0ef6625dbc7042bc9baf-006a608bcc
+            X-Amz-Request-Id:
+                - txg0ef6625dbc7042bc9baf-006a608bcc
+        status: 404 Not Found
+        code: 404
+        duration: 98.53965ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 128
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: '{"scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false}}'
+        form: {}
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/07b906e0-eb53-48f5-a88e-ffe2a73cf1b2/backend-stages
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 344
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:20.805941778Z","id":"3413a149-ed88-4298-8bbe-1889b4009d29","pipeline_id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false},"status":"inactive","updated_at":"2026-07-22T09:22:20.805941778Z"}'
+        headers:
+            Content-Length:
+                - "344"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 2b9328d6-5567-4b7f-9bcf-f73ebc673661
+        status: 200 OK
+        code: 200
+        duration: 681.605869ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 338
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:20.805941Z","id":"3413a149-ed88-4298-8bbe-1889b4009d29","pipeline_id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false},"status":"inactive","updated_at":"2026-07-22T09:22:20.805941Z"}'
+        headers:
+            Content-Length:
+                - "338"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:20 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 877b7231-d10e-4078-a786-96a6ba8a5145
+        status: 200 OK
+        code: 200
+        duration: 112.543652ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 338
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:20.805941Z","id":"3413a149-ed88-4298-8bbe-1889b4009d29","pipeline_id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false},"status":"inactive","updated_at":"2026-07-22T09:22:20.805941Z"}'
+        headers:
+            Content-Length:
+                - "338"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - c84ffd61-866e-401b-8f44-067d8c325ef6
+        status: 200 OK
+        code: 200
+        duration: 90.015547ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/96f24ee6-870c-43e7-b647-f783f8e945f5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 331
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:09.615046Z","description":"","id":"96f24ee6-870c-43e7-b647-f783f8e945f5","name":"tf_tests_edge_services_project_backend-basic","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","qualification":{"architecture_type":"unknown_architecture_type"},"updated_at":"2026-07-22T09:22:09.615046Z"}'
+        headers:
+            Content-Length:
+                - "331"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 5ca9a3d4-2f67-4203-89d1-8b6c54d09af3
+        status: 200 OK
+        code: 200
+        duration: 66.000614ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/current-plan/96f24ee6-870c-43e7-b647-f783f8e945f5
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 23
+        uncompressed: false
+        body: '{"plan_name":"starter"}'
+        headers:
+            Content-Length:
+                - "23"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 2d8fdb5e-2b3c-4ab6-ab2f-3cc35e3eba5e
+        status: 200 OK
+        code: 200
+        duration: 56.014023ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/07b906e0-eb53-48f5-a88e-ffe2a73cf1b2
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 517
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:10.071419Z","description":"pipeline description","errors":[{"code":"pipeline_missing_head_stage","message":"first (head) stage missing","severity":"critical","stage":"unknown_stage","type":"config"}],"id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","name":"my-edge_services-pipeline","organization_id":"57a1e028-d7d3-4a4e-80cf-52cef8fd0d3e","project_id":"96f24ee6-870c-43e7-b647-f783f8e945f5","status":"warning","updated_at":"2026-07-22T09:22:10.071419Z","vpc_endpoint_ids":[]}'
+        headers:
+            Content-Length:
+                - "517"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 035e67e4-4437-4968-b123-66227862fa7f
+        status: 200 OK
+        code: 200
+        duration: 65.80919ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 8ecac8ac-6499-4916-becc-cac46c46a0ab
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092221Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?acl=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 698
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <AccessControlPolicy xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Owner><DisplayName>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</DisplayName><ID>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</ID></Owner><AccessControlList><Grant><Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CanonicalUser"><ID>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</ID><DisplayName>96f24ee6-870c-43e7-b647-f783f8e945f5:96f24ee6-870c-43e7-b647-f783f8e945f5</DisplayName></Grantee><Permission>FULL_CONTROL</Permission></Grant></AccessControlList></AccessControlPolicy>
+        headers:
+            Content-Length:
+                - "698"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            X-Amz-Id-2:
+                - txg767ce22b8f6043b6936e-006a608bcd
+            X-Amz-Request-Id:
+                - txg767ce22b8f6043b6936e-006a608bcd
+        status: 200 OK
+        code: 200
+        duration: 135.402527ms
     - id: 23
       request:
         proto: HTTP/1.1
@@ -1196,7 +1184,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -1205,16 +1193,16 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - a926e37a-0d80-4c9e-8472-97f700028e1d
+                - b001b31e-275c-4ee6-a4b5-62b1db3573aa
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161903Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/?lifecycle=
+                - 20260722T092221Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?object-lock=
         method: GET
       response:
         proto: HTTP/2.0
@@ -1222,23 +1210,23 @@ interactions:
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 352
+        content_length: 319
         uncompressed: false
-        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txg8045ca2c2d3d4fc5ac91-006995e677</RequestId><HostId>txg8045ca2c2d3d4fc5ac91-006995e677</HostId><Resource>/test-acc-scaleway-object-bucket-basic-es</Resource><BucketName>test-acc-scaleway-object-bucket-basic-es</BucketName></Error>
+        body: <Error><Code>ObjectLockConfigurationNotFoundError</Code><Message>Object Lock configuration does not exist for this bucket</Message><RequestId>txg0aeace1a7d8a4885bcc4-006a608bcd</RequestId><HostId>txg0aeace1a7d8a4885bcc4-006a608bcd</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource></Error>
         headers:
             Content-Length:
-                - "352"
+                - "319"
             Content-Type:
                 - application/xml
             Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
+                - Wed, 22 Jul 2026 09:22:21 GMT
             X-Amz-Id-2:
-                - txg8045ca2c2d3d4fc5ac91-006995e677
+                - txg0aeace1a7d8a4885bcc4-006a608bcd
             X-Amz-Request-Id:
-                - txg8045ca2c2d3d4fc5ac91-006995e677
+                - txg0aeace1a7d8a4885bcc4-006a608bcd
         status: 404 Not Found
         code: 404
-        duration: 7.488292ms
+        duration: 204.027728ms
     - id: 24
       request:
         proto: HTTP/1.1
@@ -1247,199 +1235,7 @@ interactions:
         content_length: 0
         transfer_encoding: []
         trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 307
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:19:02.397043Z","id":"68d36769-d375-47dc-9a4c-d97620418a56","pipeline_id":"a1497798-1b6f-4781-aab9-287e4c101a75","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false},"updated_at":"2026-02-18T16:19:02.397043Z"}'
-        headers:
-            Content-Length:
-                - "307"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - d129539e-1bf5-4b3e-b64c-c9e29c977442
-        status: 200 OK
-        code: 200
-        duration: 80.447709ms
-    - id: 25
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 307
-        uncompressed: false
-        body: '{"created_at":"2026-02-18T16:19:02.397043Z","id":"68d36769-d375-47dc-9a4c-d97620418a56","pipeline_id":"a1497798-1b6f-4781-aab9-287e4c101a75","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-es","bucket_region":"fr-par","is_website":false},"updated_at":"2026-02-18T16:19:02.397043Z"}'
-        headers:
-            Content-Length:
-                - "307"
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:03 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 1cd061c2-3f1c-4ec6-b5ee-ac2bff656597
-        status: 200 OK
-        code: 200
-        duration: 127.628542ms
-    - id: 26
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:04 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 19403f42-755c-41dd-bd07-4743ffbdb654
-        status: 204 No Content
-        code: 204
-        duration: 162.513625ms
-    - id: 27
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: api.scaleway.com
-        remote_addr: ""
-        request_uri: ""
-        body: ""
-        form: {}
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/a1497798-1b6f-4781-aab9-287e4c101a75
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        transfer_encoding: []
-        trailer: {}
-        content_length: 0
-        uncompressed: false
-        body: ""
-        headers:
-            Content-Security-Policy:
-                - default-src 'none'; frame-ancestors 'none'
-            Content-Type:
-                - application/json
-            Date:
-                - Wed, 18 Feb 2026 16:19:04 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
-            Strict-Transport-Security:
-                - max-age=63072000
-            X-Content-Type-Options:
-                - nosniff
-            X-Frame-Options:
-                - DENY
-            X-Request-Id:
-                - 0155328f-fbd8-4584-b2ec-a43bd06092f1
-        status: 204 No Content
-        code: 204
-        duration: 98.401875ms
-    - id: 28
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        transfer_encoding: []
-        trailer: {}
-        host: test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
         remote_addr: ""
         request_uri: ""
         body: ""
@@ -1448,36 +1244,250 @@ interactions:
             Accept-Encoding:
                 - identity
             Amz-Sdk-Invocation-Id:
-                - 2a6d3d35-ff04-4945-9843-64869da4e8ac
+                - d19f8188-91e8-41a8-95ca-2ce0a2246083
             Amz-Sdk-Request:
                 - attempt=1; max=3
             User-Agent:
-                - aws-sdk-go-v2/1.41.1 ua/2.1 os/macos lang/go#1.25.3 md/GOOS#darwin md/GOARCH#arm64 api/s3#1.93.0 m/E,e
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
             X-Amz-Content-Sha256:
                 - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
             X-Amz-Date:
-                - 20260218T161904Z
-        url: https://test-acc-scaleway-object-bucket-basic-es.s3.fr-par.scw.cloud/
-        method: DELETE
+                - 20260722T092221Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/
+        method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         transfer_encoding: []
         trailer: {}
-        content_length: 0
+        content_length: 276
         uncompressed: false
-        body: ""
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>test-acc-scaleway-object-bucket-basic-edgeservices</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated></ListBucketResult>
         headers:
+            Content-Length:
+                - "276"
+            Content-Type:
+                - application/xml
             Date:
-                - Wed, 18 Feb 2026 16:19:04 GMT
+                - Wed, 22 Jul 2026 09:22:21 GMT
             X-Amz-Id-2:
-                - txg08d53d0e617f440dbbc4-006995e678
+                - txge24357b26aaf4067920d-006a608bcd
             X-Amz-Request-Id:
-                - txg08d53d0e617f440dbbc4-006995e678
-        status: 204 No Content
-        code: 204
-        duration: 212.961125ms
+                - txge24357b26aaf4067920d-006a608bcd
+        status: 200 OK
+        code: 200
+        duration: 76.403074ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 79a1d741-89fa-489d-b1ab-2c283d73b1a2
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092221Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?tagging=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 118
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Tagging><TagSet><Tag><Key>foo</Key><Value>bar</Value></Tag></TagSet></Tagging>
+        headers:
+            Content-Length:
+                - "118"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Wed, 22 Jul 2026 09:22:21 GMT
+            X-Amz-Id-2:
+                - txg2e9f820d781c4f6f98eb-006a608bcd
+            X-Amz-Request-Id:
+                - txg2e9f820d781c4f6f98eb-006a608bcd
+        status: 200 OK
+        code: 200
+        duration: 75.300887ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 5f4c309f-fb58-49c5-a129-edba2841a104
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092221Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?cors=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 287
+        uncompressed: false
+        body: <Error><Code>NoSuchCORSConfiguration</Code><Message>The CORS configuration does not exist</Message><RequestId>txg3aca15454eb24661bbee-006a608bce</RequestId><HostId>txg3aca15454eb24661bbee-006a608bce</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource></Error>
+        headers:
+            Content-Length:
+                - "287"
+            Content-Type:
+                - application/xml
+            Date:
+                - Wed, 22 Jul 2026 09:22:22 GMT
+            X-Amz-Id-2:
+                - txg3aca15454eb24661bbee-006a608bce
+            X-Amz-Request-Id:
+                - txg3aca15454eb24661bbee-006a608bce
+        status: 404 Not Found
+        code: 404
+        duration: 98.125647ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - c0ef575a-79e1-4a4b-afae-c8c168a8a838
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092222Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?versioning=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 107
+        uncompressed: false
+        body: |-
+            <?xml version="1.0" encoding="UTF-8"?>
+            <VersioningConfiguration><Status></Status></VersioningConfiguration>
+        headers:
+            Content-Length:
+                - "107"
+            Content-Type:
+                - text/xml; charset=utf-8
+            Date:
+                - Wed, 22 Jul 2026 09:22:22 GMT
+            X-Amz-Id-2:
+                - txg1bad606cabba4497998e-006a608bce
+            X-Amz-Request-Id:
+                - txg1bad606cabba4497998e-006a608bce
+        status: 200 OK
+        code: 200
+        duration: 84.303838ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 6f2b480b-55be-4b9a-a43d-a423337b5b0c
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092222Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/?lifecycle=
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 372
+        uncompressed: false
+        body: <Error><Code>NoSuchLifecycleConfiguration</Code><Message>The lifecycle configuration does not exist</Message><RequestId>txg4ebf19aeb27149f78384-006a608bce</RequestId><HostId>txg4ebf19aeb27149f78384-006a608bce</HostId><Resource>/test-acc-scaleway-object-bucket-basic-edgeservices</Resource><BucketName>test-acc-scaleway-object-bucket-basic-edgeservices</BucketName></Error>
+        headers:
+            Content-Length:
+                - "372"
+            Content-Type:
+                - application/xml
+            Date:
+                - Wed, 22 Jul 2026 09:22:22 GMT
+            X-Amz-Id-2:
+                - txg4ebf19aeb27149f78384-006a608bce
+            X-Amz-Request-Id:
+                - txg4ebf19aeb27149f78384-006a608bce
+        status: 404 Not Found
+        code: 404
+        duration: 58.715597ms
     - id: 29
       request:
         proto: HTTP/1.1
@@ -1493,8 +1503,341 @@ interactions:
         form: {}
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.25.3; darwin; arm64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/68d36769-d375-47dc-9a4c-d97620418a56
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 338
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:20.805941Z","id":"3413a149-ed88-4298-8bbe-1889b4009d29","pipeline_id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false},"status":"inactive","updated_at":"2026-07-22T09:22:20.805941Z"}'
+        headers:
+            Content-Length:
+                - "338"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 4ed66cb3-0e1f-48c4-9d26-976d4699318f
+        status: 200 OK
+        code: 200
+        duration: 94.898905ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 338
+        uncompressed: false
+        body: '{"created_at":"2026-07-22T09:22:20.805941Z","id":"3413a149-ed88-4298-8bbe-1889b4009d29","pipeline_id":"07b906e0-eb53-48f5-a88e-ffe2a73cf1b2","scaleway_s3":{"bucket_name":"test-acc-scaleway-object-bucket-basic-edgeservices","bucket_region":"fr-par","is_website":false},"status":"inactive","updated_at":"2026-07-22T09:22:20.805941Z"}'
+        headers:
+            Content-Length:
+                - "338"
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:22 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 745326c6-7974-438f-92ac-655cc587a8d4
+        status: 200 OK
+        code: 200
+        duration: 92.21784ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 6da145d5-f0e5-46a1-88e2-82c422db9bd1
+        status: 204 No Content
+        code: 204
+        duration: 209.608926ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/pipelines/07b906e0-eb53-48f5-a88e-ffe2a73cf1b2
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 60431866-0526-4d16-b954-b954419f0c8e
+        status: 204 No Content
+        code: 204
+        duration: 203.800023ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/current-plan/96f24ee6-870c-43e7-b647-f783f8e945f5
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:23 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 18f678f2-3e67-4c2f-b3ea-41c4c71d40a8
+        status: 204 No Content
+        code: 204
+        duration: 125.32209ms
+    - id: 34
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            Accept-Encoding:
+                - identity
+            Amz-Sdk-Invocation-Id:
+                - 9ad92fb9-f8c4-4ffd-831d-4ed19bafe769
+            Amz-Sdk-Request:
+                - attempt=1; max=3
+            User-Agent:
+                - aws-sdk-go-v2/1.42.1 ua/2.1 os/linux lang/go#1.26.0 md/GOOS#linux md/GOARCH#amd64 api/s3#1.104.2 terraform-provider-scaleway/develop m/E,e
+            X-Amz-Content-Sha256:
+                - e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+            X-Amz-Date:
+                - 20260722T092223Z
+        url: https://test-acc-scaleway-object-bucket-basic-edgeservices.s3.fr-par.scw.cloud/
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Date:
+                - Wed, 22 Jul 2026 09:22:23 GMT
+            X-Amz-Id-2:
+                - txg7202d58228c34b9ea1a1-006a608bcf
+            X-Amz-Request-Id:
+                - txg7202d58228c34b9ea1a1-006a608bcf
+        status: 204 No Content
+        code: 204
+        duration: 502.239191ms
+    - id: 35
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/account/v3/projects/96f24ee6-870c-43e7-b647-f783f8e945f5
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        transfer_encoding: []
+        trailer: {}
+        content_length: 0
+        uncompressed: false
+        body: ""
+        headers:
+            Content-Security-Policy:
+                - default-src 'none'; frame-ancestors 'none'
+            Content-Type:
+                - application/json
+            Date:
+                - Wed, 22 Jul 2026 09:22:25 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge02)
+            Strict-Transport-Security:
+                - max-age=63072000
+            X-Content-Type-Options:
+                - nosniff
+            X-Frame-Options:
+                - DENY
+            X-Request-Id:
+                - 10c386c4-fae1-4a80-a7b9-022f69edbc30
+        status: 204 No Content
+        code: 204
+        duration: 1.728670197s
+    - id: 36
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        transfer_encoding: []
+        trailer: {}
+        host: api.scaleway.com
+        remote_addr: ""
+        request_uri: ""
+        body: ""
+        form: {}
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/edge-services/v1beta1/backend-stages/3413a149-ed88-4298-8bbe-1889b4009d29
         method: DELETE
       response:
         proto: HTTP/2.0
@@ -1513,9 +1856,9 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Wed, 18 Feb 2026 16:19:04 GMT
+                - Wed, 22 Jul 2026 09:22:25 GMT
             Server:
-                - Scaleway API Gateway (fr-par-2;edge01)
+                - Scaleway API Gateway (fr-par-2;edge02)
             Strict-Transport-Security:
                 - max-age=63072000
             X-Content-Type-Options:
@@ -1523,7 +1866,7 @@ interactions:
             X-Frame-Options:
                 - DENY
             X-Request-Id:
-                - aff9bbbe-1e66-42f8-b86c-71d15fe0226d
+                - b8ade120-78e5-40f9-9fab-0296d5a9955d
         status: 404 Not Found
         code: 404
-        duration: 51.258166ms
+        duration: 56.719724ms
