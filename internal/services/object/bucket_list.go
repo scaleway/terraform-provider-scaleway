@@ -271,6 +271,7 @@ func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketL
 		// Filter by tags if specified
 		if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
 			var filterTagStrings []string
+
 			diags := data.Tags.ElementsAs(ctx, &filterTagStrings, false)
 			if diags.HasError() {
 				continue
