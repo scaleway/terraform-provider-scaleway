@@ -96,7 +96,7 @@ func DataSourceRegistryImageRead(ctx context.Context, d *schema.ResourceData, m 
 			Name:        types.ExpandStringPtr(imageName),
 			NamespaceID: namespaceID,
 			ProjectID:   types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithContext(ctx))
+		}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}

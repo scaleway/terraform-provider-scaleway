@@ -215,6 +215,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
+		keymanager.NewKeyMaterialResource,
 	}
 }
 
@@ -277,6 +278,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
 		block.NewSnapshotListResource,
+		block.NewVolumeListResource,
 		mongodb.NewInstanceListResource,
 		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
@@ -312,5 +314,6 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		functions.NewRegionFromID,
+		functions.NewIDFromRegionalID,
 	}
 }
