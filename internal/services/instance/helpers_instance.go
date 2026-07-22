@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -37,9 +38,33 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, err
 	return instanceAPI, zone, nil
 }
 
+// newAPIV2WithZone returns a new instance API v2 and the zone for a Create request
+func newAPIV2WithZone(d *schema.ResourceData, m any) (*instanceV2.API, scw.Zone, error) {
+	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
+
+	zone, err := meta.ExtractZone(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return instanceAPI, zone, nil
+}
+
 // NewAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func NewAPIWithZoneAndID(m any, zonedID string) (*instance.API, scw.Zone, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
+
+	zone, ID, err := zonal.ParseID(zonedID)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return instanceAPI, zone, ID, nil
+}
+
+// NewAPIV2WithZoneAndID returns an instance API v2 with zone and ID extracted from the state
+func NewAPIV2WithZoneAndID(m any, zonedID string) (*instanceV2.API, scw.Zone, string, error) {
+	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
 
 	zone, ID, err := zonal.ParseID(zonedID)
 	if err != nil {
