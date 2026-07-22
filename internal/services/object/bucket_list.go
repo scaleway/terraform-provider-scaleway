@@ -212,7 +212,7 @@ func (r *BucketListResource) List(ctx context.Context, req list.ListRequest, str
 			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
 			result.Diagnostics.Append(identitySetDiags...)
 
-			setBucketState(resourceData, row.Bucket, row.Region, row.ProjectID)
+			setBucketStateForList(resourceData, row.Bucket, row.Region, row.ProjectID)
 
 			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
 			if errTfTypeResourceState != nil {
@@ -332,7 +332,7 @@ func tagsMatch(bucketTags []string, filterTags []string) bool {
 	return true
 }
 
-func setBucketState(resourceData *sdkv2schema.ResourceData, bucket *s3Types.Bucket, region scw.Region, projectID string) {
+func setBucketStateForList(resourceData *sdkv2schema.ResourceData, bucket *s3Types.Bucket, region scw.Region, projectID string) {
 	if bucket.Name != nil {
 		_ = resourceData.Set("name", *bucket.Name)
 	}
