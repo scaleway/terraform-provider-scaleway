@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -90,6 +90,7 @@ func TestAccPlacementGroup_Rename(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.base"),
 					resource.TestCheckResourceAttr("scaleway_instance_placement_group.base", "name", "foo"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_placement_group.base", "id", "scaleway_instance_server.base", "placement_group_id"),
 				),
 			},
 			{
@@ -168,7 +169,7 @@ func isPlacementGroupPresent(tt *acctest.TestTools, n string) resource.TestCheck
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, ID, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+		instanceAPI, zone, ID, err := instance.NewAPIV2WithZoneAndID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
@@ -195,7 +196,7 @@ func isPlacementGroupDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					continue
 				}
 
-				api, zone, id, err := instance.NewAPIWithZoneAndID(tt.Meta, rs.Primary.ID)
+				api, zone, id, err := instance.NewAPIV2WithZoneAndID(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}

@@ -119,7 +119,7 @@ func TestAccListBlockSnapshots_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLengthAtLeast("list.scaleway_block_snapshot.all", 3),
+					querycheck.ExpectLength("list.scaleway_block_snapshot.all", 3),
 				},
 			},
 

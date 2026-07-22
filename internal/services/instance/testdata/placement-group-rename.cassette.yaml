@@ -6,39 +6,104 @@ interactions:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 116
+        content_length: 104
         host: api.scaleway.com
-        body: '{"name":"foo","project":"105bdce1-64c0-48ab-899d-868455867ecf","policy_mode":"enforced","policy_type":"low_latency"}'
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552","name":"foo","policy_type":"low_latency","tags":[]}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"foo", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:11:56.943778Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:11:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - a2d7c6ba-8c35-4863-8f3e-0fb8ea8ebb25
+        status: 200 OK
+        code: 200
+        duration: 258.3243ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 26
+        host: api.scaleway.com
+        body: '{"policy_mode":"enforced"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
         content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "304"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:16 GMT
-            Location:
-                - https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 656c1e8b-7e81-4668-af2b-bc012ac3921b
-        status: 201 Created
-        code: 201
-        duration: 341.789846ms
-    - id: 1
+                - d13e51ca-1865-4ea7-8443-dd3d8628438c
+        status: 200 OK
+        code: 200
+        duration: 107.183377ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 304
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "304"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:11:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - b6884891-c609-49a1-b89c-5083812862aa
+        status: 200 OK
+        code: 200
+        duration: 74.137352ms
+    - id: 3
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -50,7 +115,7 @@ interactions:
                 - "1"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=1
         method: GET
       response:
@@ -65,19 +130,19 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:16 GMT
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Link:
                 - </products/servers?page=2&per_page=50&>; rel="next",</products/servers?page=3&per_page=50&>; rel="last"
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 5fe4a601-a9a2-4fee-a2f2-ac82fd7fe0a8
+                - 067056e4-ee6c-4017-af22-62d82d18eb7d
             X-Total-Count:
                 - "107"
         status: 200 OK
         code: 200
-        duration: 21.682706ms
-    - id: 2
+        duration: 28.487459ms
+    - id: 4
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -89,7 +154,7 @@ interactions:
                 - "2"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=2
         method: GET
       response:
@@ -104,19 +169,19 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:16 GMT
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Link:
                 - </products/servers?page=1&per_page=50&>; rel="first",</products/servers?page=1&per_page=50&>; rel="previous",</products/servers?page=3&per_page=50&>; rel="next",</products/servers?page=3&per_page=50&>; rel="last"
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 34c207fb-b044-4902-be25-a0a4888f67ba
+                - d88a4b50-1e0f-41f8-bfa1-ea2ae37c0f4c
             X-Total-Count:
                 - "107"
         status: 200 OK
         code: 200
-        duration: 26.477871ms
-    - id: 3
+        duration: 25.50399ms
+    - id: 5
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -128,7 +193,7 @@ interactions:
                 - "3"
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v1/zones/fr-par-1/products/servers?page=3
         method: GET
       response:
@@ -143,19 +208,19 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:16 GMT
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Link:
                 - </products/servers?page=1&per_page=50&>; rel="first",</products/servers?page=2&per_page=50&>; rel="previous",</products/servers?page=3&per_page=50&>; rel="last"
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 7ec4fe42-5f25-46a8-acb7-da87e5150c64
+                - 51b0d99f-e1b1-4399-98dc-a81b483de2d3
             X-Total-Count:
                 - "107"
         status: 200 OK
         code: 200
-        duration: 17.813531ms
-    - id: 4
+        duration: 19.719242ms
+    - id: 6
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -173,130 +238,66 @@ interactions:
                 - fr-par-1
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/marketplace/v2/local-images?image_label=ubuntu_focal&order_by=type_asc&type=instance_sbs&zone=fr-par-1
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2061
-        body: '{"local_images":[{"id":"516875a2-40bd-487a-bd5c-052b61f248a1", "arch":"arm64", "zone":"fr-par-1", "compatible_commercial_types":["COPARM1-2C-8G", "COPARM1-4C-16G", "COPARM1-8C-32G", "COPARM1-16C-64G", "COPARM1-32C-128G", "BASIC2-A2C-4G", "BASIC2-A2C-8G", "BASIC2-A4C-8G", "BASIC2-A4C-16G", "BASIC2-A8C-16G", "BASIC2-A8C-32G", "BASIC2-A16C-32G", "BASIC2-A16C-64G", "STANDARD2-A2C-8G", "STANDARD2-A4C-16G", "STANDARD2-A8C-32G", "STANDARD2-A16C-64G", "STANDARD2-A32C-128G", "STANDARD2-A48C-192G", "STANDARD2-A64C-256G"], "label":"ubuntu_focal", "type":"instance_sbs"}, {"id":"fc4d4e26-849d-4e03-b933-cb1626ca8cad", "arch":"x86_64", "zone":"fr-par-1", "compatible_commercial_types":["DEV1-L", "DEV1-M", "DEV1-S", "DEV1-XL", "GP1-L", "GP1-M", "GP1-S", "GP1-XL", "GP1-XS", "START1-L", "START1-M", "START1-S", "START1-XS", "VC1L", "VC1M", "VC1S", "X64-120GB", "X64-15GB", "X64-30GB", "X64-60GB", "PRO2-XXS", "PRO2-XS", "PRO2-S", "PRO2-M", "PRO2-L", "STARDUST1-S", "PLAY2-MICRO", "PLAY2-NANO", "PLAY2-PICO", "POP2-2C-8G", "POP2-4C-16G", "POP2-8C-32G", "POP2-16C-64G", "POP2-32C-128G", "POP2-48C-192G", "POP2-64C-256G", "POP2-HM-2C-16G", "POP2-HM-4C-32G", "POP2-HM-8C-64G", "POP2-HM-16C-128G", "POP2-HM-32C-256G", "POP2-HM-48C-384G", "POP2-HM-64C-512G", "POP2-HC-2C-4G", "POP2-HC-4C-8G", "POP2-HC-8C-16G", "POP2-HC-16C-32G", "POP2-HC-32C-64G", "POP2-HC-48C-96G", "POP2-HC-64C-128G", "POP2-HN-3", "POP2-HN-5", "POP2-HN-10", "BASIC3-X2C-4G", "BASIC3-X2C-8G", "BASIC3-X4C-8G", "BASIC3-X4C-16G", "BASIC3-X8C-16G", "BASIC3-X8C-32G", "BASIC3-X16C-32G", "BASIC3-X16C-64G", "STANDARD3-X2C-8G", "STANDARD3-X4C-16G", "STANDARD3-X8C-32G", "STANDARD3-X16C-64G", "STANDARD3-X32C-128G", "STANDARD3-X48C-192G", "STANDARD3-X64C-256G", "MEMORY3-X2C-16G", "MEMORY3-X4C-32G", "MEMORY3-X8C-64G", "MEMORY3-X16C-128G", "MEMORY3-X32C-256G", "MEMORY3-X48C-384G", "COMPUTE3-X2C-4G", "COMPUTE3-X4C-8G", "COMPUTE3-X8C-16G", "COMPUTE3-X16C-32G", "COMPUTE3-X32C-64G", "COMPUTE3-X48C-96G", "COMPUTE3-X64C-128G", "COMPUTE3-X96C-192G"], "label":"ubuntu_focal", "type":"instance_sbs"}], "total_count":2}'
+        content_length: 2599
+        body: '{"local_images":[{"id":"516875a2-40bd-487a-bd5c-052b61f248a1", "arch":"arm64", "zone":"fr-par-1", "compatible_commercial_types":["COPARM1-2C-8G", "COPARM1-4C-16G", "COPARM1-8C-32G", "COPARM1-16C-64G", "COPARM1-32C-128G", "BASIC2-A2C-4G", "BASIC2-A2C-8G", "BASIC2-A4C-8G", "BASIC2-A4C-16G", "BASIC2-A8C-16G", "BASIC2-A8C-32G", "BASIC2-A16C-32G", "BASIC2-A16C-64G", "STANDARD2-A2C-8G", "STANDARD2-A4C-16G", "STANDARD2-A8C-32G", "STANDARD2-A16C-64G", "STANDARD2-A32C-128G", "STANDARD2-A48C-192G", "STANDARD2-A64C-256G", "BASIC2-A6C-12G", "BASIC2-A6C-24G", "BASIC2-A12C-24G", "BASIC2-A12C-48G", "STANDARD2-A6C-24G", "STANDARD2-A12C-48G"], "label":"ubuntu_focal", "type":"instance_sbs"}, {"id":"fc4d4e26-849d-4e03-b933-cb1626ca8cad", "arch":"x86_64", "zone":"fr-par-1", "compatible_commercial_types":["DEV1-L", "DEV1-M", "DEV1-S", "DEV1-XL", "GP1-L", "GP1-M", "GP1-S", "GP1-XL", "GP1-XS", "START1-L", "START1-M", "START1-S", "START1-XS", "VC1L", "VC1M", "VC1S", "X64-120GB", "X64-15GB", "X64-30GB", "X64-60GB", "PRO2-XXS", "PRO2-XS", "PRO2-S", "PRO2-M", "PRO2-L", "STARDUST1-S", "PLAY2-MICRO", "PLAY2-NANO", "PLAY2-PICO", "POP2-2C-8G", "POP2-4C-16G", "POP2-8C-32G", "POP2-16C-64G", "POP2-32C-128G", "POP2-48C-192G", "POP2-64C-256G", "POP2-HM-2C-16G", "POP2-HM-4C-32G", "POP2-HM-8C-64G", "POP2-HM-16C-128G", "POP2-HM-32C-256G", "POP2-HM-48C-384G", "POP2-HM-64C-512G", "POP2-HC-2C-4G", "POP2-HC-4C-8G", "POP2-HC-8C-16G", "POP2-HC-16C-32G", "POP2-HC-32C-64G", "POP2-HC-48C-96G", "POP2-HC-64C-128G", "POP2-HN-3", "POP2-HN-5", "POP2-HN-10", "BASIC3-X2C-4G", "BASIC3-X2C-8G", "BASIC3-X4C-8G", "BASIC3-X4C-16G", "BASIC3-X8C-16G", "BASIC3-X8C-32G", "BASIC3-X16C-32G", "BASIC3-X16C-64G", "STANDARD3-X2C-8G", "STANDARD3-X4C-16G", "STANDARD3-X8C-32G", "STANDARD3-X16C-64G", "STANDARD3-X32C-128G", "STANDARD3-X48C-192G", "STANDARD3-X64C-256G", "MEMORY3-X2C-16G", "MEMORY3-X4C-32G", "MEMORY3-X8C-64G", "MEMORY3-X16C-128G", "MEMORY3-X32C-256G", "MEMORY3-X48C-384G", "COMPUTE3-X2C-4G", "COMPUTE3-X4C-8G", "COMPUTE3-X8C-16G", "COMPUTE3-X16C-32G", "COMPUTE3-X32C-64G", "COMPUTE3-X48C-96G", "COMPUTE3-X64C-128G", "COMPUTE3-X96C-192G", "POP2-6C-24G", "POP2-12C-48G", "POP2-24C-96G", "POP2-HM-6C-48G", "POP2-HM-12C-96G", "POP2-HM-24C-192G", "POP2-HC-6C-12G", "POP2-HC-12C-24G", "POP2-HC-24C-48G", "BASIC3-X6C-12G", "BASIC3-X6C-24G", "BASIC3-X12C-24G", "BASIC3-X12C-48G", "STANDARD3-X6C-24G", "STANDARD3-X12C-48G", "STANDARD3-X24C-96G", "COMPUTE3-X6C-12G", "COMPUTE3-X12C-24G", "COMPUTE3-X24C-48G", "MEMORY3-X6C-48G", "MEMORY3-X12C-96G", "MEMORY3-X24C-192G"], "label":"ubuntu_focal", "type":"instance_sbs"}], "total_count":2}'
         headers:
             Content-Length:
-                - "2061"
+                - "2599"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:16 GMT
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - d05ea9b5-1b51-4ace-955a-4e6fe2a2086b
+                - 066bd6f5-24ad-46b7-9145-ad9808ca602d
         status: 200 OK
         code: 200
-        duration: 45.027076ms
-    - id: 5
+        duration: 55.12191ms
+    - id: 7
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 292
+        content_length: 289
         host: api.scaleway.com
-        body: '{"name":"tf-srv-recursing-chaum","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"fc4d4e26-849d-4e03-b933-cb1626ca8cad","volumes":{"0":{"boot":false}},"boot_type":"local","project":"105bdce1-64c0-48ab-899d-868455867ecf","placement_group":"c1bb1826-4b4c-4f33-beec-8da8593d7791"}'
+        body: '{"name":"tf-srv-quirky-black","dynamic_ip_required":false,"commercial_type":"DEV1-S","image":"fc4d4e26-849d-4e03-b933-cb1626ca8cad","volumes":{"0":{"boot":false}},"boot_type":"local","project":"fa1e3217-dc80-42ac-85c3-3f034b78b552","placement_group":"4320069b-c533-424f-9f64-cb4d213d8bc6"}'
         headers:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
         url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2091
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:18.522579+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
+        content_length: 2085
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:11:57.417447+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "2091"
+                - "2085"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:18 GMT
+                - Tue, 21 Jul 2026 11:11:57 GMT
             Location:
-                - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - e956493e-aaf9-42e8-93f5-b1fbfe8dc3c5
+                - 951fb2fc-3e20-4814-a22f-895e911aab0f
         status: 201 Created
         code: 201
-        duration: 2.162679845s
-    - id: 6
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2177
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:18.522579+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud", "admin_password_encryption_ssh_key_id": null, "admin_password_encrypted_value": null}}'
-        headers:
-            Content-Length:
-                - "2177"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:19 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - fbc8640f-c5fc-4439-a75b-1334bd043ed8
-        status: 200 OK
-        code: 200
-        duration: 105.834403ms
-    - id: 7
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2091
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:18.522579+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
-        headers:
-            Content-Length:
-                - "2091"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:19 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - b663962b-51e5-4e44-b1f2-41f82c31cf8c
-        status: 200 OK
-        code: 200
-        duration: 85.230695ms
+        duration: 613.872634ms
     - id: 8
       request:
         proto: HTTP/1.1
@@ -306,30 +307,94 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 2085
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:11:57.417447+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
+        headers:
+            Content-Length:
+                - "2085"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:11:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 85eeb205-c7ff-48ed-9503-5c89408a933a
+        status: 200 OK
+        code: 200
+        duration: 107.563951ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 2085
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopped", "protected": false, "state_detail": "", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:11:57.417447+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["poweron", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
+        headers:
+            Content-Length:
+                - "2085"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:11:58 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 4fc364a0-27ff-45f3-82bb-db8499a4002a
+        status: 200 OK
+        code: 200
+        duration: 96.407511ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 720
-        body: '{"id":"18252193-6c12-4853-a9bd-e0293557e3cc", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-23T09:41:18.713158Z", "updated_at":"2026-06-23T09:41:18.713158Z", "references":[{"id":"4373d53c-a230-412e-940f-020c95be97c4", "product_resource_type":"instance_server", "product_resource_id":"57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "created_at":"2026-06-23T09:41:18.713158Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        body: '{"id":"3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-07-21T11:11:57.598402Z", "updated_at":"2026-07-21T11:11:57.717535Z", "references":[{"id":"d780d2ce-ae19-4d06-8793-a45298de4aa7", "product_resource_type":"instance_server", "product_resource_id":"6e1b28cf-d944-4ccb-9c68-c68ff1823436", "created_at":"2026-07-21T11:11:57.598402Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
         headers:
             Content-Length:
                 - "720"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:19 GMT
+                - Tue, 21 Jul 2026 11:11:58 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - aebbf6db-23f8-4fff-aa04-d76945d3c5ac
+                - 4ccdf003-a2a8-4ce9-9d62-15e236d94bd3
         status: 200 OK
         code: 200
-        duration: 28.893985ms
-    - id: 9
+        duration: 49.039555ms
+    - id: 11
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -341,95 +406,29 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/action
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/action
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 357
-        body: '{"task": {"id": "798ce96d-96a9-41f5-9522-b67795dfacd6", "description": "server_batch_poweron", "status": "pending", "href_from": "/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/action", "href_result": "/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "started_at": "2026-06-23T09:41:19.549539+00:00", "terminated_at": null, "progress": 0, "zone": "fr-par-1"}}'
+        content_length: 346
+        body: '{"task": {"id": "00000000-0000-0000-0000-000000000000", "description": "fake task", "status": "pending", "href_from": "/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/action", "href_result": "/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436", "started_at": "2026-07-21T11:11:58.507466+00:00", "terminated_at": null, "progress": 0, "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "357"
+                - "346"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:19 GMT
-            Location:
-                - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/798ce96d-96a9-41f5-9522-b67795dfacd6
+                - Tue, 21 Jul 2026 11:11:58 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 1ee2b84b-3b3d-456a-abc1-b4af1ee2f544
+                - 18fa702d-4e44-4206-a63a-53d7a68d1e9e
         status: 202 Accepted
         code: 202
-        duration: 383.381118ms
-    - id: 10
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2113
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "starting", "protected": false, "state_detail": "allocating node", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:19.219770+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
-        headers:
-            Content-Length:
-                - "2113"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:19 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - c114d5af-f79d-4e95-9f9a-5a360e848179
-        status: 200 OK
-        code: 200
-        duration: 107.94961ms
-    - id: 11
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2248
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
-        headers:
-            Content-Length:
-                - "2248"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:24 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 04c09b83-6ab4-4c38-bc28-e1eb3c3a34f5
-        status: 200 OK
-        code: 200
-        duration: 128.418658ms
+        duration: 334.690183ms
     - id: 12
       request:
         proto: HTTP/1.1
@@ -439,29 +438,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2248
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
+        content_length: 2107
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "starting", "protected": false, "state_detail": "allocating node", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:11:58.230884+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": null, "maintenances": [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "2248"
+                - "2107"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:24 GMT
+                - Tue, 21 Jul 2026 11:11:58 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - f59cf755-621e-43b1-ae9f-29fe9c1be0de
+                - 3370ff9b-d9e9-42c1-961a-178205cebe0e
         status: 200 OK
         code: 200
-        duration: 100.694633ms
+        duration: 105.162263ms
     - id: 13
       request:
         proto: HTTP/1.1
@@ -471,29 +470,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 143
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "18252193-6c12-4853-a9bd-e0293557e3cc"}'
+        content_length: 2242
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:01.432684+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "143"
+                - "2242"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:24 GMT
+                - Tue, 21 Jul 2026 11:12:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 0dbec271-e912-4eee-a700-a45dfcb8ff11
-        status: 404 Not Found
-        code: 404
-        duration: 27.272597ms
+                - 790d0223-f1a5-495c-8286-108ce21848a8
+        status: 200 OK
+        code: 200
+        duration: 108.216605ms
     - id: 14
       request:
         proto: HTTP/1.1
@@ -503,29 +502,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 720
-        body: '{"id":"18252193-6c12-4853-a9bd-e0293557e3cc", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-23T09:41:18.713158Z", "updated_at":"2026-06-23T09:41:18.713158Z", "references":[{"id":"4373d53c-a230-412e-940f-020c95be97c4", "product_resource_type":"instance_server", "product_resource_id":"57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "created_at":"2026-06-23T09:41:18.713158Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        content_length: 2242
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:01.432684+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "720"
+                - "2242"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:24 GMT
+                - Tue, 21 Jul 2026 11:12:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 89c411b6-b742-4fbf-95b6-eca3569b539b
+                - 51675683-abca-42a8-b13a-1047920a40c8
         status: 200 OK
         code: 200
-        duration: 34.55042ms
+        duration: 89.380552ms
     - id: 15
       request:
         proto: HTTP/1.1
@@ -535,29 +534,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/user_data
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 17
-        body: '{"user_data": []}'
+        content_length: 143
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d"}'
         headers:
             Content-Length:
-                - "17"
+                - "143"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 63eeec98-c5c8-4f07-88ff-49fc9e5bf2d4
-        status: 200 OK
-        code: 200
-        duration: 48.172272ms
+                - 5fd6ee85-198d-4a6d-b58e-2f340f000b67
+        status: 404 Not Found
+        code: 404
+        duration: 32.499359ms
     - id: 16
       request:
         proto: HTTP/1.1
@@ -567,33 +566,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 20
-        body: '{"private_nics": []}'
+        content_length: 720
+        body: '{"id":"3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-07-21T11:11:57.598402Z", "updated_at":"2026-07-21T11:11:57.717535Z", "references":[{"id":"d780d2ce-ae19-4d06-8793-a45298de4aa7", "product_resource_type":"instance_server", "product_resource_id":"6e1b28cf-d944-4ccb-9c68-c68ff1823436", "created_at":"2026-07-21T11:11:57.598402Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "20"
+                - "720"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
-            Link:
-                - </servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics?page=0&per_page=50&>; rel="last"
+                - Tue, 21 Jul 2026 11:12:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - a7ea44a1-b0f9-49be-92ff-32a578917753
-            X-Total-Count:
-                - "0"
+                - cc4d7a1e-e8b1-4f65-b3da-7b38b9dd54ba
         status: 200 OK
         code: 200
-        duration: 77.846805ms
+        duration: 37.464599ms
     - id: 17
       request:
         proto: HTTP/1.1
@@ -603,29 +598,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/user_data
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 17
+        body: '{"user_data": []}'
         headers:
             Content-Length:
-                - "304"
+                - "17"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:03 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 74473983-1b26-48ff-9ef6-2002b36d4f0c
+                - 2a4198ab-32af-47ad-844b-170d7435f5ce
         status: 200 OK
         code: 200
-        duration: 215.498093ms
+        duration: 65.589878ms
     - id: 18
       request:
         proto: HTTP/1.1
@@ -635,29 +630,33 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 20
+        body: '{"private_nics": []}'
         headers:
             Content-Length:
-                - "304"
+                - "20"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
+            Link:
+                - </servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics?page=0&per_page=50&>; rel="last"
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - cce36a17-5640-4ef3-b070-7d58a5174585
+                - 34dc5386-2d97-4d09-9d75-a624b30f7bdd
+            X-Total-Count:
+                - "0"
         status: 200 OK
         code: 200
-        duration: 71.463583ms
+        duration: 54.238542ms
     - id: 19
       request:
         proto: HTTP/1.1
@@ -667,29 +666,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2294
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud", "admin_password_encryption_ssh_key_id": null}}'
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"foo", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:11:57.010171Z", "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "2294"
+                - "259"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 53aea5e7-4939-4f8b-8635-edf0af398525
+                - 5d4b2afd-6aec-468a-9f47-16ec3c0118fa
         status: 200 OK
         code: 200
-        duration: 100.945985ms
+        duration: 113.695148ms
     - id: 20
       request:
         proto: HTTP/1.1
@@ -699,29 +698,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 143
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "18252193-6c12-4853-a9bd-e0293557e3cc"}'
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"foo", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:11:57.010171Z", "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "143"
+                - "259"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 9d6a4fcb-d610-4540-a7d9-84bf3b539f65
-        status: 404 Not Found
-        code: 404
-        duration: 30.967754ms
+                - 007c6f0d-fa4b-464a-b338-f80da3aabeeb
+        status: 200 OK
+        code: 200
+        duration: 66.125593ms
     - id: 21
       request:
         proto: HTTP/1.1
@@ -731,29 +730,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 720
-        body: '{"id":"18252193-6c12-4853-a9bd-e0293557e3cc", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-23T09:41:18.713158Z", "updated_at":"2026-06-23T09:41:18.713158Z", "references":[{"id":"4373d53c-a230-412e-940f-020c95be97c4", "product_resource_type":"instance_server", "product_resource_id":"57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "created_at":"2026-06-23T09:41:18.713158Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        content_length: 304
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "720"
+                - "304"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - d4ba9482-2a5b-410f-84e8-e3d549b84045
+                - 987602d5-267c-471e-8f79-41d96a7bfda1
         status: 200 OK
         code: 200
-        duration: 56.284274ms
+        duration: 68.186641ms
     - id: 22
       request:
         proto: HTTP/1.1
@@ -763,29 +762,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/user_data
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 17
-        body: '{"user_data": []}'
+        content_length: 2242
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:01.432684+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "17"
+                - "2242"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:25 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - f712ad7f-328f-4216-bde7-ace60c4291c8
+                - 1f1d18cd-8a56-483a-bce9-1d40afbb6b36
         status: 200 OK
         code: 200
-        duration: 53.323206ms
+        duration: 117.030558ms
     - id: 23
       request:
         proto: HTTP/1.1
@@ -795,33 +794,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 20
-        body: '{"private_nics": []}'
+        content_length: 143
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d"}'
         headers:
             Content-Length:
-                - "20"
+                - "143"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
-            Link:
-                - </servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics?page=0&per_page=50&>; rel="last"
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 3c0fd182-b9f5-430e-9b9f-a5ba40bfdf9e
-            X-Total-Count:
-                - "0"
-        status: 200 OK
-        code: 200
-        duration: 48.464702ms
+                - cd1e1c00-eeed-40ab-acda-1dbf26e201c5
+        status: 404 Not Found
+        code: 404
+        duration: 30.597399ms
     - id: 24
       request:
         proto: HTTP/1.1
@@ -831,29 +826,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 720
+        body: '{"id":"3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-07-21T11:11:57.598402Z", "updated_at":"2026-07-21T11:11:57.717535Z", "references":[{"id":"d780d2ce-ae19-4d06-8793-a45298de4aa7", "product_resource_type":"instance_server", "product_resource_id":"6e1b28cf-d944-4ccb-9c68-c68ff1823436", "created_at":"2026-07-21T11:11:57.598402Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "304"
+                - "720"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 6cca9a26-3ab6-4674-b190-e7f65348e2b6
+                - 1d3c4438-673a-40d2-8e23-69210d36bd0b
         status: 200 OK
         code: 200
-        duration: 217.076982ms
+        duration: 74.086505ms
     - id: 25
       request:
         proto: HTTP/1.1
@@ -863,104 +858,8 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2248
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
-        headers:
-            Content-Length:
-                - "2248"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - a7678d71-416d-47c5-8771-392a8db3bdaf
-        status: 200 OK
-        code: 200
-        duration: 96.98576ms
-    - id: 26
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 143
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "18252193-6c12-4853-a9bd-e0293557e3cc"}'
-        headers:
-            Content-Length:
-                - "143"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 178c8c0a-6fe1-407c-be61-c9361b39ea32
-        status: 404 Not Found
-        code: 404
-        duration: 21.387262ms
-    - id: 27
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 720
-        body: '{"id":"18252193-6c12-4853-a9bd-e0293557e3cc", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-23T09:41:18.713158Z", "updated_at":"2026-06-23T09:41:18.713158Z", "references":[{"id":"4373d53c-a230-412e-940f-020c95be97c4", "product_resource_type":"instance_server", "product_resource_id":"57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "created_at":"2026-06-23T09:41:18.713158Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
-        headers:
-            Content-Length:
-                - "720"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - b56d713f-c5ed-415f-af0a-2bb86f8d141c
-        status: 200 OK
-        code: 200
-        duration: 34.534652ms
-    - id: 28
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/user_data
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/user_data
         method: GET
       response:
         proto: HTTP/2.0
@@ -974,15 +873,15 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 708744a5-3cef-4179-8025-7cd5d8efd988
+                - da3801be-eb4b-433c-a02d-6595a9986a12
         status: 200 OK
         code: 200
-        duration: 39.989558ms
-    - id: 29
+        duration: 59.888186ms
+    - id: 26
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -991,8 +890,8 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics
         method: GET
       response:
         proto: HTTP/2.0
@@ -1006,18 +905,114 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
+                - Tue, 21 Jul 2026 11:12:04 GMT
             Link:
-                - </servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/private_nics?page=0&per_page=50&>; rel="last"
+                - </servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics?page=0&per_page=50&>; rel="last"
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - c3c9f696-29dc-40b9-b758-a7aed7957805
+                - 7cca4ae0-9d81-4ed5-b349-8d76e8f36236
             X-Total-Count:
                 - "0"
         status: 200 OK
         code: 200
-        duration: 44.130914ms
+        duration: 80.105232ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"foo", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:11:57.010171Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 275c956a-2a7d-4768-af82-149b2301ec58
+        status: 200 OK
+        code: 200
+        duration: 89.092891ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 304
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "304"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - b4268128-d0d1-4ec3-ae4d-a3a6f2858946
+        status: 200 OK
+        code: 200
+        duration: 76.787394ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"foo", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:11:57.010171Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - e8f96b19-50dd-4d6e-919e-25591178f690
+        status: 200 OK
+        code: 200
+        duration: 69.26711ms
     - id: 30
       request:
         proto: HTTP/1.1
@@ -1027,30 +1022,194 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 2242
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:01.432684+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
+        headers:
+            Content-Length:
+                - "2242"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 7b9f9055-b077-41e9-9675-ac04c442fca8
+        status: 200 OK
+        code: 200
+        duration: 102.178803ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 143
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d"}'
+        headers:
+            Content-Length:
+                - "143"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - ba52f640-aae3-4284-831f-6bbdf3cb2e89
+        status: 404 Not Found
+        code: 404
+        duration: 38.830732ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
         content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "foo", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
         headers:
             Content-Length:
                 - "304"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:26 GMT
+                - Tue, 21 Jul 2026 11:12:05 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - facf5df9-6a74-4045-a7e8-4601616bfe90
+                - 86acdc01-e515-4d18-b928-05fe3a2f0a4e
         status: 200 OK
         code: 200
-        duration: 244.501645ms
-    - id: 31
+        duration: 80.99385ms
+    - id: 33
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 720
+        body: '{"id":"3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-07-21T11:11:57.598402Z", "updated_at":"2026-07-21T11:11:57.717535Z", "references":[{"id":"d780d2ce-ae19-4d06-8793-a45298de4aa7", "product_resource_type":"instance_server", "product_resource_id":"6e1b28cf-d944-4ccb-9c68-c68ff1823436", "created_at":"2026-07-21T11:11:57.598402Z", "type":"exclusive", "status":"attached"}], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"in_use", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "720"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 7c33dc92-54ed-4211-9e17-fa6d3c31c7a6
+        status: 200 OK
+        code: 200
+        duration: 50.036025ms
+    - id: 34
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/user_data
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 17
+        body: '{"user_data": []}'
+        headers:
+            Content-Length:
+                - "17"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 9ea4f107-72b4-4845-82da-99ed58b2d9db
+        status: 200 OK
+        code: 200
+        duration: 54.080235ms
+    - id: 35
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 20
+        body: '{"private_nics": []}'
+        headers:
+            Content-Length:
+                - "20"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:05 GMT
+            Link:
+                - </servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/private_nics?page=0&per_page=50&>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - fa33e441-fd49-4d25-b575-81e57051a2a5
+            X-Total-Count:
+                - "0"
+        status: 200 OK
+        code: 200
+        duration: 55.5907ms
+    - id: 36
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1062,30 +1221,30 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: PATCH
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2334
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud", "admin_password_encryption_ssh_key_id": null, "admin_password_encrypted_value": null}}'
+        content_length: 1962
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:06.180808+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "2334"
+                - "1962"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:28 GMT
+                - Tue, 21 Jul 2026 11:12:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 825555e6-2fe4-4960-8413-f42a97e27494
+                - 687be4cc-8e5f-4876-a8b0-9a74c2ca7aae
         status: 200 OK
         code: 200
-        duration: 1.025941403s
-    - id: 32
+        duration: 281.106907ms
+    - id: 37
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1094,30 +1253,30 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2248
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
+        content_length: 1962
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:06.180808+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "2248"
+                - "1962"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:28 GMT
+                - Tue, 21 Jul 2026 11:12:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 2db79ebf-130b-425f-8539-b7ca6ed52995
+                - 12ca9975-ba1f-46cd-a75b-c9e735377662
         status: 200 OK
         code: 200
-        duration: 111.451309ms
-    - id: 33
+        duration: 102.210532ms
+    - id: 38
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1126,30 +1285,30 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 2294
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:22.972273+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud", "admin_password_encryption_ssh_key_id": null}}'
+        content_length: 1962
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "running", "protected": false, "state_detail": "booting kernel", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:06.180808+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["poweroff", "terminate", "reboot", "stop_in_place", "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "2294"
+                - "1962"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:28 GMT
+                - Tue, 21 Jul 2026 11:12:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 6cd67b4e-61ca-4a28-86dc-9dd83218a76a
+                - bcc3a0b1-b004-4c30-b680-b9a9c2155c1e
         status: 200 OK
         code: 200
-        duration: 166.90366ms
-    - id: 34
+        duration: 117.414128ms
+    - id: 39
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1161,224 +1320,61 @@ interactions:
             Content-Type:
                 - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/action
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/action
         method: POST
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 353
-        body: '{"task": {"id": "f1c61599-0dd9-4e31-b77e-0abb431ae2e5", "description": "server_terminate", "status": "pending", "href_from": "/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4/action", "href_result": "/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "started_at": "2026-06-23T09:41:28.846426+00:00", "terminated_at": null, "progress": 0, "zone": "fr-par-1"}}'
+        content_length: 346
+        body: '{"task": {"id": "00000000-0000-0000-0000-000000000000", "description": "fake task", "status": "pending", "href_from": "/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436/action", "href_result": "/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436", "started_at": "2026-07-21T11:12:06.764728+00:00", "terminated_at": null, "progress": 0, "zone": "fr-par-1"}}'
         headers:
             Content-Length:
-                - "353"
+                - "346"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:28 GMT
-            Location:
-                - https://api.scaleway.com/instance/v1/zones/fr-par-1/tasks/f1c61599-0dd9-4e31-b77e-0abb431ae2e5
+                - Tue, 21 Jul 2026 11:12:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 4ecdabf5-ec8a-4217-a13a-fe952e586f16
+                - fe2e5a3f-d35b-403b-8e71-d16dc59d290f
         status: 202 Accepted
         code: 202
-        duration: 531.006479ms
-    - id: 35
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 2211
-        body: '{"server": {"id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4", "name": "tf-srv-recursing-chaum", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "hostname": "tf-srv-recursing-chaum", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "18252193-6c12-4853-a9bd-e0293557e3cc", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopping", "protected": false, "state_detail": "terminating", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:1b:75:eb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-06-23T09:41:18.522579+00:00", "modification_date": "2026-06-23T09:41:28.398636+00:00", "bootscript": null, "security_group": {"id": "5881315f-2400-43a0-ac75-08adf6cb8c12", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "17", "hypervisor_id": "1801", "node_id": "60"}, "maintenances": [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "foo", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": false, "tags": [], "zone": "fr-par-1"}, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4.pub.instances.scw.cloud"}}'
-        headers:
-            Content-Length:
-                - "2211"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:28 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 2709cfe3-1e59-4a82-9c35-e2074b993c1d
-        status: 200 OK
-        code: 200
-        duration: 101.644299ms
-    - id: 36
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 143
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_server", "resource_id": "57a28ebc-ca5e-460e-b0ab-816ad4a7ccf4"}'
-        headers:
-            Content-Length:
-                - "143"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - eeef5a91-43c1-44c7-8d87-50af65a545d3
-        status: 404 Not Found
-        code: 404
-        duration: 96.326455ms
-    - id: 37
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 143
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "18252193-6c12-4853-a9bd-e0293557e3cc"}'
-        headers:
-            Content-Length:
-                - "143"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - a0a77a21-fc5a-41cc-b1d8-f79e28b25b13
-        status: 404 Not Found
-        code: 404
-        duration: 40.299652ms
-    - id: 38
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
-        method: GET
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 513
-        body: '{"id":"18252193-6c12-4853-a9bd-e0293557e3cc", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"105bdce1-64c0-48ab-899d-868455867ecf", "created_at":"2026-06-23T09:41:18.713158Z", "updated_at":"2026-06-23T09:41:30.494549Z", "references":[], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":"2026-06-23T09:41:30.494549Z", "kms_key_id":null, "zone":"fr-par-1"}'
-        headers:
-            Content-Length:
-                - "513"
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - 61c581db-44a8-4a52-87ac-c4e1e4395ffc
-        status: 200 OK
-        code: 200
-        duration: 87.446678ms
-    - id: 39
-      request:
-        proto: HTTP/1.1
-        proto_major: 1
-        proto_minor: 1
-        content_length: 0
-        host: api.scaleway.com
-        headers:
-            User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/18252193-6c12-4853-a9bd-e0293557e3cc
-        method: DELETE
-      response:
-        proto: HTTP/2.0
-        proto_major: 2
-        proto_minor: 0
-        content_length: 0
-        body: ""
-        headers:
-            Content-Type:
-                - application/json
-            Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
-            Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
-            X-Request-Id:
-                - e7971bcd-b1b4-4936-9e82-d4daf4230e9f
-        status: 204 No Content
-        code: 204
-        duration: 115.425375ms
+        duration: 166.312818ms
     - id: 40
       request:
         proto: HTTP/1.1
         proto_major: 1
         proto_minor: 1
-        content_length: 24
+        content_length: 0
         host: api.scaleway.com
-        body: '{"name":"bar","tags":[]}'
         headers:
-            Content-Type:
-                - application/json
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
-        method: PATCH
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
+        method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "bar", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 1925
+        body: '{"server": {"id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436", "name": "tf-srv-quirky-black", "arch": "x86_64", "commercial_type": "DEV1-S", "boot_type": "local", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "hostname": "tf-srv-quirky-black", "image": {"id": "fc4d4e26-849d-4e03-b933-cb1626ca8cad", "name": "Ubuntu 20.04 Focal Fossa", "organization": "51b656e3-4865-41e8-adbc-0c45bdd780db", "project": "51b656e3-4865-41e8-adbc-0c45bdd780db", "root_volume": {"volume_type": "sbs_snapshot", "id": "dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "size": 0, "name": ""}, "extra_volumes": {}, "public": true, "arch": "x86_64", "creation_date": "2026-05-12T15:20:10.934226+00:00", "modification_date": "2026-05-12T15:20:10.934226+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": [], "zone": "fr-par-1"}, "volumes": {"0": {"boot": false, "volume_type": "sbs_volume", "id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "state": "available", "zone": "fr-par-1"}}, "tags": [], "state": "stopping", "protected": false, "state_detail": "terminating", "public_ip": null, "public_ips": [], "mac_address": "de:00:01:23:c8:bb", "routed_ip_enabled": true, "ipv6": null, "extra_networks": [], "dynamic_ip_required": false, "enable_ipv6": false, "private_ip": null, "creation_date": "2026-07-21T11:11:57.417447+00:00", "modification_date": "2026-07-21T11:12:06.637844+00:00", "bootscript": null, "security_group": {"id": "da505169-540e-4c2b-b0da-c854139224e0", "name": "Default security group"}, "location": {"zone_id": "fr-par-1", "platform_id": "14", "cluster_id": "34", "hypervisor_id": "1701", "node_id": "50"}, "maintenances": [], "allowed_actions": ["stop_in_place", "backup"], "placement_group": null, "private_nics": [], "zone": "fr-par-1", "filesystems": [], "end_of_service": false, "dns": "6e1b28cf-d944-4ccb-9c68-c68ff1823436.pub.instances.scw.cloud"}}'
         headers:
             Content-Length:
-                - "304"
+                - "1925"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
+                - Tue, 21 Jul 2026 11:12:06 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 313867f0-38ce-4f8e-b0cd-9c52947b7d70
+                - 05994db9-116a-48a5-8882-7805bc9fa984
         status: 200 OK
         code: 200
-        duration: 294.773838ms
+        duration: 111.76278ms
     - id: 41
       request:
         proto: HTTP/1.1
@@ -1388,29 +1384,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/servers/6e1b28cf-d944-4ccb-9c68-c68ff1823436
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "bar", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 143
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_server", "resource_id": "6e1b28cf-d944-4ccb-9c68-c68ff1823436"}'
         headers:
             Content-Length:
-                - "304"
+                - "143"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
+                - Tue, 21 Jul 2026 11:12:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 053aff7d-85a7-4dab-8a1f-632f0739977d
-        status: 200 OK
-        code: 200
-        duration: 216.217244ms
+                - 2d91fbe9-d145-43bc-a7d1-a30e1d77ea84
+        status: 404 Not Found
+        code: 404
+        duration: 49.246712ms
     - id: 42
       request:
         proto: HTTP/1.1
@@ -1420,29 +1416,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "bar", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 143
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_volume", "resource_id": "3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d"}'
         headers:
             Content-Length:
-                - "304"
+                - "143"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:34 GMT
+                - Tue, 21 Jul 2026 11:12:11 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - e776bea3-1fb0-4c83-905d-a577d611fc4d
-        status: 200 OK
-        code: 200
-        duration: 120.074425ms
+                - 87ff1283-1a93-4707-8292-d9f648fa0ac4
+        status: 404 Not Found
+        code: 404
+        duration: 27.708747ms
     - id: 43
       request:
         proto: HTTP/1.1
@@ -1452,29 +1448,29 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 304
-        body: '{"placement_group": {"id": "c1bb1826-4b4c-4f33-beec-8da8593d7791", "name": "bar", "organization": "105bdce1-64c0-48ab-899d-868455867ecf", "project": "105bdce1-64c0-48ab-899d-868455867ecf", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        content_length: 513
+        body: '{"id":"3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d", "name":"Ubuntu 20.04 Focal Fossa_sbs_volume_0", "type":"sbs_5k", "size":10000000000, "project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "created_at":"2026-07-21T11:11:57.598402Z", "updated_at":"2026-07-21T11:12:07.974512Z", "references":[], "parent_snapshot_id":"dacec4bb-03fd-4723-ac85-7d8ca6ca83a7", "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":"2026-07-21T11:12:07.974512Z", "kms_key_id":null, "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "304"
+                - "513"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:35 GMT
+                - Tue, 21 Jul 2026 11:12:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - 3d4a9b6b-8691-4d4a-8f8e-4a21ff62ca46
+                - af35c54a-f88b-4afc-aaa2-97c413ab0178
         status: 200 OK
         code: 200
-        duration: 54.985495ms
+        duration: 47.895436ms
     - id: 44
       request:
         proto: HTTP/1.1
@@ -1484,8 +1480,8 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/3f3b4f4e-7f4b-40e2-a25f-c87f40f9282d
         method: DELETE
       response:
         proto: HTTP/2.0
@@ -1497,15 +1493,50 @@ interactions:
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:35 GMT
+                - Tue, 21 Jul 2026 11:12:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - dd19d176-131b-4cb3-b3f1-a0bfb12fdcd2
+                - c13ed674-1767-4a99-ad59-ebc0c9340f9a
         status: 204 No Content
         code: 204
-        duration: 283.428959ms
+        duration: 70.47695ms
     - id: 45
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 50
+        host: api.scaleway.com
+        body: '{"name":"bar","policy_type":"unknown_policy_type"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: PATCH
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"bar", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:12:12.153744Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 1dc02e35-e833-4cf7-b28c-61d3dd690763
+        status: 200 OK
+        code: 200
+        duration: 133.037391ms
+    - id: 46
       request:
         proto: HTTP/1.1
         proto_major: 1
@@ -1514,26 +1545,216 @@ interactions:
         host: api.scaleway.com
         headers:
             User-Agent:
-                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
-        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/c1bb1826-4b4c-4f33-beec-8da8593d7791
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
         method: GET
       response:
         proto: HTTP/2.0
         proto_major: 2
         proto_minor: 0
-        content_length: 152
-        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_placement_group", "resource_id": "c1bb1826-4b4c-4f33-beec-8da8593d7791"}'
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"bar", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:12:12.153744Z", "zone":"fr-par-1"}'
         headers:
             Content-Length:
-                - "152"
+                - "259"
             Content-Type:
                 - application/json
             Date:
-                - Tue, 23 Jun 2026 09:41:35 GMT
+                - Tue, 21 Jul 2026 11:12:12 GMT
             Server:
-                - Scaleway API Gateway (fr-par-3;edge02)
+                - Scaleway API Gateway (fr-par-3;edge03)
             X-Request-Id:
-                - fde7de70-5984-444d-8755-970db0c60bbf
+                - d10f5f79-1419-4f74-ba9b-be7da68c34e4
+        status: 200 OK
+        code: 200
+        duration: 60.384176ms
+    - id: 47
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 304
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "bar", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "304"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - b271d502-17bc-461f-acab-0924012fa20e
+        status: 200 OK
+        code: 200
+        duration: 60.90267ms
+    - id: 48
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"bar", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:12:12.153744Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 9e7f0f7b-7324-467a-acfe-b0046cd612a2
+        status: 200 OK
+        code: 200
+        duration: 49.558988ms
+    - id: 49
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 259
+        body: '{"project_id":"fa1e3217-dc80-42ac-85c3-3f034b78b552", "name":"bar", "id":"4320069b-c533-424f-9f64-cb4d213d8bc6", "policy_type":"low_latency", "tags":[], "created_at":"2026-07-21T11:11:56.943778Z", "updated_at":"2026-07-21T11:12:12.153744Z", "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "259"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 4d251fc7-fd54-4712-bea2-52524164c335
+        status: 200 OK
+        code: 200
+        duration: 59.804228ms
+    - id: 50
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/placement_groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 304
+        body: '{"placement_group": {"id": "4320069b-c533-424f-9f64-cb4d213d8bc6", "name": "bar", "organization": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "project": "fa1e3217-dc80-42ac-85c3-3f034b78b552", "policy_mode": "enforced", "policy_type": "low_latency", "policy_respected": true, "tags": [], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "304"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:12 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 2f9f164d-f2e8-4c6b-b33c-2b535dc602e3
+        status: 200 OK
+        code: 200
+        duration: 60.499132ms
+    - id: 51
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - 6100343c-0139-4066-b4a1-436cb17b573d
+        status: 204 No Content
+        code: 204
+        duration: 134.705421ms
+    - id: 52
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.1; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v2alpha1/zones/fr-par-1/placement-groups/4320069b-c533-424f-9f64-cb4d213d8bc6
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 145
+        body: '{"message":"resource is not found","resource":"instance_placement_group","resource_id":"4320069b-c533-424f-9f64-cb4d213d8bc6","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "145"
+            Content-Type:
+                - application/json
+            Date:
+                - Tue, 21 Jul 2026 11:12:13 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-3;edge03)
+            X-Request-Id:
+                - d89a46b4-cfeb-4836-aaac-13f439ae9019
         status: 404 Not Found
         code: 404
-        duration: 32.082362ms
+        duration: 29.246894ms
