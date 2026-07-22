@@ -333,9 +333,7 @@ func tagsMatch(bucketTags []string, filterTags []string) bool {
 }
 
 func setBucketStateForList(resourceData *sdkv2schema.ResourceData, bucket *s3Types.Bucket, region scw.Region, projectID string) {
-	if bucket.Name != nil {
-		_ = resourceData.Set("name", *bucket.Name)
-	}
+	_ = resourceData.Set("name", stringValue(bucket.Name))
 
 	_ = resourceData.Set("region", region.String())
 	_ = resourceData.Set("project_id", projectID)
@@ -343,4 +341,11 @@ func setBucketStateForList(resourceData *sdkv2schema.ResourceData, bucket *s3Typ
 	// Set computed fields
 	_ = resourceData.Set("endpoint", objectBucketEndpointURL(aws.ToString(bucket.Name), region))
 	_ = resourceData.Set("api_endpoint", objectBucketAPIEndpointURL(region))
+}
+
+func stringValue(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
 }
