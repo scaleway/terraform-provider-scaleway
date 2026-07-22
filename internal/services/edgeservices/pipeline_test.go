@@ -18,9 +18,14 @@ func TestAccEdgeServicesPipeline_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-pipeline-name"
 					  description = "a description"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(

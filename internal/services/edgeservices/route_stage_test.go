@@ -18,9 +18,14 @@ func TestAccEdgeServicesRoute_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource "scaleway_edge_services_plan" "main" {
+				  name = "starter"
+				}
+
 				resource "scaleway_edge_services_pipeline" "main" {
 				  name        = "my-edge-services-pipeline"
 				  description = "pipeline description"
+				  depends_on  = [scaleway_edge_services_plan.main]
 				}
 				
 				resource "scaleway_edge_services_waf_stage" "waf" {
@@ -193,9 +198,14 @@ func TestAccEdgeServicesRoute_WafRule(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+				resource "scaleway_edge_services_plan" "main" {
+				  name = "starter"
+				}
+
 				resource "scaleway_edge_services_pipeline" "main" {
 				  name        = "my-edge-services-pipeline-waf-rule"
 				  description = "pipeline for waf rule test"
+				  depends_on  = [scaleway_edge_services_plan.main]
 				}
 
 				resource "scaleway_edge_services_waf_stage" "waf" {

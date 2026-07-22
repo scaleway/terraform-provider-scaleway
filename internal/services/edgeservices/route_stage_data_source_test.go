@@ -18,9 +18,14 @@ func TestAccDataSourceRouteStage_ByID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-route-id"
 					  description = "pipeline for route data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_edge_services_waf_stage" "waf" {
@@ -87,9 +92,14 @@ func TestAccDataSourceRouteStage_ByPipelineID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-route-filter"
 					  description = "pipeline for route filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
 					}
 
 					resource "scaleway_edge_services_waf_stage" "waf" {
