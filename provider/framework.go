@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -50,6 +53,10 @@ type ScalewayProvider struct {
 	providerMeta *meta.Meta
 }
 
+type EndpointModel struct {
+	S3 types.String `tfsdk:"s3"`
+}
+
 func NewFrameworkProvider(m *meta.Meta) func() provider.Provider {
 	return func() provider.Provider {
 		return &ScalewayProvider{providerMeta: m}
@@ -69,6 +76,8 @@ type ScalewayProviderModel struct {
 	APIURL         types.String `tfsdk:"api_url"`
 	Region         types.String `tfsdk:"region"`
 	Zone           types.String `tfsdk:"zone"`
+	Endpoints      types.Set    `tfsdk:"endpoints"`
+	S3UsePathStyle types.Bool   `tfsdk:"s3_use_path_style"`
 }
 
 func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
@@ -106,11 +115,34 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "The zone you want to attach the resource to",
 				Optional:    true,
 			},
+			"s3_use_path_style": schema.BoolAttribute{
+				Description: "Whether to enable the request to use path-style addressing.",
+				Optional:    true,
+			},
+		},
+		Blocks: map[string]schema.Block{
+			"endpoints": schema.SetNestedBlock{
+				Description: "Configuration block for customizing service endpoints.",
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"s3": schema.StringAttribute{
+							Optional:    true,
+							Description: "Use this to override the default service endpoint URL.",
+							Validators: []validator.String{
+								stringvalidator.RegexMatches(
+									regexp.MustCompile(`^https?://`),
+									"must start with 'https://' or 'http://'",
+								),
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
 
-func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
+func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *meta.FrameworkProviderConfig {
 	config := &meta.FrameworkProviderConfig{}
 
 	if !model.AccessKey.IsNull() && !model.AccessKey.IsUnknown() {
@@ -145,6 +177,27 @@ func modelToFrameworkConfig(model *ScalewayProviderModel) *meta.FrameworkProvide
 		config.APIURL = model.APIURL.ValueString()
 	}
 
+	if !model.Endpoints.IsNull() && !model.Endpoints.IsUnknown() {
+		config.Endpoints = make(map[string]string)
+
+		var endpoints []EndpointModel
+
+		diags := model.Endpoints.ElementsAs(ctx, &endpoints, false)
+		if diags.HasError() {
+			return config
+		}
+
+		for _, endpoint := range endpoints {
+			if !endpoint.S3.IsNull() && !endpoint.S3.IsUnknown() {
+				config.Endpoints["s3"] = endpoint.S3.ValueString()
+			}
+		}
+	}
+
+	if !model.S3UsePathStyle.IsNull() && !model.S3UsePathStyle.IsUnknown() {
+		config.S3UsePathStyle = model.S3UsePathStyle.ValueBool()
+	}
+
 	return config
 }
 
@@ -168,7 +221,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 	} else {
 		frameworkConfig := &meta.FrameworkProviderConfig{}
 		if data != nil {
-			frameworkConfig = modelToFrameworkConfig(data)
+			frameworkConfig = modelToFrameworkConfig(ctx, data)
 		}
 
 		var err error
