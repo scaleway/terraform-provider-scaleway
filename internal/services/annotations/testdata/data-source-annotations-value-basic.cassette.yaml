@@ -1,0 +1,357 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 143
+        host: api.scaleway.com
+        body: '{"organization_id":"105bdce1-64c0-48ab-899d-868455867ecf","name":"test_key_value_ds","description":"Test annotation key for value data source"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 132
+        body: '{"id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_key_value_ds", "description":"Test annotation key for value data source"}'
+        headers:
+            Content-Length:
+                - "132"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - b374142c-0410-4a74-9984-9f298e419296
+        status: 200 OK
+        code: 200
+        duration: 257.036862ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 126
+        host: api.scaleway.com
+        body: '{"key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77","name":"test_value_ds","description":"Test annotation value for data source"}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 173
+        body: '{"id":"019f8f85-e81a-7889-bd6a-57330887e452", "key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "173"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 80dbacbe-c185-48e5-bafa-46b4d6a8f14e
+        status: 200 OK
+        code: 200
+        duration: 171.626814ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 173
+        body: '{"id":"019f8f85-e81a-7889-bd6a-57330887e452", "key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "173"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - bc0b509a-4c58-4dad-a86e-a48220105333
+        status: 200 OK
+        code: 200
+        duration: 143.62961ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 173
+        body: '{"id":"019f8f85-e81a-7889-bd6a-57330887e452", "key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "173"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:05 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 597f5b6f-f898-4539-87a2-a244b0ecd622
+        status: 200 OK
+        code: 200
+        duration: 62.423915ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys/019f8f85-e768-709c-a3ab-dffc83feeb77
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 132
+        body: '{"id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_key_value_ds", "description":"Test annotation key for value data source"}'
+        headers:
+            Content-Length:
+                - "132"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 1cdf8fa6-f034-4344-9f55-0bf678a2473a
+        status: 200 OK
+        code: 200
+        duration: 152.602619ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 173
+        body: '{"id":"019f8f85-e81a-7889-bd6a-57330887e452", "key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "173"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 176ffe72-9d93-4165-8d41-a2d8a79bd0b7
+        status: 200 OK
+        code: 200
+        duration: 162.137124ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 173
+        body: '{"id":"019f8f85-e81a-7889-bd6a-57330887e452", "key_id":"019f8f85-e768-709c-a3ab-dffc83feeb77", "name":"test_value_ds", "description":"Test annotation value for data source"}'
+        headers:
+            Content-Length:
+                - "173"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 3d20ce62-63ea-4008-bd58-7afacb9290d9
+        status: 200 OK
+        code: 200
+        duration: 62.34662ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - 801fa24b-d67b-4932-8807-e6971fd5e84f
+        status: 204 No Content
+        code: 204
+        duration: 146.728055ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/keys/019f8f85-e768-709c-a3ab-dffc83feeb77
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:06 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - a239f1d0-f19e-4d7f-8589-e2d81205c48c
+        status: 204 No Content
+        code: 204
+        duration: 102.989859ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 137
+        body: '{"message":"resource is not found","resource":"annotation_value","resource_id":"019f8f85-e81a-7889-bd6a-57330887e452","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "137"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - c9b41b1d-5bb4-4586-bfa1-9dcfe363c310
+        status: 404 Not Found
+        code: 404
+        duration: 55.302428ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.7+dev (go1.26.0; linux; amd64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/annotations/v1/values/019f8f85-e81a-7889-bd6a-57330887e452
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 137
+        body: '{"message":"resource is not found","resource":"annotation_value","resource_id":"019f8f85-e81a-7889-bd6a-57330887e452","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "137"
+            Content-Type:
+                - application/json
+            Date:
+                - Thu, 23 Jul 2026 15:09:07 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-2;edge03)
+            X-Request-Id:
+                - fd006536-b12c-4f16-bfdd-ddc9ff11dc72
+        status: 404 Not Found
+        code: 404
+        duration: 53.792719ms
