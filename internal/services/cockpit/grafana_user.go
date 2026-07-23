@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,6 +14,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -113,11 +115,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaUsersResponse, error) {
-		return api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-			ProjectID: projectID,
-		}, scw.WithContext(ctx), scw.WithAllPages())
-	})
+	grafanaUser, err := findGrafanaUser(ctx, api, projectID, grafanaUserID)
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -126,16 +124,6 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		}
 
 		return diag.FromErr(err)
-	}
-
-	var grafanaUser *cockpit.GrafanaUser
-
-	for _, user := range res.GrafanaUsers {
-		if user.ID == grafanaUserID {
-			grafanaUser = user
-
-			break
-		}
 	}
 
 	if grafanaUser == nil {
@@ -192,6 +180,45 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 	}
 
 	return nil
+}
+
+// findGrafanaUser waits until the Grafana user appears in ListGrafanaUsers. A freshly created user
+// can be missing from the list while permissions and cockpit metadata propagate; clearing state in
+// that window makes Terraform report an inconsistent result after apply.
+func findGrafanaUser(ctx context.Context, api *cockpit.GlobalAPI, projectID string, grafanaUserID uint32) (*cockpit.GrafanaUser, error) {
+	wait := transport.RetryOn403WaitTime
+	if transport.DefaultWaitRetryInterval != nil {
+		wait = *transport.DefaultWaitRetryInterval
+	}
+
+	deadline := time.Now().Add(transport.IAMPropagationTimeout)
+
+	for {
+		res, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaUsersResponse, error) {
+			return api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+				ProjectID: projectID,
+			}, scw.WithContext(ctx), scw.WithAllPages())
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		for _, user := range res.GrafanaUsers {
+			if user.ID == grafanaUserID {
+				return user, nil
+			}
+		}
+
+		if time.Now().After(deadline) {
+			return nil, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(wait):
+		}
+	}
 }
 
 func setCockpitGrafanaUserIdentity(d *schema.ResourceData, projectID, grafanaUserID string) error {
