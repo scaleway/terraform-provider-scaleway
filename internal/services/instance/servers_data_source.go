@@ -197,7 +197,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		Name:    types.ExpandStringPtr(d.Get("name")),
 		Project: types.ExpandStringPtr(d.Get("project_id")),
 		Tags:    types.ExpandStrings(d.Get("tags")),
-	}, scw.WithContext(ctx))
+	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
 		return diag.FromErr(err)
 	}
