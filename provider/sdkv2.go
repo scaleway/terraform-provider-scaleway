@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
@@ -118,8 +116,16 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Description:      "The Scaleway organization ID.",
 					ValidateDiagFunc: verify.IsUUID(),
 				},
-				"region": regional.Schema(),
-				"zone":   zonal.Schema(),
+				"region": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The region you want to attach the resource to",
+				},
+				"zone": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The zone you want to attach the resource to",
+				},
 				"api_url": {
 					Type:        schema.TypeString,
 					Optional:    true,
