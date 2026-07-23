@@ -137,6 +137,7 @@ func deploymentSchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"id": {
 						Type:        schema.TypeString,
+						Optional:    true,
 						Computed:    true,
 						Description: "ID of the public endpoint",
 					},

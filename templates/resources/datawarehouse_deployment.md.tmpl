@@ -85,6 +85,7 @@ The following arguments are supported:
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `private_network` - (Optional, Forces new resource) Private network configuration to expose your deployment. Changing this forces recreation of the deployment.
     - `pn_id` - (Required) The ID of the private network. Format: `{region}/{id}` or just `{id}`.
+- `public_network` - Public endpoint information.
 - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
@@ -98,7 +99,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the deployment (e.g., "ready", "provisioning").
 - `created_at` - Date and time of deployment creation (RFC 3339 format).
 - `updated_at` - Date and time of deployment last update (RFC 3339 format).
-- `public_network` - Public endpoint information (always created automatically).
+- `public_network` - Public endpoint information.
     - `id` - The ID of the public endpoint.
     - `dns_record` - DNS record for the public endpoint.
     - `services` - List of services exposed on the public endpoint.
