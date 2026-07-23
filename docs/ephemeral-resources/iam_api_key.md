@@ -18,7 +18,7 @@ For more information, see [our guide to using Ephemeral Resources](https://regis
 ```terraform
 ephemeral "scaleway_iam_api_key" "main" {
   application_id = scaleway_iam_application.main.id
-  expires_at     = "2026-06-10T16:22:39Z"
+  expires_at     = timeadd(timestamp(), "10h")
 }
 ```
 
