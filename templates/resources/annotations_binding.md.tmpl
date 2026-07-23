@@ -1,0 +1,41 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Annotations"
+page_title: "Scaleway: scaleway_annotations_binding"
+---
+
+# Resource: {{ .Name }}
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `srn` - (Required) Scaleway Resource Number to associate. Changing this forces a new resource to be created.
+- `value_id` - (Required) ID of the value to associate. Changing this forces a new resource to be created.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the annotation binding.
+- `binding_id` - The ID of the annotation binding.
+- `key_id` - ID of the key associated to the binding.
+
+## Import
+
+Annotation bindings can be imported using their `id`:
+
+```bash
+terraform import scaleway_annotations_binding.main <binding_id>
+```

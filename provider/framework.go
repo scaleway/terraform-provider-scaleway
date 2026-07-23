@@ -210,6 +210,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
+		annotations.NewAnnotationsBindingResource,
 		datalab.NewDatalabResource,
 		billing.NewBudgetResource,
 		billing.NewBudgetAlertResource,
@@ -238,6 +239,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		annotations.NewAnnotationsKeyDataSource,
 		annotations.NewAnnotationsValueDataSource,
+		annotations.NewAnnotationsBindingDataSource,
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
 		billing.NewBudgetDataSource,
