@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	acctest2 "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -20,54 +21,76 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	testDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
+	bucketName1 := acctest2.RandomWithPrefix("tf-test-bucket-list-1")
+	bucketName2 := acctest2.RandomWithPrefix("tf-test-bucket-list-2")
+	bucketName3 := acctest2.RandomWithPrefix("tf-test-bucket-list-3")
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
-					resource "scaleway_object_bucket" "bucket1" {
-						name = "test-bucket-list-1"
-					}
-				`,
+				Config: fmt.Sprintf(`
+                resource "scaleway_object_bucket" "bucket1" {
+                   name = "%s"
+                }
+             `, bucketName1),
 			},
 
 			{
-				Config: `
-					resource "scaleway_object_bucket" "bucket1" {
-						name = "test-bucket-list-1"
-					}
+				Config: fmt.Sprintf(`
+                resource "scaleway_object_bucket" "bucket1" {
+                   name = "%s"
+                }
 
-					resource "scaleway_object_bucket" "bucket2" {
-						name = "test-bucket-list-2"
-						tags = {
-							environment = "test"
-						}
-					}
-				`,
+                resource "scaleway_object_bucket" "bucket2" {
+                   name = "%s"
+                   tags = {
+                      environment = "test"
+                   }
+                }
+             `, bucketName1, bucketName2),
 			},
 
 			{
-				Config: `
-					resource "scaleway_object_bucket" "bucket1" {
-						name = "test-bucket-list-1"
-					}
+				Config: fmt.Sprintf(`
+                resource "scaleway_object_bucket" "bucket1" {
+                   name = "%s"
+                }
 
-					resource "scaleway_object_bucket" "bucket2" {
-						name = "test-bucket-list-2"
-						tags = {
-							environment = "test"
-						}
-					}
+                resource "scaleway_object_bucket" "bucket2" {
+                   name = "%s"
+                   tags = {
+                      environment = "test"
+                   }
+                }
 
-					resource "scaleway_object_bucket" "bucket3" {
-						name = "test-bucket-list-3"
-						region = "pl-waw"
-						tags = {
-							environment = "test"
-						}
+                resource "scaleway_object_bucket" "bucket3" {
+                   name = "%s"
+                   region = "pl-waw"
+                   tags = {
+                      environment = "test"
+                   }
+                }
+             `, bucketName1, bucketName2, bucketName3),
+			},
+
+			{
+				Query: true,
+				Config: fmt.Sprintf(`
+					list "scaleway_object_bucket" "by_name" {
+					   provider = scaleway
+
+					   config {
+						  regions     = ["*"]
+						  project_ids = ["*"]
+						  name        = "%s"
+					   }
 					}
-				`,
+				`, bucketName1),
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					querycheck.ExpectLength("list.scaleway_object_bucket.by_name", 1),
+				},
 			},
 
 			{
@@ -135,24 +158,6 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 				`, testDefaultRegion),
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectLengthAtLeast("list.scaleway_object_bucket.by_region_default", 2),
-				},
-			},
-
-			{
-				Query: true,
-				Config: `
-					list "scaleway_object_bucket" "by_name" {
-						provider = scaleway
-
-						config {
-							regions     = ["*"]
-							project_ids = ["*"]
-							name        = "test-bucket-list-1"
-						}
-					}
-				`,
-				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_object_bucket.by_name", 1),
 				},
 			},
 		},
