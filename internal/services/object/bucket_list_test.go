@@ -87,7 +87,6 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 					err := retry.RetryContext(ctx, 2*time.Second, func() *retry.RetryError {
 						return nil
 					})
-
 					if err != nil {
 						t.Fatalf("error while checking for bucket:: %s", err)
 					}
