@@ -9,8 +9,6 @@ Gets information about an Interlink Dedicated Connection.
 
 A dedicated connection is a physical connection owned by the user at a PoP, used to create self-hosted links between your infrastructure and Scaleway.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -19,16 +17,12 @@ data "scaleway_interlink_dedicated_connection" "by_id" {
   connection_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve a dedicated connection by name
 data "scaleway_interlink_dedicated_connection" "by_name" {
   name = "my-dedicated-connection"
 }
 ```
-
-
-
 
 ## Argument Reference
 

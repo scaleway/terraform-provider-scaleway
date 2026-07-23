@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_interlink_partners"
 Gets information about multiple Interlink Partners.
 
 A partner is an organization that provides shared connections at PoPs. Use this data source to list and filter available partners for creating hosted links.
-
 ## Example Usage
 
 ```terraform
@@ -24,8 +23,6 @@ data "scaleway_interlink_partners" "at_pops" {
   ]
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -22,4 +22,3 @@ Refer to the Cockpit [documentation](https://www.scaleway.com/en/docs/managed-se
 - `region` (String) The region you want to attach the resource to
 
 
-

@@ -25,7 +25,6 @@ list "scaleway_domain_record" "all_zones" {
   }
 }
 ```
-
 ```terraform
 // List DNS zone records in a specific zone
 list "scaleway_domain_record" "by_dns_zone" {
@@ -37,7 +36,6 @@ list "scaleway_domain_record" "by_dns_zone" {
   }
 }
 ```
-
 ```terraform
 // List DNS zone records filtered by name
 list "scaleway_domain_record" "by_name" {
@@ -50,8 +48,6 @@ list "scaleway_domain_record" "by_name" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

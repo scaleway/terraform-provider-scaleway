@@ -8,7 +8,6 @@ description: |-
 # Resource: scaleway_rdb_snapshot
 
 
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/).
 
 
@@ -26,7 +25,6 @@ list "scaleway_rdb_snapshot" "by_instance" {
   }
 }
 ```
-
 ```terraform
 # List snapshots filtered by name
 list "scaleway_rdb_snapshot" "by_name" {
@@ -40,7 +38,6 @@ list "scaleway_rdb_snapshot" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List snapshots on all RDB instances in a region and project
 list "scaleway_rdb_snapshot" "all_instances" {
@@ -53,8 +50,6 @@ list "scaleway_rdb_snapshot" "all_instances" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

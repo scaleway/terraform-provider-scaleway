@@ -20,7 +20,6 @@ resource "scaleway_object_bucket" "some_bucket" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "main" {
   name   = "mybuckectid"
@@ -100,7 +99,6 @@ resource "scaleway_object_bucket" "main" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "main" {
   name   = "mybuckectid"
@@ -127,7 +125,6 @@ resource "scaleway_object_bucket" "main" {
   }
 }
 ```
-
 
 ### Creating the bucket in a specific project
 

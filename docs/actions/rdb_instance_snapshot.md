@@ -25,4 +25,3 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 - `wait` (Boolean) Wait for the snapshot to reach a terminal state before returning.
 
 
-

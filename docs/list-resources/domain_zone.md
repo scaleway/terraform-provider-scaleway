@@ -8,7 +8,6 @@ description: |-
 # Resource: scaleway_domain_zone
 
 
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/domains-and-dns/).
 
 
@@ -25,7 +24,6 @@ list "scaleway_domain_zone" "all_domains" {
   }
 }
 ```
-
 ```terraform
 // List a specific DNS zone by FQDN
 list "scaleway_domain_zone" "by_dns_zone" {
@@ -37,7 +35,6 @@ list "scaleway_domain_zone" "by_dns_zone" {
   }
 }
 ```
-
 ```terraform
 // List DNS zones for a domain in the default project
 list "scaleway_domain_zone" "by_domain" {
@@ -48,8 +45,6 @@ list "scaleway_domain_zone" "by_domain" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

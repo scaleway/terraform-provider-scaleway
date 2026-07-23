@@ -11,8 +11,6 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -29,7 +27,6 @@ resource "scaleway_rdb_instance" "main" {
   encryption_at_rest = true
 }
 ```
-
 ```terraform
 ### Example Engine Upgrade
 
@@ -61,7 +58,6 @@ output "upgradable_versions" {
 #   password       = "thiZ_is_v&ry_s3cret"
 # }
 ```
-
 ```terraform
 ### Usage of ephemeral random_password for instance password without storing it in state
 
@@ -93,7 +89,6 @@ resource "scaleway_rdb_instance" "main" {
   encryption_at_rest  = true
 }
 ```
-
 ```terraform
 #### 1 IPAM Private Network endpoint + 1 public endpoint
 
@@ -109,7 +104,6 @@ resource "scaleway_rdb_instance" "main" {
   load_balancer {}
 }
 ```
-
 ```terraform
 ### Examples of endpoint configuration
 
@@ -133,7 +127,6 @@ resource "scaleway_rdb_instance" "main" {
   }
 }
 ```
-
 ```terraform
 #### Default: 1 public endpoint
 
@@ -142,7 +135,6 @@ resource "scaleway_rdb_instance" "main" {
   engine    = "PostgreSQL-15"
 }
 ```
-
 ```terraform
 ### Example Block Storage Low Latency
 
@@ -158,7 +150,6 @@ resource "scaleway_rdb_instance" "main" {
   volume_size_in_gb = 10
 }
 ```
-
 ```terraform
 ### Example with backup schedule
 
@@ -175,7 +166,6 @@ resource "scaleway_rdb_instance" "main" {
   backup_schedule_retention = 7  # keep it one week
 }
 ```
-
 ```terraform
 ### Example with Settings
 
@@ -194,9 +184,6 @@ resource "scaleway_rdb_instance" "main" {
   }
 }
 ```
-
-
-
 
 -> **Note** If nothing is defined, your Database Instance will have a default public load-balancer endpoint.
 
