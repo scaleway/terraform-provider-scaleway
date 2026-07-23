@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	acctest2 "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -21,11 +21,11 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	testDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
-	bucketName1 := acctest2.RandomWithPrefix("tf-test-bucket-list-1")
-	bucketName2 := acctest2.RandomWithPrefix("tf-test-bucket-list-2")
-	bucketName3 := acctest2.RandomWithPrefix("tf-test-bucket-list-3")
+	bucketName1 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-1")
+	bucketName2 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-2")
+	bucketName3 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-3")
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
