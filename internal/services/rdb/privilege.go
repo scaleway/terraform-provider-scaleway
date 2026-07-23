@@ -25,9 +25,7 @@ func ResourcePrivilege() *schema.Resource {
 		ReadContext:   ResourceRdbPrivilegeRead,
 		DeleteContext: ResourceRdbPrivilegeDelete,
 		UpdateContext: ResourceRdbPrivilegeUpdate,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.CompositeRegionalImporter("region", "instance_id", "database_name", "user_name"),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
@@ -41,7 +39,7 @@ func ResourcePrivilege() *schema.Resource {
 		},
 		SchemaFunc:    privilegeSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
-		Identity:      identity.DefaultRegional(),
+		Identity:      identity.CompositeRegionalIdentity("instance_id", "database_name", "user_name"),
 	}
 }
 
@@ -135,7 +133,12 @@ func ResourceRdbPrivilegeCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, locality.ExpandID(instanceID), databaseName, userName); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   locality.ExpandID(instanceID),
+		"database_name": databaseName,
+		"user_name":     userName,
+	}, "region", "instance_id", "database_name", "user_name"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -271,7 +274,12 @@ func ResourceRdbPrivilegeRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, databaseName, userName); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   instanceID,
+		"database_name": databaseName,
+		"user_name":     userName,
+	}, "region", "instance_id", "database_name", "user_name"); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -33,9 +33,7 @@ func ResourceReadReplica() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		SchemaVersion: 0,
 		SchemaFunc:    readReplicaSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id", "private_network.#.private_network_id"),
