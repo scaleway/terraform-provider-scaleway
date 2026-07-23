@@ -3,6 +3,7 @@ package object_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -77,6 +78,9 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 			{
 				Query: true,
+				PreConfig: func() {
+					time.Sleep(2 * time.Second)
+				},
 				Config: fmt.Sprintf(`
 					list "scaleway_object_bucket" "by_name" {
 					   provider = scaleway
