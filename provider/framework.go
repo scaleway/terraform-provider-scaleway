@@ -235,6 +235,7 @@ func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() epheme
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		annotations.NewAnnotationsKeyDataSource,
 		datalab.NewDatalabDataSource,
 		datalab.NewDatalabsDataSource,
 		billing.NewBudgetDataSource,
