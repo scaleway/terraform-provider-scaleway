@@ -1,6 +1,6 @@
 resource "scaleway_key_manager_key" "main" {
   name        = "tf-test-kms-key-rotation-action"
-  region      = local.region
+  region      = "fr-par"
   usage       = "symmetric_encryption"
   algorithm   = "aes_256_gcm"
   description = "Test key"
@@ -18,6 +18,6 @@ resource "scaleway_key_manager_key" "main" {
 action "scaleway_key_manager_rotate_key" "main" {
   config {
     key_id = scaleway_key_manager_key.main.id
-    region = local.region
+    region = scaleway_key_manager_key.main.region
   }
 }
