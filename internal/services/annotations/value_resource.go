@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -22,6 +23,7 @@ var (
 	_ resource.Resource                = (*AnnotationsValueResource)(nil)
 	_ resource.ResourceWithConfigure   = (*AnnotationsValueResource)(nil)
 	_ resource.ResourceWithImportState = (*AnnotationsValueResource)(nil)
+	_ resource.ResourceWithIdentity    = (*AnnotationsValueResource)(nil)
 )
 
 func NewAnnotationsValueResource() resource.Resource {
@@ -41,6 +43,10 @@ type annotationsValueResourceModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
+type annotationsValueResourceIdentityModel struct {
+	ID types.String `tfsdk:"id"`
+}
+
 func (r *AnnotationsValueResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_annotations_value"
 }
@@ -51,7 +57,6 @@ var annotationsValueResourceDescription string
 func (r *AnnotationsValueResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: annotationsValueResourceDescription,
-		Description:         annotationsValueResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -78,6 +83,16 @@ func (r *AnnotationsValueResource) Schema(ctx context.Context, req resource.Sche
 			"value_id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The ID of the annotation value.",
+			},
+		},
+	}
+}
+
+func (r *AnnotationsValueResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
 			},
 		},
 	}
@@ -136,17 +151,35 @@ func (r *AnnotationsValueResource) Create(ctx context.Context, req resource.Crea
 	data.KeyID = types.StringValue(value.KeyID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	identity := annotationsValueResourceIdentityModel{
+		ID: types.StringValue(value.ID),
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state annotationsValueResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var (
+		state    annotationsValueResourceModel
+		identity annotationsValueResourceIdentityModel
+	)
 
-	if resp.Diagnostics.HasError() {
-		return
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+
+	var valueID string
+
+	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
+		resp.Diagnostics = nil
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		valueID = locality.ExpandID(state.ID.ValueString())
+	} else {
+		valueID = locality.ExpandID(identity.ID.ValueString())
 	}
-
-	valueID := locality.ExpandID(state.ID.ValueString())
 
 	value, err := r.annotationsAPI.GetValue(&annotations.GetValueRequest{
 		ValueID: valueID,
@@ -178,6 +211,9 @@ func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	identity.ID = types.StringValue(value.ID)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsValueResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -218,6 +254,11 @@ func (r *AnnotationsValueResource) Update(ctx context.Context, req resource.Upda
 	data.Name = types.StringValue(value.Name)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	identity := annotationsValueResourceIdentityModel{
+		ID: types.StringValue(value.ID),
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsValueResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -248,28 +289,5 @@ func (r *AnnotationsValueResource) Delete(ctx context.Context, req resource.Dele
 }
 
 func (r *AnnotationsValueResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	valueID := locality.ExpandID(req.ID)
-
-	value, err := r.annotationsAPI.GetValue(&annotations.GetValueRequest{
-		ValueID: valueID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to import annotation value",
-			fmt.Sprintf("Failed to import annotation value: %s", err),
-		)
-
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), value.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("value_id"), value.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key_id"), value.KeyID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), value.Name)...)
-
-	if value.Description != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), value.Description)...)
-	} else {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), types.StringNull())...)
-	}
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
