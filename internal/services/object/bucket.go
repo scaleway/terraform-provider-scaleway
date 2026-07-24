@@ -283,7 +283,7 @@ func bucketSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"region":     regional.Schema(),
+		"region":     regional.ComputedOptionalSchema(),
 		"project_id": account.ProjectIDSchema(),
 		"versioning": {
 			Type:        schema.TypeList,

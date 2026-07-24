@@ -32,7 +32,20 @@ func Schema() *schema.Schema {
 		Description:      "The region you want to attach the resource to",
 		Optional:         true,
 		ForceNew:         true,
+		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
+		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
+	}
+}
+
+// ComputedOptionalSchema returns a standard schema for a region, albeit
+// Computed and Optional
+func ComputedOptionalSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Description:      "The region you want to attach the resource to",
+		Optional:         true,
 		Computed:         true,
+		ForceNew:         true,
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
 		DiffSuppressFunc: locality.SuppressSDKNullAssignment,
 	}
