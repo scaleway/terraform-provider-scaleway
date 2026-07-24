@@ -4,6 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -56,7 +57,6 @@ var annotationsKeyResourceDescription string
 func (r *AnnotationsKeyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: annotationsKeyResourceDescription,
-		Description:         annotationsKeyResourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -160,6 +160,14 @@ func (r *AnnotationsKeyResource) Create(ctx context.Context, req resource.Create
 	}
 
 	data.ID = types.StringValue(key.ID)
+	data.Name = types.StringValue(key.Name)
+
+	if key.Description != "" {
+		data.Description = types.StringValue(key.Description)
+	} else {
+		data.Description = types.StringNull()
+	}
+
 	data.OrganizationID = types.StringValue(orgID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -191,6 +199,12 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		keyID = locality.ExpandID(state.ID.ValueString())
 	} else {
 		keyID = locality.ExpandID(identity.ID.ValueString())
+		// OrganizationID is not returned by the API, we retrieve it from the previous state
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	key, err := r.annotationsAPI.GetKey(&annotations.GetKeyRequest{
@@ -218,20 +232,6 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		state.Description = types.StringValue(key.Description)
 	} else {
 		state.Description = types.StringNull()
-	}
-
-	if state.OrganizationID.IsNull() {
-		orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
-		if !exists {
-			resp.Diagnostics.AddError(
-				"Missing organization ID",
-				"Could not determine organization ID. Please ensure a default organization is configured.",
-			)
-
-			return
-		}
-
-		state.OrganizationID = types.StringValue(orgID)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -275,7 +275,23 @@ func (r *AnnotationsKeyResource) Update(ctx context.Context, req resource.Update
 	data.ID = types.StringValue(key.ID)
 	data.Name = types.StringValue(key.Name)
 
+	if key.Description != "" {
+		data.Description = types.StringValue(key.Description)
+	} else {
+		data.Description = types.StringNull()
+	}
+
+	// OrganizationID is not returned by the API, preserve from state
+	var state annotationsKeyResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	data.OrganizationID = state.OrganizationID
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	identity := annotationsKeyResourceIdentityModel{
+		ID: types.StringValue(key.ID),
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -306,5 +322,27 @@ func (r *AnnotationsKeyResource) Delete(ctx context.Context, req resource.Delete
 }
 
 func (r *AnnotationsKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
+	// Import ID format: {organization_id}/{key_id} or just {key_id} if default org should be used
+	importID := req.ID
+
+	organizationID, keyID, found := strings.Cut(importID, "/")
+	if !found {
+		keyID = importID
+
+		orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
+		if !exists {
+			resp.Diagnostics.AddError(
+				"Invalid import ID",
+				"Either provide the import ID in format {organization_id}/{key_id} or configure a default organization",
+			)
+
+			return
+		}
+
+		organizationID = orgID
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), keyID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization_id"), organizationID)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), keyID)...)
 }

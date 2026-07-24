@@ -35,8 +35,12 @@ In addition to all arguments above, the following attributes are exported:
 
 ## Import
 
-Annotation keys can be imported using their `id`:
+Annotation keys can be imported using their `key_id` and optionally the `organization_id`. If no `organization_id` is specified, the default [provider](../index.md#arguments-reference) `organization_id` will be used.
 
 ```bash
 terraform import scaleway_annotations_key.main <key_id>
+```
+
+```bash
+terraform import scaleway_annotations_key.main <organization_id>/<key_id>
 ```
