@@ -119,6 +119,41 @@ func TestAccObjectBucket_Basic(t *testing.T) {
 	})
 }
 
+// Test to reproduce https://github.com/scaleway/terraform-provider-scaleway/issues/4201
+func TestAccObjectBucket_CheckRegionIsSet(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	bucketBasic := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-basic")
+	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_object_bucket" "base-01" {
+						name = "%[1]s"
+					}
+
+					resource "scaleway_object_bucket" "base-02" {
+						name = "%[1]s${scaleway_object_bucket.base-01.region}"
+					}
+
+				`, bucketBasic),
+				Check: resource.ComposeTestCheckFunc(
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
+					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-02", true),
+
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "region", objectBucketTestDefaultRegion.String()),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-02", "name", bucketBasic+objectBucketTestDefaultRegion.String()),
+				),
+			},
+		},
+	})
+}
+
 func TestAccObjectBucket_Lifecycle(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
