@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -22,6 +23,7 @@ var (
 	_ resource.Resource                = (*AnnotationsKeyResource)(nil)
 	_ resource.ResourceWithConfigure   = (*AnnotationsKeyResource)(nil)
 	_ resource.ResourceWithImportState = (*AnnotationsKeyResource)(nil)
+	_ resource.ResourceWithIdentity    = (*AnnotationsKeyResource)(nil)
 )
 
 func NewAnnotationsKeyResource() resource.Resource {
@@ -38,6 +40,10 @@ type annotationsKeyResourceModel struct {
 	Name           types.String `tfsdk:"name"`
 	Description    types.String `tfsdk:"description"`
 	OrganizationID types.String `tfsdk:"organization_id"`
+}
+
+type annotationsKeyResourceIdentityModel struct {
+	ID types.String `tfsdk:"id"`
 }
 
 func (r *AnnotationsKeyResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -75,6 +81,16 @@ func (r *AnnotationsKeyResource) Schema(ctx context.Context, req resource.Schema
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+			},
+		},
+	}
+}
+
+func (r *AnnotationsKeyResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"id": identityschema.StringAttribute{
+				RequiredForImport: true,
 			},
 		},
 	}
@@ -147,17 +163,35 @@ func (r *AnnotationsKeyResource) Create(ctx context.Context, req resource.Create
 	data.OrganizationID = types.StringValue(orgID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+
+	identity := annotationsKeyResourceIdentityModel{
+		ID: types.StringValue(key.ID),
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state annotationsKeyResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var (
+		state    annotationsKeyResourceModel
+		identity annotationsKeyResourceIdentityModel
+	)
 
-	if resp.Diagnostics.HasError() {
-		return
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+
+	var keyID string
+
+	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
+		resp.Diagnostics = nil
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		keyID = locality.ExpandID(state.ID.ValueString())
+	} else {
+		keyID = locality.ExpandID(identity.ID.ValueString())
 	}
-
-	keyID := locality.ExpandID(state.ID.ValueString())
 
 	key, err := r.annotationsAPI.GetKey(&annotations.GetKeyRequest{
 		KeyID: keyID,
@@ -186,7 +220,24 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		state.Description = types.StringNull()
 	}
 
+	if state.OrganizationID.IsNull() {
+		orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
+		if !exists {
+			resp.Diagnostics.AddError(
+				"Missing organization ID",
+				"Could not determine organization ID. Please ensure a default organization is configured.",
+			)
+
+			return
+		}
+
+		state.OrganizationID = types.StringValue(orgID)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	identity.ID = types.StringValue(key.ID)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
 }
 
 func (r *AnnotationsKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -255,37 +306,5 @@ func (r *AnnotationsKeyResource) Delete(ctx context.Context, req resource.Delete
 }
 
 func (r *AnnotationsKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	keyID := locality.ExpandID(req.ID)
-
-	key, err := r.annotationsAPI.GetKey(&annotations.GetKeyRequest{
-		KeyID: keyID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to import annotation key",
-			fmt.Sprintf("Failed to import annotation key: %s", err),
-		)
-
-		return
-	}
-
-	orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
-	if !exists {
-		resp.Diagnostics.AddError(
-			"Missing default organization ID",
-			"Cannot import annotation key without a default organization ID",
-		)
-
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), key.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), key.Name)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization_id"), orgID)...)
-
-	if key.Description != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), key.Description)...)
-	} else {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("description"), types.StringNull())...)
-	}
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
