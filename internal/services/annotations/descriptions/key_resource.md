@@ -1,0 +1,1 @@
+Create an annotation key to define custom metadata labels that can be attached to Scaleway resources. Annotation keys allow you to organize and categorize resources using custom tags with meaningful names and descriptions.
