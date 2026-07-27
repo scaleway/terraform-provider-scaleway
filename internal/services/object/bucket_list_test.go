@@ -1,16 +1,13 @@
 package object_test
 
 import (
-	"context"
 	"fmt"
 	"testing"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func TestAccListObjectBuckets_Basic(t *testing.T) {
@@ -29,7 +26,7 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
+		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -79,17 +76,6 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 			{
 				Query: true,
-				PreConfig: func() {
-					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-					defer cancel()
-
-					err := retry.RetryContext(ctx, 2*time.Second, func() *retry.RetryError {
-						return nil
-					})
-					if err != nil {
-						t.Fatalf("error while checking for bucket:: %s", err)
-					}
-				},
 				Config: fmt.Sprintf(`
 					list "scaleway_object_bucket" "by_name" {
 					   provider = scaleway
