@@ -164,6 +164,98 @@ func TestAccKeyManagerKey_WithRotationPolicy(t *testing.T) {
 	})
 }
 
+func TestAccKeyManagerKey_RotationPolicyDrift(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	config := `
+	resource "scaleway_key_manager_key" "main" {
+	  name        = "tf-test-kms-key-rotation-drift"
+	  region      = "fr-par"
+	  usage       = "symmetric_encryption"
+	  algorithm   = "aes_256_gcm"
+	  unprotected = true
+
+	  rotation_policy {
+	    rotation_period = "720h"
+	  }
+	}
+	`
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsKeyManagerKeyDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "720h0m0s"),
+					resource.TestCheckResourceAttrSet("scaleway_key_manager_key.main", "rotation_policy.0.next_rotation_at"),
+				),
+			},
+			{
+				// next_rotation_at is not set in the config: re-planning must
+				// not produce a diff, otherwise every apply postpones the
+				// scheduled rotation.
+				Config:   config,
+				PlanOnly: true,
+			},
+			{
+				ResourceName:      "scaleway_key_manager_key.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// unprotected is not returned by the API (only the computed
+				// protected attribute is), so it cannot survive an import.
+				ImportStateVerifyIgnore: []string{"unprotected"},
+			},
+			{
+				// Changing only rotation_period must let the API recompute the
+				// schedule instead of re-sending the value carried over from
+				// state (the cassette body matcher fails on replay otherwise).
+				Config: `
+				resource "scaleway_key_manager_key" "main" {
+				  name        = "tf-test-kms-key-rotation-drift"
+				  region      = "fr-par"
+				  usage       = "symmetric_encryption"
+				  algorithm   = "aes_256_gcm"
+				  unprotected = true
+
+				  rotation_policy {
+				    rotation_period = "8760h"
+				  }
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "8760h0m0s"),
+					resource.TestCheckResourceAttrSet("scaleway_key_manager_key.main", "rotation_policy.0.next_rotation_at"),
+				),
+			},
+			{
+				// An explicitly configured next_rotation_at must be sent to
+				// the API and round-trip unchanged.
+				Config: `
+				resource "scaleway_key_manager_key" "main" {
+				  name        = "tf-test-kms-key-rotation-drift"
+				  region      = "fr-par"
+				  usage       = "symmetric_encryption"
+				  algorithm   = "aes_256_gcm"
+				  unprotected = true
+
+				  rotation_policy {
+				    rotation_period  = "8760h"
+				    next_rotation_at = "2027-03-01T00:00:00Z"
+				  }
+				}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.rotation_period", "8760h0m0s"),
+					resource.TestCheckResourceAttr("scaleway_key_manager_key.main", "rotation_policy.0.next_rotation_at", "2027-03-01T00:00:00Z"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccKeyManagerKey_WithCustomAlgorithm(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

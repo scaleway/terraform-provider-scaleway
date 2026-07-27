@@ -103,7 +103,7 @@ func ResourceContainerTokenRead(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	token, err := api.GetToken(&container.GetTokenRequest{
+	token, err := api.GetToken(&container.GetTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))
@@ -131,7 +131,7 @@ func ResourceContainerTokenDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	_, err = api.DeleteToken(&container.DeleteTokenRequest{
+	_, err = api.DeleteToken(&container.DeleteTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 		Region:  region,
 		TokenID: ID,
 	}, scw.WithContext(ctx))

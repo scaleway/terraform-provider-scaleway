@@ -74,7 +74,7 @@ func isTokenPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return err
 		}
 
-		_, err = api.GetToken(&containerSDK.GetTokenRequest{
+		_, err = api.GetToken(&containerSDK.GetTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 			TokenID: id,
 			Region:  region,
 		})
@@ -98,7 +98,7 @@ func isTokenDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				return err
 			}
 
-			_, err = api.DeleteToken(&containerSDK.DeleteTokenRequest{
+			_, err = api.DeleteToken(&containerSDK.DeleteTokenRequest{ //nolint:staticcheck // legacy token resource uses deprecated API
 				TokenID: id,
 				Region:  region,
 			})
