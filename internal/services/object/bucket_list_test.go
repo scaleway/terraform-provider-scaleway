@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
-	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
+	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
 )
 
 func TestAccListObjectBuckets_Basic(t *testing.T) {
@@ -24,13 +23,13 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	testDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
-	bucketName1 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-1")
-	bucketName2 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-2")
-	bucketName3 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-3")
+	bucketName1 := "tf-test-bucket-list-resource-1"
+	bucketName2 := "tf-test-bucket-list-resource-2"
+	bucketName3 := "tf-test-bucket-list-resource-3"
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             objectchecks.IsBucketDestroyed(tt),
+		CheckDestroy:             accounttestfuncs.IsProjectDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
