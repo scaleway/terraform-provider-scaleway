@@ -61,13 +61,13 @@ jobs:
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - run: make tfproviderdocs
 
-  nightly-matrix:
-    name: nightly-matrix
+  tests-matrix:
+    name: tests-matrix
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Check all services are in the nightly matrix
-        run: bash .github/scripts/check_nightly_matrix.sh
+        run: bash .github/scripts/check_tests_matrix.sh
 
   actionlint:
     name: actionlint
