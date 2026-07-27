@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -21,9 +20,9 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	testDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
-	bucketName1 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-one")
-	bucketName2 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-two")
-	bucketName3 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-three")
+	bucketName1 := "tf-test-bucket-list-resource-one"
+	bucketName2 := "tf-test-bucket-list-resource-two"
+	bucketName3 := "tf-test-bucket-list-resource-three"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -45,9 +44,6 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
                 resource "scaleway_object_bucket" "bucket2" {
                    name = "%s"
-                   tags = {
-                      environment = "test"
-                   }
                 }
              `, bucketName1, bucketName2),
 			},
@@ -60,17 +56,11 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
                 resource "scaleway_object_bucket" "bucket2" {
                    name = "%s"
-                   tags = {
-                      environment = "test"
-                   }
                 }
 
                 resource "scaleway_object_bucket" "bucket3" {
                    name = "%s"
                    region = "pl-waw"
-                   tags = {
-                      environment = "test"
-                   }
                 }
              `, bucketName1, bucketName2, bucketName3),
 			},
