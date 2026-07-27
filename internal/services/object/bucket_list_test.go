@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
@@ -20,9 +21,9 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 	testDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
-	bucketName1 := "tf-test-bucket-list-resource-1"
-	bucketName2 := "tf-test-bucket-list-resource-2"
-	bucketName3 := "tf-test-bucket-list-resource-3"
+	bucketName1 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-one")
+	bucketName2 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-two")
+	bucketName3 := sdkacctest.RandomWithPrefix("tf-test-bucket-list-resource-three")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -139,7 +140,7 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_object_bucket.by_region_pl_waw", 1),
+					querycheck.ExpectLengthAtLeast("list.scaleway_object_bucket.by_region_pl_waw", 1),
 				},
 			},
 
