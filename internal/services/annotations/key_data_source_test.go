@@ -17,7 +17,7 @@ func TestAccDataSourceAnnotationsKey_Basic(t *testing.T) {
 		t.Skip("No default organization ID found, skipping test")
 	}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             IsAnnotationsKeyDestroyed(tt),
 		Steps: []resource.TestStep{

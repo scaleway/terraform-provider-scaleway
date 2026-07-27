@@ -199,7 +199,7 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 		keyID = locality.ExpandID(state.ID.ValueString())
 	} else {
 		keyID = locality.ExpandID(identity.ID.ValueString())
-		// OrganizationID is not returned by the API, we retrieve it from the previous state
+
 		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 		if resp.Diagnostics.HasError() {
@@ -227,6 +227,7 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 
 	state.ID = types.StringValue(key.ID)
 	state.Name = types.StringValue(key.Name)
+	// OrganizationID is not returned by the API, preserve from state
 
 	if key.Description != "" {
 		state.Description = types.StringValue(key.Description)
