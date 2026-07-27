@@ -124,7 +124,7 @@ func TestAccObjectBucket_CheckRegionIsSet(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketBasic := sdkacctest.RandomWithPrefix("tf-tests-scaleway-object-bucket-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-tests-bucket-region")
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -138,16 +138,15 @@ func TestAccObjectBucket_CheckRegionIsSet(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "base-02" {
-						name = "%[1]s${scaleway_object_bucket.base-01.region}"
+						name = "%[1]s-${scaleway_object_bucket.base-01.region}"
 					}
-
-				`, bucketBasic),
+				`, bucketName),
 				Check: resource.ComposeTestCheckFunc(
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-01", true),
 					objectchecks.CheckBucketExists(tt, "scaleway_object_bucket.base-02", true),
 
 					resource.TestCheckResourceAttr("scaleway_object_bucket.base-01", "region", objectBucketTestDefaultRegion.String()),
-					resource.TestCheckResourceAttr("scaleway_object_bucket.base-02", "name", bucketBasic+objectBucketTestDefaultRegion.String()),
+					resource.TestCheckResourceAttr("scaleway_object_bucket.base-02", "name", bucketName+"-"+objectBucketTestDefaultRegion.String()),
 				),
 			},
 		},
