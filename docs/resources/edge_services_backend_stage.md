@@ -140,10 +140,10 @@ resource "scaleway_edge_services_backend_stage" "main" {
         - `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
 - `container_backend_config` - (Optional) The Scaleway Serverless Container backend linked to the backend stage.
     - `container_id` - (Required) The ID of the Serverless Container.
-    - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Container.
+    - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Container.
 - `function_backend_config` - (Optional) The Scaleway Serverless Function backend linked to the backend stage.
     - `function_id` - (Required) The ID of the Serverless Function.
-    - `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Function.
+    - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Function.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the backend stage is associated with.
 
 ~> **Important:** `s3_backend_config`, `lb_backend_config`, `container_backend_config` and `function_backend_config` are mutually exclusive.

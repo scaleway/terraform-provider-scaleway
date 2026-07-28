@@ -69,7 +69,7 @@ The following arguments are supported:
 * `acl` - (Optional) The canned ACL you want to apply to the bucket. Refer to the [AWS Canned ACL](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl_overview.html#canned-acl) documentation page to find a list of all the supported canned ACLs.
 * `access_control_policy` - (Optional, Conflicts with ACL) A configuration block that sets the ACL permissions for an object per grantee documented below.
 * `expected_bucket_owner` - (Optional, Forces new resource) The project ID of the expected bucket owner.
-* `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#regions-and-zones) in which the bucket should be created.
+* `region` - (Optional, Computed) The [region](https://www.scaleway.com/en/developers/api/#regions-and-zones) in which the bucket should be created.
 * `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the bucket is associated with.
 
 ~> **Important:** The `project_id` attribute has a particular behavior with s3 products, because the s3 API is scoped by project.

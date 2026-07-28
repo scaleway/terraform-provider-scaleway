@@ -247,7 +247,7 @@ The `scaleway_object_bucket_policy` resource exports certain attributes once the
 
 ~> **Important:** Object Storage bucket IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{name}`, e.g. `fr-par/bucket-name`
 
-- `region` - The Scaleway region this bucket resides in.
+- `region` - (Computed) The Scaleway region this bucket resides in.
 
 ## Import
 
