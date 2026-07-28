@@ -119,12 +119,12 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"region": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The region you want to use.",
+					Description: "The region you want to attach the resource to",
 				},
 				"zone": {
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The zone you want to use.",
+					Description: "The zone you want to attach the resource to",
 				},
 				"api_url": {
 					Type:        schema.TypeString,
