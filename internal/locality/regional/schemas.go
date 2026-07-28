@@ -30,6 +30,7 @@ func Schema() *schema.Schema {
 	return &schema.Schema{
 		Type:             schema.TypeString,
 		Description:      "The region you want to attach the resource to",
+		Computed:         true,
 		Optional:         true,
 		ForceNew:         true,
 		ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(allRegions(), "region"),
