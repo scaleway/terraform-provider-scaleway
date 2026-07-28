@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
@@ -251,15 +251,14 @@ func isPrivateNICPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+		instanceAPI, zone, pnicID, _, err := instance.NewAPIV2WithZoneAndNestedID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceAPI.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
-			ServerID:     outerID,
-			PrivateNicID: innerID,
-			Zone:         zone,
+		_, err = instanceAPI.GetPrivateNetworkInterface(&instanceSDK.GetPrivateNetworkInterfaceRequest{
+			PrivateNetworkInterfaceID: pnicID,
+			Zone:                      zone,
 		})
 		if err != nil {
 			return err
@@ -279,15 +278,14 @@ func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					continue
 				}
 
-				api, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+				api, zone, pnicID, _, err := instance.NewAPIV2WithZoneAndNestedID(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
 
-				_, err = api.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
-					ServerID:     outerID, // parent
-					PrivateNicID: innerID, // child
-					Zone:         zone,
+				_, err = api.GetPrivateNetworkInterface(&instanceSDK.GetPrivateNetworkInterfaceRequest{
+					PrivateNetworkInterfaceID: pnicID,
+					Zone:                      zone,
 				})
 
 				switch {

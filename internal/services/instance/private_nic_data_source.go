@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -40,29 +40,29 @@ func DataSourcePrivateNIC() *schema.Resource {
 }
 
 func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, err := newAPIWithZone(d, m)
+	instanceAPI, zone, err := newAPIV2WithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	var privateNICID string
 
-	var pNIC *instance.PrivateNIC
+	var pNIC *instance.PrivateNetworkInterface
 
 	serverID := locality.ExpandID(d.Get("server_id"))
 
 	id, ok := d.GetOk("private_nic_id")
 	if !ok {
-		resp, err := instanceAPI.ListPrivateNICs(&instance.ListPrivateNICsRequest{
-			Zone:     zone,
-			ServerID: serverID,
-			Tags:     types.ExpandStrings(d.Get("tags")),
+		resp, err := instanceAPI.ListPrivateNetworkInterfaces(&instance.ListPrivateNetworkInterfacesRequest{
+			Zone:      zone,
+			ServerIDs: []string{serverID},
+			Tags:      types.ExpandStrings(d.Get("tags")),
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("failed to list instance private_nic: %w", err))
 		}
 
-		privateNic, err := privateNICWithFilters(resp.PrivateNics, d)
+		privateNic, err := privateNICWithFilters(resp.PrivateNetworkInterfaces, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -75,17 +75,16 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(err)
 		}
 
-		res, err := instanceAPI.GetPrivateNIC(&instance.GetPrivateNICRequest{
-			Zone:         zone,
-			PrivateNicID: pNICID,
-			ServerID:     serverID,
+		privateNetworkInterface, err := instanceAPI.GetPrivateNetworkInterface(&instance.GetPrivateNetworkInterfaceRequest{
+			Zone:                      zone,
+			PrivateNetworkInterfaceID: pNICID,
 		}, scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		pNIC = res.PrivateNic
-		privateNICID = res.PrivateNic.ID
+		pNIC = privateNetworkInterface
+		privateNICID = privateNetworkInterface.ID
 	}
 
 	zonedID := zonal.NewNestedIDString(
@@ -100,10 +99,15 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return setPrivateNICState(ctx, instanceAPI, d, pNIC, m)
+	instanceAPIV1, zone, err := newAPIWithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPrivateNICState(ctx, instanceAPIV1, d, pNIC, zone, m)
 }
 
-func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.ResourceData) (*instance.PrivateNIC, error) {
+func privateNICWithFilters(privateNICs []*instance.PrivateNetworkInterface, d *schema.ResourceData) (*instance.PrivateNetworkInterface, error) {
 	privateNetworkID := locality.ExpandID(d.Get("private_network_id"))
 
 	if privateNetworkID == "" {
@@ -117,7 +121,7 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNIC, d *schema.Resourc
 		}
 	}
 
-	var privateNIC *instance.PrivateNIC
+	var privateNIC *instance.PrivateNetworkInterface
 
 	for _, pnic := range privateNICs {
 		if pnic.PrivateNetworkID == privateNetworkID {
