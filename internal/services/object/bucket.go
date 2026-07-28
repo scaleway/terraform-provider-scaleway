@@ -872,7 +872,7 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName stri
 		})
 	}
 
-	return nil
+	return diags
 }
 
 func resourceBucketLifecycleRulesRead(
