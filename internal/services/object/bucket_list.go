@@ -3,7 +3,6 @@ package object
 import (
 	"context"
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -243,43 +242,6 @@ func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketL
 	}
 
 	return rows, nil
-}
-
-func (r *BucketListResource) getBucketTags(ctx context.Context, client *s3.Client, bucketName *string) ([]string, error) {
-	if bucketName == nil {
-		return nil, nil
-	}
-
-	resp, err := client.GetBucketTagging(ctx, &s3.GetBucketTaggingInput{
-		Bucket: bucketName,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	tags := make([]string, 0, len(resp.TagSet))
-	for _, tag := range resp.TagSet {
-		if tag.Key != nil {
-			tags = append(tags, *tag.Key)
-		}
-	}
-
-	return tags, nil
-}
-
-func tagsMatch(bucketTags []string, filterTags []string) bool {
-	if len(filterTags) == 0 {
-		return true
-	}
-
-	// Check if all filter tags are present in bucket tags
-	for _, filterTag := range filterTags {
-		if !slices.Contains(bucketTags, filterTag) {
-			return false
-		}
-	}
-
-	return true
 }
 
 func setBucketStateForList(resourceData *sdkv2schema.ResourceData, bucket *s3Types.Bucket, region scw.Region, projectID string) {
