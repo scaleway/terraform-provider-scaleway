@@ -9,13 +9,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server/translate"
 	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +22,6 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -58,23 +54,10 @@ func (r *BucketListResource) Metadata(_ context.Context, req resource.MetadataRe
 func (r *BucketListResource) ListResourceConfigSchema(_ context.Context, _ list.ListResourceSchemaRequest, response *list.ListResourceSchemaResponse) {
 	response.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"project_ids": schema.ListAttribute{
-				ElementType: types.StringType,
-				Optional:    true,
-				Description: "Project IDs to filter for. Use '*' to list across all projects",
-				Validators: []validator.List{
-					listvalidator.SizeAtLeast(1),
-					listvalidator.ValueStringsAre(
-						stringvalidator.Any(
-							stringvalidator.OneOf("*"),
-							verify.IsStringUUID(),
-						),
-					),
-				},
-			},
-			"regions": listscw.RegionsAttribute("Regions to filter for. Use '*' to list from all regions"),
-			"name":    listscw.NameAttribute("Name of the bucket to filter on"),
-			"tags":    listscw.TagsAttribute("Tags of the bucket to filter on"),
+			"project_ids": listscw.ProjectIDsAttribute("Project IDs to filter on."),
+			"regions":     listscw.RegionsAttribute("Regions to filter on."),
+			"name":        listscw.NameAttribute("Name of the bucket to filter on."),
+			"tags":        listscw.TagsAttribute("Tags of the bucket to filter on."),
 		},
 	}
 }
