@@ -56,8 +56,6 @@ func (r *BucketListResource) ListResourceConfigSchema(_ context.Context, _ list.
 		Attributes: map[string]schema.Attribute{
 			"project_ids": listscw.ProjectIDsAttribute("Project IDs to filter on."),
 			"regions":     listscw.RegionsAttribute("Regions to filter on."),
-			"name":        listscw.NameAttribute("Name of the bucket to filter on."),
-			"tags":        listscw.TagsAttribute("Tags of the bucket to filter on."),
 		},
 	}
 }
@@ -70,10 +68,8 @@ func (r *BucketListResource) RawV6Schemas(ctx context.Context, _ list.RawV6Schem
 }
 
 type BucketListResourceModel struct {
-	ProjectIDs types.List   `tfsdk:"project_ids"`
-	Regions    types.List   `tfsdk:"regions"`
-	Name       types.String `tfsdk:"name"`
-	Tags       types.List   `tfsdk:"tags"`
+	ProjectIDs types.List `tfsdk:"project_ids"`
+	Regions    types.List `tfsdk:"regions"`
 }
 
 func (m *BucketListResourceModel) GetProjects() types.List {
@@ -82,10 +78,6 @@ func (m *BucketListResourceModel) GetProjects() types.List {
 
 func (m *BucketListResourceModel) GetRegions() types.List {
 	return m.Regions
-}
-
-func (m *BucketListResourceModel) GetTags() types.List {
-	return m.Tags
 }
 
 type bucketRow struct {
@@ -242,31 +234,6 @@ func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketL
 
 	for i := range resp.Buckets {
 		bucket := &resp.Buckets[i]
-
-		// Filter by name if specified
-		if !data.Name.IsNull() && !data.Name.IsUnknown() {
-			expectedName := data.Name.ValueString()
-			if bucket.Name == nil || *bucket.Name != expectedName {
-				continue
-			}
-		}
-
-		// Filter by tags if specified
-		if !data.Tags.IsNull() && !data.Tags.IsUnknown() {
-			var filterTagStrings []string
-
-			diags := data.Tags.ElementsAs(ctx, &filterTagStrings, false)
-			if diags.HasError() {
-				continue
-			}
-
-			if len(filterTagStrings) > 0 {
-				bucketTags, err := r.getBucketTags(ctx, s3Client, bucket.Name)
-				if err != nil || !tagsMatch(bucketTags, filterTagStrings) {
-					continue
-				}
-			}
-		}
 
 		rows = append(rows, bucketRow{
 			Bucket:    bucket,
