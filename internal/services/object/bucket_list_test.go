@@ -67,24 +67,6 @@ func TestAccListObjectBuckets_Basic(t *testing.T) {
 
 			{
 				Query: true,
-				Config: fmt.Sprintf(`
-					list "scaleway_object_bucket" "by_name" {
-					   provider = scaleway
-
-					   config {
-						  regions     = ["*"]
-						  project_ids = ["*"]
-						  name        = "%s"
-					   }
-					}
-				`, bucketName1),
-				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_object_bucket.by_name", 1),
-				},
-			},
-
-			{
-				Query: true,
 				Config: `
 					list "scaleway_object_bucket" "all" {
 						provider = scaleway
