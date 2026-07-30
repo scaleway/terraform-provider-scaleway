@@ -142,7 +142,6 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		IPIDs:            locality.ExpandIDs(d.Get("ipam_ip_ids")),
 	}
 
-
 	instanceAPI, zone, err := newAPIV2WithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
