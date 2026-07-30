@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
@@ -20,6 +21,7 @@ var (
 	_ resource.Resource                = (*SamlCertificateResource)(nil)
 	_ resource.ResourceWithConfigure   = (*SamlCertificateResource)(nil)
 	_ resource.ResourceWithImportState = (*SamlCertificateResource)(nil)
+	_ resource.ResourceWithIdentity    = (*SamlCertificateResource)(nil)
 )
 
 func NewSamlCertificateResource() resource.Resource {
@@ -41,6 +43,8 @@ type samlCertificateResourceModel struct {
 	Origin    types.String `tfsdk:"origin"`
 	ExpiresAt types.String `tfsdk:"expires_at"`
 }
+
+type samlCertificateResourceIdentityModel = framework.GlobalIdentity
 
 func (r *SamlCertificateResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_iam_saml_certificate"
@@ -97,6 +101,10 @@ func (r *SamlCertificateResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
+}
+
+func (r *SamlCertificateResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *SamlCertificateResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -171,12 +179,25 @@ func (r *SamlCertificateResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, new(r.convertToState(res, orgID, samlID)))...)
+	state := r.convertToState(res, orgID, samlID)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state samlCertificateResourceModel
+	var (
+		state    samlCertificateResourceModel
+		identity samlCertificateResourceIdentityModel
+	)
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -244,6 +265,8 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 	state = r.convertToState(foundCert, orgID, samlID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(foundCert.ID))...)
 }
 
 func (r *SamlCertificateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -275,7 +298,12 @@ func (r *SamlCertificateResource) Delete(ctx context.Context, req resource.Delet
 }
 
 func (r *SamlCertificateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), req.ID)...)
+
+	if orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID(); exists {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization_id"), orgID)...)
+	}
 }
 
 func (r *SamlCertificateResource) convertToState(cert *iam.SamlCertificate, orgID string, samlID string) samlCertificateResourceModel {

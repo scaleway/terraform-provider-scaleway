@@ -19,6 +19,7 @@ import (
 	datalab "github.com/scaleway/scaleway-sdk-go/api/datalab/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
@@ -28,6 +29,7 @@ var (
 	_ resource.Resource                = (*DatalabResource)(nil)
 	_ resource.ResourceWithConfigure   = (*DatalabResource)(nil)
 	_ resource.ResourceWithImportState = (*DatalabResource)(nil)
+	_ resource.ResourceWithIdentity    = (*DatalabResource)(nil)
 )
 
 func NewDatalabResource() resource.Resource {
@@ -58,6 +60,8 @@ type datalabResourceModel struct {
 	NotebookURL       types.String `tfsdk:"notebook_url"`
 	HasNotebook       types.Bool   `tfsdk:"has_notebook"`
 }
+
+type datalabResourceIdentityModel = framework.RegionalIdentity
 
 type sparkMainModel struct {
 	NodeType       types.String `tfsdk:"node_type"`
@@ -315,6 +319,10 @@ func (r *DatalabResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 	}
 }
 
+func (r *DatalabResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.DefaultRegional()
+}
+
 func (r *DatalabResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
@@ -440,17 +448,37 @@ func (r *DatalabResource) Create(ctx context.Context, req resource.CreateRequest
 
 	state := flattenDatalab(ctx, dl, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetRegionalIdentity(dl.Region, dl.ID))...)
 }
 
 func (r *DatalabResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state datalabResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var (
+		state    datalabResourceModel
+		identity datalabResourceIdentityModel
+	)
 
-	if resp.Diagnostics.HasError() {
-		return
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+
+	var (
+		region scw.Region
+		id     string
+		err    error
+	)
+
+	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
+		resp.Diagnostics = nil
+		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		region, id, err = regional.ParseID(state.ID.ValueString())
+	} else {
+		region, id, err = regional.ParseID(identity.ID.ValueString())
 	}
 
-	region, id, err := regional.ParseID(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse Datalab ID", err.Error())
 
@@ -475,6 +503,8 @@ func (r *DatalabResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	newState := flattenDatalab(ctx, dl, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetRegionalIdentity(dl.Region, dl.ID))...)
 }
 
 func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -585,6 +615,8 @@ func (r *DatalabResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	newState := flattenDatalab(ctx, dl, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetRegionalIdentity(dl.Region, dl.ID))...)
 }
 
 func (r *DatalabResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -639,14 +671,27 @@ func (r *DatalabResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *DatalabResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	region, id, err := regional.ParseID(req.ID)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse import ID", "Expected format: {region}/{id}. "+err.Error())
+	if req.ID != "" {
+		region, id, err := regional.ParseID(req.ID)
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse import ID", "Expected format: {region}/{id}. "+err.Error())
+
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), regional.NewIDString(region, id))...)
 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), regional.NewIDString(region, id))...)
+	var identityData datalabResourceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.ID)...)
 }
 
 func flattenDatalab(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagnostics) datalabResourceModel {

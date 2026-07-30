@@ -17,6 +17,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -25,6 +26,7 @@ var (
 	_ resource.Resource                = (*SamlResource)(nil)
 	_ resource.ResourceWithConfigure   = (*SamlResource)(nil)
 	_ resource.ResourceWithImportState = (*SamlResource)(nil)
+	_ resource.ResourceWithIdentity    = (*SamlResource)(nil)
 )
 
 func NewSamlResource() resource.Resource {
@@ -45,6 +47,8 @@ type samlResourceModel struct {
 	Status          types.String `tfsdk:"status"`
 	ServiceProvider types.Object `tfsdk:"service_provider"`
 }
+
+type samlResourceIdentityModel = framework.GlobalIdentity
 
 type serviceProviderModel struct {
 	EntityID                    types.String `tfsdk:"entity_id"`
@@ -128,6 +132,10 @@ func (r *SamlResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 	}
 }
 
+func (r *SamlResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.DefaultGlobal()
+}
+
 func (r *SamlResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
@@ -193,6 +201,8 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 			state = convertSamlToState(res, orgID, &resp.Diagnostics)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+			resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 		} else {
 			resp.Diagnostics.AddError(
 				"Failed to check SAML status",
@@ -214,8 +224,18 @@ func (r *SamlResource) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state samlResourceModel
+	var (
+		state    samlResourceModel
+		identity samlResourceIdentityModel
+	)
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -257,6 +277,8 @@ func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	state = convertSamlToState(saml, orgID, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(saml.ID))...)
 }
 
 func (r *SamlResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -320,7 +342,12 @@ func (r *SamlResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func (r *SamlResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), req.ID)...)
+
+	if orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID(); exists {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization_id"), orgID)...)
+	}
 }
 
 func convertSamlToState(saml *iam.Saml, orgID string, diags *diag.Diagnostics) samlResourceModel {

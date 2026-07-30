@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -15,6 +14,7 @@ import (
 	annotations "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -57,9 +57,7 @@ type annotationsBindingResourceModel struct {
 	KeyID   types.String `tfsdk:"key_id"`
 }
 
-type annotationsBindingResourceIdentityModel struct {
-	ID types.String `tfsdk:"id"`
-}
+type annotationsBindingResourceIdentityModel = framework.GlobalIdentity
 
 func (r *AnnotationsBindingResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_annotations_binding"
@@ -103,13 +101,7 @@ func (r *AnnotationsBindingResource) Schema(ctx context.Context, req resource.Sc
 }
 
 func (r *AnnotationsBindingResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"id": identityschema.StringAttribute{
-				RequiredForImport: true,
-			},
-		},
-	}
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *AnnotationsBindingResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -161,10 +153,7 @@ func (r *AnnotationsBindingResource) Create(ctx context.Context, req resource.Cr
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	identity := annotationsBindingResourceIdentityModel{
-		ID: types.StringValue(binding.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(binding.ID))...)
 }
 
 func (r *AnnotationsBindingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -219,8 +208,7 @@ func (r *AnnotationsBindingResource) Read(ctx context.Context, req resource.Read
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	identity.ID = types.StringValue(binding.ID)
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(binding.ID))...)
 }
 
 func (r *AnnotationsBindingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -258,21 +246,33 @@ func (r *AnnotationsBindingResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *AnnotationsBindingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	bindingID := locality.ExpandID(req.ID)
+	if req.ID != "" {
+		bindingID := locality.ExpandID(req.ID)
 
-	binding, err := getBindingByID(ctx, r.annotationsAPI, bindingID)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to import annotation binding",
-			fmt.Sprintf("Failed to import annotation binding: %s", err),
-		)
+		binding, err := getBindingByID(ctx, r.annotationsAPI, bindingID)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to import annotation binding",
+				fmt.Sprintf("Failed to import annotation binding: %s", err),
+			)
+
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), binding.ID)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("srn"), binding.Srn)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("value_id"), binding.Value.ID)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key_id"), binding.Key.ID)...)
 
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), binding.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("srn"), binding.Srn)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("value_id"), binding.Value.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("key_id"), binding.Key.ID)...)
-	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), binding.ID)...)
+	var identityData annotationsBindingResourceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.ID)...)
 }

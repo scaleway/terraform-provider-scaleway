@@ -15,6 +15,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -23,6 +24,7 @@ var (
 	_ resource.Resource                = (*ScimResource)(nil)
 	_ resource.ResourceWithConfigure   = (*ScimResource)(nil)
 	_ resource.ResourceWithImportState = (*ScimResource)(nil)
+	_ resource.ResourceWithIdentity    = (*ScimResource)(nil)
 )
 
 func NewScimResource() resource.Resource {
@@ -40,6 +42,8 @@ type scimResourceModel struct {
 	ID        types.String `tfsdk:"id"`
 	CreatedAt types.String `tfsdk:"created_at"`
 }
+
+type scimResourceIdentityModel = framework.GlobalIdentity
 
 func (r *ScimResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_iam_scim"
@@ -73,6 +77,10 @@ func (r *ScimResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 		},
 	}
+}
+
+func (r *ScimResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *ScimResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -140,6 +148,8 @@ func (r *ScimResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 			state = convertScimToState(res, orgID)
 			resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+			resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 		} else {
 			resp.Diagnostics.AddError(
 				"Failed to check SCIM status",
@@ -161,8 +171,18 @@ func (r *ScimResource) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (r *ScimResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state scimResourceModel
+	var (
+		state    scimResourceModel
+		identity scimResourceIdentityModel
+	)
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 
 	if resp.Diagnostics.HasError() {
 		return
@@ -204,6 +224,8 @@ func (r *ScimResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	state = convertScimToState(scim, orgID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(scim.ID))...)
 }
 
 func (r *ScimResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -267,7 +289,12 @@ func (r *ScimResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 }
 
 func (r *ScimResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), req.ID)...)
+
+	if orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID(); exists {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("organization_id"), orgID)...)
+	}
 }
 
 func convertScimToState(scim *iam.Scim, orgID string) scimResourceModel {
