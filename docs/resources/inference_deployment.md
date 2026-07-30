@@ -8,9 +8,8 @@ page_title: "Scaleway: scaleway_inference_deployment"
 Creates and manages Scaleway Managed Inference deployments.
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/inference/).
 
-## Example Usage
 
-### Basic
+## Example Usage
 
 ```terraform
 data "scaleway_inference_model" "my_model" {
@@ -18,15 +17,16 @@ data "scaleway_inference_model" "my_model" {
 }
 
 resource "scaleway_inference_deployment" "deployment" {
-  name       = "tf-inference-deployment"
-  node_type  = "L4"
-  model_id   = data.scaleway_inference_model.my_model.id
+  name      = "tf-inference-deployment"
+  node_type = "L4"
+  model_id  = data.scaleway_inference_model.my_model.id
   public_endpoint {
     is_enabled = true
   }
   accept_eula = true
 }
 ```
+
 
 ## Argument Reference
 
