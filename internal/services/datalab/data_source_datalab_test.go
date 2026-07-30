@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccDatalabDataSource_ByID(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -84,6 +86,8 @@ func TestAccDatalabDataSource_ByID(t *testing.T) {
 }
 
 func TestAccDatalabDataSource_ByName(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
