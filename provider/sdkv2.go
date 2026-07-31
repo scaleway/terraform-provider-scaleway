@@ -118,20 +118,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Description:      "The Scaleway organization ID.",
 					ValidateDiagFunc: verify.IsUUID(),
 				},
-				"region": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ForceNew:         true,
-					ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(regional.AllRegions(), "region"),
-					Description:      "The region you want to attach the resource to",
-				},
-				"zone": {
-					Type:             schema.TypeString,
-					Optional:         true,
-					ForceNew:         true,
-					ValidateDiagFunc: verify.ValidateStringInSliceWithWarning(zonal.AllZones(), "zone"),
-					Description:      "The zone you want to attach the resource to",
-				},
+				"region": regional.ProviderSchema(),
+				"zone":   zonal.ProviderSchema(),
 				"api_url": {
 					Type:        schema.TypeString,
 					Optional:    true,
