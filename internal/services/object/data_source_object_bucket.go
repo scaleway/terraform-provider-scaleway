@@ -68,5 +68,5 @@ func DataSourceObjectStorageRead(ctx context.Context, d *schema.ResourceData, m 
 	bucketRegionalID := regional.NewIDString(region, bucket)
 	d.SetId(bucketRegionalID)
 
-	return resourceObjectBucketRead(ctx, d, m)
+	return setBucketState(ctx, d, bucket, region, s3Client)
 }
