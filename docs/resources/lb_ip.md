@@ -31,7 +31,7 @@ resource "scaleway_lb_ip" "ipv6" {
 
 The following arguments are supported:
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the IP is associated with.
 - `reverse` - (Optional) The reverse domain associated with this IP.
 - `tags` - (Optional) The tags associated with this IP.

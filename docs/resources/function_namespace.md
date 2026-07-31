@@ -32,7 +32,7 @@ The following arguments are supported:
 
 - `tags` - (Optional) The list of tags associated with the namespace.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The unique identifier of the project that contains the namespace.
 

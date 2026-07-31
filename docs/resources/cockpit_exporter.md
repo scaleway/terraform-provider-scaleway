@@ -78,7 +78,7 @@ resource "scaleway_cockpit_exporter" "main" {
 - `exported_products` - (Optional) List of Scaleway products to export. Use `["all"]` to export all products. Use [`scaleway_cockpit_products`](../data-sources/cockpit_products.md) for valid product names. Defaults to `["all"]`.
 - `description` - (Optional) Description of the data export.
 - `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)) The ID of the Project.
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the exporter is located.
+- `region` - (Optional, Computed, Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)) The [region](../guides/regions_and_zones.md#regions) where the exporter is located.
 
 ### datadog_destination block
 

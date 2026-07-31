@@ -29,7 +29,7 @@ data "scaleway_instance_ip" "my_ip" {
 - `id` - (Optional) The ID of the IP address to retrieve
   Only one of `address` and `id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the IP is associated with.
 

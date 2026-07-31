@@ -98,7 +98,7 @@ The following arguments are supported:
     - `access_key` - (Required, Sensitive) The access key for accessing the SQS queue.
     - `secret_key` - (Required, Sensitive) The secret key for accessing the SQS queue.
     - `project_id` - (Optional) The ID of the project in which SQS is enabled, (defaults to [provider](../index.md#arguments-reference) `project_id`)
-    - `region` - (Optional) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `region` - (Optional, Computed) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
     - `queue` - (Deprecated) The name of the SQS queue. This argument is no longer supported.
 
 - `nats` - The configuration for the Scaleway NATS account used by the trigger
@@ -106,7 +106,7 @@ The following arguments are supported:
     - `server_urls` - (Required) The list of URLs of the NATS server (e.g., "nats://nats.mnq.fr-par.scaleway.com:4222").
     - `credentials_file_content` - (Required, Sensitive) The content of the NATS credentials file that will be used to authenticate with the NATS server and subscribe to the specified subject.
     - `project_id` - (Optional) The ID of the project that contains the Messaging and Queuing NATS account (defaults to [provider](../index.md#arguments-reference) `project_id`)
-    - `region` - (Optional) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `region` - (Optional, Computed) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
     - `account_id` - (Deprecated) unique identifier of the Messaging and Queuing NATS account.
 
 - `cron` - The configuration for the cron source of the trigger
@@ -115,7 +115,7 @@ The following arguments are supported:
     - `body` - (Optional) Body to send to the container when the trigger is invoked.
     - `headers` - (Optional) Additional headers to send to the container when the trigger is invoked.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 ## Attributes Reference
 

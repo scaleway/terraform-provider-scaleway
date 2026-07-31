@@ -29,7 +29,7 @@ data "scaleway_instance_snapshot" "by_id" {
 - `snapshot_id` - (Optional) The snapshot id.
   Only one of `name` and `snapshot_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the snapshot exists.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the snapshot is associated with.
 
