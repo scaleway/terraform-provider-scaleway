@@ -113,7 +113,7 @@ The following arguments are supported:
 - `external_rules` - (Defaults to `false`) A boolean to specify whether to use [instance_security_group_rules](../resources/instance_security_group_rules.md).
   If `external_rules` is set to `true`, `inbound_rule` and `outbound_rule` can not be set directly in the security group.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the security group is associated with.
 

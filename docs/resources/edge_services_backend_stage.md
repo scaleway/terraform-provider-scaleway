@@ -137,7 +137,7 @@ resource "scaleway_edge_services_backend_stage" "main" {
         - `is_ssl` - Defines whether the Load Balancer's frontend handles SSL connections.
         - `domain_name` - The Fully Qualified Domain Name (in the format subdomain.example.com) to use in HTTP requests sent towards your Load Balancer.
         - `has_websocket` - Defines whether to forward websocket requests to the load balancer.
-        - `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
+        - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the Load Balancer.
 - `container_backend_config` - (Optional) The Scaleway Serverless Container backend linked to the backend stage.
     - `container_id` - (Required) The ID of the Serverless Container.
     - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Serverless Container.

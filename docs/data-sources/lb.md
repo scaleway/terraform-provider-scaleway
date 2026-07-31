@@ -45,4 +45,4 @@ In addition to all arguments above, the following attributes are exported:
 
 - `tags` - The tags associated with the Load Balancer.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancer exists.

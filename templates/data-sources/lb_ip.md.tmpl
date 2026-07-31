@@ -33,7 +33,7 @@ The following arguments are supported:
 - `ip_id` - (Optional) The IP ID.
   Only one of `ip_address` and `ip_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP was reserved.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP was reserved.
 
 - `project_id` - (Optional) The ID of the Project the Load Balancer IP is associated with.
 

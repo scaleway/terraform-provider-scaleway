@@ -75,7 +75,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the server.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
