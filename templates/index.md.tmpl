@@ -219,7 +219,7 @@ resource "scaleway_instance_ip" "server_ip" {
 | `region`          | `SCW_DEFAULT_REGION`                            | The [region](./guides/regions_and_zones.md#regions)  that will be used as default value for all resources. (`fr-par` if none specified)         |           |
 | `zone`            | `SCW_DEFAULT_ZONE`                              | The [zone](./guides/regions_and_zones.md#zones) that will be used as default value for all resources. (`fr-par-1` if none specified)            |           |
 
-## Argument Reference
+## Arguments Reference
 
 In addition to [generic provider arguments](https://www.terraform.io/docs/configuration/providers.html)
 (e.g. `alias` and `version`), and [the configuration arguments](#scaleway-configuration-reference),

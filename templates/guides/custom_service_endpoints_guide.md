@@ -21,7 +21,7 @@ the `provider` declarations, e.g.,
 ```hcl
 provider "scaleway" {
   # ... potentially other provider configuration ...
-  
+
   endpoints {
     s3 = "http://localhost:4572"
   }
