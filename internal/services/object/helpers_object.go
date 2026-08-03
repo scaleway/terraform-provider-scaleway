@@ -88,6 +88,7 @@ func NewS3ClientFromMeta(ctx context.Context, meta *meta.Meta, region string) (*
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
 	s3UsePathStyle := meta.S3UsePathStyle()
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
 	if err != nil {
 		return nil, err
@@ -110,6 +111,7 @@ func NewS3ClientFromMetaWithProjectID(ctx context.Context, meta *meta.Meta, regi
 	accessKey, _ := meta.ScwClient().GetAccessKey()
 	secretKey, _ := meta.ScwClient().GetSecretKey()
 	s3UsePathStyle := meta.S3UsePathStyle()
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, meta, nil, nil, region)
 	if err != nil {
 		return nil, err
@@ -144,6 +146,7 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
 		return nil, "", err
@@ -185,6 +188,7 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 	}
 
 	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
 		return nil, "", "", err
@@ -211,6 +215,7 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
 		return nil, "", "", "", err
@@ -237,6 +242,7 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
 	if err != nil {
 		return nil, "", name, "", err
@@ -258,6 +264,7 @@ func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, reg
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
 	s3UsePathStyle := meta.ExtractS3UsePathStyle(d, m)
+
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
 	if err != nil {
 		return nil, err
