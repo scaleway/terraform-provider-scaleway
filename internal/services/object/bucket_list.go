@@ -212,15 +212,7 @@ type bucketListTarget struct {
 }
 
 func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketListTarget, data BucketListResourceModel) ([]bucketRow, error) {
-	accessKey, _ := r.meta.ScwClient().GetAccessKey()
-	accessKey = accessKeyWithProjectID(accessKey, target.ProjectID)
-
-	secretKey, _ := r.meta.ScwClient().GetSecretKey()
-	s3Endpoint := r.meta.Endpoints()["s3_endpoint"]
-
-	s3Client, err := newS3Client(
-		ctx, target.Region.String(), accessKey, secretKey, s3Endpoint, false, r.meta.HTTPClient(),
-	)
+	s3Client, err := NewS3ClientFromMeta(ctx, r.meta, target.Region.String())
 	if err != nil {
 		return nil, fmt.Errorf("creating S3 client: %w", err)
 	}

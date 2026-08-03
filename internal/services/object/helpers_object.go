@@ -309,8 +309,12 @@ func retrieveS3Endpoint(
 	}
 
 	// Profile field value
-	scwClient := meta.ExtractScwClient(m)
-	profileS3Endpoint, s3EndpointOk := scwClient.GetS3Endpoint()
+	profileS3Endpoint, s3EndpointOk := "", false
+
+	if m != nil {
+		scwClient := meta.ExtractScwClient(m)
+		profileS3Endpoint, s3EndpointOk = scwClient.GetS3Endpoint()
+	}
 
 	if s3EndpointOk && profileS3Endpoint != "" {
 		return profileS3Endpoint, nil
