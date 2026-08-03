@@ -23,4 +23,3 @@ For more information, see the [API documentation](https://www.scaleway.com/en/de
 - `zone` (String) Zone of server to send the action to
 
 
-

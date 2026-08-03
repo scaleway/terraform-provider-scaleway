@@ -8,7 +8,6 @@ description: |-
 # Resource: scaleway_opensearch_deployment
 
 
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/opensearch/).
 
 
@@ -25,7 +24,6 @@ list "scaleway_opensearch_deployment" "all" {
   }
 }
 ```
-
 ```terraform
 # List OpenSearch deployments filtered by name prefix
 list "scaleway_opensearch_deployment" "by_name" {
@@ -37,7 +35,6 @@ list "scaleway_opensearch_deployment" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List OpenSearch deployments in a specific region for a specific project
 list "scaleway_opensearch_deployment" "region" {
@@ -49,7 +46,6 @@ list "scaleway_opensearch_deployment" "region" {
   }
 }
 ```
-
 ```terraform
 # List OpenSearch deployments filtered by tag
 list "scaleway_opensearch_deployment" "by_tag" {
@@ -61,7 +57,6 @@ list "scaleway_opensearch_deployment" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List OpenSearch deployments filtered by engine version
 list "scaleway_opensearch_deployment" "by_version" {
@@ -74,8 +69,6 @@ list "scaleway_opensearch_deployment" "by_version" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

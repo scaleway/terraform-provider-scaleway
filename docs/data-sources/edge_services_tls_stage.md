@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_tls_stage"
 Gets information about an Edge Services TLS stage.
 
 A TLS stage manages TLS/SSL certificates for an Edge Services pipeline, supporting both managed Let's Encrypt certificates and custom certificates stored in Scaleway Secret Manager.
-
 ## Example Usage
 
 ```terraform
@@ -17,15 +16,12 @@ data "scaleway_edge_services_tls_stage" "by_id" {
   tls_stage_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services TLS stage by pipeline ID
 data "scaleway_edge_services_tls_stage" "by_pipeline" {
   pipeline_id = scaleway_edge_services_pipeline.main.id
 }
 ```
-
-
 
 ## Argument Reference
 

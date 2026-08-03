@@ -6,16 +6,11 @@ page_title: "Scaleway: {{ .Name }}"
 
 # {{ .Name }} (Data Source)
 
-{{ .Description }}
-
+{{ .Description -}}
 {{ if .HasExamples }}
 ## Example Usage
 
 {{ range .ExampleFiles -}}
 {{ tffile . }}
 
-{{ end }}
-
-{{ end -}}
-
-{{ .SchemaMarkdown }}
+{{ end -}}{{ end -}}{{- .SchemaMarkdown | trimspace }}

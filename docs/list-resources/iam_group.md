@@ -23,7 +23,6 @@ list "scaleway_iam_group" "all" {
   }
 }
 ```
-
 ```terraform
 # List groups filtered by application IDs
 list "scaleway_iam_group" "by_application" {
@@ -37,7 +36,6 @@ list "scaleway_iam_group" "by_application" {
   }
 }
 ```
-
 ```terraform
 # List groups filtered by name
 list "scaleway_iam_group" "by_name" {
@@ -48,7 +46,6 @@ list "scaleway_iam_group" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List groups filtered by tag
 list "scaleway_iam_group" "by_tag" {
@@ -59,7 +56,6 @@ list "scaleway_iam_group" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List groups filtered by user IDs
 list "scaleway_iam_group" "by_user" {
@@ -73,7 +69,6 @@ list "scaleway_iam_group" "by_user" {
   }
 }
 ```
-
 
 ## Argument Reference
 

@@ -8,8 +8,6 @@ page_title: "Scaleway: scaleway_interlink_link"
 Gets information about an Interlink Link.
 
 A link is a logical Interlink session created within a PoP, representing the connection between your infrastructure and Scaleway.
-
-
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
 
 
@@ -21,16 +19,12 @@ data "scaleway_interlink_link" "my_link" {
   link_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Get link info by name
 data "scaleway_interlink_link" "my_link" {
   name = "my-link"
 }
 ```
-
-
-
 
 ## Argument Reference
 

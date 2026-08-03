@@ -23,4 +23,3 @@ Refer to the RDB [documentation](https://www.scaleway.com/en/docs/managed-databa
 - `wait` (Boolean) Wait for the export operation to complete before returning.
 
 
-

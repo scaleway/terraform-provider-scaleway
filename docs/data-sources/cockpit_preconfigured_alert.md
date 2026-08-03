@@ -96,6 +96,3 @@ In addition to all arguments above, the following attributes are exported:
     - `product_name` - Scaleway product associated with the alert (e.g., "instance", "rdb", "kubernetes").
     - `product_family` - Family of the product (e.g., "compute", "storage", "network").
     - `data_source_id` - ID of the data source containing the alert rule.
-
-
-

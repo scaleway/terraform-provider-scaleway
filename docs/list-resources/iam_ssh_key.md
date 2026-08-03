@@ -23,7 +23,6 @@ list "scaleway_iam_ssh_key" "all" {
   }
 }
 ```
-
 ```terraform
 # List SSH keys filtered by name
 list "scaleway_iam_ssh_key" "by_name" {
@@ -34,7 +33,6 @@ list "scaleway_iam_ssh_key" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List disabled SSH keys in specific projects
 list "scaleway_iam_ssh_key" "disabled" {
@@ -49,7 +47,6 @@ list "scaleway_iam_ssh_key" "disabled" {
   }
 }
 ```
-
 
 ## Argument Reference
 

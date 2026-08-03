@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_waf_stage"
 Gets information about an Edge Services WAF (Web Application Firewall) stage.
 
 A WAF stage provides web application firewall protection for an Edge Services pipeline, inspecting HTTP requests and blocking malicious traffic based on a configurable paranoia level.
-
 ## Example Usage
 
 ```terraform
@@ -17,15 +16,12 @@ data "scaleway_edge_services_waf_stage" "by_id" {
   waf_stage_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services WAF stage by pipeline ID
 data "scaleway_edge_services_waf_stage" "by_pipeline" {
   pipeline_id = scaleway_edge_services_pipeline.main.id
 }
 ```
-
-
 
 ## Argument Reference
 

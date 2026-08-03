@@ -9,8 +9,6 @@ Gets information about a VPC connector.
 
 A VPC connector enables network connectivity between two VPCs, allowing resources in separate VPCs to communicate with each other.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -19,16 +17,12 @@ data "scaleway_vpc_connector" "by_id" {
   connector_id = "fr-par/11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve a VPC connector by name
 data "scaleway_vpc_connector" "by_name" {
   name = "my-vpc-connector"
 }
 ```
-
-
-
 
 ## Argument Reference
 

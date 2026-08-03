@@ -46,7 +46,6 @@ data "scaleway_ipam_ip" "by_id" {
   type = "ipv4"
 }
 
-
 ```
 
 ### RDB instance

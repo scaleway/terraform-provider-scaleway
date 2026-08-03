@@ -23,7 +23,6 @@ list "scaleway_iam_application" "all" {
   }
 }
 ```
-
 ```terraform
 # List applications filtered by application IDs
 list "scaleway_iam_application" "by_application_ids" {
@@ -37,7 +36,6 @@ list "scaleway_iam_application" "by_application_ids" {
   }
 }
 ```
-
 ```terraform
 # List applications filtered by editable status
 list "scaleway_iam_application" "by_editable" {
@@ -48,7 +46,6 @@ list "scaleway_iam_application" "by_editable" {
   }
 }
 ```
-
 ```terraform
 # List applications filtered by name
 list "scaleway_iam_application" "by_name" {
@@ -59,7 +56,6 @@ list "scaleway_iam_application" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List applications filtered by tag
 list "scaleway_iam_application" "by_tag" {
@@ -70,7 +66,6 @@ list "scaleway_iam_application" "by_tag" {
   }
 }
 ```
-
 
 ## Argument Reference
 

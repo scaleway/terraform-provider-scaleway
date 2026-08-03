@@ -11,8 +11,6 @@ A VPC connector enables network connectivity between two VPCs, allowing resource
 
 For more information, see [the main documentation](https://www.scaleway.com/en/docs/vpc/concepts/).
 
-
-
 ## Example Usage
 
 ```terraform
@@ -30,7 +28,6 @@ resource "scaleway_vpc_connector" "main" {
   target_vpc_id = scaleway_vpc.vpc02.id
 }
 ```
-
 ```terraform
 resource "scaleway_vpc" "vpc01" {
   name   = "my-vpc-source"
@@ -49,7 +46,6 @@ resource "scaleway_vpc_connector" "main" {
   region        = "nl-ams"
 }
 ```
-
 ```terraform
 resource "scaleway_vpc" "vpc01" {
   name = "my-vpc-source"
@@ -66,9 +62,6 @@ resource "scaleway_vpc_connector" "main" {
   tags          = ["production", "connector"]
 }
 ```
-
-
-
 
 ## Argument Reference
 

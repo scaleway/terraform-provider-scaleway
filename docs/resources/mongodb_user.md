@@ -10,8 +10,6 @@ Manages MongoDB users. For more information, see the [API documentation](https:/
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
 
-
-
 ## Example Usage
 
 ```terraform
@@ -38,7 +36,6 @@ resource "scaleway_mongodb_user" "main" {
   }
 }
 ```
-
 ```terraform
 ### Multiple user creation
 
@@ -84,7 +81,6 @@ resource "scaleway_mongodb_user" "admin_user" {
   }
 }
 ```
-
 ```terraform
 ### Create user with Write Only password (not stored in state), update and rollback the password while ensuring the password is not stored in the state
 
@@ -192,7 +188,6 @@ resource "scaleway_secret_version" "renewed" {
 #   }
 # }
 ```
-
 ```terraform
 ### Create user with Write Only password (not stored in state)
 
@@ -246,10 +241,6 @@ resource "scaleway_mongodb_user" "main" {
   }
 }
 ```
-
-
-
-
 
 ## Argument Reference
 

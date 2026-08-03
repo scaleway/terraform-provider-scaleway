@@ -8,7 +8,6 @@ page_title: "Scaleway: scaleway_edge_services_backend_stage"
 Gets information about an Edge Services backend stage.
 
 A backend stage defines the origin (Scaleway Object Storage bucket, Load Balancer, Serverless Container or Serverless Function) that Edge Services forwards requests to.
-
 ## Example Usage
 
 ```terraform
@@ -17,15 +16,12 @@ data "scaleway_edge_services_backend_stage" "by_id" {
   backend_stage_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Retrieve an Edge Services backend stage by pipeline ID
 data "scaleway_edge_services_backend_stage" "by_pipeline" {
   pipeline_id = scaleway_edge_services_pipeline.main.id
 }
 ```
-
-
 
 ## Argument Reference
 

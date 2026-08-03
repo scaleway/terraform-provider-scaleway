@@ -19,7 +19,6 @@ list "scaleway_secret" "all" {
   provider = scaleway
 }
 ```
-
 ```terraform
 // List secrets filtered by name
 list "scaleway_secret" "by_name" {
@@ -30,7 +29,6 @@ list "scaleway_secret" "by_name" {
   }
 }
 ```
-
 ```terraform
 // List secrets in specific regions
 list "scaleway_secret" "by_region" {
@@ -41,7 +39,6 @@ list "scaleway_secret" "by_region" {
   }
 }
 ```
-
 ```terraform
 // List secrets filtered by tags
 list "scaleway_secret" "by_tags" {
@@ -52,7 +49,6 @@ list "scaleway_secret" "by_tags" {
   }
 }
 ```
-
 
 ## Argument Reference
 

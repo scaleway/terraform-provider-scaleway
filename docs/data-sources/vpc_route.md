@@ -16,14 +16,12 @@ data "scaleway_vpc_route" "by_filters" {
   tags   = ["my-tag"]
 }
 ```
-
 ```terraform
 # Get info by route ID
 data "scaleway_vpc_route" "by_id" {
   route_id = "fr-par/11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ## Argument Reference
 
 One of `route_id` or filter arguments must be specified.

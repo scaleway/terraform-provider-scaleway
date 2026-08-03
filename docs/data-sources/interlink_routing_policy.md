@@ -8,8 +8,6 @@ page_title: "Scaleway: scaleway_interlink_routing_policy"
 Gets information about an Interlink Routing Policy.
 
 A routing policy defines IP prefix filters that control which routes are accepted from and advertised to a peer via BGP on an Interlink connection.
-
-
 For more information, see [the Interlink documentation](https://www.scaleway.com/en/docs/network/interlink/) and [API documentation](https://www.scaleway.com/en/developers/api/interlink/).
 
 
@@ -21,16 +19,12 @@ data "scaleway_interlink_routing_policy" "my_policy" {
   routing_policy_id = "11111111-1111-1111-1111-111111111111"
 }
 ```
-
 ```terraform
 # Get routing policy info by name
 data "scaleway_interlink_routing_policy" "my_policy" {
   name = "my-routing-policy"
 }
 ```
-
-
-
 
 ## Argument Reference
 

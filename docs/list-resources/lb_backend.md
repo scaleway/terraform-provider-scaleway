@@ -24,7 +24,6 @@ list "scaleway_lb_backend" "by_lb" {
   }
 }
 ```
-
 ```terraform
 # List backends filtered by name across multiple Load Balancers
 list "scaleway_lb_backend" "by_name" {
@@ -40,7 +39,6 @@ list "scaleway_lb_backend" "by_name" {
   }
 }
 ```
-
 
 ## Argument Reference
 

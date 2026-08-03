@@ -8,7 +8,6 @@ description: |-
 # Resource: scaleway_rdb_instance
 
 
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/).
 
 
@@ -25,7 +24,6 @@ list "scaleway_rdb_instance" "all" {
   }
 }
 ```
-
 ```terraform
 # List RDB instances filtered by name prefix
 list "scaleway_rdb_instance" "by_name" {
@@ -37,7 +35,6 @@ list "scaleway_rdb_instance" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List RDB instances in a specific region for a specific project
 list "scaleway_rdb_instance" "region" {
@@ -49,7 +46,6 @@ list "scaleway_rdb_instance" "region" {
   }
 }
 ```
-
 ```terraform
 # List RDB instances filtered by tag
 list "scaleway_rdb_instance" "by_tag" {
@@ -61,7 +57,6 @@ list "scaleway_rdb_instance" "by_tag" {
   }
 }
 ```
-
 ```terraform
 # List RDB instances with scheduled maintenances
 list "scaleway_rdb_instance" "with_maintenance" {
@@ -73,8 +68,6 @@ list "scaleway_rdb_instance" "with_maintenance" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 

@@ -39,7 +39,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name   = "my-bucket"
@@ -59,7 +58,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name   = "my-unique-bucket-name"
@@ -77,7 +75,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
 ```terraform
 resource "scaleway_object_bucket" "test" {
   name = "my-unique-bucket-name"
@@ -93,9 +90,6 @@ resource "scaleway_object_bucket_server_side_encryption_configuration" "test" {
   }
 }
 ```
-
-
-
 
 ## Argument Reference
 

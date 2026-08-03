@@ -8,7 +8,6 @@ description: |-
 # Resource: scaleway_rdb_database
 
 
-
 For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/postgresql-and-mysql/).
 
 
@@ -26,7 +25,6 @@ list "scaleway_rdb_database" "by_instance" {
   }
 }
 ```
-
 ```terraform
 # List databases filtered by name on all instances in scope
 list "scaleway_rdb_database" "by_name" {
@@ -40,7 +38,6 @@ list "scaleway_rdb_database" "by_name" {
   }
 }
 ```
-
 ```terraform
 # List databases on all RDB instances in a region and project
 list "scaleway_rdb_database" "all_instances" {
@@ -53,8 +50,6 @@ list "scaleway_rdb_database" "all_instances" {
   }
 }
 ```
-
-
 
 ## Argument Reference
 
