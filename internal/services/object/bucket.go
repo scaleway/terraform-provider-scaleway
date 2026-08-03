@@ -746,7 +746,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := setBucketState(ctx, d, bucketName, region, s3Client)
+	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
 	err = identity.SetRegionalIdentity(d, region, bucketName)
 	if err != nil {
@@ -756,7 +756,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	return diags
 }
 
-func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
+func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	_ = d.Set("name", bucketName)

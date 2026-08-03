@@ -186,7 +186,7 @@ func (r *BucketListResource) List(ctx context.Context, req list.ListRequest, str
 			identitySetDiags := result.Identity.Set(ctx, *tfTypeIdentity)
 			result.Diagnostics.Append(identitySetDiags...)
 
-			setBucketStateForList(resourceData, row.Bucket, row.Region, row.ProjectID)
+			setBucketStateForList(resourceData, r.meta, row.Bucket, row.Region, row.ProjectID)
 
 			tfTypeResource, errTfTypeResourceState := resourceData.TfTypeResourceState()
 			if errTfTypeResourceState != nil {
@@ -216,8 +216,11 @@ func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketL
 	accessKey = accessKeyWithProjectID(accessKey, target.ProjectID)
 
 	secretKey, _ := r.meta.ScwClient().GetSecretKey()
+	s3Endpoint := r.meta.Endpoints()["s3_endpoint"]
 
-	s3Client, err := newS3Client(ctx, target.Region.String(), accessKey, secretKey, r.meta.HTTPClient())
+	s3Client, err := newS3Client(
+		ctx, target.Region.String(), accessKey, secretKey, s3Endpoint, false, r.meta.HTTPClient(),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("creating S3 client: %w", err)
 	}
@@ -244,15 +247,16 @@ func (r *BucketListResource) fetchBucketRows(ctx context.Context, target bucketL
 	return rows, nil
 }
 
-func setBucketStateForList(resourceData *sdkv2schema.ResourceData, bucket *s3Types.Bucket, region scw.Region, projectID string) {
+func setBucketStateForList(resourceData *sdkv2schema.ResourceData, m any, bucket *s3Types.Bucket, region scw.Region, projectID string) {
 	_ = resourceData.Set("name", stringValue(bucket.Name))
 
 	_ = resourceData.Set("region", region.String())
 	_ = resourceData.Set("project_id", projectID)
 
 	// Set computed fields
-	_ = resourceData.Set("endpoint", objectBucketEndpointURL(aws.ToString(bucket.Name), region))
-	_ = resourceData.Set("api_endpoint", objectBucketAPIEndpointURL(region))
+	endpoint, APIEndpoint := ComputeObjectBucketURLs(resourceData, m, aws.ToString(bucket.Name), region)
+	_ = resourceData.Set("endpoint", endpoint)
+	_ = resourceData.Set("api_endpoint", APIEndpoint)
 }
 
 func stringValue(ptr *string) string {
