@@ -9,7 +9,7 @@ description: |-
 
 
 
-For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases/).
+For more information, see the [product documentation](https://www.scaleway.com/en/docs/managed-databases-for-postgresql-and-mysql/).
 
 
 ## Example Usage
