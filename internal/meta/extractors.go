@@ -72,23 +72,29 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	return "", regional.ErrRegionNotFound
 }
 
-func ExtractS3UsePathStyle(d terraformResourceData, m any) bool {
+// ExtractS3UsePathStyle will retrieve the "s3_use_path_style" flag value from
+// the Terraform config file, in the "provider" block.
+func ExtractS3UsePathStyle(d terraformResourceData, m any) (s3UsePathStyle, ok bool) {
 	rawConfigS3UsePathStyle, ok := GetRawConfigForKey(d, "s3_use_path_style", cty.Bool)
 	if ok && rawConfigS3UsePathStyle != "" {
-		return rawConfigS3UsePathStyle.(bool)
+		return rawConfigS3UsePathStyle.(bool), true
 	}
 
 	rawConfigS3UsePathStyle, ok = d.GetOk("s3_use_path_style")
 	if ok && rawConfigS3UsePathStyle != "" {
-		return rawConfigS3UsePathStyle.(bool)
+		return rawConfigS3UsePathStyle.(bool), true
 	}
 
 	meta, ok := m.(*Meta)
 	if !ok {
-		return false
+		return false, false
 	}
 
-	return meta.S3UsePathStyle()
+	if meta.S3UsePathStyle() {
+		return true, true
+	}
+
+	return false, true
 }
 
 func convertEndpointsMap(endpointsAny map[string]any) (endpointsString map[string]string) {
