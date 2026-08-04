@@ -24,6 +24,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -285,38 +286,39 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		account.NewProjectListResource,
 		block.NewSnapshotListResource,
-		object.NewBucketListResource,
 		block.NewVolumeListResource,
+		domain.NewRecordListResource,
+		domain.NewZoneListResource,
+		file.NewFileSystemListResource,
+		iam.NewAPIKeyListResource,
+		iam.NewApplicationListResource,
+		iam.NewGroupListResource,
+		iam.NewPolicyListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewUserListResource,
+		ipam.NewIPListResource,
+		keymanager.NewKeyListResource,
+		lb.NewBackendListResource,
+		lb.NewFrontendListResource,
+		lb.NewLbListResource,
 		mongodb.NewInstanceListResource,
+		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
 		rdb.NewSnapshotListResource,
 		redis.NewClusterListResource,
-		vpc.NewVPCListResource,
-		vpc.NewConnectorListResource,
-		vpc.NewRouteListResource,
-		vpc.NewPrivateNetworkListResource,
-		ipam.NewIPListResource,
-		vpcgw.NewPublicGatewayListResource,
-		vpcgw.NewIPListResource,
-		lb.NewLbListResource,
-		lb.NewFrontendListResource,
-		lb.NewBackendListResource,
-		iam.NewSSHKeyListResource,
-		iam.NewGroupListResource,
-		iam.NewUserListResource,
-		iam.NewApplicationListResource,
-		iam.NewPolicyListResource,
-		account.NewProjectListResource,
-		iam.NewAPIKeyListResource,
-		domain.NewRecordListResource,
-		domain.NewZoneListResource,
 		secret.NewSecretListResource,
 		secret.NewVersionListResource,
-		keymanager.NewKeyListResource,
+		vpc.NewConnectorListResource,
+		vpc.NewPrivateNetworkListResource,
+		vpc.NewRouteListResource,
+		vpc.NewVPCListResource,
+		vpcgw.NewIPListResource,
+		vpcgw.NewPublicGatewayListResource,
 	}
 }
 
