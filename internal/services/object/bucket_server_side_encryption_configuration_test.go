@@ -24,7 +24,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -56,7 +56,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_sideProject(t *testing.T) 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
 
 	project, iamAPIKey, terminateFakeSideProject, err := acctest.CreateFakeSideProject(
@@ -104,7 +104,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_basic_withKMS(t *testing.T
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -137,7 +137,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withKey(t *testing.T) 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 	resourceName := "scaleway_object_bucket_server_side_encryption_configuration.test"
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -170,7 +170,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_wrongAlgo(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -190,7 +190,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KeyID_withoutKMS(t *testin
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -210,7 +210,7 @@ func TestAccS3BucketServerSideEncryptionConfiguration_KMS_withoutBucketKey(t *te
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("sse-config-basic")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-sse-config")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
