@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	audit_trail "github.com/scaleway/scaleway-sdk-go/api/audit_trail/v1alpha1"
@@ -22,6 +23,8 @@ func TestAccDataSourceEvent_Basic(t *testing.T) {
 
 	project, iamAPIKey, _, terminateFakeSideProject, err := acctest.CreateFakeIAMManager(tt)
 	require.NoError(t, err)
+
+	secretName := sdkacctest.RandomWithPrefix("tf-test-audit-trail-secret")
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: acctest.FakeSideProjectProviders(ctx, tt, project, iamAPIKey),

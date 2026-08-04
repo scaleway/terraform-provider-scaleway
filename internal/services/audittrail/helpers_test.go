@@ -17,7 +17,6 @@ import (
 
 const (
 	defaultAuditTrailEventsTimeout = 20 * time.Second
-	destroyWaitTimeout             = 3 * time.Minute
 	dummyID                        = "AB7BD9BF-E1BD-41E8-9F1D-F16A2E3F3925"
 	recordedAfter                  = "2025-11-01T00:00:00Z"
 	recordedBefore                 = "2025-11-01T10:00:00Z"
@@ -26,7 +25,6 @@ const (
 	methodCreate                   = "CreateSecret"
 	resourceType                   = "secret_manager_secret"
 	resourceName                   = "scaleway_secret.main"
-	secretName                     = "scalewayDataSourceAuditTrailSecret"
 )
 
 func getAuditEvents(ctx context.Context, api *audit_trail.API, projectID string, method string) (*audit_trail.ListEventsResponse, error) {
