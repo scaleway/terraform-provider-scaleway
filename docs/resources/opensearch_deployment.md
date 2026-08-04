@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_opensearch_deployment"
 # Resource: scaleway_opensearch_deployment
 
 Creates and manages Scaleway OpenSearch deployments.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-opensearch/).
+For more information refer to the [product documentation](https://www.scaleway.com/en/developers/api/cloud-essentials-for-opensearch).
 
 ## Example Usage
 

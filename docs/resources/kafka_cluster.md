@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_kafka_cluster"
 # Resource: scaleway_kafka_cluster
 
 Creates and manages Scaleway Kafka clusters.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-services/kafka/).
+For more information refer to the [product documentation](https://www.scaleway.com/en/developers/api/clusters-for-kafka).
 
 ~> **Important:** The Kafka product is currently in Public Beta.
 
