@@ -174,26 +174,23 @@ func (r *AnnotationsKeyResource) Read(ctx context.Context, req resource.ReadRequ
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var keyID string
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		keyID = locality.ExpandID(state.ID.ValueString())
-	} else {
+	if identityAvailable {
 		keyID = locality.ExpandID(identity.ID.ValueString())
-
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	} else {
+		keyID = locality.ExpandID(state.ID.ValueString())
 	}
 
 	key, err := r.annotationsAPI.GetKey(&annotations.GetKeyRequest{

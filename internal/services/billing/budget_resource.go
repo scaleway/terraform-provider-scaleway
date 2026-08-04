@@ -170,20 +170,23 @@ func (r *BudgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var budgetID string
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		budgetID = state.ID.ValueString()
-	} else {
+	if identityAvailable {
 		budgetID = identity.ID.ValueString()
+	} else {
+		budgetID = state.ID.ValueString()
 	}
 
 	if budgetID == "" {
@@ -283,20 +286,7 @@ func (r *BudgetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func (r *BudgetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	if req.ID != "" {
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
-
-		return
-	}
-
-	var identityData budgetResourceIdentityModel
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.ID)...)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func convertBudgetToState(budget *billing.Budget, state budgetResourceModel) budgetResourceModel {

@@ -229,13 +229,14 @@ func (r *SamlResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		identity samlResourceIdentityModel
 	)
 
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
-	if resp.Diagnostics.HasError() {
-		return
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return

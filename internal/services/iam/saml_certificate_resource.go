@@ -191,16 +191,24 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 		identity samlCertificateResourceIdentityModel
 	)
 
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-
-	if resp.Diagnostics.HasError() {
-		return
+	var certID string
+	if identityAvailable {
+		certID = identity.ID.ValueString()
+	} else {
+		certID = state.ID.ValueString()
 	}
 
 	orgID := state.OrganizationID.ValueString()
@@ -229,6 +237,8 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 				"Failed to retrieve SAML config",
 				err.Error(),
 			)
+
+			return
 		}
 
 		samlID = saml.ID
@@ -249,7 +259,7 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 	var foundCert *iam.SamlCertificate
 
 	for _, cert := range res.Certificates {
-		if cert.ID == state.ID.ValueString() {
+		if cert.ID == certID {
 			foundCert = cert
 
 			break

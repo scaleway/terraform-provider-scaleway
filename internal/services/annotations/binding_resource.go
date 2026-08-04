@@ -163,26 +163,23 @@ func (r *AnnotationsBindingResource) Read(ctx context.Context, req resource.Read
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var bindingID string
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		bindingID = locality.ExpandID(state.ID.ValueString())
-	} else {
+	if identityAvailable {
 		bindingID = locality.ExpandID(identity.ID.ValueString())
-
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	} else {
+		bindingID = locality.ExpandID(state.ID.ValueString())
 	}
 
 	binding, err := getBindingByID(ctx, r.annotationsAPI, bindingID)

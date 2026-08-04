@@ -339,6 +339,17 @@ func (r *KeyMaterialResource) Read(ctx context.Context, req resource.ReadRequest
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var (
 		region scw.Region
@@ -346,23 +357,10 @@ func (r *KeyMaterialResource) Read(ctx context.Context, req resource.ReadRequest
 		err    error
 	)
 
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		region, keyID, err = regional.ParseID(state.ID.ValueString())
-	} else {
+	if identityAvailable {
 		region, keyID, err = regional.ParseID(identity.ID.ValueString())
-
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	} else {
+		region, keyID, err = regional.ParseID(state.ID.ValueString())
 	}
 
 	if err != nil {

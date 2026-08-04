@@ -169,19 +169,26 @@ func (r *ScimTokenResource) Read(ctx context.Context, req resource.ReadRequest, 
 		identity scimTokenResourceIdentityModel
 	)
 
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-
-	if resp.Diagnostics.HasError() {
-		return
+	var tokenID string
+	if identityAvailable {
+		tokenID = identity.ID.ValueString()
+	} else {
+		tokenID = state.ID.ValueString()
 	}
 
-	tokenID := state.ID.ValueString()
 	if tokenID == "" {
 		resp.Diagnostics.AddError(
 			"Token ID not set",

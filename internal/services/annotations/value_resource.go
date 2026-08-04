@@ -154,20 +154,23 @@ func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRe
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var valueID string
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		valueID = locality.ExpandID(state.ID.ValueString())
-	} else {
+	if identityAvailable {
 		valueID = locality.ExpandID(identity.ID.ValueString())
+	} else {
+		valueID = locality.ExpandID(state.ID.ValueString())
 	}
 
 	value, err := r.annotationsAPI.GetValue(&annotations.GetValueRequest{

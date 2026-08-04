@@ -459,26 +459,26 @@ func (r *DatalabResource) Read(ctx context.Context, req resource.ReadRequest, re
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
 
-	var (
-		region scw.Region
-		id     string
-		err    error
-	)
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
+	if !identityAvailable && resp.Diagnostics.HasError() {
 		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		region, id, err = regional.ParseID(state.ID.ValueString())
-	} else {
-		region, id, err = regional.ParseID(identity.ID.ValueString())
 	}
 
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var resourceID string
+	if identityAvailable {
+		resourceID = identity.ID.ValueString()
+	} else {
+		resourceID = state.ID.ValueString()
+	}
+
+	region, id, err := regional.ParseID(resourceID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse Datalab ID", err.Error())
 
@@ -671,27 +671,7 @@ func (r *DatalabResource) Delete(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *DatalabResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	if req.ID != "" {
-		region, id, err := regional.ParseID(req.ID)
-		if err != nil {
-			resp.Diagnostics.AddError("Failed to parse import ID", "Expected format: {region}/{id}. "+err.Error())
-
-			return
-		}
-
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), regional.NewIDString(region, id))...)
-
-		return
-	}
-
-	var identityData datalabResourceIdentityModel
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.ID)...)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func flattenDatalab(ctx context.Context, dl *datalab.Datalab, diags *diag.Diagnostics) datalabResourceModel {
