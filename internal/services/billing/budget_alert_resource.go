@@ -251,39 +251,7 @@ func (r *BudgetAlertResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *BudgetAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	alertID := req.ID
-
-	orgID, _ := r.meta.ScwClient().GetDefaultOrganizationID()
-
-	listResp, err := r.billingAPI.ListBudgets(&billing.ListBudgetsRequest{
-		OrganizationID: &orgID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to list budgets during import",
-			err.Error(),
-		)
-
-		return
-	}
-
-	foundAlert, foundBudgetID := findBudgetAlertInList(listResp.Budgets, alertID)
-
-	if foundAlert == nil {
-		resp.Diagnostics.AddError(
-			"Budget alert not found during import",
-			fmt.Sprintf("Budget alert %s was not found in any budget", alertID),
-		)
-
-		return
-	}
-
-	state := budgetAlertResourceModel{
-		ID:       types.StringValue(alertID),
-		BudgetID: types.StringValue(foundBudgetID),
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-	resp.Diagnostics.Append(resp.Identity.SetAttribute(ctx, path.Root("id"), alertID)...)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func convertBudgetAlertToState(alert *billing.BudgetAlert, state budgetAlertResourceModel) budgetAlertResourceModel {

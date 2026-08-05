@@ -67,6 +67,12 @@ func TestAccKeyMaterialResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_key_manager_key_material.main", "origin", "external"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_key_manager_key_material.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"key_material", "key_material_wo"},
+			},
 		},
 	})
 }
