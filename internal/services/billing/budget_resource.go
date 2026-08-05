@@ -16,6 +16,7 @@ import (
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -24,6 +25,7 @@ var (
 	_ resource.Resource                = (*BudgetResource)(nil)
 	_ resource.ResourceWithConfigure   = (*BudgetResource)(nil)
 	_ resource.ResourceWithImportState = (*BudgetResource)(nil)
+	_ resource.ResourceWithIdentity    = (*BudgetResource)(nil)
 )
 
 func NewBudgetResource() resource.Resource {
@@ -43,6 +45,8 @@ type budgetResourceModel struct {
 	ConsumptionLimit types.Int64  `tfsdk:"consumption_limit"`
 	Enabled          types.Bool   `tfsdk:"enabled"`
 }
+
+type budgetResourceIdentityModel = framework.GlobalIdentity
 
 func (r *BudgetResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_billing_budget"
@@ -90,6 +94,10 @@ func (r *BudgetResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 		},
 	}
+}
+
+func (r *BudgetResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *BudgetResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -151,17 +159,36 @@ func (r *BudgetResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	state := convertBudgetToState(res, data)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state budgetResourceModel
+	var (
+		state    budgetResourceModel
+		identity budgetResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	budgetID := state.ID.ValueString()
+	var budgetID string
+	if identityAvailable {
+		budgetID = identity.ID.ValueString()
+	} else {
+		budgetID = state.ID.ValueString()
+	}
+
 	if budgetID == "" {
 		resp.Diagnostics.AddError(
 			"Budget ID not set",
@@ -191,6 +218,8 @@ func (r *BudgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	state = convertBudgetToState(res, state)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -231,6 +260,8 @@ func (r *BudgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	newState := convertBudgetToState(res, plan)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -255,8 +286,7 @@ func (r *BudgetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 func (r *BudgetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	budgetID := req.ID
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), budgetID)...)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func convertBudgetToState(budget *billing.Budget, state budgetResourceModel) budgetResourceModel {

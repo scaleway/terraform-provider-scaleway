@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -15,6 +14,7 @@ import (
 	annotations "github.com/scaleway/scaleway-sdk-go/api/annotations/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -43,9 +43,7 @@ type annotationsValueResourceModel struct {
 	Description types.String `tfsdk:"description"`
 }
 
-type annotationsValueResourceIdentityModel struct {
-	ID types.String `tfsdk:"id"`
-}
+type annotationsValueResourceIdentityModel = framework.GlobalIdentity
 
 func (r *AnnotationsValueResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_annotations_value"
@@ -89,13 +87,7 @@ func (r *AnnotationsValueResource) Schema(ctx context.Context, req resource.Sche
 }
 
 func (r *AnnotationsValueResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"id": identityschema.StringAttribute{
-				RequiredForImport: true,
-			},
-		},
-	}
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *AnnotationsValueResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -152,10 +144,7 @@ func (r *AnnotationsValueResource) Create(ctx context.Context, req resource.Crea
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	identity := annotationsValueResourceIdentityModel{
-		ID: types.StringValue(value.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(value.ID))...)
 }
 
 func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -165,20 +154,23 @@ func (r *AnnotationsValueResource) Read(ctx context.Context, req resource.ReadRe
 	)
 
 	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	var valueID string
-
-	if resp.Diagnostics.HasError() || identity.ID.IsNull() || identity.ID.IsUnknown() {
-		resp.Diagnostics = nil
-		resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-
-		if resp.Diagnostics.HasError() {
-			return
-		}
-
-		valueID = locality.ExpandID(state.ID.ValueString())
-	} else {
+	if identityAvailable {
 		valueID = locality.ExpandID(identity.ID.ValueString())
+	} else {
+		valueID = locality.ExpandID(state.ID.ValueString())
 	}
 
 	value, err := r.annotationsAPI.GetValue(&annotations.GetValueRequest{
@@ -255,10 +247,7 @@ func (r *AnnotationsValueResource) Update(ctx context.Context, req resource.Upda
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	identity := annotationsValueResourceIdentityModel{
-		ID: types.StringValue(value.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(value.ID))...)
 }
 
 func (r *AnnotationsValueResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
