@@ -62,13 +62,20 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 			return diag.FromErr(fmt.Errorf("failed to list instance private_nic: %w", err))
 		}
 
-		privateNic, err := privateNICWithFilters(resp.PrivateNetworkInterfaces, d)
+		privateNicSummary, err := privateNICWithFilters(resp.PrivateNetworkInterfaces, d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		pNIC = privateNic
-		privateNICID = privateNic.ID
+		privateNicResp, err := instanceAPI.GetPrivateNetworkInterface(&instance.GetPrivateNetworkInterfaceRequest{
+			PrivateNetworkInterfaceID: privateNicSummary.ID,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		pNIC = privateNicResp
+		privateNICID = privateNicResp.ID
 	} else {
 		pNICID, err := locality.ExtractUUID(id.(string))
 		if err != nil {
@@ -107,7 +114,7 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 	return setPrivateNICState(ctx, instanceAPIV1, d, pNIC, zone, m)
 }
 
-func privateNICWithFilters(privateNICs []*instance.PrivateNetworkInterface, d *schema.ResourceData) (*instance.PrivateNetworkInterface, error) {
+func privateNICWithFilters(privateNICs []*instance.PrivateNetworkInterfaceSummary, d *schema.ResourceData) (*instance.PrivateNetworkInterfaceSummary, error) {
 	privateNetworkID := locality.ExpandID(d.Get("private_network_id"))
 
 	if privateNetworkID == "" {
@@ -121,7 +128,7 @@ func privateNICWithFilters(privateNICs []*instance.PrivateNetworkInterface, d *s
 		}
 	}
 
-	var privateNIC *instance.PrivateNetworkInterface
+	var privateNIC *instance.PrivateNetworkInterfaceSummary
 
 	for _, pnic := range privateNICs {
 		if pnic.PrivateNetworkID == privateNetworkID {

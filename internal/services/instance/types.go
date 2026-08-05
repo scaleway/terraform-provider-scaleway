@@ -14,7 +14,7 @@ import (
 )
 
 func (ph *privateNICsHandler) flatPrivateNICs() error {
-	privateNICsMap := make(map[string]*instanceV2.PrivateNetworkInterface)
+	privateNICsMap := make(map[string]*instanceV2.PrivateNetworkInterfaceSummary)
 
 	privateNics, err := ph.instanceAPI.ListPrivateNetworkInterfaces(&instanceV2.ListPrivateNetworkInterfacesRequest{
 		Zone:      ph.zone,

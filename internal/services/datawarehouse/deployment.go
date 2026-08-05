@@ -280,7 +280,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 			req.Endpoints = append(req.Endpoints, &datawarehouseapi.EndpointSpec{
-				PrivateNetwork: &datawarehouseapi.PrivateNetworkDetails{
+				PrivateNetwork: &datawarehouseapi.EndpointSpecPrivateNetworkSummary{
 					PrivateNetworkID: privateNetworkID,
 				},
 			})
