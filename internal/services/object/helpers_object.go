@@ -356,15 +356,17 @@ func retrieveS3UsePathStyle(
 
 	// SCW environment variable
 	usePathStyleStr := os.Getenv(scw.ScwS3UsePathStyleEnv)
-	if usePathStyleStr == "true" {
+	switch usePathStyleStr {
+	case "true":
 		return true
-	} else if usePathStyleStr == "false" {
+	case "false":
 		return false
 	}
 
 	// Profile field value
 	if m != nil {
 		scwClient := meta.ExtractScwClient(m)
+
 		return scwClient.GetS3UsePathStyle()
 	}
 
