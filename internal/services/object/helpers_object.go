@@ -145,7 +145,7 @@ func s3ClientWithRegion(ctx context.Context, d *schema.ResourceData, m any) (*s3
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m, region.String())
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
@@ -187,7 +187,7 @@ func s3ClientWithRegionAndName(ctx context.Context, d *schema.ResourceData, m an
 		}
 	}
 
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m, region.String())
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
@@ -214,7 +214,7 @@ func s3ClientWithRegionAndNestedName(ctx context.Context, d *schema.ResourceData
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m, region.String())
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region.String())
 	if err != nil {
@@ -241,7 +241,7 @@ func s3ClientWithRegionWithNameACL(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m, region)
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
 	if err != nil {
@@ -263,7 +263,7 @@ func s3ClientForceRegion(ctx context.Context, d *schema.ResourceData, m any, reg
 	}
 
 	secretKey, _ := meta.ExtractScwClient(m).GetSecretKey()
-	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m, region)
+	s3UsePathStyle := retrieveS3UsePathStyle(nil, d, m)
 
 	s3Endpoint, err := retrieveS3Endpoint(ctx, nil, d, m, region)
 	if err != nil {
@@ -332,7 +332,7 @@ func retrieveS3Endpoint(
 }
 
 // retrieveS3UsePathStyle retrieves the S3 UsePathStyle flag value according to
-// various configuration sources. The order priority follows is as follow:
+// various configuration sources. The order priority follows is as follows:
 // - "provider" block
 // - SCW environment variable
 // - Profile field value
@@ -341,17 +341,14 @@ func retrieveS3UsePathStyle(
 	metaStruct *meta.Meta,
 	d *schema.ResourceData,
 	m any,
-	region string,
 ) bool {
 	// Provider block
 	if metaStruct != nil {
 		return metaStruct.S3UsePathStyle()
 	}
 
-	if d != nil && m != nil {
-		if usePathStyle, ok := meta.ExtractS3UsePathStyle(d, m); ok {
-			return usePathStyle
-		}
+	if usePathStyle, ok := meta.ExtractS3UsePathStyle(d, m); ok {
+		return usePathStyle
 	}
 
 	// SCW environment variable
@@ -414,7 +411,7 @@ func ExpandObjectBucketTags(tags any) []s3Types.Tag {
 func ComputeObjectBucketURLs(
 	d *schema.ResourceData, m any, bucketName string, region scw.Region,
 ) (endpoint, apiEndpoint string) {
-	usePathStyle := retrieveS3UsePathStyle(nil, d, m, region.String())
+	usePathStyle := retrieveS3UsePathStyle(nil, d, m)
 	apiEndpoint = objectBucketAPIEndpointURL(d, m, region)
 
 	if usePathStyle {
