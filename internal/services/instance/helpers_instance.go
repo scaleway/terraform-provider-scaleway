@@ -333,7 +333,7 @@ type privateNICsHandler struct {
 	instanceAPI    *instanceV2.API
 	instanceAPIV1  *instance.API
 	serverID       string
-	privateNICsMap map[string]*instanceV2.PrivateNetworkInterface
+	privateNICsMap map[string]*instanceV2.PrivateNetworkInterfaceSummary
 	zone           scw.Zone
 	projectID      string
 }
