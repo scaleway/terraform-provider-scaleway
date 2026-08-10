@@ -159,6 +159,7 @@ func (r *ServerListResource) FetchServers(ctx context.Context, zone scw.Zone, pr
 
 	if !data.MacAddresses.IsNull() {
 		diags.Append(data.MacAddresses.ElementsAs(ctx, &listRequest.MacAddresses, false)...)
+
 		if diags.HasError() {
 			return nil, errors.New(diags[0].Summary() + ": " + diags[0].Detail())
 		}
