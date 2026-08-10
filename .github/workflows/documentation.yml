@@ -56,6 +56,8 @@ jobs:
           go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
+      - name: Install rumdl
+        uses: rvben/rumdl@50e0d35538974a90f462931dd359b7fcf7e33a8f # v0.2.46
       - run: make docs
       - run: git diff --exit-code docs
 
