@@ -9,7 +9,7 @@ Gets information about an instance IP.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by IP address
 data "scaleway_instance_ip" "my_ip" {
   address = "0.0.0.0"

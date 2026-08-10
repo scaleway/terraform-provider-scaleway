@@ -26,8 +26,8 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_s2s_vpn_gateway" "gateway" {
-  name              = "my-vpn-gateway"
-  gateway_type      = "VGW-S"
+  name               = "my-vpn-gateway"
+  gateway_type       = "VGW-S"
   private_network_id = scaleway_vpc_private_network.pn.id
 }
 ```

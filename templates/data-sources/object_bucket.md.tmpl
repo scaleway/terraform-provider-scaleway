@@ -16,7 +16,7 @@ The following commands allow you to:
 - retrieve a bucket by its name
 - retrieve a bucket by its ID
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
   name = "bucket.test.com"
   tags = {
@@ -31,7 +31,7 @@ data "scaleway_object_bucket" "selected" {
 
 ## Retrieve a bucket from a specific project
 
-```hcl
+```terraform
 data "scaleway_object_bucket" "selected" {
   name       = "bucket.test.com"
   project_id = "11111111-1111-1111-1111-111111111111"

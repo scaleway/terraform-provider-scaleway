@@ -19,7 +19,7 @@ The following commands allow you to:
 - retrieve the secret's information using the secret's ID
 - retrieve the secret's information using the secret's name
 
-```hcl
+```terraform
 // Create a secret
 resource "scaleway_secret" "main" {
   name        = "foo"

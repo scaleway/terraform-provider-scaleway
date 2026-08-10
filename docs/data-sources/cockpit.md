@@ -22,12 +22,12 @@ The following commands allow you to:
 - get information on the Cockpit associated with your Scaleway default Project
 - get information on the Cockpit associated with a specific Scaleway Project
 
-```hcl
+```terraform
 // Get the default Project's Cockpit
 data "scaleway_cockpit" "main" {}
 ```
 
-```hcl
+```terraform
 // Get a specific Project's Cockpit
 data "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"

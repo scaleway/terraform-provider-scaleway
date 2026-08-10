@@ -9,7 +9,7 @@ Gets information about an instance server.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by server name
 data "scaleway_instance_server" "my_key" {
   name = "my-server-name"

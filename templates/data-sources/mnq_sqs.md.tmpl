@@ -11,7 +11,7 @@ Gets information about SQS for a Project
 
 ### Basic
 
-```hcl
+```terraform
 // For default project
 data "scaleway_mnq_sqs" "main" {}
 
