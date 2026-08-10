@@ -79,4 +79,3 @@ docs: format_examples
 	go tool tfplugindocs validate -provider-name scaleway
 	rm -fr ./docs
 	go tool tfplugindocs generate -provider-name scaleway
-	rumdl fmt

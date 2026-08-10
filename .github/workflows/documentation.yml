@@ -56,12 +56,6 @@ jobs:
           go-version: stable
       - name: Install Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
-      - name: Install rumdl
-        run: |
-          curl -fsSL https://github.com/rvben/rumdl/releases/download/v0.2.46/rumdl-v0.2.46-x86_64-unknown-linux-gnu.tar.gz | tar -xz -C /tmp
-          sudo install -m 0755 /tmp/rumdl /usr/local/bin/rumdl
-          rm -f /tmp/rumdl
-          rumdl --version
       - run: make docs
       - run: git diff --exit-code docs
 
