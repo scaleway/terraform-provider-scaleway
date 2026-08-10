@@ -1243,9 +1243,17 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
+	server, err := api.GetServer(&instanceSDK.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	// Delete private-nic if managed by instance_server resource
 	if pnRaw, ok := d.GetOk("private_network"); ok {
-		diags := detachPrivateNetworkDelete(ctx, d, pnRaw, api.InstanceV2API, zone, id)
+		diags := detachPrivateNetworkDelete(ctx, d, pnRaw, api.InstanceV2API, api.API, zone, id, server.Server.Project)
 		if diags.HasError() {
 			return diags
 		}

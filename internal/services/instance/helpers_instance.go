@@ -714,8 +714,8 @@ func detachFileSystemDelete(ctx context.Context, filesystems any, api *instance.
 	return nil
 }
 
-func detachPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, pnRaw any, api *instance.API, zone scw.Zone, id string) diag.Diagnostics {
-	ph, err := newPrivateNICHandler(api, id, zone)
+func detachPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, pnRaw any, apiV2 *instanceV2.API, apiV1 *instance.API, zone scw.Zone, id string, projectID string) diag.Diagnostics {
+	ph, err := newPrivateNICHandler(apiV2, apiV1, id, zone, projectID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
