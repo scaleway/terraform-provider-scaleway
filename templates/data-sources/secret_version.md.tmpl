@@ -22,7 +22,7 @@ The following commands allow you to:
 
 The output blocks display the sensitive data contained in your secret version.
 
-```hcl
+```terraform
 # Create a secret named fooii
 resource "scaleway_secret" "main" {
   name        = "fooii"

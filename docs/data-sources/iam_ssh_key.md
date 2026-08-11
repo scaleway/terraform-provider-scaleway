@@ -9,7 +9,7 @@ Use this data source to get SSH key information based on its ID or name.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by SSH key name
 data "scaleway_iam_ssh_key" "my_key" {
   name = "my-key-name"

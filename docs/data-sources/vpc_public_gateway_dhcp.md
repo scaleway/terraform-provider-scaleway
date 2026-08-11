@@ -13,13 +13,13 @@ Gets information about a Public Gateway DHCP configuration.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway_dhcp" "main" {
   subnet = "192.168.0.0/24"
 }
 
 data "scaleway_vpc_public_gateway_dhcp" "dhcp_by_id" {
-  dhcp_id = "${scaleway_vpc_public_gateway_dhcp.main.id}"
+  dhcp_id = scaleway_vpc_public_gateway_dhcp.main.id
 }
 ```
 

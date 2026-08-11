@@ -9,7 +9,7 @@ Gets information about a Container Registry image.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by image name
 data "scaleway_registry_image" "my_image" {
   name = "my-image-name"

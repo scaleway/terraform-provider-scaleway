@@ -9,7 +9,7 @@ Gets information about a Flexible IP.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by IP address
 data "scaleway_flexible_ip" "with_ip" {
   ip_address = "1.2.3.4"

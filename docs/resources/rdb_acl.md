@@ -62,9 +62,9 @@ variable "allowed_ips" {
   description = "Map of allowed IPs with descriptions"
   type        = map(string)
   default = {
-    "1.2.3.4/32"   = "Office IP"
-    "5.6.7.8/32"   = "Home IP"
-    "10.0.0.0/24"  = "Internal network"
+    "1.2.3.4/32"  = "Office IP"
+    "5.6.7.8/32"  = "Home IP"
+    "10.0.0.0/24" = "Internal network"
   }
 }
 

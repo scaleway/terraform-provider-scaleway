@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by IP address
 data "scaleway_lb_ip" "my_ip" {
   ip_address = "0.0.0.0"

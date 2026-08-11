@@ -9,7 +9,7 @@ Gets information about an instance image.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by image name
 data "scaleway_instance_image" "my_image" {
   name = "my-image-name"

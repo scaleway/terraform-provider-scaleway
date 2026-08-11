@@ -10,7 +10,7 @@ For more information, see the [API documentation](https://developers.scaleway.co
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by server name
 data "scaleway_baremetal_server" "by_name" {
   name = "foobar"

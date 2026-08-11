@@ -9,7 +9,7 @@ Gets information about an instance snapshot.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by snapshot name
 data "scaleway_instance_snapshot" "by_name" {
   name = "my-snapshot-name"
