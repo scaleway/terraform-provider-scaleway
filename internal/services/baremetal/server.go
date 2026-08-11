@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -446,7 +447,10 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if file != "" {
 			todecode, _ := file.(string)
 
-			err = json.Unmarshal([]byte(todecode), &partitioningSchema)
+			decoder := json.NewDecoder(strings.NewReader(todecode))
+			decoder.DisallowUnknownFields()
+
+			err = decoder.Decode(&partitioningSchema)
 			if err != nil {
 				return diag.FromErr(err)
 			}
