@@ -19,7 +19,7 @@ In this guide, we will take the example of a load-balancer backend resource.
 
 Here is how we used to declare a load-balancer backend using the `public_ip` attribute.
 
-```hcl
+```terraform
 # Declare a public IPv4 addresses
 resource "scaleway_instance_ip" "ip_v4" {
   type = "routed_ipv4"
@@ -27,7 +27,7 @@ resource "scaleway_instance_ip" "ip_v4" {
 # Declare a server with the IP attached
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_noble"
-  type = "PRO2-S"
+  type  = "PRO2-S"
   ip_id = scaleway_instance_ip.ip_v4.id
 }
 # Declare a load-balancer
@@ -36,24 +36,24 @@ resource "scaleway_lb" "lb" {
 }
 # Declare a backend using the public_ip attribute
 resource "scaleway_lb_backend" "backend" {
-  lb_id = scaleway_lb.lb.id
+  lb_id            = scaleway_lb.lb.id
   forward_port     = 80
   forward_protocol = "http"
 
-  server_ips = [ scaleway_instance_server.server.public_ip ]
+  server_ips = [scaleway_instance_server.server.public_ip]
 }
 ```
 
 Here is how to declare the same backend using the `public_ips` list attribute.
 
-```hcl
+```terraform
 # Declare a backend using the public_ips list attribute
 resource "scaleway_lb_backend" "backend" {
-  lb_id = scaleway_lb.lb.id
+  lb_id            = scaleway_lb.lb.id
   forward_port     = 80
   forward_protocol = "http"
 
-  server_ips = [ scaleway_instance_server.server.public_ips.0.address ]
+  server_ips = [scaleway_instance_server.server.public_ips.0.address]
 }
 ```
 
@@ -61,7 +61,7 @@ resource "scaleway_lb_backend" "backend" {
 
 Here is how we used to declare a load-balancer backend using the `private_ip` attribute.
 
-```hcl
+```terraform
 # Declare a VPC and a private network
 resource "scaleway_vpc" "vpc" {}
 resource "scaleway_vpc_private_network" "pn" {
@@ -70,7 +70,7 @@ resource "scaleway_vpc_private_network" "pn" {
 # Declare a server attached to the private network, this will create a private IPv4 and IPv6
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_noble"
-  type = "PRO2-S"
+  type  = "PRO2-S"
   private_network {
     pn_id = scaleway_vpc_private_network.pn.id
   }
@@ -81,8 +81,8 @@ resource "scaleway_lb" "lb" {
 }
 # Declare a backend with the private IP
 resource "scaleway_lb_backend" "backend" {
-  lb_id        = scaleway_lb.lb.id
-  forward_port = 80
+  lb_id            = scaleway_lb.lb.id
+  forward_port     = 80
   forward_protocol = "http"
 
   server_ips = [scaleway_instance_server.server.private_ip]
@@ -91,22 +91,22 @@ resource "scaleway_lb_backend" "backend" {
 
 Here is how to declare the same backend using the `private_ips` list attribute.
 
-```hcl
+```terraform
 # Declare a backend with only the private IPv4 (index 1 in the list)
 resource "scaleway_lb_backend" "backend" {
-  lb_id        = scaleway_lb.lb.id
-  forward_port = 80
+  lb_id            = scaleway_lb.lb.id
+  forward_port     = 80
   forward_protocol = "http"
 
   server_ips = [scaleway_instance_server.server.private_ips.1.address]
 }
 ```
 
-```hcl
+```terraform
 # Declare a backend with both the private IPv4 and private IPv6
 resource "scaleway_lb_backend" "backend" {
-  lb_id        = scaleway_lb.lb.id
-  forward_port = 80
+  lb_id            = scaleway_lb.lb.id
+  forward_port     = 80
   forward_protocol = "http"
 
   server_ips = [
@@ -125,24 +125,24 @@ of private IPs are not shown here)
 
 **NB**: For IPv6 addresses, the logic is the same, just replace `inet` by `inet6`.
 
-```hcl
+```terraform
 # Declare 3 public IPv4 addresses
 resource "scaleway_instance_ip" "ip_v4" {
-  type = "routed_ipv4"
+  type  = "routed_ipv4"
   count = 3
 }
 # Declare 3 public IPv6 addresses
 resource "scaleway_instance_ip" "ip_v6" {
-  type = "routed_ipv6"
+  type  = "routed_ipv6"
   count = 3
 }
 # Declare a server with all IPs attached
 resource "scaleway_instance_server" "server" {
   image = "ubuntu_noble"
-  type = "PRO2-S"
+  type  = "PRO2-S"
   ip_ids = concat(
-    [ for ip in scaleway_instance_ip.ip_v4 : ip.id ],
-    [ for ip in scaleway_instance_ip.ip_v6 : ip.id ],
+    [for ip in scaleway_instance_ip.ip_v4 : ip.id],
+    [for ip in scaleway_instance_ip.ip_v6 : ip.id],
   )
 }
 # Declare a load-balancer
@@ -151,7 +151,7 @@ resource "scaleway_lb" "lb" {
 }
 # Declare a backend with only the IPv4 addresses
 resource "scaleway_lb_backend" "backend" {
-  lb_id = scaleway_lb.lb.id
+  lb_id            = scaleway_lb.lb.id
   forward_port     = 80
   forward_protocol = "http"
 

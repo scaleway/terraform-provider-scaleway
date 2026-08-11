@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find LBs by name
 data "scaleway_lbs" "my_key" {
   name = "foobar"

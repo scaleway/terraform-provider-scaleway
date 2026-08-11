@@ -9,7 +9,7 @@ Gets information about multiple VPC routes.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name           = "tf-vpc-route"
   enable_routing = true

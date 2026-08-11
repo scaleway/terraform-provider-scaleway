@@ -12,7 +12,7 @@ You can also use the [scaleway-cli](https://github.com/scaleway/scaleway-cli) wi
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by os name and version
 data "scaleway_baremetal_os" "by_name" {
   name    = "Ubuntu"

@@ -11,7 +11,7 @@ Gets information about multiple instance servers.
 
 ### Basic
 
-```hcl
+```terraform
 # Find servers by tag
 data "scaleway_instance_servers" "my_key" {
   tags = ["tag"]

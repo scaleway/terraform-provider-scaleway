@@ -14,13 +14,13 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 
 resource "scaleway_datawarehouse_user" "main" {
@@ -34,13 +34,13 @@ resource "scaleway_datawarehouse_user" "main" {
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 
 resource "scaleway_datawarehouse_user" "admin" {

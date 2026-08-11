@@ -17,7 +17,7 @@ This guide provides a step-by-step process to remove the deprecated `scaleway_co
 
 Ensure your Scaleway provider is updated to at least version `2.49.0`.
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -48,7 +48,7 @@ The `scaleway_cockpit` resource is deprecated. Its functionalities, including en
 
 The following resource will no longer be supported after January 1st, 2025:
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
   plan       = "premium"
@@ -63,7 +63,7 @@ To handle specific functionalities previously managed by `scaleway_cockpit`, you
 
 In the deprecated `scaleway_cockpit` resource, the `plan` argument determined the retention period for logs, metrics, and traces. Now, retention periods are set individually for each data source using the `retention_days` argument in `scaleway_cockpit_source` resources.
 
-```hcl
+```terraform
 resource "scaleway_account_project" "project" {
   name = "test project data source"
 }
@@ -94,7 +94,7 @@ resource "scaleway_cockpit_source" "traces" {
 
 To retrieve the deprecated `alertmanager_url`, you must now explicitly create an Alert Manager using the `scaleway_cockpit_alert_manager` resource:
 
-```hcl
+```terraform
 resource "scaleway_cockpit_alert_manager" "alert_manager" {
   project_id            = scaleway_account_project.project.id
   enable_managed_alerts = true
@@ -115,7 +115,7 @@ resource "scaleway_cockpit_alert_manager" "alert_manager" {
 
 To retrieve the Grafana URL, use the `scaleway_cockpit_grafana` data source. Authentication is handled via your Scaleway IAM credentials:
 
-```hcl
+```terraform
 data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
 }
@@ -130,7 +130,7 @@ data "scaleway_cockpit_grafana" "main" {
 
 #### Before: Using `scaleway_cockpit` to Retrieve Endpoints
 
-```hcl
+```terraform
 resource "scaleway_cockpit" "main" {
   project_id = "11111111-1111-1111-1111-111111111111"
   plan       = "premium"
@@ -145,7 +145,7 @@ output "endpoints" {
 
 To retrieve all endpoints (metrics, logs, traces, alert manager, and Grafana):
 
-```hcl
+```terraform
 resource "scaleway_cockpit_source" "metrics" {
   project_id     = scaleway_account_project.project.id
   name           = "metrics-source"
@@ -204,7 +204,7 @@ terraform import scaleway_cockpit_source.main fr-par/11111111-1111-1111-1111-111
 
 The `scaleway_cockpit_grafana` data source automatically retrieves Grafana information. No import is required:
 
-```hcl
+```terraform
 data "scaleway_cockpit_grafana" "main" {
   project_id = scaleway_account_project.project.id
 }

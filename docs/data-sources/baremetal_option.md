@@ -10,7 +10,7 @@ For more information, see the [API documentation](https://developers.scaleway.co
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by option name
 data "scaleway_baremetal_option" "by_name" {
   name = "Remote Access"

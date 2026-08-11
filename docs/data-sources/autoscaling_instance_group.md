@@ -9,7 +9,7 @@ Gets information about an Autoscaling Instance group.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_autoscaling_instance_group" "by_name" {
   name = "my-instance-group"

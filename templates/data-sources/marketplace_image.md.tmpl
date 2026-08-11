@@ -9,7 +9,7 @@ Gets local image ID of an image from its label name.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_marketplace_image" "my_image" {
   label = "ubuntu_jammy"
 }

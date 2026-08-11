@@ -6,7 +6,7 @@ This action exports a block snapshot to a specified bucket in Scaleway Object St
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_block_snapshot" "example" {
   name      = "example-snapshot"
   volume_id = scaleway_block_volume.example.id

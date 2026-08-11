@@ -9,7 +9,7 @@ Gets information about an instance volume.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by volume name
 data "scaleway_instance_volume" "my_volume" {
   name = "my-volume-name"

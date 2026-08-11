@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find multiple IPs that share the same CIDR block
 data "scaleway_lb_ips" "my_key" {
   ip_cidr_range = "0.0.0.0/0"
