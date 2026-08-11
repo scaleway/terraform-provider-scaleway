@@ -93,7 +93,7 @@ func TestAccListServers_Basic(t *testing.T) {
 			{
 				Query: true,
 				Config: `
-					list "scaleway_instance_server" "all" {
+					list "scaleway_instance_server" "organization" {
 					  provider = scaleway
 
 					  config {
@@ -103,7 +103,9 @@ func TestAccListServers_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_instance_server.all", 3),
+					identitycheck.ExpectIdentityFunc("scaleway_instance_server.organization", identityFrPar.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_instance_server.organization", identityNlAms.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_instance_server.organization", identityPlWaw.Checks()),
 				},
 			},
 			{
