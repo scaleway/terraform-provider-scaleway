@@ -184,7 +184,7 @@ func TestAccLB_WithIPv6(t *testing.T) {
 				Config: `
 					resource "scaleway_lb_ip" "v4" {
 					}
-					
+
 					resource "scaleway_lb_ip" "v6" {
 					  is_ipv6 = true
 					}
@@ -200,6 +200,68 @@ func TestAccLB_WithIPv6(t *testing.T) {
 					acctest.CheckResourceAttrIPv4("scaleway_lb.main", "ip_address"),
 					acctest.CheckResourceAttrIPv6("scaleway_lb.main", "ipv6_address"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccLB_WithIPIDs_NoOrphanIP verifies that when ip_ids is provided,
+// no additional IP is auto-assigned by the API (regression test for orphan IP bug).
+func TestAccLB_WithIPIDs_NoOrphanIP(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isLbDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v4" {
+					}
+
+					resource "scaleway_lb_ip" "v6" {
+					  is_ipv6 = true
+					}
+
+					resource scaleway_lb main {
+					    ip_ids = [scaleway_lb_ip.v4.id, scaleway_lb_ip.v6.id]
+						name   = "test-lb-ip-ids-no-orphan"
+						type   = "LB-S"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isLbPresent(tt, "scaleway_lb.main"),
+					resource.TestCheckResourceAttrPair("scaleway_lb.main", "ipv6_address", "scaleway_lb_ip.v6", "ip_address"),
+					resource.TestCheckResourceAttrPair("scaleway_lb.main", "ip_address", "scaleway_lb_ip.v4", "ip_address"),
+					resource.TestCheckResourceAttr("scaleway_lb.main", "ip_ids.#", "2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccLB_WithIPIDs_OnlyIPv6Error(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isLbDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_lb_ip" "v6" {
+					  is_ipv6 = true
+					}
+
+					resource scaleway_lb main {
+					    ip_ids = [scaleway_lb_ip.v6.id]
+						name   = "test-lb-ip-ids-ipv6-only"
+						type   = "LB-S"
+					}
+				`,
+				ExpectError: regexp.MustCompile("ip_ids: lb must contain an IPv4 if they have a an IPv6 address"),
 			},
 		},
 	})

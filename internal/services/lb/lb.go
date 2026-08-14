@@ -246,9 +246,11 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
+	ipIDs := types.ExpandSliceIDs(d.Get("ip_ids"))
+
 	createReq := &lbSDK.ZonedAPICreateLBRequest{
 		Zone:                  zone,
-		IPIDs:                 types.ExpandSliceIDs(d.Get("ip_ids")),
+		IPIDs:                 ipIDs,
 		IPID:                  types.ExpandStringPtr(locality.ExpandID(d.Get("ip_id"))),
 		ProjectID:             types.ExpandStringPtr(d.Get("project_id")),
 		Name:                  types.ExpandOrGenerateString(d.Get("name"), "lb"),
@@ -257,6 +259,13 @@ func resourceLbCreate(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		SslCompatibilityLevel: lbSDK.SSLCompatibilityLevel(*types.ExpandStringPtr(d.Get("ssl_compatibility_level"))),
 		AssignFlexibleIP:      types.ExpandBoolPtr(types.GetBool(d, "assign_flexible_ip")),
 		AssignFlexibleIPv6:    types.ExpandBoolPtr(types.GetBool(d, "assign_flexible_ipv6")),
+	}
+
+	// When ip_ids is provided, explicitly disable flexible IP assignment to prevent
+	// the API from assigning additional IPs by default (which would be orphan resources)
+	if len(ipIDs) > 0 {
+		createReq.AssignFlexibleIP = new(false)
+		createReq.AssignFlexibleIPv6 = new(false)
 	}
 
 	if tags, ok := d.GetOk("tags"); ok {
