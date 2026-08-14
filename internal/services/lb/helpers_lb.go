@@ -197,7 +197,7 @@ func normalizeIPSubnet(ip string) string {
 	return ip
 }
 
-func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+func customizeDiffLBIPIDs(ctx context.Context, diff *schema.ResourceDiff, m any) error {
 	oldIPIDs, newIPIDs := diff.GetChange("ip_ids")
 	oldIPIDsSet := make(map[string]struct{})
 	newIPIDsSet := make(map[string]struct{})
@@ -214,6 +214,39 @@ func customizeDiffLBIPIDs(_ context.Context, diff *schema.ResourceDiff, _ any) e
 	for id := range oldIPIDsSet {
 		if _, ok := newIPIDsSet[id]; !ok {
 			return diff.ForceNew("ip_ids")
+		}
+	}
+
+	if len(newIPIDsSet) > 0 {
+		lbAPI := lbSDK.NewZonedAPI(meta.ExtractScwClient(m))
+
+		zone, err := meta.ExtractZone(diff, m)
+		if err != nil {
+			return fmt.Errorf("failed to extract zone: %w", err)
+		}
+
+		var hasIPv4, hasIPv6 bool
+		for id := range newIPIDsSet {
+			ip, err := lbAPI.GetIP(&lbSDK.ZonedAPIGetIPRequest{
+				Zone: zone,
+				IPID: locality.ExpandID(id),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return fmt.Errorf("failed to get IP %s: %w", id, err)
+			}
+
+			parsedIP := net.ParseIP(ip.IPAddress)
+			if parsedIP != nil {
+				if parsedIP.To4() != nil {
+					hasIPv4 = true
+				} else {
+					hasIPv6 = true
+				}
+			}
+		}
+
+		if hasIPv6 && !hasIPv4 {
+			return errors.New("ip_ids: lb must contain an IPv4 if they have a an IPv6 address")
 		}
 	}
 
