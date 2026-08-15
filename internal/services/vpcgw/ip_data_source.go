@@ -36,6 +36,14 @@ func DataSourceVPCPublicGatewayIPRead(ctx context.Context, d *schema.ResourceDat
 
 	ipID, _ := d.GetOk("ip_id")
 
+	// Extract zone from ip_id if it contains localized format (zone/uuid)
+	if parsedZone, parsedID, err := locality.ParseLocalizedID(ipID.(string)); err == nil && parsedZone != "" {
+		if parsedZoneEnum, err := scw.ParseZone(parsedZone); err == nil {
+			zone = parsedZoneEnum
+			ipID = parsedID
+		}
+	}
+
 	zonedID := datasource.NewZonedID(ipID, zone)
 	d.SetId(zonedID)
 	_ = d.Set("ip_id", zonedID)
