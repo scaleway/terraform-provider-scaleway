@@ -27,9 +27,7 @@ func ResourceACL() *schema.Resource {
 		ReadContext:   ResourceRdbACLRead,
 		UpdateContext: ResourceACLUpdate,
 		DeleteContext: ResourceACLDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),

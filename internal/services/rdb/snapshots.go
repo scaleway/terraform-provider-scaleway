@@ -27,9 +27,7 @@ func ResourceSnapshot() *schema.Resource {
 			Read:   schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.DefaultRegionalImporter(),
 		SchemaFunc:    snapshotSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
 		Identity:      identity.DefaultRegional(),

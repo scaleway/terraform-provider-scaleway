@@ -31,9 +31,7 @@ func ResourceUser() *schema.Resource {
 		ReadContext:   ResourceUserRead,
 		UpdateContext: ResourceUserUpdate,
 		DeleteContext: ResourceUserDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.CompositeRegionalImporter("region", "instance_id", "name"),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
@@ -44,7 +42,7 @@ func ResourceUser() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    userSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
-		Identity:      identity.DefaultRegional(),
+		Identity:      identity.CompositeRegionalIdentity("instance_id", "name"),
 	}
 }
 
@@ -150,7 +148,11 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, locality.ExpandID(instanceID), user.Name); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      region.String(),
+		"instance_id": locality.ExpandID(instanceID),
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -204,7 +206,11 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 	_ = d.Set("is_admin", user.IsAdmin)
 	_ = d.Set("region", string(region))
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, user.Name); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":      region.String(),
+		"instance_id": instanceID,
+		"name":        user.Name,
+	}, "region", "instance_id", "name"); err != nil {
 		return diag.FromErr(err)
 	}
 
