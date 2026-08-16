@@ -1,0 +1,42 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ListResourceTemplateType */ -}}
+---
+page_title: "Scaleway: {{ .Name }}"
+subcategory: "Instances"
+description: |-
+  Lists Scaleway Instance Servers across zones and projects.
+---
+
+# Resource: {{ .Name }}
+
+Lists Scaleway Instance Servers across zones and projects using query parameters.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/instances).
+
+## Example Usage
+
+{{ tffile "examples/list-resources/scaleway_instance_server/list-resource-by-project.tfquery.hcl" }}
+
+{{ tffile "examples/list-resources/scaleway_instance_server/list-resource-by-name-and-tag.tfquery.hcl" }}
+
+{{ tffile "examples/list-resources/scaleway_instance_server/list-resource-by-server-type.tfquery.hcl" }}
+
+{{ tffile "examples/list-resources/scaleway_instance_server/list-resource-by-attached-resources.tfquery.hcl" }}
+
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `zones` - (Optional) Zones to filter by. Use `["*"]` to list servers from all zones.
+- `project_ids` - (Optional) List of Project IDs to filter by. Use `["*"]` to list servers from all projects.
+- `name` - (Optional) Name of the server to filter by. The name-matching is strict, and will not pick up servers which names only contain the `name` parameter.
+- `tags` - (Optional) List of tags of the server to filter by.
+- `server_type` - (Optional) Commercial type of the server to filter by. The name-matching is strict, and will not pick up servers which type only contain the `server-type` parameter.
+- `security_group_ids` - (Optional) List of Security Group IDs to filter the servers by. Accepts either zonal IDs (e.g. `fr-par-1/uuid`) or plain UUIDs.
+- `placement_group_ids` - (Optional) List of Placement Group IDs to filter the servers by. Accepts either zonal IDs (e.g. `fr-par-1/uuid`) or plain UUIDs.
+- `private_network_ids` - (Optional) List of Private Network IDs to filter the servers by. Accepts either zonal IDs (e.g. `fr-par-1/uuid`) or plain UUIDs.
+- `mac_addresses` - (Optional) List of MAC addresses to filter the servers by.
+
+## Attributes Reference
+
+Each result corresponds to one Instance Server and exposes the same attributes as the [`scaleway_instance_server` resource](../resources/instance_server.md).

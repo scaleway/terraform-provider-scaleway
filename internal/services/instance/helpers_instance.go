@@ -5,19 +5,26 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
+	"github.com/scaleway/scaleway-sdk-go/api/marketplace/v2"
+	product_catalog "github.com/scaleway/scaleway-sdk-go/api/product_catalog/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	scwvalidation "github.com/scaleway/scaleway-sdk-go/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
@@ -686,4 +693,474 @@ func FindIPInList(ipID string, ips []*instance.ServerIP) *instance.ServerIP {
 	}
 
 	return nil
+}
+
+func detachFileSystemDelete(ctx context.Context, filesystems any, api *instance.API, zone scw.Zone, id string) diag.Diagnostics {
+	fsList := filesystems.([]any)
+	for i, fsRaw := range fsList {
+		fsMap := fsRaw.(map[string]any)
+
+		fsIDRaw, ok := fsMap["filesystem_id"]
+		if !ok || fsIDRaw == nil {
+			return diag.Errorf("filesystem_id is missing or nil for filesystem at index %d", i)
+		}
+
+		fsID := fsIDRaw.(string)
+
+		newFileSystemID := types.ExpandStringPtr(fsID)
+		if newFileSystemID == nil {
+			return diag.Errorf("failed to expand filesystem_id pointer at index %d", i)
+		}
+
+		_, err := api.DetachServerFileSystem(&instance.DetachServerFileSystemRequest{
+			Zone:         zone,
+			ServerID:     id,
+			FilesystemID: locality.ExpandID(*newFileSystemID),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = waitForFilesystems(ctx, api, zone, id, DefaultInstanceServerWaitTimeout)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+func detachPrivateNetworkDelete(ctx context.Context, d *schema.ResourceData, pnRaw any, apiV2 *instanceV2.API, apiV1 *instance.API, zone scw.Zone, id string, projectID string) diag.Diagnostics {
+	ph, err := newPrivateNICHandler(apiV2, apiV1, id, zone, projectID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	for index := range pnRaw.([]any) {
+		pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
+		pn := d.Get(pnKey)
+
+		err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	return nil
+}
+
+func terminateServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	// reach running state (mandatory for termination)
+	err := reachState(ctx, api, zone, id, instance.ServerStateRunning)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
+		Zone:     zone,
+		ServerID: id,
+		Action:   instance.ServerActionTerminate,
+		Timeout:  &timeout,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	return nil
+}
+
+func deleteServer(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string, timeout time.Duration) error {
+	_, err := waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	// reach stopped state
+	err = reachState(ctx, api, zone, id, instance.ServerStateStopped)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	err = api.DeleteServer(&instance.DeleteServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	_, err = waitForServer(ctx, api.API, zone, id, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return err
+	}
+
+	return nil
+}
+
+func instanceServerCanMigrate(api *instance.API, server *instance.Server, requestedType string) error {
+	var localVolumeSize scw.Size
+
+	for _, volume := range server.Volumes {
+		if volume.VolumeType == instance.VolumeServerVolumeTypeLSSD && volume.Size != nil {
+			localVolumeSize += *volume.Size
+		}
+	}
+
+	serverType, err := api.GetServerType(&instance.GetServerTypeRequest{
+		Zone: server.Zone,
+		Name: requestedType,
+	})
+	if err != nil {
+		return err
+	}
+
+	if serverType.VolumesConstraint != nil &&
+		(localVolumeSize > serverType.VolumesConstraint.MaxSize) ||
+		(localVolumeSize < serverType.VolumesConstraint.MinSize) {
+		return fmt.Errorf("local volume total size does not respect type constraint, expected beteween (%dGB, %dGB), got %sGB",
+			serverType.VolumesConstraint.MinSize/scw.GB,
+			serverType.VolumesConstraint.MaxSize/scw.GB,
+			localVolumeSize/scw.GB)
+	}
+
+	return nil
+}
+
+func customDiffInstanceRootVolumeSize(_ context.Context, diff *schema.ResourceDiff, meta any) error {
+	if !diff.HasChange("root_volume.0.size_in_gb") || diff.Id() == "" {
+		return nil
+	}
+
+	instanceAPI, zone, id, err := NewAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	resp, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server root volume type: %w", err)
+	}
+
+	if rootVolume, hasRootVolume := resp.Server.Volumes["0"]; hasRootVolume {
+		if rootVolume.VolumeType == instance.VolumeServerVolumeTypeLSSD {
+			return diff.ForceNew("root_volume.0.size_in_gb")
+		}
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerType(_ context.Context, diff *schema.ResourceDiff, meta any) error {
+	if !diff.HasChange("type") || diff.Id() == "" {
+		return nil
+	}
+
+	if diff.Get("replace_on_type_change").(bool) {
+		return diff.ForceNew("type")
+	}
+
+	instanceAPI, zone, id, err := NewAPIWithZoneAndID(meta, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	_, newValue := diff.GetChange("type")
+	newType := newValue.(string)
+
+	resp, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check server type change: %w", err)
+	}
+
+	err = instanceServerCanMigrate(instanceAPI, resp.Server, newType)
+	if err != nil {
+		return fmt.Errorf("cannot change server type: %w", err)
+	}
+
+	return nil
+}
+
+func customDiffInstanceServerImage(ctx context.Context, diff *schema.ResourceDiff, m any) error {
+	if diff.Get("image") == "" || !diff.HasChange("image") || diff.Id() == "" {
+		return nil
+	}
+
+	// We get the server to fetch the UUID of the image
+	instanceAPI, zone, id, err := NewAPIWithZoneAndID(m, diff.Id())
+	if err != nil {
+		return err
+	}
+
+	server, err := instanceAPI.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: id,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+
+	// If 'image' field is defined by the user and server.Image is empty, we should create a new server
+	if server.Server.Image == nil {
+		return diff.ForceNew("image")
+	}
+
+	// We get the image as it is defined by the user
+	image := regional.ExpandID(diff.Get("image").(string))
+	if scwvalidation.IsUUID(image.ID) {
+		if image.ID == zonal.ExpandID(server.Server.Image.ID).ID {
+			return nil
+		}
+	}
+
+	// If image is a label, we check that server.Image.ID matches the label in case the user has edited
+	// the image with another tool.
+	marketplaceAPI := marketplace.NewAPI(meta.ExtractScwClient(m))
+
+	marketplaceImage, err := marketplaceAPI.GetLocalImage(&marketplace.GetLocalImageRequest{
+		LocalImageID: server.Server.Image.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		// If UUID is not in marketplace, then it's an image change
+		if httperrors.Is404(err) {
+			return diff.ForceNew("image")
+		}
+
+		return err
+	}
+
+	if marketplaceImage.Label != image.ID {
+		return diff.ForceNew("image")
+	}
+
+	return nil
+}
+
+func ResourceInstanceServerMigrate(ctx context.Context, d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, id string) error {
+	server, err := waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return fmt.Errorf("failed to wait for server before changing server type: %w", err)
+	}
+
+	beginningState := server.State
+
+	err = reachState(ctx, api, zone, id, instance.ServerStateStopped)
+	if err != nil {
+		return fmt.Errorf("failed to stop server before changing server type: %w", err)
+	}
+
+	_, err = api.UpdateServer(&instance.UpdateServerRequest{
+		Zone:           zone,
+		ServerID:       id,
+		CommercialType: types.ExpandStringPtr(d.Get("type")),
+	})
+	if err != nil {
+		return errors.New("failed to change server type server")
+	}
+
+	err = reachState(ctx, api, zone, id, beginningState)
+	if err != nil {
+		return fmt.Errorf("failed to start server after changing server type: %w", err)
+	}
+
+	return nil
+}
+
+func ResourceInstanceServerUpdateIPs(ctx context.Context, d *schema.ResourceData, instanceAPI *instance.API, zone scw.Zone, id string, attribute string) error {
+	server, err := waitForServer(ctx, instanceAPI, zone, id, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return err
+	}
+
+	var schemaIPs []any
+
+	switch attribute {
+	case "ip_id":
+		schemaIP := d.Get(attribute).(string)
+		schemaIPs = append(schemaIPs, schemaIP)
+	case "ip_ids":
+		schemaIPs = d.Get(attribute).([]any)
+	}
+
+	requestedIPs := make(map[string]bool, len(schemaIPs))
+
+	// Gather request IPs in a map
+	for _, rawIP := range schemaIPs {
+		requestedIPs[locality.ExpandID(rawIP)] = false
+	}
+
+	// Detach all IPs that are not requested and set to true the one that are already attached
+	for _, ip := range server.PublicIPs {
+		_, isRequested := requestedIPs[ip.ID]
+		if isRequested {
+			requestedIPs[ip.ID] = true
+		} else {
+			_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+				Zone: zone,
+				IP:   ip.ID,
+				Server: &instance.NullableStringValue{
+					Null: true,
+				},
+			})
+			if err != nil {
+				return fmt.Errorf("failed to detach IP: %w", err)
+			}
+		}
+	}
+
+	// Attach all remaining IPs that are not attached
+	for ipID, isAttached := range requestedIPs {
+		if isAttached {
+			continue
+		}
+
+		_, err := instanceAPI.UpdateIP(&instance.UpdateIPRequest{
+			Zone: zone,
+			IP:   ipID,
+			Server: &instance.NullableStringValue{
+				Value: server.ID,
+			},
+		})
+		if err != nil {
+			return fmt.Errorf("failed to attach IP: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func ResourceInstanceServerUpdateRootVolumeIOPS(ctx context.Context, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverID string, iops *uint32) diag.Diagnostics {
+	res, err := api.GetServer(&instance.GetServerRequest{
+		Zone:     zone,
+		ServerID: serverID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	rootVolume, exists := res.Server.Volumes["0"]
+	if exists {
+		_, err := api.BlockAPI.UpdateVolume(&blockSDK.UpdateVolumeRequest{
+			Zone:     zone,
+			VolumeID: rootVolume.ID,
+			PerfIops: iops,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.Diagnostics{{
+				Severity:      diag.Warning,
+				Summary:       "Failed to update root_volume iops",
+				Detail:        err.Error(),
+				AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+			}}
+		}
+	} else {
+		return diag.Diagnostics{{
+			Severity:      diag.Warning,
+			Summary:       "Failed to find root_volume",
+			Detail:        "Failed to update root_volume IOPS",
+			AttributePath: cty.GetAttrPath("root_volume.0.sbs_iops"),
+		}}
+	}
+
+	return nil
+}
+
+// instanceServerVolumesUpdate updates root_volume size and returns the list of volumes templates that should be updated for the server.
+// It uses root_volume and additional_volume_ids to build the volumes templates.
+func instanceServerVolumesUpdate(ctx context.Context, d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, serverIsStopped bool) (map[string]*instance.VolumeServerTemplate, error) {
+	volumes := map[string]*instance.VolumeServerTemplate{}
+	raw, hasAdditionalVolumes := d.GetOk("additional_volume_ids")
+
+	if d.HasChange("root_volume.0.size_in_gb") {
+		err := api.ResizeUnknownVolume(&instancehelpers.ResizeUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID,
+			Zone:     zone,
+			Size:     new(scw.Size(d.Get("root_volume.0.size_in_gb").(int)) * scw.GB),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	volumes["0"] = &instance.VolumeServerTemplate{
+		ID:   new(zonal.ExpandID(d.Get("root_volume.0.volume_id")).ID),
+		Name: new(types.NewRandomName("vol")), // name is ignored by the API, any name will work here
+		Boot: types.ExpandBoolPtr(d.Get("root_volume.0.boot")),
+	}
+
+	if !hasAdditionalVolumes {
+		raw = []any{} // Set an empty list if not volumes exist
+	}
+
+	for i, volumeID := range raw.([]any) {
+		volumeHasChange := d.HasChange("additional_volume_ids." + strconv.Itoa(i))
+
+		volume, err := api.GetUnknownVolume(&instancehelpers.GetUnknownVolumeRequest{
+			VolumeID: zonal.ExpandID(volumeID).ID,
+			Zone:     zone,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return nil, fmt.Errorf("failed to get updated volume: %w", err)
+		}
+
+		// local volumes can only be added when the server is stopped
+		if volumeHasChange && !serverIsStopped && volume.IsLocal() && volume.IsAttached() {
+			return nil, errors.New("instance must be stopped to change local volumes")
+		}
+
+		volumes[strconv.Itoa(i+1)] = volume.VolumeTemplate()
+	}
+
+	return volumes, nil
+}
+
+func GetEndOfServiceDate(ctx context.Context, client *scw.Client, zone scw.Zone, commercialType string) (string, error) {
+	api := product_catalog.NewPublicCatalogAPI(client)
+
+	products, err := api.ListPublicCatalogProducts(&product_catalog.PublicCatalogAPIListPublicCatalogProductsRequest{
+		Zone: &zone,
+		ProductTypes: []product_catalog.ListPublicCatalogProductsRequestProductType{
+			product_catalog.ListPublicCatalogProductsRequestProductTypeInstance,
+		},
+		APIIDs: []string{commercialType},
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		return "", fmt.Errorf("could not list product catalog entries: %w", err)
+	}
+
+	if products.TotalCount != 1 {
+		return "", fmt.Errorf("expected exactly 1 PCU entry for %q, got %d", commercialType, products.TotalCount)
+	}
+
+	return products.Products[0].EndOfLifeAt.Format(time.DateOnly), nil
+}
+
+func renameRootVolumeIfNeeded(d *schema.ResourceData, api *instancehelpers.BlockAndInstanceAPI, zone scw.Zone, volumes map[string]*instance.VolumeServer) error {
+	if volumes == nil || volumes["0"] == nil {
+		return nil
+	}
+
+	if rootVolumeName, setByUser := meta.GetRawConfigForKey(d, "root_volume.0.name", cty.String); setByUser {
+		if volumes["0"].Name == nil || *volumes["0"].Name != rootVolumeName {
+			err := api.RenameUnknownVolume(&instancehelpers.RenameUnknownVolumeRequest{
+				Zone:     zone,
+				VolumeID: volumes["0"].ID,
+				Name:     new(rootVolumeName.(string)),
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func errorCheck(err error, message string) bool {
+	return strings.Contains(err.Error(), message)
 }
