@@ -1,8 +1,6 @@
 package interlinktestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	interlink "github.com/scaleway/scaleway-sdk-go/api/interlink/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -33,7 +31,9 @@ func testSweepLink(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing interlink links in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing interlink links in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, link := range listLinks.Links {
@@ -42,7 +42,7 @@ func testSweepLink(_ string) error {
 				LinkID: link.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting interlink link in sweeper: %w", err)
+				logging.L.Warningf("error deleting interlink link in sweeper: %s", err)
 			}
 		}
 
@@ -60,7 +60,9 @@ func testSweepRoutingPolicy(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing interlink routing policies in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing interlink routing policies in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, policy := range listPolicies.RoutingPolicies {
@@ -69,7 +71,7 @@ func testSweepRoutingPolicy(_ string) error {
 				RoutingPolicyID: policy.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting interlink routing policy in sweeper: %w", err)
+				logging.L.Warningf("error deleting interlink routing policy in sweeper: %s", err)
 			}
 		}
 

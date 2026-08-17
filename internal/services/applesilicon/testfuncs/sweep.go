@@ -1,8 +1,6 @@
 package applesilicontestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	applesiliconSDK "github.com/scaleway/scaleway-sdk-go/api/applesilicon/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,7 +23,9 @@ func testSweepAppleSiliconServer(_ string) error {
 
 		listServers, err := asAPI.ListServers(&applesiliconSDK.ListServersRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing apple silicon servers in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing apple silicon servers in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, server := range listServers.Servers {
@@ -34,7 +34,7 @@ func testSweepAppleSiliconServer(_ string) error {
 				Zone:     zone,
 			})
 			if errDelete != nil {
-				return fmt.Errorf("error deleting apple silicon server in sweeper: %w", err)
+				logging.L.Warningf("error deleting apple silicon server in sweeper: %s", err)
 			}
 		}
 
