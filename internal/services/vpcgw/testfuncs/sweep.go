@@ -1,8 +1,6 @@
 package vpcgwtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	v2 "github.com/scaleway/scaleway-sdk-go/api/vpcgw/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -35,7 +33,9 @@ func testSweepVPCPublicGateway(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway in sweeper: %w", err)
+			logging.L.Warningf("error listing public gateway in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, gateway := range listGatewayResponse.Gateways {
@@ -44,7 +44,7 @@ func testSweepVPCPublicGateway(_ string) error {
 				GatewayID: gateway.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway in sweeper: %w", err)
+				logging.L.Warningf("error deleting public gateway %s: %s", gateway.ID, err)
 			}
 		}
 
@@ -62,16 +62,18 @@ func testSweepVPCGatewayNetwork(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing gateway network in sweeper: %w", err)
+			logging.L.Warningf("error listing gateway network in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, gn := range listPNResponse.GatewayNetworks {
 			_, err := api.DeleteGatewayNetwork(&v2.DeleteGatewayNetworkRequest{
-				GatewayNetworkID: gn.GatewayID,
+				GatewayNetworkID: gn.ID,
 				Zone:             zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting gateway network in sweeper: %w", err)
+				logging.L.Warningf("error deleting gateway network %s: %s", gn.ID, err)
 			}
 		}
 
@@ -89,7 +91,9 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing public gateway ip in sweeper: %w", err)
+			logging.L.Warningf("error listing public gateway ip in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, ip := range listIPResponse.IPs {
@@ -98,7 +102,7 @@ func testSweepVPCPublicGatewayIP(_ string) error {
 				IPID: ip.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting public gateway ip in sweeper: %w", err)
+				logging.L.Warningf("error deleting public gateway ip %s: %s", ip.ID, err)
 			}
 		}
 
