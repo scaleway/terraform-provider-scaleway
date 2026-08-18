@@ -435,7 +435,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if startupTaints, ok := d.GetOk("startup_taints"); ok {
-		req.Taints = expandCoreV1Taints(startupTaints)
+		req.StartupTaints = expandCoreV1Taints(startupTaints)
 	}
 
 	// Validate pool configuration
