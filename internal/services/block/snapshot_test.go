@@ -45,7 +45,7 @@ func TestAccSnapshot_FromS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-block-snapshot")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
@@ -88,7 +88,7 @@ func TestAccSnapshot_ToS3(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	bucketName := sdkacctest.RandomWithPrefix("test-acc-scaleway-export-block-snapshot")
+	bucketName := sdkacctest.RandomWithPrefix("tf-test-scaleway-export-block-snapshot")
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
