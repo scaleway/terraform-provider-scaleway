@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -66,7 +68,8 @@ func ResourceInstance() *schema.Resource {
 				return nil
 			},
 		),
-		Identity: identity.DefaultRegional(),
+		Identity:         identity.DefaultRegional(),
+		ResourceBehavior: schema.ResourceBehavior{MutableIdentity: true},
 	}
 }
 
@@ -604,6 +607,128 @@ func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, regio
 	return nil
 }
 
+func handleVersionUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) (string, diag.Diagnostics) {
+	_, newVersionInterface := d.GetChange("version")
+	newVersion := NormalizeMongoDBVersion(newVersionInterface.(string))
+
+	upgradeInstanceRequest := mongodb.UpgradeInstanceRequest{
+		InstanceID: id,
+		Region:     region,
+		Version:    types.ExpandStringPtr(newVersion),
+	}
+
+	upgradedInstance, err := mongodbAPI.UpgradeInstance(&upgradeInstanceRequest, scw.WithContext(ctx))
+	if err != nil {
+		return id, diag.FromErr(err)
+	}
+
+	if upgradedInstance.ID != id {
+		tflog.Info(ctx, fmt.Sprintf("Version upgrade created new instance, updating ID from %s to %s", id, upgradedInstance.ID))
+		oldInstanceID := id
+
+		id = upgradedInstance.ID
+		if err := identity.SetRegionalIdentity(d, region, id); err != nil {
+			return id, diag.FromErr(err)
+		}
+
+		_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil && !httperrors.Is404(err) {
+			return id, diag.FromErr(err)
+		}
+
+		if err := deleteOldInstanceAfterUpgrade(ctx, mongodbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate)); err != nil {
+			tflog.Warn(ctx, fmt.Sprintf("Failed to clean up old instance %s: %v", oldInstanceID, err))
+		}
+	} else {
+		_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return id, diag.FromErr(err)
+		}
+	}
+
+	return id, nil
+}
+
+// deleteOldInstanceAfterUpgrade deletes the old instance after a blue/green upgrade.
+// The old instance may be in a transient state (e.g. error) right after the upgrade,
+// so this function retries the deletion until it succeeds or the timeout is reached.
+func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, oldInstanceID string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	if timeout == 0 {
+		deadline = time.Now().Add(defaultMongodbInstanceTimeout)
+	}
+
+	retryInterval := defaultWaitMongodbInstanceRetryInterval
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	deleteRequested := false
+
+	for time.Now().Before(deadline) && !deleteRequested {
+		instance, err := mongodbAPI.GetInstance(&mongodb.GetInstanceRequest{
+			Region:     region,
+			InstanceID: oldInstanceID,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			if httperrors.Is404(err) {
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s already deleted", oldInstanceID))
+				return nil
+			}
+
+			tflog.Warn(ctx, fmt.Sprintf("Failed to get old instance %s status: %v", oldInstanceID, err))
+		} else {
+			switch instance.Status {
+			case mongodb.InstanceStatusDeleting:
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s is already deleting, waiting...", oldInstanceID))
+				deleteRequested = true
+			case mongodb.InstanceStatusReady, mongodb.InstanceStatusError, mongodb.InstanceStatusLocked:
+				_, err = mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil {
+					if httperrors.Is404(err) {
+						return nil
+					}
+
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s (status=%s): %v", oldInstanceID, instance.Status, err))
+				} else {
+					tflog.Info(ctx, fmt.Sprintf("Old instance %s deletion requested", oldInstanceID))
+					deleteRequested = true
+				}
+			default:
+				tflog.Info(ctx, fmt.Sprintf("Old instance %s is in status %s, waiting before deletion attempt", oldInstanceID, instance.Status))
+			}
+		}
+
+		if !deleteRequested {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(retryInterval):
+			}
+		}
+	}
+
+	if !deleteRequested {
+		_, err := mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
+			Region:     region,
+			InstanceID: oldInstanceID,
+		}, scw.WithContext(ctx))
+		if err != nil && !httperrors.Is404(err) {
+			return fmt.Errorf("failed to delete old instance %s after timeout: %w", oldInstanceID, err)
+		}
+	}
+
+	_, err := waitForInstance(ctx, mongodbAPI, region, oldInstanceID, timeout)
+	if err != nil && !httperrors.Is404(err) {
+		return fmt.Errorf("error waiting for old instance %s deletion: %w", oldInstanceID, err)
+	}
+
+	return nil
+}
+
 func handleInstanceUpdate(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) diag.Diagnostics {
 	shouldUpdateInstance := false
 	req := &mongodb.UpdateInstanceRequest{
@@ -649,6 +774,14 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	if d.HasChange("volume_size_in_gb") {
 		if diag := handleVolumeSizeUpgrade(ctx, mongodbAPI, region, ID, d); diag != nil {
 			return diag
+		}
+	}
+
+	if d.HasChange("version") {
+		var diags diag.Diagnostics
+		ID, diags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
+		if len(diags) > 0 {
+			return diags
 		}
 	}
 

@@ -98,6 +98,50 @@ func TestAccMongoDBInstance_VolumeUpdate(t *testing.T) {
 	})
 }
 
+func TestAccMongoDBInstance_VersionUpgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsInstanceDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-version-upgrade"
+						version = "7.0.12"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "7.0"),
+				),
+			},
+			{
+				Config: `
+					resource scaleway_mongodb_instance main {
+						name = "test-mongodb-version-upgrade"
+						version = "8.0"
+						node_type = "MGDB-PLAY2-NANO"
+						node_number = 1
+						user_name = "my_initial_user"
+						password = "thiZ_is_v&ry_s3cret"
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					isMongoDBInstancePresent(tt, "scaleway_mongodb_instance.main"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_instance.main", "version", "8.0"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccMongoDBInstance_SnapshotSchedule(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
