@@ -129,9 +129,14 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	_, err = waitForServer(ctx, instanceAPIV1, zone, locality.ExpandID(d.Get("server_id")), d.Timeout(schema.TimeoutCreate))
+	server, err := waitForServer(ctx, instanceAPIV1, zone, locality.ExpandID(d.Get("server_id")), d.Timeout(schema.TimeoutCreate))
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	projectID := d.Get("project_id")
+	if projectID == nil || projectID == "" {
+		projectID = server.Project
 	}
 
 	createPrivateNICRequest := &instance.CreatePrivateNetworkInterfaceRequest{
@@ -140,6 +145,7 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		PrivateNetworkID: regional.ExpandID(d.Get("private_network_id").(string)).ID,
 		Tags:             types.ExpandStrings(d.Get("tags")),
 		IPIDs:            locality.ExpandIDs(d.Get("ipam_ip_ids")),
+		ProjectID:        projectID.(string),
 	}
 
 	instanceAPI, zone, err := newAPIV2WithZone(d, m)
