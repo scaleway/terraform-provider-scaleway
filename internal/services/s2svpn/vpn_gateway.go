@@ -151,7 +151,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		IpamPrivateIPv4ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv4_id").(string)).ID),
 		IpamPrivateIPv6ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv6_id").(string)).ID),
 		Zone:              zonePtr,
-		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")),
+		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")), //nolint:staticcheck
 	}
 
 	res, err := api.CreateVpnGateway(req, scw.WithContext(ctx))
