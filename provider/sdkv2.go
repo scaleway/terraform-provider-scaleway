@@ -4,9 +4,11 @@ import (
 	"context"
 	"maps"
 	"os"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -124,6 +126,30 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The Scaleway API URL to use.",
+				},
+				"endpoints": {
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Description: "Configuration block for customizing service endpoints.",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"s3": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Use this to override the default service endpoint URL.",
+								ValidateFunc: validation.StringMatch(
+									regexp.MustCompile(`^https?://`),
+									"must start with 'https://' or 'http://'",
+								),
+							},
+						},
+					},
+				},
+				"s3_use_path_style": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Whether to enable the request to use path-style addressing.",
 				},
 			},
 
@@ -418,9 +444,30 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return config.Meta, nil
 			}
 
+			var endpoints map[string]string
+
+			if rawEndpoints, ok := data.GetOk("endpoints"); ok {
+				endpointsSet := rawEndpoints.(*schema.Set)
+				endpoints = make(map[string]string)
+
+				for _, endpoint := range endpointsSet.List() {
+					endpointMap := endpoint.(map[string]any)
+					if s3, ok := endpointMap["s3"]; ok && s3 != "" {
+						endpoints["s3"] = s3.(string)
+					}
+				}
+			}
+
+			s3UsePathStyle := false
+			if rawS3UsePathStyle, ok := data.GetOk("s3_use_path_style"); ok {
+				s3UsePathStyle = rawS3UsePathStyle.(bool)
+			}
+
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,
 				TerraformVersion: terraformVersion,
+				Endpoints:        endpoints,
+				S3UsePathStyle:   s3UsePathStyle,
 			})
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -439,7 +486,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return m, diags
 			}
 
-			if ok && err == nil {
+			if ok { // && err == nil
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
