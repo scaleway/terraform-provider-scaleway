@@ -42,6 +42,7 @@ type samlCertificateResourceModel struct {
 	Type      types.String `tfsdk:"type"`
 	Origin    types.String `tfsdk:"origin"`
 	ExpiresAt types.String `tfsdk:"expires_at"`
+	Srn       types.String `tfsdk:"srn"`
 }
 
 type samlCertificateResourceIdentityModel = framework.GlobalIdentity
@@ -92,6 +93,10 @@ func (r *SamlCertificateResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"expires_at": schema.StringAttribute{
 				MarkdownDescription: "The expiration date and time of the SAML certificate",
+				Computed:            true,
+			},
+			"srn": schema.StringAttribute{
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the SAML certificate",
 				Computed:            true,
 			},
 			"organization_id": schema.StringAttribute{
@@ -322,6 +327,7 @@ func (r *SamlCertificateResource) convertToState(cert *iam.SamlCertificate, orgI
 		ID:             types.StringValue(cert.ID),
 		Type:           types.StringValue(string(cert.Type)),
 		Origin:         types.StringValue(string(cert.Origin)),
+		Srn:            types.StringValue(cert.Srn),
 		OrganizationID: types.StringValue(orgID),
 	}
 
