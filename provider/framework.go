@@ -192,7 +192,7 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 			return
 		}
 
-		if ok && err == nil {
+		if ok {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
 				"Multiple variable sources detected, please make sure the right credentials are used",
 				message,
@@ -212,10 +212,10 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
 		annotations.NewAnnotationsBindingResource,
-		datalab.NewDatalabResource,
 		billing.NewBudgetResource,
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetAlertNotificationResource,
+		datalab.NewDatalabResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
@@ -226,13 +226,13 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
 	return []func() ephemeral.EphemeralResource{
+		iam.NewApiKeyEphemeralResource,
 		keymanager.NewDecryptEphemeralResource,
 		keymanager.NewEncryptEphemeralResource,
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
-		iam.NewApiKeyEphemeralResource,
-		secret.NewVersionEphemeralResource,
 		scwconfig.NewScwConfigEphemeralResource,
+		secret.NewVersionEphemeralResource,
 	}
 }
 
@@ -241,11 +241,11 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		annotations.NewAnnotationsKeyDataSource,
 		annotations.NewAnnotationsValueDataSource,
 		annotations.NewAnnotationsBindingDataSource,
-		datalab.NewDatalabDataSource,
-		datalab.NewDatalabsDataSource,
 		billing.NewBudgetDataSource,
 		billing.NewBudgetAlertDataSource,
 		billing.NewBudgetAlertNotificationDataSource,
+		datalab.NewDatalabDataSource,
+		datalab.NewDatalabsDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
@@ -285,38 +285,38 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		account.NewProjectListResource,
 		block.NewSnapshotListResource,
-		object.NewBucketListResource,
 		block.NewVolumeListResource,
+		domain.NewRecordListResource,
+		domain.NewZoneListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewGroupListResource,
+		iam.NewUserListResource,
+		iam.NewApplicationListResource,
+		iam.NewPolicyListResource,
+		iam.NewAPIKeyListResource,
+		ipam.NewIPListResource,
+		keymanager.NewKeyListResource,
+		lb.NewLbListResource,
+		lb.NewFrontendListResource,
+		lb.NewBackendListResource,
 		mongodb.NewInstanceListResource,
+		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
 		rdb.NewSnapshotListResource,
 		redis.NewClusterListResource,
+		secret.NewSecretListResource,
+		secret.NewVersionListResource,
 		vpc.NewVPCListResource,
 		vpc.NewConnectorListResource,
 		vpc.NewRouteListResource,
 		vpc.NewPrivateNetworkListResource,
-		ipam.NewIPListResource,
 		vpcgw.NewPublicGatewayListResource,
 		vpcgw.NewIPListResource,
-		lb.NewLbListResource,
-		lb.NewFrontendListResource,
-		lb.NewBackendListResource,
-		iam.NewSSHKeyListResource,
-		iam.NewGroupListResource,
-		iam.NewUserListResource,
-		iam.NewApplicationListResource,
-		iam.NewPolicyListResource,
-		account.NewProjectListResource,
-		iam.NewAPIKeyListResource,
-		domain.NewRecordListResource,
-		domain.NewZoneListResource,
-		secret.NewSecretListResource,
-		secret.NewVersionListResource,
-		keymanager.NewKeyListResource,
 	}
 }
 
