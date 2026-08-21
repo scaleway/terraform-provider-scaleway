@@ -80,6 +80,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the Public Gateway.
 - `updated_at` - The date and time of the last update of the Public Gateway.
 - `status` - The status of the public gateway.
+- `srn` - The Scaleway Resource Name (SRN) of the public gateway.
 
 ## Import
 
