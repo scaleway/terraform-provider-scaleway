@@ -94,6 +94,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the Flexible IP (Format ISO 8601).
 - `updated_at` - The date and time of the last update of the Flexible IP (Format ISO 8601).
 - `organization_id` - The organization of the Flexible IP.
+- `srn` - The Scaleway Resource Name (SRN) of the flexible IP.
 
 ## Import
 
