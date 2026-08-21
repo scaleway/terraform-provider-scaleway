@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	instanceV1 "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
 	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	ipamAPI "github.com/scaleway/scaleway-sdk-go/api/ipam/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -18,6 +17,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
@@ -119,7 +119,8 @@ func privateNicSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "IPAM IDs of a pre-reserved IP addresses to assign to the Instance in the requested private network",
 		},
-		"zone": zonal.Schema(),
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
@@ -175,10 +176,10 @@ func ResourceInstancePrivateNICCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	return setPrivateNICState(ctx, instanceAPIV1, d, privateNIC, zone, m)
+	return setPrivateNICState(ctx, d, privateNIC, zone, m)
 }
 
-func setPrivateNICState(ctx context.Context, instanceAPI *instanceV1.API, d *schema.ResourceData, privateNIC *instance.PrivateNetworkInterface, zone scw.Zone, m any) diag.Diagnostics {
+func setPrivateNICState(ctx context.Context, d *schema.ResourceData, privateNIC *instance.PrivateNetworkInterface, zone scw.Zone, m any) diag.Diagnostics {
 	region, err := zone.Region()
 	if err != nil {
 		return diag.FromErr(err)
@@ -188,6 +189,7 @@ func setPrivateNICState(ctx context.Context, instanceAPI *instanceV1.API, d *sch
 	_ = d.Set("server_id", zonal.NewID(zone, privateNIC.ServerID).String())
 	_ = d.Set("private_network_id", regional.NewIDString(region, privateNIC.PrivateNetworkID))
 	_ = d.Set("mac_address", privateNIC.MacAddress)
+	_ = d.Set("project_id", privateNIC.ProjectID)
 
 	if len(privateNIC.Tags) > 0 {
 		_ = d.Set("tags", privateNIC.Tags)
@@ -195,22 +197,12 @@ func setPrivateNICState(ctx context.Context, instanceAPI *instanceV1.API, d *sch
 
 	// Get private NIC's private IPs if possible
 	diags := diag.Diagnostics{}
-
-	projectID, err := getServerProjectID(ctx, instanceAPI, zone, privateNIC.ServerID)
-	if err != nil {
-		return append(diags, diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  "Unable to get private NIC's private IPs",
-			Detail:   err.Error(),
-		})
-	}
-
 	resourceType := ipamAPI.ResourceTypeInstancePrivateNic
 	opts := &ipam.GetResourcePrivateIPsOptions{
 		ResourceID:       &privateNIC.ID,
 		ResourceType:     new(resourceType),
 		PrivateNetworkID: &privateNIC.PrivateNetworkID,
-		ProjectID:        &projectID,
+		ProjectID:        &privateNIC.ProjectID,
 	}
 
 	privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
@@ -268,12 +260,7 @@ func ResourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	instanceAPIV1, _, err := newAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setPrivateNICState(ctx, instanceAPIV1, d, privateNIC, zone, m)
+	return setPrivateNICState(ctx, d, privateNIC, zone, m)
 }
 
 func ResourceInstancePrivateNICUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
