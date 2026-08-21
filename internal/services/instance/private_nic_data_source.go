@@ -106,12 +106,7 @@ func DataSourceInstancePrivateNICRead(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	instanceAPIV1, zone, err := newAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setPrivateNICState(ctx, instanceAPIV1, d, pNIC, zone, m)
+	return setPrivateNICState(ctx, d, pNIC, zone, m)
 }
 
 func privateNICWithFilters(privateNICs []*instance.PrivateNetworkInterfaceSummary, d *schema.ResourceData) (*instance.PrivateNetworkInterfaceSummary, error) {
