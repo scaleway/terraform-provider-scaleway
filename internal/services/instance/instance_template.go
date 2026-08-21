@@ -20,6 +20,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -65,15 +66,6 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Instance Template.",
 		Attributes: map[string]schema.Attribute{
-			"project_id": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				MarkdownDescription: "The project ID the Instance Template belongs to. Defaults to the provider's project ID.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The ID of the Instance Template, in the `{zone}/{id}` format.",
@@ -103,10 +95,16 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 			"security_group_id": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "The ID of the security group to attach to the servers created using the Instance Template.",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithZone(),
+				},
 			},
 			"placement_group_id": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "The ID of the placement group to attach to the servers created using the Instance Template.",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithZone(),
+				},
 			},
 			"public_ipv4_count": schema.Int32Attribute{
 				Optional:            true,
@@ -120,7 +118,7 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 				Default:             int32default.StaticInt32(0),
 				MarkdownDescription: "The number of public IPv6 to attach to the servers created using the Instance Template.",
 			},
-			"volumes": schema.ListNestedAttribute{ // schema.ListNestedBlock // TODO: name it 'volume' instead ??
+			"volumes": schema.ListNestedAttribute{
 				Optional:            true,
 				MarkdownDescription: "The specs of the volumes of the servers created using the Instance Template.",
 				NestedObject: schema.NestedAttributeObject{
@@ -129,8 +127,12 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 							Required:            true,
 							MarkdownDescription: "The type of volume.",
 							Validators: []validator.String{
-								stringvalidator.OneOf(ServerVolumeVolumeTypeEnumValuesString(instanceV2.ServerVolumeVolumeType("").Values())...),
+								verify.ValidateEnumFramework[instanceV2.ServerVolumeVolumeType](),
 							},
+						},
+						"size_in_gb": schema.Int64Attribute{
+							Required:            true,
+							MarkdownDescription: "The size of the volume in gigabytes.",
 						},
 						"name": schema.StringAttribute{
 							Optional:            true,
@@ -142,15 +144,12 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 							ElementType:         types.StringType,
 							MarkdownDescription: "The tags associated with the volume.",
 						},
-						"size_in_gb": schema.Int64Attribute{
-							Required:            true,
-							MarkdownDescription: "The size of the volume in gigabytes.",
-						},
 						"base_snapshot_id": schema.StringAttribute{
 							Optional:            true,
 							MarkdownDescription: "The ID of the base snapshot for the volume.",
 							Validators: []validator.String{
 								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("image_label")),
+								verify.IsStringUUIDOrUUIDWithZone(),
 							},
 						},
 						"image_label": schema.StringAttribute{
@@ -171,6 +170,24 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 				Optional:            true,
 				MarkdownDescription: "The IDs of the private networks to attach to the servers created using the Instance Template.",
 				ElementType:         types.StringType,
+				Validators: []validator.Set{
+					verify.SetElemIsStringUUIDOrUUIDWithRegion(),
+				},
+			},
+			"windows_rdp_ssh_key_id": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server. This will be repeated on all servers created using the Instance Template.",
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithRegion(),
+				},
+			},
+			"filesystem_ids": schema.SetAttribute{
+				Optional:            true,
+				MarkdownDescription: "The IDs of the filesystems to attach to the servers created using the Instance Template.",
+				ElementType:         types.StringType,
+				Validators: []validator.Set{
+					verify.SetElemIsStringUUIDOrUUIDWithRegion(),
+				},
 			},
 			"created_at": schema.StringAttribute{
 				Computed:            true,
@@ -180,14 +197,14 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 				Computed:            true,
 				MarkdownDescription: "The last update timestamp of the Instance Template.",
 			},
-			"windows_rdp_ssh_key_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server. This will be repeated on all servers created using the Instance Template.",
-			},
-			"filesystem_ids": schema.SetAttribute{
-				Optional:            true,
-				MarkdownDescription: "The IDs of the filesystems to attach to the servers created using the Instance Template.",
-				ElementType:         types.StringType,
+				Computed:            true,
+				MarkdownDescription: "The project ID the Instance Template belongs to. Defaults to the provider's project ID.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"zone": schema.StringAttribute{
 				Optional:            true,
@@ -300,7 +317,7 @@ func (r *InstanceTemplateResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	state := flattenInstanceTemplate(ctx, tmpl, req, &resp.Diagnostics)
-	resp.Diagnostics.Append(resp.State.Set(ctx, new(state))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func flattenInstanceTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) any {
