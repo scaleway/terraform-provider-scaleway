@@ -19,7 +19,7 @@ func IsStringUUID() validator.String {
 	)
 }
 
-func IsStringUUIDOrUUIDWithLocality() validator.String {
+func IsStringUUIDOrUUIDWithRegion() validator.String {
 	return stringvalidator.RegexMatches(
 		regexp.MustCompile(`^([a-zA-Z]{2}-[a-zA-Z]{3}/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`),
 		"must be a valid UUID or UUID with region prefix (format: aa-aaa/<uuid>)",
