@@ -37,6 +37,22 @@ func ProjectIDsAttribute(description string) schema.ListAttribute {
 	}
 }
 
+func UUIDsAttribute(description string) schema.ListAttribute {
+	return schema.ListAttribute{
+		Description: description + " Use '*' to list all UUIDs.",
+		Optional:    true,
+		ElementType: types.StringType,
+		Validators: []validator.List{
+			listvalidator.ValueStringsAre(
+				stringvalidator.Any(
+					stringvalidator.OneOf("*"),
+					verify.IsStringUUID(),
+				),
+			),
+		},
+	}
+}
+
 func ZonesAttribute(description string) schema.ListAttribute {
 	return schema.ListAttribute{
 		Description: description + " Use '*' to list from all zones",
