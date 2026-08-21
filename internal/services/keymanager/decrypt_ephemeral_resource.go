@@ -80,7 +80,7 @@ func (r *DecryptEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Required:    true,
 				Description: "ID of the key to decrypt with. The key must have a usage set to `symmetric_encryption` or `asymmetric_encryption`. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"ciphertext": schema.StringAttribute{
