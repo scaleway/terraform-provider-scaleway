@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -93,4 +94,10 @@ func (v errorToWarningValidator) ValidateString(ctx context.Context, req validat
 			resp.Diagnostics = append(resp.Diagnostics, d)
 		}
 	}
+}
+
+// Validators for schema.SetAttribute{}
+
+func SetElemIsStringUUIDOrUUIDWithRegion() validator.Set {
+	return setvalidator.ValueStringsAre(IsStringUUIDOrUUIDWithRegion())
 }

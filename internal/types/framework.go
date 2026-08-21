@@ -124,6 +124,37 @@ func FlattenIDSet(ctx context.Context, attribute string, rawIDs []string, locali
 // Reference Checking
 ////
 
+// IDUsesZonedFormat checks if an ID attribute is in its raw or zoned form in the reference (state or config).
+func IDUsesZonedFormat(ctx context.Context, reference any, attributePath path.Path, diags *diag.Diagnostics) bool {
+	var refValue basetypes.StringValue
+
+	switch req := reference.(type) {
+	case resource.CreateRequest:
+		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	case resource.ReadRequest:
+		d := req.State.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	case resource.UpdateRequest:
+		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	default:
+		return false
+	}
+
+	if diags.HasError() {
+		return false
+	}
+
+	if refValue.IsNull() {
+		// If the value in the reference is null, we assume that we are in an Import context (no state/config)
+		return true
+	}
+
+	return zonal.ExpandID(refValue.ValueString()).Zone != ""
+}
+
+// SetIsNullInReference checks if a Set attribute is null (return true) or empty (return false).
 func SetIsNullInReference(ctx context.Context, attribute string, reference any) bool {
 	var (
 		diags  diag.Diagnostics
@@ -150,6 +181,7 @@ func SetIsNullInReference(ctx context.Context, attribute string, reference any) 
 	return false
 }
 
+// IDUsesLocalizedFormatInSet checks if an ID contained in a Set attribute is in its raw or zoned form in the reference (state or config).
 func IDUsesLocalizedFormatInSet(ctx context.Context, reference any, attribute, idToFind string) (bool, diag.Diagnostics) {
 	var (
 		diags  diag.Diagnostics
@@ -192,33 +224,4 @@ func IDUsesLocalizedFormatInSet(ctx context.Context, reference any, attribute, i
 		fmt.Sprintf("failed to read %q", attribute),
 		fmt.Sprintf("API response contains ID %q that cannot be found in the config", idToFind),
 	)}
-}
-
-func IDUsesZonedFormat(ctx context.Context, reference any, attributePath path.Path, diags *diag.Diagnostics) bool {
-	var refValue basetypes.StringValue
-
-	switch req := reference.(type) {
-	case resource.CreateRequest:
-		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
-		diags.Append(d...)
-	case resource.ReadRequest:
-		d := req.State.GetAttribute(ctx, attributePath, &refValue)
-		diags.Append(d...)
-	case resource.UpdateRequest:
-		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
-		diags.Append(d...)
-	default:
-		return false
-	}
-
-	if diags.HasError() {
-		return false
-	}
-
-	if refValue.IsNull() {
-		// If the value in the reference is null, we assume that we are in an Import context (no state/config)
-		return true
-	}
-
-	return zonal.ExpandID(refValue.ValueString()).Zone != ""
 }

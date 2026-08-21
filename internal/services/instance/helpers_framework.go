@@ -14,15 +14,6 @@ import (
 	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
-func ServerVolumeVolumeTypeEnumValuesString(enumValues []instanceV2.ServerVolumeVolumeType) []string {
-	strValues := make([]string, 0, len(enumValues))
-	for _, value := range enumValues {
-		strValues = append(strValues, value.String())
-	}
-
-	return strValues
-}
-
 type privateNetworkSpecs struct {
 	privateNetworkIDs []string
 }
@@ -31,10 +22,10 @@ func expandPrivateNetworks(ctx context.Context, networks types.Set, d *diag.Diag
 	rawIDsList := scwtypes.ExpandRawIDSet(ctx, networks, "private_networks", d)
 
 	pnIDs := make([]string, 0, len(rawIDsList))
-	_ = append(pnIDs, rawIDsList...)
+	pnIDs = append(pnIDs, rawIDsList...)
 
 	return privateNetworkSpecs{
-		privateNetworkIDs: rawIDsList,
+		privateNetworkIDs: pnIDs,
 	}
 }
 
