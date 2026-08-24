@@ -24,21 +24,21 @@ import (
 )
 
 var (
-	_ resource.Resource                = (*InstanceTemplateResource)(nil)
-	_ resource.ResourceWithConfigure   = (*InstanceTemplateResource)(nil)
-	_ resource.ResourceWithImportState = (*InstanceTemplateResource)(nil)
+	_ resource.Resource                = (*TemplateResource)(nil)
+	_ resource.ResourceWithConfigure   = (*TemplateResource)(nil)
+	_ resource.ResourceWithImportState = (*TemplateResource)(nil)
 )
 
-func NewInstanceTemplateResource() resource.Resource {
-	return &InstanceTemplateResource{}
+func NewTemplateResource() resource.Resource {
+	return &TemplateResource{}
 }
 
-type InstanceTemplateResource struct {
+type TemplateResource struct {
 	api  *instanceV2.API
 	meta *meta.Meta
 }
 
-type instanceTemplateResourceModel struct {
+type templateResourceModel struct {
 	Volumes            types.List   `tfsdk:"volumes"`
 	FilesystemIDs      types.Set    `tfsdk:"filesystem_ids"`
 	PrivateNetworks    types.Set    `tfsdk:"private_networks"`
@@ -58,11 +58,11 @@ type instanceTemplateResourceModel struct {
 	PublicIPV6Count    types.Int32  `tfsdk:"public_ipv6_count"`
 }
 
-func (r *InstanceTemplateResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *TemplateResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_instance_template"
 }
 
-func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Scaleway Instance Template.",
 		Attributes: map[string]schema.Attribute{
@@ -219,7 +219,7 @@ func (r *InstanceTemplateResource) Schema(_ context.Context, _ resource.SchemaRe
 	}
 }
 
-func (r *InstanceTemplateResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *TemplateResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -238,8 +238,8 @@ func (r *InstanceTemplateResource) Configure(_ context.Context, req resource.Con
 	r.api = instanceV2.NewAPI(r.meta.ScwClient())
 }
 
-func (r *InstanceTemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data instanceTemplateResourceModel
+func (r *TemplateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data templateResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
 	if resp.Diagnostics.HasError() {
@@ -316,12 +316,12 @@ func (r *InstanceTemplateResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	state := flattenInstanceTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	state := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func flattenInstanceTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) any {
-	model := instanceTemplateResourceModel{
+func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference any, diags *diag.Diagnostics) any {
+	model := templateResourceModel{
 		ProjectID:       types.StringValue(tmpl.ProjectID),
 		ID:              types.StringValue(zonal.NewIDString(tmpl.Zone, tmpl.ID)),
 		Name:            types.StringValue(tmpl.Name),
@@ -406,8 +406,8 @@ func flattenInstanceTemplate(ctx context.Context, tmpl *instanceV2.Template, ref
 	return model
 }
 
-func (r *InstanceTemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state instanceTemplateResourceModel
+func (r *TemplateResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state templateResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
@@ -437,14 +437,14 @@ func (r *InstanceTemplateResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	newState := flattenInstanceTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, new(newState))...)
 }
 
-func (r *InstanceTemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var (
-		plan  instanceTemplateResourceModel
-		state instanceTemplateResourceModel
+		plan  templateResourceModel
+		state templateResourceModel
 	)
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -560,12 +560,12 @@ func (r *InstanceTemplateResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	newState := flattenInstanceTemplate(ctx, tmpl, req, &resp.Diagnostics)
+	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, new(newState))...)
 }
 
-func (r *InstanceTemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state instanceTemplateResourceModel
+func (r *TemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state templateResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
@@ -594,7 +594,7 @@ func (r *InstanceTemplateResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-func (r *InstanceTemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *TemplateResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	zone, id, err := zonal.ParseID(req.ID)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse import ID", "Expected format: {zone}/{id}. "+err.Error())
