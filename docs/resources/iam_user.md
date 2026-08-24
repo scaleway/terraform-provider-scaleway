@@ -121,6 +121,7 @@ In addition to all arguments above, the following attributes are exported:
 - `mfa` - Whether the MFA is enabled.
 - `account_root_user_id` - The ID of the account root user associated with the user.
 - `locked` - Whether the user is locked.
+- `srn` - The Scaleway Resource Name (SRN) of the user.
 
 ## Import
 

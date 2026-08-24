@@ -150,6 +150,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the policy.
 - `updated_at` - The date and time of the last update of the policy.
 - `editable` - Whether the policy is editable.
+- `srn` - The Scaleway Resource Name (SRN) of the policy.
 
 ## Import
 
