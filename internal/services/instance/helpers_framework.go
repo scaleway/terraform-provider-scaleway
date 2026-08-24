@@ -118,39 +118,40 @@ func expandVolumes(ctx context.Context, volumes types.List, diags *diag.Diagnost
 
 	for _, volObj := range volumeObjects {
 		vol := volumeSpecs{}
+		volObjAttributes := volObj.Attributes()
 
-		volumeType := volObj.Attributes()["volume_type"].(types.String)
+		volumeType := volObjAttributes["volume_type"].(types.String)
 		if !volumeType.IsNull() && !volumeType.IsUnknown() {
 			vol.VolumeType = instanceV2.CreateServerRequestServerVolumeVolumeType(volumeType.ValueString())
 		}
 
-		name := volObj.Attributes()["name"].(types.String)
+		name := volObjAttributes["name"].(types.String)
 		if !name.IsNull() && !name.IsUnknown() {
 			vol.Name = name.ValueString()
 		}
 
-		tags := volObj.Attributes()["tags"].(types.List)
+		tags := volObjAttributes["tags"].(types.List)
 		if !tags.IsNull() && !tags.IsUnknown() {
 			vol.Tags = scwtypes.ExpandStringList(ctx, tags, diags)
 		}
 
-		size := volObj.Attributes()["size_in_gb"].(types.Int64)
+		size := volObjAttributes["size_in_gb"].(types.Int64)
 		if !size.IsNull() && !size.IsUnknown() {
 			sizeVal := scw.Size(size.ValueInt64()) * scw.GB
 			vol.Size = &sizeVal
 		}
 
-		baseSnapshotID := volObj.Attributes()["base_snapshot_id"].(types.String)
+		baseSnapshotID := volObjAttributes["base_snapshot_id"].(types.String)
 		if !baseSnapshotID.IsNull() && !baseSnapshotID.IsUnknown() {
 			vol.BaseSnapshotID = scwtypes.ExpandRawID(baseSnapshotID, "base_snapshot_id", diags)
 		}
 
-		imageLabel := volObj.Attributes()["image_label"].(types.String)
+		imageLabel := volObjAttributes["image_label"].(types.String)
 		if !imageLabel.IsNull() && !imageLabel.IsUnknown() {
 			vol.ImageLabel = new(imageLabel.ValueString())
 		}
 
-		perfIops := volObj.Attributes()["perf_iops"].(types.Int32)
+		perfIops := volObjAttributes["perf_iops"].(types.Int32)
 		if !perfIops.IsNull() && !perfIops.IsUnknown() {
 			perfIopsVal := uint32(perfIops.ValueInt32())
 			vol.PerfIops = &perfIopsVal
