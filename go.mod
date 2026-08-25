@@ -1,6 +1,6 @@
 module github.com/scaleway/terraform-provider-scaleway/v2
 
-go 1.26.0
+go 1.27.0
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
@@ -13,7 +13,6 @@ require (
 	github.com/aws/smithy-go v1.27.7
 	github.com/dustin/go-humanize v1.0.1
 	github.com/google/go-cmp v0.7.0
-	github.com/google/uuid v1.6.0
 	github.com/hashicorp/aws-sdk-go-base v1.1.0
 	github.com/hashicorp/aws-sdk-go-base/v2 v2.0.0-beta.74
 	github.com/hashicorp/awspolicyequivalence v1.7.0
@@ -93,6 +92,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gookit/color v1.5.1 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
