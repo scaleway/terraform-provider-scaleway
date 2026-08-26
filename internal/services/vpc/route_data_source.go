@@ -138,5 +138,18 @@ func dataSourceRouteReadByFilters(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(routeRegionalID)
 	_ = d.Set("route_id", routeRegionalID)
 
-	return setRouteState(d, route.Route)
+	vpcAPI, _, err := vpcAPIWithRegion(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	fullRoute, err := vpcAPI.GetRoute(&vpc.GetRouteRequest{
+		Region:  region,
+		RouteID: route.Route.ID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setRouteState(d, fullRoute)
 }
