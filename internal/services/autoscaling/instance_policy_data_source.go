@@ -5,10 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -27,56 +24,16 @@ func DataSourceInstancePolicy() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		ReadContext: DataSourceInstancePolicyRead,
-		Schema:      dsSchema,
+		ReadContext:        DataSourceInstancePolicyRead,
+		Schema:             dsSchema,
+		DeprecationMessage: deprecationMessage,
 	}
 }
 
-func DataSourceInstancePolicyRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := NewAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	policyID, ok := d.GetOk("instance_policy_id")
-	if !ok {
-		policyName := d.Get("name").(string)
-
-		instanceGroupIDRaw, instanceGroupIDOk := d.GetOk("instance_group_id")
-		if !instanceGroupIDOk {
-			return diag.Errorf("instance_group_id is required when looking up instance policy by name")
-		}
-
-		res, err := api.ListInstancePolicies(&autoscaling.ListInstancePoliciesRequest{
-			Zone:            zone,
-			InstanceGroupID: locality.ExpandID(instanceGroupIDRaw.(string)),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		foundPolicy, err := datasource.FindExact(
-			res.Policies,
-			func(p *autoscaling.InstancePolicy) bool { return p.Name == policyName },
-			policyName,
-		)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		policyID = foundPolicy.ID
-	}
-
-	zonedID := datasource.NewZonedID(policyID, zone)
-	d.SetId(zonedID)
-
-	policy, err := api.GetInstancePolicy(&autoscaling.GetInstancePolicyRequest{
-		Zone:     zone,
-		PolicyID: locality.ExpandID(policyID),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setInstancePolicyState(d, policy)
+func DataSourceInstancePolicyRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_autoscaling_instance_policy data source is no longer supported",
+		Detail:   deprecationMessage,
+	}}
 }

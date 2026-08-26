@@ -5,10 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -27,52 +24,16 @@ func DataSourceInstanceGroup() *schema.Resource {
 	}
 
 	return &schema.Resource{
-		ReadContext: DataSourceInstanceGroupRead,
-		Schema:      dsSchema,
+		ReadContext:        DataSourceInstanceGroupRead,
+		Schema:             dsSchema,
+		DeprecationMessage: deprecationMessage,
 	}
 }
 
-func DataSourceInstanceGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := NewAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	instanceGroupID, ok := d.GetOk("instance_group_id")
-	if !ok {
-		instanceGroupName := d.Get("name").(string)
-
-		res, err := api.ListInstanceGroups(&autoscaling.ListInstanceGroupsRequest{
-			Zone: zone,
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		foundGroup, err := datasource.FindExact(
-			res.InstanceGroups,
-			func(g *autoscaling.InstanceGroup) bool {
-				return g.Name == instanceGroupName
-			},
-			instanceGroupName,
-		)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		instanceGroupID = foundGroup.ID
-	}
-
-	zonedID := datasource.NewZonedID(instanceGroupID, zone)
-	d.SetId(zonedID)
-
-	group, err := api.GetInstanceGroup(&autoscaling.GetInstanceGroupRequest{
-		Zone:            zone,
-		InstanceGroupID: locality.ExpandID(instanceGroupID),
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return setInstanceGroupState(d, group)
+func DataSourceInstanceGroupRead(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_autoscaling_instance_group data source is no longer supported",
+		Detail:   deprecationMessage,
+	}}
 }
