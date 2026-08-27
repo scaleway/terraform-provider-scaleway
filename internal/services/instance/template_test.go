@@ -8,11 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	blocktestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block/testfuncs"
 	filetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file/testfuncs"
 	iamchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
+	instancetestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 	vpctestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
@@ -29,7 +29,7 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isTemplateDestroyed(tt),
+		CheckDestroy:             instancetestfuncs.IsTemplateDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -121,7 +121,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			blocktestfuncs.IsSnapshotDestroyed(tt),
 			blocktestfuncs.IsVolumeDestroyed(tt),
 		),
@@ -272,7 +272,7 @@ func TestAccInstanceTemplateResource_SecurityGroupID(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			isSecurityGroupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -395,7 +395,7 @@ func TestAccInstanceTemplateResource_PlacementGroupID(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			isPlacementGroupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
@@ -514,7 +514,7 @@ func TestAccInstanceTemplateResource_WindowsRdpSshKeyID(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			iamchecks.CheckSSHKeyDestroy(tt),
 		),
 		Steps: []resource.TestStep{
@@ -589,7 +589,7 @@ func TestAccInstanceTemplateResource_PrivateNetworks(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			vpctestfuncs.CheckPrivateNetworkDestroy(tt),
 			vpctestfuncs.CheckVPCDestroy(tt),
 		),
@@ -735,7 +735,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isTemplateDestroyed(tt),
+			instancetestfuncs.IsTemplateDestroyed(tt),
 			filetestfuncs.CheckFileDestroy(tt),
 		),
 		Steps: []resource.TestStep{
@@ -857,39 +857,6 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 			},
 		},
 	})
-}
-
-func isTemplateDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
-	return func(state *terraform.State) error {
-		for _, rs := range state.RootModule().Resources {
-			if rs.Type != "scaleway_instance_template" {
-				continue
-			}
-
-			api := instanceV2.NewAPI(tt.Meta.ScwClient())
-
-			zone, id, err := zonal.ParseID(rs.Primary.ID)
-			if err != nil {
-				return err
-			}
-
-			_, err = api.GetTemplate(&instanceV2.GetTemplateRequest{
-				Zone:       zone,
-				TemplateID: id,
-			})
-			if err != nil {
-				if httperrors.Is404(err) {
-					continue
-				}
-
-				return err
-			}
-
-			return fmt.Errorf("template (%s) still exists", rs.Primary.ID)
-		}
-
-		return nil
-	}
 }
 
 func isTemplatePresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
