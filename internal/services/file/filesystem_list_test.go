@@ -5,7 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	identitycheck "github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest/identity"
 	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
 )
 
@@ -16,6 +18,10 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	identity1 := identitycheck.Identity()
+	identity2 := identitycheck.Identity()
+	identity3 := identitycheck.Identity()
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -62,6 +68,11 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					size_in_gb = 300
 					tags = ["bar"]
 				}`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity1.GetIdentity("scaleway_file_filesystem.fs1"),
+					identity2.GetIdentity("scaleway_file_filesystem.fs2"),
+					identity3.GetIdentity("scaleway_file_filesystem.fs3"),
+				},
 			},
 			{
 				Query: true,
@@ -86,6 +97,12 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  }
 					}`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_name_all", identity1.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_name_all", identity2.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_name_all", identity3.Checks()),
+
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_name_01", identity1.Checks()),
+
 					querycheck.ExpectLength("list.scaleway_file_filesystem.by_name_all", 3),
 					querycheck.ExpectLength("list.scaleway_file_filesystem.by_name_01", 1),
 				},
@@ -137,6 +154,12 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					querycheck.ExpectLength("list.scaleway_file_filesystem.by_tags_bar", 2),
 					querycheck.ExpectLength("list.scaleway_file_filesystem.by_tags_foobar", 0),
 					querycheck.ExpectLength("list.scaleway_file_filesystem.by_tags_foo_and_bar", 3),
+
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_tags_foo", identity1.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_tags_bar", identity3.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_tags_foo_and_bar", identity1.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_tags_foo_and_bar", identity2.Checks()),
+					identitycheck.ExpectIdentityFunc("scaleway_file_filesystem.by_tags_foo_and_bar", identity3.Checks()),
 				},
 			},
 		},

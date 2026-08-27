@@ -9,6 +9,8 @@ description: |-
 
 
 
+Lists Scaleway File File Systems.
+
 For more information, see [the main documentation][1].
 
 

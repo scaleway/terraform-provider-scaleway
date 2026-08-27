@@ -17,6 +17,12 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
+var (
+	_ list.ListResource                 = (*FileSystemListResource)(nil)
+	_ list.ListResourceWithConfigure    = (*FileSystemListResource)(nil)
+	_ list.ListResourceWithRawV6Schemas = (*FileSystemListResource)(nil)
+)
+
 type FileSystemListResource struct {
 	meta    *meta.Meta
 	fileAPI *file.API
