@@ -20,20 +20,28 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
+	// We should find a more appropriate solution in the future.
+	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isTemplateDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_template" "main" {
+						project_id = %q
 						tags = [ "terraform-test", "scaleway_instance_template", "basic" ]
 
 						server_type = "PRO2-M"
 						server_tags = [ "from-template" ]
 						public_ipv4_count = 1
 						public_ipv6_count = 3
-					}`,
+					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
@@ -64,13 +72,14 @@ func TestAccInstanceTemplateResource_Basic(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_template" "main" {
+						project_id = %q
 						name = "tf-test-acc-instance-tmpl-basic"
 						tags = [ "scaleway_instance_template", "basic-step2" ]
 
 						server_type = "POP2-HM-16C-128G"
-					}`,
+					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
@@ -102,6 +111,13 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 
 	templateID := ""
 
+	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
+	// We should find a more appropriate solution in the future.
+	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -111,8 +127,9 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_instance_template" "main" {
+						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -124,7 +141,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb  = 20
 							tags        = [ "local", "volume" ]
 						}]
-					}`,
+					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-2"),
@@ -143,7 +160,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -155,6 +172,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "GP1-L"
@@ -172,7 +190,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							size_in_gb       = 30
 							perf_iops        = 15000
 						}]
-					}`,
+					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					blocktestfuncs.IsSnapshotPresent(tt, "scaleway_block_snapshot.snap"),
@@ -194,7 +212,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_block_volume" "sbs" {
 						size_in_gb = 15
 						iops       = 5000
@@ -206,6 +224,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = %q
 						name        = "tf-test-acc-instance-tmpl-volumes"
 						tags        = [ "terraform-test", "scaleway_instance_template", "volumes" ]
 						server_type = "L40S-1-48G"
@@ -220,7 +239,7 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 							volume_type = "scratch"
 							size_in_gb  = 300
 						}]
-					}`,
+					}`, projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "L40S-1-48G"),
@@ -267,6 +286,7 @@ func TestAccInstanceTemplateResource_AdditionalResources(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_security_group.sg.project_id
 						name        = "tf-test-acc-instance-tmpl-security-group"
 						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
 						zone        = "nl-ams-3"
@@ -296,6 +316,7 @@ func TestAccInstanceTemplateResource_AdditionalResources(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_placement_group.pg.project_id
 						name        = "tf-test-acc-instance-tmpl-placement-group"
 						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
 						zone        = "pl-waw-2"
@@ -325,6 +346,7 @@ func TestAccInstanceTemplateResource_AdditionalResources(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_placement_group.pg.project_id
 						name        = "tf-test-acc-instance-tmpl-admin-ssh-key"
 						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
 						zone        = "fr-par-1"
@@ -386,6 +408,7 @@ func TestAccInstanceTemplateResource_PrivateNetworks(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_vpc_private_network.pn0.project_id
 						name        = "tf-test-acc-instance-tmpl-private-networks"
 						tags        = [ "terraform-test", "scaleway_instance_template", "private-networks" ]
 						zone        =  "nl-ams-1"
@@ -428,6 +451,7 @@ func TestAccInstanceTemplateResource_PrivateNetworks(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_vpc_private_network.pn0.project_id
 						name        = "tf-test-acc-instance-tmpl-private-networks"
 						tags        = [ "terraform-test", "scaleway_instance_template", "private-networks" ]
 						zone        =  "nl-ams-1"
@@ -473,6 +497,7 @@ func TestAccInstanceTemplateResource_PrivateNetworks(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_vpc_private_network.pn0.project_id
 						name        = "tf-test-acc-instance-tmpl-private-networks"
 						tags        = [ "terraform-test", "scaleway_instance_template", "private-networks" ]
 						zone        =  "nl-ams-1"
@@ -521,6 +546,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id        = scaleway_file_filesystem.fs0.project_id
 						name              = "tf-test-acc-instance-tmpl-filesystems"
 						tags              = [ "terraform-test", "scaleway_instance_template", "filesystems" ]
 						server_type       = "POP2-8C-32G"
@@ -564,6 +590,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_file_filesystem.fs0.project_id
 						name        = "tf-test-acc-instance-tmpl-filesystems"
 						tags        = [ "terraform-test", "scaleway_instance_template", "filesystems" ]
 						server_type = "POP2-8C-32G"
@@ -600,6 +627,7 @@ func TestAccInstanceTemplateResource_Filesystems(t *testing.T) {
 					}
 
 					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_file_filesystem.fs0.project_id
 						name        = "tf-test-acc-instance-tmpl-filesystems"
 						tags        = [ "terraform-test", "scaleway_instance_template", "filesystems" ]
 						server_type = "POP2-8C-32G"
