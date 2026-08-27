@@ -9,7 +9,7 @@ Gets information about a baremetal offer. For more information, see the [API doc
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by offer name
 data "scaleway_baremetal_offer" "my_offer" {
   zone = "fr-par-2"

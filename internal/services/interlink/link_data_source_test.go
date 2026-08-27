@@ -18,7 +18,7 @@ func TestAccDataSourceInterlinkLink_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_interlink_pop" "pop" {
-						name   = "Telehouse TH2"
+						name   = "TeleHouse TH2"
 						region = "fr-par"
 					}
 
@@ -39,7 +39,7 @@ func TestAccDataSourceInterlinkLink_Basic(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_interlink_pop" "pop" {
-						name   = "Telehouse TH2"
+						name   = "TeleHouse TH2"
 						region = "fr-par"
 					}
 

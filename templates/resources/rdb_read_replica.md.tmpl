@@ -25,7 +25,7 @@ resource "scaleway_rdb_instance" "instance" {
   tags           = ["terraform-test", "scaleway_rdb_read_replica", "minimal"]
 }
 
-resource scaleway_rdb_read_replica "replica" {
+resource "scaleway_rdb_read_replica" "replica" {
   instance_id = scaleway_rdb_instance.instance.id
   direct_access {}
 }

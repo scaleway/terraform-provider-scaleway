@@ -33,6 +33,7 @@ data "scaleway_iam_saml_certificate" "main" {
 - `content` (String) The content of the SAML certificate
 - `expires_at` (String) The expiration date and time of the SAML certificate
 - `origin` (String) The origin of the SAML certificate. Possible values are: `scaleway`, `identity_provider`.
+- `srn` (String) The Scaleway Resource Name (SRN) of the SAML certificate
 - `type` (String) The type of the SAML certificate. Possible values are: `signing`, `encryption`.
 
 

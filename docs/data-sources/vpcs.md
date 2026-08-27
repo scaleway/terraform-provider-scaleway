@@ -9,7 +9,7 @@ Gets information about multiple Virtual Private Clouds.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find VPCs that share the same tags
 data "scaleway_vpcs" "my_key" {
   tags = ["tag"]

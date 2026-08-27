@@ -27,7 +27,7 @@ resource "scaleway_s2s_vpn_customer_gateway" "customer_gw" {
 
 ```terraform
 resource "scaleway_s2s_vpn_customer_gateway" "customer_gw" {
-  name       = "my-customer-gateway"
+  name        = "my-customer-gateway"
   ipv4_public = "203.0.113.1"
   ipv6_public = "2001:db8::1"
   asn         = 65000
@@ -40,16 +40,16 @@ resource "scaleway_s2s_vpn_customer_gateway" "customer_gw" {
 resource "scaleway_instance_ip" "vpn_endpoint_ip" {}
 
 resource "scaleway_instance_server" "vpn_endpoint" {
-  name  = "vpn-endpoint"
-  type  = "DEV1-S"
-  image = "ubuntu_jammy"
+  name   = "vpn-endpoint"
+  type   = "DEV1-S"
+  image  = "ubuntu_jammy"
   ip_ids = [scaleway_instance_ip.vpn_endpoint_ip.id]
 }
 
 resource "scaleway_s2s_vpn_customer_gateway" "customer_gw" {
-  name       = "my-customer-gateway"
+  name        = "my-customer-gateway"
   ipv4_public = scaleway_instance_ip.vpn_endpoint_ip.address
-  asn        = 65000
+  asn         = 65000
 }
 ```
 
@@ -73,6 +73,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the customer gateway (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the customer gateway (RFC 3339 format).
 - `organization_id` - The Organization ID the customer gateway is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the customer gateway.
 
 ~> **Important:** Customer Gateways' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

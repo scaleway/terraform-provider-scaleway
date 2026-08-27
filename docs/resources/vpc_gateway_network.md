@@ -116,6 +116,7 @@ In addition to all arguments above, the following attributes are exported:
 - `private_ip` - The private IPv4 address associated with the resource.
     - `id` - The ID of the IPv4 address resource.
     - `address` - The private IPv4 address.
+- `srn` - The Scaleway Resource Name (SRN) of the gateway network.
 
 ## Import
 

@@ -20,8 +20,8 @@ About cloud-init documentation please check [the official documentation](https:/
 ### Basic
 
 ```terraform
-variable user_data {
-  type = map
+variable "user_data" {
+  type = map(any)
   default = {
     "cloud-init" = <<-EOF
     #cloud-config

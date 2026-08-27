@@ -73,3 +73,21 @@ indent = 4  # Unordered list indentation
 # [MD044]
 # names = ["rumdl", "Markdown", "GitHub"]  # Proper names that should be capitalized correctly
 # code-blocks = false  # Check code blocks for proper names (default: false, skips code blocks)
+
+[code-block-tools]
+enabled = true
+on-missing-language-definition = "fail"
+normalize-language = "linguist"
+
+[code-block-tools.languages]
+shell = { enabled = false }
+terraform = { format = ["terraform_fmt"], lint = ["true"] }
+ini = { enabled = false }
+text = { enabled = false }
+json = { lint = ["jq"], format = ["jq"] }
+yaml = { format = ["yamlfmt"], lint = ["yamllint"] }
+
+[code-block-tools.tools.terraform_fmt]
+command = ["terraform", "fmt", "-"]
+stdin = true
+stdout = true

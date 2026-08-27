@@ -14,13 +14,13 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 
 resource "scaleway_datawarehouse_user" "main" {
@@ -34,13 +34,13 @@ resource "scaleway_datawarehouse_user" "main" {
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 
 resource "scaleway_datawarehouse_user" "admin" {
@@ -66,6 +66,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the user (format: `{region}/{deployment_id}/{name}`).
+- `srn` - The Scaleway Resource Name (SRN) of the user.
 
 ## Import
 

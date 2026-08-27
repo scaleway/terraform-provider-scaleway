@@ -2,6 +2,7 @@ package s2svpn_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -38,6 +39,7 @@ func TestAccRoutingPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_routing_policy.main", "prefix_filter_out.#", "1"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_routing_policy.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_routing_policy.main", "updated_at"),
+					resource.TestMatchResourceAttr("scaleway_s2s_vpn_routing_policy.main", "srn", regexp.MustCompile(`^srn://s2s-vpn\..+/regions/.+/routing-policies/.+$`)),
 				),
 			},
 			{

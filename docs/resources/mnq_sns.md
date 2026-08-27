@@ -16,7 +16,7 @@ our [main documentation](https://www.scaleway.com/en/docs/messaging/reference-co
 Activate SNS in the default Project
 
 ```terraform
-resource scaleway_mnq_sns "main" {}
+resource "scaleway_mnq_sns" "main" {}
 ```
 
 Activate SNS in a specific Project
@@ -27,7 +27,7 @@ data "scaleway_account_project" "project" {
 }
 
 // For specific Project in default region
-resource scaleway_mnq_sns "for_project" {
+resource "scaleway_mnq_sns" "for_project" {
   project_id = data.scaleway_account_project.project.id
 }
 ```

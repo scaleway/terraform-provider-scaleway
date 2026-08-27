@@ -95,6 +95,11 @@ func ipSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the Flexible IP (Format ISO 8601)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the flexible IP",
+		},
 	}
 }
 
@@ -177,6 +182,7 @@ func setFlexibleIPState(d *schema.ResourceData, flexibleIP *flexibleip.FlexibleI
 	_ = d.Set("updated_at", types.FlattenTime(flexibleIP.UpdatedAt))
 	_ = d.Set("tags", flexibleIP.Tags)
 	_ = d.Set("status", flexibleIP.Status.String())
+	_ = d.Set("srn", flexibleIP.Srn)
 
 	if flexibleIP.ServerID != nil {
 		_ = d.Set("server_id", zonal.NewIDString(zone, *flexibleIP.ServerID))

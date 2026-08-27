@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find routes that share the same frontend ID
 data "scaleway_lb_routes" "by_frontendID" {
   frontend_id = scaleway_lb_frontend.frt01.id

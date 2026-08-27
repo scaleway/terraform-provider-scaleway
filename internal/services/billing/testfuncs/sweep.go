@@ -2,7 +2,6 @@ package billingtestfuncs
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	billingSDK "github.com/scaleway/scaleway-sdk-go/api/billing/v2"
@@ -41,7 +40,9 @@ func testSweepBillingBudget(_ string) error {
 			OrganizationID: &orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list budgets: %w", err)
+			logging.L.Warningf("failed to list budgets: %s", err)
+
+			return nil
 		}
 
 		for _, budget := range listBudgets.Budgets {
@@ -49,7 +50,7 @@ func testSweepBillingBudget(_ string) error {
 				BudgetID: budget.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("failed to delete budget: %w", err)
+				logging.L.Warningf("failed to delete budget: %s", err)
 			}
 		}
 
@@ -72,7 +73,9 @@ func testSweepBillingBudgetAlert(_ string) error {
 			OrganizationID: &orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list budgets: %w", err)
+			logging.L.Warningf("failed to list budgets: %s", err)
+
+			return nil
 		}
 
 		for _, budget := range listBudgets.Budgets {
@@ -81,7 +84,7 @@ func testSweepBillingBudgetAlert(_ string) error {
 					BudgetAlertID: alert.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("failed to delete budget alert: %w", err)
+					logging.L.Warningf("failed to delete budget alert: %s", err)
 				}
 			}
 		}
@@ -105,7 +108,9 @@ func testSweepBillingBudgetAlertNotification(_ string) error {
 			OrganizationID: &orgID,
 		})
 		if err != nil {
-			return fmt.Errorf("failed to list budgets: %w", err)
+			logging.L.Warningf("failed to list budgets: %s", err)
+
+			return nil
 		}
 
 		for _, budget := range listBudgets.Budgets {
@@ -115,7 +120,7 @@ func testSweepBillingBudgetAlertNotification(_ string) error {
 						BudgetAlertNotificationID: notification.ID,
 					})
 					if err != nil {
-						return fmt.Errorf("failed to delete budget alert notification: %w", err)
+						logging.L.Warningf("failed to delete budget alert notification: %s", err)
 					}
 				}
 			}

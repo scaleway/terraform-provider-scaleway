@@ -15,13 +15,13 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 
 resource "scaleway_datawarehouse_database" "main" {
@@ -44,6 +44,7 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the database (format: `{region}/{deployment_id}/{name}`).
 - `size` - Size of the database in GB.
+- `srn` - The Scaleway Resource Name (SRN) of the database.
 
 ## Import
 

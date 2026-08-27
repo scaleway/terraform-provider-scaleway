@@ -858,6 +858,12 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 							value = "value2"
 							effect = "NoExecute"
 						}
+
+						startup_taints {
+							key = "startup-key1"
+							value = "startup-value1"
+							effect = "NoSchedule"
+						}
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckK8SClusterExists(tt, "scaleway_k8s_cluster.main"),
@@ -877,7 +883,12 @@ func TestAccPool_TaintsAndLabels(t *testing.T) {
 						"value":  "value2",
 						"effect": "NoExecute",
 					}),
-					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_k8s_pool.main", "startup_taints.#", "1"),
+					resource.TestCheckTypeSetElemNestedAttrs("scaleway_k8s_pool.main", "startup_taints.*", map[string]string{
+						"key":    "startup-key1",
+						"value":  "startup-value1",
+						"effect": "NoSchedule",
+					}),
 				),
 			},
 			{
