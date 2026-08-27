@@ -2,6 +2,7 @@ package k8s_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -57,6 +58,7 @@ func TestAccACL_Basic(t *testing.T) {
 						"scaleway_ranges": "false",
 					}),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.0.id"),
+					resource.TestMatchResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/acl-rules/.+$`)),
 				),
 			},
 			{
