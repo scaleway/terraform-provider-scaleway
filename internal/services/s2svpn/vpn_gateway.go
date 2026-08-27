@@ -73,7 +73,7 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 				Schema: map[string]*schema.Schema{
 					"ipam_ipv4_id": {
 						Type:             schema.TypeString,
-						Description:      " The ID of the IPAM IPv4 address to use as the public IP for the VPN gateway",
+						Description:      "The ID of the IPAM IPv4 address to use as the public IP for the VPN gateway",
 						Optional:         true,
 						Computed:         true,
 						ForceNew:         true,
@@ -81,7 +81,7 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 					},
 					"ipam_ipv6_id": {
 						Type:             schema.TypeString,
-						Description:      " The ID of the IPAM IPv6 address to use as the public IP for the VPN gateway",
+						Description:      "The ID of the IPAM IPv6 address to use as the public IP for the VPN gateway",
 						Optional:         true,
 						Computed:         true,
 						ForceNew:         true,
