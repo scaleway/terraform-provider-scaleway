@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
@@ -232,6 +233,24 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 		}
 	}
 
+	cert, err := r.iamAPI.GetSamlCertificate(&iam.GetSamlCertificateRequest{
+		CertificateID: certID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
+		resp.Diagnostics.AddError(
+			"Failed to retrieve SAML certificate",
+			err.Error(),
+		)
+
+		return
+	}
+
 	samlID := state.SamlID.ValueString()
 	if samlID == "" {
 		saml, err := r.iamAPI.GetOrganizationSaml(&iam.GetOrganizationSamlRequest{
@@ -239,7 +258,7 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 		}, scw.WithContext(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Failed to retrieve SAML config",
+				"Failed to retrieve SAML configuration",
 				err.Error(),
 			)
 
@@ -249,39 +268,11 @@ func (r *SamlCertificateResource) Read(ctx context.Context, req resource.ReadReq
 		samlID = saml.ID
 	}
 
-	res, err := r.iamAPI.ListSamlCertificates(&iam.ListSamlCertificatesRequest{
-		SamlID: samlID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to list SAML certificates",
-			err.Error(),
-		)
-
-		return
-	}
-
-	var foundCert *iam.SamlCertificate
-
-	for _, cert := range res.Certificates {
-		if cert.ID == certID {
-			foundCert = cert
-
-			break
-		}
-	}
-
-	if foundCert == nil {
-		resp.State.RemoveResource(ctx)
-
-		return
-	}
-
-	state = r.convertToState(foundCert, orgID, samlID)
+	state = r.convertToState(cert, orgID, samlID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(foundCert.ID))...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(cert.ID))...)
 }
 
 func (r *SamlCertificateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
