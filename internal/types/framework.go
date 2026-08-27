@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
@@ -40,8 +41,8 @@ func ExpandUpdatedStringList(ctx context.Context, list types.List, diags *diag.D
 }
 
 // FlattenStringList builds a Terraform types.List from a Go type string array.
-func FlattenStringList(ctx context.Context, items []string) (types.List, diag.Diagnostics) {
-	if len(items) == 0 {
+func FlattenStringList(ctx context.Context, attribute string, items []string, reference any) (types.List, diag.Diagnostics) {
+	if len(items) == 0 && ListIsNullInReference(ctx, attribute, reference) {
 		return types.ListNull(types.StringType), nil
 	}
 
@@ -154,6 +155,36 @@ func IDUsesZonedFormat(ctx context.Context, reference any, attributePath path.Pa
 	return zonal.ExpandID(refValue.ValueString()).Zone != ""
 }
 
+// IDUsesRegionalFormat checks if an ID attribute is in its raw or zoned form in the reference (state or config).
+func IDUsesRegionalFormat(ctx context.Context, reference any, attributePath path.Path, diags *diag.Diagnostics) bool {
+	var refValue basetypes.StringValue
+
+	switch req := reference.(type) {
+	case resource.CreateRequest:
+		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	case resource.ReadRequest:
+		d := req.State.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	case resource.UpdateRequest:
+		d := req.Config.GetAttribute(ctx, attributePath, &refValue)
+		diags.Append(d...)
+	default:
+		return false
+	}
+
+	if diags.HasError() {
+		return false
+	}
+
+	if refValue.IsNull() {
+		// If the value in the reference is null, we assume that we are in an Import context (no state/config)
+		return true
+	}
+
+	return regional.ExpandID(refValue.ValueString()).Region != ""
+}
+
 // SetIsNullInReference checks if a Set attribute is null (return true) or empty (return false).
 func SetIsNullInReference(ctx context.Context, attribute string, reference any) bool {
 	var (
@@ -224,4 +255,31 @@ func IDUsesLocalizedFormatInSet(ctx context.Context, reference any, attribute, i
 		fmt.Sprintf("failed to read %q", attribute),
 		fmt.Sprintf("API response contains ID %q that cannot be found in the config", idToFind),
 	)}
+}
+
+// ListIsNullInReference checks if a List attribute is null (return true) or empty (return false).
+func ListIsNullInReference(ctx context.Context, attribute string, reference any) bool {
+	var (
+		diags   diag.Diagnostics
+		reflist basetypes.ListValue
+	)
+
+	switch req := reference.(type) {
+	case resource.CreateRequest:
+		diags = req.Config.GetAttribute(ctx, path.Root(attribute), &reflist)
+	case resource.ReadRequest:
+		diags = req.State.GetAttribute(ctx, path.Root(attribute), &reflist)
+	case resource.UpdateRequest:
+		diags = req.Config.GetAttribute(ctx, path.Root(attribute), &reflist)
+	}
+
+	if diags.HasError() {
+		return false
+	}
+
+	if reflist.IsNull() {
+		return true
+	}
+
+	return false
 }

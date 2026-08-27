@@ -18,6 +18,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
@@ -221,6 +222,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
+		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
 	}
 }
