@@ -133,6 +133,11 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the VPN gateway",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the VPN gateway",
+		},
 		"zone":       zonal.Schema(),
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
@@ -205,6 +210,7 @@ func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway) diag
 	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(gateway.Region, gateway.IpamPrivateIPv6ID))
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(gateway.Region, gateway.PublicConfig))
+	_ = d.Set("srn", gateway.Srn)
 
 	return nil
 }
