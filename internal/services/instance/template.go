@@ -444,6 +444,7 @@ func (r *TemplateResource) Read(ctx context.Context, req resource.ReadRequest, r
 	resp.Diagnostics.Append(resp.State.Set(ctx, new(newState))...)
 }
 
+//gocyclo:ignore
 func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var (
 		plan  templateResourceModel
@@ -499,14 +500,30 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if !plan.SecurityGroupID.Equal(state.SecurityGroupID) {
-		securityGroupID := plan.SecurityGroupID.ValueString()
-		updateReq.SecurityGroupID = new(securityGroupID)
+		newSGID := scwtypes.ExpandRawID(plan.SecurityGroupID, "security_group_id", &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.SecurityGroupID = newSGID
+		if newSGID == nil && !state.SecurityGroupID.IsNull() {
+			updateReq.SecurityGroupID = new("")
+		}
+
 		hasChanges = true
 	}
 
 	if !plan.PlacementGroupID.Equal(state.PlacementGroupID) {
-		placementGroupID := plan.PlacementGroupID.ValueString()
-		updateReq.PlacementGroupID = new(placementGroupID)
+		newPGID := scwtypes.ExpandRawID(plan.PlacementGroupID, "placement_group_id", &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.PlacementGroupID = newPGID
+		if newPGID == nil && !state.PlacementGroupID.IsNull() {
+			updateReq.PlacementGroupID = new("")
+		}
+
 		hasChanges = true
 	}
 
@@ -524,6 +541,10 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 
 	if !plan.Volumes.Equal(state.Volumes) {
 		updateReq.UpdateVolumes = expandVolumes(ctx, plan.Volumes, &resp.Diagnostics).ToUpdateRequest()
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		hasChanges = true
 	}
 
@@ -537,8 +558,16 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if !plan.WindowsRdpSSHKeyID.Equal(state.WindowsRdpSSHKeyID) {
-		windowsRdpSSHKeyID := plan.WindowsRdpSSHKeyID.ValueString()
-		updateReq.WindowsRdpSSHKeyID = new(windowsRdpSSHKeyID)
+		newSSHKeyID := scwtypes.ExpandRawID(plan.WindowsRdpSSHKeyID, "windows_rdp_ssh_key_id", &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		updateReq.WindowsRdpSSHKeyID = newSSHKeyID
+		if newSSHKeyID == nil && !state.WindowsRdpSSHKeyID.IsNull() {
+			updateReq.WindowsRdpSSHKeyID = new("")
+		}
+
 		hasChanges = true
 	}
 

@@ -263,44 +263,43 @@ func TestAccInstanceTemplateResource_Volumes(t *testing.T) {
 	})
 }
 
-func TestAccInstanceTemplateResource_AdditionalResources(t *testing.T) {
+func TestAccInstanceTemplateResource_SecurityGroupID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
 	templateID := ""
-	sshKey := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFNaFderD6JUbMr6LoL7SdTaQ31gLcXwKv07Zyw0t4pq6Y8CGaeEvevS54TBR2iNJHa3hlIIUmA2qvH7Oh4v1QmMG2djWi2cD1lDEl8/8PYakaEBGh6snp3TMyhoqHOZqqKwDhPW0gJbe2vXfAgWSEzI8h1fs1D7iEkC1L/11hZjkqbUX/KduWFLyIRWdSuI3SWk4CXKRXwIkeYeSYb8AiIGY21u2z8H2J7YmhRzE85Kj/Fk4tST5gLW/IfLD4TMJjC/cZiJevETjs+XVmzTMIyU2sTQKufSQTj2qZ7RfgGwTHDoOeFvylgAdMGLZ/Un+gzeEPj9xUSPvvnbA9UPIKV4AffgtT1y5gcSWuHaqRxpUTY204mh6kq0EdVN2UsiJTgX+xnJgnOrKg6G3dkM8LSi2QtbjYbRXcuDJ9YUbUFK8M5Vo7LhMsMFb1hPtY68kbDUqD01RuMD5KhGIngCRRBZJriRQclUCJS4D3jr/Frw9ruNGh+NTIvIwdv0Y2brU= opensource@scaleway.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			isTemplateDestroyed(tt),
 			isSecurityGroupDestroyed(tt),
-			isPlacementGroupDestroyed(tt),
-			iamchecks.CheckSSHKeyDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_security_group" "sg" {
+					resource "scaleway_instance_security_group" "sg1" {
 						zone = "nl-ams-3"
+						name = "first-sg"
+						tags = [ "terraform-test", "scaleway_instance_template", "security_group1" ]
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_instance_security_group.sg.project_id
+						project_id  = scaleway_instance_security_group.sg1.project_id
 						name        = "tf-test-acc-instance-tmpl-security-group"
-						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
+						tags        = [ "terraform-test", "scaleway_instance_template", "security_group" ]
 						zone        = "nl-ams-3"
 						server_type = "PRO2-M"
 
-						security_group_id = scaleway_instance_security_group.sg.id
+						security_group_id = scaleway_instance_security_group.sg1.id
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
-					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "name", "tf-test-acc-instance-tmpl-security-group"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg1"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "nl-ams-3"),
 					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PRO2-M"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "security_group_id", "scaleway_instance_security_group.sg", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "security_group_id", "scaleway_instance_security_group.sg1", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "project_id"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
 				),
 			},
@@ -311,63 +310,273 @@ func TestAccInstanceTemplateResource_AdditionalResources(t *testing.T) {
 			},
 			{
 				Config: `
-					resource "scaleway_instance_placement_group" "pg" {
-						zone = "pl-waw-2"
+					resource "scaleway_instance_security_group" "sg1" {
+						zone = "nl-ams-3"
+						name = "first-sg"
+						tags = [ "terraform-test", "scaleway_instance_template", "security_group1" ]
+					}
+
+					resource "scaleway_instance_security_group" "sg2" {
+						zone = "nl-ams-3"
+						name = "second-sg"
+						tags = [ "terraform-test", "scaleway_instance_template", "security_group2" ]
 					}
 
 					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_instance_placement_group.pg.project_id
-						name        = "tf-test-acc-instance-tmpl-placement-group"
-						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
-						zone        = "pl-waw-2"
-						server_type = "PLAY2-MICRO"
+						project_id  = scaleway_instance_security_group.sg1.project_id
+						name        = "tf-test-acc-instance-tmpl-security-group"
+						tags        = [ "terraform-test", "scaleway_instance_template", "security_group" ]
+						zone        = "nl-ams-3"
+						server_type = "PRO2-M"
 
-						placement_group_id = substr(scaleway_instance_placement_group.pg.id, 9, -1)
+						security_group_id = scaleway_instance_security_group.sg2.id
 					}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					isTemplatePresent(tt, "scaleway_instance_template.main"),
-					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.pg"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "name", "tf-test-acc-instance-tmpl-placement-group"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PLAY2-MICRO"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "pl-waw-2"),
-					acctest.CheckResourceRawIDMatches("scaleway_instance_template.main", "placement_group_id", "scaleway_instance_placement_group.pg", "id"),
-					acctest.CheckResourceIDChanged("scaleway_instance_template.main", &templateID),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "scaleway_instance_placement_group" "pg" {
-						zone = "pl-waw-2"
-					}
-
-					resource "scaleway_iam_ssh_key" "key" {
-						name       = "tf-test-acc-instance-tmpl-admin-ssh-key"
-						public_key = %q
-					}
-
-					resource "scaleway_instance_template" "main" {
-						project_id  = scaleway_instance_placement_group.pg.project_id
-						name        = "tf-test-acc-instance-tmpl-admin-ssh-key"
-						tags        = [ "terraform-test", "scaleway_instance_template", "additional_resources" ]
-						zone        = "fr-par-1"
-						server_type = "POP2-4C-16G-WIN"
-
-						windows_rdp_ssh_key_id = scaleway_iam_ssh_key.key.id
-					}`, sshKey),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					isTemplatePresent(tt, "scaleway_instance_template.main"),
-					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.key"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "name", "tf-test-acc-instance-tmpl-admin-ssh-key"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-4C-16G-WIN"),
-					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
-					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "windows_rdp_ssh_key_id", "scaleway_iam_ssh_key.key", "id"),
-					acctest.CheckResourceIDChanged("scaleway_instance_template.main", &templateID),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg2"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "nl-ams-3"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PRO2-M"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "security_group_id", "scaleway_instance_security_group.sg2", "id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "project_id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
 				),
 			},
 			{
 				ResourceName:      "scaleway_instance_template.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_security_group" "sg1" {
+						zone = "nl-ams-3"
+						name = "first-sg"
+						tags = [ "terraform-test", "scaleway_instance_template", "security_group1" ]
+					}
+
+					resource "scaleway_instance_security_group" "sg2" {
+						zone = "nl-ams-3"
+						name = "second-sg"
+						tags = [ "terraform-test", "scaleway_instance_template", "security_group2" ]
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_security_group.sg1.project_id
+						name        = "tf-test-acc-instance-tmpl-security-group"
+						tags        = [ "terraform-test", "scaleway_instance_template", "security_group" ]
+						zone        = "nl-ams-3"
+						server_type = "PRO2-M"
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					isSecurityGroupPresent(tt, "scaleway_instance_security_group.sg2"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "nl-ams-3"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PRO2-M"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_template.main", "security_group_id"),
+					resource.TestCheckResourceAttrSet("scaleway_instance_template.main", "project_id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
+			},
+			{
+				ResourceName:      "scaleway_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccInstanceTemplateResource_PlacementGroupID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	templateID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isTemplateDestroyed(tt),
+			isPlacementGroupDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "pg1" {
+						zone = "pl-waw-2"
+						name = "first-pg"
+						tags = [ "terraform-test", "scaleway_instance_template", "placement_group1" ]
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_placement_group.pg1.project_id
+						name        = "tf-test-acc-instance-tmpl-placement-group"
+						tags        = [ "terraform-test", "scaleway_instance_template", "placement_group" ]
+						zone        = "pl-waw-2"
+						server_type = "PLAY2-MICRO"
+
+						placement_group_id = substr(scaleway_instance_placement_group.pg1.id, 9, -1)
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.pg1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PLAY2-MICRO"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "pl-waw-2"),
+					acctest.CheckResourceRawIDMatches("scaleway_instance_template.main", "placement_group_id", "scaleway_instance_placement_group.pg1", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
+			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "pg1" {
+						zone = "pl-waw-2"
+						name = "first-pg"
+						tags = [ "terraform-test", "scaleway_instance_template", "placement_group1" ]
+					}
+
+					resource "scaleway_instance_placement_group" "pg2" {
+						zone = "pl-waw-2"
+						name = "second-pg"
+						tags = [ "terraform-test", "scaleway_instance_template", "placement_group2" ]
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_placement_group.pg1.project_id
+						name        = "tf-test-acc-instance-tmpl-placement-group"
+						tags        = [ "terraform-test", "scaleway_instance_template", "placement_group" ]
+						zone        = "pl-waw-2"
+						server_type = "PLAY2-MICRO"
+
+						placement_group_id = scaleway_instance_placement_group.pg2.id
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.pg2"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PLAY2-MICRO"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "pl-waw-2"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "placement_group_id", "scaleway_instance_placement_group.pg2", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
+			},
+			{
+				ResourceName:      "scaleway_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: `
+					resource "scaleway_instance_placement_group" "pg1" {
+						zone = "pl-waw-2"
+						name = "first-pg"
+						tags = [ "terraform-test", "scaleway_instance_template", "placement_group1" ]
+					}
+
+					resource "scaleway_instance_placement_group" "pg2" {
+						zone = "pl-waw-2"
+						name = "second-pg"
+						tags = [ "terraform-test", "scaleway_instance_template", "placement_group2" ]
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = scaleway_instance_placement_group.pg1.project_id
+						name        = "tf-test-acc-instance-tmpl-placement-group"
+						tags        = [ "terraform-test", "scaleway_instance_template", "placement_group" ]
+						zone        = "pl-waw-2"
+						server_type = "PLAY2-MICRO"
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					isPlacementGroupPresent(tt, "scaleway_instance_placement_group.pg2"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "PLAY2-MICRO"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "pl-waw-2"),
+					resource.TestCheckNoResourceAttr("scaleway_instance_template.main", "placement_group_id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstanceTemplateResource_WindowsRdpSshKeyID(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	templateID := ""
+	sshKey1 := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDFNaFderD6JUbMr6LoL7SdTaQ31gLcXwKv07Zyw0t4pq6Y8CGaeEvevS54TBR2iNJHa3hlIIUmA2qvH7Oh4v1QmMG2djWi2cD1lDEl8/8PYakaEBGh6snp3TMyhoqHOZqqKwDhPW0gJbe2vXfAgWSEzI8h1fs1D7iEkC1L/11hZjkqbUX/KduWFLyIRWdSuI3SWk4CXKRXwIkeYeSYb8AiIGY21u2z8H2J7YmhRzE85Kj/Fk4tST5gLW/IfLD4TMJjC/cZiJevETjs+XVmzTMIyU2sTQKufSQTj2qZ7RfgGwTHDoOeFvylgAdMGLZ/Un+gzeEPj9xUSPvvnbA9UPIKV4AffgtT1y5gcSWuHaqRxpUTY204mh6kq0EdVN2UsiJTgX+xnJgnOrKg6G3dkM8LSi2QtbjYbRXcuDJ9YUbUFK8M5Vo7LhMsMFb1hPtY68kbDUqD01RuMD5KhGIngCRRBZJriRQclUCJS4D3jr/Frw9ruNGh+NTIvIwdv0Y2brU= opensource@scaleway.com"
+	sshKey2 := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQClWb6lwORneAv3JvuMXkQmnt3g6vJ6fHjcojZfOrSdKfx6BOgE6BauAw1wibD0eLYVzZtC9onIjSeDETig0psSILv2O7I57XlaWdqTDjw7w74opVCsx8X1VelU3NwINkXEy2wR2htgJ2zUASniJw+Wt644WkSICcMPnSw9boE1vWwSsykloJr3MdXKn2pwVZ26lumoutHlm/XQ8DWGHh6gxE8DQIVKrCqVFp2ewPsCH4I/LtcWBAX9NTuUhG0uotunhYUoajKN7N0W3XeOxobjh2kvWZlQPjHEcUdKroUBGpIeEAu0i89lFgwqvk0Zdlc+FkJwaSliv3cikXToLK+H20BDlb0hwS/zkjpHKvNenjP7M+awE4aapOtZNvO1fsLfzeqaWsYvAOesq4bUfL6UkfVSZ/Z+pU7U3DsUviPhzLJ4Sf6daQYwgdCDXLfcsJprDZ+g0k0+DeZkJQv5/9dg3yLf537eXoJ/H1kNmQroCBE6Rra6MNQPMtCBrD8I8kE= user@user-ThinkPad-T14s-Gen-6"
+
+	// For now, we need to explicitly define the project_id for the CI's Acceptance Tests to pass.
+	// We should find a more appropriate solution in the future.
+	projectID, projectIDExists := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !projectIDExists {
+		projectID = "105bdce1-64c0-48ab-899d-868455867ecf"
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isTemplateDestroyed(tt),
+			iamchecks.CheckSSHKeyDestroy(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_ssh_key" "key1" {
+						name       = "tf-test-acc-instance-tmpl-admin-ssh-key1"
+						public_key = %q
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = %q
+						name        = "tf-test-acc-instance-tmpl-admin-ssh-key"
+						tags        = [ "terraform-test", "scaleway_instance_template", "windows_rdp_ssh_key" ]
+						zone        = "fr-par-1"
+						server_type = "POP2-4C-16G-WIN"
+
+						windows_rdp_ssh_key_id = scaleway_iam_ssh_key.key1.id
+					}`, sshKey1, projectID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.key1"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-4C-16G-WIN"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "windows_rdp_ssh_key_id", "scaleway_iam_ssh_key.key1", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
+			},
+			{
+				ResourceName:      "scaleway_instance_template.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_iam_ssh_key" "key1" {
+						name       = "tf-test-acc-instance-tmpl-admin-ssh-key1"
+						public_key = %q
+					}
+
+					resource "scaleway_iam_ssh_key" "key2" {
+						name       = "tf-test-acc-instance-tmpl-admin-ssh-key2"
+						public_key = %q
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id  = %q
+						name        = "tf-test-acc-instance-tmpl-admin-ssh-key"
+						tags        = [ "terraform-test", "scaleway_instance_template", "windows_rdp_ssh_key" ]
+						zone        = "fr-par-1"
+						server_type = "POP2-4C-16G-WIN"
+
+						windows_rdp_ssh_key_id = scaleway_iam_ssh_key.key2.id
+					}`, sshKey1, sshKey2, projectID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isTemplatePresent(tt, "scaleway_instance_template.main"),
+					iamchecks.CheckSSHKeyExists(tt, "scaleway_iam_ssh_key.key2"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "server_type", "POP2-4C-16G-WIN"),
+					resource.TestCheckResourceAttr("scaleway_instance_template.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_template.main", "windows_rdp_ssh_key_id", "scaleway_iam_ssh_key.key2", "id"),
+					acctest.CheckResourceIDPersisted("scaleway_instance_template.main", &templateID),
+				),
 			},
 		},
 	})
