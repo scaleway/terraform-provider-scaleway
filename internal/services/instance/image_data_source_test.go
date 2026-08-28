@@ -45,3 +45,49 @@ func TestAccDataSourceImage_Basic(t *testing.T) {
 		},
 	})
 }
+
+func TestAccDataSourceImage_Tags(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isImageDestroyed(tt),
+			instancechecks.IsSnapshotDestroyed(tt),
+			instancechecks.IsVolumeDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "scaleway_block_volume" "main" {
+						size_in_gb = 20
+						iops       = 5000
+					}
+
+					resource "scaleway_block_snapshot" "main" {
+						volume_id = scaleway_block_volume.main.id
+					}
+
+					resource "scaleway_instance_image" "main" {
+						name            = "tf-test-image-tags"
+						root_volume_id  = scaleway_block_snapshot.main.id
+						tags            = ["product=vivado", "version=2021.1"]
+					}
+
+					data "scaleway_instance_image" "by_tags" {
+						tags      = ["product=vivado", "version=2021.1"]
+						latest    = true
+						depends_on = [scaleway_instance_image.main]
+					}
+				`,
+				Check: resource.ComposeTestCheckFunc(
+					instancechecks.DoesImageExists(tt, "data.scaleway_instance_image.by_tags"),
+					resource.TestCheckResourceAttrPair("data.scaleway_instance_image.by_tags", "id", "scaleway_instance_image.main", "id"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "name", "tf-test-image-tags"),
+					resource.TestCheckResourceAttr("data.scaleway_instance_image.by_tags", "latest", "true"),
+				),
+			},
+		},
+	})
+}
