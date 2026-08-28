@@ -441,7 +441,7 @@ func (r *TemplateResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
-	resp.Diagnostics.Append(resp.State.Set(ctx, new(newState))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 //gocyclo:ignore
@@ -593,7 +593,7 @@ func (r *TemplateResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	newState := flattenTemplate(ctx, tmpl, req, &resp.Diagnostics)
-	resp.Diagnostics.Append(resp.State.Set(ctx, new(newState))...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 
 func (r *TemplateResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
