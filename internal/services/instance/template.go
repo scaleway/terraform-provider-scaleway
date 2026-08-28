@@ -178,7 +178,7 @@ func (r *TemplateResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Optional:            true,
 				MarkdownDescription: "The ID of the IAM SSH key used to encrypt the initial admin password on a Windows server. This will be repeated on all servers created using the Instance Template.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithRegion(),
+					verify.IsStringUUID(),
 				},
 			},
 			"filesystem_ids": schema.SetAttribute{
