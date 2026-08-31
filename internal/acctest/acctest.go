@@ -34,7 +34,6 @@ type TestTools struct {
 func jsonValid(b []byte) bool {
 	return jsontext.Value(b).IsValid(
 		jsontext.AllowDuplicateNames(true),
-		jsontext.AllowInvalidUTF8(true),
 	)
 }
 
