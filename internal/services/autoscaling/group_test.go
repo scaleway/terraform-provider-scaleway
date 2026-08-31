@@ -49,7 +49,7 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 						scaling_policy = {
 							minimum_size = 3
 							maximum_size = 12
-							scale_in_cooldown = "5m0s"
+							scale_in_cooldown = "5m"
 							scale_out_cooldown = "40s"
 							scale_in_step = 2
 							scale_out_step = 1
@@ -67,21 +67,18 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.2", "basic"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.minimum_size", "3"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.maximum_size", "12"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_cooldown", "5m0s"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_cooldown", "5m"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_out_cooldown", "40s"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_step", "2"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_out_step", "1"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size", "7"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.cpu_target"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.memory_target"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "project_id"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "updated_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "status"),
 				),
-			},
-			{
-				ResourceName:      "scaleway_autoscaling_group.main",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 			{
 				Config: fmt.Sprintf(`
@@ -100,13 +97,13 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 					resource "scaleway_autoscaling_group" "main" {
 						project_id = %[1]q
 						template_id = scaleway_instance_template.secondary.id
-						tags = [ "tf-test", "scaleway_autoscaling_group", "basic", "update" ]
+						tags = [ "tf-test", "scaleway_autoscaling_group", "basic", "updated" ]
 						name = "tf-test-acc-asg-basic"
 
 						scaling_policy = {
 							minimum_size = 1
 							maximum_size = 17
-							scale_in_cooldown = "1m0s"
+							scale_in_cooldown = "7m0s"
 							scale_out_cooldown = "30s"
 							scale_in_step = 1
 							scale_out_step = 4
@@ -122,14 +119,16 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.0", "tf-test"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.1", "scaleway_autoscaling_group"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.2", "basic"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.3", "update"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.3", "updated"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.minimum_size", "1"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.maximum_size", "17"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_cooldown", "1m0s"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_cooldown", "7m0s"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_out_cooldown", "30s"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_in_step", "1"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.scale_out_step", "4"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size", "10"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.cpu_target"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.memory_target"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "project_id"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "created_at"),
 					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "updated_at"),
@@ -140,12 +139,92 @@ func TestAccAutoScalingGroupResource_Basic(t *testing.T) {
 				ResourceName:      "scaleway_autoscaling_group.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scaling_policy.scale_in_cooldown",
+				}, // Import with no reference sets duration fields to their canonical form "1m0s" instead of "1m"
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_template" "main" {
+						project_id = %[1]q
+						tags = [ "terraform-test", "scaleway_autoscaling_group", "basic" ]
+						server_type = "PRO2-M"
+					}
+
+					resource "scaleway_instance_template" "secondary" {
+						project_id = %[1]q
+						tags = [ "terraform-test", "scaleway_autoscaling_group", "basic", "second" ]
+						server_type = "GP1-L"
+					}
+
+					resource "scaleway_autoscaling_group" "main" {
+						project_id = %[1]q
+						template_id = scaleway_instance_template.secondary.id
+						tags = []
+						name = "tf-test-acc-asg-basic-renamed"
+
+						scaling_policy = {
+							minimum_size = 1
+							maximum_size = 17
+							cpu_target = 80
+						}
+					}`, projectID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isGroupPresent(tt, "scaleway_autoscaling_group.main"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "name", "tf-test-acc-asg-basic-renamed"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "template_id", "scaleway_instance_template.secondary", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.cpu_target", "80"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size"),
+					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "status"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_autoscaling_group.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scaling_policy.scale_in_cooldown",
+					"scaling_policy.scale_out_cooldown",
+				}, // Import with no reference sets duration fields to their canonical form "1m0s" instead of "1m"
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_instance_template" "secondary" {
+						project_id = %[1]q
+						tags = [ "terraform-test", "scaleway_autoscaling_group", "basic", "second" ]
+						server_type = "GP1-L"
+					}
+
+					resource "scaleway_autoscaling_group" "main" {
+						project_id = %[1]q
+						template_id = scaleway_instance_template.secondary.id
+						tags = []
+						name = "tf-test-acc-asg-basic-renamed"
+
+						scaling_policy = {
+							minimum_size = 1
+							maximum_size = 17
+							memory_target = 95
+						}
+					}`, projectID),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isGroupPresent(tt, "scaleway_autoscaling_group.main"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "template_id", "scaleway_instance_template.secondary", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "tags.#", "0"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.memory_target", "95"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.cpu_target"),
+					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "project_id"),
+					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "status"),
+				),
 			},
 		},
 	})
 }
-
-// TODO: test : what if nested attributes get deleted ??
 
 func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -207,6 +286,7 @@ func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.maximum_size", "25"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.load_balancer_id", "scaleway_lb.lb", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.#", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.backend_id", "scaleway_lb_backend.back0", "id"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.address_family", "ipv4"),
 					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.private_network_id"),
@@ -220,6 +300,10 @@ func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 				ResourceName:      "scaleway_autoscaling_group.main",
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scaling_policy.scale_in_cooldown",
+					"scaling_policy.scale_out_cooldown",
+				}, // Import with no reference sets duration fields to their canonical form "1m0s" instead of "1m"
 			},
 			{
 				Config: `
@@ -236,6 +320,92 @@ func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 						lb_id            = scaleway_lb.lb.id
 						forward_protocol = "http"
 						forward_port     = 80
+					}
+
+					resource "scaleway_lb_backend" "back1" {
+						lb_id            = scaleway_lb.lb.id
+						forward_protocol = "tcp"
+						forward_port     = 81
+					}
+
+					resource "scaleway_lb_backend" "back2" {
+						lb_id            = scaleway_lb.lb.id
+						forward_protocol = "http"
+						forward_port     = 82
+					}
+
+					resource "scaleway_instance_template" "main" {
+						project_id = scaleway_lb.lb.project_id
+						tags = [ "terraform-test", "scaleway_autoscaling_group", "lb_config" ]
+						server_type = "PRO2-M"
+					}
+
+					resource "scaleway_autoscaling_group" "main" {
+						project_id = scaleway_lb.lb.project_id
+						template_id = scaleway_instance_template.main.id
+						tags = [ "terraform-test", "scaleway_autoscaling_group", "lb_config" ]
+						name = "tf-test-acc-asg-lb-config"
+
+						scaling_policy = {
+							minimum_size = 0
+							maximum_size = 25
+							fixed_size = 1
+						}
+
+						load_balancer_configuration = {
+							load_balancer_id = scaleway_lb.lb.id
+							backends = [{
+								backend_id = scaleway_lb_backend.back0.id
+								address_family = "ipv6"
+							},{
+								backend_id = scaleway_lb_backend.back1.id
+								address_family = "ipv4"
+								private_network_id = scaleway_vpc_private_network.pn.id
+							},{
+								backend_id = scaleway_lb_backend.back2.id
+								address_family = "ipv6"
+								private_network_id = scaleway_vpc_private_network.pn.id
+							}]
+							auto_healing = {
+								enabled = true
+								grace_period = "10m"
+							}
+						}
+					}`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					isGroupPresent(tt, "scaleway_autoscaling_group.main"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "zone", "fr-par-1"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "name", "tf-test-acc-asg-lb-config"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "template_id", "scaleway_instance_template.main", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.load_balancer_id", "scaleway_lb.lb", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.#", "3"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.backend_id", "scaleway_lb_backend.back0", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.address_family", "ipv6"),
+					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.private_network_id"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.backend_id", "scaleway_lb_backend.back1", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.address_family", "ipv4"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.private_network_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.2.backend_id", "scaleway_lb_backend.back2", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.2.address_family", "ipv6"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.2.private_network_id", "scaleway_vpc_private_network.pn", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.enabled", "true"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.grace_period", "10m"),
+				),
+			},
+			{
+				ResourceName:      "scaleway_autoscaling_group.main",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"scaling_policy.scale_in_cooldown",
+					"scaling_policy.scale_out_cooldown",
+					"load_balancer_configuration.auto_healing.grace_period",
+				}, // Import with no reference sets duration fields to their canonical form "1m0s" instead of "1m"
+			},
+			{
+				Config: `
+					resource "scaleway_lb" "lb" {
+						type = "LB-S"
 					}
 
 					resource "scaleway_lb_backend" "back1" {
@@ -265,17 +435,11 @@ func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 						load_balancer_configuration = {
 							load_balancer_id = scaleway_lb.lb.id
 							backends = [{
-								backend_id = scaleway_lb_backend.back0.id
-								address_family = "ipv6"
-							},
-							{
 								backend_id = scaleway_lb_backend.back1.id
 								address_family = "ipv4"
-								private_network_id = scaleway_vpc_private_network.pn.id
 							}]
 							auto_healing = {
-								enabled = true
-								grace_period = "10m0s"
+								enabled = false
 							}
 						}
 					}`,
@@ -284,24 +448,17 @@ func TestAccAutoScalingGroupResource_LoadBalancerConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "zone", "fr-par-1"),
 					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "name", "tf-test-acc-asg-lb-config"),
 					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "template_id", "scaleway_instance_template.main", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.minimum_size", "0"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.maximum_size", "25"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "scaling_policy.fixed_size", "1"),
 					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.load_balancer_id", "scaleway_lb.lb", "id"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.#", "2"),
-					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.backend_id", "scaleway_lb_backend.back0", "id"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.address_family", "ipv6"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.#", "1"),
+					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.backend_id", "scaleway_lb_backend.back1", "id"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.address_family", "ipv4"),
 					resource.TestCheckNoResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.0.private_network_id"),
-					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.backend_id", "scaleway_lb_backend.back1", "id"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.address_family", "ipv4"),
-					resource.TestCheckResourceAttrPair("scaleway_autoscaling_group.main", "load_balancer_configuration.backends.1.private_network_id", "scaleway_vpc_private_network.pn", "id"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.enabled", "true"),
-					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.grace_period", "10m0s"),
-					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "project_id"),
-					resource.TestCheckResourceAttrSet("scaleway_autoscaling_group.main", "status"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.enabled", "false"),
+					resource.TestCheckResourceAttr("scaleway_autoscaling_group.main", "load_balancer_configuration.auto_healing.grace_period", "10m0s"), // TF keeps the last value set
 				),
-			},
-			{
-				ResourceName:      "scaleway_autoscaling_group.main",
-				ImportState:       true,
-				ImportStateVerify: true,
 			},
 		},
 	})
