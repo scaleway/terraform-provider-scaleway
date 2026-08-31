@@ -2,6 +2,7 @@ package ipam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -58,6 +59,8 @@ func TestAccDataSourceIPAMIP_Instance(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_mac", "address"),
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.by_id", "address"),
 					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_mac", "address", "data.scaleway_ipam_ip.by_id", "address"),
+					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_mac", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_id", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
 				),
 			},
 		},
@@ -106,7 +109,7 @@ func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 						ip_id = scaleway_lb_ip.main.id
 						type = "LB-S"
 					}
-					
+
 					resource "scaleway_lb_backend" "main" {
 						lb_id = scaleway_lb.main.id
 						forward_protocol = "http"
@@ -115,6 +118,7 @@ func TestAccDataSourceIPAMIP_InstanceLB(t *testing.T) {
 					}`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
+					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.main", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
 				),
 			},
 		},
@@ -172,6 +176,7 @@ func TestAccDataSourceIPAMIP_RDB(t *testing.T) {
 				`, latestEngineVersion),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_ipam_ip.main", "address"),
+					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.main", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
 				),
 			},
 		},
@@ -191,21 +196,21 @@ func TestAccDataSourceIPAMIP_ID(t *testing.T) {
 					resource "scaleway_vpc" "vpc01" {
 					  name = "my vpc"
 					}
-					
+
 					resource "scaleway_vpc_private_network" "pn01" {
 					  vpc_id = scaleway_vpc.vpc01.id
 					  ipv4_subnet {
 						subnet = "172.16.32.0/22"
 					  }
 					}
-					
+
 					resource "scaleway_ipam_ip" "ip01" {
 					  address = "172.16.32.5"
 					  source {
 						private_network_id = scaleway_vpc_private_network.pn01.id
 					  }
 					}
-					
+
 					data "scaleway_ipam_ip" "by_id" {
 					  ipam_ip_id = scaleway_ipam_ip.ip01.id
 					}
@@ -214,6 +219,7 @@ func TestAccDataSourceIPAMIP_ID(t *testing.T) {
 					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address", "172.16.32.5"),
 					resource.TestCheckResourceAttr("data.scaleway_ipam_ip.by_id", "address_cidr", "172.16.32.5/22"),
 					resource.TestCheckResourceAttrPair("data.scaleway_ipam_ip.by_id", "ipam_ip_id", "scaleway_ipam_ip.ip01", "id"),
+					resource.TestMatchResourceAttr("data.scaleway_ipam_ip.by_id", "srn", regexp.MustCompile(`^srn://ipam\..+/zones/.+/ips/.+$`)),
 				),
 			},
 		},
