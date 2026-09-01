@@ -3,6 +3,7 @@ package iam
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	scw_ephemeral "github.com/scaleway/terraform-provider-scaleway/v2/internal/ephemeral"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -23,6 +25,7 @@ import (
 var (
 	_                         ephemeral.EphemeralResource              = (*ApiKeyEphemeralResource)(nil)
 	_                         ephemeral.EphemeralResourceWithConfigure = (*ApiKeyEphemeralResource)(nil)
+	_                         ephemeral.EphemeralResourceWithClose     = (*ApiKeyEphemeralResource)(nil)
 	iamTerraformAnnotationKey                                          = "iam_terraform_identifier"
 )
 
@@ -79,7 +82,7 @@ type ApiKeyEphemeralResourceModel struct {
 	SecretKey             types.String `tfsdk:"secret_key"`
 	CreationIP            types.String `tfsdk:"creation_ip"`
 	DefaultProjectID      types.String `tfsdk:"default_project_id"`
-	ReplaceResource       types.Bool   `tfsdk:"replace_resource"`
+	EphemeralLifecycle    types.String `tfsdk:"ephemeral_lifecycle"`
 }
 
 //go:embed descriptions/api_key_ephemeral_resource.md
@@ -146,9 +149,14 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 					verify.IsStringUUID(),
 				},
 			},
-			"replace_resource": schema.BoolAttribute{
+			"ephemeral_lifecycle": schema.StringAttribute{
 				Optional:    true,
-				Description: "If true, always create a new resource and replace the existing one found by identifier (see `annotation_identifier` and `description_identifier`). If false, reuse existing resource if found.",
+				Computed:    true,
+				Description: "Controls the lifecycle behavior of the ephemeral API key. `persist` (default): the API key and its annotations are not deleted when the ephemeral resource is closed. `delete`: the API key and its annotations are deleted when the ephemeral resource is closed. `replace`: any existing API key with the same identifier is deleted and a new one is created. Requires either `annotation_identifier` or `description_identifier` to be set.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("persist", "delete", "replace"),
+					verify.StringAlsoRequiresOneOf(path.MatchRoot("annotation_identifier"), path.MatchRoot("description_identifier")),
+				},
 			},
 			"annotation_identifier": schema.StringAttribute{
 				Optional:    true,
@@ -186,9 +194,11 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 		return
 	}
 
-	var existingAPIKey *iam.APIKey
-	var identifierDescription string
-	var err error
+	var (
+		existingAPIKey        *iam.APIKey
+		identifierDescription string
+		err                   error
+	)
 
 	orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
 	if !exists {
@@ -226,6 +236,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 			return
 		}
 
+		// TODO: annotation should be compatible with description and not set here
 		// Use the annotation value as description for the new key
 		identifierDescription = "annotation_identifier:" + annotationValue
 	}
@@ -246,9 +257,15 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 		identifierDescription = descriptionIdentifier
 	}
 
-	recreateResource := !data.ReplaceResource.IsNull() && !data.ReplaceResource.IsUnknown() && data.ReplaceResource.ValueBool()
+	lifecycle := "persist"
+	if !data.EphemeralLifecycle.IsNull() && !data.EphemeralLifecycle.IsUnknown() {
+		lifecycle = data.EphemeralLifecycle.ValueString()
+	}
 
-	if recreateResource || existingAPIKey == nil {
+	shouldReplace := lifecycle == "replace"
+	shouldCreateNew := shouldReplace || existingAPIKey == nil
+
+	if shouldCreateNew {
 		createReq := iam.CreateAPIKeyRequest{
 			ApplicationID:    data.ApplicationID.ValueStringPointer(),
 			UserID:           data.UserID.ValueStringPointer(),
@@ -292,7 +309,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 			}
 		}
 
-		if recreateResource && existingAPIKey != nil {
+		if shouldReplace && existingAPIKey != nil {
 			deleteReq := iam.DeleteAPIKeyRequest{
 				AccessKey: existingAPIKey.AccessKey,
 			}
@@ -312,4 +329,94 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 	}
 
 	resp.Result.Set(ctx, &data)
+
+	// Store access key, lifecycle and annotation in private state for Close operation
+	// Values must be JSON-encoded for private state storage
+	if !data.AccessKey.IsNull() {
+		accessKeyJSON, err := json.Marshal(data.AccessKey.ValueString())
+		if err == nil {
+			resp.Private.SetKey(ctx, "access_key", accessKeyJSON)
+		}
+	}
+
+	lifecycleJSON, err := json.Marshal(lifecycle)
+	if err == nil {
+		resp.Private.SetKey(ctx, "ephemeral_lifecycle", lifecycleJSON)
+	}
+
+	if hasAnnotationIdentifier {
+		annotationJSON, err := json.Marshal(data.AnnotationIdentifier.ValueString())
+		if err == nil {
+			resp.Private.SetKey(ctx, "annotation_identifier", annotationJSON)
+		}
+	}
+}
+
+func (r *ApiKeyEphemeralResource) Close(ctx context.Context, req ephemeral.CloseRequest, resp *ephemeral.CloseResponse) {
+	lifecycleBytes, err := req.Private.GetKey(ctx, "ephemeral_lifecycle")
+	if err != nil {
+		return
+	}
+
+	var lifecycle string
+	if err := json.Unmarshal(lifecycleBytes, &lifecycle); err != nil {
+		return
+	}
+
+	if lifecycle != "delete" {
+		return
+	}
+
+	accessKeyBytes, err := req.Private.GetKey(ctx, "access_key")
+	if err != nil || len(accessKeyBytes) == 0 {
+		return
+	}
+
+	var accessKey string
+	if err := json.Unmarshal(accessKeyBytes, &accessKey); err != nil {
+		return
+	}
+
+	annotationIdentifierBytes, err := req.Private.GetKey(ctx, "annotation_identifier")
+	if err != nil {
+		annotationIdentifierBytes = nil
+	}
+
+	var annotationIdentifier string
+	if len(annotationIdentifierBytes) > 0 {
+		if err := json.Unmarshal(annotationIdentifierBytes, &annotationIdentifier); err != nil {
+			annotationIdentifier = ""
+		}
+	}
+
+	orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
+	if !exists {
+		resp.Diagnostics.AddError(
+			"Organization ID is required",
+			"Configure a default organization",
+		)
+
+		return
+	}
+
+	deleteReq := iam.DeleteAPIKeyRequest{
+		AccessKey: accessKey,
+	}
+	if err := r.iamAPI.DeleteAPIKey(&deleteReq, scw.WithContext(ctx)); err != nil {
+		if !httperrors.Is404(err) {
+			resp.Diagnostics.AddError(
+				"Error deleting API key",
+				fmt.Sprintf("Failed to delete API key %s: %s", accessKey, err),
+			)
+		}
+	}
+
+	if annotationIdentifier != "" {
+		if err := r.identifierClient.DeleteAnnotationIdentifier(ctx, annotationIdentifier, orgID); err != nil {
+			resp.Diagnostics.AddWarning(
+				"Annotation cleanup failed",
+				fmt.Sprintf("Failed to delete annotation binding for %q: %s", annotationIdentifier, err),
+			)
+		}
+	}
 }

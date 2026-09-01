@@ -51,6 +51,7 @@ type AnnotationsAPI interface {
 	CreateKey(req *annotations.CreateKeyRequest, opts ...scw.RequestOption) (*annotations.Key, error)
 	ListValues(req *annotations.ListValuesRequest, opts ...scw.RequestOption) (*annotations.ListValuesResponse, error)
 	CreateValue(req *annotations.CreateValueRequest, opts ...scw.RequestOption) (*annotations.Value, error)
+	DeleteValue(req *annotations.DeleteValueRequest, opts ...scw.RequestOption) error
 	ListBindings(req *annotations.ListBindingsRequest, opts ...scw.RequestOption) (*annotations.ListBindingsResponse, error)
 	CreateBinding(req *annotations.CreateBindingRequest, opts ...scw.RequestOption) (*annotations.Binding, error)
 	DeleteBinding(req *annotations.DeleteBindingRequest, opts ...scw.RequestOption) error
@@ -191,6 +192,7 @@ func (m *ResourceIdentifierManager[T]) FindResourceByAnnotation(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
+
 	if keyID == "" {
 		return nil, nil
 	}
@@ -199,6 +201,7 @@ func (m *ResourceIdentifierManager[T]) FindResourceByAnnotation(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
+
 	if valueID == "" {
 		return nil, nil
 	}
@@ -207,6 +210,7 @@ func (m *ResourceIdentifierManager[T]) FindResourceByAnnotation(ctx context.Cont
 	if err != nil {
 		return nil, err
 	}
+
 	if binding == nil {
 		return nil, nil
 	}
@@ -267,4 +271,45 @@ func (m *ResourceIdentifierManager[T]) GetResourceByID(ctx context.Context, id s
 
 func (m *ResourceIdentifierManager[T]) DeleteResourceByID(ctx context.Context, id string) error {
 	return m.ResourceHandler.DeleteByID(ctx, id)
+}
+
+func (m *ResourceIdentifierManager[T]) DeleteAnnotationIdentifier(ctx context.Context, annotationValue, organizationID string) error {
+	keyID, err := m.GetAnnotationKeyID(ctx, organizationID)
+	if err != nil {
+		return err
+	}
+
+	if keyID == "" {
+		return nil
+	}
+
+	valueID, err := m.GetAnnotationValueID(ctx, keyID, annotationValue)
+	if err != nil {
+		return err
+	}
+
+	if valueID == "" {
+		return nil
+	}
+
+	binding, err := m.GetAnnotationBinding(ctx, organizationID, valueID)
+	if err != nil {
+		return err
+	}
+
+	if binding != nil {
+		if err := m.annotationsAPI.DeleteBinding(&annotations.DeleteBindingRequest{
+			BindingID: binding.ID,
+		}, scw.WithContext(ctx)); err != nil {
+			return fmt.Errorf("failed to delete binding: %w", err)
+		}
+	}
+
+	if err := m.annotationsAPI.DeleteValue(&annotations.DeleteValueRequest{
+		ValueID: valueID,
+	}, scw.WithContext(ctx)); err != nil {
+		return fmt.Errorf("failed to delete annotation value: %w", err)
+	}
+
+	return nil
 }
