@@ -42,6 +42,7 @@ var foldersUsingVCRv4 = []string{
 	"jobs",
 	"k8s",
 	"keymanager",
+	"mailbox",
 	"marketplace",
 	"secret",
 }

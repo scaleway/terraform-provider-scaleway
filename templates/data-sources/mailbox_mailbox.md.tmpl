@@ -1,0 +1,54 @@
+---
+subcategory: "Mailbox"
+page_title: "Scaleway: scaleway_mailbox_mailbox"
+---
+
+# scaleway_mailbox_mailbox
+
+Use this data source to get information about a Scaleway Mailbox mailbox based on its UUID
+or its full email address.
+
+~> **Note** This data source is in **alpha** and the API is subject to change.
+
+## Example Usage
+
+```hcl
+# Look up by mailbox UUID
+data "scaleway_mailbox_mailbox" "by_id" {
+  mailbox_id = "11111111-1111-1111-1111-111111111111"
+}
+
+# Look up by email address
+data "scaleway_mailbox_mailbox" "by_email" {
+  email = "john.doe@mail.example.com"
+}
+
+output "mailbox_status" {
+  value = data.scaleway_mailbox_mailbox.by_email.status
+}
+```
+
+## Argument Reference
+
+- `mailbox_id` - (Optional) UUID of the mailbox. Conflicts with `email`.
+- `email` - (Optional) Full email address of the mailbox (`local_part@domain`). Conflicts with `mailbox_id`.
+
+-> **Note** You must specify exactly one of `mailbox_id` or `email`.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - Unique identifier of the mailbox (UUID).
+- `domain_id` - UUID of the domain to which this mailbox belongs.
+- `email` - Full email address (`local_part@domain`).
+- `display_name` - Display name of the mailbox.
+- `recovery_email` - Recovery email address.
+- `status` - Current mailbox status (`ready`, `locked`, `deletion_scheduled`, etc.).
+- `subscription_period` - Active billing period (`monthly` or `yearly`).
+- `subscription_period_started_at` - Start date of the current billing period (RFC 3339 format).
+- `next_subscription_period` - Next renewal period.
+- `next_subscription_period_starts_at` - Date when the next period starts (RFC 3339 format).
+- `deletion_scheduled_at` - Scheduled deletion date if status is `deletion_scheduled` (RFC 3339 format).
+- `created_at` - Date and time of mailbox creation (RFC 3339 format).
+- `updated_at` - Date and time of last update (RFC 3339 format).
