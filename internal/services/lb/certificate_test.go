@@ -27,7 +27,7 @@ func TestAccCertificate_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isLbDestroyed(tt),
+			lbchecks.IsLbDestroyed(tt),
 			lbchecks.IsIPDestroyed(tt),
 			isCertificateDestroyed(tt),
 		),

@@ -334,12 +334,12 @@ func flattenTemplate(ctx context.Context, tmpl *instanceV2.Template, reference a
 		Zone:            types.StringValue(tmpl.Zone.String()),
 	}
 
-	tagList, d := scwtypes.FlattenStringList(ctx, tmpl.Tags)
+	tagList, d := scwtypes.FlattenStringList(ctx, "tags", tmpl.Tags, reference)
 	diags.Append(d...)
 
 	model.Tags = tagList
 
-	serverTagList, d := scwtypes.FlattenStringList(ctx, tmpl.ServerTags)
+	serverTagList, d := scwtypes.FlattenStringList(ctx, "server_tags", tmpl.ServerTags, reference)
 	diags.Append(d...)
 
 	model.ServerTags = serverTagList
