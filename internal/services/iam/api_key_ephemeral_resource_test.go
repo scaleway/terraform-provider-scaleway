@@ -131,7 +131,7 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 }
 
 // TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Create tests that when no previous
-// resource exists and replace_resource is false, a new resource is created, identifying the
+// resource exists and ephemeral_lifecycle is "persist", a new resource is created, identifying the
 // new API key via its description.
 func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Create(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -168,7 +168,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Create(t *testing.
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -184,7 +184,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Create(t *testing.
 }
 
 // TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace tests that when no previous
-// resource exists and replace_resource is true, a new resource is created, identifying the
+// resource exists and ephemeral_lifecycle is "replace", a new resource is created, identifying the
 // new API key via its description.
 func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -221,7 +221,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace(t *testing
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -230,7 +230,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace(t *testing
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("description_identifier"), knownvalue.StringExact(descriptionIdentifier)),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("replace_resource"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("ephemeral_lifecycle"), knownvalue.StringExact("replace")),
 				},
 			},
 		},
@@ -238,7 +238,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace(t *testing
 }
 
 // TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_NoRecreate tests that when a resource already
-// exists and replace_resource is false, the existing resource is reused (not recreated), identifying the
+// exists and ephemeral_lifecycle is "persist", the existing resource is reused (not recreated), identifying the
 // existing API key via its description.
 func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_NoRecreate(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -277,7 +277,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_NoRecreate(t *test
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -306,7 +306,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_NoRecreate(t *test
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -333,7 +333,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_NoRecreate(t *test
 }
 
 // TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate tests that when a resource already
-// exists and replace_resource is true, a new resource is created and the old one is deleted, identifying
+// exists and ephemeral_lifecycle is "replace", a new resource is created and the old one is deleted, identifying
 // the API key via its description.
 func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -372,7 +372,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate(t *testin
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -380,7 +380,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate(t *testin
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("description_identifier"), knownvalue.StringExact(descriptionIdentifier)),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("replace_resource"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("ephemeral_lifecycle"), knownvalue.StringExact("replace")),
 				},
 			},
 			{
@@ -402,7 +402,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate(t *testin
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						description_identifier = "%[2]s"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), descriptionIdentifier, expiresAt),
@@ -434,7 +434,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Recreate(t *testin
 }
 
 // TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Create tests that when no previous
-// resource exists and replace_resource is false, a new resource is created, identifying the
+// resource exists and ephemeral_lifecycle is "persist", a new resource is created, identifying the
 // new API key via its annotations.
 func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Create(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -457,6 +457,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Create(t *testing.
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
+			testAccCheckIamAPIKeyAnnotationBindingDestroy(tt, "my_identifier_value"),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -470,7 +471,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Create(t *testing.
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "my_identifier_value"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[2]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), expiresAt),
@@ -486,7 +487,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Create(t *testing.
 }
 
 // TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace tests that when no previous
-// resource exists and replace_resource is true, a new resource is created, identifying the
+// resource exists and ephemeral_lifecycle is "replace", a new resource is created, identifying the
 // new API key via its annotations.
 func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -522,7 +523,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace(t *testing
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "my_identifier_value"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[2]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), expiresAt),
@@ -531,7 +532,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace(t *testing
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("annotation_identifier"), knownvalue.StringExact("my_identifier_value")),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("replace_resource"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("ephemeral_lifecycle"), knownvalue.StringExact("replace")),
 				},
 			},
 		},
@@ -539,7 +540,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace(t *testing
 }
 
 // TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_NoRecreate tests that when a resource already
-// exists and replace_resource is false, the existing resource is reused (not recreated), identifying the
+// exists and ephemeral_lifecycle is "persist", the existing resource is reused (not recreated), identifying the
 // existing API key via its annotations.
 func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_NoRecreate(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -578,7 +579,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_NoRecreate(t *test
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "%[2]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), annotationValue, expiresAt),
@@ -607,7 +608,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_NoRecreate(t *test
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "%[2]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), annotationValue, expiresAt),
@@ -634,7 +635,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_NoRecreate(t *test
 }
 
 // TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Recreate tests that when a resource already
-// exists and replace_resource is true, a new resource is created and the old one is deleted, identifying
+// exists and ephemeral_lifecycle is "replace", a new resource is created and the old one is deleted, identifying
 // the API key via its annotations.
 func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Recreate(t *testing.T) {
 	if acctest.IsRunningOpenTofu() {
@@ -673,7 +674,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Recreate(t *testin
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "%[2]s"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), annotationValue, expiresAt),
@@ -681,7 +682,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Recreate(t *testin
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("access_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("secret_key"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("annotation_identifier"), knownvalue.StringExact(annotationValue)),
-					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("replace_resource"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(echoResourceName, dataPath.AtMapKey("ephemeral_lifecycle"), knownvalue.StringExact("replace")),
 				},
 			},
 			{
@@ -703,7 +704,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Recreate(t *testin
 					ephemeral "scaleway_iam_api_key" "main" {
 						application_id = scaleway_iam_application.main.id
 						annotation_identifier = "%[2]s"
-						replace_resource = true
+						ephemeral_lifecycle = "replace"
 						expires_at = "%[3]s"
 					}
 					`, acctest.ConfigWithEchoProvider("ephemeral.scaleway_iam_api_key.main"), annotationValue, expiresAt),
@@ -768,7 +769,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_ErrorMismatch(t *t
 						application_id = scaleway_iam_application.main.id
 						description = "%[2]s"
 						description_identifier = "%[3]s"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[4]s"
 					}
 					`, description, description, descriptionIdentifier, expiresAt),
@@ -811,7 +812,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_ErrorMismatch(t *t
 						application_id = scaleway_iam_application.main.id
 						description = "%[1]s"
 						annotation_identifier = "my_identifier_value"
-						replace_resource = false
+						ephemeral_lifecycle = "persist"
 						expires_at = "%[2]s"
 					}
 					`, description, expiresAt),
@@ -965,4 +966,81 @@ func getAPIKeyAccessKeyByAnnotation(tt *acctest.TestTools, annotationValue strin
 	}
 
 	return accessKey, nil
+}
+
+func testAccCheckIamAPIKeyAnnotationBindingDestroy(tt *acctest.TestTools, annotationValue string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		annotationsAPI := annotations.NewAPI(tt.Meta.ScwClient())
+
+		orgID, exists := tt.Meta.ScwClient().GetDefaultOrganizationID()
+		if !exists {
+			return errors.New("organization ID not found")
+		}
+
+		keysResp, err := annotationsAPI.ListKeys(&annotations.ListKeysRequest{
+			OrganizationID: orgID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list annotation keys: %w", err)
+		}
+
+		var keyID string
+
+		for _, key := range keysResp.Keys {
+			if key.Name == "iam_terraform_identifier" {
+				keyID = key.ID
+
+				break
+			}
+		}
+
+		if keyID == "" {
+			return nil
+		}
+
+		valuesResp, err := annotationsAPI.ListValues(&annotations.ListValuesRequest{
+			KeyID: &keyID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list annotation values: %w", err)
+		}
+
+		var valueID string
+
+		for _, value := range valuesResp.Values {
+			if value.Name == annotationValue {
+				valueID = value.ID
+
+				break
+			}
+		}
+
+		if valueID == "" {
+			return nil
+		}
+
+		bindingsResp, err := annotationsAPI.ListBindings(&annotations.ListBindingsRequest{
+			OrganizationID: orgID,
+			ValueID:        &valueID,
+		}, scw.WithAllPages())
+		if err != nil {
+			return fmt.Errorf("failed to list bindings: %w", err)
+		}
+
+		for _, binding := range bindingsResp.Bindings {
+			if err := annotationsAPI.DeleteBinding(&annotations.DeleteBindingRequest{
+				BindingID: binding.ID,
+			}); err != nil && !httperrors.Is404(err) {
+				return fmt.Errorf("failed to delete binding %s: %w", binding.ID, err)
+			}
+		}
+
+		if err := annotationsAPI.DeleteValue(&annotations.DeleteValueRequest{
+			ValueID: valueID,
+		}); err != nil && !httperrors.Is404(err) {
+			return fmt.Errorf("failed to delete annotation value %s: %w", valueID, err)
+		}
+
+		return nil
+	}
 }
