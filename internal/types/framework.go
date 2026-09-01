@@ -69,6 +69,30 @@ func ExpandRawID(str types.String, attributeName string, diags *diag.Diagnostics
 	return new(rawID)
 }
 
+// ExpandRawIDList builds an array of raw UUIDs in string from (without locality) from a Terraform types.List
+func ExpandRawIDList(ctx context.Context, list types.List, attributeName string, diags *diag.Diagnostics) []string {
+	if list.IsNull() || list.IsUnknown() {
+		return nil
+	}
+
+	var result []string
+	diags.Append(list.ElementsAs(ctx, &result, false)...)
+
+	rawIDs := make([]string, 0, len(result))
+	for _, id := range result {
+		rawID, err := locality.ExtractUUID(id)
+		if err != nil {
+			diags.AddAttributeError(path.Root(attributeName), "Failed to parse "+attributeName, err.Error())
+
+			return nil
+		}
+
+		rawIDs = append(rawIDs, rawID)
+	}
+
+	return rawIDs
+}
+
 // ExpandRawIDSet returns the raw UUIDs (without locality) in string array form, from a Terraform types.Set.
 func ExpandRawIDSet(ctx context.Context, set types.Set, attributeName string, diags *diag.Diagnostics) []string {
 	if set.IsNull() || set.IsUnknown() {

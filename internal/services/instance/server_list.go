@@ -19,6 +19,7 @@ import (
 	listscw "github.com/scaleway/terraform-provider-scaleway/v2/internal/list"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/instancehelpers"
+	scwtypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 var (
@@ -137,21 +138,21 @@ func (r *ServerListResource) FetchServers(ctx context.Context, zone scw.Zone, pr
 	}
 
 	if !data.SecurityGroupIDs.IsNull() {
-		listRequest.SecurityGroupIDs = expandRawIDList(ctx, data.SecurityGroupIDs, "security_group_ids", &diags)
+		listRequest.SecurityGroupIDs = scwtypes.ExpandRawIDList(ctx, data.SecurityGroupIDs, "security_group_ids", &diags)
 		if diags.HasError() {
 			return nil, errors.New(diags[0].Summary() + ": " + diags[0].Detail())
 		}
 	}
 
 	if !data.PlacementGroupIDs.IsNull() {
-		listRequest.PlacementGroupIDs = expandRawIDList(ctx, data.PlacementGroupIDs, "placement_group_ids", &diags)
+		listRequest.PlacementGroupIDs = scwtypes.ExpandRawIDList(ctx, data.PlacementGroupIDs, "placement_group_ids", &diags)
 		if diags.HasError() {
 			return nil, errors.New(diags[0].Summary() + ": " + diags[0].Detail())
 		}
 	}
 
 	if !data.PrivateNetworkIDs.IsNull() {
-		listRequest.PrivateNetworkIDs = expandRawIDList(ctx, data.PrivateNetworkIDs, "private_network_ids", &diags)
+		listRequest.PrivateNetworkIDs = scwtypes.ExpandRawIDList(ctx, data.PrivateNetworkIDs, "private_network_ids", &diags)
 		if diags.HasError() {
 			return nil, errors.New(diags[0].Summary() + ": " + diags[0].Detail())
 		}
