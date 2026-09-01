@@ -331,33 +331,56 @@ func (r *AutoScalingGroupResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	groupSummaries, err := r.api.ListGroups(&autoscaling.ListGroupsRequest{
-		Zone:       zone,
-		ProjectID:  projectID,
-		TemplateID: templateID,
-	}, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to list Autoscaling Groups", err.Error())
-
-		return
-	}
-
-	groupFoundInZone := false
-
-	for _, gs := range groupSummaries.GroupSummaries {
-		if gs.ID == group.ID {
-			groupFoundInZone = true
-		}
-	}
-
-	if !groupFoundInZone {
-		resp.Diagnostics.AddWarning(
-			"Could not verify zone for Autoscaling Group "+group.ID,
-			"The zone from the config will be used during reading operations, which can cause some unexpected behaviors.")
+	if ok, warning := checkZone(ctx, r, zone, projectID, *templateID, group.ID); !ok {
+		resp.Diagnostics.Append(warning)
 	}
 
 	state := flattenGroup(ctx, group, zone, req, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func checkZone(ctx context.Context, r *AutoScalingGroupResource, zone scw.Zone, projectID, templateID, groupID string) (bool, diag.Diagnostic) {
+	pageToken := new("")
+
+	for {
+		groupSummaries, err := r.api.ListGroups(&autoscaling.ListGroupsRequest{
+			Zone:       zone,
+			ProjectID:  projectID,
+			TemplateID: &templateID,
+			PageToken:  pageToken,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return false, diag.NewWarningDiagnostic(
+				"Could not verify zone for Autoscaling Group "+groupID,
+				"Failed to list groups: "+err.Error(),
+			)
+		}
+
+		for _, gs := range groupSummaries.GroupSummaries {
+			if gs.ID == groupID {
+				if gs.Zone == zone {
+					return true, nil
+				}
+
+				// Should not ever return here
+				return false, diag.NewWarningDiagnostic(
+					"unexpected zone for group",
+					fmt.Sprintf("expected %s, got %s", zone, gs.Zone),
+				)
+			}
+		}
+
+		if groupSummaries.NextPageToken == nil {
+			break
+		}
+
+		pageToken = groupSummaries.NextPageToken
+	}
+
+	return false, diag.NewWarningDiagnostic(
+		"Could not verify zone for Autoscaling Group "+groupID,
+		"The zone from the config will be used during reading operations, which can cause some unexpected behaviors.",
+	)
 }
 
 func flattenGroup(ctx context.Context, group *autoscaling.Group, zone scw.Zone, reference any, diags *diag.Diagnostics) any {
