@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	edgeservicestestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func TestAccEdgeServicesRoute_Basic(t *testing.T) {
@@ -14,51 +15,66 @@ func TestAccEdgeServicesRoute_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_edge_services_pipeline" "main" {
-				  name        = "my-edge-services-pipeline"
-				  description = "pipeline description"
-				}
-				
-				resource "scaleway_edge_services_waf_stage" "waf" {
-				  pipeline_id    = scaleway_edge_services_pipeline.main.id
-				  mode           = "enable"
-				  paranoia_level = 3
-				}
-				
-				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-basic-route"
-				  tags = {
-					foo = "bar"
-				  }
-				}
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_route-basic"
+					}
 
-				resource "scaleway_edge_services_backend_stage" "backend" {
-				  pipeline_id = scaleway_edge_services_pipeline.main.id
-				  s3_backend_config {
-					bucket_name   = scaleway_object_bucket.main.name
-					bucket_region = "fr-par"
-				  }
-				}
-				
-				resource "scaleway_edge_services_route_stage" "main" {
-				  pipeline_id   = scaleway_edge_services_pipeline.main.id
-				  waf_stage_id  = scaleway_edge_services_waf_stage.waf.id
-				
-				  rule {
-					backend_stage_id = scaleway_edge_services_backend_stage.backend.id
-					rule_http_match {
-					  method_filters = ["get", "post"]
-					  path_filter {
-						path_filter_type = "regex"
-						value           = ".*"
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge-services-pipeline"
+					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_edge_services_waf_stage" "waf" {
+					  pipeline_id    = scaleway_edge_services_pipeline.main.id
+					  mode           = "enable"
+					  paranoia_level = 3
+					}
+
+					resource "scaleway_object_bucket" "main" {
+					  name = "tf-test-scaleway-object-bucket-basic-route"
+					  tags = {
+						foo = "bar"
 					  }
 					}
-				  }
-				}
+
+					resource "scaleway_edge_services_backend_stage" "backend" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  s3_backend_config {
+						bucket_name   = scaleway_object_bucket.main.name
+						bucket_region = "fr-par"
+					  }
+					}
+
+					resource "scaleway_edge_services_route_stage" "main" {
+					  pipeline_id   = scaleway_edge_services_pipeline.main.id
+					  waf_stage_id  = scaleway_edge_services_waf_stage.waf.id
+
+					  rule {
+						backend_stage_id = scaleway_edge_services_backend_stage.backend.id
+						rule_http_match {
+						  method_filters = ["get", "post"]
+						  path_filter {
+							path_filter_type = "regex"
+							value           = ".*"
+						  }
+						}
+					  }
+					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesRouteExists(tt, "scaleway_edge_services_route_stage.main"),
@@ -94,68 +110,72 @@ func TestAccEdgeServicesRoute_HostFilter(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_account_project" "main" {
-				  name = "tf_tests_edge_services_project_pipeline-host-filter"
-				}
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_pipeline-host-filter"
+					}
 
-				resource "scaleway_edge_services_plan" "main" {
-				  name = "starter"
-				  project_id = scaleway_account_project.main.id
-				}
+					resource "scaleway_edge_services_plan" "main" {
+					  name = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
 
-				resource "scaleway_edge_services_pipeline" "main" {
-				  name        = "my-edge-services-pipeline-host-filter"
-				  description = "pipeline for host filter test"
-				  depends_on  = [scaleway_edge_services_plan.main]
-				  project_id  = scaleway_account_project.main.id
-				}
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge-services-pipeline-host-filter"
+					  description = "pipeline for host filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
+					}
 
-				resource "scaleway_edge_services_waf_stage" "waf" {
-				  pipeline_id    = scaleway_edge_services_pipeline.main.id
-				  mode           = "enable"
-				  paranoia_level = 2
-				  project_id = scaleway_account_project.main.id
-				}
+					resource "scaleway_edge_services_waf_stage" "waf" {
+					  pipeline_id    = scaleway_edge_services_pipeline.main.id
+					  mode           = "enable"
+					  paranoia_level = 2
+					  project_id = scaleway_account_project.main.id
+					}
 
-				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-host-filter-route"
-				  tags = {
-					foo = "bar"
-				  }
-				  project_id = scaleway_account_project.main.id
-				}
-
-				resource "scaleway_edge_services_backend_stage" "backend" {
-				  pipeline_id = scaleway_edge_services_pipeline.main.id
-				  s3_backend_config {
-					bucket_name   = scaleway_object_bucket.main.name
-					bucket_region = "fr-par"
-				  }
-				}
-
-				resource "scaleway_edge_services_route_stage" "main" {
-				  pipeline_id  = scaleway_edge_services_pipeline.main.id
-				  waf_stage_id = scaleway_edge_services_waf_stage.waf.id
-
-				  rule {
-					backend_stage_id = scaleway_edge_services_backend_stage.backend.id
-					rule_http_match {
-					  method_filters = ["get"]
-					  path_filter {
-						path_filter_type = "regex"
-						value            = ".*"
+					resource "scaleway_object_bucket" "main" {
+					  name = "tf-test-scaleway-object-bucket-host-filter-route"
+					  tags = {
+						foo = "bar"
 					  }
-					  host_filter {
-						host_filter_type = "regex"
-						value            = "api\\.example\\.com"
+					  project_id = scaleway_account_project.main.id
+					}
+
+					resource "scaleway_edge_services_backend_stage" "backend" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  s3_backend_config {
+						bucket_name   = scaleway_object_bucket.main.name
+						bucket_region = "fr-par"
 					  }
 					}
-				  }
-				}
+
+					resource "scaleway_edge_services_route_stage" "main" {
+					  pipeline_id  = scaleway_edge_services_pipeline.main.id
+					  waf_stage_id = scaleway_edge_services_waf_stage.waf.id
+
+					  rule {
+						backend_stage_id = scaleway_edge_services_backend_stage.backend.id
+						rule_http_match {
+						  method_filters = ["get"]
+						  path_filter {
+							path_filter_type = "regex"
+							value            = ".*"
+						  }
+						  host_filter {
+							host_filter_type = "regex"
+							value            = "api\\.example\\.com"
+						  }
+						}
+					  }
+					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesRouteExists(tt, "scaleway_edge_services_route_stage.main"),
@@ -189,51 +209,66 @@ func TestAccEdgeServicesRoute_WafRule(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
-				resource "scaleway_edge_services_pipeline" "main" {
-				  name        = "my-edge-services-pipeline-waf-rule"
-				  description = "pipeline for waf rule test"
-				}
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_route-basic"
+					}
 
-				resource "scaleway_edge_services_waf_stage" "waf" {
-				  pipeline_id    = scaleway_edge_services_pipeline.main.id
-				  mode           = "enable"
-				  paranoia_level = 2
-				}
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
 
-				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-waf-route-rule"
-				  tags = {
-					foo = "bar"
-				  }
-				}
+					resource "scaleway_edge_services_pipeline" "main" {
+					  name        = "my-edge-services-pipeline-waf-rule"
+					  description = "pipeline for waf rule test"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
+					}
 
-				resource "scaleway_edge_services_backend_stage" "backend" {
-				  pipeline_id = scaleway_edge_services_pipeline.main.id
-				  s3_backend_config {
-					bucket_name   = scaleway_object_bucket.main.name
-					bucket_region = "fr-par"
-				  }
-				}
+					resource "scaleway_edge_services_waf_stage" "waf" {
+					  pipeline_id    = scaleway_edge_services_pipeline.main.id
+					  mode           = "enable"
+					  paranoia_level = 2
+					}
 
-				resource "scaleway_edge_services_route_stage" "main" {
-				  pipeline_id      = scaleway_edge_services_pipeline.main.id
-				  backend_stage_id = scaleway_edge_services_backend_stage.backend.id
-
-				  rule {
-					waf_stage_id = scaleway_edge_services_waf_stage.waf.id
-					rule_http_match {
-					  method_filters = ["get"]
-					  path_filter {
-						path_filter_type = "regex"
-						value            = "/api/.*"
+					resource "scaleway_object_bucket" "main" {
+					  name = "tf-test-scaleway-object-bucket-waf-route-rule"
+					  tags = {
+						foo = "bar"
 					  }
 					}
-				  }
-				}
+
+					resource "scaleway_edge_services_backend_stage" "backend" {
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
+					  s3_backend_config {
+						bucket_name   = scaleway_object_bucket.main.name
+						bucket_region = "fr-par"
+					  }
+					}
+
+					resource "scaleway_edge_services_route_stage" "main" {
+					  pipeline_id      = scaleway_edge_services_pipeline.main.id
+					  backend_stage_id = scaleway_edge_services_backend_stage.backend.id
+
+					  rule {
+						waf_stage_id = scaleway_edge_services_waf_stage.waf.id
+						rule_http_match {
+						  method_filters = ["get"]
+						  path_filter {
+							path_filter_type = "regex"
+							value            = "/api/.*"
+						  }
+						}
+					  }
+					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					edgeservicestestfuncs.CheckEdgeServicesRouteExists(tt, "scaleway_edge_services_route_stage.main"),

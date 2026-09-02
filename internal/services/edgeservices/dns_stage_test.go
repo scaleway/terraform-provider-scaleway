@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	edgeservicestestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func TestAccEdgeServicesDNS_Basic(t *testing.T) {
@@ -14,17 +15,31 @@ func TestAccEdgeServicesDNS_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_dns-basic"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_dns_stage" "main" {
-                      pipeline_id = scaleway_edge_services_pipeline.main.id
+					  pipeline_id = scaleway_edge_services_pipeline.main.id
 					  fqdns       = ["subodomain.example.fr"]
 					}
 				`,
@@ -54,7 +69,11 @@ func TestAccEdgeServicesDNS_Wildcard(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesDNSDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				// A wildcard DNS stage requires the linked TLS stage to hold a valid, CA-signed
@@ -64,14 +83,25 @@ func TestAccEdgeServicesDNS_Wildcard(t *testing.T) {
 					data "scaleway_secret" "main" {
 					  secret_id = "d023fa93-eb36-44b5-91b8-13b998e2e630"
 					}
-	
+
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_dns-wildcard"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-edge-dns-wildcard"
 					  description = "pipeline for wildcard DNS test"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-edge-dns-wildcard"
+					  name = "tf-test-edge-dns-wildcard"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

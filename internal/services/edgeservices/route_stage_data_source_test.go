@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	edgeservicestestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/edgeservices/testfuncs"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func TestAccDataSourceRouteStage_ByID(t *testing.T) {
@@ -14,13 +15,28 @@ func TestAccDataSourceRouteStage_ByID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_route-basic"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-route-id"
 					  description = "pipeline for route data source test"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_waf_stage" "waf" {
@@ -30,7 +46,7 @@ func TestAccDataSourceRouteStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-route-id"
+					  name = "tf-test-scaleway-object-bucket-ds-route-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "backend" {
@@ -83,13 +99,28 @@ func TestAccDataSourceRouteStage_ByPipelineID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesRouteDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_route-basic"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "tf-tests-ds-route-filter"
 					  description = "pipeline for route filter test"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_waf_stage" "waf" {
@@ -99,7 +130,7 @@ func TestAccDataSourceRouteStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-route-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-route-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "backend" {

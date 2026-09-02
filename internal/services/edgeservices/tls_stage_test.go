@@ -14,17 +14,31 @@ func TestAccEdgeServicesTLS_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             edgeservicestestfuncs.CheckEdgeServicesTLSDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			edgeservicestestfuncs.CheckEdgeServicesTLSDestroy(tt),
+			edgeservicestestfuncs.CheckEdgeServicesPlanDestroy(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
+					resource "scaleway_account_project" "main" {
+					  name = "tf_tests_edge_services_project_tls-basic"
+					}
+
+					resource "scaleway_edge_services_plan" "main" {
+					  name       = "starter"
+					  project_id = scaleway_account_project.main.id
+					}
+
 					resource "scaleway_edge_services_pipeline" "main" {
 					  name        = "my-edge_services-pipeline"
 					  description = "pipeline description"
+					  depends_on  = [scaleway_edge_services_plan.main]
+					  project_id  = scaleway_account_project.main.id
 					}
 
 					resource "scaleway_edge_services_tls_stage" "main" {
-                      pipeline_id         = scaleway_edge_services_pipeline.main.id
+					  pipeline_id         = scaleway_edge_services_pipeline.main.id
 					  managed_certificate = true
 					}
 				`,
