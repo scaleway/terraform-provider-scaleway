@@ -89,7 +89,7 @@ func (r *VersionEphemeralResource) Schema(ctx context.Context, req ephemeral.Sch
 				Computed:    true,
 				Description: "The ID of the secret associated with the version. Either secret_id or secret_name must be specified.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 					stringvalidator.ExactlyOneOf(
 						path.MatchRoot("secret_id"),
 						path.MatchRoot("secret_name"),

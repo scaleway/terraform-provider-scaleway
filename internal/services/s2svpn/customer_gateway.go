@@ -72,6 +72,11 @@ func customerGatewaySchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the TLS stage",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the customer gateway",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -168,6 +173,7 @@ func setCustomerGatewayState(d *schema.ResourceData, gateway *s2s_vpn.CustomerGa
 	_ = d.Set("ipv6_public", types.FlattenIPPtr(gateway.PublicIPv6))
 	_ = d.Set("asn", int(gateway.Asn))
 	_ = d.Set("region", gateway.Region.String())
+	_ = d.Set("srn", gateway.Srn)
 
 	return nil
 }
