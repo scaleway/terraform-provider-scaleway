@@ -77,7 +77,7 @@ func (a *StartJobDefinitionAction) Schema(ctx context.Context, req action.Schema
 				Required:    true,
 				Description: "ID of the job definition to start. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"region": regional.SchemaAttribute("Region of the job definition. If not set, the region is derived from the job_definition_id when possible or from the provider configuration."),

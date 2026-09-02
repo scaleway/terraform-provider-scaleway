@@ -31,7 +31,7 @@ func TestAccAction_InstanceExportSnapshot_Local(t *testing.T) {
 
 	var bucketName string
 	for {
-		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-local")
+		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-local")
 		if len(bucketName) < 63 {
 			break
 		}
@@ -153,7 +153,7 @@ func TestAccAction_InstanceExportSnapshot_SBS(t *testing.T) {
 
 	var bucketName string
 	for {
-		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-sbs")
+		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-sbs")
 		if len(bucketName) < 63 {
 			break
 		}
@@ -273,7 +273,7 @@ func TestAccAction_InstanceExportSnapshot_Wait(t *testing.T) {
 
 	var bucketName string
 	for {
-		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-wait")
+		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-wait")
 		if len(bucketName) < 63 {
 			break
 		}
@@ -391,7 +391,7 @@ func TestAccAction_InstanceExportSnapshot_Zone(t *testing.T) {
 
 	var bucketName string
 	for {
-		bucketName = sdkacctest.RandomWithPrefix("test-acc-action-instance-export-snap-zone")
+		bucketName = sdkacctest.RandomWithPrefix("tf-test-action-instance-export-snap-zone")
 		if len(bucketName) < 63 {
 			break
 		}

@@ -45,6 +45,7 @@ type samlResourceModel struct {
 	EntityID        types.String `tfsdk:"entity_id"`
 	SingleSignOnURL types.String `tfsdk:"single_sign_on_url"`
 	Status          types.String `tfsdk:"status"`
+	Srn             types.String `tfsdk:"srn"`
 	ServiceProvider types.Object `tfsdk:"service_provider"`
 }
 
@@ -121,6 +122,10 @@ func (r *SamlResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"status": schema.StringAttribute{
 				MarkdownDescription: "The status of the SAML configuration",
+				Computed:            true,
+			},
+			"srn": schema.StringAttribute{
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the SAML configuration",
 				Computed:            true,
 			},
 			"service_provider": schema.ObjectAttribute{
@@ -356,6 +361,7 @@ func convertSamlToState(saml *iam.Saml, orgID string, diags *diag.Diagnostics) s
 		EntityID:        types.StringValue(saml.EntityID),
 		SingleSignOnURL: types.StringValue(saml.SingleSignOnURL),
 		Status:          types.StringValue(string(saml.Status)),
+		Srn:             types.StringValue(saml.Srn),
 		OrganizationID:  types.StringValue(orgID),
 		ServiceProvider: getServiceProviderObject(saml.ServiceProvider, diags),
 	}

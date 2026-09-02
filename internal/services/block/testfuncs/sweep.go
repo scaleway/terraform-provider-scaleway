@@ -1,8 +1,6 @@
 package blocktestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -32,7 +30,9 @@ func testSweepBlockVolume(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing volume in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing volume in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, volume := range listVolumes.Volumes {
@@ -41,9 +41,7 @@ func testSweepBlockVolume(_ string) error {
 				Zone:     zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting volume in sweeper: %w", err)
+				logging.L.Warningf("error deleting volume in sweeper: %s", err)
 			}
 		}
 
@@ -62,7 +60,9 @@ func testSweepSnapshot(_ string) error {
 				Zone: zone,
 			}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing snapshot in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing snapshot in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, snapshot := range listSnapshots.Snapshots {
@@ -71,9 +71,7 @@ func testSweepSnapshot(_ string) error {
 				Zone:       zone,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting snapshot in sweeper: %w", err)
+				logging.L.Warningf("error deleting snapshot in sweeper: %s", err)
 			}
 		}
 

@@ -35,53 +35,59 @@ func TestAccActionServer_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-server-basic"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_server_action.main]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "main" {
-						config {
-						  	action = "reboot"
-							server_id = scaleway_instance_server.main.id
+						resource "scaleway_instance_server" "main" {
+							name = "test-terraform-action-server-basic"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}`,
+
+						action "scaleway_instance_server_action" "main" {
+							config {
+							  	action = "reboot"
+								server_id = scaleway_instance_server.main.id
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger"
+							lifecycle {
+								action_trigger {
+									events  = [after_create]
+									actions = [action.scaleway_instance_server_action.main]
+								}
+							}
+						}`,
 			},
 			{
 				Config: `
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-server-basic"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_server_action.main]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "main" {
-						config {
-						  	action = "reboot"
-							server_id = scaleway_instance_server.main.id
+						resource "scaleway_instance_server" "main" {
+							name = "test-terraform-action-server-basic"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}
 
-					data "scaleway_audit_trail_event" "instance" {
-						resource_type = "instance_server"
-						resource_id = scaleway_instance_server.main.id
-						method_name = "ServerAction"
-					}`,
+						action "scaleway_instance_server_action" "main" {
+							config {
+							  	action = "reboot"
+								server_id = scaleway_instance_server.main.id
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger"
+							lifecycle {
+								action_trigger {
+									events  = [after_create]
+									actions = [action.scaleway_instance_server_action.main]
+								}
+							}
+						}
+
+						data "scaleway_audit_trail_event" "instance" {
+							resource_type = "instance_server"
+							resource_id = scaleway_instance_server.main.id
+							method_name = "ServerAction"
+						}`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_audit_trail_event.instance", "events.#"),
 					func(state *terraform.State) error {
@@ -121,13 +127,13 @@ func TestAccActionServer_UnknownVerb(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					action "scaleway_instance_server_action" "main" {
-						config {
-						  	action = "unknownVerb"
-							server_id = "11111111-1111-1111-1111-111111111111"
+						action "scaleway_instance_server_action" "main" {
+							config {
+							  	action = "unknownVerb"
+								server_id = "11111111-1111-1111-1111-111111111111"
+							}
 						}
-					}
-				`,
+					`,
 				ExpectError: regexp.MustCompile("Invalid Attribute Value Match"),
 			},
 		},
@@ -148,26 +154,29 @@ func TestAccActionServer_On_Off(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-server-on-off"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_server_action.stop]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "stop" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = true
+						resource "scaleway_instance_server" "main" {
+							name = "test-terraform-action-server-on-off"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}`, instanceSDK.ServerActionStopInPlace),
+
+						action "scaleway_instance_server_action" "stop" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = true
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger"
+							lifecycle {
+								action_trigger {
+									events  = [after_create]
+									actions = [action.scaleway_instance_server_action.stop]
+								}
+							}
+						}`, instanceSDK.ServerActionStopInPlace),
 			},
 			{
 				RefreshState: true,
@@ -178,26 +187,29 @@ func TestAccActionServer_On_Off(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "should-be-powered-off"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_update]
-						  		actions = [action.scaleway_instance_server_action.poweroff]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "poweroff" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = true
+						resource "scaleway_instance_server" "main" {
+							name = "should-be-powered-off"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}`, instanceSDK.ServerActionPoweroff),
+
+						action "scaleway_instance_server_action" "poweroff" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = true
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger-update-1"
+							lifecycle {
+								action_trigger {
+									events  = [after_update]
+									actions = [action.scaleway_instance_server_action.poweroff]
+								}
+							}
+						}`, instanceSDK.ServerActionPoweroff),
 			},
 			{
 				RefreshState: true,
@@ -208,26 +220,29 @@ func TestAccActionServer_On_Off(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "should-be-started"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_update]
-						  		actions = [action.scaleway_instance_server_action.start]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "start" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = true
+						resource "scaleway_instance_server" "main" {
+							name = "should-be-started"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}`, instanceSDK.ServerActionPoweron),
+
+						action "scaleway_instance_server_action" "start" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = true
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger-update-2"
+							lifecycle {
+								action_trigger {
+									events  = [after_update]
+									actions = [action.scaleway_instance_server_action.start]
+								}
+							}
+						}`, instanceSDK.ServerActionPoweron),
 			},
 			{
 				RefreshState: true,
@@ -238,26 +253,29 @@ func TestAccActionServer_On_Off(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "should-be-terminated"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_update]
-						  		actions = [action.scaleway_instance_server_action.terminate]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "terminate" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = false
+						resource "scaleway_instance_server" "main" {
+							name = "should-be-terminated"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 						}
-					}`, instanceSDK.ServerActionTerminate),
+
+						action "scaleway_instance_server_action" "terminate" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = false
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger-update-3"
+							lifecycle {
+								action_trigger {
+									events  = [after_update]
+									actions = [action.scaleway_instance_server_action.terminate]
+								}
+							}
+						}`, instanceSDK.ServerActionTerminate),
 				ExpectNonEmptyPlan: true,
 			},
 			{
@@ -289,31 +307,31 @@ func TestAccActionServer_Backup(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-server-backup"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
+						resource "scaleway_instance_server" "main" {
+							name = "test-terraform-action-server-backup"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
 
-						root_volume {
-							volume_type = "%s"
-							size_in_gb = %d
-						}
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_server_action.backup]
+							root_volume {
+								volume_type = "%s"
+								size_in_gb = %d
 							}
-					  	}
-					}
 
-					action "scaleway_instance_server_action" "backup" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = true
+						  	lifecycle {
+								action_trigger {
+							  		events  = [after_create]
+							  		actions = [action.scaleway_instance_server_action.backup]
+								}
+						  	}
 						}
-					}`, rootVolumeType, rootVolumeSize, instanceSDK.ServerActionBackup),
+
+						action "scaleway_instance_server_action" "backup" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = true
+							}
+						}`, rootVolumeType, rootVolumeSize, instanceSDK.ServerActionBackup),
 			},
 			{
 				RefreshState: true,
@@ -343,27 +361,30 @@ func TestAccActionServer_Zone(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_instance_server" "main" {
-						name = "test-terraform-action-server-zone"
-						type = "DEV1-S"
-						image = "ubuntu_jammy"
-						zone = "pl-waw-1"
-
-					  	lifecycle {
-							action_trigger {
-						  		events  = [after_create]
-						  		actions = [action.scaleway_instance_server_action.stop]
-							}
-					  	}
-					}
-
-					action "scaleway_instance_server_action" "stop" {
-						config {
-						  	action = "%s"
-							server_id = scaleway_instance_server.main.id
-							wait = true
+						resource "scaleway_instance_server" "main" {
+							name = "test-terraform-action-server-zone"
+							type = "DEV1-S"
+							image = "ubuntu_jammy"
+							zone = "pl-waw-1"
 						}
-					}`, instanceSDK.ServerActionStopInPlace),
+
+						action "scaleway_instance_server_action" "stop" {
+							config {
+							  	action = "%s"
+								server_id = scaleway_instance_server.main.id
+								wait = true
+							}
+						}
+
+						resource "terraform_data" "trigger" {
+							input = "trigger"
+							lifecycle {
+								action_trigger {
+									events  = [after_create]
+									actions = [action.scaleway_instance_server_action.stop]
+								}
+							}
+						}`, instanceSDK.ServerActionStopInPlace),
 			},
 			{
 				RefreshState: true,

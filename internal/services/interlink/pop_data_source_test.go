@@ -17,15 +17,15 @@ func TestAccDataSourceInterlinkPop_ByName(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_interlink_pop" "by_name" {
-					  name   = "DC2"
+					  name   = "TeleHouse TH2"
 					  region = "fr-par"
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.scaleway_interlink_pop.by_name", "id"),
-					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "name", "DC2"),
-					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "hosting_provider_name", "OpCore"),
-					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "city", "Vitry-sur-Seine"),
+					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "name", "TeleHouse TH2"),
+					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "hosting_provider_name", "TeleHouse"),
+					resource.TestCheckResourceAttr("data.scaleway_interlink_pop.by_name", "city", "Paris"),
 				),
 			},
 		},
@@ -42,7 +42,7 @@ func TestAccDataSourceInterlinkPop_ByID(t *testing.T) {
 			{
 				Config: `
 					data "scaleway_interlink_pop" "by_name" {
-					  name   = "DC2"
+					  name   = "TeleHouse TH2"
 					  region = "fr-par"
 					}
 

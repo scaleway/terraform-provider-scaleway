@@ -222,7 +222,7 @@ func ResourceDomainCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		Region:     region,
 		ProjectID:  d.Get("project_id").(string),
 		DomainName: d.Get("name").(string),
-		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)),
+		AcceptTos:  types.ExpandBoolPtr(d.Get("accept_tos").(bool)), //nolint:staticcheck
 		Autoconfig: d.Get("autoconfig").(bool),
 	}, scw.WithContext(ctx))
 	if err != nil {

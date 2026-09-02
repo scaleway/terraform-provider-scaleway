@@ -125,7 +125,7 @@ func TestAccObjectBucket_CheckRegionIsSet(t *testing.T) {
 	defer tt.Cleanup()
 
 	bucketNamePrefix := "tf-tests-bucket-region"
-	bucketNameSuffix := sdkacctest.RandomWithPrefix("")
+	bucketNameSuffix := sdkacctest.RandomWithPrefix("tf-test")
 	objectBucketTestDefaultRegion, _ := tt.Meta.ScwClient().GetDefaultRegion()
 
 	resource.ParallelTest(t, resource.TestCase{

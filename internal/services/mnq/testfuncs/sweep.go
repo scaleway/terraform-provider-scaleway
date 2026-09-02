@@ -51,7 +51,9 @@ func testSweepSQSCredentials(_ string) error {
 				return nil
 			}
 
-			return fmt.Errorf("error listing sqs credentials in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing sqs credentials in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, credentials := range listSqsCredentials.SqsCredentials {
@@ -66,9 +68,7 @@ func testSweepSQSCredentials(_ string) error {
 					continue
 				}
 
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting sqs credentials in sweeper: %w", err)
+				logging.L.Warningf("error deleting sqs credentials in sweeper: %s", err)
 			}
 		}
 
@@ -104,9 +104,7 @@ func testSweepSQS(_ string) error {
 					continue
 				}
 
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return err
+				logging.L.Warningf("error deleting sqs in sweeper: %s", err)
 			}
 		}
 
@@ -129,7 +127,9 @@ func testSweepSNSCredentials(_ string) error {
 				return nil
 			}
 
-			return fmt.Errorf("error listing sns credentials in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing sns credentials in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, credentials := range listSnsCredentials.SnsCredentials {
@@ -144,9 +144,7 @@ func testSweepSNSCredentials(_ string) error {
 					continue
 				}
 
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting sns credentials in sweeper: %w", err)
+				logging.L.Warningf("error deleting sns credentials in sweeper: %s", err)
 			}
 		}
 
@@ -182,9 +180,7 @@ func testSweepSNS(_ string) error {
 					continue
 				}
 
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return err
+				logging.L.Warningf("error deleting sns in sweeper: %s", err)
 			}
 		}
 
@@ -207,7 +203,9 @@ func testSweepNatsAccount(_ string) error {
 				return nil
 			}
 
-			return fmt.Errorf("error listing nats account in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing nats account in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, account := range listNatsAccounts.NatsAccounts {
@@ -222,9 +220,7 @@ func testSweepNatsAccount(_ string) error {
 					continue
 				}
 
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting nats account in sweeper: %w", err)
+				logging.L.Warningf("error deleting nats account in sweeper: %s", err)
 			}
 		}
 
