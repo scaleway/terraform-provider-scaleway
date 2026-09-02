@@ -145,7 +145,7 @@ func (m *ResourceIdentifierManager[T]) GetAnnotationValueID(ctx context.Context,
 	return "", nil
 }
 
-func (m *ResourceIdentifierManager[T]) GetOrCreateValue(ctx context.Context, keyID, annotationValue string) (string, error) {
+func (m *ResourceIdentifierManager[T]) GetOrCreateAnnotationValue(ctx context.Context, keyID, annotationValue string) (string, error) {
 	identifierValueID, err := m.GetAnnotationValueID(ctx, keyID, annotationValue)
 	if err != nil {
 		return "", err
@@ -222,21 +222,16 @@ func (m *ResourceIdentifierManager[T]) FindResourceByDescription(ctx context.Con
 	return m.ResourceHandler.FindByDescription(ctx, description, organizationID)
 }
 
-func (m *ResourceIdentifierManager[T]) GetOrCreateAnnotationBinding(ctx context.Context, resourceSRN, identifierValueID, organizationID string) error {
-	existingBindingsResp, err := m.annotationsAPI.ListBindings(&annotations.ListBindingsRequest{
-		OrganizationID: organizationID,
-		ValueID:        &identifierValueID,
-		Srn:            &resourceSRN,
-	}, scw.WithContext(ctx), scw.WithAllPages())
-	if err != nil {
-		return fmt.Errorf("failed to list existing bindings: %w", err)
-	}
+func (m *ResourceIdentifierManager[T]) CreateOrUpdateAnnotationBinding(ctx context.Context, resourceSRN, identifierValueID, organizationID string, updateBinding bool) error {
+	existingBinding, err := m.GetAnnotationBinding(ctx, organizationID, identifierValueID)
 
-	if len(existingBindingsResp.Bindings) > 1 {
-		return fmt.Errorf("found %d bindings for the given SRN and value ID, expected at most 1", len(existingBindingsResp.Bindings))
-	}
-
-	if len(existingBindingsResp.Bindings) == 1 {
+	if updateBinding && existingBinding != nil {
+		if err := m.annotationsAPI.DeleteBinding(&annotations.DeleteBindingRequest{
+			BindingID: existingBinding.ID,
+		}, scw.WithContext(ctx)); err != nil {
+			return fmt.Errorf("failed to delete existing binding: %w", err)
+		}
+	} else if existingBinding != nil {
 		return nil
 	}
 
@@ -251,18 +246,18 @@ func (m *ResourceIdentifierManager[T]) GetOrCreateAnnotationBinding(ctx context.
 	return nil
 }
 
-func (m *ResourceIdentifierManager[T]) GetOrCreateAnnotationIdentifier(ctx context.Context, resourceSRN, annotationValue, organizationID string) error {
+func (m *ResourceIdentifierManager[T]) CreateOrUpdateAnnotationIdentifier(ctx context.Context, resourceSRN, annotationValue, organizationID string, updateBinding bool) error {
 	annotationKeyID, err := m.GetOrCreateAnnotationKey(ctx, organizationID)
 	if annotationKeyID == "" || err != nil {
 		return err
 	}
 
-	identifierValueID, err := m.GetOrCreateValue(ctx, annotationKeyID, annotationValue)
+	identifierValueID, err := m.GetOrCreateAnnotationValue(ctx, annotationKeyID, annotationValue)
 	if identifierValueID == "" || err != nil {
 		return err
 	}
 
-	return m.GetOrCreateAnnotationBinding(ctx, resourceSRN, identifierValueID, organizationID)
+	return m.CreateOrUpdateAnnotationBinding(ctx, resourceSRN, identifierValueID, organizationID, updateBinding)
 }
 
 func (m *ResourceIdentifierManager[T]) GetResourceByID(ctx context.Context, id string) (*T, error) {

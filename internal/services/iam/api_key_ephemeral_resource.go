@@ -97,7 +97,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 				Optional:    true,
 				Description: "The description of the iam api key. Conflicts with `annotation_identifier` and `description_identifier`.",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.MatchRoot("annotation_identifier"), path.MatchRoot("description_identifier")),
+					stringvalidator.ConflictsWith(path.MatchRoot("description_identifier")),
 				},
 			},
 			"created_at": schema.StringAttribute{
@@ -152,7 +152,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 			"ephemeral_lifecycle": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Controls the lifecycle behavior of the ephemeral API key. `persist` (default): the API key and its annotations are not deleted when the ephemeral resource is closed. `delete`: the API key and its annotations are deleted when the ephemeral resource is closed. `replace`: any existing API key with the same identifier is deleted and a new one is created. Requires either `annotation_identifier` or `description_identifier` to be set.",
+				Description: "Controls the lifecycle behavior of the ephemeral API key. `persist` (default): the API key and its annotations are not deleted when the ephemeral resource is closed, and are not recreated on subsequent applies. `delete`: the API key and its annotations are deleted when the ephemeral resource is closed. `replace`: any existing API key with the same identifier is deleted and a new one is created. Requires either `annotation_identifier` or `description_identifier` to be set.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("persist", "delete", "replace"),
 					verify.StringAlsoRequiresOneOf(path.MatchRoot("annotation_identifier"), path.MatchRoot("description_identifier")),
@@ -160,9 +160,10 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 			},
 			"annotation_identifier": schema.StringAttribute{
 				Optional:    true,
-				Description: "String value used as identifier. Must be a unique string (e.g., UUID v7) to identify the resource. This value is stored as an annotation with key 'iam_terraform_identifier'. Conflicts with `description` and `description_identifier`.",
+				Description: "String value used as identifier. Must be a unique string (e.g., UUID v7) to identify the resource. This value is stored as an annotation with key 'iam_terraform_identifier'. Conflicts with `description_identifier`.",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.MatchRoot("description"), path.MatchRoot("description_identifier")),
+					stringvalidator.ConflictsWith(path.MatchRoot("description_identifier")),
+					stringvalidator.AlsoRequires(path.MatchRoot("ephemeral_lifecycle")),
 				},
 			},
 			"description_identifier": schema.StringAttribute{
@@ -170,6 +171,7 @@ func (r *ApiKeyEphemeralResource) Schema(ctx context.Context, req ephemeral.Sche
 				Description: "Unique description used as identifier. Must be a unique string (e.g., UUID v7) to identify the resource. Conflicts with `description` and `annotation_identifier`.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("description"), path.MatchRoot("annotation_identifier")),
+					stringvalidator.AlsoRequires(path.MatchRoot("ephemeral_lifecycle")),
 				},
 			},
 		},
@@ -195,9 +197,9 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 	}
 
 	var (
-		existingAPIKey        *iam.APIKey
-		identifierDescription string
-		err                   error
+		existingAPIKey *iam.APIKey
+		description    string
+		err            error
 	)
 
 	orgID, exists := r.meta.ScwClient().GetDefaultOrganizationID()
@@ -235,11 +237,9 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 
 			return
 		}
-
-		// TODO: annotation should be compatible with description and not set here
-		// Use the annotation value as description for the new key
-		identifierDescription = "annotation_identifier:" + annotationValue
 	}
+
+	description = data.Description.ValueString()
 
 	if hasDescriptionIdentifier {
 		descriptionIdentifier := data.DescriptionIdentifier.ValueString()
@@ -254,7 +254,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 			return
 		}
 
-		identifierDescription = descriptionIdentifier
+		description = descriptionIdentifier
 	}
 
 	lifecycle := "persist"
@@ -270,7 +270,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 			ApplicationID:    data.ApplicationID.ValueStringPointer(),
 			UserID:           data.UserID.ValueStringPointer(),
 			DefaultProjectID: data.DefaultProjectID.ValueStringPointer(),
-			Description:      identifierDescription,
+			Description:      description,
 		}
 
 		if !data.ExpiresAt.IsNull() && !data.ExpiresAt.IsUnknown() && data.ExpiresAt.ValueString() != "" {
@@ -299,7 +299,7 @@ func (r *ApiKeyEphemeralResource) Open(ctx context.Context, req ephemeral.OpenRe
 
 		if hasAnnotationIdentifier {
 			annotationValue := data.AnnotationIdentifier.ValueString()
-			if err := r.identifierClient.GetOrCreateAnnotationIdentifier(ctx, res.Srn, annotationValue, orgID); err != nil {
+			if err := r.identifierClient.CreateOrUpdateAnnotationIdentifier(ctx, res.Srn, annotationValue, orgID, shouldReplace); err != nil {
 				resp.Diagnostics.AddError(
 					"Error setting up identifier annotations",
 					err.Error(),
@@ -363,6 +363,8 @@ func (r *ApiKeyEphemeralResource) Close(ctx context.Context, req ephemeral.Close
 		return
 	}
 
+	// Only clean up for "delete" lifecycle. "persist" and "replace" lifecycles
+	// keep the resource after the ephemeral block closes.
 	if lifecycle != "delete" {
 		return
 	}
