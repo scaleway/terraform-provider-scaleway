@@ -21,7 +21,6 @@ func AddTestSweepers() {
 		Name: "scaleway_annotations_key",
 		F:    testSweepAnnotationsKey,
 	})
-
 }
 
 func testSweepAnnotationsBinding(_ string) error {
@@ -33,6 +32,7 @@ func testSweepAnnotationsBinding(_ string) error {
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
 			logging.L.Warningf("sweeper: missing organizationID")
+
 			return nil
 		}
 
@@ -41,6 +41,7 @@ func testSweepAnnotationsBinding(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("sweeper: failed to list bindings: %s", err)
+
 			return nil
 		}
 
@@ -68,6 +69,7 @@ func testSweepAnnotationsValue(_ string) error {
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
 			logging.L.Warningf("sweeper: missing organizationID")
+
 			return nil
 		}
 
@@ -76,6 +78,7 @@ func testSweepAnnotationsValue(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("sweeper: failed to list annotation values: %s", err)
+
 			return nil
 		}
 
@@ -103,6 +106,7 @@ func testSweepAnnotationsKey(_ string) error {
 		orgID, exists := scwClient.GetDefaultOrganizationID()
 		if !exists {
 			logging.L.Warningf("sweeper: missing organizationID")
+
 			return nil
 		}
 
@@ -111,6 +115,7 @@ func testSweepAnnotationsKey(_ string) error {
 		}, scw.WithAllPages())
 		if err != nil {
 			logging.L.Warningf("sweeper: failed to list annotation keys: %s", err)
+
 			return nil
 		}
 

@@ -33,7 +33,7 @@ func TestAccApiKeyEphemeralResource_WithApplication(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_api_key_er_with_app_desc"
@@ -90,7 +90,7 @@ func TestAccApiKeyEphemeralResource_DefaultProject(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /api-keys" request.
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_api_key_er_project_desc"
@@ -143,7 +143,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Persist_CreatesNew
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	descriptionIdentifier := "tf_test_desc_identifier_create_unique"
@@ -196,7 +196,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationIdentifier_DeleteLifecycle(t *
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_annot_delete_lifecycle"
@@ -210,6 +210,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationIdentifier_DeleteLifecycle(t *
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -235,10 +236,12 @@ func TestAccApiKeyEphemeralResource_WithAnnotationIdentifier_DeleteLifecycle(t *
 					}
 					// Store the access key for later verification
 					var err error
+
 					accessKey, err = getAPIKeyAccessKeyByAnnotation(tt, description)
 					if err != nil {
 						return err
 					}
+
 					return nil
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -267,12 +270,14 @@ func TestAccApiKeyEphemeralResource_WithAnnotationIdentifier_DeleteLifecycle(t *
 				Check: func(s *terraform.State) error {
 					// Verify the API key has been deleted
 					iamAPI := iam.NewAPI(tt.Meta)
+
 					_, err := iamAPI.GetAPIKey(&iamSDK.GetAPIKeyRequest{
 						AccessKey: accessKey,
 					})
 					if err == nil {
 						return fmt.Errorf("API key with access key %q still exists, expected it to be deleted after lifecycle changed to delete", accessKey)
 					}
+
 					if !httperrors.Is403(err) && !httperrors.Is404(err) {
 						return fmt.Errorf("failed to check API key deletion: %w", err)
 					}
@@ -303,7 +308,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace_CreatesNew
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	descriptionIdentifier := "tf_test_desc_identifier_replace_unique"
@@ -357,7 +362,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Persist_NoRecreate
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	descriptionIdentifier := "tf_test_desc_identifier_reuse_unique"
@@ -452,7 +457,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_Replace_ReplacesPr
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-08-25T14:29:31Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	descriptionIdentifier := "tf_test_desc_identifier_recreate_unique"
@@ -552,7 +557,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationAndDescription(t *testing.T) {
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_api_key_with_desc_and_annot"
@@ -564,7 +569,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationAndDescription(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
-			testAccCheckIamAPIKeyAnnotationDestroy(tt, description),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -627,7 +632,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Persist_CreatesNew
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_annot_persist_create"
@@ -639,7 +644,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Persist_CreatesNew
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
-			testAccCheckIamAPIKeyAnnotationDestroy(tt, description),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -681,7 +686,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace_CreatesNew
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_annot_replace_create"
@@ -693,6 +698,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace_CreatesNew
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -735,7 +741,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Persist_NoRecreate
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_annot_persist_norecreate"
@@ -749,6 +755,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Persist_NoRecreate
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -830,7 +837,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace_ReplacesPr
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	description := "tf_test_annot_replace_replaces"
@@ -844,7 +851,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationsIdentifier_Replace_ReplacesPr
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testAccCheckIamApplicationDestroy(tt),
 			testAccCheckIamAPIKeyDestroy(tt),
-			testAccCheckIamAPIKeyAnnotationDestroy(tt, description),
+			testAccCheckAnnotationValueDestroy(tt, description),
 		),
 		Steps: []resource.TestStep{
 			{
@@ -931,7 +938,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_ErrorMismatch(t *t
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	descriptionIdentifier := "tf_test_desc_identifier_mismatch_unique"
@@ -975,7 +982,7 @@ func TestAccApiKeyEphemeralResource_WithAnnotationIdentifier_ErrorMissingLifecyc
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	appName := "tf_test_app_missing_lifecycle_annot"
@@ -1016,7 +1023,7 @@ func TestAccApiKeyEphemeralResource_WithDescriptionIdentifier_ErrorMissingLifecy
 
 	expiresAt := time.Now().Add(time.Minute * 10).UTC().Format(time.RFC3339)
 	if !*acctest.UpdateCassettes {
-		expiresAt = "2026-06-10T16:22:39Z"
+		expiresAt = "2026-09-02T17:11:29Z"
 	}
 
 	appName := "tf_test_app_missing_lifecycle_desc"
@@ -1312,7 +1319,7 @@ func getAnnotationBindingByValue(tt *acctest.TestTools, annotationValue string) 
 	return bindingsResp.Bindings[0], nil
 }
 
-func testAccCheckIamAPIKeyAnnotationDestroy(tt *acctest.TestTools, annotationValue string) resource.TestCheckFunc {
+func testAccCheckAnnotationValueDestroy(tt *acctest.TestTools, annotationValue string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		annotationsAPI := annotations.NewAPI(tt.Meta.ScwClient())
 
