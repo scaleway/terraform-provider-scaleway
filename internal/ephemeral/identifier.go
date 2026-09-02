@@ -224,6 +224,9 @@ func (m *ResourceIdentifierManager[T]) FindResourceByDescription(ctx context.Con
 
 func (m *ResourceIdentifierManager[T]) CreateOrUpdateAnnotationBinding(ctx context.Context, resourceSRN, identifierValueID, organizationID string, updateBinding bool) error {
 	existingBinding, err := m.GetAnnotationBinding(ctx, organizationID, identifierValueID)
+	if err != nil {
+		return fmt.Errorf("failed to get existing binding: %w", err)
+	}
 
 	if updateBinding && existingBinding != nil {
 		if err := m.annotationsAPI.DeleteBinding(&annotations.DeleteBindingRequest{
