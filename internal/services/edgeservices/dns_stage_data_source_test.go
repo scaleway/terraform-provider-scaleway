@@ -24,7 +24,7 @@ func TestAccDataSourceDNSStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-dns-id"
+					  name = "tf-test-scaleway-object-bucket-ds-dns-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -72,7 +72,7 @@ func TestAccDataSourceDNSStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-dns-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-dns-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

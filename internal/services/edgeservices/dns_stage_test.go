@@ -71,7 +71,7 @@ func TestAccEdgeServicesDNS_Wildcard(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-edge-dns-wildcard"
+					  name = "tf-test-edge-dns-wildcard"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
