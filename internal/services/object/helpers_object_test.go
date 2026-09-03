@@ -118,10 +118,18 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 			Description: "",
 		},
 		"endpoints": {
-			Type:        schema.TypeMap,
+			Type:        schema.TypeSet,
 			Optional:    true,
 			Description: "",
-			Elem:        &schema.Schema{Type: schema.TypeString},
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"s3": {
+						Type:        schema.TypeString,
+						Optional:    true,
+						Description: "",
+					},
+				},
+			},
 		},
 	}
 
@@ -138,8 +146,10 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 			name: "s3 valid endpoint without path style",
 			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
 				"s3_use_path_style": false,
-				"endpoints": map[string]any{
-					"s3": "https://mys3.endpoint.com",
+				"endpoints": []any{
+					map[string]any{
+						"s3": "https://mys3.endpoint.com",
+					},
 				},
 			}),
 			bucketName:          "my-bucket",
@@ -151,8 +161,10 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 			name: "s3 valid endpoint with path style",
 			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
 				"s3_use_path_style": true,
-				"endpoints": map[string]any{
-					"s3": "https://mys3.endpoint.com",
+				"endpoints": []any{
+					map[string]any{
+						"s3": "https://mys3.endpoint.com",
+					},
 				},
 			}),
 			bucketName:          "my-bucket-hehe",
@@ -164,8 +176,10 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 			name: "s3 empty endpoint with path style",
 			d: schema.TestResourceDataRaw(t, resourceSchema, map[string]any{
 				"s3_use_path_style": true,
-				"endpoints": map[string]any{
-					"s3": "",
+				"endpoints": []any{
+					map[string]any{
+						"s3": "",
+					},
 				},
 			}),
 			bucketName:          "my-bucket-hehe",

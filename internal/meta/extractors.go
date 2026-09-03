@@ -117,9 +117,15 @@ func convertEndpointsMap(endpointsAny map[string]any) (endpointsString map[strin
 //   - endpoints field of the resource data
 //   - endpoints from config
 func ExtractEndpoints(d terraformResourceData, m any) map[string]string {
-	rawConfigEndpoints, ok := d.GetOk("endpoints")
-	if ok && rawConfigEndpoints != nil {
-		return convertEndpointsMap(rawConfigEndpoints.(map[string]any))
+	if rawConfigEndpoints, ok := d.GetOk("endpoints"); ok && rawConfigEndpoints != nil {
+		switch v := rawConfigEndpoints.(type) {
+		case *schema.Set:
+			if v.Len() > 0 {
+				return convertEndpointsMap(v.List()[0].(map[string]any))
+			}
+		case map[string]any:
+			return convertEndpointsMap(v)
+		}
 	}
 
 	meta, ok := m.(*Meta)
