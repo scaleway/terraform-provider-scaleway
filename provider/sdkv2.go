@@ -486,7 +486,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				return m, diags
 			}
 
-			if ok { // && err == nil
+			if ok {
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
 					Summary:  "Multiple variable sources detected, please make sure the right credentials are used",
