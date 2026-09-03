@@ -11,7 +11,7 @@ For further information refer to the Managed Databases for MongoDB® [API docume
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_mongodb_instance" "my_instance" {
   name = "foobar"

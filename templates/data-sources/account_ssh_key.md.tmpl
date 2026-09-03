@@ -16,7 +16,7 @@ The following commands allow you to:
 - retrieve an SSH key by its name
 - retrieve an SSH key by its ID
 
-```hcl
+```terraform
 # Get info by SSH key name
 data "scaleway_account_ssh_key" "my_key" {
   name = "my-key-name"

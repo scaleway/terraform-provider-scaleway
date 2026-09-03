@@ -47,10 +47,10 @@ resource "scaleway_s2s_vpn_routing_policy" "policy" {
 }
 
 resource "scaleway_s2s_vpn_connection" "main" {
-  name                = "my-vpn-connection"
-  vpn_gateway_id      = scaleway_s2s_vpn_gateway.gateway.id
-  customer_gateway_id = scaleway_s2s_vpn_customer_gateway.customer_gw.id
-  initiation_policy   = "customer_gateway"
+  name                     = "my-vpn-connection"
+  vpn_gateway_id           = scaleway_s2s_vpn_gateway.gateway.id
+  customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.customer_gw.id
+  initiation_policy        = "customer_gateway"
   enable_route_propagation = true
 
   bgp_config_ipv4 {
@@ -124,6 +124,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the connection (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the connection (RFC 3339 format).
 - `organization_id` - The Organization ID the connection is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the connection.
 
 ### BGP Session
 

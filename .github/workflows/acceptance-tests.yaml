@@ -65,7 +65,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
       - name: Install Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -151,6 +151,7 @@ jobs:
           SCW_ACCESS_KEY: "SCWXXXXXXXXXXXXXFAKE"
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_ENABLE_BETA: true
+          AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
   test-scwconfig:
     strategy:
       fail-fast: false
@@ -160,7 +161,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       - name: Install Terraform
@@ -234,7 +235,7 @@ jobs:
         with:
           tofu_version: '1.11.5'
       - name: Install Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable
       # This CI supports skipping flaky or broken tests via GitHub repository variables.
@@ -324,3 +325,5 @@ jobs:
           SCW_ENABLE_BETA: true
           TF_ACC_LOG: trace
           TF_ACC_OPENTOFU: true
+          AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
+

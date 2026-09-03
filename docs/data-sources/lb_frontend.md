@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_lb_ip" "ip01" {}
 resource "scaleway_lb" "lb01" {
   ip_id = scaleway_lb_ip.ip01.id

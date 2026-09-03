@@ -2,6 +2,7 @@ package vpcgw_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -66,6 +67,7 @@ func TestAccVPCGatewayNetwork_WithIPAMConfig(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_gateway_network.main", "enable_masquerade", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_ip.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_vpc_gateway_network.main", "private_ip.0.address"),
+					resource.TestMatchResourceAttr("scaleway_vpc_gateway_network.main", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateway-networks/.+$`)),
 				),
 			},
 			{

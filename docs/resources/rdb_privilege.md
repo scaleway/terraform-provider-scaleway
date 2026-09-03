@@ -98,7 +98,7 @@ terraform apply
 
 The plan will typically show:
 
-```diff
+```text
 ~ resource "scaleway_rdb_privilege" "app" {
     ~ permission = "custom" -> "readwrite"
 }

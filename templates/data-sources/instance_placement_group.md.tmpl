@@ -9,7 +9,7 @@ Gets information about a Security Group.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by placement group name
 data "scaleway_instance_placement_group" "my_key" {
   name = "my-placement-group-name"

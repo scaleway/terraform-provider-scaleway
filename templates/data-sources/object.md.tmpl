@@ -13,14 +13,14 @@ Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/obj
 
 The following example demonstrates how to retrieve metadata about an object stored in a bucket:
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
   name = "bucket.test.com"
 }
 
 resource "scaleway_object" "example" {
-  bucket = scaleway_object_bucket.main.name
-  key    = "example.txt"
+  bucket  = scaleway_object_bucket.main.name
+  key     = "example.txt"
   content = "Hello world!"
 }
 

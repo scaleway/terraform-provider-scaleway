@@ -1,8 +1,6 @@
 package temtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	temSDK "github.com/scaleway/scaleway-sdk-go/api/tem/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -25,7 +23,9 @@ func testSweepDomain(_ string) error {
 
 		listDomains, err := temAPI.ListDomains(&temSDK.ListDomainsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing domains in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing domains in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, ns := range listDomains.Domains {
@@ -40,9 +40,7 @@ func testSweepDomain(_ string) error {
 				Region:   region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error revoking domain in sweeper: %w", err)
+				logging.L.Warningf("error revoking domain in sweeper: %s", err)
 			}
 		}
 

@@ -73,7 +73,7 @@ func (a *RotateKeyAction) Schema(ctx context.Context, req action.SchemaRequest, 
 				Required:    true,
 				Description: "ID of the key to rotate. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 		},

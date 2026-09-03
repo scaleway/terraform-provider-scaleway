@@ -83,15 +83,15 @@ resource "scaleway_key_manager_key" "main" {
 
 # Encrypt the plaintext with the created encryption key using the key_manager_encrypt Ephemeral resource (not stored in state)
 ephemeral "scaleway_key_manager_encrypt" "main" {
-  key_id     = scaleway_key_manager_key.main.id
-  plaintext  = "This is a sensitive plaintext"
-  region     = "fr-par"
+  key_id    = scaleway_key_manager_key.main.id
+  plaintext = "This is a sensitive plaintext"
+  region    = "fr-par"
 }
 
 # The encrypted ciphertext can be stored in a scaleway_secret, using a write-only argument
 # Create a secret that will be used to store the encrypted ciphertext
 resource "scaleway_secret" "main" {
-  name        = "my-secret"
+  name = "my-secret"
 }
 
 # Store the ciphertext in a secret_version using the data write-only argument

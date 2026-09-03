@@ -11,7 +11,7 @@ Gets information about multiple Cockpit data sources.
 
 ### List all sources in a project
 
-```hcl
+```terraform
 data "scaleway_cockpit_sources" "all" {
   project_id = "11111111-1111-1111-1111-111111111111"
 }
@@ -19,7 +19,7 @@ data "scaleway_cockpit_sources" "all" {
 
 ### Filter sources by type
 
-```hcl
+```terraform
 data "scaleway_cockpit_sources" "metrics" {
   project_id = "11111111-1111-1111-1111-111111111111"
   type       = "metrics"
@@ -28,7 +28,7 @@ data "scaleway_cockpit_sources" "metrics" {
 
 ### Filter sources by name
 
-```hcl
+```terraform
 data "scaleway_cockpit_sources" "my_sources" {
   project_id = "11111111-1111-1111-1111-111111111111"
   name       = "my-data-source"
@@ -37,7 +37,7 @@ data "scaleway_cockpit_sources" "my_sources" {
 
 ### Filter sources by origin
 
-```hcl
+```terraform
 data "scaleway_cockpit_sources" "custom" {
   project_id = "11111111-1111-1111-1111-111111111111"
   origin     = "custom"
@@ -46,7 +46,7 @@ data "scaleway_cockpit_sources" "custom" {
 
 ### List default Scaleway sources
 
-```hcl
+```terraform
 data "scaleway_cockpit_sources" "default" {
   project_id = "11111111-1111-1111-1111-111111111111"
   origin     = "scaleway"

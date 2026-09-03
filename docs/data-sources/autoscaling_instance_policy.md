@@ -9,7 +9,7 @@ Gets information about an Autoscaling Instance policy.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name (instance_group_id is required when using name)
 data "scaleway_autoscaling_instance_policy" "by_name" {
   name              = "my-instance-policy"

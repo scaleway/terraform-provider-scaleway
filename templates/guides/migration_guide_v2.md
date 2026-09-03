@@ -18,7 +18,7 @@ If you are following these recommendations, update the version constraints in yo
 
 Update to latest `1.X` version:
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -35,7 +35,7 @@ provider "scaleway" {
 
 Update to latest 2.X version:
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -107,12 +107,12 @@ We will first get the identifier of the resource, then remove the resource from 
 
 For instance, let's suppose that you have resource in `fr-par-1` such as:
 
-```hcl-terraform
+```terraform
 provider "scaleway" {
   zone = "fr-par-1"
 }
 
-resource scaleway_server main {
+resource "scaleway_server" "main" {
   name  = "foobar"
   type  = "DEV1-S"
   image = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
@@ -143,12 +143,12 @@ You can do it using: `terraform state rm scaleway_server.main`.
 
 Once this is done, refactor your terraform code to:
 
-```hcl-terraform
+```terraform
 provider "scaleway" {
   zone = "fr-par-1"
 }
 
-resource scaleway_instance_server main {
+resource "scaleway_instance_server" "main" {
   name  = "foobar"
   type  = "DEV1-S"
   image = "cf44b8f5-77e2-42ed-8f1e-09ed5bb028fc"
@@ -182,7 +182,7 @@ In particular, the `cloud_init` attribute is now managed as a common field in th
 
 v1.X:
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
   image = "ubuntu_jammy"
@@ -198,7 +198,7 @@ resource "scaleway_instance_server" "web" {
 
 v2.X:
 
-```hcl
+```terraform
 resource "scaleway_instance_server" "web" {
   type  = "DEV1-S"
   image = "ubuntu_jammy"
@@ -224,7 +224,7 @@ From now on, this is done on the `scaleway_instance_server` resource.
 
 Thus, to create a server with a volume attached:
 
-```hcl
+```terraform
 resource "scaleway_instance_volume" "data" {
   size_in_gb = 100
 }
@@ -247,7 +247,7 @@ resource "scaleway_instance_server" "web" {
 
 `scaleway_ip` was renamed to `scaleway_instance_ip` and the `server` attribute, used to attach an IP has been moved to `scaleway_instance_server.ip_id`
 
-```hcl
+```terraform
 resource "scaleway_instance_ip" "test_ip" {
 }
 ```

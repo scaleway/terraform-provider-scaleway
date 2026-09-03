@@ -28,7 +28,7 @@ resource "scaleway_rdb_database" "main" {
   name        = "database"
 }
 
-resource scaleway_rdb_database_backup "main" {
+resource "scaleway_rdb_database_backup" "main" {
   instance_id   = scaleway_rdb_instance.main.id
   database_name = scaleway_rdb_database.main.name
 }
@@ -37,7 +37,7 @@ resource scaleway_rdb_database_backup "main" {
 ### With expiration
 
 ```terraform
-resource scaleway_rdb_database_backup "main" {
+resource "scaleway_rdb_database_backup" "main" {
   instance_id   = data.scaleway_rdb_instance.main.id
   database_name = data.scaleway_rdb_database.main.name
   expires_at    = "2022-06-16T07:48:44Z"

@@ -1,8 +1,6 @@
 package s2svpntestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -45,7 +43,9 @@ func testSweepConnection(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing s2s vpn connections in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing s2s vpn connections in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, connection := range listConnections.Connections {
@@ -54,7 +54,7 @@ func testSweepConnection(_ string) error {
 				ConnectionID: connection.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting s2s vpn connection in sweeper: %w", err)
+				logging.L.Warningf("error deleting s2s vpn connection %s: %s", connection.ID, err)
 			}
 		}
 
@@ -72,7 +72,9 @@ func testSweepVPNGateway(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing s2s vpn gateways in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing s2s vpn gateways in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, gateway := range listGateways.Gateways {
@@ -81,7 +83,7 @@ func testSweepVPNGateway(_ string) error {
 				GatewayID: gateway.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting s2s vpn gateway in sweeper: %w", err)
+				logging.L.Warningf("error deleting s2s vpn gateway %s: %s", gateway.ID, err)
 			}
 		}
 
@@ -99,7 +101,9 @@ func testSweepCustomerGateway(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing s2s vpn customer gateways in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing s2s vpn customer gateways in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, gateway := range listGateways.Gateways {
@@ -108,7 +112,7 @@ func testSweepCustomerGateway(_ string) error {
 				GatewayID: gateway.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting s2s vpn customer gateway in sweeper: %w", err)
+				logging.L.Warningf("error deleting s2s vpn customer gateway %s: %s", gateway.ID, err)
 			}
 		}
 
@@ -126,7 +130,9 @@ func testSweepRoutingPolicy(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing s2s vpn routing policies in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing s2s vpn routing policies in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, policy := range listPolicies.RoutingPolicies {
@@ -135,7 +141,7 @@ func testSweepRoutingPolicy(_ string) error {
 				RoutingPolicyID: policy.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting s2s vpn routing policy in sweeper: %w", err)
+				logging.L.Warningf("error deleting s2s vpn routing policy %s: %s", policy.ID, err)
 			}
 		}
 

@@ -26,8 +26,8 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_s2s_vpn_gateway" "gateway" {
-  name              = "my-vpn-gateway"
-  gateway_type      = "VGW-S"
+  name               = "my-vpn-gateway"
+  gateway_type       = "VGW-S"
   private_network_id = scaleway_vpc_private_network.pn.id
 }
 ```
@@ -65,6 +65,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the VPN gateway (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the VPN gateway (RFC 3339 format).
 - `organization_id` - The Organization ID the VPN gateway is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the VPN gateway.
 
 ~> **Important:** VPN Gateways' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

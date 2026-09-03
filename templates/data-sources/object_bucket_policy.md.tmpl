@@ -13,7 +13,7 @@ Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/obj
 
 The following command allows you to retrieve a bucket policy by its bucket.
 
-```hcl
+```terraform
 data "scaleway_object_bucket_policy" "main" {
   bucket = "bucket.test.com"
 }

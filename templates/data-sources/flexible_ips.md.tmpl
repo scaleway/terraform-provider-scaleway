@@ -9,7 +9,7 @@ Gets information about multiple Flexible IPs.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find ips that share the same tags
 data "scaleway_flexible_ips" "fips_by_tags" {
   tags = ["a tag"]

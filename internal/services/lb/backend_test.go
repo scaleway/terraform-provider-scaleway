@@ -239,7 +239,7 @@ func TestAccBackend_HealthCheck(t *testing.T) {
 }
 
 func TestAccBackend_WithFailoverHost(t *testing.T) {
-	rName := sdkacctest.RandomWithPrefix("tf-acc-test")
+	rName := sdkacctest.RandomWithPrefix("tf-test-acc")
 	resourceName := "scaleway_object_bucket_website_configuration.test"
 
 	tt := acctest.NewTestTools(t)

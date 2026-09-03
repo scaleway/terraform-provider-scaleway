@@ -49,17 +49,17 @@ resource "scaleway_instance_server" "web" {
 ### With filesystem
 
 ```terraform
-resource scaleway_block_volume volume {
+resource "scaleway_block_volume" "volume" {
   iops       = 15000
   size_in_gb = 15
 }
 
-resource scaleway_file_filesystem terraform_instance_filesystem {
-  name = "filesystem-instance-terraform"
+resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+  name       = "filesystem-instance-terraform"
   size_in_gb = 100
 }
 
-resource scaleway_instance_server base {
+resource "scaleway_instance_server" "base" {
   type  = "POP2-HM-2C-16G"
   state = "started"
   tags  = ["terraform-test", "scaleway_instance_server", "state"]

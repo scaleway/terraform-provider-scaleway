@@ -136,6 +136,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - Date and time of IP's creation (RFC 3339 format).
 - `updated_at` - Date and time of IP's last update (RFC 3339 format).
 - `zone` - The zone of the IP.
+- `srn` - The Scaleway Resource Name (SRN) of the IP.
 
 ~> **Important:** IPAM IP IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

@@ -96,6 +96,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The Organization ID the PAT rule configuration is associated with.
 - `created_at` - The date and time of the creation of the PAT rule configuration.
 - `updated_at` - The date and time of the last update of the PAT rule configuration.
+- `srn` - The Scaleway Resource Name (SRN) of the PAT rule.
 
 ## Import
 
