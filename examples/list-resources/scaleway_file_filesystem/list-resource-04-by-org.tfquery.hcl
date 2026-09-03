@@ -3,7 +3,7 @@ list "scaleway_file_filesystem" "by_organization" {
   provider = scaleway
 
   config {
-    regions         = ["*"]
+    regions         = ["fr-par"]
     organization_id = "11111111-1111-1111-1111-111111111111"
   }
 }

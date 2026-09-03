@@ -68,10 +68,10 @@ func (r *FileSystemListResource) ListResourceConfigSchema(
 }
 
 func (r *FileSystemListResource) RawV6Schemas(ctx context.Context, req list.RawV6SchemaRequest, resp *list.RawV6SchemaResponse) {
-	resourceVPC := ResourceFileSystem()
+	resourceFS := ResourceFileSystem()
 
-	resp.ProtoV6Schema = translate.Schema(resourceVPC.ProtoSchema(ctx)())
-	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceVPC.ProtoIdentitySchema(ctx)())
+	resp.ProtoV6Schema = translate.Schema(resourceFS.ProtoSchema(ctx)())
+	resp.ProtoV6IdentitySchema = translate.ResourceIdentitySchema(resourceFS.ProtoIdentitySchema(ctx)())
 }
 
 type ListResourceModel struct {
