@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	lbtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
@@ -15,7 +16,7 @@ func TestAccLBPrivateNetwork_Basic(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			isLbDestroyed(tt),
+			lbtestfuncs.IsLbDestroyed(tt),
 			vpcchecks.CheckPrivateNetworkDestroy(tt),
 			vpcchecks.CheckVPCDestroy(tt),
 		),
