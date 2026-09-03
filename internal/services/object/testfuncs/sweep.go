@@ -3,6 +3,7 @@ package objecttestfuncs
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -37,20 +38,24 @@ func testSweepStorageObjectBucket(_ string) error {
 
 		// For each project, delete all buckets
 		for _, p := range listProjects.Projects {
+			if !strings.HasPrefix(p.Name, "tf_tests") {
+				continue
+			}
+
 			s3client, err := object.SharedS3ClientForRegionWithProjectID(region, p.ID)
 			ctx := context.Background()
 
 			if err != nil {
-				logging.L.Warningf("error getting client: %s", err)
+				logging.L.Warningf("error getting client for project %s: %s", p.ID, err)
 
-				return nil
+				continue
 			}
 
 			listBucketResponse, err := s3client.ListBuckets(ctx, &s3.ListBucketsInput{})
 			if err != nil {
-				logging.L.Warningf("couldn't list buckets: %s", err)
+				logging.L.Warningf("couldn't list buckets for project %s: %s", p.ID, err)
 
-				return nil
+				continue
 			}
 
 			for _, bucket := range listBucketResponse.Buckets {
