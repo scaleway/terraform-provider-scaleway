@@ -120,7 +120,7 @@ func EmptyBucket(ctx context.Context, client *s3.Client, bucketName *string) err
 			return fmt.Errorf("failed to delete objects batch: %w", err)
 		}
 
-		logging.L.Infof("Successfully deleted a batch of %d objects\n", len(objectIds))
+		logging.L.Debugf("Successfully deleted a batch of %d objects", len(objectIds))
 	}
 
 	return nil
