@@ -18,7 +18,7 @@ For more information, see [the main documentation][1].
 
 ```terraform
 # List file systems filtered by name prefix
-list "scaleway_block_volume" "by_name" {
+list "scaleway_file_filesystem" "by_name" {
   provider = scaleway
 
   config {
@@ -57,7 +57,7 @@ list "scaleway_file_filesystem" "by_organization" {
   provider = scaleway
 
   config {
-    regions         = ["*"]
+    regions         = ["fr-par"]
     organization_id = "11111111-1111-1111-1111-111111111111"
   }
 }
