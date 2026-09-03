@@ -1272,11 +1272,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	_, err = waitForServer(ctx, api.API, zone, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
-	}
-
 	// Related to https://github.com/hashicorp/terraform-plugin-sdk/issues/142
 	_, rootVolumeAttributeSet := d.GetOk("root_volume")
 	if d.Get("root_volume.0.delete_on_termination").(bool) || !rootVolumeAttributeSet {

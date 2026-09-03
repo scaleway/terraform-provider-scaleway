@@ -226,9 +226,9 @@ func (r *ServerListResource) List(ctx context.Context, req list.ListRequest, str
 
 	var targets []listscw.ZonalFetchTarget
 
-	for _, r := range zones {
+	for _, zone := range zones {
 		for _, p := range projects {
-			targets = append(targets, listscw.ZonalFetchTarget{Zone: r, ProjectID: p})
+			targets = append(targets, listscw.ZonalFetchTarget{Zone: zone, ProjectID: p})
 		}
 	}
 

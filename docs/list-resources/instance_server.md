@@ -41,7 +41,7 @@ list "scaleway_instance_server" "by_name_and_tag" {
 
 ```terraform
 # List servers filtered by server-type on the default project across all zones
-list "scaleway_instance_server" "by_name_and_tag" {
+list "scaleway_instance_server" "by_server_type" {
   provider = scaleway
 
   config {
@@ -53,7 +53,7 @@ list "scaleway_instance_server" "by_name_and_tag" {
 
 ```terraform
 # List servers of a specific zone matching the filters (on the default project)
-list "scaleway_instance_server" "by_project" {
+list "scaleway_instance_server" "by_attached_resources" {
   provider = scaleway
 
   config {

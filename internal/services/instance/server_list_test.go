@@ -342,7 +342,7 @@ func TestAccListServers_ByPlacementGroup(t *testing.T) {
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			instancetestfuncs.IsServerDestroyed(tt),
-			isSecurityGroupDestroyed(tt),
+			isPlacementGroupDestroyed(tt),
 		),
 		Steps: []resource.TestStep{
 			{

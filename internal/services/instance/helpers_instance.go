@@ -801,7 +801,7 @@ func instanceServerCanMigrate(api *instance.API, server *instance.Server, reques
 	if serverType.VolumesConstraint != nil &&
 		(localVolumeSize > serverType.VolumesConstraint.MaxSize) ||
 		(localVolumeSize < serverType.VolumesConstraint.MinSize) {
-		return fmt.Errorf("local volume total size does not respect type constraint, expected beteween (%dGB, %dGB), got %sGB",
+		return fmt.Errorf("local volume total size does not respect type constraint, expected between (%dGB, %dGB), got %sGB",
 			serverType.VolumesConstraint.MinSize/scw.GB,
 			serverType.VolumesConstraint.MaxSize/scw.GB,
 			localVolumeSize/scw.GB)

@@ -1,5 +1,5 @@
 # List servers of a specific zone matching the filters (on the default project)
-list "scaleway_instance_server" "by_project" {
+list "scaleway_instance_server" "by_attached_resources" {
   provider = scaleway
 
   config {
