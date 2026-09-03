@@ -10,7 +10,7 @@ For more information, see the [API documentation](https://developers.scaleway.co
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by server name
 data "scaleway_baremetal_server" "by_name" {
   name = "foobar"
@@ -26,7 +26,7 @@ data "scaleway_baremetal_server" "by_id" {
 ## Argument Reference
 
 - `name` - (Optional) The server name. Only one of `name` and `server_id` should be specified.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server exists.
 - `project_id` - (Optional) The ID of the project the baremetal server is associated with.
 
 ## Attributes Reference

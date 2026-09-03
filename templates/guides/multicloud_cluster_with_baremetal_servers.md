@@ -18,7 +18,7 @@ as a node by the apiserver. This can be achieved manually ([method A](#method-a-
 
 ## Setup
 
-```hcl
+```terraform
 ###############################################
 #         CONFIGURE THE K8S CLUSTER           #
 ###############################################
@@ -118,7 +118,7 @@ If you want the configuration process to be automated, you will have to add a fe
 In addition to the SSH key file and the data sources for the offer and the os, add your secret key and give the
 configuration instructions in the bare metal server spec.
 
-```hcl
+```terraform
 # Put your secret key in a file on your local machine
 data "local_sensitive_file" "secret_key" {
   filename = pathexpand("~/path/to/secret/key")
@@ -163,13 +163,36 @@ You check that everything went well by :
 following lines :
 
 ```json lines
-[...]
-{"time":"2023-05-24T16:47:38.750041045Z","level":"DEBUG","msg":"writing kubelet config and CA"}
-{"time":"2023-05-24T16:47:38.750272845Z","level":"DEBUG","msg":"writing kubelet env file and systemd service"}
-{"time":"2023-05-24T16:47:38.750410725Z","level":"DEBUG","msg":"writing kubeconfig files"}
-{"time":"2023-05-24T16:47:38.751171166Z","level":"DEBUG","msg":"starting containerd systemd service"}
-{"time":"2023-05-24T16:47:39.042781246Z","level":"DEBUG","msg":"starting kubelet systemd service"}
-{"time":"2023-05-24T16:47:39.056392423Z","level":"INFO","msg":"successfully started kubelet"}
+{
+  "time": "2023-05-24T16:47:38.750041045Z",
+  "level": "DEBUG",
+  "msg": "writing kubelet config and CA"
+}
+{
+  "time": "2023-05-24T16:47:38.750272845Z",
+  "level": "DEBUG",
+  "msg": "writing kubelet env file and systemd service"
+}
+{
+  "time": "2023-05-24T16:47:38.750410725Z",
+  "level": "DEBUG",
+  "msg": "writing kubeconfig files"
+}
+{
+  "time": "2023-05-24T16:47:38.751171166Z",
+  "level": "DEBUG",
+  "msg": "starting containerd systemd service"
+}
+{
+  "time": "2023-05-24T16:47:39.042781246Z",
+  "level": "DEBUG",
+  "msg": "starting kubelet systemd service"
+}
+{
+  "time": "2023-05-24T16:47:39.056392423Z",
+  "level": "INFO",
+  "msg": "successfully started kubelet"
+}
 ```
 
   If something went wrong you should be able to find useful information for troubleshooting in here, like the

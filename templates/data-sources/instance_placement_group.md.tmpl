@@ -9,7 +9,7 @@ Gets information about a Security Group.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by placement group name
 data "scaleway_instance_placement_group" "my_key" {
   name = "my-placement-group-name"
@@ -29,7 +29,7 @@ data "scaleway_instance_placement_group" "my_key" {
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the placement group is associated with.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the placement group exists.
 
 ## Attributes Reference
 

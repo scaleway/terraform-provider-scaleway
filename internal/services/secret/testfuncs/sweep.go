@@ -1,8 +1,6 @@
 package secrettestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	secretSDK "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -33,7 +31,9 @@ func testSweepSecret(_ string) error {
 			ProjectID: projectID,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing secrets in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing secrets in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, se := range listSecrets.Secrets {
@@ -42,9 +42,7 @@ func testSweepSecret(_ string) error {
 				Region:   region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting secret in sweeper: %w", err)
+				logging.L.Warningf("error deleting secret in sweeper: %s", err)
 			}
 		}
 

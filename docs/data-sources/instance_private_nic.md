@@ -9,7 +9,7 @@ Gets information about an instance private NIC.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_instance_private_nic" "by_nic_id" {
   server_id      = "11111111-1111-1111-1111-111111111111"
   private_nic_id = "11111111-1111-1111-1111-111111111111"
@@ -39,7 +39,7 @@ data "scaleway_instance_private_nic" "by_tags" {
 - `private_network_id` - (Optional) The ID of the private network
   Only one of `private_nic_id` and `private_network_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private nic exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the private nic exists.
 
 ## Attributes Reference
 

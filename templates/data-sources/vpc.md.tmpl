@@ -9,7 +9,7 @@ Gets information about a Scaleway Virtual Private Cloud.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_vpc" "by_name" {
   name = "foobar"

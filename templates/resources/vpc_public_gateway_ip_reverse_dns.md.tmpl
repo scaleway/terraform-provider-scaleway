@@ -18,7 +18,7 @@ resource "scaleway_domain_record" "tf_A" {
   dns_zone = "example.com"
   name     = "tf"
   type     = "A"
-  data     = "${scaleway_vpc_public_gateway_ip.main.address}"
+  data     = scaleway_vpc_public_gateway_ip.main.address
   ttl      = 3600
   priority = 1
 }
@@ -35,7 +35,7 @@ The following arguments are supported:
 
 - `gateway_ip_id` - (Required) The Public Gateway IP ID
 - `reverse` - (Required) The reverse domain name for this IP address
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 ## Attributes Reference
 

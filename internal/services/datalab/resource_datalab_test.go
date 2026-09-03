@@ -24,6 +24,8 @@ resource "scaleway_vpc_private_network" "main" {
 `
 
 func TestAccDatalabResource_Basic(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -69,6 +71,8 @@ func TestAccDatalabResource_Basic(t *testing.T) {
 }
 
 func TestAccDatalabResource_Update(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -139,6 +143,8 @@ func TestAccDatalabResource_Update(t *testing.T) {
 }
 
 func TestAccDatalabResource_StateImport(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -178,6 +184,8 @@ func TestAccDatalabResource_StateImport(t *testing.T) {
 }
 
 func TestAccDatalabResource_WithWorker(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

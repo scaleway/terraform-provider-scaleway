@@ -62,9 +62,9 @@ variable "allowed_ips" {
   description = "Map of allowed IPs with descriptions"
   type        = map(string)
   default = {
-    "1.2.3.4/32"   = "Office IP"
-    "5.6.7.8/32"   = "Home IP"
-    "10.0.0.0/24"  = "Internal network"
+    "1.2.3.4/32"  = "Office IP"
+    "5.6.7.8/32"  = "Home IP"
+    "10.0.0.0/24" = "Internal network"
   }
 }
 
@@ -93,7 +93,7 @@ The following arguments are supported:
 
 ~> **Important:** The `scaleway_rdb_acl` resource replaces **all** ACL rules for the given instance. Multiple `scaleway_rdb_acl` resources targeting the same `instance_id` will conflict with each other. Use multiple `acl_rules` blocks within a single resource instead.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the Database Instance should be created.
 
 The `acl_rules` block supports:
 

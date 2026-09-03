@@ -2,6 +2,7 @@ package iam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -35,11 +36,11 @@ func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 						name 	   = "%s"
 						public_key = "%s"
 					}
-					
+
 					data "scaleway_iam_ssh_key" "prod" {
 						name = "${scaleway_iam_ssh_key.main.name}"
 					}
-					
+
 					data "scaleway_iam_ssh_key" "stg" {
 						ssh_key_id = "${scaleway_iam_ssh_key.main.id}"
 					}`, sshKeyName, dataSourceIamSSHKey),
@@ -50,6 +51,8 @@ func TestAccDataSourceSSHKey_Basic(t *testing.T) {
 					iamchecks.CheckSSHKeyExists(tt, "data.scaleway_iam_ssh_key.stg"),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "name", sshKeyName),
 					resource.TestCheckResourceAttr("data.scaleway_iam_ssh_key.stg", "public_key", dataSourceIamSSHKeyWithoutComment),
+					resource.TestMatchResourceAttr("data.scaleway_iam_ssh_key.prod", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_iam_ssh_key.stg", "srn", regexp.MustCompile(`^srn://iam\..+/ssh-keys/.+$`)),
 				),
 			},
 		},

@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -16,14 +16,16 @@ import (
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
-	_ resource.Resource              = (*BudgetAlertResource)(nil)
-	_ resource.ResourceWithConfigure = (*BudgetAlertResource)(nil)
-	_ resource.ResourceWithIdentity  = (*BudgetAlertResource)(nil)
+	_ resource.Resource                = (*BudgetAlertResource)(nil)
+	_ resource.ResourceWithConfigure   = (*BudgetAlertResource)(nil)
+	_ resource.ResourceWithImportState = (*BudgetAlertResource)(nil)
+	_ resource.ResourceWithIdentity    = (*BudgetAlertResource)(nil)
 )
 
 func NewBudgetAlertResource() resource.Resource {
@@ -43,9 +45,7 @@ type budgetAlertResourceModel struct {
 	Threshold types.Int64  `tfsdk:"threshold"`
 }
 
-type budgetAlertResourceIdentityModel struct {
-	ID types.String `tfsdk:"id"`
-}
+type budgetAlertResourceIdentityModel = framework.GlobalIdentity
 
 func (r *BudgetAlertResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_billing_budget_alert"
@@ -92,13 +92,7 @@ func (r *BudgetAlertResource) Schema(ctx context.Context, req resource.SchemaReq
 }
 
 func (r *BudgetAlertResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"id": identityschema.StringAttribute{
-				RequiredForImport: true,
-			},
-		},
-	}
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *BudgetAlertResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -146,18 +140,33 @@ func (r *BudgetAlertResource) Create(ctx context.Context, req resource.CreateReq
 	})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	identity := budgetAlertResourceIdentityModel{
-		ID: types.StringValue(res.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetAlertResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state budgetAlertResourceModel
+	var (
+		state    budgetAlertResourceModel
+		identity budgetAlertResourceIdentityModel
+	)
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() && !identity.ID.IsNull() && !identity.ID.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
+	}
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	var alertID string
+	if identityAvailable {
+		alertID = identity.ID.ValueString()
+	} else {
+		alertID = state.ID.ValueString()
 	}
 
 	orgID, _ := r.meta.ScwClient().GetDefaultOrganizationID()
@@ -174,7 +183,7 @@ func (r *BudgetAlertResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	foundAlert, foundBudgetID := findBudgetAlertInList(listResp.Budgets, state.ID.ValueString())
+	foundAlert, foundBudgetID := findBudgetAlertInList(listResp.Budgets, alertID)
 
 	if foundAlert == nil {
 		resp.State.RemoveResource(ctx)
@@ -186,10 +195,7 @@ func (r *BudgetAlertResource) Read(ctx context.Context, req resource.ReadRequest
 	state.BudgetID = types.StringValue(foundBudgetID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	identity := budgetAlertResourceIdentityModel{
-		ID: types.StringValue(foundAlert.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(foundAlert.ID))...)
 }
 
 func (r *BudgetAlertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -219,6 +225,8 @@ func (r *BudgetAlertResource) Update(ctx context.Context, req resource.UpdateReq
 	newState := convertBudgetAlertToState(res, plan)
 	newState.BudgetID = plan.BudgetID
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetAlertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -243,38 +251,7 @@ func (r *BudgetAlertResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 func (r *BudgetAlertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	alertID := req.ID
-
-	orgID, _ := r.meta.ScwClient().GetDefaultOrganizationID()
-
-	listResp, err := r.billingAPI.ListBudgets(&billing.ListBudgetsRequest{
-		OrganizationID: &orgID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to list budgets during import",
-			err.Error(),
-		)
-
-		return
-	}
-
-	foundAlert, foundBudgetID := findBudgetAlertInList(listResp.Budgets, alertID)
-
-	if foundAlert == nil {
-		resp.Diagnostics.AddError(
-			"Budget alert not found during import",
-			fmt.Sprintf("Budget alert %s was not found in any budget", alertID),
-		)
-
-		return
-	}
-
-	state := budgetAlertResourceModel{
-		ID:       types.StringValue(alertID),
-		BudgetID: types.StringValue(foundBudgetID),
-	}
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("id"), path.Root("id"), req, resp)
 }
 
 func convertBudgetAlertToState(alert *billing.BudgetAlert, state budgetAlertResourceModel) budgetAlertResourceModel {

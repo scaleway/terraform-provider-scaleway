@@ -10,7 +10,7 @@ For more information, see the [API documentation](https://developers.scaleway.co
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by option name
 data "scaleway_baremetal_option" "by_name" {
   name = "Remote Access"
@@ -26,7 +26,7 @@ data "scaleway_baremetal_option" "by_id" {
 
 - `name` - (Optional) The option name. Only one of `name` and `option_id` should be specified.
 - `option_id` - (Optional) The option id. Only one of `name` and `option_id` should be specified.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the option exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the option exists.
 
 ## Attributes Reference
 

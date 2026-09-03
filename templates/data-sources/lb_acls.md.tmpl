@@ -11,14 +11,14 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find acls that share the same frontend ID
 data "scaleway_lb_acls" "byFrontID" {
-  frontend_id = "${scaleway_lb_frontend.frt01.id}"
+  frontend_id = scaleway_lb_frontend.frt01.id
 }
 # Find acls by frontend ID and name
 data "scaleway_lb_acls" "byFrontID_and_name" {
-  frontend_id = "${scaleway_lb_frontend.frt01.id}"
+  frontend_id = scaleway_lb_frontend.frt01.id
   name        = "tf-acls-datasource"
 }
 ```
@@ -30,7 +30,7 @@ data "scaleway_lb_acls" "byFrontID_and_name" {
 
 - `name` - (Optional) The ACL name to filter for. ACLs with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the ACLs exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the ACLs exist.
 
 ## Attributes Reference
 

@@ -32,7 +32,7 @@ The following arguments are supported:
 
 - `is_public` (Defaults to `false`) Whether the images stored in the namespace should be downloadable publicly (docker pull).
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the namespace is associated with.
 

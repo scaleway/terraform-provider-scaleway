@@ -9,7 +9,7 @@ Gets information about a webhosting.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by offer domain
 data "scaleway_webhosting" "by_domain" {
   domain = "foobar.com"

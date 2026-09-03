@@ -16,7 +16,7 @@ For more information, see [the main documentation](https://www.scaleway.com/en/d
 
 ```terraform
 resource "scaleway_s2s_vpn_routing_policy" "policy" {
-  name            = "my-routing-policy"
+  name              = "my-routing-policy"
   prefix_filter_in  = ["10.0.2.0/24"]
   prefix_filter_out = ["10.0.1.0/24"]
 }
@@ -26,7 +26,7 @@ resource "scaleway_s2s_vpn_routing_policy" "policy" {
 
 ```terraform
 resource "scaleway_s2s_vpn_routing_policy" "policy" {
-  name            = "my-routing-policy"
+  name              = "my-routing-policy"
   prefix_filter_in  = ["10.0.2.0/24", "10.0.3.0/24"]
   prefix_filter_out = ["10.0.1.0/24", "172.16.0.0/16"]
 }
@@ -41,7 +41,7 @@ The following arguments are supported:
 - `name` - (Optional) The name of the routing policy. If not provided, it will be randomly generated.
 - `tags` - (Optional) The list of tags to apply to the routing policy.
 - `is_ipv6` - (Optional) Defines whether the routing policy is for IPv6 prefixes. Defaults to `false` (IPv4).
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the routing policy should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the routing policy should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the routing policy is associated with.
 
 ## Attributes Reference
@@ -52,6 +52,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the routing policy (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the routing policy (RFC 3339 format).
 - `organization_id` - The Organization ID the routing policy is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the routing policy.
 
 ~> **Important:** Routing Policies' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

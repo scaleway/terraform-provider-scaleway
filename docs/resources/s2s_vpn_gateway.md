@@ -26,8 +26,8 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_s2s_vpn_gateway" "gateway" {
-  name              = "my-vpn-gateway"
-  gateway_type      = "VGW-S"
+  name               = "my-vpn-gateway"
+  gateway_type       = "VGW-S"
   private_network_id = scaleway_vpc_private_network.pn.id
 }
 ```
@@ -43,8 +43,8 @@ The following arguments are supported:
 - `public_config` - (Optional) The public endpoint configuration of the VPN gateway. See [Public Config](#public-config) below.
 - `ipam_private_ipv4_id` - (Optional) The ID of the IPAM private IPv4 address to attach to the VPN gateway.
 - `ipam_private_ipv6_id` - (Optional) The ID of the IPAM private IPv6 address to attach to the VPN gateway.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the VPN gateway should be created.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the VPN gateway should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the VPN gateway should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the VPN gateway should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the VPN gateway is associated with.
 
 ### Public Config
@@ -65,6 +65,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the VPN gateway (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the VPN gateway (RFC 3339 format).
 - `organization_id` - The Organization ID the VPN gateway is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the VPN gateway.
 
 ~> **Important:** VPN Gateways' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

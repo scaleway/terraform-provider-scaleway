@@ -73,7 +73,7 @@ The following arguments are supported:
 - `type` - (Default to `l_ssd`) The snapshot's volume type. The possible values are: `l_ssd` (Local SSD).
 Updates to this field will recreate a new resource.
 - `name` - (Optional) The name of the snapshot. If not provided it will be randomly generated.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the snapshot should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the snapshot is
   associated with.

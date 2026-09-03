@@ -9,7 +9,7 @@ Gets information about a server type.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_instance_server_type" "pro2-s" {
   name = "PRO2-S"
   zone = "nl-ams-1"
@@ -23,7 +23,7 @@ To select the server type which information should be fetched, the following arg
 - `name` - (Required) The name of the server type.
   Only one of `name` and `snapshot_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the server type (to check the availability of the server type for example).
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) of the server type (to check the availability of the server type for example).
 
 ## Attributes Reference
 

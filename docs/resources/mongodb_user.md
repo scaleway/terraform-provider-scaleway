@@ -5,7 +5,7 @@ page_title: "Scaleway: scaleway_mongodb_user"
 
 # Resource: scaleway_mongodb_user
 
-Manages MongoDB users. For more information, see the [API documentation](https://developers.scaleway.com/products/mongodb/api/).
+Manages MongoDB users. For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/managed-database-mongodb).
 
 -> **Security Best Practice:**
 For enhanced security, we recommend using the [`password_wo` write-only argument](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) instead of the regular `password` argument. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. Write-Only arguments are supported in Terraform 1.11.0 and later.
@@ -270,7 +270,7 @@ The following arguments are supported:
     - `database_name` - (Optional) The database name for the role. Cannot be used with `any_database`.
     - `any_database` - (Optional) Apply the role to all databases. Cannot be used with `database_name`.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® user should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® user should be created.
 
 ## Attributes Reference
 

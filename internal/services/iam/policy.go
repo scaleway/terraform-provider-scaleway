@@ -131,6 +131,11 @@ func policySchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the policy",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the policy",
+		},
 	}
 }
 
@@ -284,6 +289,7 @@ func setPolicyState(d *schema.ResourceData, pol *iam.Policy, rules []*iam.Rule) 
 	_ = d.Set("organization_id", pol.OrganizationID)
 	_ = d.Set("editable", pol.Editable)
 	_ = d.Set("tags", types.FlattenSliceString(pol.Tags))
+	_ = d.Set("srn", pol.Srn)
 
 	if pol.UserID != nil {
 		_ = d.Set("user_id", types.FlattenStringPtr(pol.UserID))

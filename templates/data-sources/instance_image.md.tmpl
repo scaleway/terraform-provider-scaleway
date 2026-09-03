@@ -9,7 +9,7 @@ Gets information about an instance image.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by image name
 data "scaleway_instance_image" "my_image" {
   name = "my-image-name"
@@ -31,7 +31,7 @@ data "scaleway_instance_image" "my_image" {
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 
 ## Attributes Reference
 

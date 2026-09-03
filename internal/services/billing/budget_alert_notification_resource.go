@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -19,6 +18,7 @@ import (
 	billing "github.com/scaleway/scaleway-sdk-go/api/billing/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -51,9 +51,7 @@ type budgetAlertNotificationResourceModel struct {
 	Type      types.String `tfsdk:"type"`
 }
 
-type budgetAlertNotificationIdentityModel struct {
-	ID types.String `tfsdk:"id"`
-}
+type budgetAlertNotificationResourceIdentityModel = framework.GlobalIdentity
 
 func (r *BudgetAlertNotificationResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_billing_budget_alert_notification"
@@ -127,13 +125,7 @@ func (r *BudgetAlertNotificationResource) Schema(ctx context.Context, req resour
 }
 
 func (r *BudgetAlertNotificationResource) IdentitySchema(ctx context.Context, req resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"id": identityschema.StringAttribute{
-				RequiredForImport: true,
-			},
-		},
-	}
+	resp.IdentitySchema = framework.DefaultGlobal()
 }
 
 func (r *BudgetAlertNotificationResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -192,10 +184,7 @@ func (r *BudgetAlertNotificationResource) Create(ctx context.Context, req resour
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	identity := budgetAlertNotificationIdentityModel{
-		ID: types.StringValue(res.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(res.ID))...)
 }
 
 func (r *BudgetAlertNotificationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -252,10 +241,7 @@ func (r *BudgetAlertNotificationResource) Read(ctx context.Context, req resource
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	identity := budgetAlertNotificationIdentityModel{
-		ID: types.StringValue(found.ID),
-	}
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, &identity)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(found.ID))...)
 }
 
 func (r *BudgetAlertNotificationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -321,6 +307,8 @@ func (r *BudgetAlertNotificationResource) Update(ctx context.Context, req resour
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetGlobalIdentity(found.notification.ID))...)
 }
 
 func (r *BudgetAlertNotificationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -345,29 +333,42 @@ func (r *BudgetAlertNotificationResource) Delete(ctx context.Context, req resour
 }
 
 func (r *BudgetAlertNotificationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	notificationID := req.ID
+	if req.ID != "" {
+		notificationID := req.ID
 
-	found, err := findBudgetAlertNotification(r.billingAPI, r.meta, notificationID, "", "", ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to fetch budget alert notification during import",
-			err.Error(),
-		)
+		found, err := findBudgetAlertNotification(r.billingAPI, r.meta, notificationID, "", "", ctx)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Failed to fetch budget alert notification during import",
+				err.Error(),
+			)
+
+			return
+		}
+
+		if found == nil {
+			resp.Diagnostics.AddError(
+				"Budget alert notification not found during import",
+				fmt.Sprintf("Budget alert notification %s was not found", notificationID),
+			)
+
+			return
+		}
+
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), notificationID)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("budget_alert_id"), found.BudgetAlertID)...)
 
 		return
 	}
 
-	if found == nil {
-		resp.Diagnostics.AddError(
-			"Budget alert notification not found during import",
-			fmt.Sprintf("Budget alert notification %s was not found", notificationID),
-		)
+	var identityData budgetAlertNotificationResourceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
 
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), notificationID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("budget_alert_id"), found.BudgetAlertID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.ID)...)
 }
 
 func convertBudgetAlertNotificationToState(ctx context.Context, notification *billing.BudgetAlertNotification, state budgetAlertNotificationResourceModel, diags *diag.Diagnostics) budgetAlertNotificationResourceModel {

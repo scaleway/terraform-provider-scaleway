@@ -48,17 +48,17 @@ resource "scaleway_instance_server" "web" {
 ### With filesystem
 
 ```terraform
-resource scaleway_block_volume volume {
+resource "scaleway_block_volume" "volume" {
   iops       = 15000
   size_in_gb = 15
 }
 
-resource scaleway_file_filesystem terraform_instance_filesystem {
-  name = "filesystem-instance-terraform"
+resource "scaleway_file_filesystem" "terraform_instance_filesystem" {
+  name       = "filesystem-instance-terraform"
   size_in_gb = 100
 }
 
-resource scaleway_instance_server base {
+resource "scaleway_instance_server" "base" {
   type  = "POP2-HM-2C-16G"
   state = "started"
   tags  = ["terraform-test", "scaleway_instance_server", "state"]
@@ -294,7 +294,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
   Mandatory for Windows OS. The public_key value of this key is used to encrypt the admin password.
   When set to an empty string, it resets this value and admin_password_encrypted_value to an empty string so a new password may be generated.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is associated with.
 
@@ -305,7 +305,7 @@ attached to the server. Updates to this field will trigger a stop/start of the s
 - `pn_id` - (Required) The private network ID where to connect.
 - `mac_address` The private NIC MAC address.
 - `status` The private NIC state.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the server must be created.
 
 ~> **Important:** You can only attach an instance in the same [zone](../guides/regions_and_zones.md#zones) as a private network.
 ~> **Important:** Instance supports a maximum of 8 different private networks.

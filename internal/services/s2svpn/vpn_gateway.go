@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2svpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -59,44 +60,58 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 		"gateway_type": {
 			Type:        schema.TypeString,
 			Required:    true,
+			ForceNew:    true,
 			Description: "The VPN gateway type (commercial offer type)",
 		},
 		"public_config": {
 			Type:        schema.TypeList,
 			Computed:    true,
 			Optional:    true,
+			ForceNew:    true,
 			Description: "The public endpoint configuration of the VPN gateway",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"ipam_ipv4_id": {
-						Type:        schema.TypeString,
-						Description: " The ID of the IPAM IPv4 address to use as the public IP for the VPN gateway",
-						Optional:    true,
+						Type:             schema.TypeString,
+						Description:      "The ID of the IPAM IPv4 address to use as the public IP for the VPN gateway",
+						Optional:         true,
+						Computed:         true,
+						ForceNew:         true,
+						DiffSuppressFunc: dsf.Locality,
 					},
 					"ipam_ipv6_id": {
-						Type:        schema.TypeString,
-						Description: " The ID of the IPAM IPv6 address to use as the public IP for the VPN gateway",
-						Optional:    true,
+						Type:             schema.TypeString,
+						Description:      "The ID of the IPAM IPv6 address to use as the public IP for the VPN gateway",
+						Optional:         true,
+						Computed:         true,
+						ForceNew:         true,
+						DiffSuppressFunc: dsf.Locality,
 					},
 				},
 			},
 		},
 		"private_network_id": {
-			Type:        schema.TypeString,
-			Required:    true,
-			Description: "The ID of the Private Network to attach to the VPN gateway",
+			Type:             schema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The ID of the Private Network to attach to the VPN gateway",
 		},
 		"ipam_private_ipv4_id": {
-			Type:        schema.TypeString,
-			Optional:    true,
-			Computed:    true,
-			Description: "The ID of the IPAM private IPv4 address to attach to the VPN gateway",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The ID of the IPAM private IPv4 address to attach to the VPN gateway",
 		},
 		"ipam_private_ipv6_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Optional:    true,
-			Description: "The ID of the IPAM private IPv6 address to attach to the VPN gateway",
+			Type:             schema.TypeString,
+			Computed:         true,
+			Optional:         true,
+			ForceNew:         true,
+			DiffSuppressFunc: dsf.Locality,
+			Description:      "The ID of the IPAM private IPv6 address to attach to the VPN gateway",
 		},
 		"asn": {
 			Type:        schema.TypeInt,
@@ -117,6 +132,11 @@ func vpnGatewaySchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The date and time of the last update of the VPN gateway",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the VPN gateway",
 		},
 		"zone":       zonal.Schema(),
 		"region":     regional.Schema(),
@@ -151,7 +171,7 @@ func ResourceVPNGatewayCreate(ctx context.Context, d *schema.ResourceData, m any
 		IpamPrivateIPv4ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv4_id").(string)).ID),
 		IpamPrivateIPv6ID: types.ExpandStringPtr(regional.ExpandID(d.Get("ipam_private_ipv6_id").(string)).ID),
 		Zone:              zonePtr,
-		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")),
+		PublicConfig:      expandVPNGatewayPublicConfig(d.Get("public_config")), //nolint:staticcheck
 	}
 
 	res, err := api.CreateVpnGateway(req, scw.WithContext(ctx))
@@ -190,6 +210,7 @@ func setVPNGatewayState(d *schema.ResourceData, gateway *s2svpn.VpnGateway) diag
 	_ = d.Set("ipam_private_ipv6_id", regional.NewIDString(gateway.Region, gateway.IpamPrivateIPv6ID))
 	_ = d.Set("zone", gateway.Zone)
 	_ = d.Set("public_config", flattenVPNGatewayPublicConfig(gateway.Region, gateway.PublicConfig))
+	_ = d.Set("srn", gateway.Srn)
 
 	return nil
 }

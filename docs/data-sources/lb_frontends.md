@@ -11,14 +11,14 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find frontends that share the same LB ID
 data "scaleway_lb_frontends" "byLBID" {
-  lb_id = "${scaleway_lb.lb01.id}"
+  lb_id = scaleway_lb.lb01.id
 }
 # Find frontends by LB ID and name
 data "scaleway_lb_frontends" "byLBID_and_name" {
-  lb_id = "${scaleway_lb.lb01.id}"
+  lb_id = scaleway_lb.lb01.id
   name  = "tf-frontend-datasource"
 }
 ```
@@ -29,7 +29,7 @@ data "scaleway_lb_frontends" "byLBID_and_name" {
 
 - `name` - (Optional) The frontend name to filter for. Frontends with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the frontends exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the frontends exist.
 
 ## Attributes Reference
 
