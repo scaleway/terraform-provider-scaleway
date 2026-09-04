@@ -81,7 +81,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						name = "test-fs"
 					  }
@@ -91,7 +90,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						name = "test-fs-01"
 					  }
@@ -114,7 +112,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						tags = ["foo"]
 					  }
@@ -124,7 +121,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						tags = ["bar"]
 					  }
@@ -134,7 +130,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						tags = ["foobar"]
 					  }
@@ -144,7 +139,6 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  provider = scaleway
 
 					  config {
-						project_ids = [scaleway_file_system.fs1.project_id]
 						regions = ["fr-par"]
 						tags = ["foo", "bar"]
 					  }
