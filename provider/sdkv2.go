@@ -130,7 +130,6 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 			ResourcesMap: map[string]*schema.Resource{
 				"scaleway_account_project":                                    account.ResourceProject(),
 				"scaleway_account_ssh_key":                                    iam.ResourceSSKKey(),
-				"scaleway_apple_silicon_server":                               applesilicon.ResourceServer(),
 				"scaleway_apple_silicon_runner":                               applesilicon.ResourceRunner(),
 				"scaleway_autoscaling_instance_group":                         autoscaling.ResourceInstanceGroup(),
 				"scaleway_autoscaling_instance_policy":                        autoscaling.ResourceInstancePolicy(),

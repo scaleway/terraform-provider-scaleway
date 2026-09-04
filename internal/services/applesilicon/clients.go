@@ -31,14 +31,3 @@ func NewAPIWithZoneAndID(m any, id string) (*applesilicon.API, scw.Zone, string,
 
 	return asAPI, zone, ID, nil
 }
-
-func newPrivateNetworkAPIWithZone(d *schema.ResourceData, m any) (*applesilicon.PrivateNetworkAPI, scw.Zone, error) {
-	privateNetworkAPI := applesilicon.NewPrivateNetworkAPI(meta.ExtractScwClient(m))
-
-	zone, err := meta.ExtractZone(d, m)
-	if err != nil {
-		return nil, "", err
-	}
-
-	return privateNetworkAPI, zone, nil
-}
