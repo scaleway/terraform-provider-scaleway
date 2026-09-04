@@ -213,6 +213,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
 		annotations.NewAnnotationsBindingResource,
+		autoscaling.NewAutoScalingGroupResource,
 		billing.NewBudgetResource,
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetAlertNotificationResource,
@@ -222,7 +223,6 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		iam.NewScimResource,
 		iam.NewScimTokenResource,
 		instance.NewTemplateResource,
-		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
 	}
 }
@@ -299,6 +299,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		iam.NewApplicationListResource,
 		iam.NewPolicyListResource,
 		iam.NewAPIKeyListResource,
+		instance.NewServerListResource,
 		ipam.NewIPListResource,
 		keymanager.NewKeyListResource,
 		lb.NewLbListResource,
