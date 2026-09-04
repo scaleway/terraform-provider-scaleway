@@ -24,7 +24,7 @@ func TestAccDataSourceCacheStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-cache-id"
+					  name = "tf-test-scaleway-object-bucket-ds-cache-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -74,7 +74,7 @@ func TestAccDataSourceCacheStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-cache-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-cache-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

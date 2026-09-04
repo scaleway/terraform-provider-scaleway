@@ -30,7 +30,7 @@ func TestAccEdgeServicesRoute_Basic(t *testing.T) {
 				}
 				
 				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-basic-route"
+				  name = "tf-test-scaleway-object-bucket-basic-route"
 				  tags = {
 					foo = "bar"
 				  }
@@ -122,7 +122,7 @@ func TestAccEdgeServicesRoute_HostFilter(t *testing.T) {
 				}
 
 				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-host-filter-route"
+				  name = "tf-test-scaleway-object-bucket-host-filter-route"
 				  tags = {
 					foo = "bar"
 				  }
@@ -205,7 +205,7 @@ func TestAccEdgeServicesRoute_WafRule(t *testing.T) {
 				}
 
 				resource "scaleway_object_bucket" "main" {
-				  name = "test-acc-scaleway-object-bucket-waf-route-rule"
+				  name = "tf-test-scaleway-object-bucket-waf-route-rule"
 				  tags = {
 					foo = "bar"
 				  }
