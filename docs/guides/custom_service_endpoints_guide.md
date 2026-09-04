@@ -18,7 +18,7 @@ environments.
 To configure endpoints on the provider, set the values in the `endpoints` block in
 the `provider` declarations, e.g.,
 
-```hcl
+```terraform
 provider "scaleway" {
   # ... potentially other provider configuration ...
 
