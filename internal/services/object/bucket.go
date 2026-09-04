@@ -746,7 +746,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
-	diags := setBucketState(ctx, d, bucketName, region, s3Client)
+	diags := setBucketState(ctx, d, m, bucketName, region, s3Client)
 
 	err = identity.SetRegionalIdentity(d, region, bucketName)
 	if err != nil {
@@ -756,7 +756,7 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 	return diags
 }
 
-func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
+func setBucketState(ctx context.Context, d *schema.ResourceData, m any, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	_ = d.Set("name", bucketName)
@@ -823,8 +823,10 @@ func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName stri
 
 	_ = d.Set("tags", flattenObjectBucketTags(tagsSet))
 
-	_ = d.Set("endpoint", objectBucketEndpointURL(bucketName, region))
-	_ = d.Set("api_endpoint", objectBucketAPIEndpointURL(region))
+	endpoint, apiEndpoint := ComputeObjectBucketURLs(d, m, bucketName, region)
+
+	_ = d.Set("endpoint", endpoint)
+	_ = d.Set("api_endpoint", apiEndpoint)
 
 	// Read the CORS
 	corsResponse, err := s3Client.GetBucketCors(ctx, &s3.GetBucketCorsInput{
