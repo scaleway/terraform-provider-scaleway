@@ -19,6 +19,16 @@ data "scaleway_instance_image" "my_image" {
 data "scaleway_instance_image" "my_image" {
   image_id = "11111111-1111-1111-1111-111111111111"
 }
+
+# Get info by tags (select the most recent matching image)
+data "scaleway_instance_image" "vivado" {
+  tags = [
+    "product=vivado",
+    "version=2021.1",
+  ]
+
+  latest = true
+}
 ```
 
 ## Argument Reference
@@ -30,6 +40,8 @@ data "scaleway_instance_image" "my_image" {
 - `architecture` - (Optional, default `x86_64`) The architecture the image is compatible with. Possible values are: `x86_64` or `arm`.
 
 - `latest` - (Optional, default `true`) Use the latest image ID.
+
+- `tags` - (Optional) List of tags to filter images by. Only one of `name`+`tags` and `image_id` should be specified. When multiple images match, `latest = true` selects the most recently created one.
 
 - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the image exists.
 

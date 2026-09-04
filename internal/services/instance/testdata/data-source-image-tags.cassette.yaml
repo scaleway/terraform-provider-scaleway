@@ -1,0 +1,1295 @@
+---
+version: 2
+interactions:
+    - id: 0
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 145
+        host: api.scaleway.com
+        body: '{"name":"tf-volume-keen-mendel","perf_iops":5000,"project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","from_empty":{"size":20000000000},"tags":[]}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 437
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:43.924354Z", "references":[], "parent_snapshot_id":null, "status":"creating", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "437"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:43 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 92892901-e76f-4770-b87f-a966413cb513
+        status: 200 OK
+        code: 200
+        duration: 231.941458ms
+    - id: 1
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/metadata
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 59
+        body: '{"platform":"external","partition":"scw","domain":"scw.eu"}'
+        headers:
+            Content-Length:
+                - "59"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:43 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 9344c263-ad04-4b62-9a97-1911ef9fed1b
+        status: 200 OK
+        code: 200
+        duration: 15.393166ms
+    - id: 2
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 437
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:43.924354Z", "references":[], "parent_snapshot_id":null, "status":"creating", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "437"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:44 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1d37b896-5c26-4770-a2a3-6780c319e864
+        status: 200 OK
+        code: 200
+        duration: 43.04075ms
+    - id: 3
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 438
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:44.038085Z", "references":[], "parent_snapshot_id":null, "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "438"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 86a3a1ba-9938-47f3-9fa4-3d16499ebc9a
+        status: 200 OK
+        code: 200
+        duration: 49.129083ms
+    - id: 4
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 438
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:44.038085Z", "references":[], "parent_snapshot_id":null, "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "438"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 49b8e9ab-8038-4561-8f50-cae01d55e055
+        status: 200 OK
+        code: 200
+        duration: 47.96075ms
+    - id: 5
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 166
+        host: api.scaleway.com
+        body: '{"volume_id":"c9386e32-4589-43f7-b9eb-79309dc56e13","name":"tf-snapshot-infallible-shaw","project_id":"951df375-e094-4d26-97c1-ba548eeb9c42","tags":[],"public":false}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 496
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:49.191301Z", "references":[], "status":"creating", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "496"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 48d6d166-3db1-48fa-82d7-1401c9e14131
+        status: 200 OK
+        code: 200
+        duration: 108.746208ms
+    - id: 6
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 496
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:49.191301Z", "references":[], "status":"creating", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "496"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:49 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 94ee8705-11f3-4789-be7b-25b938801335
+        status: 200 OK
+        code: 200
+        duration: 47.928792ms
+    - id: 7
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 497
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:50.360665Z", "references":[], "status":"available", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "497"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 9cfe9fd4-a7ee-487d-88bd-c006c80dd50a
+        status: 200 OK
+        code: 200
+        duration: 53.374667ms
+    - id: 8
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 497
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:50.360665Z", "references":[], "status":"available", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "497"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 0219b19b-b7ff-4531-a0f0-8379b60d0a13
+        status: 200 OK
+        code: 200
+        duration: 43.855083ms
+    - id: 9
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 205
+        host: api.scaleway.com
+        body: '{"name":"tf-test-image-tags","root_volume":"84eb8a90-51d9-4944-9b99-41287ab6aa96","arch":"x86_64","project":"951df375-e094-4d26-97c1-ba548eeb9c42","tags":["product=vivado","version=2021.1"],"public":false}'
+        headers:
+            Content-Type:
+                - application/json
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images
+        method: POST
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:54 GMT
+            Location:
+                - https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 5fde8c07-362e-4d3f-b2cb-90b0eccc3119
+        status: 201 Created
+        code: 201
+        duration: 318.673333ms
+    - id: 10
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:54 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1f582d72-6303-4e64-ad99-115cfb410718
+        status: 200 OK
+        code: 200
+        duration: 71.460666ms
+    - id: 11
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            arch:
+                - x86_64
+            page:
+                - "1"
+            tags:
+                - product=vivado,version=2021.1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images?arch=x86_64&page=1&tags=product%3Dvivado%2Cversion%3D2021.1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 615
+        body: '{"images": [{"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}]}'
+        headers:
+            Content-Length:
+                - "615"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:54 GMT
+            Link:
+                - </images?page=1&per_page=50&arch=x86_64&tags=product%3Dvivado%2Cversion%3D2021.1>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 050b9511-e837-4164-a7d5-57883fd309d9
+            X-Total-Count:
+                - "1"
+        status: 200 OK
+        code: 200
+        duration: 194.644333ms
+    - id: 12
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 792b527d-ac64-4e60-80b5-4d4b2a51173f
+        status: 200 OK
+        code: 200
+        duration: 69.903541ms
+    - id: 13
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 74e13cf1-a7a0-4f14-9b22-e294db79a382
+        status: 200 OK
+        code: 200
+        duration: 77.746833ms
+    - id: 14
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            arch:
+                - x86_64
+            page:
+                - "1"
+            tags:
+                - product=vivado,version=2021.1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images?arch=x86_64&page=1&tags=product%3Dvivado%2Cversion%3D2021.1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 615
+        body: '{"images": [{"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}]}'
+        headers:
+            Content-Length:
+                - "615"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Link:
+                - </images?page=1&per_page=50&arch=x86_64&tags=product%3Dvivado%2Cversion%3D2021.1>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - bfe6c427-c0c3-47b2-bc4e-6465c5a7188c
+            X-Total-Count:
+                - "1"
+        status: 200 OK
+        code: 200
+        duration: 184.94925ms
+    - id: 15
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 445b8919-4429-4282-b431-4fb310852bfd
+        status: 200 OK
+        code: 200
+        duration: 65.380375ms
+    - id: 16
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 438
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:50.360665Z", "references":[], "parent_snapshot_id":null, "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "438"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4b043d26-d2fd-4d2b-95f8-97f4ea7d9a39
+        status: 200 OK
+        code: 200
+        duration: 42.113834ms
+    - id: 17
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 723
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:54.547476Z", "references":[{"id":"291b5988-8646-494e-b240-b4e5b4730167", "product_resource_type":"instance_image", "product_resource_id":"c73de302-d253-46b5-a97b-33da7eedf68e", "created_at":"2026-08-28T15:37:54.547476Z", "type":"link", "status":"attached"}], "status":"in_use", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "723"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 8243438a-38c9-49ac-be52-491f9f04be7c
+        status: 200 OK
+        code: 200
+        duration: 46.437917ms
+    - id: 18
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:55 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 7b9e172a-54a7-4ff6-a4f1-8318067b4d85
+        status: 200 OK
+        code: 200
+        duration: 62.983292ms
+    - id: 19
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        form:
+            arch:
+                - x86_64
+            page:
+                - "1"
+            tags:
+                - product=vivado,version=2021.1
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images?arch=x86_64&page=1&tags=product%3Dvivado%2Cversion%3D2021.1
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 615
+        body: '{"images": [{"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}]}'
+        headers:
+            Content-Length:
+                - "615"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:56 GMT
+            Link:
+                - </images?page=1&per_page=50&arch=x86_64&tags=product%3Dvivado%2Cversion%3D2021.1>; rel="last"
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 3a24947a-b52b-4def-83e0-1f21d1164797
+            X-Total-Count:
+                - "1"
+        status: 200 OK
+        code: 200
+        duration: 265.327709ms
+    - id: 20
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:56 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 334b238b-e24f-44aa-ba8d-b5c6dfc6f3e0
+        status: 200 OK
+        code: 200
+        duration: 55.766834ms
+    - id: 21
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 612
+        body: '{"image": {"id": "c73de302-d253-46b5-a97b-33da7eedf68e", "name": "tf-test-image-tags", "organization": "951df375-e094-4d26-97c1-ba548eeb9c42", "project": "951df375-e094-4d26-97c1-ba548eeb9c42", "root_volume": {"volume_type": "sbs_snapshot", "id": "84eb8a90-51d9-4944-9b99-41287ab6aa96", "size": 0, "name": ""}, "extra_volumes": {}, "public": false, "arch": "x86_64", "creation_date": "2026-08-28T15:37:54.485743+00:00", "modification_date": "2026-08-28T15:37:54.485743+00:00", "default_bootscript": null, "from_server": "", "state": "available", "tags": ["product=vivado", "version=2021.1"], "zone": "fr-par-1"}}'
+        headers:
+            Content-Length:
+                - "612"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 83db8049-cf0e-40f4-aef3-b99e50830e49
+        status: 200 OK
+        code: 200
+        duration: 606.979084ms
+    - id: 22
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 787f5252-fe70-49de-a94c-035aff6001ee
+        status: 204 No Content
+        code: 204
+        duration: 394.252ms
+    - id: 23
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 142
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_image", "resource_id": "c73de302-d253-46b5-a97b-33da7eedf68e"}'
+        headers:
+            Content-Length:
+                - "142"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 1cbea0aa-df48-4c3a-acfb-89c3b5fd191d
+        status: 404 Not Found
+        code: 404
+        duration: 30.546125ms
+    - id: 24
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 494
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:54.547476Z", "references":[], "status":"in_use", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "494"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:37:57 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4f4c6ad6-0f83-4a32-b302-47e1ef8b4874
+        status: 200 OK
+        code: 200
+        duration: 39.21525ms
+    - id: 25
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 497
+        body: '{"id":"84eb8a90-51d9-4944-9b99-41287ab6aa96", "name":"tf-snapshot-infallible-shaw", "parent_volume":{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "status":"available"}, "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:49.191301Z", "updated_at":"2026-08-28T15:37:57.644193Z", "references":[], "status":"available", "tags":[], "class":"sbs", "zone":"fr-par-1", "public":false, "kms_key_id":null}'
+        headers:
+            Content-Length:
+                - "497"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 5488484d-5c56-4bf9-908a-b0a9fd98c810
+        status: 200 OK
+        code: 200
+        duration: 56.611083ms
+    - id: 26
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - d674148d-3fa0-444b-8b42-129f0d310432
+        status: 204 No Content
+        code: 204
+        duration: 60.62525ms
+    - id: 27
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/snapshots/84eb8a90-51d9-4944-9b99-41287ab6aa96
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 129
+        body: '{"message":"resource is not found","resource":"snapshot","resource_id":"84eb8a90-51d9-4944-9b99-41287ab6aa96","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "129"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "49"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - e23d7034-4ceb-49da-beaf-48735eb4d8f7
+        status: 404 Not Found
+        code: 404
+        duration: 42.325833ms
+    - id: 28
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 438
+        body: '{"id":"c9386e32-4589-43f7-b9eb-79309dc56e13", "name":"tf-volume-keen-mendel", "type":"sbs_5k", "size":20000000000, "project_id":"951df375-e094-4d26-97c1-ba548eeb9c42", "created_at":"2026-08-28T15:37:43.924354Z", "updated_at":"2026-08-28T15:37:50.360665Z", "references":[], "parent_snapshot_id":null, "status":"available", "tags":[], "specs":{"perf_iops":5000, "class":"sbs"}, "last_detached_at":null, "kms_key_id":null, "zone":"fr-par-1"}'
+        headers:
+            Content-Length:
+                - "438"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 2b09580d-7d9f-4c00-bf29-4916707f0ba9
+        status: 200 OK
+        code: 200
+        duration: 42.355334ms
+    - id: 29
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: DELETE
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 0
+        body: ""
+        headers:
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 4aabe7c5-a4e7-49fc-8c00-910565a41719
+        status: 204 No Content
+        code: 204
+        duration: 65.899458ms
+    - id: 30
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/block/v1/zones/fr-par-1/volumes/c9386e32-4589-43f7-b9eb-79309dc56e13
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 127
+        body: '{"message":"resource is not found","resource":"volume","resource_id":"c9386e32-4589-43f7-b9eb-79309dc56e13","type":"not_found"}'
+        headers:
+            Content-Length:
+                - "127"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:02 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "47"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 68a3473d-614d-41ab-a20b-99f747a0ff93
+        status: 404 Not Found
+        code: 404
+        duration: 105.141042ms
+    - id: 31
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 142
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_image", "resource_id": "c73de302-d253-46b5-a97b-33da7eedf68e"}'
+        headers:
+            Content-Length:
+                - "142"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "46"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - e3978e54-8e9f-4563-9904-b8f3817abdf7
+        status: 404 Not Found
+        code: 404
+        duration: 145.593416ms
+    - id: 32
+      request:
+        proto: HTTP/1.1
+        proto_major: 1
+        proto_minor: 1
+        content_length: 0
+        host: api.scaleway.com
+        headers:
+            User-Agent:
+                - scaleway-sdk-go/v1.0.0-beta.37.0.20260820161448-2c5cd81b0528 (go1.27.0; darwin; arm64) terraform-provider/develop terraform/terraform-tests
+        url: https://api.scaleway.com/instance/v1/zones/fr-par-1/images/c73de302-d253-46b5-a97b-33da7eedf68e
+        method: GET
+      response:
+        proto: HTTP/2.0
+        proto_major: 2
+        proto_minor: 0
+        content_length: 142
+        body: '{"type": "not_found", "message": "resource is not found", "resource": "instance_image", "resource_id": "c73de302-d253-46b5-a97b-33da7eedf68e"}'
+        headers:
+            Content-Length:
+                - "142"
+            Content-Type:
+                - application/json
+            Date:
+                - Fri, 28 Aug 2026 15:38:03 GMT
+            Server:
+                - Scaleway API Gateway (fr-par-1;edge02)
+            X-Ratelimit-Limit:
+                - 50, 50;w=1
+            X-Ratelimit-Remaining:
+                - "48"
+            X-Ratelimit-Reset:
+                - "1"
+            X-Request-Id:
+                - 6a39c020-ecf4-4880-a091-84b7c40b63f0
+        status: 404 Not Found
+        code: 404
+        duration: 26.488917ms
