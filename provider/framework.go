@@ -25,6 +25,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/file"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
@@ -293,17 +294,18 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		block.NewVolumeListResource,
 		domain.NewRecordListResource,
 		domain.NewZoneListResource,
-		iam.NewSSHKeyListResource,
-		iam.NewGroupListResource,
-		iam.NewUserListResource,
-		iam.NewApplicationListResource,
-		iam.NewPolicyListResource,
+		file.NewFileSystemListResource,
 		iam.NewAPIKeyListResource,
+		iam.NewApplicationListResource,
+		iam.NewGroupListResource,
+		iam.NewPolicyListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewUserListResource,
 		ipam.NewIPListResource,
 		keymanager.NewKeyListResource,
-		lb.NewLbListResource,
-		lb.NewFrontendListResource,
 		lb.NewBackendListResource,
+		lb.NewFrontendListResource,
+		lb.NewLbListResource,
 		mongodb.NewInstanceListResource,
 		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
@@ -314,12 +316,12 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		redis.NewClusterListResource,
 		secret.NewSecretListResource,
 		secret.NewVersionListResource,
-		vpc.NewVPCListResource,
 		vpc.NewConnectorListResource,
-		vpc.NewRouteListResource,
 		vpc.NewPrivateNetworkListResource,
-		vpcgw.NewPublicGatewayListResource,
+		vpc.NewRouteListResource,
+		vpc.NewVPCListResource,
 		vpcgw.NewIPListResource,
+		vpcgw.NewPublicGatewayListResource,
 	}
 }
 
