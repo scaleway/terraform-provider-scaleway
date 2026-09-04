@@ -5,6 +5,10 @@ page_title: "Scaleway: scaleway_autoscaling_instance_policy"
 
 # scaleway_autoscaling_instance_policy
 
+~> **Important:** The data source `scaleway_autoscaling_instance_policy` has been deprecated and will no longer be supported.
+The Autoscaling API (v1alpha1) has been discontinued, this data source is no longer functional.
+Please remove it from your configuration.
+
 Gets information about an Autoscaling Instance policy.
 
 ## Example Usage
