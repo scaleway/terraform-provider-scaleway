@@ -21,6 +21,7 @@ func TestAccFileSystem_Basic(t *testing.T) {
 	fileSystemName := "TestAccFileSystem_Basic"
 	fileSystemNameUpdated := "TestAccFileSystem_BasicUpdate"
 	sizeInGB := 100
+	sizeInGBUpdated := 200
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -50,6 +51,18 @@ func TestAccFileSystem_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_file_filesystem" "fs" {
+						name = "%s"
+						size_in_gb = %d
+					}
+				`, fileSystemNameUpdated, sizeInGBUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckFileSystemExists(tt, "scaleway_file_filesystem.fs"),
+					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGBUpdated)),
 				),
 			},
 			{
