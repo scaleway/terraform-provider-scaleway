@@ -20,7 +20,7 @@ more details on the implementation.
 
 Configure your backend as:
 
-```hcl
+```terraform
 terraform {
   backend "s3" {
     bucket                      = "terraform-state"
@@ -32,10 +32,8 @@ terraform {
     skip_credentials_validation = true
     force_path_style            = true
     skip_region_validation      = true
-    # Need terraform>=1.6.1
-    skip_requesting_account_id  = true
-    # Enable locking
-    use_lockfile                = true
+    skip_requesting_account_id  = true # Need terraform>=1.6.1
+    use_lockfile                = true # Enable locking
   }
 }
 ```
@@ -59,7 +57,7 @@ You can create your database resource using Terraform itself.
 
 If you have already one database running, you can step over to [Configuring your Connection string](#configuring-the-postgresql-connection-string).
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -82,7 +80,7 @@ resource "scaleway_rdb_database" "database" {
   instance_id = scaleway_rdb_instance.main.id
 }
 
-resource scaleway_rdb_instance main {
+resource "scaleway_rdb_instance" "main" {
   name           = "your-backend-db"
   node_type      = "db-dev-s"
   engine         = "PostgreSQL-11"
@@ -114,7 +112,7 @@ Hashicorp offers several methods to keep your secrets. Please check the Terrafor
 
 #### Create your infrastructure with the Scaleway provider
 
-```hcl
+```terraform
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # CREATE A BACKEND TYPE PG
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,7 +138,7 @@ resource "scaleway_instance_server" "main" {
 
 Check your database `schema`. e.g:
 
-```sql
+```text
 rdb=> SELECT * FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema';
        schemaname       | tablename | tableowner | tablespace | hasindexes | hasrules | hastriggers | rowsecurity
 ------------------------+-----------+------------+------------+------------+----------+-------------+-------------
@@ -174,7 +172,7 @@ Since tracking of the workspaces is in the table inside PostgreSQL, we need to s
 
 We can do that in one of two ways: separate databases or separate schemas.
 
-```hcl
+```terraform
 terraform {
   # Omitted
 
@@ -211,7 +209,7 @@ The Lock method prevents opening the state file while already in use.
 You can also share the configuration using the different [data sources](https://www.terraform.io/language/state/remote-state-data).
 This is useful when working on the same infrastructure or the same team.
 
-```hcl
+```terraform
 data "scaleway_rdb_instance" "mybackend" {
   name = "your-database-name"
 }

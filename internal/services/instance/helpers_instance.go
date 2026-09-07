@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	blockSDK "github.com/scaleway/scaleway-sdk-go/api/block/v1"
 	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV2 "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
@@ -37,6 +38,18 @@ func newAPIWithZone(d *schema.ResourceData, m any) (*instance.API, scw.Zone, err
 	return instanceAPI, zone, nil
 }
 
+// newAPIV2WithZone returns a new instance API v2 and the zone for a Create request
+func newAPIV2WithZone(d *schema.ResourceData, m any) (*instanceV2.API, scw.Zone, error) {
+	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
+
+	zone, err := meta.ExtractZone(d, m)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return instanceAPI, zone, nil
+}
+
 // NewAPIWithZoneAndID returns an instance API with zone and ID extracted from the state
 func NewAPIWithZoneAndID(m any, zonedID string) (*instance.API, scw.Zone, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
@@ -49,9 +62,33 @@ func NewAPIWithZoneAndID(m any, zonedID string) (*instance.API, scw.Zone, string
 	return instanceAPI, zone, ID, nil
 }
 
+// NewAPIV2WithZoneAndID returns an instance API v2 with zone and ID extracted from the state
+func NewAPIV2WithZoneAndID(m any, zonedID string) (*instanceV2.API, scw.Zone, string, error) {
+	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
+
+	zone, ID, err := zonal.ParseID(zonedID)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	return instanceAPI, zone, ID, nil
+}
+
 // NewAPIWithZoneAndNestedID returns an instance API with zone and inner/outer ID extracted from the state
 func NewAPIWithZoneAndNestedID(m any, zonedNestedID string) (*instance.API, scw.Zone, string, string, error) {
 	instanceAPI := instance.NewAPI(meta.ExtractScwClient(m))
+
+	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
+	if err != nil {
+		return nil, "", "", "", err
+	}
+
+	return instanceAPI, zone, innerID, outerID, nil
+}
+
+// NewAPIV2WithZoneAndNestedID returns an instance API v2 with zone and inner/outer ID extracted from the state
+func NewAPIV2WithZoneAndNestedID(m any, zonedNestedID string) (*instanceV2.API, scw.Zone, string, string, error) {
+	instanceAPI := instanceV2.NewAPI(meta.ExtractScwClient(m))
 
 	zone, innerID, outerID, err := zonal.ParseNestedID(zonedNestedID)
 	if err != nil {
@@ -253,12 +290,12 @@ func validateLocalVolumeSizes(volumes map[string]*instance.VolumeServerTemplate,
 func preparePrivateNIC(
 	ctx context.Context, data any,
 	server *instance.Server, vpcAPI *vpc.API,
-) ([]*instance.CreatePrivateNICRequest, error) {
+) ([]*instanceV2.CreatePrivateNetworkInterfaceRequest, error) {
 	if data == nil {
 		return nil, nil
 	}
 
-	var res []*instance.CreatePrivateNICRequest
+	var res []*instanceV2.CreatePrivateNetworkInterfaceRequest
 
 	for _, pn := range data.([]any) {
 		r := pn.(map[string]any)
@@ -279,10 +316,11 @@ func preparePrivateNIC(
 				return nil, err
 			}
 
-			query := &instance.CreatePrivateNICRequest{
+			query := &instanceV2.CreatePrivateNetworkInterfaceRequest{
 				Zone:             server.Zone,
-				ServerID:         server.ID,
+				ServerID:         new(server.ID),
 				PrivateNetworkID: currentPN.ID,
+				ProjectID:        server.Project,
 			}
 			res = append(res, query)
 		}
@@ -292,17 +330,21 @@ func preparePrivateNIC(
 }
 
 type privateNICsHandler struct {
-	instanceAPI    *instance.API
+	instanceAPI    *instanceV2.API
+	instanceAPIV1  *instance.API
 	serverID       string
-	privateNICsMap map[string]*instance.PrivateNIC
+	privateNICsMap map[string]*instanceV2.PrivateNetworkInterfaceSummary
 	zone           scw.Zone
+	projectID      string
 }
 
-func newPrivateNICHandler(api *instance.API, server string, zone scw.Zone) (*privateNICsHandler, error) {
+func newPrivateNICHandler(api *instanceV2.API, apiV1 *instance.API, serverID string, zone scw.Zone, projectID string) (*privateNICsHandler, error) {
 	handler := &privateNICsHandler{
-		instanceAPI: api,
-		serverID:    server,
-		zone:        zone,
+		instanceAPI:   api,
+		instanceAPIV1: apiV1,
+		serverID:      serverID,
+		zone:          zone,
+		projectID:     projectID,
 	}
 
 	return handler, handler.flatPrivateNICs()
@@ -314,27 +356,25 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 		idPN := locality.ExpandID(*oPtr)
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, locality.ExpandID(p.ID), timeout)
+			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, locality.ExpandID(p.ID), timeout)
 			if err != nil {
 				return err
 			}
 			// detach private NIC
-			err = ph.instanceAPI.DeletePrivateNIC(&instance.DeletePrivateNICRequest{
-				PrivateNicID: locality.ExpandID(p.ID),
-				Zone:         ph.zone,
-				ServerID:     ph.serverID,
+			err = ph.instanceAPI.DeletePrivateNetworkInterface(&instanceV2.DeletePrivateNetworkInterfaceRequest{
+				PrivateNetworkInterfaceID: locality.ExpandID(p.ID),
+				Zone:                      ph.zone,
 			},
 				scw.WithContext(ctx))
 			if err != nil {
 				return err
 			}
 
-			_, err = ph.instanceAPI.WaitForPrivateNIC(&instance.WaitForPrivateNICRequest{
-				ServerID:      ph.serverID,
-				PrivateNicID:  p.ID,
-				Zone:          ph.zone,
-				Timeout:       &timeout,
-				RetryInterval: new(instancehelpers.DefaultInstanceRetryInterval),
+			_, err = ph.instanceAPI.WaitForPrivateNetworkInterface(&instanceV2.WaitForPrivateNetworkInterfaceRequest{
+				PrivateNetworkInterfaceID: p.ID,
+				Zone:                      ph.zone,
+				Timeout:                   &timeout,
+				RetryInterval:             new(instancehelpers.DefaultInstanceRetryInterval),
 			})
 			if err != nil && !httperrors.Is404(err) {
 				return err
@@ -350,21 +390,21 @@ func (ph *privateNICsHandler) attach(ctx context.Context, n any, timeout time.Du
 		// check if new private network was already attached on instance server
 		privateNetworkID := locality.ExpandID(*nPtr)
 		if _, ok := ph.privateNICsMap[privateNetworkID]; !ok {
-			pn, err := ph.instanceAPI.CreatePrivateNIC(&instance.CreatePrivateNICRequest{
+			pn, err := ph.instanceAPI.CreatePrivateNetworkInterface(&instanceV2.CreatePrivateNetworkInterfaceRequest{
 				Zone:             ph.zone,
-				ServerID:         ph.serverID,
+				ServerID:         new(ph.serverID),
 				PrivateNetworkID: privateNetworkID,
 			})
 			if err != nil {
 				return err
 			}
 
-			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, pn.ID, timeout)
 			if err != nil {
 				return err
 			}
 
-			_, err = waitForMACAddress(ctx, ph.instanceAPI, ph.zone, ph.serverID, pn.PrivateNic.ID, timeout)
+			err = waitForMACAddress(ctx, ph.instanceAPIV1, ph.zone, ph.serverID, pn.ID, timeout)
 			if err != nil {
 				return err
 			}
@@ -407,7 +447,7 @@ func (ph *privateNICsHandler) get(key string) (any, error) {
 	return map[string]any{
 		"pn_id":       key,
 		"mac_address": pn.MacAddress,
-		"status":      pn.State.String(),
+		"status":      pn.Status.String(),
 		"zone":        loc,
 		"pnic_id":     pn.ID,
 	}, nil
@@ -518,22 +558,6 @@ func prepareRootVolume(rootVolumeI map[string]any, serverType *instance.ServerTy
 		Size:               rootVolumeSize,
 		Boot:               rootVolumeIsBootVolume,
 	}
-}
-
-func getServerProjectID(ctx context.Context, api *instance.API, zone scw.Zone, serverID string) (string, error) {
-	server, err := api.GetServer(&instance.GetServerRequest{
-		Zone:     zone,
-		ServerID: serverID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return "", fmt.Errorf("get private NIC's project ID: error getting server %s", serverID)
-	}
-
-	if server.Server.Project == "" {
-		return "", fmt.Errorf("no project ID found for server %s", serverID)
-	}
-
-	return server.Server.Project, nil
 }
 
 func attachNewFileSystem(ctx context.Context, newIDs map[string]struct{}, oldIDs map[string]struct{}, api *instance.API, zone scw.Zone, server *instance.Server) error {

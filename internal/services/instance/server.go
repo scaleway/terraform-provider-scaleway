@@ -632,19 +632,19 @@ func ResourceInstanceServerCreate(ctx context.Context, d *schema.ResourceData, m
 				return diag.FromErr(err)
 			}
 
-			pn, err := api.CreatePrivateNIC(q, scw.WithContext(ctx))
+			pn, err := api.InstanceV2API.CreatePrivateNetworkInterface(q, scw.WithContext(ctx))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.PrivateNic.ID, pn.PrivateNic.State))
+			tflog.Debug(ctx, fmt.Sprintf("private network created (ID: %s, status: %s)", pn.ID, pn.Status))
 
-			_, err = waitForPrivateNIC(ctx, api.API, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			_, err = waitForPrivateNIC(ctx, api.InstanceV2API, zone, pn.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 
-			_, err = waitForMACAddress(ctx, api.API, zone, res.Server.ID, pn.PrivateNic.ID, d.Timeout(schema.TimeoutCreate))
+			err = waitForMACAddress(ctx, api.API, zone, res.Server.ID, pn.ID, d.Timeout(schema.TimeoutCreate))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -844,7 +844,7 @@ You can check the full list of compatible server types:
 	////
 	// Read server private networks
 	////
-	ph, err := newPrivateNICHandler(api.API, id, zone)
+	ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Project)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -1105,7 +1105,7 @@ func ResourceInstanceServerUpdate(ctx context.Context, d *schema.ResourceData, m
 	// Update server private network
 	////
 	if d.HasChanges("private_network") {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
+		ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Project)
 		if err != nil {
 			diag.FromErr(err)
 		}
@@ -1228,24 +1228,6 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	// Delete private-nic if managed by instance_server resource
-	if raw, ok := d.GetOk("private_network"); ok {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		for index := range raw.([]any) {
-			pnKey := fmt.Sprintf("private_network.%d.pn_id", index)
-			pn := d.Get(pnKey)
-
-			err := ph.detach(ctx, pn, d.Timeout(schema.TimeoutDelete))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	// Detach filesystem
 	if filesystems, ok := d.GetOk("filesystems"); ok {
 		fsList := filesystems.([]any)
@@ -1282,7 +1264,15 @@ func ResourceInstanceServerDelete(ctx context.Context, d *schema.ResourceData, m
 
 	// Delete private-nic if managed by instance_server resource
 	if raw, ok := d.GetOk("private_network"); ok {
-		ph, err := newPrivateNICHandler(api.API, id, zone)
+		server, err := api.GetServer(&instanceSDK.GetServerRequest{
+			Zone:     zone,
+			ServerID: id,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		ph, err := newPrivateNICHandler(api.InstanceV2API, api.API, id, zone, server.Server.Project)
 		if err != nil {
 			return diag.FromErr(err)
 		}

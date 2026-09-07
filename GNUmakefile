@@ -28,6 +28,13 @@ testacc: fmtcheck
 test-update-cassettes: fmtcheck
 	TF_ACC=1 TF_UPDATE_CASSETTES=true go test $(TEST) -run $(TESTARGS) -timeout=120m -parallel=10
 
+compress-cassettes:
+	@git diff --name-only HEAD --diff-filter=AM | grep 'internal/services/.*testdata/.*\.yaml$$' | while read f; do \
+			base="$${f%.yaml}"; \
+			echo "Compressing $$f"; \
+			go run ./cmd/vcr-compressor "$$base"; \
+	done
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \

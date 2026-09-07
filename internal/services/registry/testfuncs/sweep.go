@@ -1,8 +1,6 @@
 package registrytestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	registrySDK "github.com/scaleway/scaleway-sdk-go/api/registry/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -26,7 +24,9 @@ func testSweepNamespace(_ string) error {
 		listNamespaces, err := registryAPI.ListNamespaces(
 			&registrySDK.ListNamespacesRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing namespaces in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing namespaces in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, ns := range listNamespaces.Namespaces {
@@ -35,9 +35,7 @@ func testSweepNamespace(_ string) error {
 				Region:      region,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting namespace in sweeper: %w", err)
+				logging.L.Warningf("error deleting namespace in sweeper: %s", err)
 			}
 		}
 

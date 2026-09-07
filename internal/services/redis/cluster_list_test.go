@@ -35,7 +35,9 @@ func TestAccListRedisClusters_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-redis-cluster-list"
+					}
 
 					resource "scaleway_redis_cluster" "main" {
 					  project_id   = scaleway_account_project.main.id
@@ -123,7 +125,9 @@ func TestAccListRedisClusters_Basic(t *testing.T) {
 			{
 				// Force cluster deletion before final project destroy.
 				Config: `
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-redis-cluster-list"
+					}
 				`,
 				Check: waitForRedisClusterDeletion(tt, "scaleway_account_project.main", clusterName),
 			},

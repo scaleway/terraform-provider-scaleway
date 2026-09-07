@@ -14,13 +14,13 @@ For more information refer to the [product documentation](https://www.scaleway.c
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 }
 ```
 
@@ -28,14 +28,14 @@ resource "scaleway_datawarehouse_deployment" "main" {
 
 ```terraform
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
-  tags           = ["production", "analytics"]
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
+  tags          = ["production", "analytics"]
 }
 ```
 
@@ -52,13 +52,13 @@ resource "scaleway_vpc_private_network" "pn" {
 }
 
 resource "scaleway_datawarehouse_deployment" "main" {
-  name           = "my-datawarehouse"
-  version        = "v25"
-  replica_count  = 1
-  cpu_min        = 2
-  cpu_max        = 4
-  ram_per_cpu    = 4
-  password       = "thiZ_is_v&ry_s3cret"
+  name          = "my-datawarehouse"
+  version       = "v25"
+  replica_count = 1
+  cpu_min       = 2
+  cpu_max       = 4
+  ram_per_cpu   = 4
+  password      = "thiZ_is_v&ry_s3cret"
 
   private_network {
     pn_id = scaleway_vpc_private_network.pn.id
@@ -84,7 +84,7 @@ The following arguments are supported:
 - `tags` - (Optional) List of tags to apply to the deployment.
 - `private_network` - (Optional, Forces new resource) Private network configuration to expose your deployment. Changing this forces recreation of the deployment.
     - `pn_id` - (Required) The ID of the private network. Format: `{region}/{id}` or just `{id}`.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ~> **Note:** A public endpoint is always created automatically alongside any private network configuration.
@@ -110,6 +110,7 @@ In addition to all arguments above, the following attributes are exported:
     - `services` - List of services exposed on the private endpoint.
         - `protocol` - Service protocol (e.g., "tcp", "https", "mysql").
         - `port` - TCP port number.
+- `srn` - The Scaleway Resource Name (SRN) of the deployment.
 
 ## Import
 

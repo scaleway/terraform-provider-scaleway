@@ -57,6 +57,8 @@ func TestAccACL_Basic(t *testing.T) {
 						"scaleway_ranges": "false",
 					}),
 					resource.TestCheckResourceAttrSet("scaleway_k8s_acl.acl_basic", "acl_rules.0.id"),
+					// TODO: uncomment once API properly returns srn (currently empty)
+					// resource.TestMatchResourceAttr("scaleway_k8s_acl.acl_basic", "acl_rules.0.srn", regexp.MustCompile(`^srn://k8s\..+/regions/.+/acl-rules/.+$`)),
 				),
 			},
 			{

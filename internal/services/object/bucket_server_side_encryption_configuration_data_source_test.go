@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
@@ -22,12 +23,15 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-sse-id"
+					  name = "tf-test-scaleway-bucket-ds-sse-id"
 					  region = "fr-par"
 					}
 
@@ -73,12 +77,15 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testin
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-sse-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-sse-filter"
 					  region = "fr-par"
 					}
 

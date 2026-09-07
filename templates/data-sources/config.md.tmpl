@@ -9,7 +9,7 @@ Gets information about the current configuration that Scaleway provider is using
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get configuration information
 data "scaleway_config" "main" {}
 ```

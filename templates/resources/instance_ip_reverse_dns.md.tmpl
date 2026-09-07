@@ -19,7 +19,7 @@ resource "scaleway_domain_record" "tf_A" {
   dns_zone = "scaleway.com"
   name     = "www"
   type     = "A"
-  data     = "${scaleway_instance_ip.server_ip.address}"
+  data     = scaleway_instance_ip.server_ip.address
   ttl      = 3600
   priority = 1
 }
@@ -36,7 +36,7 @@ The following arguments are supported:
 
 - `ip_id` - (Required) The IP ID
 - `reverse` - (Required) The reverse DNS for this IP.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IP should be reserved.
 
 ## Attributes Reference
 

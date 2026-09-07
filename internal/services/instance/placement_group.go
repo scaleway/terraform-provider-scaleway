@@ -5,7 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceV1 "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
@@ -51,14 +52,16 @@ func placementGroupSchema() map[string]*schema.Schema {
 		"policy_mode": {
 			Type:             schema.TypeString,
 			Optional:         true,
-			Default:          instance.PlacementGroupPolicyModeOptional,
+			Default:          instanceV1.PlacementGroupPolicyModeOptional,
 			Description:      "One of the two policy_mode may be selected: enforced or optional.",
-			ValidateDiagFunc: verify.ValidateEnum[instance.PlacementGroupPolicyMode](),
+			ValidateDiagFunc: verify.ValidateEnum[instanceV1.PlacementGroupPolicyMode](),
+			Deprecated:       "Policy mode is deprecated and will be removed with v1 of the Instance API.",
 		},
 		"policy_respected": {
 			Type:        schema.TypeBool,
 			Computed:    true,
 			Description: "Is true when the policy is respected.",
+			Deprecated:  "policy_respected is deprecated and will be removed with v1 of the Instance API.",
 		},
 		"tags": {
 			Type: schema.TypeList,
@@ -68,23 +71,21 @@ func placementGroupSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the placement group",
 		},
-		"zone":            zonal.Schema(),
-		"organization_id": account.OrganizationIDSchema(),
-		"project_id":      account.ProjectIDSchema(),
+		"zone":       zonal.Schema(),
+		"project_id": account.ProjectIDSchema(),
 	}
 }
 
 func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, err := newAPIWithZone(d, m)
+	instanceAPI, zone, err := newAPIV2WithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
+	pg, err := instanceAPI.CreatePlacementGroup(&instance.CreatePlacementGroupRequest{
 		Zone:       zone,
 		Name:       types.ExpandOrGenerateString(d.Get("name"), "pg"),
-		Project:    types.ExpandStringPtr(d.Get("project_id")),
-		PolicyMode: instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)),
+		ProjectID:  d.Get("project_id").(string),
 		PolicyType: instance.PlacementGroupPolicyType(d.Get("policy_type").(string)),
 		Tags:       types.ExpandStrings(d.Get("tags")),
 	}, scw.WithContext(ctx))
@@ -92,34 +93,54 @@ func ResourceInstancePlacementGroupCreate(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	if policyMode, ok := d.GetOk("policy_mode"); ok {
+		instanceAPIV1, _, err := newAPIWithZone(d, m)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = instanceAPIV1.UpdatePlacementGroup(&instanceV1.UpdatePlacementGroupRequest{
+			Zone:             zone,
+			PlacementGroupID: pg.ID,
+			PolicyMode:       new(instanceV1.PlacementGroupPolicyMode(policyMode.(string))),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	err = identity.SetZonalIdentity(d, pg.Zone, pg.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, res.PlacementGroup)
+	pgV1, err := fetchPlacementGroupV1(ctx, d, m, pg.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPlacementGroupState(d, pg, pgV1)
 }
 
-func setPlacementGroupState(d *schema.ResourceData, pg *instance.PlacementGroup) diag.Diagnostics {
+func setPlacementGroupState(d *schema.ResourceData, pg *instance.PlacementGroup, pgV1 *instanceV1.PlacementGroup) diag.Diagnostics {
 	_ = d.Set("name", pg.Name)
 	_ = d.Set("zone", pg.Zone)
-	_ = d.Set("organization_id", pg.Organization)
-	_ = d.Set("project_id", pg.Project)
-	_ = d.Set("policy_mode", pg.PolicyMode.String())
+	_ = d.Set("project_id", pg.ProjectID)
+	_ = d.Set("policy_mode", pgV1.PolicyMode.String())
 	_ = d.Set("policy_type", pg.PolicyType.String())
-	_ = d.Set("policy_respected", pg.PolicyRespected)
+	_ = d.Set("policy_respected", pgV1.PolicyRespected)
 	_ = d.Set("tags", pg.Tags)
 
 	return nil
 }
 
 func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := NewAPIV2WithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	res, err := instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+	pg, err := instanceAPI.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
 	}, scw.WithContext(ctx))
@@ -133,16 +154,21 @@ func ResourceInstancePlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	err = identity.SetZonalIdentity(d, res.PlacementGroup.Zone, res.PlacementGroup.ID)
+	err = identity.SetZonalIdentity(d, pg.Zone, pg.ID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, res.PlacementGroup)
+	pgV1, err := fetchPlacementGroupV1(ctx, d, m, pg.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPlacementGroupState(d, pg, pgV1)
 }
 
 func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := NewAPIV2WithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,7 +176,6 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 	req := &instance.UpdatePlacementGroupRequest{
 		Zone:             zone,
 		PlacementGroupID: ID,
-		Tags:             new([]string{}),
 	}
 
 	hasChanged := false
@@ -161,12 +186,23 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	if d.HasChange("policy_mode") {
-		req.PolicyMode = new(instance.PlacementGroupPolicyMode(d.Get("policy_mode").(string)))
-		hasChanged = true
+		instanceAPIV1, _, _, err := NewAPIWithZoneAndID(m, d.Id())
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = instanceAPIV1.UpdatePlacementGroup(&instanceV1.UpdatePlacementGroupRequest{
+			Zone:             zone,
+			PlacementGroupID: ID,
+			PolicyMode:       new(instanceV1.PlacementGroupPolicyMode(d.Get("policy_mode").(string))),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("policy_type") {
-		req.PolicyType = new(instance.PlacementGroupPolicyType(d.Get("policy_type").(string)))
+		req.PolicyType = instance.PlacementGroupPolicyType(d.Get("policy_type").(string))
 		hasChanged = true
 	}
 
@@ -186,7 +222,7 @@ func ResourceInstancePlacementGroupUpdate(ctx context.Context, d *schema.Resourc
 }
 
 func ResourceInstancePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	instanceAPI, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
+	instanceAPI, zone, ID, err := NewAPIV2WithZoneAndID(m, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -201,4 +237,21 @@ func ResourceInstancePlacementGroupDelete(ctx context.Context, d *schema.Resourc
 	}
 
 	return nil
+}
+
+func fetchPlacementGroupV1(ctx context.Context, d *schema.ResourceData, m any, pgID string) (*instanceV1.PlacementGroup, error) {
+	instanceAPIV1, zone, err := newAPIWithZone(d, m)
+	if err != nil {
+		return nil, err
+	}
+
+	pgV1, err := instanceAPIV1.GetPlacementGroup(&instanceV1.GetPlacementGroupRequest{
+		Zone:             zone,
+		PlacementGroupID: pgID,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		return nil, err
+	}
+
+	return pgV1.PlacementGroup, nil
 }

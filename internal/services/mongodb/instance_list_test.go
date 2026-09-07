@@ -23,7 +23,9 @@ func TestAccListMongoDBInstances_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: `
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-mongodb-instance-list"
+					}
 
 					resource "scaleway_mongodb_instance" "main" {
 					  project_id  = scaleway_account_project.main.id

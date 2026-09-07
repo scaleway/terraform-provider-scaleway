@@ -1,8 +1,6 @@
 package testfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	kafkaSDK "github.com/scaleway/scaleway-sdk-go/api/kafka/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -28,7 +26,9 @@ func testSweepCluster(region string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing kafka clusters in sweeper: %w", err)
+			logging.L.Warningf("error listing kafka clusters in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, cluster := range listClusters.Clusters {
@@ -37,9 +37,7 @@ func testSweepCluster(region string) error {
 				ClusterID: cluster.ID,
 			})
 			if err != nil {
-				logging.L.Debugf("sweeper: error (%s)", err)
-
-				return fmt.Errorf("error deleting kafka cluster in sweeper: %w", err)
+				logging.L.Warningf("error deleting kafka cluster in sweeper: %s", err)
 			}
 		}
 

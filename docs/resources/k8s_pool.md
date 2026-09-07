@@ -152,11 +152,11 @@ For the field to be properly taken into account, the `upgrade_pools` field of th
 
 -> Note: The minimal volume size of a node is 20GB.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
@@ -264,7 +264,7 @@ If you want to have a new pool created when a variable changes, you can use a na
 resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
   cluster_id = scaleway_k8s_cluster.kubernetes_cluster.id
   name       = "${var.kubernetes_cluster_id}_${var.node_type}_1"
-  node_type  = "${var.node_type}"
+  node_type  = var.node_type
 
   # use Scaleway built-in cluster autoscaler
   autoscaling         = true

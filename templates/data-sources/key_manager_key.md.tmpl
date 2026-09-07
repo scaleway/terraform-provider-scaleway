@@ -16,7 +16,7 @@ The following commands allow you to:
 - create a key named `my-kms-key`
 - retrieve the key's information using the key's ID
 
-```hcl
+```terraform
 // Create a key
 resource "scaleway_key_manager_key" "symmetric" {
   name        = "my-kms-key"

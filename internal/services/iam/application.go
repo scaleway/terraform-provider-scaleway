@@ -65,6 +65,11 @@ func applicationSchema() map[string]*schema.Schema {
 			Description: "The tags associated with the application",
 		},
 		"organization_id": account.OrganizationIDOptionalSchema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the application",
+		},
 	}
 }
 
@@ -170,4 +175,5 @@ func setApplicationState(d *schema.ResourceData, app *iam.Application) {
 	_ = d.Set("organization_id", app.OrganizationID)
 	_ = d.Set("editable", app.Editable)
 	_ = d.Set("tags", types.FlattenSliceString(app.Tags))
+	_ = d.Set("srn", app.Srn)
 }

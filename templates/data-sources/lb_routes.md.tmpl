@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find routes that share the same frontend ID
 data "scaleway_lb_routes" "by_frontendID" {
   frontend_id = scaleway_lb_frontend.frt01.id
@@ -27,7 +27,7 @@ data "scaleway_lb_routes" "my_key" {
 
 - `frontend_id` - (Optional) The frontend ID (the origin of the redirection), to filter for. Routes with a matching frontend ID are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the routes exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the routes exist.
 
 ## Attributes Reference
 

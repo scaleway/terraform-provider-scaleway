@@ -15,7 +15,7 @@ resource "scaleway_domain_record" "tf_A" {
   dns_zone = "example.com"
   name     = "tf"
   type     = "A"
-  data     = "${scaleway_vpc_public_gateway_ip.main.address}"
+  data     = scaleway_vpc_public_gateway_ip.main.address
   ttl      = 3600
   priority = 1
 }
@@ -31,7 +31,7 @@ The following arguments are supported:
 
 - `reverse` - (Optional) The reverse domain name for the IP address
 - `tags` - (Optional) The tags associated with the Public Gateway IP.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway IP should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway IP should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Public Gateway IP is associated with.
 
 ## Attributes Reference
@@ -46,6 +46,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The Organization ID the Public Gateway IP is associated with.
 - `created_at` - The date and time of the creation of the Public Gateway IP.
 - `updated_at` - The date and time of the last update of the Public Gateway IP.
+- `srn` - The Scaleway Resource Name (SRN) of the IP.
 
 ## Import
 

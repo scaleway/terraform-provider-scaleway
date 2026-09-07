@@ -90,6 +90,11 @@ func patRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the PAT rule",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the PAT rule",
+		},
 	}
 }
 
@@ -179,6 +184,7 @@ func setPATRuleState(d *schema.ResourceData, patRule *vpcgw.PatRule) diag.Diagno
 	_ = d.Set("public_port", int(patRule.PublicPort))
 	_ = d.Set("protocol", patRule.Protocol.String())
 	_ = d.Set("zone", patRule.Zone.String())
+	_ = d.Set("srn", patRule.Srn)
 
 	return nil
 }

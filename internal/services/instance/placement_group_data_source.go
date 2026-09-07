@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instance "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
@@ -35,7 +35,7 @@ func DataSourcePlacementGroup() *schema.Resource {
 }
 
 func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := newAPIWithZone(d, m)
+	api, zone, err := newAPIV2WithZone(d, m)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -47,9 +47,9 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 		name := d.Get("name").(string)
 
 		res, err := api.ListPlacementGroups(&instance.ListPlacementGroupsRequest{
-			Zone:    zone,
-			Name:    types.ExpandStringPtr(name),
-			Project: types.ExpandStringPtr(d.Get("project_id")),
+			Zone:      zone,
+			Name:      types.ExpandStringPtr(name),
+			ProjectID: d.Get("project_id").(string),
 		})
 		if err != nil {
 			return diag.FromErr(err)
@@ -75,7 +75,7 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		res, err := api.GetPlacementGroup(&instance.GetPlacementGroupRequest{
+		placementGroup, err := api.GetPlacementGroup(&instance.GetPlacementGroupRequest{
 			Zone:             zone,
 			PlacementGroupID: id,
 		}, scw.WithContext(ctx))
@@ -83,7 +83,7 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 			return diag.FromErr(err)
 		}
 
-		pg = res.PlacementGroup
+		pg = placementGroup
 	}
 
 	zoneID := datasource.NewZonedID(placementGroupID, zone)
@@ -94,5 +94,10 @@ func DataSourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	return setPlacementGroupState(d, pg)
+	pgV1, err := fetchPlacementGroupV1(ctx, d, m, pg.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return setPlacementGroupState(d, pg, pgV1)
 }

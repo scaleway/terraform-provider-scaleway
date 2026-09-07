@@ -168,6 +168,11 @@ func connectionSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The BGP peer IP on customer side",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the connection",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -346,6 +351,7 @@ func setConnectionState(d *schema.ResourceData, connection *s2s_vpn.Connection) 
 	_ = d.Set("bgp_status_ipv6", connection.BgpStatusIPv6.String())
 	_ = d.Set("secret_id", regional.NewIDString(connection.Region, connection.SecretID))
 	_ = d.Set("secret_version", int(connection.SecretRevision))
+	_ = d.Set("srn", connection.Srn)
 
 	bgpSessionIPv4, err := flattenBGPSession(connection.Region, connection.BgpSessionIPv4)
 	if err != nil {
