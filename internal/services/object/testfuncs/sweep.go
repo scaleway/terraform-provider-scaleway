@@ -129,11 +129,13 @@ func EmptyBucket(ctx context.Context, client *s3.Client, bucketName *string) err
 			var errMessage string
 
 			var errMessageSb129 strings.Builder
+
 			for _, e := range output.Errors {
 				if e.Message != nil {
 					errMessageSb129.WriteString(*e.Message + ",")
 				}
 			}
+
 			errMessage += errMessageSb129.String()
 
 			return fmt.Errorf("failed to delete objects batch: %s", errMessage)
