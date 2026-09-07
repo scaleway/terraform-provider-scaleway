@@ -3,7 +3,6 @@ package objecttestfuncs
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -38,7 +37,7 @@ func testSweepStorageObjectBucket(_ string) error {
 
 		// For each project, delete all buckets
 		for _, p := range listProjects.Projects {
-			if !strings.HasPrefix(p.Name, "tf_tests") {
+			if !acctest.IsTestResource(p.Name) {
 				continue
 			}
 
@@ -114,7 +113,7 @@ func EmptyBucket(ctx context.Context, client *s3.Client, bucketName *string) err
 		}
 
 		// Batch deletion (max 1000 per request)
-		_, err = client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
+		output, err := client.DeleteObjects(ctx, &s3.DeleteObjectsInput{
 			Bucket: bucketName,
 			Delete: &types.Delete{
 				Objects: objectIds,
@@ -123,6 +122,17 @@ func EmptyBucket(ctx context.Context, client *s3.Client, bucketName *string) err
 		})
 		if err != nil {
 			return fmt.Errorf("failed to delete objects batch: %w", err)
+		}
+
+		if len(output.Errors) > 0 {
+			var errMessage string
+			for _, e := range output.Errors {
+				if e.Message != nil {
+					errMessage += *e.Message + ","
+				}
+			}
+
+			return fmt.Errorf("failed to delete objects batch: %s", errMessage)
 		}
 
 		logging.L.Debugf("Successfully deleted a batch of %d objects", len(objectIds))
