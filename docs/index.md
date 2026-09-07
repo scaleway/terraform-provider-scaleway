@@ -15,7 +15,7 @@ Use the navigation to the left to read about the available resources.
 
 For Terraform 0.13 and later, please also include this:
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -38,7 +38,7 @@ You can test this config by creating a `test.tf` and run terraform commands from
 - Generate and show the execution plan: `terraform plan`
 - Build the infrastructure: `terraform apply`
 
-```hcl
+```terraform
 variable "project_id" {
   type        = string
   description = "Your project ID."
@@ -139,7 +139,7 @@ You can provide your credentials via the `SCW_ACCESS_KEY`, `SCW_SECRET_KEY` envi
 
 Example:
 
-```hcl
+```terraform
 provider "scaleway" {}
 ```
 
@@ -159,7 +159,7 @@ Static credentials can be provided by adding `access_key` and `secret_key` attri
 
 Example:
 
-```hcl
+```terraform
 provider "scaleway" {
   access_key = "my-access-key"
   secret_key = "my-secret-key"
@@ -197,7 +197,7 @@ profiles:
 
 You can invoke and use this profile in the provider declaration:
 
-```hcl
+```terraform
 provider "scaleway" {
   alias   = "p2"
   profile = "myProfile"

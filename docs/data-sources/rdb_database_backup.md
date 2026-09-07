@@ -9,7 +9,7 @@ Gets information about an RDB backup.
 
 ## Example Usage
 
-```hcl
+```terraform
 data "scaleway_rdb_database_backup" "find_by_name" {
   name = "mybackup"
 }

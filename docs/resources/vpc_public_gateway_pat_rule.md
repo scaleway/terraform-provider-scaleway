@@ -83,7 +83,7 @@ The following arguments are supported:
 - `public_port` - (Required) The public port to listen on.
 - `private_port` - (Required) The private port to translate to.
 - `protocol` - (Defaults to both) The protocol the rule should apply to. Possible values are `both`, `tcp` and `udp`.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
 
 ## Attributes Reference
 
@@ -96,6 +96,7 @@ In addition to all arguments above, the following attributes are exported:
 - `organization_id` - The Organization ID the PAT rule configuration is associated with.
 - `created_at` - The date and time of the creation of the PAT rule configuration.
 - `updated_at` - The date and time of the last update of the PAT rule configuration.
+- `srn` - The Scaleway Resource Name (SRN) of the PAT rule.
 
 ## Import
 

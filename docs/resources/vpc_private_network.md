@@ -49,7 +49,7 @@ The following arguments are supported:
     - `subnet` - (Optional) The subnet CIDR.
 - `ipv6_subnets` - (Optional) The IPv6 subnets to associate with the private network.
     - `subnet` - (Optional) The subnet CIDR.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Private Network.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the Private Network.
 - `vpc_id` - (Optional) The VPC in which to create the Private Network.
 - `is_regional` - (Deprecated) Private Networks are now all necessarily regional.
 - `enable_default_route_propagation` - (Optional) Defines whether default v4 and v6 routes are propagated for this Private Network.

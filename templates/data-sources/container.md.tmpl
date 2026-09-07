@@ -18,7 +18,7 @@ The following commands allow you to:
 - retrieve a container by its name
 - retrieve a container by its ID
 
-```hcl
+```terraform
 resource "scaleway_container_namespace" "main" {
 }
 

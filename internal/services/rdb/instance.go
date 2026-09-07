@@ -475,7 +475,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)),
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			NodeType:     new(d.Get("node_type").(string)),
 		}
 
@@ -547,7 +547,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:      d.Get("node_type").(string),
 			Engine:        d.Get("engine").(string),
-			IsHaCluster:   d.Get("is_ha_cluster").(bool),
+			IsHaCluster:   d.Get("is_ha_cluster").(bool), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
 			Password:      password,
@@ -1088,7 +1088,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			})
 	}
 
@@ -1182,7 +1182,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 					Region:     region,
 					InstanceID: ID,
-					EnableHa:   new(true),
+					EnableHa:   new(true), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)

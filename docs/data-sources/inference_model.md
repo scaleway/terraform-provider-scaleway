@@ -11,7 +11,7 @@ The `scaleway_inference_model` data source allows you to retrieve information ab
 
 ### Basic
 
-```hcl
+```terraform
 data "scaleway_inference_model" "my_model" {
   name = "meta/llama-3.1-8b-instruct:fp8"
 }

@@ -9,7 +9,7 @@ Gets information about multiple Flexible IPs.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find ips that share the same tags
 data "scaleway_flexible_ips" "fips_by_tags" {
   tags = ["a tag"]
@@ -48,7 +48,7 @@ data "scaleway_flexible_ips" "fips_by_server_id" {
 
 - `tags` - (Optional) List of tags used as filter. IPs with these exact tags are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which IPs exist.
 
 ## Attributes Reference
 
@@ -66,7 +66,7 @@ In addition to all above arguments, the following attributes are exported:
         - `status` - The status of virtual MAC.
         - `created_at` - The date on which the virtual MAC was created (RFC 3339 format).
         - `updated_at` - The date on which the virtual MAC was last updated (RFC 3339 format).
-        - `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
+        - `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the MAC address exist.
     - `created_at` - The date on which the flexible IP was created (RFC 3339 format).
     - `updated_at` - The date on which the flexible IP was last updated (RFC 3339 format).
     - `reverse` - The reverse domain associated with this IP.

@@ -55,15 +55,15 @@ The following arguments are supported:
     - `namespace_id` (Deprecated) ID of the Messaging and Queuing namespace. This argument is deprecated.
     - `queue` (Required) The name of the SQS queue.
     - `project_id` (Optional) The ID of the project in which SQS is enabled, (defaults to [provider](../index.md#arguments-reference) `project_id`)
-    - `region` (Optional) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `region` (Optional, Computed) Region where SQS is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
 
 - `nats` The configuration for the Scaleway NATS account used by the trigger
     - `account_id` (Required) unique identifier of the Messaging and Queuing NATS account.
     - `subject` (Required) The subject to listen to.
     - `project_id` (Optional) THe ID of the project that contains the Messaging and Queuing NATS account (defaults to [provider](../index.md#arguments-reference) `project_id`)
-    - `region` (Optional) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
+    - `region` (Optional, Computed) Region where the Messaging and Queuing NATS account is enabled (defaults to [provider](../index.md#arguments-reference) `region`)
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the namespace is created.
 
 ## Attributes Reference
 

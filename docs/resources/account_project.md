@@ -16,7 +16,7 @@ Refer to the Organizations and Projects [documentation](https://www.scaleway.com
 
 The following command allows you to create a project named `project`.
 
-```hcl
+```terraform
 resource "scaleway_account_project" "project" {
   name = "project"
 }
@@ -27,12 +27,12 @@ resource "scaleway_account_project" "project" {
 If you want to use as default a project created in terraform you can use a temporary provider alias.
 This project can then be used to configure your default provider.
 
-```hcl
+```terraform
 provider "scaleway" {
   alias = "tmp"
 }
 
-resource scaleway_account_project "project" {
+resource "scaleway_account_project" "project" {
   provider = scaleway.tmp
   name     = "my_project"
 }

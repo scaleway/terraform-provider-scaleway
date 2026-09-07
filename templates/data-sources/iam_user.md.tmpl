@@ -10,7 +10,7 @@ For more information refer to the [IAM API documentation](https://developers.sca
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by user id
 data "scaleway_iam_user" "find_by_id" {
   user_id = "11111111-1111-1111-1111-111111111111"

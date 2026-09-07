@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find LBs by name
 data "scaleway_lbs" "my_key" {
   name = "foobar"
@@ -35,7 +35,7 @@ data "scaleway_lbs" "lbs_by_tags" {
 
 - `tags` - (Optional) List of tags to filter for. Load Balancers with these exact tags are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancers exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Load Balancers exist.
 
 ## Attributes Reference
 

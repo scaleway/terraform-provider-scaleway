@@ -11,7 +11,7 @@ For further information refer to the Managed Database for Redis™ [API document
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_redis_cluster" "my_cluster" {
   name = "foobar"

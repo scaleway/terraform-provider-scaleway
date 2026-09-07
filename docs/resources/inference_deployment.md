@@ -8,9 +8,8 @@ page_title: "Scaleway: scaleway_inference_deployment"
 Creates and manages Scaleway Managed Inference deployments.
 For more information, see the [API documentation](https://www.scaleway.com/en/developers/api/inference/).
 
-## Example Usage
 
-### Basic
+## Example Usage
 
 ```terraform
 data "scaleway_inference_model" "my_model" {
@@ -18,15 +17,16 @@ data "scaleway_inference_model" "my_model" {
 }
 
 resource "scaleway_inference_deployment" "deployment" {
-  name       = "tf-inference-deployment"
-  node_type  = "L4"
-  model_name = data.scaleway_inference_model.my_model.id
+  name      = "tf-inference-deployment"
+  node_type = "L4"
+  model_id  = data.scaleway_inference_model.my_model.id
   public_endpoint {
     is_enabled = true
   }
   accept_eula = true
 }
 ```
+
 
 ## Argument Reference
 
@@ -43,7 +43,7 @@ resource "scaleway_inference_deployment" "deployment" {
 - `public_endpoint` - (Optional) Configuration of the deployment's public endpoint.
     - `is_enabled` - (Optional) Enable or disable public endpoint.
     - `disable_auth` - (Optional) Disable the authentication on the endpoint.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the deployment is created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the deployment is associated with.
 
 ## Attributes Reference

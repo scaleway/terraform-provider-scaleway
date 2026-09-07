@@ -58,7 +58,7 @@ The following arguments are supported:
 - `type` - (Required) The gateway type.
 - `name` - (Optional) The name for the Public Gateway. If not provided it will be randomly generated.
 - `tags` - (Optional) The tags to associate with the Public Gateway.
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the public gateway is associated with.
 - `upstream_dns_servers` - (Deprecated) Override the gateway's default recursive DNS servers, if DNS features are enabled.
 - `ip_id` - (Optional) Attach an existing flexible IP to the gateway.
@@ -80,6 +80,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the Public Gateway.
 - `updated_at` - The date and time of the last update of the Public Gateway.
 - `status` - The status of the public gateway.
+- `srn` - The Scaleway Resource Name (SRN) of the public gateway.
 
 ## Import
 

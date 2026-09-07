@@ -11,14 +11,14 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find backends that share the same LB ID
 data "scaleway_lb_backends" "byLBID" {
-  lb_id = "${scaleway_lb.lb01.id}"
+  lb_id = scaleway_lb.lb01.id
 }
 # Find backends by LB ID and name
 data "scaleway_lb_backends" "byLBID_and_name" {
-  lb_id = "${scaleway_lb.lb01.id}"
+  lb_id = scaleway_lb.lb01.id
   name  = "tf-backend-datasource"
 }
 ```
@@ -29,7 +29,7 @@ data "scaleway_lb_backends" "byLBID_and_name" {
 
 - `name` - (Optional) The backend name to filter for. Backends with a matching name are listed.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which backends exist.
 
 ## Attributes Reference
 
@@ -50,6 +50,7 @@ In addition to all arguments above, the following attributes are exported:
     - `timeout_connect` - Maximum initial server connection establishment time.
     - `timeout_tunnel` - Maximum tunnel inactivity time.
     - `failover_host` - Scaleway S3 bucket website to be served if all backend servers are down.
+    - `host` - Value used as the HTTP `Host` header or TLS SNI when connecting to backend servers.
     - `ssl_bridging` - Enables SSL between Load Balancer and backend servers.
     - `ignore_ssl_server_verify` - Specifies whether the Load Balancer should check the backend server’s certificate before initiating a connection.
     - `health_check_timeout` - Timeout before a health check request is considered failed.

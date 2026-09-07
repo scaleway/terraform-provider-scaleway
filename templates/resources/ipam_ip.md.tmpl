@@ -117,7 +117,7 @@ The following arguments are supported:
 - `custom_resource` - (Optional) The custom resource to attach to the IP being reserved. An example of a custom resource is a virtual machine hosted on an Elastic Metal server.
     - `mac_address` - The MAC address of the custom resource.
     - `name` - When the resource is in a Private Network, a DNS record is available to resolve the resource name.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the IP.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the IP is associated with.
 
 ## Attributes Reference
@@ -137,6 +137,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - Date and time of IP's creation (RFC 3339 format).
 - `updated_at` - Date and time of IP's last update (RFC 3339 format).
 - `zone` - The zone of the IP.
+- `srn` - The Scaleway Resource Name (SRN) of the IP.
 
 ~> **Important:** IPAM IP IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

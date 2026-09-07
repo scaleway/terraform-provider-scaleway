@@ -14,7 +14,7 @@ For more information refer to the [product documentation](https://www.scaleway.c
 ```terraform
 
 resource "scaleway_mongodb_snapshot" "main" {
-  instance_id = "${scaleway_mongodb_instance.main.id}"
+  instance_id = scaleway_mongodb_instance.main.id
   name        = "name-snapshot"
   expires_at  = "2024-12-31T23:59:59Z"
 }
@@ -32,7 +32,7 @@ The following arguments are supported:
 
 ~> **Important:** Once set, `expires_at` cannot be removed.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® snapshot should be created.
 
 ## Attributes Reference
 

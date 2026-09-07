@@ -11,7 +11,7 @@ For more information, refer to the [IAM API documentation](https://developers.sc
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_iam_group" "find_by_name" {
   name = "foobar"

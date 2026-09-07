@@ -82,9 +82,14 @@ func groupSchema() map[string]*schema.Schema {
 				Type: schema.TypeString,
 			},
 			Optional:    true,
-			Description: "The tags associated with the application",
+			Description: "The tags associated with the group",
 		},
 		"organization_id": account.OrganizationIDOptionalSchema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the group",
+		},
 	}
 }
 
@@ -232,6 +237,7 @@ func setGroupState(d *schema.ResourceData, group *iam.Group, external_membership
 	_ = d.Set("updated_at", types.FlattenTime(group.UpdatedAt))
 	_ = d.Set("organization_id", group.OrganizationID)
 	_ = d.Set("tags", types.FlattenSliceString(group.Tags))
+	_ = d.Set("srn", group.Srn)
 
 	if !external_membership {
 		_ = d.Set("user_ids", group.UserIDs)

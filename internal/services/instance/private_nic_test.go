@@ -8,11 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v1"
+	instanceSDK "github.com/scaleway/scaleway-sdk-go/api/instance/v2alpha1"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
+	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
 )
 
 func TestAccPrivateNIC_Basic(t *testing.T) {
@@ -21,7 +22,11 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isPrivateNICDestroyed(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			isPrivateNICDestroyed(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+			instancechecks.IsServerDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -51,6 +56,7 @@ func TestAccPrivateNIC_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_ips.0.id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_ips.0.address"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic01", "project_id", "scaleway_instance_server.server01", "project_id"),
 				),
 			},
 			{
@@ -69,7 +75,11 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isPrivateNICDestroyed(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			isPrivateNICDestroyed(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+			instancechecks.IsServerDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -98,6 +108,8 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic01", "project_id", "scaleway_instance_server.server01", "project_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.#", "0"),
 				),
 			},
 			{
@@ -128,6 +140,8 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic01", "project_id", "scaleway_instance_server.server01", "project_id"),
+					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.0", "tag1"),
 					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.1", "tag2"),
 				),
@@ -165,6 +179,7 @@ func TestAccPrivateNIC_Tags(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "mac_address"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "private_network_id"),
 					resource.TestCheckResourceAttrSet("scaleway_instance_private_nic.nic01", "server_id"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.nic01", "project_id", "scaleway_instance_server.server01", "project_id"),
 					resource.TestCheckResourceAttr("scaleway_instance_private_nic.nic01", "tags.#", "0"),
 				),
 			},
@@ -178,7 +193,11 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             isPrivateNICDestroyed(tt),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			isPrivateNICDestroyed(tt),
+			vpcchecks.CheckVPCDestroy(tt),
+			instancechecks.IsServerDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
@@ -232,6 +251,7 @@ func TestAccPrivateNIC_WithIPAM(t *testing.T) {
 					resource.TestCheckResourceAttrPair(
 						"scaleway_ipam_ip.ip01", "address_cidr",
 						"data.scaleway_ipam_ip.by_id", "address_cidr"),
+					resource.TestCheckResourceAttrPair("scaleway_instance_private_nic.pnic01", "project_id", "scaleway_instance_server.server01", "project_id"),
 				),
 			},
 			{
@@ -251,15 +271,14 @@ func isPrivateNICPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		instanceAPI, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+		instanceAPI, zone, pnicID, _, err := instance.NewAPIV2WithZoneAndNestedID(tt.Meta, rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		_, err = instanceAPI.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
-			ServerID:     outerID,
-			PrivateNicID: innerID,
-			Zone:         zone,
+		_, err = instanceAPI.GetPrivateNetworkInterface(&instanceSDK.GetPrivateNetworkInterfaceRequest{
+			PrivateNetworkInterfaceID: pnicID,
+			Zone:                      zone,
 		})
 		if err != nil {
 			return err
@@ -279,15 +298,14 @@ func isPrivateNICDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 					continue
 				}
 
-				api, zone, innerID, outerID, err := instance.NewAPIWithZoneAndNestedID(tt.Meta, rs.Primary.ID)
+				api, zone, pnicID, _, err := instance.NewAPIV2WithZoneAndNestedID(tt.Meta, rs.Primary.ID)
 				if err != nil {
 					return retry.NonRetryableError(err)
 				}
 
-				_, err = api.GetPrivateNIC(&instanceSDK.GetPrivateNICRequest{
-					ServerID:     outerID, // parent
-					PrivateNicID: innerID, // child
-					Zone:         zone,
+				_, err = api.GetPrivateNetworkInterface(&instanceSDK.GetPrivateNetworkInterfaceRequest{
+					PrivateNetworkInterfaceID: pnicID,
+					Zone:                      zone,
 				})
 
 				switch {

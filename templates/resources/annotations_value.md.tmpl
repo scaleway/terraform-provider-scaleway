@@ -1,0 +1,41 @@
+{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
+---
+subcategory: "Annotations"
+page_title: "Scaleway: scaleway_annotations_value"
+---
+
+# Resource: {{ .Name }}
+{{ .Description }}
+
+{{ if .HasExamples }}
+## Example Usage
+
+{{ range .ExampleFiles -}}
+{{ tffile . }}
+
+{{ end }}
+
+{{ end -}}
+
+## Argument Reference
+
+The following arguments are supported:
+
+- `key_id` - (Required) ID of the key the value is associated to.
+- `name` - (Required) Name of the annotation value.
+- `description` - (Optional) Description of the annotation value.
+
+## Attributes Reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the annotation value.
+- `value_id` - The ID of the annotation value.
+
+## Import
+
+Annotation values can be imported using their `id`:
+
+```bash
+terraform import scaleway_annotations_value.main <value_id>
+```
