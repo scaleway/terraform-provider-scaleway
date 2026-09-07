@@ -608,8 +608,7 @@ func handleVolumeSizeUpgrade(ctx context.Context, mongodbAPI *mongodb.API, regio
 }
 
 func handleVersionUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region scw.Region, id string, d *schema.ResourceData) (string, diag.Diagnostics) {
-	_, newVersionInterface := d.GetChange("version")
-	newVersion := NormalizeMongoDBVersion(newVersionInterface.(string))
+	newVersion := NormalizeMongoDBVersion(d.Get("version").(string))
 
 	upgradeInstanceRequest := mongodb.UpgradeInstanceRequest{
 		InstanceID: id,
@@ -673,6 +672,7 @@ func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API,
 		if err != nil {
 			if httperrors.Is404(err) {
 				tflog.Info(ctx, fmt.Sprintf("Old instance %s already deleted", oldInstanceID))
+
 				return nil
 			}
 
@@ -681,6 +681,7 @@ func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API,
 			switch instance.Status {
 			case mongodb.InstanceStatusDeleting:
 				tflog.Info(ctx, fmt.Sprintf("Old instance %s is already deleting, waiting...", oldInstanceID))
+
 				deleteRequested = true
 			case mongodb.InstanceStatusReady, mongodb.InstanceStatusError, mongodb.InstanceStatusLocked:
 				_, err = mongodbAPI.DeleteInstance(&mongodb.DeleteInstanceRequest{
@@ -695,6 +696,7 @@ func deleteOldInstanceAfterUpgrade(ctx context.Context, mongodbAPI *mongodb.API,
 					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s (status=%s): %v", oldInstanceID, instance.Status, err))
 				} else {
 					tflog.Info(ctx, fmt.Sprintf("Old instance %s deletion requested", oldInstanceID))
+
 					deleteRequested = true
 				}
 			default:
@@ -779,6 +781,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 
 	if d.HasChange("version") {
 		var diags diag.Diagnostics
+
 		ID, diags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
 		if len(diags) > 0 {
 			return diags
