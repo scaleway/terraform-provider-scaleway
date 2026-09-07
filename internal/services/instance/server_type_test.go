@@ -37,6 +37,12 @@ func TestAccServer_Migrate(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
 						name = "tf-acc-server-migrate"
@@ -51,6 +57,12 @@ func TestAccServer_Migrate(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				Config: `
 					resource "scaleway_instance_server" "main" {
 						name = "tf-acc-server-migrate"
@@ -63,6 +75,12 @@ func TestAccServer_Migrate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.main", "type", "PRO2-XXS"),
 					acctest.CheckResourceIDPersisted("scaleway_instance_server.main", serverID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 		},
 	})
@@ -96,6 +114,12 @@ func TestAccServer_Migrate_ReplaceOnTypeChange(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
+			},
+			{
 				// DEV1-S
 				Config: `
 					resource "scaleway_instance_server" "base" {
@@ -112,6 +136,12 @@ func TestAccServer_Migrate_ReplaceOnTypeChange(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_instance_server.base", "type", "DEV1-S"),
 					acctest.CheckResourceIDChanged("scaleway_instance_server.base", serverID),
 				),
+			},
+			{
+				ResourceName:            "scaleway_instance_server.base",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"replace_on_type_change", "image"},
 			},
 		},
 	})

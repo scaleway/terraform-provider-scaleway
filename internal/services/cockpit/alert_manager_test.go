@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	accounttestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccCockpitAlertManager_CreateWithSingleContact(t *testing.T) {
@@ -275,8 +277,16 @@ func testAccCheckCockpitContactPointExists(tt *acctest.TestTools, resourceName s
 		api := cockpit.NewRegionalAPI(meta.ExtractScwClient(tt.Meta))
 		projectID := rs.Primary.Attributes["project_id"]
 
-		contactPoints, err := api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
-			ProjectID: projectID,
+		var contactPoints *cockpit.ListContactPointsResponse
+
+		err := transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			contactPoints, err = api.ListContactPoints(&cockpit.RegionalAPIListContactPointsRequest{
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err
@@ -532,11 +542,19 @@ func testAccCheckPreconfiguredAlertsCount(tt *acctest.TestTools, resourceName st
 			}
 		}
 
-		alerts, err := api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
-			Region:          region,
-			ProjectID:       projectID,
-			IsPreconfigured: new(true),
-		}, scw.WithAllPages())
+		var alerts *cockpit.ListAlertsResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			alerts, err = api.ListAlerts(&cockpit.RegionalAPIListAlertsRequest{
+				Region:          region,
+				ProjectID:       projectID,
+				IsPreconfigured: new(true),
+			}, scw.WithAllPages())
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to list alerts: %w", err)
 		}
@@ -573,9 +591,17 @@ func testAccCheckManagedAlertsEnabled(tt *acctest.TestTools, resourceName string
 		projectID := rs.Primary.Attributes["project_id"]
 		region := scw.Region(rs.Primary.Attributes["region"])
 
-		alertManager, err := api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
-			Region:    region,
-			ProjectID: projectID,
+		var alertManager *cockpit.AlertManager
+
+		err := transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			alertManager, err = api.GetAlertManager(&cockpit.RegionalAPIGetAlertManagerRequest{
+				Region:    region,
+				ProjectID: projectID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

@@ -5,7 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	billingSDK "github.com/scaleway/scaleway-sdk-go/api/billing/v2"
@@ -146,18 +148,30 @@ func checkBudgetDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			billingAPI := billingSDK.NewAPI(tt.Meta.ScwClient())
 
-			_, err := billingAPI.GetBudget(&billingSDK.GetBudgetRequest{
-				BudgetID: rs.Primary.ID,
-			}, scw.WithContext(context.Background()))
-			if err != nil {
-				if httperrors.Is404(err) {
-					continue
-				}
+			_, err := (&retry.StateChangeConf{
+				Pending: []string{"exists"},
+				Target:  []string{"deleted"},
+				Refresh: func() (any, string, error) {
+					_, err := billingAPI.GetBudget(&billingSDK.GetBudgetRequest{
+						BudgetID: rs.Primary.ID,
+					}, scw.WithContext(context.Background()))
+					if err != nil {
+						if httperrors.Is404(err) {
+							return nil, "deleted", nil
+						}
 
-				return fmt.Errorf("failed to get budget: %w", err)
+						return nil, "", err
+					}
+
+					return nil, "exists", nil
+				},
+				Timeout:    10 * time.Second,
+				Delay:      0,
+				MinTimeout: 2 * time.Second,
+			}).WaitForStateContext(context.Background())
+			if err == nil {
+				return fmt.Errorf("budget %s still exists after deletion", rs.Primary.ID)
 			}
-
-			return fmt.Errorf("budget %s still exists after deletion", rs.Primary.ID)
 		}
 
 		return nil

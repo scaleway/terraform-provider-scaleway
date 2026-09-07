@@ -11,6 +11,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccActionRDBReadReplicaReset_Basic(t *testing.T) {
@@ -77,10 +78,18 @@ func isReadReplicaReset(tt *acctest.TestTools, readReplicaResourceName string) r
 
 		api := rdbSDK.NewAPI(tt.Meta.ScwClient())
 
-		readReplica, err := api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
-			Region:        region,
-			ReadReplicaID: id,
-		}, scw.WithContext(context.Background()))
+		var readReplica *rdbSDK.ReadReplica
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			readReplica, err = api.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
+				Region:        region,
+				ReadReplicaID: id,
+			}, scw.WithContext(context.Background()))
+
+			return err
+		})
 		if err != nil {
 			return fmt.Errorf("failed to get read replica: %w", err)
 		}

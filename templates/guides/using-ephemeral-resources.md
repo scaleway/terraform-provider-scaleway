@@ -6,7 +6,7 @@ page_title: "Using Ephemeral Resources Guide"
 
 Ephemeral resources in Terraform allow you to access sensitive data during Terraform operations without storing that data in the Terraform state file. This ensures your sensitive credentials are never stored in Terraform state files, providing superior protection against accidental exposure. This guide explains how to use ephemeral resources in the Scaleway Terraform Provider.
 
-For more information, see the [official Terraform documentation for Ephemeral Resources](https://developer.hashicorp.com/terraform/plugin/framework/resources/ephemeral).
+For more information, see the [official Terraform documentation for Ephemeral Resources](https://developer.hashicorp.com/terraform/plugin/framework/ephemeral-resources).
 
 ## What are Ephemeral Resources?
 
@@ -83,15 +83,15 @@ resource "scaleway_key_manager_key" "main" {
 
 # Encrypt the plaintext with the created encryption key using the key_manager_encrypt Ephemeral resource (not stored in state)
 ephemeral "scaleway_key_manager_encrypt" "main" {
-  key_id     = scaleway_key_manager_key.main.id
-  plaintext  = "This is a sensitive plaintext"
-  region     = "fr-par"
+  key_id    = scaleway_key_manager_key.main.id
+  plaintext = "This is a sensitive plaintext"
+  region    = "fr-par"
 }
 
 # The encrypted ciphertext can be stored in a scaleway_secret, using a write-only argument
 # Create a secret that will be used to store the encrypted ciphertext
 resource "scaleway_secret" "main" {
-  name        = "my-secret"
+  name = "my-secret"
 }
 
 # Store the ciphertext in a secret_version using the data write-only argument

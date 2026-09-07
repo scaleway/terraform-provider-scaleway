@@ -88,6 +88,11 @@ func routeSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the route",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the route",
+		},
 	}
 }
 
@@ -181,6 +186,8 @@ func setRouteState(d *schema.ResourceData, res *vpc.Route) diag.Diagnostics {
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)
 	}
+
+	_ = d.Set("srn", res.Srn)
 
 	return nil
 }

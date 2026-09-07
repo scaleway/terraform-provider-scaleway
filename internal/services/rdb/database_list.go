@@ -77,7 +77,7 @@ func (r *DatabaseListResource) ListResourceConfigSchema(_ context.Context, _ lis
 					listvalidator.ValueStringsAre(
 						stringvalidator.Any(
 							stringvalidator.OneOf("*"),
-							verify.IsStringUUIDOrUUIDWithLocality(),
+							verify.IsStringUUIDOrUUIDWithRegion(),
 						),
 					),
 				},

@@ -55,12 +55,12 @@ resource "scaleway_block_volume" "imported" {
 
 ```terraform
 resource "scaleway_object_bucket" "my-import-bucket" {
-      name = "snapshot-bucket-to-import"
+  name = "snapshot-bucket-to-import"
 }
 
 resource "scaleway_object" "qcow-object" {
-      bucket = scaleway_object_bucket.snapshot-bucket.name
-      key    = "export/my-snapshot.qcow2"
+  bucket = scaleway_object_bucket.snapshot-bucket.name
+  key    = "export/my-snapshot.qcow2"
 }
 
 resource "scaleway_block_volume" "to_export" {
@@ -80,8 +80,8 @@ This section lists the arguments that are supported:
 
 - `volume_id` - (Optional) The ID of the volume to take a snapshot from.
 - `name` - (Optional) The name of the snapshot. If not provided, a name will be randomly generated.
-- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#zone)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
-- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#project_id)). The ID of the Scaleway Project the snapshot is associated with.
+- `zone` - (Defaults to the zone specified in the [provider configuration](../index.md#arguments-reference)). The [zone](../guides/regions_and_zones.md#zones) in which the snapshot should be created.
+- `project_id` - (Defaults to the Project ID specified in the [provider configuration](../index.md#arguments-reference)). The ID of the Scaleway Project the snapshot is associated with.
 - `tags` - (Optional) A list of tags to apply to the snapshot.
 - `import` - (Optional) Use this block to import a QCOW image from Object Storage to create a volume.
       - `bucket` – (Required) The name of the bucket containing the QCOW file.
@@ -97,6 +97,8 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the snapshot.
 
 ~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID might be `fr-par-1/11111111-1111-1111-1111-111111111111`.
+
+- `srn` - The Scaleway Resource Name (SRN) of the snapshot.
 
 ## Import
 

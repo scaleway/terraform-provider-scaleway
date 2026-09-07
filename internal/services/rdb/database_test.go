@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -125,13 +127,21 @@ func isDatabasePresent(tt *acctest.TestTools, instance string, database string) 
 			return err
 		}
 
-		databases, err := rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
-			Region:     region,
-			InstanceID: instanceID,
-			Name:       &databaseName,
-			Managed:    nil,
-			Owner:      nil,
-			OrderBy:    "",
+		var databases *rdbSDK.ListDatabasesResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			databases, err = rdbAPI.ListDatabases(&rdbSDK.ListDatabasesRequest{
+				Region:     region,
+				InstanceID: instanceID,
+				Name:       &databaseName,
+				Managed:    nil,
+				Owner:      nil,
+				OrderBy:    "",
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

@@ -86,7 +86,7 @@ func DataSourceOfferSubscriptionRead(ctx context.Context, d *schema.ResourceData
 
 	offer, err := api.ListOfferSubscriptions(&tem.ListOfferSubscriptionsRequest{
 		Region:    region,
-		ProjectID: projectID,
+		ProjectID: &projectID,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {

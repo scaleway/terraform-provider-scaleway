@@ -9,7 +9,7 @@ Gets information about multiple VPC routes.
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc" "vpc01" {
   name           = "tf-vpc-route"
   enable_routing = true
@@ -63,7 +63,7 @@ data "scaleway_vpc_routes" "routes_by_pn_id" {
 
 - `tags` - (Optional) List of tags to filter for. routes with these exact tags are listed.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the routes exist.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the routes exist.
 
 ## Attributes Reference
 

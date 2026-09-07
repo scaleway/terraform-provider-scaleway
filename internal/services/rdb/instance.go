@@ -208,11 +208,11 @@ func instanceSchema() map[string]*schema.Schema {
 						Description: "The endpoint ID",
 					},
 					"ip_net": {
-						Type:         schema.TypeString,
-						Optional:     true,
-						Computed:     true,
-						ValidateFunc: validation.IsCIDR,
-						Description:  "The IP with the given mask within the private subnet",
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: validateRdbPrivateNetworkIPNet,
+						Description:      "The IP with the given mask within the private subnet",
 					},
 					"ip": {
 						Type:        schema.TypeString,
@@ -385,6 +385,50 @@ func instanceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+		"maintenances": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "List of scheduled maintenance events on the database instance",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"starts_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Start date of the maintenance window",
+					},
+					"stops_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "End date of the maintenance window",
+					},
+					"closed_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Closed maintenance date",
+					},
+					"reason": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Maintenance information message",
+					},
+					"status": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Status of the maintenance",
+					},
+					"forced_at": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Time when Scaleway-side maintenance will be applied",
+					},
+					"is_applicable": {
+						Type:        schema.TypeBool,
+						Computed:    true,
+						Description: "Whether the maintenance can be applied by the user",
+					},
+				},
+			},
+		},
 		"private_ip": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -431,7 +475,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)),
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			NodeType:     new(d.Get("node_type").(string)),
 		}
 
@@ -503,7 +547,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:      d.Get("node_type").(string),
 			Engine:        d.Get("engine").(string),
-			IsHaCluster:   d.Get("is_ha_cluster").(bool),
+			IsHaCluster:   d.Get("is_ha_cluster").(bool), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
 			Password:      password,
@@ -679,6 +723,22 @@ func deleteLoadBalancerEndpoints(ctx context.Context, rdbAPI *rdb.API, region sc
 	return nil
 }
 
+// validateRdbPrivateNetworkIPNet validates that ip_net is a valid CIDR and warns that setting it
+// provisions the endpoint in `static` mode, which is not registered in the VPC IPAM and DNS.
+func validateRdbPrivateNetworkIPNet(v any, path cty.Path) diag.Diagnostics {
+	diags := validation.ToDiagFunc(validation.IsCIDR)(v, path)
+	if diags.HasError() {
+		return diags
+	}
+
+	return append(diags, diag.Diagnostic{
+		Severity:      diag.Warning,
+		Summary:       "Private Network endpoint will use `static` provisioning mode",
+		Detail:        "Setting `ip_net` creates a static service IP that is not registered in the VPC IPAM and DNS. The endpoint may be unreachable from other resources in the same VPC (no dataplane routing, no `.internal` DNS record). Reserved IPs (`scaleway_ipam_ip`) are not supported for Managed Databases. Use `enable_ipam = true` instead for an IPAM-managed endpoint with working VPC routing and DNS.",
+		AttributePath: path,
+	})
+}
+
 // collectEndpointSpecs collects all endpoint specifications for instance creation
 func collectEndpointSpecs(d *schema.ResourceData) ([]*rdb.EndpointSpec, diag.Diagnostics) {
 	var endpoints []*rdb.EndpointSpec
@@ -769,6 +829,7 @@ func setInstanceState(ctx context.Context, d *schema.ResourceData, m any, rdbAPI
 	}
 
 	_ = d.Set("upgradable_versions", upgradableVersions)
+	_ = d.Set("maintenances", FlattenInstanceMaintenances(res.Maintenances))
 
 	// set user and password
 	if user, ok := d.GetOk("user_name"); ok {
@@ -1003,7 +1064,9 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if d.HasChange("node_type") {
 		// Upgrading the node_type with block storage is not allowed when the disk is full, so if we are in this case,
 		// we can only allow this action if an increase of the size of the volume is also scheduled before it.
-		if !diskIsFull || len(upgradeInstanceRequests) > 0 {
+		// With local storage (lssd), the volume size is tied to the node_type, so bumping the node_type is the only
+		// way to increase storage and must therefore be allowed even when the disk is full.
+		if !diskIsFull || len(upgradeInstanceRequests) > 0 || volType == rdb.VolumeTypeLssd {
 			upgradeInstanceRequests = append(upgradeInstanceRequests,
 				rdb.UpgradeInstanceRequest{
 					Region:     region,
@@ -1025,7 +1088,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			})
 	}
 
@@ -1119,7 +1182,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 					Region:     region,
 					InstanceID: ID,
-					EnableHa:   new(true),
+					EnableHa:   new(true), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)

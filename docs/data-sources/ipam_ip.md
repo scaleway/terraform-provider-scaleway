@@ -93,7 +93,7 @@ If specified, `type` is required, and at least one of `id` or `name` must be set
 
 - `mac_address` - (Optional) The MAC address linked to the IP. Cannot be used with `ipam_ip_id`.
 
-- `region` - (Defaults to [provider](../index.md#zone) `region`) The [region](../guides/regions_and_zones.md#regions) in which the IP exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the IP exists.
 
 - `tags` (Optional) The tags associated with the IP. Cannot be used with `ipam_ip_id`.
   As datasource only returns one IP, the search with given tags must return only one result.
@@ -102,9 +102,9 @@ If specified, `type` is required, and at least one of `id` or `name` must be set
 
 - `attached` - (Optional) Defines whether to filter only for IPs which are attached to a resource. Cannot be used with `ipam_ip_id`.
 
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the Project the IP is associated with.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the IP is associated with.
 
-- `organization_id` - (Defaults to [provider](../index.md#organization_id) `organization_id`) The ID of the Organization the IP is in.
+- `organization_id` - (Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the Organization the IP is in.
 
 ## Attributes Reference
 

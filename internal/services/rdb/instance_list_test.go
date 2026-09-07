@@ -27,7 +27,9 @@ func TestAccListRDBInstances_Basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "main" {}
+					resource "scaleway_account_project" "main" {
+					  name = "tf-tests-rdb-instance-list"
+					}
 
 					resource "scaleway_rdb_instance" "main" {
 					  project_id      = scaleway_account_project.main.id

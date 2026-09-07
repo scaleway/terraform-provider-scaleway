@@ -31,7 +31,7 @@ data "scaleway_datalab" "by_name" {
 - `datalab_id` - (Optional) The ID of the Datalab instance to look up. Only one of `datalab_id` and `name` should be specified.
 - `name` - (Optional) The name of the Datalab instance to look up. Only one of `datalab_id` and `name` should be specified.
 - `project_id` - (Optional) The project ID the Datalab belongs to.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The region the Datalab is in.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The region the Datalab is in.
 
 ## Attributes Reference
 

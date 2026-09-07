@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccDatalabsDataSource_Basic(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -70,6 +72,8 @@ func TestAccDatalabsDataSource_Basic(t *testing.T) {
 }
 
 func TestAccDatalabsDataSource_FilterByName(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
@@ -139,6 +143,8 @@ func TestAccDatalabsDataSource_FilterByName(t *testing.T) {
 }
 
 func TestAccDatalabsDataSource_FilterByTags(t *testing.T) {
+	t.Skip("datalab: skipping until SPK-936 is fixed")
+
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

@@ -1,6 +1,7 @@
 package cockpit_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccGrafanaUser_Basic(t *testing.T) {
@@ -132,9 +134,17 @@ func isGrafanaUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFun
 			return err
 		}
 
-		res, err := api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-			ProjectID: projectID,
-		}, scw.WithAllPages())
+		var res *cockpitSDK.ListGrafanaUsersResponse
+
+		err = transport.RetryOn403(context.Background(), func() error {
+			var err error
+
+			res, err = api.ListGrafanaUsers(&cockpitSDK.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+				ProjectID: projectID,
+			}, scw.WithAllPages())
+
+			return err
+		})
 		if err != nil {
 			return err
 		}

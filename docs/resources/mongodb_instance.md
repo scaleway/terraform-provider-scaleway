@@ -254,9 +254,7 @@ The following arguments are supported:
 - `node_type` - (Required) The type of MongoDB® instance to create.
 - `user_name` - (Optional) Name of the user created when the instance is created.
 - `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.
-
 - `password_wo` - (Optional) Password of the user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.
-
 - `password_wo_version` - (Optional) The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.
 - `name` - (Optional) Name of the MongoDB® instance.
 - `tags` - (Optional) List of tags attached to the MongoDB® instance.
@@ -266,8 +264,8 @@ The following arguments are supported:
 - `private_network` - (Optional) Private Network endpoints of the Database Instance.
     - `pn_id` - (Required) The ID of the Private Network.
 - `public_network` - (Optional) Public network endpoint configuration (no arguments).
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance should be created.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project the MongoDB® instance is associated with.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the MongoDB® instance should be created.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the MongoDB® instance is associated with.
 
 ### Snapshot Scheduling
 
@@ -284,7 +282,7 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the MongoDB® instance.
 - `created_at` - The date and time of the creation of the MongoDB® instance.
 - `updated_at` - The date and time of the last update of the MongoDB® instance.
-- `region` - The region of the MongoDB® instance.
+- `region` - (Computed) The region of the MongoDB® instance.
 - `private_network` - Private Network endpoints of the Database Instance.
     - `id` - The ID of the endpoint.
     - `ips` - List of IP addresses for your endpoint.

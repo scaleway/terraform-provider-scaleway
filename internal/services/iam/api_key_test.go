@@ -3,6 +3,7 @@ package iam_test
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
@@ -42,6 +43,7 @@ func TestAccApiKey_WithApplication(t *testing.T) {
 					resource.TestCheckResourceAttrPair("scaleway_iam_api_key.main", "application_id", "scaleway_iam_application.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_iam_api_key.main", "description", "tf_tests_with_application"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_api_key.main", "secret_key"),
+					resource.TestMatchResourceAttr("scaleway_iam_api_key.main", "srn", regexp.MustCompile(`^srn://iam\..+/api-keys/.+$`)),
 				),
 			},
 			{

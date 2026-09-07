@@ -16,7 +16,7 @@ The following commands allow you to:
 - retrieve a bucket by its name
 - retrieve a bucket by its ID
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
   name = "bucket.test.com"
   tags = {
@@ -31,7 +31,7 @@ data "scaleway_object_bucket" "selected" {
 
 ## Retrieve a bucket from a specific project
 
-```hcl
+```terraform
 data "scaleway_object_bucket" "selected" {
   name       = "bucket.test.com"
   project_id = "11111111-1111-1111-1111-111111111111"
@@ -44,8 +44,8 @@ This section lists the arguments that you can provide to the `scaleway_object_bu
 
 - `name` - (Required) The name of the bucket, or its terraform ID (`{region}/{name}`)
 - `object_lock_enabled` - (Optional) Enable object lock on the bucket. Defaults to `false`. Updating this field will force the creation of a new bucket.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project with which the bucket is associated.
 
 ## Attributes Reference
 

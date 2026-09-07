@@ -11,7 +11,7 @@ For more information, refer to the [IAM API documentation](https://developers.sc
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_iam_group" "find_by_name" {
   name = "foobar"
@@ -31,7 +31,7 @@ data "scaleway_iam_group" "find_by_id" {
 
   -> **Note** You must specify at least one: `name` and/or `group_id`.
 
-- `organization_id` - (Optional. Defaults to [provider](../index.md#organization_d) `organization_id`) The ID of the
+- `organization_id` - (Optional. Defaults to [provider](../index.md#arguments-reference) `organization_id`) The ID of the
   organization the group is associated with.
 
 ## Attribute Reference

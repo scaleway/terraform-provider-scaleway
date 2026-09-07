@@ -1,6 +1,7 @@
 package rdb_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	rdbchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb/testfuncs"
 	vpcchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc/testfuncs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
 func TestAccReadReplica_Basic(t *testing.T) {
@@ -598,9 +600,13 @@ func isReadReplicaPresent(tt *acctest.TestTools, readReplica string) resource.Te
 			return err
 		}
 
-		_, err = rdbAPI.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
-			Region:        region,
-			ReadReplicaID: ID,
+		err = transport.RetryOn403(context.Background(), func() error {
+			_, err := rdbAPI.GetReadReplica(&rdbSDK.GetReadReplicaRequest{
+				Region:        region,
+				ReadReplicaID: ID,
+			})
+
+			return err
 		})
 		if err != nil {
 			return err

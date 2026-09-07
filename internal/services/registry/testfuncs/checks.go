@@ -2,18 +2,16 @@ package registrytestfuncs
 
 import (
 	"bufio"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 
-	"github.com/docker/docker/api/types/image"
-	dockerRegistrySDK "github.com/docker/docker/api/types/registry"
-	"github.com/docker/docker/client"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	dockerRegistrySDK "github.com/moby/moby/api/types/registry"
+	"github.com/moby/moby/client"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/registry"
 )
@@ -39,7 +37,7 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 			Password:      secretKey,
 		}
 
-		cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+		cli, err := client.New(client.FromEnv)
 		if err != nil {
 			return fmt.Errorf("could not connect to Docker: %w", err)
 		}
@@ -49,10 +47,10 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 			return fmt.Errorf("could not marshal auth config: %w", err)
 		}
 
-		ctx := context.Background()
+		ctx := tt.T.Context()
 		authStr := base64.URLEncoding.EncodeToString(encodedJSON)
 
-		out, err := cli.ImagePull(ctx, testDockerIMG, image.PullOptions{})
+		out, err := cli.ImagePull(ctx, testDockerIMG, client.ImagePullOptions{})
 		if err != nil {
 			return fmt.Errorf("could not pull image: %w", err)
 		}
@@ -78,12 +76,15 @@ func PushImageToRegistry(tt *acctest.TestTools, registryEndpoint string, tagName
 
 		scwTag := registryEndpoint + "/alpine:" + tagName
 
-		err = cli.ImageTag(ctx, testDockerIMG, scwTag)
+		_, err = cli.ImageTag(ctx, client.ImageTagOptions{
+			Source: testDockerIMG,
+			Target: scwTag,
+		})
 		if err != nil {
 			return fmt.Errorf("could not tag image: %w", err)
 		}
 
-		pusher, err := cli.ImagePush(ctx, scwTag, image.PushOptions{RegistryAuth: authStr})
+		pusher, err := cli.ImagePush(ctx, scwTag, client.ImagePushOptions{RegistryAuth: authStr})
 		if err != nil {
 			return fmt.Errorf("could not push image: %w", err)
 		}

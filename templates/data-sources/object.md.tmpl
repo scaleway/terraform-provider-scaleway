@@ -13,14 +13,14 @@ Refer to the Object Storage [documentation](https://www.scaleway.com/en/docs/obj
 
 The following example demonstrates how to retrieve metadata about an object stored in a bucket:
 
-```hcl
+```terraform
 resource "scaleway_object_bucket" "main" {
   name = "bucket.test.com"
 }
 
 resource "scaleway_object" "example" {
-  bucket = scaleway_object_bucket.main.name
-  key    = "example.txt"
+  bucket  = scaleway_object_bucket.main.name
+  key     = "example.txt"
   content = "Hello world!"
 }
 
@@ -36,8 +36,8 @@ This section lists the arguments that you can provide to the `scaleway_object` d
 
 - `bucket` - (Required) The name of the bucket, or its terraform ID (`{region}/{name}`)
 - `key` - (Required) The key (path or filename) of the object within the bucket.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
-- `project_id` - (Defaults to [provider](../index.md#project_id) `project_id`) The ID of the project with which the bucket is associated.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#zones) in which the bucket exists.
+- `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project with which the bucket is associated.
 
 ## Attributes Reference
 

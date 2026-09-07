@@ -88,7 +88,7 @@ The following arguments are supported:
 - `nexthop_private_network_id` - (Required) The ID of the private network used as nexthop for traffic matched by this rule.
 - `description` - (Optional) The description of the ingress rule.
 - `tags` - (Optional) The tags to associate with the ingress rule.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) of the ingress rule.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the ingress rule.
 
 ## Attributes Reference
 
@@ -98,6 +98,7 @@ In addition to all arguments above, the following attributes are exported:
 - `is_ipv6` - Whether the ingress rule is for IPv6 traffic (derived from `source`).
 - `created_at` - The date and time of the creation of the ingress rule (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the ingress rule (RFC 3339 format).
+- `srn` - The Scaleway Resource Name (SRN) of the ingress rule.
 
 ~> **Important:** VPC ingress rules' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 

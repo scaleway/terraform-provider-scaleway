@@ -159,6 +159,57 @@ func flattenJobDefinitionSecret(jobSecrets []*jobs.Secret) []any {
 	return secretRefs
 }
 
+type JobDefinitionRetryPolicy struct {
+	MaxRetries *uint32
+}
+
+func expandJobDefinitionRetryPolicy(retryPolicyI any) *JobDefinitionRetryPolicy {
+	retryPolicy := &JobDefinitionRetryPolicy{}
+
+	for _, retryPolicyElem := range retryPolicyI.([]any) {
+		retryPolicyMap := retryPolicyElem.(map[string]any)
+		if maxRetries, ok := retryPolicyMap["max_retries"]; ok {
+			retryPolicy.MaxRetries = new(uint32(maxRetries.(int)))
+		}
+	}
+
+	return retryPolicy
+}
+
+func (p *JobDefinitionRetryPolicy) ToCreateRequest() *jobs.RetryPolicy {
+	retryPolicyCreateReq := &jobs.RetryPolicy{}
+
+	if p != nil && p.MaxRetries != nil {
+		retryPolicyCreateReq.MaxRetries = *p.MaxRetries
+	}
+
+	return retryPolicyCreateReq
+}
+
+func (p *JobDefinitionRetryPolicy) ToUpdateRequest() *jobs.UpdateJobDefinitionRequestUpdateRetryPolicy {
+	if p == nil {
+		return nil
+	}
+
+	retryPolicyUpdateReq := &jobs.UpdateJobDefinitionRequestUpdateRetryPolicy{
+		MaxRetries: p.MaxRetries,
+	}
+
+	return retryPolicyUpdateReq
+}
+
+func flattenJobDefinitionRetryPolicy(policy *jobs.RetryPolicy) []map[string]any {
+	if policy == nil {
+		return []map[string]any{}
+	}
+
+	policyFlat := map[string]any{
+		"max_retries": policy.MaxRetries,
+	}
+
+	return []map[string]any{policyFlat}
+}
+
 func CreateJobDefinitionSecret(ctx context.Context, api *jobs.API, jobSecrets []JobDefinitionSecret, region scw.Region, jobID string) error {
 	secretConfigs := make([]*jobs.CreateSecretsRequestSecretConfig, 0, len(jobSecrets))
 
