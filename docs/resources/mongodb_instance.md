@@ -30,6 +30,33 @@ resource "scaleway_mongodb_instance" "main" {
 ```
 
 ```terraform
+### Example Version Upgrade
+
+# Initial creation with MongoDB 7.0
+resource "scaleway_mongodb_instance" "main" {
+  name              = "my-mongodb"
+  version           = "7.0"
+  node_type         = "MGDB-PLAY2-NANO"
+  node_number       = 1
+  user_name         = "my_initial_user"
+  password          = "thiZ_is_v&ry_s3cret"
+  volume_size_in_gb = 5
+}
+
+# To upgrade to MongoDB 8.0, simply change the version value
+# This may trigger a blue/green upgrade that updates the Terraform state with a new instance ID
+# resource "scaleway_mongodb_instance" "main" {
+#   name              = "my-mongodb"
+#   version           = "8.0" # Changed from 7.0
+#   node_type         = "MGDB-PLAY2-NANO"
+#   node_number       = 1
+#   user_name         = "my_initial_user"
+#   password          = "thiZ_is_v&ry_s3cret"
+#   volume_size_in_gb = 5
+# }
+```
+
+```terraform
 ### Create and instance with a Write Only password (not stored in state), update and rollback the password while ensuring the password is not stored in the state
 
 # Generate an ephemeral password (not stored in the state)
@@ -251,6 +278,11 @@ resource "scaleway_mongodb_instance" "main" {
 The following arguments are supported:
 
 - `version` - (Optional) MongoDB® version of the instance.
+
+~> **Important** Updates to `version` may perform a blue/green upgrade. This can create a new instance, update the Terraform state with the new instance ID, and delete the old instance. The upgrade ensures minimal downtime.
+
+~> **Note** Terraform plans dependent resources before the blue/green upgrade returns the new instance ID. As a result, resources that reference the previous instance ID, such as `scaleway_mongodb_user`, may require a second `terraform apply` to fully reconcile their Terraform state with the upgraded instance.
+
 - `node_type` - (Required) The type of MongoDB® instance to create.
 - `user_name` - (Optional) Name of the user created when the instance is created.
 - `password` - (Optional) Password of the user. Only one of `password` or `password_wo` should be specified.

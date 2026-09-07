@@ -85,7 +85,7 @@ func instanceSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Optional:    true,
 			Computed:    true,
-			Description: "MongoDB version of the instance",
+			Description: "MongoDB version of the instance (e.g. '7.0'). Changing this value may trigger a blue/green upgrade that updates the Terraform state with a new instance ID",
 			ConflictsWith: []string{
 				"snapshot_id",
 			},
@@ -637,6 +637,17 @@ func handleVersionUpgrade(ctx context.Context, mongodbAPI *mongodb.API, region s
 
 		if err := deleteOldInstanceAfterUpgrade(ctx, mongodbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate)); err != nil {
 			tflog.Warn(ctx, fmt.Sprintf("Failed to clean up old instance %s: %v", oldInstanceID, err))
+
+			return id, diag.Diagnostics{
+				{
+					Severity: diag.Warning,
+					Summary:  "Failed to clean up old MongoDB instance after version upgrade",
+					Detail: fmt.Sprintf(
+						"Failed to delete old instance %s after blue/green version upgrade: %v. Please delete it manually to avoid unexpected costs.",
+						oldInstanceID, err,
+					),
+				},
+			}
 		}
 	} else {
 		_, err = waitForInstance(ctx, mongodbAPI, region, id, d.Timeout(schema.TimeoutUpdate))
@@ -779,11 +790,14 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		}
 	}
 
-	if d.HasChange("version") {
-		var diags diag.Diagnostics
+	var diags diag.Diagnostics
 
-		ID, diags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
-		if len(diags) > 0 {
+	if d.HasChange("version") {
+		var upgradeDiags diag.Diagnostics
+
+		ID, upgradeDiags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
+		diags = append(diags, upgradeDiags...)
+		if upgradeDiags.HasError() {
 			return diags
 		}
 	}
@@ -805,8 +819,6 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		Region:     region,
 		InstanceID: ID,
 	}
-
-	var diags diag.Diagnostics
 
 	if d.HasChange("user_name") {
 		diags = append(diags, diag.Diagnostic{
