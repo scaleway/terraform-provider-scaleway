@@ -45,9 +45,7 @@ func ResourceInstance() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:         identity.DefaultRegionalImporter(),
 		SchemaVersion:    0,
 		SchemaFunc:       instanceSchema,
 		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
