@@ -2,9 +2,8 @@ package baremetal
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -447,10 +446,7 @@ func ResourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) di
 		if file != "" {
 			todecode, _ := file.(string)
 
-			decoder := json.NewDecoder(strings.NewReader(todecode))
-			decoder.DisallowUnknownFields()
-
-			err = decoder.Decode(&partitioningSchema)
+			err = json.Unmarshal([]byte(todecode), &partitioningSchema, json.RejectUnknownMembers(true))
 			if err != nil {
 				return diag.FromErr(err)
 			}
