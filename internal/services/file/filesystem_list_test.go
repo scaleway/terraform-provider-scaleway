@@ -83,6 +83,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						name = "test-fs"
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}
 
@@ -92,6 +93,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						name = "test-fs-01"
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
@@ -114,6 +116,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						tags = ["foo"]
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}
 
@@ -123,6 +126,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						tags = ["bar"]
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}
 
@@ -132,6 +136,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						tags = ["foobar"]
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}
 
@@ -141,6 +146,7 @@ func TestAccListFileSystems_Basic(t *testing.T) {
 					  config {
 						regions = ["fr-par"]
 						tags = ["foo", "bar"]
+						project_ids = [scaleway_file_filesystem.fs1.project_id]
 					  }
 					}`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
