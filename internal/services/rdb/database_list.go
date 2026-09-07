@@ -238,7 +238,11 @@ func (r *DatabaseListResource) List(ctx context.Context, req list.ListRequest, s
 			dbResource := ResourceDatabase()
 			resourceData := dbResource.Data(&terraform.InstanceState{})
 
-			err := identity.SetRegionalCompositeIdentity(resourceData, row.Region, row.InstanceID, row.Database.Name)
+			err := identity.SetMultiPartIdentity(resourceData, map[string]string{
+				"region":        row.Region.String(),
+				"instance_id":   row.InstanceID,
+				"database_name": row.Database.Name,
+			}, "region", "instance_id", "database_name")
 			if err != nil {
 				result.Diagnostics.AddError(
 					"Retrieving identity data",
