@@ -3,6 +3,7 @@ package objecttestfuncs
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -126,11 +127,14 @@ func EmptyBucket(ctx context.Context, client *s3.Client, bucketName *string) err
 
 		if len(output.Errors) > 0 {
 			var errMessage string
+
+			var errMessageSb129 strings.Builder
 			for _, e := range output.Errors {
 				if e.Message != nil {
-					errMessage += *e.Message + ","
+					errMessageSb129.WriteString(*e.Message + ",")
 				}
 			}
+			errMessage += errMessageSb129.String()
 
 			return fmt.Errorf("failed to delete objects batch: %s", errMessage)
 		}
