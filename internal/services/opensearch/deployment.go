@@ -451,8 +451,10 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		// Delete endpoints that don't match the desired state.
-		// Keep the endpoint that already matches to avoid unnecessary delete+create cycles.
+		// SearchDB keeps a public dashboard endpoint alongside private API endpoints.
+		// Never delete public endpoints when managing private_network: the API ignores
+		// (or never completes) those deletes, which would hang waitForEndpointsDeleted.
+		// Only reconcile private endpoints relative to the desired private_network_id.
 		var deletedEndpointIDs []string
 
 		hasDesiredEndpoint := false
@@ -462,16 +464,21 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 				continue
 			}
 
-			matches := false
-			if desiredPrivate && endpoint.PrivateNetwork != nil && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
-				matches = true
-				hasDesiredEndpoint = true
-			} else if !desiredPrivate && endpoint.Public != nil {
-				matches = true
-				hasDesiredEndpoint = true
+			if endpoint.Public != nil && endpoint.PrivateNetwork == nil {
+				if !desiredPrivate {
+					hasDesiredEndpoint = true
+				}
+
+				continue
 			}
 
-			if matches {
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			if desiredPrivate && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
+				hasDesiredEndpoint = true
+
 				continue
 			}
 

@@ -97,6 +97,7 @@ func waitForEndpointsDeleted(
 
 			if idSet[ep.ID] {
 				anyStillPresent = true
+
 				break
 			}
 		}
