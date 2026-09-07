@@ -92,6 +92,11 @@ func apiKeySchema() map[string]*schema.Schema {
 			Description: "The IPv4 Address of the device which created the API key",
 		},
 		"default_project_id": account.ProjectIDSchema(),
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the API key",
+		},
 	}
 }
 
@@ -206,4 +211,5 @@ func setAPIKeyState(d *schema.ResourceData, apiKey *iam.APIKey) {
 	_ = d.Set("editable", apiKey.Editable)
 	_ = d.Set("creation_ip", apiKey.CreationIP)
 	_ = d.Set("default_project_id", apiKey.DefaultProjectID)
+	_ = d.Set("srn", apiKey.Srn)
 }

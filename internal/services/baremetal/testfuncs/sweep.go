@@ -1,8 +1,6 @@
 package baremetaltestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	baremetalSDK "github.com/scaleway/scaleway-sdk-go/api/baremetal/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -36,7 +34,7 @@ func testSweepServer(_ string) error {
 				ServerID: server.ID,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting server in sweeper: %w", err)
+				logging.L.Warningf("error deleting server in sweeper: %s", err)
 			}
 		}
 

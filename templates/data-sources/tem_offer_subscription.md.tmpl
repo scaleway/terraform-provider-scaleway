@@ -9,7 +9,7 @@ Gets information about a transactional email offer subscription.
 
 ## Example Usage
 
-```hcl
+```terraform
 // Retrieve offer subscription information
 data "scaleway_tem_offer_subscription" "test" {}
 ```

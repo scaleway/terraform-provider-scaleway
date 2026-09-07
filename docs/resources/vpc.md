@@ -38,7 +38,7 @@ The following arguments are supported:
 - `enable_routing` - (Optional) Enable routing between Private Networks in the VPC. Note that you will not be able to deactivate it afterwards.
 - `enable_custom_routes_propagation` - (`true` for newly created VPCs) Defines whether the VPC advertises custom routes between its Private Networks. Note that you will not be able to deactivate it afterwards.
 - `enable_transitivity` - (Optional) Enable packets from peered VPCs to transit through this VPC.
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the VPC.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) of the VPC.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the VPC is associated with.
 
 ## Attributes Reference

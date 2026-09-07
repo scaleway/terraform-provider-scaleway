@@ -9,7 +9,7 @@ Gets information about a transactional email domain.
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get info by domain name
 data "scaleway_tem_domain" "my_domain" {
   name = "example.com"

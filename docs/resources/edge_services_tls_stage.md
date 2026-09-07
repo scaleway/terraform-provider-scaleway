@@ -40,7 +40,7 @@ resource "scaleway_edge_services_tls_stage" "main" {
 - `managed_certificate` - (Optional) Set to true when Scaleway generates and manages a Let's Encrypt certificate for the TLS stage/custom endpoint.
 - `secrets` - (Optional) The TLS secrets.
     - `bucket_name` - The ID of the secret.
-    - `region` - The region of the secret.
+    - `region` - (Optional, Computed) The region of the secret.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the TLS stage is associated with.
 
 ## Attributes Reference

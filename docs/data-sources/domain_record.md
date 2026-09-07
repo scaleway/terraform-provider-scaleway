@@ -16,7 +16,7 @@ The following commands allow you to:
 - query a domain record specified by the DNS zone (`domain.tld`), the record name (`www`), the record type (`A`), and the record content (`1.2.3.4`).
 - query a domain record specified by the DNS zone (`domain.tld`) and the unique record ID (`11111111-1111-1111-1111-111111111111`).
 
-```hcl
+```terraform
 # Query record by DNS zone, record name, type and content
 data "scaleway_domain_record" "by_content" {
   dns_zone = "domain.tld"

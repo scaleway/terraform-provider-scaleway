@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	ResourcePrefix   = "tf-acc-test"
+	ResourcePrefix   = "tf-test-acc"
 	resourceTestName = "scaleway_object_bucket_website_configuration.test"
 )
 

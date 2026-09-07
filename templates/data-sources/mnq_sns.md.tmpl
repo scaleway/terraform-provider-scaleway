@@ -11,7 +11,7 @@ Gets information about SNS for a Project
 
 ### Basic
 
-```hcl
+```terraform
 // For default project
 data "scaleway_mnq_sns" "main" {}
 

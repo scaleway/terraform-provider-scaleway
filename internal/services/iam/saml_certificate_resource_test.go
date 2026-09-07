@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	"regexp"
 	"testing"
 	"time"
 
@@ -89,6 +90,7 @@ func TestAccSamlCertificateResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml_certificate.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml_certificate.main", "origin"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_saml_certificate.main", "expires_at"),
+					resource.TestMatchResourceAttr("scaleway_iam_saml_certificate.main", "srn", regexp.MustCompile(`^srn://iam\..+/saml-certificates/.+$`)),
 				),
 			},
 			{

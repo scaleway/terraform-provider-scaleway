@@ -47,6 +47,8 @@ resource "scaleway_datawarehouse_user" "test_user" {
 					isUserPresent(tt, "scaleway_datawarehouse_user.test_user"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_user.test_user", "name", "tf_test_user"),
 					resource.TestCheckResourceAttr("scaleway_datawarehouse_user.test_user", "is_admin", "false"),
+					// TODO: uncomment once API properly returns srn (currently empty)
+					// resource.TestMatchResourceAttr("scaleway_datawarehouse_user.test_user", "srn", regexp.MustCompile(`^srn://datawarehouse\..+/regions/.+/users/.+$`)),
 				),
 			},
 			{
