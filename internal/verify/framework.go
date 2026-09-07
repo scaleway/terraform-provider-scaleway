@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -19,7 +20,7 @@ func IsStringUUID() validator.String {
 	)
 }
 
-func IsStringUUIDOrUUIDWithLocality() validator.String {
+func IsStringUUIDOrUUIDWithRegion() validator.String {
 	return stringvalidator.RegexMatches(
 		regexp.MustCompile(`^([a-zA-Z]{2}-[a-zA-Z]{3}/)?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`),
 		"must be a valid UUID or UUID with region prefix (format: aa-aaa/<uuid>)",
@@ -93,4 +94,10 @@ func (v errorToWarningValidator) ValidateString(ctx context.Context, req validat
 			resp.Diagnostics = append(resp.Diagnostics, d)
 		}
 	}
+}
+
+// Validators for schema.SetAttribute{}
+
+func SetElemIsStringUUIDOrUUIDWithRegion() validator.Set {
+	return setvalidator.ValueStringsAre(IsStringUUIDOrUUIDWithRegion())
 }

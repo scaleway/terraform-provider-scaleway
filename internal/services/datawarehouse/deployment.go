@@ -233,6 +233,11 @@ func deploymentSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Date and time of deployment last update (RFC 3339 format)",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the deployment",
+		},
 	}
 }
 
@@ -285,7 +290,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 			privateNetworkID := locality.ExpandID(pn["pn_id"].(string))
 
 			req.Endpoints = append(req.Endpoints, &datawarehouseapi.EndpointSpec{
-				PrivateNetwork: &datawarehouseapi.PrivateNetworkDetails{
+				PrivateNetwork: &datawarehouseapi.EndpointSpecPrivateNetworkSummary{
 					PrivateNetworkID: privateNetworkID,
 				},
 			})
@@ -352,6 +357,7 @@ func resourceDeploymentRead(ctx context.Context, d *schema.ResourceData, meta an
 	_ = d.Set("status", string(deployment.Status))
 	_ = d.Set("created_at", deployment.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", deployment.UpdatedAt.Format(time.RFC3339))
+	_ = d.Set("srn", deployment.Srn)
 
 	publicBlock, hasPublic := flattenPublicNetwork(deployment.Endpoints, deployment.Region)
 	if hasPublic {

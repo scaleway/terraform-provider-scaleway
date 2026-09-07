@@ -155,13 +155,13 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 			// If it's a primitive type (bool, string, number), we convert the value to the expected type given as parameter before returning it
 			switch ty {
 			case cty.String:
-				if value.IsNull() {
+				if value.IsNull() || !value.IsKnown() {
 					return nil, false
 				}
 
 				return value.AsString(), true
 			case cty.Bool:
-				if value.IsNull() {
+				if value.IsNull() || !value.IsKnown() {
 					return false, false
 				}
 
@@ -171,7 +171,7 @@ func getKeyInRawConfigMap(rawConfig map[string]cty.Value, key string, ty cty.Typ
 
 				return false, true
 			case cty.Number:
-				if value.IsNull() {
+				if value.IsNull() || !value.IsKnown() {
 					return nil, false
 				}
 

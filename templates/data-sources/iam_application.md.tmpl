@@ -9,7 +9,7 @@ Gets information about an existing IAM application.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_iam_application" "find_by_name" {
   name = "foobar"

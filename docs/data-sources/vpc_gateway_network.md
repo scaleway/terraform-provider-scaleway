@@ -9,7 +9,7 @@ Gets information about a GatewayNetwork (a connection between a Public Gateway a
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "scaleway_vpc_gateway_network" "main" {
   gateway_id         = scaleway_vpc_public_gateway.pg01.id
   private_network_id = scaleway_vpc_private_network.pn01.id

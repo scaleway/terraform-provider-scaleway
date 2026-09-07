@@ -16,7 +16,7 @@ The following commands allow you to:
 - retrieve a namespace by its name
 - retrieve a namespace by its ID
 
-```hcl
+```terraform
 // Get info by namespace name
 data "scaleway_function_namespace" "my_namespace" {
   name = "my-namespace-name"

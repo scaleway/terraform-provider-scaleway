@@ -337,7 +337,7 @@ unsetting it to go back to the default value will not have any effect.
 ~> **Important:** Changes to this field will recreate a new resource. However once it has been set to a custom value,
 unsetting it to go back to the default value will not have any effect.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the cluster should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the cluster is associated with.
 

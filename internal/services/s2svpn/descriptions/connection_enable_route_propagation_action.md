@@ -2,7 +2,7 @@ The `scaleway_s2s_vpn_connection_enable_route_propagation` action enables route 
 
 Note that by default, even when route propagation is enabled, all routes are blocked. It is essential to attach a routing policy to the connection to define the ranges of routes to announce.
 
-Refer to the [S2S VPN documentation](https://www.scaleway.com/en/docs/network/s2s-vpn/) and [API documentation](https://www.scaleway.com/en/developers/api/s2s-vpn/) for more information.
+Refer to the [S2S VPN documentation](https://www.scaleway.com/en/docs/site-to-site-vpn/) and [API documentation](https://www.scaleway.com/en/developers/api/s2s-vpn/) for more information.
 
 ## Example Usage
 

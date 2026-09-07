@@ -28,7 +28,7 @@ scw vpc-gw gateway move-to-ipam 'id-of-the-public-gateway'
 
 Ensure your Scaleway Terraform provider is updated to at least version `2.52.0`.
 
-```hcl
+```terraform
 terraform {
   required_providers {
     scaleway = {
@@ -45,7 +45,7 @@ terraform {
 
 A typical legacy configuration might look like this:
 
-```hcl
+```terraform
 resource "scaleway_vpc" "main" {
   name = "foo"
 }
@@ -97,7 +97,7 @@ resource "scaleway_vpc_public_gateway_dhcp_reservation" "main" {
 
 Before updating your configuration, you must trigger the move to IPAM-mode on the Public Gateway resource. For example, add the `move_to_ipam` flag:
 
-```hcl
+```terraform
 resource "scaleway_vpc_public_gateway" "main" {
   name         = "foobar"
   type         = "VPC-GW-S"
@@ -123,7 +123,7 @@ After triggering the move, update your Terraform configuration as follows:
 
    Replace the DHCP related attributes with an `ipam_config` block. For example
 
-    ```hcl
+    ```terraform
     resource "scaleway_vpc_gateway_network" "main" {
       gateway_id         = scaleway_vpc_public_gateway.main.id
       private_network_id = scaleway_vpc_private_network.main.id
@@ -142,7 +142,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
 1. **Retrieve an Existing IP with the IPAM Datasource**  
    If you have already reserved an IP (for example, via your legacy configuration), even after deleting the DHCP reservation resource the IP is still available. You can retrieve it using the `scaleway_ipam_ip` datasource. For instance:
 
-   ```hcl
+   ```terraform
    data "scaleway_ipam_ip" "existing" {
      mac_address = scaleway_instance_private_nic.main.mac_address
      type        = "ipv4"
@@ -154,7 +154,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
 2. **Book New IPs Using the IPAM IP Resource**
    If you need to reserve new IPs, use the `scaleway_ipam_ip` resource. This resource allows you to explicitly book an IP from your private network. For example:
 
-   ```hcl
+   ```terraform
    resource "scaleway_ipam_ip" "new_ip" {
      address = "192.168.1.1"
      source {
@@ -167,7 +167,7 @@ Instead, you remove the legacy DHCP reservation resource and switch to using IPA
 
    Once you have your IP—whether retrieved via the datasource or booked as a new resource—you can attach it to your server’s private NIC:
 
-   ```hcl
+   ```terraform
    resource "scaleway_instance_private_nic" "pnic01" {
      private_network_id = scaleway_vpc_private_network.main.id
      server_id          = scaleway_instance_server.main.id

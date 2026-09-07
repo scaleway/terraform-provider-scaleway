@@ -60,7 +60,7 @@ resource "scaleway_key_manager_key" "signing" {
 The following arguments are supported:
 
 - `name` (String) – The name of the key.  
-- `region` (String) – The region in which to create the key (e.g., `fr-par`).  
+- `region` (String, Optional, Computed) – The region in which to create the key (e.g., `fr-par`). If not specified, defaults to the provider configuration.  
 - `project_id` (String, Optional) – The ID of the project the key belongs to.
 
 **Key Usage and Algorithm (both required):**

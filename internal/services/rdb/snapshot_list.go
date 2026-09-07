@@ -79,7 +79,7 @@ func (r *SnapshotListResource) ListResourceConfigSchema(_ context.Context, _ lis
 					listvalidator.ValueStringsAre(
 						stringvalidator.Any(
 							stringvalidator.OneOf("*"),
-							verify.IsStringUUIDOrUUIDWithLocality(),
+							verify.IsStringUUIDOrUUIDWithRegion(),
 						),
 					),
 				},

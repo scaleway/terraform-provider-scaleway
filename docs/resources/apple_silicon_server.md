@@ -28,17 +28,17 @@ resource "scaleway_vpc" "vpc-apple-silicon" {
 }
 
 resource "scaleway_vpc_private_network" "pn-apple-silicon" {
-  name = "pn-apple-silicon"
+  name   = "pn-apple-silicon"
   vpc_id = scaleway_vpc.vpc-apple-silicon.id
 }
 
 resource "scaleway_apple_silicon_server" "my-server" {
-    name = "TestAccServerEnableVPC"
-    type = "M2-M"
-    enable_vpc = true
-    private_network {
-      id = scaleway_vpc_private_network.pn-apple-silicon.id
-    }
+  name       = "TestAccServerEnableVPC"
+  type       = "M2-M"
+  enable_vpc = true
+  private_network {
+    id = scaleway_vpc_private_network.pn-apple-silicon.id
+  }
 }
 ```
 
@@ -50,18 +50,18 @@ data "scaleway_apple_silicon_os" "by_name" {
 }
 
 resource "scaleway_apple_silicon_runner" "main" {
-    name       = "TestAccRunnerGithub"
-    ci_provider   = "github"
-    url        = "https://github.com/my-repo-url"
-    token      = "MY_GITHUB_RUNNER_TOKEN"
+  name        = "TestAccRunnerGithub"
+  ci_provider = "github"
+  url         = "https://github.com/my-repo-url"
+  token       = "MY_GITHUB_RUNNER_TOKEN"
 }
 
-resource scaleway_apple_silicon_server main {
-    name = "TestAccServerRunner"
-    type = "M2-L"
-    public_bandwidth = 1000000000
-    os_id = data.scaleway_apple_silicon_os.by_name.id
-    runner_ids = [scaleway_apple_silicon_runner.main.id]
+resource "scaleway_apple_silicon_server" "main" {
+  name             = "TestAccServerRunner"
+  type             = "M2-L"
+  public_bandwidth = 1000000000
+  os_id            = data.scaleway_apple_silicon_os.by_name.id
+  runner_ids       = [scaleway_apple_silicon_runner.main.id]
 }
 ```
 
@@ -75,7 +75,7 @@ The following arguments are supported:
 
 - `name` - (Optional) The name of the server.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which
   the server should be created.
 
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the server is
