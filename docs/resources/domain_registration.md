@@ -142,7 +142,7 @@ To import an existing domain registration, use the domain name:
 terraform import scaleway_domain_registration.test <domain_name>
 ```
 
-For a multi-domain registration, list every domain name separated by commas:
+For a multi-domain registration, list every domain name separated by commas. The order matters: use the same order as the `domain_names` argument in your configuration to avoid a plan diff after import.
 
 ```bash
 terraform import scaleway_domain_registration.test <domain1.com>,<domain2.com>
