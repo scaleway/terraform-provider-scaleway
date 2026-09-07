@@ -24,9 +24,7 @@ func ResourceDatabase() *schema.Resource {
 		CreateContext: ResourceRdbDatabaseCreate,
 		ReadContext:   ResourceRdbDatabaseRead,
 		DeleteContext: ResourceRdbDatabaseDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:      identity.CompositeRegionalImporter("region", "instance_id", "database_name"),
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
@@ -35,7 +33,7 @@ func ResourceDatabase() *schema.Resource {
 		SchemaVersion: 0,
 		SchemaFunc:    databaseSchema,
 		CustomizeDiff: cdf.LocalityCheck("instance_id"),
-		Identity:      identity.DefaultRegional(),
+		Identity:      identity.CompositeRegionalIdentity("instance_id", "database_name"),
 	}
 }
 
@@ -133,7 +131,11 @@ func ResourceRdbDatabaseCreate(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, db.Name); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   instanceID,
+		"database_name": db.Name,
+	}, "region", "instance_id", "database_name"); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -209,7 +211,11 @@ func ResourceRdbDatabaseRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetRegionalCompositeIdentity(d, region, instanceID, databaseName); err != nil {
+	if err := identity.SetMultiPartIdentity(d, map[string]string{
+		"region":        region.String(),
+		"instance_id":   instanceID,
+		"database_name": databaseName,
+	}, "region", "instance_id", "database_name"); err != nil {
 		return diag.FromErr(err)
 	}
 
