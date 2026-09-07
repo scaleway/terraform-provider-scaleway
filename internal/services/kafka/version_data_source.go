@@ -44,8 +44,8 @@ func (d *versionDataSource) Metadata(_ context.Context, req datasource.MetadataR
 func (d *versionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "The `scaleway_kafka_version` data source is used to retrieve information about an available Kafka version.\n\n" +
-			"Refer to the [Kafka documentation](https://www.scaleway.com/en/docs/managed-databases/kafka/) and " +
-			"[API documentation](https://www.scaleway.com/en/developers/api/kafka/) for more information.",
+			"Refer to the [Kafka documentation](https://www.scaleway.com/en/docs/clusters-for-kafka/) and " +
+			"[API documentation](https://www.scaleway.com/en/developers/api/clusters-for-kafka) for more information.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:            true,
