@@ -485,30 +485,30 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		// Expiration
 		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]any)
 		if len(expiration) > 0 && expiration[0] != nil {
-			e := expiration[0].(map[string]any)
-			i := &s3Types.LifecycleExpiration{}
+			expirationMap := expiration[0].(map[string]any)
+			expirationS3 := &s3Types.LifecycleExpiration{}
 
-			if val, ok := e["days"].(int); ok && val > 0 {
+			if val, ok := expirationMap["days"].(int); ok && val > 0 {
 				days := int32(val)
-				i.Days = aws.Int32(days)
+				expirationS3.Days = aws.Int32(days)
 			}
 
-			if val, ok := e["date"].(string); ok && val != "" {
+			if val, ok := expirationMap["date"].(string); ok && val != "" {
 				date, err := time.Parse("2006-01-02", val)
 				if err != nil {
 					return fmt.Errorf("error while parsing expiration date '%s': %w", val, err)
 				}
 
-				i.Date = aws.Time(date)
+				expirationS3.Date = aws.Time(date)
 			}
 
 			if val, ok := meta.GetRawConfigForKey(
 				d, fmt.Sprintf("lifecycle_rule.%d.expiration.0.expired_object_delete_marker", i), cty.Bool,
 			); ok {
-				i.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
+				expirationS3.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
 			}
 
-			rule.Expiration = i
+			rule.Expiration = expirationS3
 		}
 
 		// Transitions
