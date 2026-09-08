@@ -502,8 +502,10 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 				i.Date = aws.Time(date)
 			}
 
-			if val, ok := e["expired_object_delete_marker"].(bool); ok {
-				i.ExpiredObjectDeleteMarker = aws.Bool(val)
+			if val, ok := meta.GetRawConfigForKey(
+				d, fmt.Sprintf("lifecycle_rule.%d.expiration.0.expired_object_delete_marker", i), cty.Bool,
+			); ok {
+				i.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
 			}
 
 			rule.Expiration = i
