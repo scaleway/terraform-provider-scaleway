@@ -384,7 +384,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.PlacementGroupID = types.ExpandStringPtr(locality.ExpandID(placementGroupID))
 	}
 
-	if minSize, ok := d.GetOk("min_size"); ok {
+	if minSize, ok := d.GetOkExists("min_size"); ok { //nolint:staticcheck
 		req.MinSize = new(uint32(minSize.(int)))
 	} else if req.Size == 0 {
 		req.MinSize = new(uint32(0))
