@@ -796,6 +796,7 @@ func ResourceInstanceUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 		var upgradeDiags diag.Diagnostics
 
 		ID, upgradeDiags = handleVersionUpgrade(ctx, mongodbAPI, region, ID, d)
+
 		diags = append(diags, upgradeDiags...)
 		if upgradeDiags.HasError() {
 			return diags
