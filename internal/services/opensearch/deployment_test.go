@@ -231,6 +231,8 @@ func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
+				// Serialize pn1 then pn2 so VCR cassettes stay deterministic across
+				// Terraform and OpenTofu (parallel create order otherwise diverges).
 				Config: fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
   name = "tf-test-opensearch-vpc-update"
@@ -242,8 +244,9 @@ resource "scaleway_vpc_private_network" "pn1" {
 }
 
 resource "scaleway_vpc_private_network" "pn2" {
-  name   = "tf-test-opensearch-pn2"
-  vpc_id = scaleway_vpc.main.id
+  name       = "tf-test-opensearch-pn2"
+  vpc_id     = scaleway_vpc.main.id
+  depends_on = [scaleway_vpc_private_network.pn1]
 }
 
 resource "scaleway_opensearch_deployment" "pn" {
@@ -286,8 +289,9 @@ resource "scaleway_vpc_private_network" "pn1" {
 }
 
 resource "scaleway_vpc_private_network" "pn2" {
-  name   = "tf-test-opensearch-pn2"
-  vpc_id = scaleway_vpc.main.id
+  name       = "tf-test-opensearch-pn2"
+  vpc_id     = scaleway_vpc.main.id
+  depends_on = [scaleway_vpc_private_network.pn1]
 }
 
 resource "scaleway_opensearch_deployment" "pn" {
