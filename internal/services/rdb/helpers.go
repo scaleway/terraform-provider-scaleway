@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	defaultInstanceTimeout   = 30 * time.Minute
-	defaultWaitRetryInterval = 30 * time.Second
+	defaultInstanceTimeout       = 30 * time.Minute
+	defaultInstanceUpdateTimeout = 60 * time.Minute
+	defaultWaitRetryInterval     = 30 * time.Second
 )
 
 // newAPI returns a new RDB API
