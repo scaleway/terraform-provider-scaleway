@@ -513,23 +513,35 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		_, wantPrivateNetwork := d.GetOk("private_network")
 		_, wantLoadBalancer := d.GetOk("load_balancer")
 
-		if !wantLoadBalancer {
-			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
-				return diags
-			}
-		}
+		if wantLoadBalancer {
+			// Instance already has a public LB from the snapshot restore: only attach PN if requested.
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
 
-		if wantPrivateNetwork {
-			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-				return diag.FromErr(err)
-			}
+				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+					return diags
+				}
 
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		} else {
+			// Preserve historical order (PN then remove inherited LB) for existing cassettes.
 			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
 				return diags
 			}
 
-			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-				return diag.FromErr(err)
+			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
+				return diags
+			}
+
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
 	} else {
