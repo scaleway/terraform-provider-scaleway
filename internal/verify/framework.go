@@ -2,10 +2,12 @@ package verify
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -100,4 +102,84 @@ func (v errorToWarningValidator) ValidateString(ctx context.Context, req validat
 
 func SetElemIsStringUUIDOrUUIDWithRegion() validator.Set {
 	return setvalidator.ValueStringsAre(IsStringUUIDOrUUIDWithRegion())
+}
+
+// StringAlsoRequiresOneOf validates that if the string attribute has a value,
+// at least one of the specified sibling attributes must also have a value.
+func StringAlsoRequiresOneOf(paths ...path.Expression) validator.String {
+	return stringAlsoRequiresOneOfValidator{
+		pathExpressions: paths,
+	}
+}
+
+type stringAlsoRequiresOneOfValidator struct {
+	pathExpressions path.Expressions
+}
+
+func (v stringAlsoRequiresOneOfValidator) Description(ctx context.Context) string {
+	return "ensures at least one of the specified attributes is set when this attribute has a value"
+}
+
+func (v stringAlsoRequiresOneOfValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v stringAlsoRequiresOneOfValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	// Merge the path expressions with the current path expression
+	expressions := req.PathExpression.MergeExpressions(v.pathExpressions...)
+
+	// Check if at least one of the specified paths has a value
+	atLeastOneSet := false
+
+	for _, expression := range expressions {
+		matchedPaths, diags := req.Config.PathMatches(ctx, expression)
+		resp.Diagnostics.Append(diags...)
+
+		if resp.Diagnostics.HasError() {
+			continue
+		}
+
+		for _, mp := range matchedPaths {
+			// Skip the current attribute itself
+			if mp.Equal(req.Path) {
+				continue
+			}
+
+			var siblingValue attr.Value
+
+			diags := req.Config.GetAttribute(ctx, mp, &siblingValue)
+			resp.Diagnostics.Append(diags...)
+
+			if resp.Diagnostics.HasError() {
+				continue
+			}
+
+			// Delay validation until the value is known
+			if siblingValue.IsUnknown() {
+				return
+			}
+
+			if !siblingValue.IsNull() {
+				atLeastOneSet = true
+
+				break
+			}
+		}
+
+		if atLeastOneSet {
+			break
+		}
+	}
+
+	if !atLeastOneSet {
+		resp.Diagnostics.AddAttributeError(
+			req.Path,
+			"Missing required attribute",
+			fmt.Sprintf("When %s is set, at least one of the identifier attributes (annotation_identifier or description_identifier) must also be set.", req.Path),
+		)
+	}
 }
