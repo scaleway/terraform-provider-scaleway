@@ -59,6 +59,7 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
 		tflog.Warn(ctx, fmt.Sprintf("Invalid replaced_from_instance_id %q, clearing attribute: %v", regionalID, err))
+
 		_ = d.Set("replaced_from_instance_id", "")
 
 		return
@@ -73,5 +74,6 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 	}
 
 	_ = d.Set("replaced_from_instance_id", "")
+
 	tflog.Info(ctx, "Successfully cleaned up replaced RDB instance "+regionalID)
 }
