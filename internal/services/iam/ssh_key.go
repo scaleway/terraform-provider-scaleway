@@ -87,6 +87,11 @@ func sshKeySchema() map[string]*schema.Schema {
 			Default:     false,
 			Description: "The SSH key status",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the SSH key",
+		},
 	}
 }
 
@@ -96,7 +101,7 @@ func resourceIamSSKKeyCreate(ctx context.Context, d *schema.ResourceData, m any)
 	res, err := api.CreateSSHKey(&iam.CreateSSHKeyRequest{
 		Name:      d.Get("name").(string),
 		PublicKey: strings.Trim(d.Get("public_key").(string), "\n"),
-		ProjectID: (d.Get("project_id")).(string),
+		ProjectID: d.Get("project_id").(string),
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -155,6 +160,7 @@ func setSSHKeyState(d *schema.ResourceData, sshKey *iam.SSHKey) diag.Diagnostics
 	_ = d.Set("organization_id", sshKey.OrganizationID)
 	_ = d.Set("project_id", sshKey.ProjectID)
 	_ = d.Set("disabled", sshKey.Disabled)
+	_ = d.Set("srn", sshKey.Srn)
 
 	return nil
 }

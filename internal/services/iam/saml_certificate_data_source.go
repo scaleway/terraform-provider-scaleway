@@ -36,6 +36,7 @@ type samlCertificateDatasourceModel struct {
 	Type      types.String `tfsdk:"type"`
 	Origin    types.String `tfsdk:"origin"`
 	ExpiresAt types.String `tfsdk:"expires_at"`
+	Srn       types.String `tfsdk:"srn"`
 }
 
 func (d *SamlCertificateDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -70,6 +71,10 @@ func (d *SamlCertificateDataSource) Schema(ctx context.Context, req datasource.S
 			},
 			"expires_at": schema.StringAttribute{
 				MarkdownDescription: "The expiration date and time of the SAML certificate",
+				Computed:            true,
+			},
+			"srn": schema.StringAttribute{
+				MarkdownDescription: "The Scaleway Resource Name (SRN) of the SAML certificate",
 				Computed:            true,
 			},
 		},
@@ -126,6 +131,7 @@ func (d *SamlCertificateDataSource) convertToState(cert *iam.SamlCertificate) sa
 		Content:       types.StringValue(cert.Content),
 		Type:          types.StringValue(string(cert.Type)),
 		Origin:        types.StringValue(string(cert.Origin)),
+		Srn:           types.StringValue(cert.Srn),
 	}
 
 	if cert.ExpiresAt != nil {

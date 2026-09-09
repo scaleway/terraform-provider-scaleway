@@ -84,8 +84,8 @@ func TestAccActionS2SVPNConnectionEnableRoutePropagation_Basic(t *testing.T) {
 
 						bgp_config_ipv4 {
 							routing_policy_id = scaleway_s2s_vpn_routing_policy.main.id
-							private_ip        = "169.254.0.1/30"
-							peer_private_ip   = "169.254.0.2/30"
+							private_ip        = "169.254.3.1/30"
+							peer_private_ip   = "169.254.3.2/30"
 						}
 
 						ikev2_ciphers {

@@ -311,7 +311,7 @@ func TestAccAction_InstanceCreateSnapshot_Scratch(t *testing.T) {
 							wait = true
 						}
 					}`, scratchVolumeType),
-				ExpectError: regexp.MustCompile("Error when invoking action"), // scratch storage cannot be snapshot
+				ExpectError: regexp.MustCompile("invalid volume type"), // scratch storage cannot be snapshot
 			},
 		},
 	})

@@ -1,6 +1,7 @@
 package block_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -29,6 +30,7 @@ func TestAccVolume_Basic(t *testing.T) {
 					acctest.CheckResourceAttrUUID("scaleway_block_volume.main", "id"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "name", "test-block-volume-basic"),
 					resource.TestCheckResourceAttr("scaleway_block_volume.main", "size_in_gb", "20"),
+					resource.TestMatchResourceAttr("scaleway_block_volume.main", "srn", regexp.MustCompile(`^srn://block\..+/zones/.+/volumes/.+$`)),
 				),
 			},
 		},

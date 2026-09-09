@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -50,6 +51,7 @@ func ResourcePool() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    poolSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -63,7 +65,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
 			Description: "The name of the pool",
 		},
@@ -185,6 +187,62 @@ func poolSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "Defines if the public IP should be removed from the nodes.",
 		},
+		"labels": {
+			Type: schema.TypeMap,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Optional:    true,
+			Description: "Kubernetes labels applied and reconciled on the nodes.",
+		},
+		"taints": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Kubernetes taints applied and reconciled on the nodes.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key of the taint",
+						Required:    true,
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Description: "Value of the taint",
+						Required:    true,
+					},
+					"effect": {
+						Type:        schema.TypeString,
+						Description: "Effect of the taint",
+						Required:    true,
+					},
+				},
+			},
+		},
+		"startup_taints": {
+			Type:        schema.TypeSet,
+			Optional:    true,
+			Description: "Kubernetes taints applied at node creation but not reconciled afterwards.",
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"key": {
+						Type:        schema.TypeString,
+						Description: "Key of the taint",
+						Required:    true,
+					},
+					"value": {
+						Type:        schema.TypeString,
+						Description: "Value of the taint",
+						Required:    true,
+					},
+					"effect": {
+						Type:        schema.TypeString,
+						Description: "Effect of the taint",
+						Required:    true,
+					},
+				},
+			},
+		},
 		"zone":   zonal.Schema(),
 		"region": regional.Schema(),
 		// Computed elements
@@ -200,6 +258,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"version": {
 			Type:        schema.TypeString,
+			Optional:    true,
 			Computed:    true,
 			Description: "The Kubernetes version of the pool",
 		},
@@ -261,6 +320,11 @@ func poolSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the node",
+					},
 				},
 			},
 		},
@@ -275,6 +339,11 @@ func poolSchema() map[string]*schema.Schema {
 			Optional:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the pool",
 		},
 	}
 }
@@ -357,6 +426,18 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		req.SecurityGroupID = types.ExpandStringPtr(locality.ExpandID(securityGroupID.(string)))
 	}
 
+	if labels, ok := d.GetOk("labels"); ok {
+		req.Labels = types.ExpandMapStringString(labels)
+	}
+
+	if taints, ok := d.GetOk("taints"); ok {
+		req.Taints = expandCoreV1Taints(taints)
+	}
+
+	if startupTaints, ok := d.GetOk("startup_taints"); ok {
+		req.StartupTaints = expandCoreV1Taints(startupTaints)
+	}
+
 	// Validate pool configuration
 	diags := validateRootVolumeSpecs(ctx, m.(*meta.Meta).ScwClient(), req)
 	if diags.HasError() {
@@ -391,7 +472,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return append(diags, diag.FromErr(err)...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -438,7 +522,18 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("cluster_id", regional.NewIDString(region, pool.ClusterID))
+	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+
+	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.Pool, k8sAPI *k8s.API, nodes []map[string]any) diag.Diagnostics {
+	_ = d.Set("cluster_id", regional.NewIDString(pool.Region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -464,7 +559,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
-	_ = d.Set("region", region)
+	_ = d.Set("region", pool.Region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
@@ -473,6 +568,11 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	if pool.PlacementGroupID != nil {
 		_ = d.Set("placement_group_id", zonal.NewID(pool.Zone, *pool.PlacementGroupID).String())
 	}
+
+	_ = d.Set("labels", flattenLabels(pool.Labels))
+	_ = d.Set("taints", flattenCoreV1Taints(pool.Taints))
+	_ = d.Set("startup_taints", flattenCoreV1Taints(pool.StartupTaints))
+	_ = d.Set("srn", pool.Srn)
 
 	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}
@@ -502,7 +602,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 				ProjectID:    &projectID,
 			}
 
-			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pool.Region, opts)
 
 			switch {
 			case err == nil:
@@ -606,15 +706,74 @@ func ResourceK8SPoolUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 		return diags
 	}
 
-	res, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
+	pool, err := k8sAPI.UpdatePool(updateRequest, scw.WithContext(ctx))
 	if err != nil {
 		return append(diags, diag.FromErr(err)...)
 	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
-		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutUpdate))
+		_, err = waitPoolReady(ctx, k8sAPI, region, pool.ID, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	// Update pool labels and taints
+	if d.HasChange("labels") {
+		_, err := k8sAPI.SetPoolLabels(&k8s.SetPoolLabelsRequest{
+			Region: region,
+			PoolID: pool.ID,
+			Labels: types.ExpandMapStringString(d.Get("labels")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("taints") {
+		_, err := k8sAPI.SetPoolTaints(&k8s.SetPoolTaintsRequest{
+			Region: region,
+			PoolID: pool.ID,
+			Taints: expandCoreV1Taints(d.Get("taints")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("startup_taints") {
+		_, err := k8sAPI.SetPoolStartupTaints(&k8s.SetPoolStartupTaintsRequest{
+			Region:        region,
+			PoolID:        pool.ID,
+			StartupTaints: expandCoreV1Taints(d.Get("startup_taints")),
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if poolVersion, poolVersionSet := meta.GetRawConfigForKey(d, "version", cty.String); poolVersionSet {
+		if d.HasChange("version") {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: poolVersion.(string),
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	} else {
+		poolVersion = d.Get("version") // read computed value in state
+		if poolVersion != cluster.Version {
+			_, err = k8sAPI.UpgradePool(&k8s.UpgradePoolRequest{
+				Region:  region,
+				PoolID:  poolID,
+				Version: cluster.Version,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

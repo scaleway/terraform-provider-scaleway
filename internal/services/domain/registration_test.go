@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -251,24 +252,61 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 	}
 }
 
-// shouldBeSkipped determines whether the test should be skipped based on the execution environment.
-//
-// Running domain registration tests in a production environment is not feasible because domains
-// are permanently reserved and billed upon registration. To safely execute these tests, a controlled
-// test environment must be used.
-//
-// Test execution is controlled by the following environment variables:
-//
-// - `TF_UPDATE_CASSETTES`: If set to "true", additional restrictions apply based on `TF_ACC_DOMAIN_REGISTRATION`.
-// - `TF_ACC_DOMAIN_REGISTRATION`: Must be set to "true" when `TF_UPDATE_CASSETTES=true` to allow domain registration tests.
-//
-// Example usage:
-//
-//	export TF_ACC_DOMAIN_REGISTRATION=true
-//
-// If `TF_UPDATE_CASSETTES=false`, the test **is always executed**.
-// If `TF_UPDATE_CASSETTES=true`, the test is **only executed if `TF_ACC_DOMAIN_REGISTRATION=true`**.
-// Otherwise, the test is skipped to prevent unintended domain reservations.
+func TestAccDomainRegistration_OwnerContactChangeError(t *testing.T) {
+	if shouldBeSkipped() {
+		t.Skip("Test skipped: must be run in a staging environment")
+	}
+
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	singleDomain := "test-owner-contact-error1.com"
+
+	ownerContactConfig := func(firstname string) string {
+		return fmt.Sprintf(`
+			resource "scaleway_domain_registration" "test" {
+			  project_id        = "%s"
+			  domain_names      = ["%s"]
+			  duration_in_years = 1
+
+			  owner_contact {
+			    firstname                   = "%s"
+			    lastname                    = "DOE"
+			    email                       = "john.doe@example.com"
+			    phone_number                = "+1.23456789"
+			    address_line_1              = "123 Main Street"
+			    city                        = "Paris"
+			    zip                         = "75001"
+			    country                     = "FR"
+			    legal_form                  = "individual"
+			    vat_identification_code     = "FR12345678901"
+			    company_identification_code = "123456789"
+			  }
+			}
+		`, testAccDomainRegistrationProjectID, singleDomain, firstname)
+	}
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             testAccCheckDomainDestroy(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: ownerContactConfig("John"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_domain_registration.test", "owner_contact.0.firstname", "John"),
+				),
+			},
+			{
+				// Changing owner_contact must return an explicit provider error.
+				Config:      ownerContactConfig("Jane"),
+				ExpectError: regexp.MustCompile(`owner_contact cannot be changed via Terraform`),
+			},
+		},
+	})
+}
+
+// shouldBeSkipped returns true when cassette recording is active but TF_ACC_DOMAIN_REGISTRATION is
+// not set, preventing unintended domain purchases in staging.
 func shouldBeSkipped() bool {
 	if os.Getenv(env.UpdateCassettes) == "false" {
 		return false

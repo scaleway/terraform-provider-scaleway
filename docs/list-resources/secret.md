@@ -1,0 +1,87 @@
+---
+page_title: "Scaleway: scaleway_secret"
+subcategory: "Secrets"
+description: |-
+  Lists Scaleway Secrets.
+---
+
+# Resource: scaleway_secret
+
+Lists Scaleway Secrets.
+
+For more information, see [the main documentation](https://www.scaleway.com/en/docs/secret-manager/concepts/).
+
+## Example Usage
+
+```terraform
+// List all secrets in default region and project
+list "scaleway_secret" "all" {
+  provider = scaleway
+}
+```
+
+```terraform
+// List secrets filtered by name
+list "scaleway_secret" "by_name" {
+  provider = scaleway
+
+  config {
+    name = "my-secret"
+  }
+}
+```
+
+```terraform
+// List secrets in specific regions
+list "scaleway_secret" "by_region" {
+  provider = scaleway
+
+  config {
+    regions = ["fr-par", "nl-ams"]
+  }
+}
+```
+
+```terraform
+// List secrets filtered by tags
+list "scaleway_secret" "by_tags" {
+  provider = scaleway
+
+  config {
+    tags = ["production", "database"]
+  }
+}
+```
+
+
+## Argument Reference
+
+The following arguments can be specified in the `config` block:
+
+- `regions` - (Optional) Regions to target. Use '*' to list from all regions. If not specified, the provider default region is used.
+- `project_ids` - (Optional) Project IDs to filter for. Use '*' to list across all projects. If not specified, the provider default project ID is used.
+- `organization_id` - (Optional) Organization ID to filter for.
+- `name` - (Optional) Filter by secret name.
+- `path` - (Optional) Filter by exact path.
+- `tags` - (Optional) Filter by tags.
+- `type` - (Optional) Filter by secret type. Could be any value among: `unknown_type`, `opaque`, `username`, `password`, `ssh_key`, `tls_certificate`, `tls_key`, `tls_certificate_and_key`.
+- `ephemeral` - (Optional) Filter by ephemeral / not ephemeral.
+- `scheduled_for_deletion` - (Optional) Filter by whether the secret was scheduled for deletion / not scheduled for deletion. By default, it will display only not scheduled for deletion secrets.
+
+## Attributes Reference
+
+In addition to the arguments above, the following attributes are exported for each Secret:
+
+- `id` - The ID of the secret.
+- `name` - The name of the secret.
+- `description` - Description of the secret.
+- `tags` - List of tags associated with the secret.
+- `status` - Status of the secret.
+- `created_at` - Date and time of secret's creation (RFC 3339 format).
+- `updated_at` - Date and time of secret's last update (RFC 3339 format).
+- `path` - Location of the secret in the directory structure.
+- `type` - Type of the secret (could be: `unknown_type`, `opaque`, `username`, `password`, `ssh_key`, `tls_certificate`, `tls_key`, `tls_certificate_and_key`).
+- `protected` - Whether or not the secret is protected from deletion.
+- `ephemeral_policy` - Ephemeral policy of the secret (includes `ttl`, `expires_once_accessed`, and `action`).
+- `region` - The region of the secret.
+- `project_id` - The project ID the secret belongs to.

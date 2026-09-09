@@ -25,6 +25,16 @@ test: fmtcheck
 testacc: fmtcheck
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout=120m -parallel=10
 
+test-update-cassettes: fmtcheck
+	TF_ACC=1 TF_UPDATE_CASSETTES=true go test $(TEST) -run $(TESTARGS) -timeout=120m -parallel=10
+
+compress-cassettes:
+	@git diff --name-only HEAD --diff-filter=AM | grep 'internal/services/.*testdata/.*\.yaml$$' | while read f; do \
+			base="$${f%.yaml}"; \
+			echo "Compressing $$f"; \
+			go run ./cmd/vcr-compressor "$$base"; \
+	done
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
@@ -73,6 +83,6 @@ format_examples:
 	terraform fmt -recursive examples
 
 docs: format_examples
-	go tool tfplugindocs validate
+	go tool tfplugindocs validate -provider-name scaleway
 	rm -fr ./docs
-	go tool tfplugindocs generate
+	go tool tfplugindocs generate -provider-name scaleway

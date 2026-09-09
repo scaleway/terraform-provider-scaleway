@@ -60,10 +60,21 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "OpenSearch version to use",
 		},
 		"node_amount": {
-			Type:        schema.TypeInt,
-			Required:    true,
-			ForceNew:    true,
-			Description: "Number of nodes",
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			Deprecated:    "Please use node_count instead",
+			ConflictsWith: []string{"node_count"},
+			ExactlyOneOf:  []string{"node_count"},
+			Description:   "Number of nodes",
+		},
+		"node_count": {
+			Type:          schema.TypeInt,
+			Optional:      true,
+			ForceNew:      true,
+			ConflictsWith: []string{"node_amount"},
+			ExactlyOneOf:  []string{"node_amount"},
+			Description:   "Number of nodes",
 		},
 		"node_type": {
 			Type:        schema.TypeString,
@@ -200,13 +211,15 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
+	nodeCount := uint32(deploymentNodeCountFromConfig(d))
+
 	req := &searchdbapi.CreateDeploymentRequest{
-		Region:     region,
-		ProjectID:  d.Get("project_id").(string),
-		Name:       types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
-		Version:    d.Get("version").(string),
-		NodeAmount: uint32(d.Get("node_amount").(int)),
-		NodeType:   d.Get("node_type").(string),
+		Region:    region,
+		ProjectID: d.Get("project_id").(string),
+		Name:      types.ExpandOrGenerateString(d.Get("name"), "opensearch"),
+		Version:   d.Get("version").(string),
+		NodeCount: &nodeCount,
+		NodeType:  d.Get("node_type").(string),
 	}
 
 	if v, ok := d.GetOk("tags"); ok {
@@ -306,7 +319,7 @@ func setDeploymentState(d *schema.ResourceData, deployment *searchdbapi.Deployme
 	_ = d.Set("name", deployment.Name)
 	_ = d.Set("tags", types.FlattenSliceString(deployment.Tags))
 	_ = d.Set("version", deployment.Version)
-	_ = d.Set("node_amount", int(deployment.NodeAmount))
+	setDeploymentNodeCountState(d, deployment)
 	_ = d.Set("node_type", deployment.NodeType)
 	_ = d.Set("status", string(deployment.Status))
 
@@ -424,26 +437,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		// SearchDB endpoints are additive: when switching connectivity mode we must explicitly remove
-		// the endpoints that no longer match the desired private/public state.
-		for _, endpoint := range deployment.Endpoints {
-			if endpoint == nil {
-				continue
-			}
-
-			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
-				Region:     region,
-				EndpointID: endpoint.ID,
-			}, scw.WithContext(ctx)); err != nil {
-				return diag.FromErr(err)
-			}
-		}
-
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
+		// Determine the desired endpoint state from the Terraform config.
 		desiredPrivate := false
 
 		var pnID string
@@ -457,35 +451,85 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 
-		if desiredPrivate {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
-						PrivateNetworkID: pnID,
-					},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
+		// SearchDB keeps a public dashboard endpoint alongside private API endpoints.
+		// Never delete public endpoints when managing private_network: the API ignores
+		// (or never completes) those deletes, which would hang waitForEndpointsDeleted.
+		// Only reconcile private endpoints relative to the desired private_network_id.
+		var deletedEndpointIDs []string
+
+		hasDesiredEndpoint := false
+
+		for _, endpoint := range deployment.Endpoints {
+			if endpoint == nil {
+				continue
+			}
+
+			if endpoint.Public != nil && endpoint.PrivateNetwork == nil {
+				if !desiredPrivate {
+					hasDesiredEndpoint = true
+				}
+
+				continue
+			}
+
+			if endpoint.PrivateNetwork == nil {
+				continue
+			}
+
+			if desiredPrivate && endpoint.PrivateNetwork.PrivateNetworkID == pnID {
+				hasDesiredEndpoint = true
+
+				continue
+			}
+
+			if err := api.DeleteEndpoint(&searchdbapi.DeleteEndpointRequest{
+				Region:     region,
+				EndpointID: endpoint.ID,
+			}, scw.WithContext(ctx)); err != nil {
 				return diag.FromErr(err)
 			}
-		} else {
-			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
-				Region:       region,
-				DeploymentID: id,
-				EndpointSpec: &searchdbapi.EndpointSpec{
-					Public: &searchdbapi.EndpointSpecPublicDetails{},
-				},
-			}, scw.WithContext(ctx))
-			if err != nil {
+
+			deletedEndpointIDs = append(deletedEndpointIDs, endpoint.ID)
+		}
+
+		// DeleteEndpoint returns 204 immediately but the removal is asynchronous.
+		// waitForDeployment only checks the deployment's top-level status, which stays
+		// "ready" during endpoint operations, so we must poll GetDeployment until the
+		// deleted endpoints are actually gone before creating new ones.
+		if len(deletedEndpointIDs) > 0 {
+			if err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate)); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 
-		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-		if err != nil {
-			return diag.FromErr(err)
+		// Create the desired endpoint only if it doesn't already exist.
+		if !hasDesiredEndpoint {
+			var spec *searchdbapi.EndpointSpec
+			if desiredPrivate {
+				spec = &searchdbapi.EndpointSpec{
+					PrivateNetwork: &searchdbapi.EndpointSpecPrivateNetworkDetails{
+						PrivateNetworkID: pnID,
+					},
+				}
+			} else {
+				spec = &searchdbapi.EndpointSpec{
+					Public: &searchdbapi.EndpointSpecPublicDetails{},
+				}
+			}
+
+			_, err := api.CreateEndpoint(&searchdbapi.CreateEndpointRequest{
+				Region:       region,
+				DeploymentID: id,
+				EndpointSpec: spec,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

@@ -130,7 +130,9 @@ func dataSourceCockpitPreconfiguredAlertRead(ctx context.Context, d *schema.Reso
 		req.RuleStatus = new(cockpit.AlertStatus(ruleStatus.(string)))
 	}
 
-	response, err := api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
+	response, err := retryOn403Value(ctx, func() (*cockpit.ListAlertsResponse, error) {
+		return api.ListAlerts(req, scw.WithContext(ctx), scw.WithAllPages())
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

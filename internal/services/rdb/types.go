@@ -264,6 +264,23 @@ func expandInstanceLogsPolicy(i any) *rdb.LogsPolicy {
 	return nil
 }
 
+func FlattenInstanceMaintenances(maintenances []*rdb.Maintenance) any {
+	res := make([]map[string]any, 0, len(maintenances))
+	for _, maintenance := range maintenances {
+		res = append(res, map[string]any{
+			"starts_at":     types.FlattenTime(maintenance.StartsAt),
+			"stops_at":      types.FlattenTime(maintenance.StopsAt),
+			"closed_at":     types.FlattenTime(maintenance.ClosedAt),
+			"reason":        maintenance.Reason,
+			"status":        string(maintenance.Status),
+			"forced_at":     types.FlattenTime(maintenance.ForcedAt),
+			"is_applicable": maintenance.IsApplicable,
+		})
+	}
+
+	return res
+}
+
 func flattenInstanceLogsPolicy(policy *rdb.LogsPolicy) any {
 	p := []map[string]any{}
 	if policy != nil {

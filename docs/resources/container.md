@@ -234,7 +234,7 @@ The following arguments are supported:
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
     - `interval`- Time interval between checks (in duration notation, e.g. "30s").
-    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
+    - `timeout` - Duration before the check times out (in duration notation, e.g. "30s").
 
 - `health_check` - (Deprecated) Health check configuration block of the container.
     - `tcp` - When set to `true`, performs TCP checks on the container.
@@ -245,13 +245,13 @@ The following arguments are supported:
 
 ~> **Important:** Only one of `liveness_probe` or `health_check` can be set at a time.
 
-- ` startup_probe` - (Optional) Defines how to check if the container has started successfully.
+- `startup_probe` - (Optional) Defines how to check if the container has started successfully.
     - `tcp` - When set to `true`, performs TCP checks on the container.
     - `http` - Perform HTTP check on the container with the specified path.
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
     - `interval`- Time interval between checks (in duration notation, e.g. "30s").
-    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
+    - `timeout` - Duration before the check times out (in duration notation, e.g. "30s").
 
 - `scaling_option` - (Optional) Configuration block used to decide when to scale up or down. Possible values:
     - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
@@ -272,7 +272,7 @@ The following arguments are supported:
 
 - `command` - (Optional) Command executed when the container starts. This overrides the default command defined in the container image. This is usually the main executable, or entry point script to run.
 
-- `args` - (Optional) Arguments passed to the command specified in the "command" field. These override the default arguments from the container image, and behave like command-line parameters.
+- `args` - (Optional) Arguments passed to the command specified in the `command` field. These override the default arguments from the container image, and behave like command-line parameters.
 
 - `private_network_id` (Optional) The ID of the Private Network the container is connected to.
 
@@ -286,19 +286,17 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 ~> **Important:** Container IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 
-- `status` - The container status.
-
-- `cron_status` - The cron status of the container.
+- `status` - The container status. In case the status is different from `ready`, a warning will be displayed when Terraform reads the resource.
 
 - `error_message` - The error message of the container.
 
-- `domain_name` - The native domain name of the container
+- `domain_name` - The native domain name of the container.
 
 - ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
 
-- `public_endpoint` - The native domain name of the container
+- `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`).
 
 ## Import
 
@@ -312,8 +310,8 @@ terraform import scaleway_container.main fr-par/11111111-1111-1111-1111-11111111
 
 The following protocols are supported:
 
-* `h2c`: HTTP/2 over TCP.
-* `http1`: Hypertext Transfer Protocol.
+- `h2c`: HTTP/2 over TCP.
+- `http1`: Hypertext Transfer Protocol.
 
 ~> **Important:** Refer to the official [Apache documentation](https://httpd.apache.org/docs/2.4/howto/http2.html) for more information.
 

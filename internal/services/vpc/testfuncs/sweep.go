@@ -1,8 +1,6 @@
 package vpctestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	vpcSDK "github.com/scaleway/scaleway-sdk-go/api/vpc/v2"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -32,6 +30,11 @@ func AddTestSweepers() {
 		Name: "scaleway_vpc_connector",
 		F:    testSweepVPCConnector,
 	})
+
+	resource.AddTestSweepers("scaleway_vpc_ingress_rule", &resource.Sweeper{
+		Name: "scaleway_vpc_ingress_rule",
+		F:    testSweepVPCIngressRule,
+	})
 }
 
 func testSweepVPC(_ string) error {
@@ -42,7 +45,9 @@ func testSweepVPC(_ string) error {
 
 		listVPCs, err := vpcAPI.ListVPCs(&vpcSDK.ListVPCsRequest{Region: region}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing VPCs in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing VPCs in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, v := range listVPCs.Vpcs {
@@ -55,7 +60,7 @@ func testSweepVPC(_ string) error {
 				Region: region,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting VPC %s in sweeper: %w", v.ID, err)
+				logging.L.Warningf("error deleting VPC %s in sweeper: %s", v.ID, err)
 			}
 		}
 
@@ -73,7 +78,9 @@ func testSweepVPCPrivateNetwork(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing private network in sweeper: %w", err)
+			logging.L.Warningf("error listing private network in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, pn := range listPNResponse.PrivateNetworks {
@@ -82,7 +89,7 @@ func testSweepVPCPrivateNetwork(_ string) error {
 				PrivateNetworkID: pn.ID,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting private network %s in sweeper: %w", pn.ID, err)
+				logging.L.Warningf("error deleting private network %s in sweeper: %s", pn.ID, err)
 			}
 		}
 
@@ -105,7 +112,9 @@ func testSweepVPCConnector(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing VPC connectors in (%s) in sweeper: %w", region, err)
+			logging.L.Warningf("error listing VPC connectors in (%s) in sweeper: %s", region, err)
+
+			return nil
 		}
 
 		for _, c := range listConnectors.VpcConnectors {
@@ -114,7 +123,36 @@ func testSweepVPCConnector(_ string) error {
 				Region:         region,
 			})
 			if err != nil {
-				logging.L.Warningf("error deleting VPC connector %s in sweeper: %w", c.ID, err)
+				logging.L.Warningf("error deleting VPC connector %s in sweeper: %s", c.ID, err)
+			}
+		}
+
+		return nil
+	})
+}
+
+func testSweepVPCIngressRule(_ string) error {
+	return acctest.SweepRegions(scw.AllRegions, func(scwClient *scw.Client, region scw.Region) error {
+		vpcAPI := vpcSDK.NewAPI(scwClient)
+
+		logging.L.Debugf("sweeper: deleting the VPC ingress rules in (%s)", region)
+
+		listRules, err := vpcAPI.ListIngressRules(&vpcSDK.ListIngressRulesRequest{
+			Region: region,
+		}, scw.WithAllPages())
+		if err != nil {
+			logging.L.Warningf("error listing VPC ingress rules in (%s) in sweeper: %s", region, err)
+
+			return nil
+		}
+
+		for _, rule := range listRules.Rules {
+			err := vpcAPI.DeleteIngressRule(&vpcSDK.DeleteIngressRuleRequest{
+				RuleID: rule.ID,
+				Region: region,
+			})
+			if err != nil {
+				logging.L.Warningf("error deleting VPC ingress rule %s in sweeper: %s", rule.ID, err)
 			}
 		}
 
@@ -133,7 +171,9 @@ func testSweepVPCRoute(_ string) error {
 			Region: region,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing route in sweeper: %w", err)
+			logging.L.Warningf("error listing route in sweeper: %s", err)
+
+			return nil
 		}
 
 		for _, routeWithNexthop := range listRoutesResponse.Routes {
@@ -143,7 +183,7 @@ func testSweepVPCRoute(_ string) error {
 					RouteID: routeWithNexthop.Route.ID,
 				})
 				if err != nil {
-					logging.L.Warningf("error deleting route %s in sweeper: %w", routeWithNexthop.Route.ID, err)
+					logging.L.Warningf("error deleting route %s in sweeper: %s", routeWithNexthop.Route.ID, err)
 				}
 			} else {
 				logging.L.Warningf("route %s is nil in RouteWithNexthop: %v", routeWithNexthop.Route.ID, routeWithNexthop)

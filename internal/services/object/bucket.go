@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
@@ -31,6 +33,7 @@ func ResourceBucket() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		Identity:      identity.DefaultRegional(),
 		SchemaFunc:    bucketSchema,
 		CustomizeDiff: validateBucket,
 	}
@@ -336,7 +339,10 @@ func resourceObjectBucketCreate(ctx context.Context, d *schema.ResourceData, m a
 		return diag.FromErr(err)
 	}
 
-	d.SetId(regional.NewIDString(region, bucketName))
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	tagsSet := ExpandObjectBucketTags(d.Get("tags"))
 
@@ -740,20 +746,25 @@ func resourceObjectBucketRead(ctx context.Context, d *schema.ResourceData, m any
 		return diag.FromErr(err)
 	}
 
+	diags := setBucketState(ctx, d, bucketName, region, s3Client)
+
+	err = identity.SetRegionalIdentity(d, region, bucketName)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setBucketState(ctx context.Context, d *schema.ResourceData, bucketName string, region scw.Region, s3Client *s3.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	_ = d.Set("name", bucketName)
 	_ = d.Set("region", region)
 
-	acl, err := s3Client.GetBucketAcl(ctx, &s3.GetBucketAclInput{
-		Bucket: aws.String(bucketName),
-	})
-	if err != nil {
-		if bucketFound, _ := addReadBucketErrorDiagnostic(&diags, err, "acl", ""); !bucketFound {
-			return diags
-		}
-	} else if acl != nil && acl.Owner != nil {
-		_ = d.Set("project_id", NormalizeOwnerID(acl.Owner.ID))
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
+	if !ok {
+		return diags
 	}
 
 	// Get object_lock_enabled

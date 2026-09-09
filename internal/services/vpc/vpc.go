@@ -64,6 +64,13 @@ func vpcSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Defines whether the VPC advertises custom routes between its Private Networks",
 		},
+		"enable_transitivity": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Computed:    true,
+			ForceNew:    true,
+			Description: "Enable packets from peered VPCs to transit through this VPC",
+		},
 		"project_id": account.ProjectIDSchema(),
 		"region":     regional.Schema(),
 		// Computed elements
@@ -83,6 +90,11 @@ func vpcSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the private network",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the private network",
+		},
 	}
 }
 
@@ -93,11 +105,12 @@ func ResourceVPCCreate(ctx context.Context, d *schema.ResourceData, m any) diag.
 	}
 
 	res, err := vpcAPI.CreateVPC(&vpc.CreateVPCRequest{
-		Name:          types.ExpandOrGenerateString(d.Get("name"), "vpc"),
-		Tags:          types.ExpandStrings(d.Get("tags")),
-		EnableRouting: d.Get("enable_routing").(bool),
-		ProjectID:     d.Get("project_id").(string),
-		Region:        region,
+		Name:               types.ExpandOrGenerateString(d.Get("name"), "vpc"),
+		Tags:               types.ExpandStrings(d.Get("tags")),
+		EnableRouting:      d.Get("enable_routing").(bool),
+		EnableTransitivity: d.Get("enable_transitivity").(bool),
+		ProjectID:          d.Get("project_id").(string),
+		Region:             region,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		return diag.FromErr(err)
@@ -160,7 +173,9 @@ func setVPCState(d *schema.ResourceData, res *vpc.VPC) diag.Diagnostics {
 	_ = d.Set("is_default", res.IsDefault)
 	_ = d.Set("enable_routing", res.RoutingEnabled)
 	_ = d.Set("enable_custom_routes_propagation", res.CustomRoutesPropagationEnabled)
+	_ = d.Set("enable_transitivity", res.TransitivityEnabled)
 	_ = d.Set("region", res.Region)
+	_ = d.Set("srn", res.Srn)
 
 	if len(res.Tags) > 0 {
 		_ = d.Set("tags", res.Tags)

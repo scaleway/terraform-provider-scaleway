@@ -1,6 +1,7 @@
 package vpcgw_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,15 +21,15 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_vpc_private_network" "pn01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway" "pg01" {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
-					
+
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
@@ -42,7 +43,7 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 				Config: `
 					resource "scaleway_vpc_private_network" "pn01" {
 					}
-					
+
 					resource "scaleway_vpc_public_gateway_ip" "gw01" {
 					}
 
@@ -50,7 +51,7 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 					  type = "VPC-GW-S"
 					  ip_id = scaleway_vpc_public_gateway_ip.gw01.id
 					}
-					
+
 					resource "scaleway_vpc_gateway_network" "main" {
 					  gateway_id = scaleway_vpc_public_gateway.pg01.id
 					  private_network_id = scaleway_vpc_private_network.pn01.id
@@ -79,6 +80,8 @@ func TestAccDataSourceVPCGatewayNetwork_Basic(t *testing.T) {
 						"data.scaleway_vpc_gateway_network.by_gateway_and_pn", "id",
 						"scaleway_vpc_gateway_network.main", "id",
 					),
+					resource.TestMatchResourceAttr("data.scaleway_vpc_gateway_network.by_id", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateway-networks/.+$`)),
+					resource.TestMatchResourceAttr("data.scaleway_vpc_gateway_network.by_gateway_and_pn", "srn", regexp.MustCompile(`^srn://public-gateway\..+/zones/.+/gateway-networks/.+$`)),
 				),
 			},
 		},

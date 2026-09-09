@@ -34,7 +34,7 @@ data "scaleway_vpc_acl" "my_acl_v6" {
 
 - `is_ipv6` - (Optional, defaults to `false`) Whether to get the IPv6 ACL.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`). The [region](../guides/regions_and_zones.md#regions) in which the ACL exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`). The [region](../guides/regions_and_zones.md#regions) in which the ACL exists.
 
 ## Attributes Reference
 

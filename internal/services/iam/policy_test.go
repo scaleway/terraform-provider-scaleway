@@ -2,6 +2,7 @@ package iam_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -58,6 +59,7 @@ func TestAccPolicy_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.0", "tf_tests"),
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "tags.1", "tests"),
+					resource.TestMatchResourceAttr("scaleway_iam_policy.main", "srn", regexp.MustCompile(`^srn://iam\..+/policies/.+$`)),
 				),
 			},
 			{
@@ -145,6 +147,11 @@ func TestAccPolicy_NoUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_iam_policy.main", "no_principal", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_iam_policy.main", "rule.0.organization_id"),
 				),
+			},
+			{
+				ResourceName:      "scaleway_iam_policy.main",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

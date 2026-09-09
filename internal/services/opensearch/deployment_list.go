@@ -245,7 +245,6 @@ func (r *DeploymentListResource) fetchDeployments(ctx context.Context, target li
 		OrganizationID: data.OrganizationID.ValueStringPointer(),
 		ProjectID:      &target.ProjectID,
 		OrderBy:        searchdbapi.ListDeploymentsRequestOrderByCreatedAtAsc,
-		Version:        versionFilter,
 	}
 
 	response, err := r.searchdbAPI.ListDeployments(req, scw.WithContext(ctx), scw.WithAllPages())
@@ -260,6 +259,10 @@ func (r *DeploymentListResource) fetchDeployments(ctx context.Context, target li
 		}
 
 		if dep.ProjectID != target.ProjectID || dep.Region != target.Region {
+			continue
+		}
+
+		if versionFilter != nil && dep.Version != *versionFilter {
 			continue
 		}
 

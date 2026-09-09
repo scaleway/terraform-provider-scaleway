@@ -2,12 +2,14 @@ package iam
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	iam "github.com/scaleway/scaleway-sdk-go/api/iam/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -64,14 +66,27 @@ func DataSourceIamPolicyRead(ctx context.Context, d *schema.ResourceData, m any)
 		return diag.FromErr(err)
 	}
 
-	diags := resourceIamPolicyRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read iam policy state")...)
+	pol, err := iamAPI.GetPolicy(&iam.GetPolicyRequest{
+		PolicyID: policyID.(string),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("iam policy (%s) not found", policyID)
+	listRules, err := iamAPI.ListRules(&iam.ListRulesRequest{
+		PolicyID: pol.ID,
+	})
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("failed to list policy's rules: %w", err))
 	}
+
+	setPolicyState(d, pol, listRules.Rules)
 
 	return nil
 }

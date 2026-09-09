@@ -4,8 +4,12 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/querycheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	identitycheck "github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest/identity"
 	iamtestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam/testfuncs"
 )
 
@@ -88,6 +92,9 @@ func TestAccListIAMUsers_MFA(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	resourceName := "scaleway_iam_user.user1"
+	identity := identitycheck.Identity()
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             iamtestfuncs.CheckUserDestroyed(tt),
@@ -95,15 +102,19 @@ func TestAccListIAMUsers_MFA(t *testing.T) {
 			{
 				Config: `
 					resource "scaleway_iam_user" "user1" {
-						email = "test-user-mfa-1@example.com"
-						username = "test-user-mfa-1"
+						email = "test-user-mfa@example.com"
+						username = "test-user-mfa"
 					}
 				`,
+				ConfigStateChecks: []statecheck.StateCheck{
+					identity.GetIdentity(resourceName),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("username"), knownvalue.StringExact("test-user-mfa")),
+				},
 			},
 			{
 				Query: true,
 				Config: `
-					list "scaleway_iam_user" "by_mfa" {
+					list "scaleway_iam_user" "by_mfa_false" {
 						provider = scaleway
 
 						config {
@@ -113,7 +124,25 @@ func TestAccListIAMUsers_MFA(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLengthAtLeast("list.scaleway_iam_user.by_mfa", 1),
+					identitycheck.ExpectIdentityFunc("scaleway_iam_user.by_mfa_false", identity.Checks()),
+					querycheck.ExpectResourceDisplayName("scaleway_iam_user.by_mfa_false", identitycheck.FilterByResourceIdentityFunc(identity.Checks()), knownvalue.StringExact("test-user-mfa@example.com")),
+					identitycheck.ExpectNoResourceObject("scaleway_iam_user.by_mfa_false", identitycheck.FilterByResourceIdentityFunc(identity.Checks())),
+				},
+			},
+			{
+				Query: true,
+				Config: `
+					list "scaleway_iam_user" "by_mfa_true" {
+						provider = scaleway
+
+						config {
+							organization_id = scaleway_iam_user.user1.organization_id
+							mfa              = true
+						}
+					}
+				`,
+				QueryResultChecks: []querycheck.QueryResultCheck{
+					identitycheck.ExpectNoIdentityFunc("scaleway_iam_user.by_mfa_true", identity.Checks()),
 				},
 			},
 		},

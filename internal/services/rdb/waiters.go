@@ -15,12 +15,22 @@ func waitForRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, id
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForInstance(&rdb.WaitForInstanceRequest{
-		Region:        region,
-		Timeout:       new(timeout),
-		InstanceID:    id,
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var instance *rdb.Instance
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		instance, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+			Region:        region,
+			Timeout:       new(timeout),
+			InstanceID:    id,
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return instance, err
 }
 
 func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.DatabaseBackup, error) {
@@ -29,12 +39,22 @@ func waitForRDBDatabaseBackup(ctx context.Context, api *rdb.API, region scw.Regi
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
-		Region:           region,
-		Timeout:          new(timeout),
-		DatabaseBackupID: id,
-		RetryInterval:    &retryInterval,
-	}, scw.WithContext(ctx))
+	var backup *rdb.DatabaseBackup
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		backup, err = api.WaitForDatabaseBackup(&rdb.WaitForDatabaseBackupRequest{
+			Region:           region,
+			Timeout:          new(timeout),
+			DatabaseBackupID: id,
+			RetryInterval:    &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return backup, err
 }
 
 func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region, id string, timeout time.Duration) (*rdb.ReadReplica, error) {
@@ -43,12 +63,22 @@ func waitForRDBReadReplica(ctx context.Context, api *rdb.API, region scw.Region,
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
-		Region:        region,
-		Timeout:       new(timeout),
-		ReadReplicaID: id,
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var replica *rdb.ReadReplica
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		replica, err = api.WaitForReadReplica(&rdb.WaitForReadReplicaRequest{
+			Region:        region,
+			Timeout:       new(timeout),
+			ReadReplicaID: id,
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return replica, err
 }
 
 func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, snapshotID string, timeout time.Duration) (*rdb.Snapshot, error) {
@@ -57,10 +87,20 @@ func waitForRDBSnapshot(ctx context.Context, api *rdb.API, region scw.Region, sn
 		retryInterval = *transport.DefaultWaitRetryInterval
 	}
 
-	return api.WaitForSnapshot(&rdb.WaitForSnapshotRequest{
-		Region:        region,
-		Timeout:       new(timeout),
-		SnapshotID:    snapshotID,
-		RetryInterval: &retryInterval,
-	}, scw.WithContext(ctx))
+	var snapshot *rdb.Snapshot
+
+	err := transport.RetryOn403(ctx, func() error {
+		var err error
+
+		snapshot, err = api.WaitForSnapshot(&rdb.WaitForSnapshotRequest{
+			Region:        region,
+			Timeout:       new(timeout),
+			SnapshotID:    snapshotID,
+			RetryInterval: &retryInterval,
+		}, scw.WithContext(ctx))
+
+		return err
+	})
+
+	return snapshot, err
 }

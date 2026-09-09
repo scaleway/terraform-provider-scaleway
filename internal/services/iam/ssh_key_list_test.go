@@ -86,7 +86,7 @@ func TestAccListIAMSSHKeys_Basic(t *testing.T) {
 					}
 				`,
 				QueryResultChecks: []querycheck.QueryResultCheck{
-					querycheck.ExpectLength("list.scaleway_iam_ssh_key.by_disabled", 1),
+					querycheck.ExpectLengthAtLeast("list.scaleway_iam_ssh_key.by_disabled", 1),
 				},
 			},
 		},

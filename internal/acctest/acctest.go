@@ -32,9 +32,11 @@ type TestTools struct {
 }
 
 var foldersUsingVCRv4 = []string{
-	"audittrail",
 	"account",
+	"annotations",
+	"audittrail",
 	"container",
+	"datalab",
 	"iam",
 	"instance",
 	"jobs",
@@ -98,11 +100,9 @@ func NewRecordedClient(t *testing.T, pkgFolder string, update bool) (client *htt
 		retryOptions.RetryWaitMax = new(time.Duration(0))
 	}
 
-	return &http.Client{
-			Transport: transport.NewRetryableTransportWithOptions(r, retryOptions),
-		}, func() {
-			require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
-		}, nil
+	return &http.Client{Transport: transport.NewRetryableTransportWithOptions(r, retryOptions)}, func() {
+		require.NoError(t, r.Stop()) // Make sure recorder is stopped once done with it
+	}, nil
 }
 
 func NewTestTools(t *testing.T) *TestTools {

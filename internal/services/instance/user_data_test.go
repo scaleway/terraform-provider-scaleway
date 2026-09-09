@@ -8,7 +8,7 @@ import (
 	instancechecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance/testfuncs"
 )
 
-func TestAccServerUserData_Basic(t *testing.T) {
+func TestAccUserData_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 

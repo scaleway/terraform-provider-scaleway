@@ -47,11 +47,11 @@ The following arguments are supported:
 
     - `redirect` - (Optional) Redirect parameters when using an ACL with `redirect` action.
 
-        - `type`  - (Optional) The redirect type. Possible values are: `location` or `scheme`.
+        - `type` - (Optional) The redirect type. Possible values are: `location` or `scheme`.
 
-        - `target`  - (Optional) An URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
+        - `target` - (Optional) An URL can be used in case of a location redirect (e.g. `https://scaleway.com` will redirect to this same URL). A scheme name (e.g. `https`, `http`, `ftp`, `git`) will replace the request's original scheme.
 
-        - `code`  - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
+        - `code` - (Optional) The HTTP redirect code to use. Valid values are `301`, `302`, `303`, `307` and `308`.
 
 - `match` - (Required) The ACL match rule. At least `ip_subnet` or `ips_edge_services` or `http_filter` and `http_filter_value` are required.
 

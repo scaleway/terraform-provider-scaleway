@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
+	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
 func testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
@@ -22,12 +23,15 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-sse-id"
+					  name = "tf-test-scaleway-bucket-ds-sse-id"
 					  region = "fr-par"
 					}
 
@@ -45,11 +49,22 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByID(t *testing.T)
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckBucketServerSideEncryptionConfigurationExists(tt, "scaleway_object_bucket_server_side_encryption_configuration.main"),
+					testAccCheckBucketServerSideEncryptionConfigurationExists(
+						tt, "scaleway_object_bucket_server_side_encryption_configuration.main",
+					),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "bucket",
-						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id", "project_id",
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "project_id",
+					),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_id",
+						"rule.0.apply_server_side_encryption_by_default.0.sse_algorithm",
+						"AES256",
+					),
 				),
 			},
 		},
@@ -62,12 +77,15 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testin
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
-		CheckDestroy:             testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testAccCheckBucketServerSideEncryptionConfigurationDestroy(tt),
+			objectchecks.IsBucketDestroyed(tt),
+		),
 		Steps: []resource.TestStep{
 			{
 				Config: `
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-sse-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-sse-filter"
 					  region = "fr-par"
 					}
 
@@ -86,10 +104,22 @@ func TestAccDataSourceBucketServerSideEncryptionConfiguration_ByBucket(t *testin
 					}
 				`,
 				Check: resource.ComposeTestCheckFunc(
+					testAccCheckBucketServerSideEncryptionConfigurationExists(
+						tt, "scaleway_object_bucket_server_side_encryption_configuration.main",
+					),
 					resource.TestCheckResourceAttrPair(
 						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "bucket",
-						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket"),
-					resource.TestCheckResourceAttr("data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "rule.0.apply_server_side_encryption_by_default.0.sse_algorithm", "AES256"),
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "bucket",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket", "project_id",
+						"scaleway_object_bucket_server_side_encryption_configuration.main", "project_id",
+					),
+					resource.TestCheckResourceAttr(
+						"data.scaleway_object_bucket_server_side_encryption_configuration.by_bucket",
+						"rule.0.apply_server_side_encryption_by_default.0.sse_algorithm",
+						"AES256",
+					),
 				),
 			},
 		},

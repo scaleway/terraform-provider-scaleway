@@ -8,6 +8,8 @@ import (
 	secret "github.com/scaleway/scaleway-sdk-go/api/secret/v1beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -50,7 +52,10 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) di
 	}
 
 	secretID, ok := d.GetOk("secret_id")
-	if !ok {
+	if ok {
+		_, parsedID, _ := regional.ParseID(secretID.(string))
+		secretID = parsedID
+	} else {
 		secretName := d.Get("name").(string)
 		request := &secret.ListSecretsRequest{
 			Region:         region,
@@ -85,14 +90,35 @@ func DataSourceSecretRead(ctx context.Context, d *schema.ResourceData, m any) di
 		return diag.FromErr(err)
 	}
 
-	diags := ResourceSecretRead(ctx, d, m)
-	if diags != nil {
-		return append(diags, diag.Errorf("failed to read secret")...)
+	secretResponse, err := api.GetSecret(&secret.GetSecretRequest{
+		Region:   region,
+		SecretID: secretID.(string),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
 
-	if d.Id() == "" {
-		return diag.Errorf("secret (%s) not found", regionalID)
+	versionsResponse, err := api.ListSecretVersions(&secret.ListSecretVersionsRequest{
+		Region:   region,
+		SecretID: secretID.(string),
+	}, scw.WithAllPages(), scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			d.SetId("")
+
+			return nil
+		}
+
+		return diag.FromErr(err)
 	}
+
+	setSecretState(d, secretResponse, versionsResponse)
 
 	return nil
 }

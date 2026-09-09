@@ -14,21 +14,72 @@ Refer to the Kubernetes [documentation](https://www.scaleway.com/en/docs/compute
 ## Example Usage
 
 ```terraform
+resource "scaleway_vpc" "main" {}
+
+resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+}
+
 resource "scaleway_k8s_cluster" "main" {
-  version = "1.32.3"
-  cni     = "cilium"
+  version                     = "1.35.3"
+  cni                         = "cilium"
+  name                        = "example-cluster"
+  delete_additional_resources = true
+  private_network_id          = scaleway_vpc_private_network.main.id
 }
 
 resource "scaleway_k8s_pool" "main" {
+  cluster_id        = scaleway_k8s_cluster.main.id
+  version           = scaleway_k8s_cluster.main.version
+  node_type         = "DEV1-M"
+  size              = 3
+  min_size          = 1
+  max_size          = 10
+  autoscaling       = true
+  autohealing       = true
+  container_runtime = "containerd"
+
+  labels = {
+    "key" = "value"
+    "foo" = "bar"
+  }
+
+  taints {
+    key    = "taint-key"
+    value  = "taint-value"
+    effect = "NoSchedule"
+  }
+
+  # Make sure that the new resource is created before destroying the old one on changes that require replacement
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+```
+
+```terraform
+resource "scaleway_vpc" "main" {}
+
+resource "scaleway_vpc_private_network" "main" {
+  vpc_id = scaleway_vpc.main.id
+}
+
+resource "scaleway_k8s_cluster" "main" {
+  version                     = "1.35.3"
+  cni                         = "cilium"
+  name                        = "example-cluster"
+  delete_additional_resources = true
+  private_network_id          = scaleway_vpc_private_network.main.id
+}
+
+resource "scaleway_instance_placement_group" "main" {}
+
+resource "scaleway_k8s_pool" "main" {
   cluster_id         = scaleway_k8s_cluster.main.id
+  version            = scaleway_k8s_cluster.main.version
   node_type          = "DEV1-M"
   size               = 3
-  min_size           = 0
-  max_size           = 10
-  autoscaling        = true
-  autohealing        = true
-  container_runtime  = "containerd"
-  placement_group_id = "1267e3fd-a51c-49ed-ad12-857092ee3a3d"
+  placement_group_id = scaleway_instance_placement_group.main.id
 
   # Make sure that the new resource is created before destroying the old one on changes that require replacement
   lifecycle {
@@ -46,9 +97,11 @@ The following arguments are supported:
 
 - `cluster_id` - (Required) The ID of the Kubernetes cluster on which this pool will be created.
 
-- `name` - (Required) The name for the pool.
+- `name` - (Optional) The name for the pool. If not provided it will be generated.
 
 ~> **Important:** Updates to this field will recreate a new resource.
+
+~> Note: In order to use the `create_before_destroy` option of the `lifecycle` field, `name` has to be generated, otherwise Terraform will try to create the new pool with the same name and the API does not allow that.
 
 - `node_type` - (Required) The commercial type of the pool instances. Instances with insufficient memory are not eligible (DEV1-S, PLAY2-PICO, STARDUST). `external` is a special node type used to provision from other Cloud providers.
 
@@ -57,6 +110,11 @@ The following arguments are supported:
 - `size` - (Required) The size of the pool.
 
 ~> **Important:** This field will only be used at creation if autoscaling is enabled.
+
+- `version` - (Optional) The version of the pool. If not explicitly set, the version of the pool will be equal to the version of the cluster.
+For the field to be properly taken into account, the `upgrade_pools` field of the cluster must be set to `false` in order to decouple the version of the pool from the cluster.
+
+~> **Important:** This field is only taken into account when updating/upgrading the resource. At creation, the pool's version is always the cluster's version.
 
 - `min_size` - (Defaults to `1` if `size` > 0, or `0` otherwise) The minimum size of the pool, used by the autoscaling feature.
 
@@ -94,11 +152,11 @@ The following arguments are supported:
 
 -> Note: The minimal volume size of a node is 20GB.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 ~> **Important:** Updates to this field will recreate a new resource.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the pool should be created.
 
 - `wait_for_pool_ready` - (Defaults to `true`) Whether to wait for the pool to be ready.
 
@@ -108,6 +166,12 @@ The following arguments are supported:
 
 - `security_group_id` - The ID of the security group
 
+- `labels` - The list of Kubernetes labels applied and reconciled on the nodes.
+
+- `taints` - The list of Kubernetes taints applied and reconciled on the nodes.
+
+- `startup_taints` - The list of Kubernetes taints applied at node creation but not reconciled afterward.
+
 ## Attributes Reference
 
 In addition to all arguments above, the following attributes are exported:
@@ -116,6 +180,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ~> **Important:** Kubernetes clusters pools' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
+- `srn` - The Scaleway Resource Name (SRN) of the pool.
 - `status` - The status of the pool.
 - `nodes` - (List of) The nodes in the default pool.
     - `name` - The name of the node.
@@ -125,9 +190,9 @@ In addition to all arguments above, the following attributes are exported:
     - `public_ip` - The public IPv4. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `public_ip_v6` - The public IPv6. (Deprecated, Please use the official Kubernetes provider and the kubernetes_nodes data source)
     - `status` - The status of the node.
+    - `srn` - The Scaleway Resource Name (SRN) of the node.
 - `created_at` - The creation date of the pool.
 - `updated_at` - The last update date of the pool.
-- `version` - The version of the pool.
 - `current_size` - The size of the pool at the time the terraform state was updated.
 
 ## Zone
@@ -151,6 +216,7 @@ resource "scaleway_instance_placement_group" "placement_group" {
 resource "scaleway_k8s_pool" "pool" {
   name               = "placement_group"
   cluster_id         = scaleway_k8s_cluster.cluster.id
+  version            = scaleway_k8s_cluster.cluster.version
   node_type          = "gp1_xs"
   placement_group_id = scaleway_instance_placement_group.placement_group.id
   size               = 1
@@ -161,7 +227,7 @@ resource "scaleway_k8s_pool" "pool" {
 resource "scaleway_k8s_cluster" "cluster" {
   name    = "placement_group"
   cni     = "kilo"
-  version = "1.32.3"
+  version = "1.35.3"
   tags    = ["terraform-test", "scaleway_k8s_cluster", "placement_group"]
   region  = "fr-par"
   type    = "multicloud"
@@ -198,7 +264,7 @@ If you want to have a new pool created when a variable changes, you can use a na
 resource "scaleway_k8s_pool" "kubernetes_cluster_workers_1" {
   cluster_id = scaleway_k8s_cluster.kubernetes_cluster.id
   name       = "${var.kubernetes_cluster_id}_${var.node_type}_1"
-  node_type  = "${var.node_type}"
+  node_type  = var.node_type
 
   # use Scaleway built-in cluster autoscaler
   autoscaling         = true

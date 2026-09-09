@@ -11,7 +11,7 @@ For more information, see the [main documentation](https://www.scaleway.com/en/d
 
 ## Example Usage
 
-```hcl
+```terraform
 # Find multiple IPs that share the same CIDR block
 data "scaleway_lb_ips" "my_key" {
   ip_cidr_range = "0.0.0.0/0"
@@ -33,11 +33,11 @@ data "scaleway_lb_ips" "ips_by_tags_and_type" {
 
 - `ip_cidr_range` - (Optional) The IP CIDR range to filter for. IPs within a matching CIDR block are listed.
 
-- `tags` - (Optional)  List of tags used as filter. IPs with these exact tags are listed.
+- `tags` - (Optional) List of tags used as filter. IPs with these exact tags are listed.
 
 - `ip_type` - (Optional) The IP type used as a filter.
 
-- `zone` - (Defaults to [provider](../index.md#zone) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IPs exist.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the IPs exist.
 
 ## Attributes Reference
 

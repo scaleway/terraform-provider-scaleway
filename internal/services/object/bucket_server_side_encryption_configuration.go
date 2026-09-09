@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
 func ResourceBucketServerSideEncryptionConfiguration() *schema.Resource {
@@ -38,7 +39,8 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 			ForceNew:    true,
 			Description: "The bucket's name or regional ID.",
 		},
-		"region": regional.Schema(),
+		"region":     regional.Schema(),
+		"project_id": account.ProjectIDSchema(),
 		"rule": {
 			Type:        schema.TypeSet,
 			Required:    true,
@@ -57,8 +59,8 @@ func bucketServerSideEncryptionConfigurationSchema() map[string]*schema.Schema {
 									Optional: true,
 									Computed: true,
 									Description: "Scaleway KMS master key ID used for the SSE-KMS encryption. " +
-										"This can only be used when you set the value of sse_algorithm as aws:kms. " +
-										"Will return an error if not this element is absent while the sse_algorithm is aws:kms.",
+										"This can only be used when you set the value of sse_algorithm as 'aws:kms'. " +
+										"Will return an error if this element is absent while the sse_algorithm is 'aws:kms'.",
 								},
 								"sse_algorithm": {
 									Type:        schema.TypeString,
@@ -147,6 +149,11 @@ func resourceBucketServerSideEncryptionConfigurationRead(ctx context.Context, d 
 
 	if err := d.Set("rule", flattenServerSideEncryptionRules(sse.Rules)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	diags, ok := setProjectIDFromACL(ctx, s3Client, d, bucketName, diags)
+	if !ok {
+		return diags
 	}
 
 	return diags

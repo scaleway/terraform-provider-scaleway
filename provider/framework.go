@@ -15,18 +15,25 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/functions"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/annotations"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/applesilicon"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/autoscaling"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/baremetal"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/billing"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/block"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/cockpit"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/datalab"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/domain"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/iam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
@@ -100,8 +107,8 @@ func (p *ScalewayProvider) Schema(_ context.Context, _ provider.SchemaRequest, r
 				Description: "The region you want to attach the resource to",
 			},
 			"zone": schema.StringAttribute{
-				Description: "The zone you want to attach the resource to",
 				Optional:    true,
+				Description: "The zone you want to attach the resource to",
 			},
 		},
 	}
@@ -187,10 +194,10 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 			return
 		}
 
-		if ok && err == nil {
+		if ok {
 			resp.Diagnostics.Append(diag.NewWarningDiagnostic(
-				"Multiple variable sources detected",
-				"Please make sure the right credentials are used: "+message,
+				"Multiple variable sources detected, please make sure the right credentials are used",
+				message,
 			))
 		}
 	}
@@ -204,29 +211,50 @@ func (p *ScalewayProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		annotations.NewAnnotationsKeyResource,
+		annotations.NewAnnotationsValueResource,
+		annotations.NewAnnotationsBindingResource,
+		billing.NewBudgetResource,
+		billing.NewBudgetAlertResource,
+		billing.NewBudgetAlertNotificationResource,
+		datalab.NewDatalabResource,
 		iam.NewSamlResource,
 		iam.NewSamlCertificateResource,
 		iam.NewScimResource,
+		iam.NewScimTokenResource,
+		instance.NewTemplateResource,
+		autoscaling.NewAutoScalingGroupResource,
+		keymanager.NewKeyMaterialResource,
 	}
 }
 
 func (p *ScalewayProvider) EphemeralResources(_ context.Context) []func() ephemeral.EphemeralResource {
 	return []func() ephemeral.EphemeralResource{
+		iam.NewApiKeyEphemeralResource,
 		keymanager.NewDecryptEphemeralResource,
 		keymanager.NewEncryptEphemeralResource,
 		keymanager.NewGenerateDataKeyEphemeralResource,
 		keymanager.NewSignEphemeralResource,
-		iam.NewApiKeyEphemeralResource,
-		secret.NewVersionEphemeralResource,
 		scwconfig.NewScwConfigEphemeralResource,
+		secret.NewVersionEphemeralResource,
 	}
 }
 
 func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		annotations.NewAnnotationsKeyDataSource,
+		annotations.NewAnnotationsValueDataSource,
+		annotations.NewAnnotationsBindingDataSource,
+		billing.NewBudgetDataSource,
+		billing.NewBudgetAlertDataSource,
+		billing.NewBudgetAlertNotificationDataSource,
+		datalab.NewDatalabDataSource,
+		datalab.NewDatalabsDataSource,
 		iam.NewSamlDataSource,
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
+		iam.NewScimTokenDataSource,
+		kafka.NewVersionDataSource,
 	}
 }
 
@@ -235,6 +263,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		applesilicon.NewRebootServerAction,
 		baremetal.NewBaremetalServerAction,
 		block.NewExportSnapshot,
+		cockpit.NewGrafanaSyncDataSourcesAction,
 		cockpit.NewTriggerTestAlertAction,
 		iam.NewSamlConfigurationAction,
 		instance.NewCreateSnapshot,
@@ -246,6 +275,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewDatabaseBackupExportAction,
 		rdb.NewDatabaseBackupRestoreAction,
 		rdb.NewInstanceCertificateRenewAction,
+		rdb.NewInstanceApplyMaintenanceAction,
 		rdb.NewInstanceRestartAction,
 		rdb.NewInstanceLogPrepareAction,
 		rdb.NewInstanceLogsPurgeAction,
@@ -260,33 +290,44 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 
 func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
+		account.NewProjectListResource,
+		block.NewSnapshotListResource,
+		block.NewVolumeListResource,
+		domain.NewRecordListResource,
+		domain.NewZoneListResource,
+		iam.NewSSHKeyListResource,
+		iam.NewGroupListResource,
+		iam.NewUserListResource,
+		iam.NewApplicationListResource,
+		iam.NewPolicyListResource,
+		iam.NewAPIKeyListResource,
+		ipam.NewIPListResource,
+		keymanager.NewKeyListResource,
+		lb.NewLbListResource,
+		lb.NewFrontendListResource,
+		lb.NewBackendListResource,
 		mongodb.NewInstanceListResource,
+		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
 		rdb.NewSnapshotListResource,
 		redis.NewClusterListResource,
+		secret.NewSecretListResource,
+		secret.NewVersionListResource,
 		vpc.NewVPCListResource,
 		vpc.NewConnectorListResource,
 		vpc.NewRouteListResource,
 		vpc.NewPrivateNetworkListResource,
-		ipam.NewIPListResource,
 		vpcgw.NewPublicGatewayListResource,
 		vpcgw.NewIPListResource,
-		lb.NewLbListResource,
-		lb.NewFrontendListResource,
-		lb.NewBackendListResource,
-		iam.NewSSHKeyListResource,
-		iam.NewGroupListResource,
-		iam.NewUserListResource,
-		iam.NewApplicationListResource,
-		domain.NewZoneListResource,
 	}
 }
 
 func (p *ScalewayProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		functions.NewRegionFromID,
+		functions.NewIDFromRegionalID,
 	}
 }

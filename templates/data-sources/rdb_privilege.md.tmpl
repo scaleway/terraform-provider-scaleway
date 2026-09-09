@@ -9,7 +9,7 @@ Gets information about the privileges in a database.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get the database privilege for the user "my-user" on the database "my-database" hosted on instance id 11111111-1111-1111-1111-111111111111 and on the default region. e.g: fr-par
 data "scaleway_rdb_privilege" "main" {
   instance_id   = "11111111-1111-111111111111"
@@ -26,7 +26,7 @@ data "scaleway_rdb_privilege" "main" {
 
 - `database_name` - (Required) The database name.
 
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
+- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the resource exists.
 
 ## Attributes Reference
 

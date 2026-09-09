@@ -3,6 +3,7 @@ package keymanager
 import (
 	"context"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -79,7 +80,7 @@ func (r *GenerateDataKeyEphemeralResource) Schema(ctx context.Context, req ephem
 				Required:    true,
 				Description: "ID of the key. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"without_plaintext": schema.BoolAttribute{
@@ -178,7 +179,7 @@ func (r *GenerateDataKeyEphemeralResource) Open(ctx context.Context, req ephemer
 	}
 
 	data.Plaintext = types.StringValue(plaintext)
-	data.Ciphertext = types.StringValue(string(generateDataKeyResp.Ciphertext))
+	data.Ciphertext = types.StringValue(base64.StdEncoding.EncodeToString(generateDataKeyResp.Ciphertext))
 	data.CreatedAt = types.StringValue(generateDataKeyResp.CreatedAt.Format(time.RFC3339))
 
 	resp.Result.Set(ctx, &data)
