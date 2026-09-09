@@ -1534,6 +1534,146 @@ func TestAccInstance_FromSnapshotWithPrivateNetwork(t *testing.T) {
 	})
 }
 
+func TestAccInstance_FromSnapshotWithLoadBalancer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot-lb"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "sbs_5k"
+						tags           = ["terraform-test", "restored_instance"]
+
+						load_balancer {}
+
+						depends_on = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot-lb"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.port"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccInstance_FromSnapshotWithPrivateNetworkAndLoadBalancer(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestEngineVersion := rdbchecks.GetLatestEngineVersion(tt, postgreSQLEngineName)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_vpc" "vpc" {
+						name = "test-vpc"
+					}
+
+					resource "scaleway_vpc_private_network" "pn" {
+						vpc_id = scaleway_vpc.vpc.id
+						ipv4_subnet {
+							subnet = "192.168.0.0/24"
+						}
+						depends_on = [scaleway_vpc.vpc]
+					}
+
+					resource "scaleway_rdb_instance" "main" {
+						name           = "test-rdb-instance"
+						node_type      = "db-dev-s"
+						engine         = %q
+						is_ha_cluster  = false
+						disable_backup = true
+						user_name      = "my_initial_user"
+						password       = "thiZ_is_v&ry_s3cret"
+						tags           = ["terraform-test", "scaleway_rdb_instance"]
+						volume_type    = "sbs_5k"
+						volume_size_in_gb = 10
+
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+
+						depends_on = [scaleway_vpc_private_network.pn]
+					}
+
+					resource "scaleway_rdb_snapshot" "test" {
+						name        = "test-snapshot"
+						instance_id = scaleway_rdb_instance.main.id
+						depends_on  = [scaleway_rdb_instance.main]
+					}
+
+					resource "scaleway_rdb_instance" "from_snapshot" {
+						name           = "test-instance-from-snapshot-pn-lb"
+						node_type      = "db-dev-s"
+						is_ha_cluster  = false
+						disable_backup = true
+						snapshot_id    = scaleway_rdb_snapshot.test.id
+						volume_type    = "sbs_5k"
+						tags           = ["terraform-test", "restored_instance"]
+
+						private_network {
+							pn_id       = scaleway_vpc_private_network.pn.id
+							enable_ipam = true
+						}
+
+						load_balancer {}
+
+						depends_on = [scaleway_rdb_snapshot.test]
+					}
+				`, latestEngineVersion),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "name", "test-instance-from-snapshot-pn-lb"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "private_network.0.pn_id"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "private_network.0.enable_ipam", "true"),
+					resource.TestCheckResourceAttr("scaleway_rdb_instance.from_snapshot", "load_balancer.#", "1"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.endpoint_id"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.ip"),
+					resource.TestCheckResourceAttrSet("scaleway_rdb_instance.from_snapshot", "load_balancer.0.port"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccInstance_PrivateNetworkCleanup(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
