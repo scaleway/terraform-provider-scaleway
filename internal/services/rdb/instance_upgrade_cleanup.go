@@ -13,8 +13,6 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-const replacedFromInstanceIDKey = "replaced_from_instance_id"
-
 // deleteReplacedRDBInstance waits for the replaced (old) instance then deletes it.
 // A 404 is treated as success (already gone).
 func deleteReplacedRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, instanceID string, timeout time.Duration) error {
@@ -48,7 +46,7 @@ func deleteReplacedRDBInstance(ctx context.Context, api *rdb.API, region scw.Reg
 // resumeReplacedRDBInstanceCleanup deletes a previous blue/green instance if
 // replaced_from_instance_id is still set in state (e.g. after an apply timeout).
 func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceData, api *rdb.API, timeout time.Duration) {
-	raw, ok := d.GetOk(replacedFromInstanceIDKey)
+	raw, ok := d.GetOk("replaced_from_instance_id")
 	if !ok {
 		return
 	}
@@ -60,13 +58,13 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
-		tflog.Warn(ctx, fmt.Sprintf("Invalid %s %q, clearing attribute: %v", replacedFromInstanceIDKey, regionalID, err))
-		_ = d.Set(replacedFromInstanceIDKey, "")
+		tflog.Warn(ctx, fmt.Sprintf("Invalid replaced_from_instance_id %q, clearing attribute: %v", regionalID, err))
+		_ = d.Set("replaced_from_instance_id", "")
 
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("Resuming cleanup of replaced RDB instance %s", regionalID))
+	tflog.Info(ctx, "Resuming cleanup of replaced RDB instance "+regionalID)
 
 	if err := deleteReplacedRDBInstance(ctx, api, region, instanceID, timeout); err != nil {
 		tflog.Warn(ctx, fmt.Sprintf("Failed to cleanup replaced instance %s: %v", regionalID, err))
@@ -74,6 +72,6 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 		return
 	}
 
-	_ = d.Set(replacedFromInstanceIDKey, "")
-	tflog.Info(ctx, fmt.Sprintf("Successfully cleaned up replaced RDB instance %s", regionalID))
+	_ = d.Set("replaced_from_instance_id", "")
+	tflog.Info(ctx, "Successfully cleaned up replaced RDB instance "+regionalID)
 }

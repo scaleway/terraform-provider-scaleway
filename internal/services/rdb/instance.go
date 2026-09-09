@@ -1180,7 +1180,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 			ID = upgradedInstance.ID
 			// Persist the old ID before long waits so cleanup can resume after a timeout.
-			_ = d.Set(replacedFromInstanceIDKey, regional.NewIDString(region, oldInstanceID))
+			_ = d.Set("replaced_from_instance_id", regional.NewIDString(region, oldInstanceID))
 
 			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
 				return diag.FromErr(err)
@@ -1218,7 +1218,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			if err := deleteReplacedRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutDelete)); err != nil {
 				tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
 			} else {
-				_ = d.Set(replacedFromInstanceIDKey, "")
+				_ = d.Set("replaced_from_instance_id", "")
 			}
 		} else {
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
