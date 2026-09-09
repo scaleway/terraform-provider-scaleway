@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/id"
@@ -18,6 +19,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
 )
 
@@ -483,28 +485,30 @@ func resourceBucketLifecycleUpdate(ctx context.Context, conn *s3.Client, d *sche
 		// Expiration
 		expiration := d.Get(fmt.Sprintf("lifecycle_rule.%d.expiration", i)).([]any)
 		if len(expiration) > 0 && expiration[0] != nil {
-			e := expiration[0].(map[string]any)
-			i := &s3Types.LifecycleExpiration{}
+			expirationMap := expiration[0].(map[string]any)
+			expirationS3 := &s3Types.LifecycleExpiration{}
 
-			if val, ok := e["days"].(int); ok && val > 0 {
+			if val, ok := expirationMap["days"].(int); ok && val > 0 {
 				days := int32(val)
-				i.Days = aws.Int32(days)
+				expirationS3.Days = aws.Int32(days)
 			}
 
-			if val, ok := e["date"].(string); ok && val != "" {
+			if val, ok := expirationMap["date"].(string); ok && val != "" {
 				date, err := time.Parse("2006-01-02", val)
 				if err != nil {
 					return fmt.Errorf("error while parsing expiration date '%s': %w", val, err)
 				}
 
-				i.Date = aws.Time(date)
+				expirationS3.Date = aws.Time(date)
 			}
 
-			if val, ok := e["expired_object_delete_marker"].(bool); ok {
-				i.ExpiredObjectDeleteMarker = aws.Bool(val)
+			if val, ok := meta.GetRawConfigForKey(
+				d, fmt.Sprintf("lifecycle_rule.%d.expiration.0.expired_object_delete_marker", i), cty.Bool,
+			); ok {
+				expirationS3.ExpiredObjectDeleteMarker = aws.Bool(val.(bool))
 			}
 
-			rule.Expiration = i
+			rule.Expiration = expirationS3
 		}
 
 		// Transitions
@@ -1163,7 +1167,7 @@ func validateLifecycleExpiration(diff *schema.ResourceDiff, i int) error {
 
 	_, daysOk := diff.GetOk(prefix + "days")
 	_, dateOk := diff.GetOk(prefix + "date")
-	_, markerOk := diff.GetOk(prefix + "expired_object_delete_marker")
+	_, markerOk := meta.GetRawConfigForKey(diff, prefix+"expired_object_delete_marker", cty.Bool)
 
 	// Implement "ExactlyOneOf"
 	count := 0
