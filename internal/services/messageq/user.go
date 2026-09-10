@@ -114,11 +114,12 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 		return diag.FromErr(err)
 	}
 
-	if err := identity.SetMultiPartIdentity(d, map[string]string{
+	err = identity.SetMultiPartIdentity(d, map[string]string{
 		"region":        string(region),
 		"deployment_id": deploymentID,
 		"name":          user.Username,
-	}, "region", "deployment_id", "name"); err != nil {
+	}, "region", "deployment_id", "name")
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -168,11 +169,12 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 
 	user := res.Users[0]
 
-	if err := identity.SetMultiPartIdentity(d, map[string]string{
+	err = identity.SetMultiPartIdentity(d, map[string]string{
 		"region":        string(region),
 		"deployment_id": deploymentID,
 		"name":          user.Username,
-	}, "region", "deployment_id", "name"); err != nil {
+	}, "region", "deployment_id", "name")
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

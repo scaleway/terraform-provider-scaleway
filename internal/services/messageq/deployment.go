@@ -499,10 +499,11 @@ func updateDeploymentPrivateNetwork(
 			continue
 		}
 
-		if err := api.DeleteEndpoint(&messageqapi.DeleteEndpointRequest{
+		err := api.DeleteEndpoint(&messageqapi.DeleteEndpointRequest{
 			Region:     region,
 			EndpointID: endpoint.ID,
-		}, scw.WithContext(ctx)); err != nil {
+		}, scw.WithContext(ctx))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -510,7 +511,8 @@ func updateDeploymentPrivateNetwork(
 	}
 
 	if len(deletedEndpointIDs) > 0 {
-		if err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate)); err != nil {
+		err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -554,7 +556,11 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
-	if err != nil && !httperrors.Is404(err) {
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
@@ -562,10 +568,15 @@ func resourceDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta 
 		Region:       region,
 		DeploymentID: id,
 	}, scw.WithContext(ctx))
-	if err != nil && !httperrors.Is404(err) {
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
+	// Wait until the deployment is fully gone after Delete.
 	_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutDelete))
 	if err != nil && !httperrors.Is404(err) {
 		return diag.FromErr(err)
