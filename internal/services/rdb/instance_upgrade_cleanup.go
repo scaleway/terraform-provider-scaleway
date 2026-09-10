@@ -68,7 +68,7 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("Resuming cleanup of replaced RDB instance %s", regionalID))
+	tflog.Info(ctx, "Resuming cleanup of replaced RDB instance "+regionalID)
 
 	err = deleteReplacedRDBInstance(ctx, api, region, instanceID, timeout)
 	if err != nil {
@@ -79,5 +79,5 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("replaced_from_instance_id", "")
 
-	tflog.Info(ctx, fmt.Sprintf("Successfully cleaned up replaced RDB instance %s", regionalID))
+	tflog.Info(ctx, "Successfully cleaned up replaced RDB instance "+regionalID)
 }
