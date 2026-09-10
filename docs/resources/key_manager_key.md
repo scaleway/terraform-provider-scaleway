@@ -60,7 +60,7 @@ resource "scaleway_key_manager_key" "signing" {
 The following arguments are supported:
 
 - `name` (String) – The name of the key.  
-- `region` (String) – The region in which to create the key (e.g., `fr-par`).  
+- `region` (String, Optional, Computed) – The region in which to create the key (e.g., `fr-par`). If not specified, defaults to the provider configuration.  
 - `project_id` (String, Optional) – The ID of the project the key belongs to.
 
 **Key Usage and Algorithm (both required):**
@@ -91,7 +91,8 @@ The following arguments are supported:
     - `scaleway_kms` (default)
     - `external`
 - `rotation_policy` (Block, Optional) – Rotation policy for the key:
-    - `rotation_period` (String, Optional) – The period between key rotations (e.g., `"720h"` for 30 days).
+    - `rotation_period` (String, Required) – The period between key rotations (e.g., `"720h"` for 30 days).
+    - `next_rotation_at` (String, Optional) – The date and time of the next scheduled rotation, in RFC 3339 format. If not set, it is computed by the Key Manager API from `rotation_period`.
 
 ## Attributes Reference
 
@@ -105,6 +106,7 @@ In addition to all arguments above, the following attributes are exported:
 - `protected` – Whether the key is protected from deletion.
 - `locked` – Whether the key is locked.
 - `rotated_at` – The date and time when the key was last rotated.
+- `srn` – The Scaleway Resource Name (SRN) of the key.
 - `rotation_policy` (Block)
     - `rotation_period` – The period between key rotations.
     - `next_rotation_at` – The date and time of the next scheduled rotation.
@@ -121,6 +123,8 @@ terraform import scaleway_key_manager_key.main fr-par/11111111-2222-3333-4444-55
 
 - **Protection**: By default, keys are protected and cannot be deleted. To allow deletion, set `unprotected = true` when creating the key.
 - **Rotation Policy**: The `rotation_policy` block allows you to set automatic rotation for your key.
+  If `next_rotation_at` is not set, the Key Manager API schedules the next rotation at `rotation_period` from the key's creation, and reschedules it after each rotation.
+  If you set `next_rotation_at` explicitly, it must be in the future (the API rejects past dates). Once the scheduled rotation occurs, the API computes a new `next_rotation_at`, so the configured value becomes stale: update or remove it from the configuration (or use `ignore_changes`) to avoid a permanent diff.
 - **Origin**: The `origin` argument is optional and defaults to `scaleway_kms`. Use `external` if you want to import an external key (see Scaleway documentation for details).
 - **Project and Region**: If not specified, `project_id` and `region` will default to the provider configuration.
 - **Algorithm Validation**: The provider validates that the specified `algorithm` is compatible with the `usage` type at plan time, providing early feedback on configuration errors.

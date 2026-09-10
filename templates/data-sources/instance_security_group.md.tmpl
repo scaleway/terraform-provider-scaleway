@@ -9,7 +9,7 @@ Gets information about a Security Group.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by security group name
 data "scaleway_instance_security_group" "my_key" {
   name = "my-security-group-name"
@@ -27,7 +27,7 @@ data "scaleway_instance_security_group" "my_key" {
 
 - `security_group_id` - (Optional) The security group id. Only one of `name` and `security_group_id` should be specified.
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group exists.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the security group exists.
 
 - `project_id` - (Optional) The ID of the project the security group is associated with.
 

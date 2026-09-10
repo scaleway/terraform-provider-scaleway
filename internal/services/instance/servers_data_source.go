@@ -192,6 +192,11 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
+	instanceAPIV2, _, err := newAPIV2WithZone(d, m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	res, err := instanceAPI.ListServers(&instance.ListServersRequest{
 		Zone:    zone,
 		Name:    types.ExpandStringPtr(d.Get("name")),
@@ -246,7 +251,7 @@ func DataSourceInstanceServersRead(ctx context.Context, d *schema.ResourceData, 
 			rawServer["placement_group_policy_respected"] = server.PlacementGroup.PolicyRespected
 		}
 
-		ph, err := newPrivateNICHandler(instanceAPI, server.ID, zone)
+		ph, err := newPrivateNICHandler(instanceAPIV2, instanceAPI, server.ID, zone, server.Project)
 		if err != nil {
 			return diag.FromErr(err)
 		}

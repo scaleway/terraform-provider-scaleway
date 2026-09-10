@@ -99,7 +99,7 @@ func DataSourceImageTagRead(ctx context.Context, d *schema.ResourceData, m any) 
 		res, err := api.ListTags(&registry.ListTagsRequest{
 			Region:  region,
 			ImageID: locality.ExpandID(imageID),
-		}, scw.WithContext(ctx))
+		}, scw.WithContext(ctx), scw.WithAllPages())
 		if err != nil {
 			return diag.FromErr(err)
 		}

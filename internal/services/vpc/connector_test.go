@@ -1,6 +1,7 @@
 package vpc_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -66,6 +67,7 @@ func TestAccVPCConnector_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.#", "2"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.0", "terraform"),
 					resource.TestCheckResourceAttr("scaleway_vpc_connector.main", "tags.1", "connector"),
+					resource.TestMatchResourceAttr("scaleway_vpc_connector.main", "srn", regexp.MustCompile(`^srn://vpc\..+/regions/.+/vpc-connectors/.+$`)),
 				),
 			},
 		},

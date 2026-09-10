@@ -9,7 +9,7 @@ Gets information about a registry namespace.
 
 ## Example Usage
 
-```hcl
+```terraform
 // Get info by namespace name
 data "scaleway_registry_namespace" "my_namespace" {
   name = "my-namespace-name"

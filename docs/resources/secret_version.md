@@ -44,7 +44,7 @@ The following arguments are supported:
 - `data_wo` - (Optional) The raw data payload of your secret version in [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) mode. Must not exceed 64KiB in size (e.g. `my-secret-version-payload`). Find out more on the [data section](#data).
 - `data_wo_version` - (Optional) The version of the [write-only](https://developer.hashicorp.com/terraform/language/manage-sensitive-data/write-only) data. To update the `data_wo`, you must also update the `data_wo_version`.
 - `description` - (Optional) Description of the secret version (e.g. `my-new-description`).
-- `region` - (Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
+- `region` - (Optional, Computed, Defaults to the region specified in the [provider configuration](../index.md#arguments-reference)). The [region](../guides/regions_and_zones.md#regions) where the resource exists.
 
 ### Data
 
@@ -72,6 +72,7 @@ In addition to all arguments above, the following attributes are exported:
 - `status` - The status of the secret version.
 - `created_at` - The date and time of the secret version's creation (in RFC 3339 format).
 - `updated_at` - The date and time of the secret version's last update (in RFC 3339 format).
+- `srn` - The Scaleway Resource Name (SRN) of the secret version.
 
 ## Import
 

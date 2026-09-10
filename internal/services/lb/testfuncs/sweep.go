@@ -1,8 +1,6 @@
 package lbtestfuncs
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	lbSDK "github.com/scaleway/scaleway-sdk-go/api/lb/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -34,7 +32,9 @@ func testSweepLB(_ string) error {
 			Zone: zone,
 		}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lbs in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing lbs in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, l := range listLBs.LBs {
@@ -51,7 +51,9 @@ func testSweepLB(_ string) error {
 				RetryInterval: &retryInterval,
 			})
 			if err != nil {
-				return fmt.Errorf("error waiting for lb in sweeper: %w", err)
+				logging.L.Warningf("error waiting for lb in sweeper: %s", err)
+
+				continue
 			}
 
 			err = lbAPI.DeleteLB(&lbSDK.ZonedAPIDeleteLBRequest{
@@ -60,7 +62,7 @@ func testSweepLB(_ string) error {
 				Zone:      zone,
 			})
 			if err != nil {
-				return fmt.Errorf("error deleting lb in sweeper: %w", err)
+				logging.L.Warningf("error deleting lb in sweeper: %s", err)
 			}
 		}
 
@@ -76,7 +78,9 @@ func testSweepIP(_ string) error {
 
 		listIPs, err := lbAPI.ListIPs(&lbSDK.ZonedAPIListIPsRequest{Zone: zone}, scw.WithAllPages())
 		if err != nil {
-			return fmt.Errorf("error listing lb ips in (%s) in sweeper: %w", zone, err)
+			logging.L.Warningf("error listing lb ips in (%s) in sweeper: %s", zone, err)
+
+			return nil
 		}
 
 		for _, ip := range listIPs.IPs {
@@ -86,7 +90,7 @@ func testSweepIP(_ string) error {
 					IPID: ip.ID,
 				})
 				if err != nil {
-					return fmt.Errorf("error deleting lb ip in sweeper: %w", err)
+					logging.L.Warningf("error deleting lb ip in sweeper: %s", err)
 				}
 			}
 		}

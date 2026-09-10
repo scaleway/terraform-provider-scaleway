@@ -92,6 +92,11 @@ func ingressRuleSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "The date and time of the last update of the ingress rule",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the ingress rule",
+		},
 	}
 }
 
@@ -183,6 +188,7 @@ func setIngressRuleState(d *schema.ResourceData, rule *vpc.IngressRule, region s
 	_ = d.Set("region", region)
 	_ = d.Set("created_at", types.FlattenTime(rule.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(rule.UpdatedAt))
+	_ = d.Set("srn", rule.Srn)
 
 	return nil
 }

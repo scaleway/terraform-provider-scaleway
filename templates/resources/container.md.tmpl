@@ -92,7 +92,7 @@ The following arguments are supported:
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
     - `interval`- Time interval between checks (in duration notation, e.g. "30s").
-    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
+    - `timeout` - Duration before the check times out (in duration notation, e.g. "30s").
 
 - `health_check` - (Deprecated) Health check configuration block of the container.
     - `tcp` - When set to `true`, performs TCP checks on the container.
@@ -109,7 +109,7 @@ The following arguments are supported:
         - `path` - Path to use for the HTTP health check.
     - `failure_threshold` - Number of consecutive failures before considering the container has to be restarted.
     - `interval`- Time interval between checks (in duration notation, e.g. "30s").
-    - `duration` - Duration before the check times out (in duration notation, e.g. "30s").
+    - `timeout` - Duration before the check times out (in duration notation, e.g. "30s").
 
 - `scaling_option` - (Optional) Configuration block used to decide when to scale up or down. Possible values:
     - `concurrent_requests_threshold` - Scale depending on the number of concurrent requests being processed per container instance.
@@ -144,17 +144,17 @@ The `scaleway_container` resource exports certain attributes once the Container 
 
 ~> **Important:** Container IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`.
 
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the container was created.
 
 - `status` - The container status. In case the status is different from `ready`, a warning will be displayed when Terraform reads the resource.
 
 - `error_message` - The error message of the container.
 
-- `domain_name` - The native domain name of the container
+- `domain_name` - The native domain name of the container.
 
 - ~> **Important:** `domain_name` is deprecated and will be removed in the future. Please use `public_endpoint` instead.
 
-- `public_endpoint` - The native domain name of the container
+- `public_endpoint` - The scheme and domain of the container (e.g., `https://example.com`).
 
 ## Import
 

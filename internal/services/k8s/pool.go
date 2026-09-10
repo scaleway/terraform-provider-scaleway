@@ -15,6 +15,7 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
@@ -50,6 +51,7 @@ func ResourcePool() *schema.Resource {
 		},
 		SchemaVersion: 0,
 		SchemaFunc:    poolSchema,
+		Identity:      identity.DefaultRegional(),
 	}
 }
 
@@ -63,7 +65,7 @@ func poolSchema() map[string]*schema.Schema {
 		},
 		"name": {
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			ForceNew:    true,
 			Description: "The name of the pool",
 		},
@@ -318,6 +320,11 @@ func poolSchema() map[string]*schema.Schema {
 							},
 						},
 					},
+					"srn": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The Scaleway Resource Name (SRN) of the node",
+					},
 				},
 			},
 		},
@@ -332,6 +339,11 @@ func poolSchema() map[string]*schema.Schema {
 			Optional:         true,
 			Description:      "The ID of the security group",
 			DiffSuppressFunc: dsf.Locality,
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the pool",
 		},
 	}
 }
@@ -423,7 +435,7 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 	}
 
 	if startupTaints, ok := d.GetOk("startup_taints"); ok {
-		req.Taints = expandCoreV1Taints(startupTaints)
+		req.StartupTaints = expandCoreV1Taints(startupTaints)
 	}
 
 	// Validate pool configuration
@@ -460,7 +472,10 @@ func ResourceK8SPoolCreate(ctx context.Context, d *schema.ResourceData, m any) d
 		return append(diags, diag.FromErr(err)...)
 	}
 
-	d.SetId(regional.NewIDString(region, res.ID))
+	err = identity.SetRegionalIdentity(d, res.Region, res.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.Get("wait_for_pool_ready").(bool) { // wait for the pool to be ready if specified (including all its nodes)
 		_, err = waitPoolReady(ctx, k8sAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
@@ -507,7 +522,18 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 		return diag.FromErr(err)
 	}
 
-	_ = d.Set("cluster_id", regional.NewIDString(region, pool.ClusterID))
+	diags := setPoolState(ctx, d, m, pool, k8sAPI, nodes)
+
+	err = identity.SetRegionalIdentity(d, pool.Region, pool.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return diags
+}
+
+func setPoolState(ctx context.Context, d *schema.ResourceData, m any, pool *k8s.Pool, k8sAPI *k8s.API, nodes []map[string]any) diag.Diagnostics {
+	_ = d.Set("cluster_id", regional.NewIDString(pool.Region, pool.ClusterID))
 	_ = d.Set("name", pool.Name)
 	_ = d.Set("node_type", pool.NodeType)
 	_ = d.Set("autoscaling", pool.Autoscaling)
@@ -533,7 +559,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("updated_at", pool.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("status", pool.Status)
 	_ = d.Set("kubelet_args", flattenKubeletArgs(pool.KubeletArgs))
-	_ = d.Set("region", region)
+	_ = d.Set("region", pool.Region)
 	_ = d.Set("zone", pool.Zone)
 	_ = d.Set("upgrade_policy", poolUpgradePolicyFlatten(pool))
 	_ = d.Set("public_ip_disabled", pool.PublicIPDisabled)
@@ -546,6 +572,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 	_ = d.Set("labels", flattenLabels(pool.Labels))
 	_ = d.Set("taints", flattenCoreV1Taints(pool.Taints))
 	_ = d.Set("startup_taints", flattenCoreV1Taints(pool.StartupTaints))
+	_ = d.Set("srn", pool.Srn)
 
 	// Get nodes' private IPs (if possible)
 	diags := diag.Diagnostics{}
@@ -575,7 +602,7 @@ func ResourceK8SPoolRead(ctx context.Context, d *schema.ResourceData, m any) dia
 				ProjectID:    &projectID,
 			}
 
-			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, region, opts)
+			privateIPs, err := ipam.GetResourcePrivateIPs(ctx, m, pool.Region, opts)
 
 			switch {
 			case err == nil:

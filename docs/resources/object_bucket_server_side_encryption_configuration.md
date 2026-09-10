@@ -107,11 +107,11 @@ The following arguments are supported:
     * `apply_server_side_encryption_by_default` - (Optional) Single object for setting server-side encryption by default. The `apply_server_side_encryption_by_default` object supports the following:
         * `sse_algorithm` - (Required) Server-side encryption algorithm to use. Valid values are `AES256`, `aws:kms`.
         * `kms_master_key_id` - (Optional) Scaleway KMS master key ID used for the SSE-KMS encryption.
-        This can only be used when you set the value of sse_algorithm as `aws:kms`. Will return an error
-        if this element is absent while the sse_algorithm is `aws:kms`.
+          This can only be used when you set the value of sse_algorithm as `aws:kms`. Will return an error
+          if this element is absent while the sse_algorithm is `aws:kms`.
     * `bucket_key_enabled` - (Optional) Whether or not to use Scaleway Object Bucket Keys for SSE-KMS.
 
-* `region` - (Optional) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
+* `region` - (Optional, Computed) The [region](https://www.scaleway.com/en/developers/api/#region-definition) in which the bucket is located.
 
 * `project_id` - (Defaults to [provider's `project_id`][1]) The ID of the
 project the bucket is associated with.

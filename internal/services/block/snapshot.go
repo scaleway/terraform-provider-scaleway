@@ -115,6 +115,11 @@ func snapshotSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "Export snapshot to a qcow",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the snapshot",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -302,4 +307,6 @@ func setSnapshotState(resourceData *schema.ResourceData, snapshot *block.Snapsho
 	} else {
 		_ = resourceData.Set("volume_id", "")
 	}
+
+	_ = resourceData.Set("srn", snapshot.Srn)
 }

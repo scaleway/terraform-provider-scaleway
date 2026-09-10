@@ -9,7 +9,7 @@ Gets information about a Private Network.
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_vpc_private_network" "my_name" {
   name = "foobar"

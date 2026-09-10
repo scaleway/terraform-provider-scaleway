@@ -48,8 +48,8 @@ func fileSystemSchema() map[string]*schema.Schema {
 		"size_in_gb": {
 			Type:         schema.TypeInt,
 			Required:     true,
-			ValidateFunc: validation.IntBetween(1, 1000),
-			Description:  "The Filesystem size_in_gb in bytes, with a granularity of 100 GB (10^11 bytes). Must be compliant with the minimum (100 GB) and maximum (10 TB) allowed size_in_gb.",
+			ValidateFunc: validation.IntBetween(25, 50000),
+			Description:  "The filesystem size in GB. Minimum 25GB, maximum 50TB",
 		},
 		"tags": {
 			Type: schema.TypeList,
@@ -81,6 +81,11 @@ func fileSystemSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "The last update date of the properties of the filesystem",
+		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the filesystem",
 		},
 	}
 }
@@ -161,6 +166,7 @@ func setFileSystemState(d *schema.ResourceData, fileSystem *file.FileSystem) {
 	_ = d.Set("created_at", fileSystem.CreatedAt.Format(time.RFC3339))
 	_ = d.Set("updated_at", fileSystem.UpdatedAt.Format(time.RFC3339))
 	_ = d.Set("number_of_attachments", int64(fileSystem.NumberOfAttachments))
+	_ = d.Set("srn", fileSystem.Srn)
 }
 
 func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -191,7 +197,7 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("size_in_gb") {
 		sizeInGB := uint64(d.Get("size_in_gb").(int)) * uint64(scw.GB)
-		req.Size = types.ExpandUint64Ptr(sizeInGB)
+		req.Size = &sizeInGB
 	}
 
 	if d.HasChange("tags") {

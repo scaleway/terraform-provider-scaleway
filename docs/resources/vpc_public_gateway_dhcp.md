@@ -24,7 +24,7 @@ resource "scaleway_vpc_public_gateway_dhcp" "main" {
 
 The following arguments are supported:
 
-- `zone` - (Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
+- `zone` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `zone`) The [zone](../guides/regions_and_zones.md#zones) in which the Public Gateway DHCP configuration should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the Project the Public Gateway DHCP configuration is associated with.
 - `subnet` - (Required) The subnet to associate with the Public Gateway DHCP configuration.
 - `address` - (Optional) The IP address of the DHCP server. This will be the gateway's address in the Private Network.

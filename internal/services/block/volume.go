@@ -84,6 +84,11 @@ func volumeSchema() map[string]*schema.Schema {
 			Optional:    true,
 			Description: "The tags associated with the volume",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the volume",
+		},
 		"zone":       zonal.Schema(),
 		"project_id": account.ProjectIDSchema(),
 	}
@@ -288,4 +293,6 @@ func setVolumeState(api *block.API, resourceData *schema.ResourceData, volume *b
 	if volume.Specs != nil {
 		_ = resourceData.Set("iops", types.FlattenUint32Ptr(volume.Specs.PerfIops))
 	}
+
+	_ = resourceData.Set("srn", volume.Srn)
 }

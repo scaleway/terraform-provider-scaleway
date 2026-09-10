@@ -15,19 +15,19 @@ Creates and manages Scaleway IAM Policies. For more information refer to the [IA
 ### Create a policy for an organization's project
 
 ```terraform
-provider scaleway {
+provider "scaleway" {
   organization_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 }
 
-data scaleway_account_project "default" {
+data "scaleway_account_project" "default" {
   name = "default"
 }
 
-resource scaleway_iam_application "app" {
+resource "scaleway_iam_application" "app" {
   name = "my app"
 }
 
-resource scaleway_iam_policy "object_read_only" {
+resource "scaleway_iam_policy" "object_read_only" {
   name           = "my policy"
   description    = "gives app readonly access to object storage in project"
   application_id = scaleway_iam_application.app.id
@@ -41,11 +41,11 @@ resource scaleway_iam_policy "object_read_only" {
 ### Create a policy for all current and future projects in an organization
 
 ```terraform
-resource scaleway_iam_application "app" {
+resource "scaleway_iam_application" "app" {
   name = "my app"
 }
 
-resource scaleway_iam_policy "object_read_only" {
+resource "scaleway_iam_policy" "object_read_only" {
   name           = "my policy"
   description    = "gives app readonly access to object storage in project"
   application_id = scaleway_iam_application.app.id
@@ -132,7 +132,7 @@ The following arguments are supported:
     - `organization_id` - ID of organization scoped to the rule, this can be used to create a rule for all projects in an organization.
     - `project_ids` - List of project IDs scoped to the rule.
 
-    ~> **Important** One `organization_id` or `project_ids` must be set per rule.
+  ~> **Important** One `organization_id` or `project_ids` must be set per rule.
 
     - `permission_set_names` - Names of permission sets bind to the rule.
     - `condition` - (Optional) The condition of the rule.
@@ -151,6 +151,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the policy.
 - `updated_at` - The date and time of the last update of the policy.
 - `editable` - Whether the policy is editable.
+- `srn` - The Scaleway Resource Name (SRN) of the policy.
 
 ## Import
 

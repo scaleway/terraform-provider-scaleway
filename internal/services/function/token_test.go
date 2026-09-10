@@ -21,7 +21,7 @@ func TestAccFunctionToken_Basic(t *testing.T) {
 	if !*acctest.UpdateCassettes {
 		// This hardcoded value has to be replaced with the expiration in cassettes.
 		// Should be in the first "POST /tokens" request.
-		expiresAt = "2026-05-05T14:37:48+02:00"
+		expiresAt = "2026-07-04T18:49:39+02:00"
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -36,7 +36,7 @@ func TestAccFunctionToken_Basic(t *testing.T) {
 
 					resource scaleway_function main {
 						namespace_id = scaleway_function_namespace.main.id
-						runtime = "node22"
+						runtime = "node26"
 						privacy = "private"
 						handler = "handler.handle"
 					}

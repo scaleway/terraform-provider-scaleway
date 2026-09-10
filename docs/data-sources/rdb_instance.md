@@ -11,7 +11,7 @@ For further information refer the Managed Databases for PostgreSQL and MySQL [AP
 
 ## Example Usage
 
-```hcl
+```terraform
 # Get info by name
 data "scaleway_rdb_instance" "my_instance" {
   name = "foobar"

@@ -13,7 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -96,8 +98,14 @@ func keySchema() map[string]*schema.Schema {
 			Description: "Key rotation policy.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
-					"rotation_period":  {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
-					"next_rotation_at": {Type: schema.TypeString, Optional: true, Description: "Timestamp indicating the next scheduled rotation."},
+					"rotation_period": {Type: schema.TypeString, Required: true, DiffSuppressFunc: dsf.Duration, Description: "Time interval between two key rotations. The minimum duration is 24 hours and the maximum duration is 1 year (876000 hours)."},
+					"next_rotation_at": {
+						Type:             schema.TypeString,
+						Optional:         true,
+						Computed:         true,
+						ValidateDiagFunc: verify.IsDate(),
+						Description:      "Timestamp indicating the next scheduled rotation. Computed from rotation_period if not set.",
+					},
 				},
 			},
 		},
@@ -124,6 +132,11 @@ func keySchema() map[string]*schema.Schema {
 		"protected":      {Type: schema.TypeBool, Computed: true, Description: "Returns true if key protection is applied to the key."},
 		"locked":         {Type: schema.TypeBool, Computed: true, Description: "Returns true if the key is locked."},
 		"rotated_at":     {Type: schema.TypeString, Computed: true, Description: "Key last rotation date."},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the key",
+		},
 	}
 }
 
@@ -168,7 +181,15 @@ func resourceKeyManagerKeyCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	createReq.Usage = keyUsage
 
-	key, err := api.CreateKey(createReq)
+	var key *key_manager.Key
+
+	err = transport.RetryOn403(ctx, func() error {
+		var err error
+
+		key, err = api.CreateKey(createReq)
+
+		return err
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,9 +208,12 @@ func resourceKeyManagerKeyRead(ctx context.Context, d *schema.ResourceData, m an
 		return diag.FromErr(err)
 	}
 
-	key, err := client.GetKey(&key_manager.GetKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	// Retry on 404 to handle eventual consistency issues
+	key, err := transport.RetryOn404(ctx, func(ctx context.Context) (*key_manager.Key, error) {
+		return client.GetKey(&key_manager.GetKeyRequest{
+			Region: region,
+			KeyID:  keyID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -235,6 +259,16 @@ func resourceKeyManagerKeyUpdate(ctx context.Context, d *schema.ResourceData, m 
 				return diag.Errorf("invalid rotation_period: %v", err)
 			}
 
+			// next_rotation_at is Optional+Computed: when it is absent from the
+			// configuration, d.Get returns the value carried over from state.
+			// Sending it back would pin the previous schedule, so only forward
+			// it when the user explicitly set it.
+			if rp != nil {
+				if _, set := meta.GetRawConfigForKey(d, "rotation_policy.0.next_rotation_at", cty.String); !set {
+					rp.NextRotationAt = nil
+				}
+			}
+
 			updateReq.RotationPolicy = rp
 		}
 	}
@@ -253,9 +287,11 @@ func resourceKeyManagerKeyDelete(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	err = client.DeleteKey(&key_manager.DeleteKeyRequest{
-		Region: region,
-		KeyID:  keyID,
+	err = transport.RetryOn403(ctx, func() error {
+		return client.DeleteKey(&key_manager.DeleteKeyRequest{
+			Region: region,
+			KeyID:  keyID,
+		})
 	})
 	if err != nil {
 		return diag.FromErr(err)

@@ -80,7 +80,7 @@ func (r *GenerateDataKeyEphemeralResource) Schema(ctx context.Context, req ephem
 				Required:    true,
 				Description: "ID of the key. Can be a plain UUID or a regional ID.",
 				Validators: []validator.String{
-					verify.IsStringUUIDOrUUIDWithLocality(),
+					verify.IsStringUUIDOrUUIDWithRegion(),
 				},
 			},
 			"without_plaintext": schema.BoolAttribute{

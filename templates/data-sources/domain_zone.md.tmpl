@@ -15,7 +15,7 @@ Refer to the Domains and DNS [product documentation](https://www.scaleway.com/en
 
 The following command allows you to retrieve information about the DNS zone for the subdomain `test` within the domain `scaleway-terraform.com`.
 
-```hcl
+```terraform
 # Get zone
 data "scaleway_domain_zone" "main" {
   domain    = "scaleway-terraform.com"

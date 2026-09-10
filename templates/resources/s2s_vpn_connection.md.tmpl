@@ -47,10 +47,10 @@ resource "scaleway_s2s_vpn_routing_policy" "policy" {
 }
 
 resource "scaleway_s2s_vpn_connection" "main" {
-  name                = "my-vpn-connection"
-  vpn_gateway_id      = scaleway_s2s_vpn_gateway.gateway.id
-  customer_gateway_id = scaleway_s2s_vpn_customer_gateway.customer_gw.id
-  initiation_policy   = "customer_gateway"
+  name                     = "my-vpn-connection"
+  vpn_gateway_id           = scaleway_s2s_vpn_gateway.gateway.id
+  customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.customer_gw.id
+  initiation_policy        = "customer_gateway"
   enable_route_propagation = true
 
   bgp_config_ipv4 {
@@ -79,7 +79,7 @@ The following arguments are supported:
 
 - `vpn_gateway_id` - (Required) The ID of the VPN gateway to attach to the connection.
 - `customer_gateway_id` - (Required) The ID of the customer gateway to attach to the connection.
-- `initiation_policy` - (Optional) Defines who initiates the IPSec tunnel.
+- `initiation_policy` - (Optional) Defines who initiates the IPSec tunnel. Possible values are `vpn_gateway`, `customer_gateway` or `unknown_initiation_policy`. Defaults to `unknown_initiation_policy`.
 - `enable_route_propagation` - (Optional) Defines whether route propagation is enabled or not.
 - `bgp_config_ipv4` - (Optional) BGP configuration for IPv4. See [BGP Config](#bgp-config) below.
 - `bgp_config_ipv6` - (Optional) BGP configuration for IPv6. See [BGP Config](#bgp-config) below.
@@ -88,7 +88,7 @@ The following arguments are supported:
 - `name` - (Optional) The name of the connection.
 - `tags` - (Optional) The list of tags to apply to the connection.
 - `is_ipv6` - (Optional) Defines IP version of the IPSec Tunnel. Defaults to `false` (IPv4).
-- `region` - (Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the connection is associated with.
 
 ### BGP Config
@@ -124,6 +124,7 @@ In addition to all arguments above, the following attributes are exported:
 - `created_at` - The date and time of the creation of the connection (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the connection (RFC 3339 format).
 - `organization_id` - The Organization ID the connection is associated with.
+- `srn` - The Scaleway Resource Name (SRN) of the connection.
 
 ### BGP Session
 

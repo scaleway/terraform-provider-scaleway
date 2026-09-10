@@ -45,9 +45,7 @@ func ResourceInstance() *schema.Resource {
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer:         identity.DefaultRegionalImporter(),
 		SchemaVersion:    0,
 		SchemaFunc:       instanceSchema,
 		CustomizeDiff:    cdf.LocalityCheck("private_network.#.pn_id"),
@@ -475,7 +473,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			SnapshotID:   snapshotID,
 			Region:       region,
 			InstanceName: types.ExpandOrGenerateString(d.Get("name"), "rdb"),
-			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)),
+			IsHaCluster:  new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			NodeType:     new(d.Get("node_type").(string)),
 		}
 
@@ -483,6 +481,13 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 		if err != nil {
 			return diag.FromErr(err)
 		}
+
+		// Set ID early so a later endpoint failure does not leave a billed instance out of state.
+		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
+			return diag.FromErr(err)
+		}
+
+		id = res.ID
 
 		_, err = waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate))
 		if err != nil {
@@ -503,35 +508,42 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			}
 		}
 
-		// Configure endpoints after instance creation from snapshot
-		if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-			return diags
-		}
-
-		if diags := createLoadBalancerEndpoint(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
-			return diags
-		}
-
+		// CreateInstanceFromSnapshot always provisions a default load-balancer endpoint and has no
+		// InitEndpoints field. Keep the inherited LB when load_balancer is set; never create a second one.
 		_, wantPrivateNetwork := d.GetOk("private_network")
 		_, wantLoadBalancer := d.GetOk("load_balancer")
 
-		if !wantLoadBalancer {
+		if wantLoadBalancer {
+			// Instance already has a public LB from the snapshot restore: only attach PN if requested.
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+
+				if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+					return diags
+				}
+
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		} else {
+			// Preserve historical order (PN then remove inherited LB) for existing cassettes.
+			if diags := createPrivateNetworkEndpoints(ctx, rdbAPI, region, res.ID, d); diags.HasError() {
+				return diags
+			}
+
 			if diags := deleteLoadBalancerEndpoints(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); diags.HasError() {
 				return diags
 			}
-		}
 
-		if wantPrivateNetwork || wantLoadBalancer {
-			if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
-				return diag.FromErr(err)
+			if wantPrivateNetwork {
+				if _, err := waitForRDBInstance(ctx, rdbAPI, region, res.ID, d.Timeout(schema.TimeoutCreate)); err != nil {
+					return diag.FromErr(err)
+				}
 			}
 		}
-
-		if err := identity.SetRegionalIdentity(d, region, res.ID); err != nil {
-			return diag.FromErr(err)
-		}
-
-		id = res.ID
 	} else {
 		var password string
 		if _, ok := d.GetOk("password_wo_version"); ok {
@@ -547,7 +559,7 @@ func ResourceRdbInstanceCreate(ctx context.Context, d *schema.ResourceData, m an
 			Name:          types.ExpandOrGenerateString(d.Get("name"), "rdb"),
 			NodeType:      d.Get("node_type").(string),
 			Engine:        d.Get("engine").(string),
-			IsHaCluster:   d.Get("is_ha_cluster").(bool),
+			IsHaCluster:   d.Get("is_ha_cluster").(bool), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			DisableBackup: d.Get("disable_backup").(bool),
 			UserName:      d.Get("user_name").(string),
 			Password:      password,
@@ -678,22 +690,6 @@ func createPrivateNetworkEndpoints(ctx context.Context, rdbAPI *rdb.API, region 
 			if err != nil {
 				return diag.FromErr(err)
 			}
-		}
-	}
-
-	return nil
-}
-
-// createLoadBalancerEndpoint creates load balancer endpoint for an instance
-func createLoadBalancerEndpoint(ctx context.Context, rdbAPI *rdb.API, region scw.Region, instanceID string, d *schema.ResourceData) diag.Diagnostics {
-	if _, lbExists := d.GetOk("load_balancer"); lbExists {
-		_, err := rdbAPI.CreateEndpoint(&rdb.CreateEndpointRequest{
-			Region:       region,
-			InstanceID:   instanceID,
-			EndpointSpec: expandLoadBalancer(),
-		}, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
 		}
 	}
 
@@ -1088,7 +1084,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			rdb.UpgradeInstanceRequest{
 				Region:     region,
 				InstanceID: ID,
-				EnableHa:   new(d.Get("is_ha_cluster").(bool)),
+				EnableHa:   new(d.Get("is_ha_cluster").(bool)), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 			})
 	}
 
@@ -1182,7 +1178,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				upgradedInstance, err = rdbAPI.UpgradeInstance(&rdb.UpgradeInstanceRequest{
 					Region:     region,
 					InstanceID: ID,
-					EnableHa:   new(true),
+					EnableHa:   new(true), //nolint:staticcheck // deprecated but still valid, will update in https://github.com/scaleway/terraform-provider-scaleway/issues/4272
 				}, scw.WithContext(ctx))
 				if err != nil {
 					return diag.FromErr(err)

@@ -55,12 +55,12 @@ resource "scaleway_block_volume" "imported" {
 
 ```terraform
 resource "scaleway_object_bucket" "my-import-bucket" {
-      name = "snapshot-bucket-to-import"
+  name = "snapshot-bucket-to-import"
 }
 
 resource "scaleway_object" "qcow-object" {
-      bucket = scaleway_object_bucket.snapshot-bucket.name
-      key    = "export/my-snapshot.qcow2"
+  bucket = scaleway_object_bucket.snapshot-bucket.name
+  key    = "export/my-snapshot.qcow2"
 }
 
 resource "scaleway_block_volume" "to_export" {
@@ -97,6 +97,8 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The ID of the snapshot.
 
 ~> **Important:** The IDs of Block Storage volumes snapshots are [zoned](../guides/regions_and_zones.md#resource-ids), meaning that the zone is part of the ID, in the form `{zone}/{id}`. For example, a snapshot ID might be `fr-par-1/11111111-1111-1111-1111-111111111111`.
+
+- `srn` - The Scaleway Resource Name (SRN) of the snapshot.
 
 ## Import
 

@@ -200,6 +200,11 @@ func linkSchema() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Last modification date of the link",
 		},
+		"srn": {
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "The Scaleway Resource Name (SRN) of the link",
+		},
 		"region":     regional.Schema(),
 		"project_id": account.ProjectIDSchema(),
 		"organization_id": {
@@ -343,6 +348,7 @@ func setLinkState(d *schema.ResourceData, link *interlink.Link) diag.Diagnostics
 	_ = d.Set("vlan", int(link.Vlan))
 	_ = d.Set("created_at", types.FlattenTime(link.CreatedAt))
 	_ = d.Set("updated_at", types.FlattenTime(link.UpdatedAt))
+	_ = d.Set("srn", link.Srn)
 
 	if link.VpcID != nil {
 		_ = d.Set("vpc_id", regional.NewIDString(link.Region, *link.VpcID))
