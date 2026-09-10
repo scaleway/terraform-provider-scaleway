@@ -266,6 +266,7 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_mnq_sns_topic_subscription",
 		"scaleway_mnq_sqs_credentials",
 		"scaleway_mnq_sqs_queue",
+		"scaleway_messageq_user",
 		"scaleway_mongodb_snapshot",
 		"scaleway_mongodb_user",
 		"scaleway_object_bucket_acl",

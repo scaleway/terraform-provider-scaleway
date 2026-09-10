@@ -231,6 +231,7 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	pnID := ""
+
 	if v, ok := d.GetOk("private_network"); ok {
 		pnList := v.([]any)
 		if len(pnList) > 0 {
@@ -403,6 +404,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	// UpgradeDeployment accepts precisely one of NodeCount or VolumeSizeBytes.
 	if d.HasChange("node_count") {
 		nodeCount := uint32(d.Get("node_count").(int))
+
 		_, err := api.UpgradeDeployment(&messageqapi.UpgradeDeploymentRequest{
 			Region:       region,
 			DeploymentID: id,
@@ -420,6 +422,7 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if d.HasChange("volume.0.size_in_gb") {
 		sizeBytes := expandVolumeSizeBytes(d.Get("volume.0.size_in_gb").(int))
+
 		_, err := api.UpgradeDeployment(&messageqapi.UpgradeDeploymentRequest{
 			Region:          region,
 			DeploymentID:    id,
