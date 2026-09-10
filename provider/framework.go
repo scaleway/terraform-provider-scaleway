@@ -32,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
@@ -255,6 +256,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		iam.NewScimDataSource,
 		iam.NewScimTokenDataSource,
 		kafka.NewVersionDataSource,
+		messageq.NewVersionDataSource,
 	}
 }
 
