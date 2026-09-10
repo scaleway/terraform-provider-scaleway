@@ -13,29 +13,33 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 )
 
-// deleteReplacedRDBInstance waits for the replaced (old) instance then deletes it.
-// A 404 is treated as success (already gone).
+// deleteReplacedRDBInstance deletes a previous blue/green instance once it is ready.
+// A 404 means the instance is already gone and is treated as success.
 func deleteReplacedRDBInstance(ctx context.Context, api *rdb.API, region scw.Region, instanceID string, timeout time.Duration) error {
+	// Wait until the old instance leaves any transient state so DeleteInstance can succeed.
 	_, err := waitForRDBInstance(ctx, api, region, instanceID, timeout)
-	if err != nil && !httperrors.Is404(err) {
+	if httperrors.Is404(err) {
+		return nil
+	}
+
+	if err != nil {
 		return fmt.Errorf("old instance %s not ready for deletion: %w", instanceID, err)
 	}
 
-	if err == nil {
-		_, err = api.DeleteInstance(&rdb.DeleteInstanceRequest{
-			Region:     region,
-			InstanceID: instanceID,
-		}, scw.WithContext(ctx))
-		if err != nil && !httperrors.Is404(err) {
-			return fmt.Errorf("failed to delete old instance %s: %w", instanceID, err)
-		}
-	}
-
-	_, err = api.WaitForInstance(&rdb.WaitForInstanceRequest{
+	_, err = api.DeleteInstance(&rdb.DeleteInstanceRequest{
 		Region:     region,
 		InstanceID: instanceID,
-		Timeout:    new(timeout),
 	}, scw.WithContext(ctx))
+	if httperrors.Is404(err) {
+		return nil
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to delete old instance %s: %w", instanceID, err)
+	}
+
+	// Wait until the deleted instance disappears from the API.
+	_, err = waitForRDBInstance(ctx, api, region, instanceID, timeout)
 	if err != nil && !httperrors.Is404(err) {
 		return fmt.Errorf("error waiting for old instance %s deletion: %w", instanceID, err)
 	}
@@ -58,16 +62,16 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 
 	region, instanceID, err := regional.ParseID(regionalID)
 	if err != nil {
-		tflog.Warn(ctx, fmt.Sprintf("Invalid replaced_from_instance_id %q, clearing attribute: %v", regionalID, err))
-
-		_ = d.Set("replaced_from_instance_id", "")
+		// Keep the attribute so the invalid value stays visible in state and can be fixed.
+		tflog.Warn(ctx, fmt.Sprintf("Invalid replaced_from_instance_id %q, skipping cleanup: %v", regionalID, err))
 
 		return
 	}
 
-	tflog.Info(ctx, "Resuming cleanup of replaced RDB instance "+regionalID)
+	tflog.Info(ctx, fmt.Sprintf("Resuming cleanup of replaced RDB instance %s", regionalID))
 
-	if err := deleteReplacedRDBInstance(ctx, api, region, instanceID, timeout); err != nil {
+	err = deleteReplacedRDBInstance(ctx, api, region, instanceID, timeout)
+	if err != nil {
 		tflog.Warn(ctx, fmt.Sprintf("Failed to cleanup replaced instance %s: %v", regionalID, err))
 
 		return
@@ -75,5 +79,5 @@ func resumeReplacedRDBInstanceCleanup(ctx context.Context, d *schema.ResourceDat
 
 	_ = d.Set("replaced_from_instance_id", "")
 
-	tflog.Info(ctx, "Successfully cleaned up replaced RDB instance "+regionalID)
+	tflog.Info(ctx, fmt.Sprintf("Successfully cleaned up replaced RDB instance %s", regionalID))
 }
