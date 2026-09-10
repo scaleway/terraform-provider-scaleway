@@ -24,7 +24,7 @@ func TestAccDataSourceWAFStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-waf-id"
+					  name = "tf-test-scaleway-object-bucket-ds-waf-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {
@@ -76,7 +76,7 @@ func TestAccDataSourceWAFStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-waf-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-waf-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "main" {

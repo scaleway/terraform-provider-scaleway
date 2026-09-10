@@ -30,7 +30,7 @@ func TestAccDataSourceRouteStage_ByID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-route-id"
+					  name = "tf-test-scaleway-object-bucket-ds-route-id"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "backend" {
@@ -99,7 +99,7 @@ func TestAccDataSourceRouteStage_ByPipelineID(t *testing.T) {
 					}
 
 					resource "scaleway_object_bucket" "main" {
-					  name = "test-acc-scaleway-object-bucket-ds-route-filter"
+					  name = "tf-test-scaleway-object-bucket-ds-route-filter"
 					}
 
 					resource "scaleway_edge_services_backend_stage" "backend" {
