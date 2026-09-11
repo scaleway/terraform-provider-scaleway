@@ -41,7 +41,7 @@ func ResourceInstance() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Read:    schema.DefaultTimeout(defaultInstanceTimeout),
-			Update:  schema.DefaultTimeout(defaultInstanceTimeout),
+			Update:  schema.DefaultTimeout(defaultInstanceUpdateTimeout),
 			Delete:  schema.DefaultTimeout(defaultInstanceTimeout),
 			Default: schema.DefaultTimeout(defaultInstanceTimeout),
 		},
@@ -1169,7 +1169,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
-				return diag.FromErr(err)
+				return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 			}
 
 			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
@@ -1186,7 +1186,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil && !httperrors.Is404(err) {
-					return diag.FromErr(err)
+					return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 				}
 			}
 
