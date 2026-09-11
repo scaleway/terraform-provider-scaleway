@@ -36,6 +36,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/opensearch"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/partner"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/rdb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/redis"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
@@ -228,6 +229,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		keymanager.NewKeyMaterialResource,
 		messageq.NewDeploymentResource,
 		messageq.NewUserResource,
+		partner.NewPartnerOrganizationResource,
 	}
 }
 
