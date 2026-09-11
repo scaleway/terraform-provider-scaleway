@@ -51,6 +51,7 @@ jobs:
           - mongodb
           - object
           - opensearch
+          - partner
           - rdb
           - redis
           - registry
@@ -156,6 +157,9 @@ jobs:
           SCW_SECRET_KEY: "11111111-1111-1111-1111-111111111111"
           SCW_DEFAULT_ORGANIZATION_ID: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
           SCW_DEFAULT_PROJECT_ID: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          SCW_PARTNER_ORGANIZATION_ID: ${{ secrets.SCW_PARTNER_ORGANIZATION_ID }}
+          SCW_PARTNER_ACCESS_KEY: ${{ secrets.SCW_PARTNER_ACCESS_KEY }}
+          SCW_PARTNER_SECRET_KEY: ${{ secrets.SCW_PARTNER_SECRET_KEY }}
           SCW_ENABLE_BETA: true
           AWS_DISABLE_CLOCK_SKEW_CORRECTION: true
   test-scwconfig:
@@ -221,6 +225,7 @@ jobs:
           - mongodb
           - object
           - opensearch
+          - partner
           - rdb
           - redis
           - registry
