@@ -40,11 +40,15 @@ func deleteReplacedRDBInstance(ctx context.Context, api *rdb.API, region scw.Reg
 
 	// Wait until the deleted instance disappears from the API.
 	_, err = waitForRDBInstance(ctx, api, region, instanceID, timeout)
-	if err != nil && !httperrors.Is404(err) {
+	if httperrors.Is404(err) {
+		return nil
+	}
+
+	if err != nil {
 		return fmt.Errorf("error waiting for old instance %s deletion: %w", instanceID, err)
 	}
 
-	return nil
+	return fmt.Errorf("old instance %s still present after delete", instanceID)
 }
 
 // resumeReplacedRDBInstanceCleanup deletes a previous blue/green instance if
