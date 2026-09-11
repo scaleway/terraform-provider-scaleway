@@ -33,7 +33,7 @@ func ResourceDeployment() *schema.Resource {
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(defaultDeploymentTimeout),
-			Read:   schema.DefaultTimeout(5 * time.Minute),
+			Read:   schema.DefaultTimeout(defaultDeploymentReadTimeout),
 			Update: schema.DefaultTimeout(defaultDeploymentTimeout),
 			Delete: schema.DefaultTimeout(defaultDeploymentTimeout),
 		},
@@ -82,11 +82,29 @@ func deploymentSchema() map[string]*schema.Schema {
 			Description: "Bootstrap username for the deployment. Prefer scaleway_messageq_user for additional users",
 		},
 		"password": {
-			Type:        schema.TypeString,
-			Sensitive:   true,
-			Optional:    true,
-			ForceNew:    true,
-			Description: "Bootstrap password for the deployment user. Prefer scaleway_messageq_user for password rotation",
+			Type:          schema.TypeString,
+			Sensitive:     true,
+			Optional:      true,
+			ForceNew:      true,
+			Description:   "Bootstrap password for the deployment user. Only one of `password` or `password_wo` should be specified. Prefer scaleway_messageq_user for password rotation",
+			ConflictsWith: []string{"password_wo"},
+		},
+		// WriteOnly is incompatible with ForceNew, so password_wo_version carries the
+		// ForceNew that makes a rotation attempt visible in the plan.
+		"password_wo": {
+			Type:          schema.TypeString,
+			Optional:      true,
+			WriteOnly:     true,
+			Description:   "Bootstrap password for the deployment user in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. Bootstrap credentials are immutable, so changing `password_wo_version` recreates the deployment: use scaleway_messageq_user to rotate a password in place",
+			ConflictsWith: []string{"password"},
+			RequiredWith:  []string{"password_wo_version"},
+		},
+		"password_wo_version": {
+			Type:         schema.TypeInt,
+			Optional:     true,
+			ForceNew:     true,
+			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`",
+			RequiredWith: []string{"password_wo"},
 		},
 		"private_network": {
 			Type:        schema.TypeList,
@@ -215,8 +233,13 @@ func resourceDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta 
 		req.UserName = types.ExpandStringPtr(v)
 	}
 
-	if v, ok := d.GetOk("password"); ok {
-		req.Password = types.ExpandStringPtr(v)
+	password := d.Get("password").(string)
+	if _, ok := d.GetOk("password_wo_version"); ok {
+		password = d.GetRawConfig().GetAttr("password_wo").AsString()
+	}
+
+	if password != "" {
+		req.Password = &password
 	}
 
 	if v, ok := d.GetOk("volume"); ok {
@@ -309,11 +332,16 @@ func setDeploymentState(d *schema.ResourceData, deployment *messageqapi.Deployme
 		_ = d.Set("volume", []map[string]any{
 			{
 				"type":       string(deployment.Volume.Type),
-				"size_in_gb": flattenVolumeSizeGB(deployment.Volume.SizeBytes),
+				"size_in_gb": bytesToGB(deployment.Volume.SizeBytes),
 			},
 		})
 	}
 
+	// The API may briefly return both public and private endpoints while a switch is
+	// in progress, and it keeps the public endpoint alive once a private one is added
+	// (see updateDeploymentPrivateNetwork). In state, expose only the endpoint that
+	// matches the Terraform config, falling back to every endpoint when nothing matches
+	// so the attribute is never silently emptied.
 	allEndpoints := deployment.Endpoints
 	filteredEndpoints := allEndpoints
 
@@ -376,28 +404,23 @@ func resourceDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Region:       region,
 			DeploymentID: id,
 		}
-		changed := false
 
 		if d.HasChange("name") {
 			req.Name = types.ExpandStringPtr(d.Get("name"))
-			changed = true
 		}
 
 		if d.HasChange("tags") {
 			req.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-			changed = true
 		}
 
-		if changed {
-			_, err := api.UpdateDeployment(req, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		_, err := api.UpdateDeployment(req, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-			_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		_, err = waitForDeployment(ctx, api, region, id, d.Timeout(schema.TimeoutUpdate))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -472,6 +495,10 @@ func updateDeploymentPrivateNetwork(
 		}
 	}
 
+	// Public endpoints are never deleted here: only private endpoints are reconciled
+	// against the desired private_network_id. Adding a private network therefore leaves
+	// the existing public endpoint in place, which setDeploymentState hides from the
+	// `endpoints` attribute.
 	var deletedEndpointIDs []string
 
 	hasDesiredEndpoint := false
@@ -510,6 +537,8 @@ func updateDeploymentPrivateNetwork(
 		deletedEndpointIDs = append(deletedEndpointIDs, endpoint.ID)
 	}
 
+	// DeleteEndpoint returns immediately but the removal is asynchronous, so the deleted
+	// endpoints must be gone before creating the new one.
 	if len(deletedEndpointIDs) > 0 {
 		err := waitForEndpointsDeleted(ctx, api, region, id, deletedEndpointIDs, d.Timeout(schema.TimeoutUpdate))
 		if err != nil {
@@ -517,6 +546,7 @@ func updateDeploymentPrivateNetwork(
 		}
 	}
 
+	// Create the desired endpoint only if it doesn't already exist.
 	if !hasDesiredEndpoint {
 		var spec *messageqapi.EndpointSpec
 		if desiredPrivate {

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
@@ -41,11 +40,7 @@ func DataSourceCertificateAuthorityRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	deploymentID := locality.ExpandID(d.Get("deployment_id").(string))
-	if parsedRegion, parsedID, parseErr := regional.ParseID(d.Get("deployment_id").(string)); parseErr == nil {
-		region = parsedRegion
-		deploymentID = parsedID
-	}
+	region, deploymentID := regionAndIDFromAttr(d.Get("deployment_id").(string), region)
 
 	file, err := api.DownloadDeploymentCertificateAuthority(&messageqapi.DownloadDeploymentCertificateAuthorityRequest{
 		Region:       region,

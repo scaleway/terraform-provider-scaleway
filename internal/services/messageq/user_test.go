@@ -10,7 +10,6 @@ import (
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
@@ -94,10 +93,10 @@ func isUserPresent(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 			return fmt.Errorf("resource not found: %s", n)
 		}
 
-		idParts := identity.ParseMultiPartID(rs.Primary.ID, "region", "deployment_id", "name")
-		region := scw.Region(idParts["region"])
-		deploymentID := idParts["deployment_id"]
-		userName := idParts["name"]
+		region, deploymentID, userName, err := messageq.ResourceUserParseID(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
 
 		api := messageq.NewAPI(tt.Meta)
 
@@ -127,14 +126,14 @@ func isUserDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			idParts := identity.ParseMultiPartID(rs.Primary.ID, "region", "deployment_id", "name")
-			region := scw.Region(idParts["region"])
-			deploymentID := idParts["deployment_id"]
-			userName := idParts["name"]
+			region, deploymentID, userName, err := messageq.ResourceUserParseID(rs.Primary.ID)
+			if err != nil {
+				return err
+			}
 
 			api := messageq.NewAPI(tt.Meta)
 
-			err := transport.RetryOn403(tt.T.Context(), func() error {
+			err = transport.RetryOn403(tt.T.Context(), func() error {
 				res, err := api.ListUsers(&messageqSDK.ListUsersRequest{
 					Region:       region,
 					DeploymentID: deploymentID,

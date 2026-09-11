@@ -128,7 +128,7 @@ func DataSourceNodeTypeRead(ctx context.Context, d *schema.ResourceData, m any) 
 	_ = d.Set("name", found.Name)
 	_ = d.Set("description", found.Description)
 	_ = d.Set("vcpus", int(found.Vcpus))
-	_ = d.Set("memory_size_in_gb", flattenVolumeSizeGB(found.MemoryBytes))
+	_ = d.Set("memory_size_in_gb", bytesToGB(found.MemoryBytes))
 	_ = d.Set("stock_status", string(found.StockStatus))
 	_ = d.Set("disabled", found.Disabled)
 	_ = d.Set("beta", found.Beta)
@@ -139,9 +139,9 @@ func DataSourceNodeTypeRead(ctx context.Context, d *schema.ResourceData, m any) 
 		volumeTypes = append(volumeTypes, map[string]any{
 			"type":             string(volumeType.Type),
 			"description":      volumeType.Description,
-			"min_size_in_gb":   flattenVolumeSizeGB(volumeType.MinSizeBytes),
-			"max_size_in_gb":   flattenVolumeSizeGB(volumeType.MaxSizeBytes),
-			"chunk_size_in_gb": flattenVolumeSizeGB(volumeType.ChunkSizeBytes),
+			"min_size_in_gb":   bytesToGB(volumeType.MinSizeBytes),
+			"max_size_in_gb":   bytesToGB(volumeType.MaxSizeBytes),
+			"chunk_size_in_gb": bytesToGB(volumeType.ChunkSizeBytes),
 		})
 	}
 

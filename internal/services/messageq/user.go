@@ -126,15 +126,26 @@ func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag
 	return ResourceUserRead(ctx, d, m)
 }
 
+// ResourceUserParseID extracts region, deployment ID and username from the resource
+// identifier, whose format is "region/deployment_id/name".
+func ResourceUserParseID(resourceID string) (region scw.Region, deploymentID string, userName string, err error) {
+	idParts := identity.ParseMultiPartID(resourceID, "region", "deployment_id", "name")
+	if idParts["region"] == "" || idParts["deployment_id"] == "" || idParts["name"] == "" {
+		return "", "", "", fmt.Errorf("can't parse user resource id: %s", resourceID)
+	}
+
+	return scw.Region(idParts["region"]), idParts["deployment_id"], idParts["name"], nil
+}
+
 func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
-	idParts := identity.ParseMultiPartID(d.Id(), "region", "deployment_id", "name")
-	region := scw.Region(idParts["region"])
-	deploymentID := idParts["deployment_id"]
-	userName := idParts["name"]
+	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err := waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutRead))
+	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutRead))
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -178,13 +189,10 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 		return diag.FromErr(err)
 	}
 
+	// The API never returns the password, so whatever is already in state is kept as is.
 	_ = d.Set("deployment_id", regional.NewID(region, deploymentID).String())
 	_ = d.Set("name", user.Username)
 	_ = d.Set("region", string(region))
-
-	if _, ok := d.GetOk("password_wo_version"); !ok {
-		_ = d.Set("password", d.Get("password"))
-	}
 
 	return nil
 }
@@ -192,39 +200,41 @@ func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.D
 func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
-	idParts := identity.ParseMultiPartID(d.Id(), "region", "deployment_id", "name")
-	region := scw.Region(idParts["region"])
-	deploymentID := idParts["deployment_id"]
-	userName := idParts["name"]
-
-	_, err := waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutUpdate))
+	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if password, ok := d.GetOk("password"); ok {
-		if d.HasChange("password") {
-			_, err = api.UpdateUser(&messageqapi.UpdateUserRequest{
-				Region:       region,
-				DeploymentID: deploymentID,
-				Username:     userName,
-				Password:     types.ExpandStringPtr(password.(string)),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutUpdate))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// A write-only password is never in state, so its rotation is driven by the version.
+	// It takes precedence so that switching from `password` to `password_wo` applies the
+	// new write-only value rather than the cleared `password`.
+	var newPassword *string
+
+	if d.HasChange("password_wo_version") {
+		passwordWO := d.GetRawConfig().GetAttr("password_wo")
+		if !passwordWO.IsNull() {
+			newPassword = types.ExpandStringPtr(passwordWO.AsString())
 		}
-	} else if _, ok := d.GetOk("password_wo_version"); ok {
-		if d.HasChange("password_wo_version") {
-			_, err = api.UpdateUser(&messageqapi.UpdateUserRequest{
-				Region:       region,
-				DeploymentID: deploymentID,
-				Username:     userName,
-				Password:     types.ExpandStringPtr(d.GetRawConfig().GetAttr("password_wo").AsString()),
-			}, scw.WithContext(ctx))
-			if err != nil {
-				return diag.FromErr(err)
-			}
+	}
+
+	if newPassword == nil && d.HasChange("password") {
+		newPassword = types.ExpandStringPtr(d.Get("password"))
+	}
+
+	if newPassword != nil {
+		_, err = api.UpdateUser(&messageqapi.UpdateUserRequest{
+			Region:       region,
+			DeploymentID: deploymentID,
+			Username:     userName,
+			Password:     newPassword,
+		}, scw.WithContext(ctx))
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
@@ -234,12 +244,12 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	api := NewAPI(m)
 
-	idParts := identity.ParseMultiPartID(d.Id(), "region", "deployment_id", "name")
-	region := scw.Region(idParts["region"])
-	deploymentID := idParts["deployment_id"]
-	userName := idParts["name"]
+	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err := waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutDelete))
+	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutDelete))
 	if err != nil {
 		if httperrors.Is404(err) {
 			return nil

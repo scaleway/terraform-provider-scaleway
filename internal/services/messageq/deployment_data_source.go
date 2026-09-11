@@ -8,7 +8,6 @@ import (
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/datasource"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -43,13 +42,7 @@ func DataSourceDeploymentRead(ctx context.Context, d *schema.ResourceData, m any
 	var deploymentID string
 
 	if id, ok := d.GetOk("deployment_id"); ok {
-		parsedRegion, parsedID, parseErr := regional.ParseID(id.(string))
-		if parseErr != nil {
-			deploymentID = locality.ExpandID(id.(string))
-		} else {
-			region = parsedRegion
-			deploymentID = parsedID
-		}
+		region, deploymentID = regionAndIDFromAttr(id.(string), region)
 	} else {
 		deploymentName := d.Get("name").(string)
 

@@ -42,6 +42,10 @@ func waitForDeployment(
 
 // waitForEndpointsDeleted polls GetDeployment until every endpoint ID in endpointIDs
 // is no longer present in the deployment's endpoint list.
+//
+// DeleteEndpoint returns 204 immediately but the endpoint is removed asynchronously.
+// waitForDeployment only checks the deployment's top-level status, which stays "ready"
+// during endpoint operations, so it cannot be used to wait for endpoint deletion.
 func waitForEndpointsDeleted(
 	ctx context.Context,
 	api *messageqapi.API,
