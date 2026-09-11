@@ -40,6 +40,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/marketplace"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mnq"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
@@ -216,6 +217,8 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_lb_ip":                                              lb.ResourceIP(),
 				"scaleway_lb_private_network":                                 lb.ResourcePrivateNetwork(),
 				"scaleway_lb_route":                                           lb.ResourceRoute(),
+				"scaleway_messageq_deployment":                                messageq.ResourceDeployment(),
+				"scaleway_messageq_user":                                      messageq.ResourceUser(),
 				"scaleway_mnq_nats_account":                                   mnq.ResourceNatsAccount(),
 				"scaleway_mnq_nats_credentials":                               mnq.ResourceNatsCredentials(),
 				"scaleway_mnq_sns":                                            mnq.ResourceSNS(),
@@ -363,6 +366,9 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_lb_routes":                                          lb.DataSourceRoutes(),
 				"scaleway_lbs":                                                lb.DataSourceLbs(),
 				"scaleway_marketplace_image":                                  marketplace.DataSourceImage(),
+				"scaleway_messageq_certificate_authority":                     messageq.DataSourceCertificateAuthority(),
+				"scaleway_messageq_deployment":                                messageq.DataSourceDeployment(),
+				"scaleway_messageq_node_type":                                 messageq.DataSourceNodeType(),
 				"scaleway_mnq_sqs":                                            mnq.DataSourceSQS(),
 				"scaleway_mnq_sns":                                            mnq.DataSourceSNS(),
 				"scaleway_mongodb_databases":                                  mongodb.DataSourceDatabases(),

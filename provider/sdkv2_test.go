@@ -259,6 +259,7 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_k8s_acl",
 		"scaleway_lb_acl",
 		"scaleway_lb_private_network",
+		"scaleway_messageq_user",
 		"scaleway_mnq_nats_account",
 		"scaleway_mnq_nats_credentials",
 		"scaleway_mnq_sns_credentials",
