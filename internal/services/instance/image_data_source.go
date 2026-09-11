@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -49,6 +50,15 @@ func dataSourceImageSchema() map[string]*schema.Schema {
 			Default:       true,
 			Description:   "Select most recent image if multiple match",
 			ConflictsWith: []string{"image_id"},
+		},
+		"tags": {
+			Type:          schema.TypeList,
+			Optional:      true,
+			Description:   "List of tags to filter images by (e.g. [\"product=vivado\", \"version=2021.1\"])",
+			ConflictsWith: []string{"image_id"},
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
 		},
 		"zone":            zonal.Schema(),
 		"organization_id": account.OrganizationIDSchema(),
@@ -108,12 +118,20 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 
 	imageID, ok := d.GetOk("image_id")
 	if !ok { // Get instance by name, zone, and arch.
-		res, err := instanceAPI.ListImages(&instance.ListImagesRequest{
+		name, hasName := d.GetOk("name")
+		tags := types.ExpandStrings(d.Get("tags"))
+
+		listReq := &instance.ListImagesRequest{
 			Zone:    zone,
 			Name:    types.ExpandStringPtr(d.Get("name")),
 			Arch:    types.ExpandStringPtr(d.Get("architecture")),
 			Project: types.ExpandStringPtr(d.Get("project_id")),
-		}, scw.WithAllPages(), scw.WithContext(ctx))
+		}
+		if len(tags) > 0 {
+			listReq.Tags = scw.StringPtr(strings.Join(tags, ","))
+		}
+
+		res, err := instanceAPI.ListImages(listReq, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -121,30 +139,25 @@ func DataSourceInstanceImageRead(ctx context.Context, d *schema.ResourceData, m 
 		var matchingImages []*instance.Image
 
 		for _, image := range res.Images {
-			if image.Name == d.Get("name").(string) {
-				matchingImages = append(matchingImages, image)
+			if hasName && image.Name != name {
+				continue
 			}
+			matchingImages = append(matchingImages, image)
 		}
 
 		if len(matchingImages) == 0 {
-			return diag.FromErr(fmt.Errorf("no image found with the name %s and architecture %s in zone %s", d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("no image found with the name %s, architecture %s and tags %s in zone %s", d.Get("name"), d.Get("architecture"), tags, zone))
 		}
 
 		if len(matchingImages) > 1 && !d.Get("latest").(bool) {
-			return diag.FromErr(fmt.Errorf("%d images found with the same name %s and architecture %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), zone))
+			return diag.FromErr(fmt.Errorf("%d images found with the same name %s, architecture %s and tags %s in zone %s", len(matchingImages), d.Get("name"), d.Get("architecture"), tags, zone))
 		}
 
 		sort.Slice(matchingImages, func(i, j int) bool {
 			return matchingImages[i].ModificationDate.After(*matchingImages[j].ModificationDate)
 		})
 
-		for _, image := range matchingImages {
-			if image.Name == d.Get("name").(string) {
-				imageID = image.ID
-
-				break
-			}
-		}
+		imageID = matchingImages[0].ID
 	}
 
 	zonedID := datasource.NewZonedID(imageID, zone)
