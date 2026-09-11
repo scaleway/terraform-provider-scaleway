@@ -318,6 +318,7 @@ func (p *ScalewayProvider) ListResources(_ context.Context) []func() list.ListRe
 		mongodb.NewInstanceListResource,
 		object.NewBucketListResource,
 		opensearch.NewDeploymentListResource,
+		partner.NewPartnerOrganizationListResource,
 		rdb.NewDatabaseBackupListResource,
 		rdb.NewDatabaseListResource,
 		rdb.NewInstanceListResource,
