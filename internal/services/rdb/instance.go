@@ -383,11 +383,6 @@ func instanceSchema() map[string]*schema.Schema {
 				},
 			},
 		},
-		"replaced_from_instance_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Regional ID of the previous instance during a blue/green engine upgrade. Cleared once the old instance has been deleted; kept in state so cleanup can resume after an interrupted apply",
-		},
 		"maintenances": {
 			Type:        schema.TypeList,
 			Computed:    true,
@@ -965,13 +960,6 @@ func readInstanceIntoState(ctx context.Context, d *schema.ResourceData, m any) d
 }
 
 func ResourceRdbInstanceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	rdbAPI, _, _, err := NewAPIWithRegionAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	resumeReplacedRDBInstanceCleanup(ctx, d, rdbAPI, d.Timeout(schema.TimeoutDelete))
-
 	diags := readInstanceIntoState(ctx, d, m)
 	if diags.HasError() {
 		return diags
@@ -999,8 +987,6 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	resumeReplacedRDBInstanceCleanup(ctx, d, rdbAPI, d.Timeout(schema.TimeoutDelete))
 
 	////////////////////
 	// Upgrade instance
@@ -1177,16 +1163,13 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 			oldInstanceID := ID
 
 			ID = upgradedInstance.ID
-			// Persist the old ID before long waits so cleanup can resume after a timeout.
-			_ = d.Set("replaced_from_instance_id", regional.NewIDString(region, oldInstanceID))
-
 			if err := identity.SetRegionalIdentity(d, region, ID); err != nil {
 				return diag.FromErr(err)
 			}
 
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
 			if err != nil && !httperrors.Is404(err) {
-				return diag.FromErr(err)
+				return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 			}
 
 			if d.Get("is_ha_cluster").(bool) && !upgradedInstance.IsHaCluster {
@@ -1203,7 +1186,7 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 
 				_, err = waitForRDBInstance(ctx, rdbAPI, region, upgradedInstance.ID, d.Timeout(schema.TimeoutUpdate))
 				if err != nil && !httperrors.Is404(err) {
-					return diag.FromErr(err)
+					return majorUpgradeTimeoutOrErr(err, region, ID, oldInstanceID)
 				}
 			}
 
@@ -1213,10 +1196,26 @@ func ResourceRdbInstanceUpdate(ctx context.Context, d *schema.ResourceData, m an
 				tflog.Warn(ctx, "ACL rules were copied to the upgraded instance. Because the instance ID changed during the blue/green upgrade, dependent resources such as scaleway_rdb_acl may require a second terraform apply to reconcile their state.")
 			}
 
-			if err := deleteReplacedRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutDelete)); err != nil {
-				tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
+			_, err = waitForRDBInstance(ctx, rdbAPI, region, oldInstanceID, d.Timeout(schema.TimeoutUpdate))
+			if err != nil && !httperrors.Is404(err) {
+				tflog.Warn(ctx, fmt.Sprintf("Old instance %s not ready for deletion: %v", oldInstanceID, err))
 			} else {
-				_ = d.Set("replaced_from_instance_id", "")
+				_, err = rdbAPI.DeleteInstance(&rdb.DeleteInstanceRequest{
+					Region:     region,
+					InstanceID: oldInstanceID,
+				}, scw.WithContext(ctx))
+				if err != nil && !httperrors.Is404(err) {
+					tflog.Warn(ctx, fmt.Sprintf("Failed to delete old instance %s: %v", oldInstanceID, err))
+				} else {
+					_, err = rdbAPI.WaitForInstance(&rdb.WaitForInstanceRequest{
+						Region:     region,
+						InstanceID: oldInstanceID,
+						Timeout:    new(d.Timeout(schema.TimeoutUpdate)),
+					}, scw.WithContext(ctx))
+					if err != nil && !httperrors.Is404(err) {
+						tflog.Warn(ctx, fmt.Sprintf("Error waiting for old instance %s deletion: %v", oldInstanceID, err))
+					}
+				}
 			}
 		} else {
 			_, err = waitForRDBInstance(ctx, rdbAPI, region, ID, d.Timeout(schema.TimeoutUpdate))
