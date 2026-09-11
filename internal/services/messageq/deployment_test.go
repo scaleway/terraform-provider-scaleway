@@ -77,6 +77,70 @@ resource "scaleway_messageq_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "tags.1", "tag2"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_messageq_deployment.main",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password", "user_name", "password_wo", "password_wo_version"},
+			},
+		},
+	})
+}
+
+func TestAccDeployment_Upgrade(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+	resourceID := ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             isDeploymentDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_messageq_deployment" "main" {
+  name       = "tf-test-messageq-upgrade"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
+					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.size_in_gb", "5"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_messageq_deployment" "main" {
+  name       = "tf-test-messageq-upgrade"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 10
+  }
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
+					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.size_in_gb", "10"),
+				),
+			},
 		},
 	})
 }

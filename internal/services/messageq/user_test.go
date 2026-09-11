@@ -82,6 +82,114 @@ resource "scaleway_messageq_user" "app" {
 					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password", "RotatedSecurePassword123!"),
 				),
 			},
+			{
+				ResourceName:            "scaleway_messageq_user.app",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"},
+			},
+		},
+	})
+}
+
+func TestAccUser_PasswordWO(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	latestVersion := fetchLatestVersion(tt)
+	nodeType := fetchAvailableNodeType(tt)
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			isUserDestroyed(tt),
+			isDeploymentDestroyed(tt),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_messageq_deployment" "main" {
+  name       = "tf-test-messageq-user-wo"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+resource "scaleway_messageq_user" "app" {
+  deployment_id       = scaleway_messageq_deployment.main.id
+  name                = "app-user-wo"
+  password_wo         = "WriteOnlySecurePassword123!"
+  password_wo_version = 1
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
+					isUserPresent(tt, "scaleway_messageq_user.app"),
+					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "name", "app-user-wo"),
+					resource.TestCheckNoResourceAttr("scaleway_messageq_user.app", "password_wo"),
+					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password_wo_version", "1"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_messageq_deployment" "main" {
+  name       = "tf-test-messageq-user-wo"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+resource "scaleway_messageq_user" "app" {
+  deployment_id       = scaleway_messageq_deployment.main.id
+  name                = "app-user-wo"
+  password_wo         = "WriteOnlySecurePassword456!"
+  password_wo_version = 2
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_messageq_user.app"),
+					resource.TestCheckNoResourceAttr("scaleway_messageq_user.app", "password_wo"),
+					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password_wo_version", "2"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+resource "scaleway_messageq_deployment" "main" {
+  name       = "tf-test-messageq-user-wo"
+  version    = "%s"
+  node_count = 1
+  node_type  = "%s"
+  user_name  = "%s"
+  password   = "ThisIsASecurePassword123!"
+  volume {
+    type       = "sbs_5k"
+    size_in_gb = 5
+  }
+}
+
+resource "scaleway_messageq_user" "app" {
+  deployment_id = scaleway_messageq_deployment.main.id
+  name          = "app-user-wo"
+  password      = "RegularSecurePassword789!"
+}
+`, latestVersion, nodeType, deploymentTestUserName),
+				Check: resource.ComposeTestCheckFunc(
+					isUserPresent(tt, "scaleway_messageq_user.app"),
+					resource.TestCheckResourceAttr("scaleway_messageq_user.app", "password", "RegularSecurePassword789!"),
+				),
+			},
 		},
 	})
 }
