@@ -5,6 +5,10 @@ page_title: "Scaleway: scaleway_autoscaling_instance_group"
 
 # Resource: scaleway_autoscaling_instance_group
 
+~> **Important:** The resource `scaleway_autoscaling_instance_group` has been deprecated and will no longer be supported.
+The Autoscaling API (v1alpha1) has been discontinued, this resource is no longer functional.
+Please remove it from your configuration.
+
 Books and manages Autoscaling Instance groups.
 
 ## Example Usage

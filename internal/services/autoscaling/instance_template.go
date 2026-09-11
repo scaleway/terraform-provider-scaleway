@@ -2,20 +2,13 @@ package autoscaling
 
 import (
 	"context"
-	_ "time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	autoscaling "github.com/scaleway/scaleway-sdk-go/api/autoscaling/v1alpha1"
-	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/account"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -28,9 +21,9 @@ func ResourceInstanceTemplate() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		Identity:      identity.DefaultZonal(),
-		SchemaVersion: 0,
-		SchemaFunc:    instanceTemplateSchema,
+		SchemaVersion:      0,
+		SchemaFunc:         instanceTemplateSchema,
+		DeprecationMessage: deprecationMessage,
 	}
 }
 
@@ -191,200 +184,26 @@ func instanceTemplateSchema() map[string]*schema.Schema {
 	}
 }
 
-func ResourceInstanceTemplateCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, err := NewAPIWithZone(d, m)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	req := &autoscaling.CreateInstanceTemplateRequest{
-		Zone:              zone,
-		CommercialType:    d.Get("commercial_type").(string),
-		ImageID:           types.ExpandStringPtr(locality.ExpandID(d.Get("image_id"))),
-		Tags:              types.ExpandStrings(d.Get("tags")),
-		SecurityGroupID:   types.ExpandStringPtr(locality.ExpandID(d.Get("security_group_id"))),
-		PlacementGroupID:  types.ExpandStringPtr(locality.ExpandID(d.Get("placement_group_id"))),
-		PublicIPsV4Count:  types.ExpandUint32Ptr(d.Get("public_ips_v4_count")),
-		PublicIPsV6Count:  types.ExpandUint32Ptr(d.Get("public_ips_v6_count")),
-		ProjectID:         d.Get("project_id").(string),
-		Name:              types.ExpandOrGenerateString(d.Get("name").(string), "template"),
-		PrivateNetworkIDs: locality.ExpandIDs(d.Get("private_network_ids")),
-	}
-
-	if ci, ok := d.GetOk("cloud_init"); ok {
-		req.CloudInit = new([]byte(ci.(string)))
-	}
-
-	volumesList := expandVolumes(d.Get("volumes").([]any))
-
-	req.Volumes = volumesList
-
-	template, err := api.CreateInstanceTemplate(req, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	return ResourceInstanceTemplateRead(ctx, d, m)
+func ResourceInstanceTemplateCreate(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "scaleway_autoscaling_instance_template is no longer supported",
+		Detail:   deprecationMessage,
+	}}
 }
 
-func ResourceInstanceTemplateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	template, err := api.GetInstanceTemplate(&autoscaling.GetInstanceTemplateRequest{
-		Zone:       zone,
-		TemplateID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		if httperrors.Is404(err) {
-			d.SetId("")
-
-			return nil
-		}
-
-		return diag.FromErr(err)
-	}
-
-	pnRegion, err := zone.Region()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	_ = d.Set("name", template.Name)
-	_ = d.Set("commercial_type", template.CommercialType)
-	_ = d.Set("tags", template.Tags)
-	_ = d.Set("public_ips_v4_count", types.FlattenUint32Ptr(template.PublicIPsV4Count))
-	_ = d.Set("public_ips_v6_count", types.FlattenUint32Ptr(template.PublicIPsV6Count))
-	_ = d.Set("private_network_ids", regional.NewIDStrings(pnRegion, template.PrivateNetworkIDs))
-	_ = d.Set("status", template.Status.String())
-	_ = d.Set("created_at", types.FlattenTime(template.CreatedAt))
-	_ = d.Set("updated_at", types.FlattenTime(template.UpdatedAt))
-	_ = d.Set("zone", zone)
-	_ = d.Set("project_id", template.ProjectID)
-	_ = d.Set("volumes", flattenVolumes(zone, template.Volumes))
-
-	if template.SecurityGroupID != nil {
-		_ = d.Set("security_group_id", zonal.NewIDString(zone, types.FlattenStringPtr(template.SecurityGroupID).(string)))
-	}
-
-	if template.PlacementGroupID != nil {
-		_ = d.Set("placement_group_id", zonal.NewIDString(zone, types.FlattenStringPtr(template.PlacementGroupID).(string)))
-	}
-
-	if template.ImageID != nil {
-		_ = d.Set("image_id", zonal.NewIDString(zone, types.FlattenStringPtr(template.ImageID).(string)))
-	}
-
-	if template.CloudInit != nil {
-		_ = d.Set("cloud_init", string(*template.CloudInit))
-	}
-
-	err = identity.SetZonalIdentity(d, template.Zone, template.ID)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func ResourceInstanceTemplateRead(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
 	return nil
 }
 
-func ResourceInstanceTemplateUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
+func ResourceInstanceTemplateUpdate(_ context.Context, d *schema.ResourceData, _ any) diag.Diagnostics {
+	d.SetId("")
 
-	updateRequest := &autoscaling.UpdateInstanceTemplateRequest{
-		Zone:       zone,
-		TemplateID: ID,
-	}
-
-	hasChanged := false
-
-	if d.HasChange("name") {
-		updateRequest.Name = types.ExpandUpdatedStringPtr(d.Get("name"))
-		hasChanged = true
-	}
-
-	if d.HasChange("commercial_type") {
-		updateRequest.CommercialType = types.ExpandUpdatedStringPtr(d.Get("commercial_type"))
-		hasChanged = true
-	}
-
-	if d.HasChange("image_id") {
-		updateRequest.ImageID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("image_id")))
-		hasChanged = true
-	}
-
-	if d.HasChange("security_group_id") {
-		updateRequest.SecurityGroupID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("security_group_id")))
-		hasChanged = true
-	}
-
-	if d.HasChange("placement_group_id") {
-		updateRequest.PlacementGroupID = types.ExpandUpdatedStringPtr(locality.ExpandID(d.Get("placement_group_id")))
-		hasChanged = true
-	}
-
-	if d.HasChange("public_ips_v4_count") {
-		updateRequest.PublicIPsV4Count = types.ExpandUint32Ptr(d.Get("public_ips_v4_count"))
-		hasChanged = true
-	}
-
-	if d.HasChange("public_ips_v6_count") {
-		updateRequest.PublicIPsV6Count = types.ExpandUint32Ptr(d.Get("public_ips_v6_count"))
-		hasChanged = true
-	}
-
-	if d.HasChange("tags") {
-		updateRequest.Tags = types.ExpandUpdatedStringsPtr(d.Get("tags"))
-		hasChanged = true
-	}
-
-	if d.HasChange("private_network_ids") {
-		updateRequest.PrivateNetworkIDs = types.ExpandUpdatedStringsPtr(locality.ExpandIDs(d.Get("private_network_ids")))
-		hasChanged = true
-	}
-
-	if d.HasChange("cloud_init") {
-		updateRequest.CloudInit = new([]byte(d.Get("cloud_init").(string)))
-		hasChanged = true
-	}
-
-	if d.HasChange("volumes") {
-		updateRequest.Volumes = expandVolumes(d.Get("volumes").([]any))
-		hasChanged = true
-	}
-
-	if hasChanged {
-		_, err = api.UpdateInstanceTemplate(updateRequest, scw.WithContext(ctx))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	return ResourceInstanceTemplateRead(ctx, d, m)
+	return nil
 }
 
-func ResourceInstanceTemplateDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, zone, ID, err := NewAPIWithZoneAndID(m, d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	err = api.DeleteInstanceTemplate(&autoscaling.DeleteInstanceTemplateRequest{
-		Zone:       zone,
-		TemplateID: ID,
-	}, scw.WithContext(ctx))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
+func ResourceInstanceTemplateDelete(_ context.Context, _ *schema.ResourceData, _ any) diag.Diagnostics {
 	return nil
 }
