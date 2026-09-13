@@ -72,6 +72,79 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 	return "", regional.ErrRegionNotFound
 }
 
+// ExtractS3UsePathStyle will retrieve the "s3_use_path_style" flag value from
+// the Terraform config file, in the "provider" block.
+func ExtractS3UsePathStyle(d terraformResourceData, m any) (s3UsePathStyle, ok bool) {
+	if d != nil {
+		rawConfigS3UsePathStyle, ok := GetRawConfigForKey(d, "s3_use_path_style", cty.Bool)
+		if ok && rawConfigS3UsePathStyle != "" {
+			return rawConfigS3UsePathStyle.(bool), true
+		}
+
+		rawConfigS3UsePathStyle, ok = d.GetOk("s3_use_path_style")
+		if ok && rawConfigS3UsePathStyle != "" {
+			return rawConfigS3UsePathStyle.(bool), true
+		}
+	}
+
+	if m != nil {
+		meta, ok := m.(*Meta)
+		if !ok {
+			return false, false
+		}
+
+		if meta.S3UsePathStyle() {
+			return true, true
+		}
+	}
+
+	return false, false
+}
+
+func convertEndpointsMap(endpointsAny map[string]any) (endpointsString map[string]string) {
+	endpointsString = map[string]string{}
+
+	for k, v := range endpointsAny {
+		if strVal, ok := v.(string); ok {
+			endpointsString[k] = strVal
+		}
+	}
+
+	return
+}
+
+// ExtractEndpoints will try to guess the endpoints from the following:
+//   - endpoints field of the resource data
+//   - endpoints from config
+func ExtractEndpoints(d terraformResourceData, m any) map[string]string {
+	if rawConfigEndpoints, ok := d.GetOk("endpoints"); ok && rawConfigEndpoints != nil {
+		switch v := rawConfigEndpoints.(type) {
+		case *schema.Set:
+			if v.Len() > 0 {
+				return convertEndpointsMap(v.List()[0].(map[string]any))
+			}
+		case map[string]any:
+			return convertEndpointsMap(v)
+		}
+	}
+
+	meta, ok := m.(*Meta)
+	if !ok {
+		return nil
+	}
+
+	return meta.Endpoints()
+}
+
+func ExtractS3Endpoint(d terraformResourceData, m any) string {
+	endpoints := ExtractEndpoints(d, m)
+	if endpoints == nil {
+		return ""
+	}
+
+	return endpoints["s3"] // Will be "" if the key doesn't exist
+}
+
 // ExtractRegionWithDefault will try to guess the region from the following:
 //   - region field of the resource data
 //   - default region given in argument
