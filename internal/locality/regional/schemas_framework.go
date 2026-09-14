@@ -1,7 +1,7 @@
 package regional
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/action/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
@@ -26,6 +26,23 @@ func SchemaAttribute(description ...string) schema.StringAttribute {
 
 	return schema.StringAttribute{
 		Optional:    true,
+		Description: desc,
+		Validators: []validator.String{
+			verify.IsStringOneOfWithWarning(AllRegions()),
+		},
+	}
+}
+
+// SchemaAttribute returns a Plugin Framework schema attribute for a region field
+func SchemaAttributeComputed(description ...string) schema.StringAttribute {
+	desc := "The region you want to attach the resource to"
+	if len(description) > 0 {
+		desc = description[0]
+	}
+
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
 		Description: desc,
 		Validators: []validator.String{
 			verify.IsStringOneOfWithWarning(AllRegions()),
