@@ -356,7 +356,31 @@ func (ph *privateNICsHandler) detach(ctx context.Context, o any, timeout time.Du
 		idPN := locality.ExpandID(*oPtr)
 		// check if old private network still exist on instance server
 		if p, ok := ph.privateNICsMap[idPN]; ok {
-			_, err := waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, locality.ExpandID(p.ID), timeout)
+			pnicID := locality.ExpandID(p.ID)
+
+			_, err := ph.instanceAPI.DetachServerPrivateNetworkInterface(&instanceV2.DetachServerPrivateNetworkInterfaceRequest{
+				PrivateNetworkInterfaceID: pnicID,
+				ServerID:                  ph.serverID,
+				Zone:                      ph.zone,
+			}, scw.WithContext(ctx))
+			if err != nil {
+				if httperrors.Is404(err) {
+					return nil
+				}
+
+				return err
+			}
+
+			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, pnicID, timeout)
+			if err != nil {
+				if httperrors.Is404(err) {
+					return nil
+				}
+
+				return err
+			}
+
+			_, err = waitForPrivateNIC(ctx, ph.instanceAPI, ph.zone, pnicID, timeout)
 			if err != nil {
 				return err
 			}
