@@ -438,6 +438,24 @@ func TestAccObjectBucket_Lifecycle(t *testing.T) {
 			},
 			{
 				Config: fmt.Sprintf(`
+						resource "scaleway_object_bucket" "main-bucket-lifecycle" {
+							name           		= "%s"
+							region 				= "%s"
+							object_lock_enabled = true
+
+							lifecycle_rule {
+								enabled = true
+								prefix  = ""
+								expiration {
+									days = 2
+									expired_object_delete_marker = false
+								}
+							}
+						}`, bucketLifecycle, objectTestsMainRegion),
+				ExpectError: regexp.MustCompile("lifecycle_rule.0.expiration: 'days', 'date', 'expired_object_delete_marker' are mutually exclusive"),
+			},
+			{
+				Config: fmt.Sprintf(`
 					resource "scaleway_object_bucket" "main-bucket-lifecycle" {
 					name = "%s"
 					region = "%s"

@@ -197,7 +197,7 @@ func ResourceFileSystemUpdate(ctx context.Context, d *schema.ResourceData, m any
 
 	if d.HasChange("size_in_gb") {
 		sizeInGB := uint64(d.Get("size_in_gb").(int)) * uint64(scw.GB)
-		req.Size = types.ExpandUint64Ptr(sizeInGB)
+		req.Size = &sizeInGB
 	}
 
 	if d.HasChange("tags") {

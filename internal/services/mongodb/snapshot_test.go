@@ -3,6 +3,7 @@ package mongodb_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -16,12 +17,18 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	expiresAt := time.Now().AddDate(0, 6, 0).UTC().Format(time.RFC3339)
+	if !*acctest.UpdateCassettes {
+		// Hardcoded value must match expires_at in the cassette request body.
+		expiresAt = "2027-03-10T23:59:59Z"
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
 						version    = "7.0.12"
@@ -34,9 +41,9 @@ func TestAccMongoDBSnapshot_Basic(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
-						expires_at  = "2026-06-30T23:59:59Z"
+						expires_at  = %q
 					}
-				`,
+				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "test-snapshot"),
 				),
@@ -49,12 +56,18 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	expiresAt := time.Now().AddDate(0, 6, 0).UTC().Format(time.RFC3339)
+	if !*acctest.UpdateCassettes {
+		// Hardcoded value must match expires_at in the cassette request body.
+		expiresAt = "2027-03-10T23:59:59Z"
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             isSnapshotDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
 						version    = "7.0.12"
@@ -67,15 +80,15 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "test-snapshot"
-						expires_at  = "2026-06-30T23:59:59Z"
+						expires_at  = %q
 					}
-				`,
+				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2026-06-30T23:59:59Z"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", expiresAt),
 				),
 			},
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mongodb_instance" "main" {
 						name       = "test-mongodb-instance"
 						version    = "7.0.12"
@@ -88,12 +101,12 @@ func TestAccMongoDBSnapshot_Update(t *testing.T) {
 					resource "scaleway_mongodb_snapshot" "main" {
 						instance_id = scaleway_mongodb_instance.main.id
 						name        = "updated-snapshot"
-						expires_at  = "2026-06-30T23:59:59Z"
+						expires_at  = %q
 					}
-				`,
+				`, expiresAt),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "name", "updated-snapshot"),
-					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", "2026-06-30T23:59:59Z"),
+					resource.TestCheckResourceAttr("scaleway_mongodb_snapshot.main", "expires_at", expiresAt),
 				),
 			},
 		},
