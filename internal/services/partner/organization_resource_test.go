@@ -19,11 +19,25 @@ import (
 
 var DestroyWaitTimeout = 3 * time.Minute
 
+func partnerEmail(t *testing.T) string {
+	t.Helper()
+
+	if *acctest.UpdateCassettes {
+		return uuid.NewString() + "@example.com"
+	}
+
+	return "test@example.com"
+}
+
 func TestAccPartnerOrganizationResource_Basic(t *testing.T) {
+	if *acctest.UpdateCassettes {
+		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+	}
+
 	tt, orgID := newPartnerTestTools(t)
 	defer tt.Cleanup()
 
-	email := uuid.NewString() + "@test.test"
+	email := partnerEmail(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -64,11 +78,14 @@ func TestAccPartnerOrganizationResource_Basic(t *testing.T) {
 }
 
 func TestAccPartnerOrganizationResource_Update(t *testing.T) {
+	if *acctest.UpdateCassettes {
+		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+	}
+
 	tt, orgID := newPartnerTestTools(t)
 	defer tt.Cleanup()
 
-	email := uuid.NewString() + "@test.test"
-	updatedEmail := uuid.NewString() + "@test.test"
+	email := partnerEmail(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -100,9 +117,9 @@ func TestAccPartnerOrganizationResource_Update(t *testing.T) {
 						owner_lastname  = "Smith"
 						customer_id     = "customer-456"
 					}
-				`, updatedEmail, orgID),
+				`, email, orgID),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "email", updatedEmail),
+					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "email", email),
 					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "organization_name", "tf_test_partner_org_updated"),
 					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "owner_firstname", "Jane"),
 					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "owner_lastname", "Smith"),
@@ -114,10 +131,14 @@ func TestAccPartnerOrganizationResource_Update(t *testing.T) {
 }
 
 func TestAccPartnerOrganizationResource_WithPhoneNumber(t *testing.T) {
+	if *acctest.UpdateCassettes {
+		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+	}
+
 	tt, orgID := newPartnerTestTools(t)
 	defer tt.Cleanup()
 
-	email := uuid.NewString() + "@test.test"
+	email := partnerEmail(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -153,10 +174,14 @@ func TestAccPartnerOrganizationResource_WithPhoneNumber(t *testing.T) {
 }
 
 func TestAccPartnerOrganizationResource_DefaultPartnerID(t *testing.T) {
+	if *acctest.UpdateCassettes {
+		t.Cleanup(func() { _ = acctest.AnonymizeCassetteForTest(t, "") })
+	}
+
 	tt, orgID := newPartnerTestTools(t)
 	defer tt.Cleanup()
 
-	email := uuid.NewString() + "@test.test"
+	email := partnerEmail(t)
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
