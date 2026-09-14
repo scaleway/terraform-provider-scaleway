@@ -21,6 +21,8 @@ func TestAccDeployment_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	skipUnlessDefaultProjectID(t, tt)
+
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -91,6 +93,8 @@ func TestAccDeployment_Upgrade(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	skipUnlessDefaultProjectID(t, tt)
+
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 	resourceID := ""
@@ -148,6 +152,8 @@ resource "scaleway_messageq_deployment" "main" {
 func TestAccDeployment_WithPrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	skipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
@@ -272,6 +278,8 @@ resource "scaleway_messageq_deployment" "pn" {
 func TestAccDeployment_UpdatePrivateNetwork(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	skipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)

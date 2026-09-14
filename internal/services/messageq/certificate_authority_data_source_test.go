@@ -12,6 +12,8 @@ func TestAccDataSourceMessageQCertificateAuthority_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	skipUnlessDefaultProjectID(t, tt)
+
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 

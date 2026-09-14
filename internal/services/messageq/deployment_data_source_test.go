@@ -12,6 +12,8 @@ func TestAccDataSourceMessageQDeployment_ByName(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	skipUnlessDefaultProjectID(t, tt)
+
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
 
@@ -58,6 +60,8 @@ data "scaleway_messageq_deployment" "by_name" {
 func TestAccDataSourceMessageQDeployment_ByID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
+
+	skipUnlessDefaultProjectID(t, tt)
 
 	latestVersion := fetchLatestVersion(tt)
 	nodeType := fetchAvailableNodeType(tt)
