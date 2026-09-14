@@ -119,7 +119,7 @@ func (d *CertificateAuthorityDataSource) Read(ctx context.Context, req datasourc
 	if file == nil || file.Content == nil {
 		resp.Diagnostics.AddError(
 			"Empty certificate authority",
-			fmt.Sprintf("certificate authority content is empty for deployment %s", deploymentID),
+			"certificate authority content is empty for deployment "+deploymentID,
 		)
 
 		return

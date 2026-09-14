@@ -927,7 +927,7 @@ func flattenFilteredEndpoints(
 	privateNetwork types.Object,
 	diags *diag.Diagnostics,
 ) types.List {
-	filteredEndpoints := allEndpoints
+	var filteredEndpoints []*messageqapi.Endpoint
 
 	if !privateNetwork.IsNull() && !privateNetwork.IsUnknown() {
 		var pn deploymentPrivateNetworkModel
