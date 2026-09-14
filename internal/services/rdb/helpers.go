@@ -168,7 +168,8 @@ func majorUpgradeTimeoutOrErr(err error, region scw.Region, newInstanceID, oldIn
 				"New instance: %s\nOld instance: %s\n\n"+
 				"Check both instances (status, engine, endpoints), e.g. `scw rdb instance get %s region=%s`. "+
 				"If the new instance is ready with the target engine and endpoints migrated, ensure Terraform state points to the new ID and delete the old instance manually if it remains. "+
-				"Do not re-apply an engine change while an upgrade is still in progress. "+
+				"Do not re-apply an engine change while an upgrade is still in progress: "+
+				"if state still points to the old instance, Terraform may start another blue/green upgrade and create more orphaned instances. "+
 				"For large or HA upgrades, increase timeouts.update (default is 60m).\n\nUnderlying error: %v",
 			newID, oldID, newInstanceID, region, err,
 		),
