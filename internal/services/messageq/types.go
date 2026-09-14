@@ -4,7 +4,7 @@ import (
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 )
 
-func flattenEndpoints(endpoints []*messageqapi.Endpoint) []map[string]any {
+func FlattenEndpoints(endpoints []*messageqapi.Endpoint) []map[string]any {
 	if len(endpoints) == 0 {
 		return nil
 	}
@@ -44,7 +44,7 @@ func flattenEndpoints(endpoints []*messageqapi.Endpoint) []map[string]any {
 	return result
 }
 
-func expandEndpointSpecsFromPrivateNetwork(pnID string) []*messageqapi.EndpointSpec {
+func ExpandEndpointSpecsFromPrivateNetwork(pnID string) []*messageqapi.EndpointSpec {
 	if pnID == "" {
 		return []*messageqapi.EndpointSpec{
 			{

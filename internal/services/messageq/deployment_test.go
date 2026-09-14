@@ -37,7 +37,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -49,8 +49,8 @@ resource "scaleway_messageq_deployment" "main" {
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "version", latestVersion),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "node_count", "1"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "node_type", nodeType),
-					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.type", "sbs_5k"),
-					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.size_in_gb", "5"),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.type", "sbs_5k"),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.size_in_gb", "5"),
 					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "endpoints.#", "1"),
 				),
 			},
@@ -64,7 +64,7 @@ resource "scaleway_messageq_deployment" "main" {
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
   tags       = ["tag1", "tag2"]
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -108,7 +108,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -117,7 +117,7 @@ resource "scaleway_messageq_deployment" "main" {
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
-					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.size_in_gb", "5"),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.size_in_gb", "5"),
 				),
 			},
 			{
@@ -129,7 +129,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 10
   }
@@ -138,7 +138,7 @@ resource "scaleway_messageq_deployment" "main" {
 				Check: resource.ComposeTestCheckFunc(
 					isDeploymentPresent(tt, "scaleway_messageq_deployment.main"),
 					acctest.CheckResourceIDPersisted("scaleway_messageq_deployment.main", &resourceID),
-					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.0.size_in_gb", "10"),
+					resource.TestCheckResourceAttr("scaleway_messageq_deployment.main", "volume.size_in_gb", "10"),
 				),
 			},
 		},
@@ -180,7 +180,7 @@ resource "scaleway_messageq_deployment" "pn" {
 
   depends_on = [scaleway_vpc_private_network.main]
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -214,11 +214,11 @@ resource "scaleway_messageq_deployment" "pn" {
 
   depends_on = [scaleway_vpc_private_network.main]
 
-  private_network {
+  private_network = {
     private_network_id = scaleway_vpc_private_network.main.id
   }
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -252,7 +252,7 @@ resource "scaleway_messageq_deployment" "pn" {
 
   depends_on = [scaleway_vpc_private_network.main]
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -310,11 +310,11 @@ resource "scaleway_messageq_deployment" "pn" {
 
   depends_on = [scaleway_vpc_private_network.pn1, scaleway_vpc_private_network.pn2]
 
-  private_network {
+  private_network = {
     private_network_id = scaleway_vpc_private_network.pn1.id
   }
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -354,11 +354,11 @@ resource "scaleway_messageq_deployment" "pn" {
 
   depends_on = [scaleway_vpc_private_network.pn1, scaleway_vpc_private_network.pn2]
 
-  private_network {
+  private_network = {
     private_network_id = scaleway_vpc_private_network.pn2.id
   }
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }

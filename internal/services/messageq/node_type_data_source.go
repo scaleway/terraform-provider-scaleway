@@ -4,88 +4,128 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
-func DataSourceNodeType() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: DataSourceNodeTypeRead,
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Description: "The node type name",
+var (
+	_ datasource.DataSource              = (*NodeTypeDataSource)(nil)
+	_ datasource.DataSourceWithConfigure = (*NodeTypeDataSource)(nil)
+)
+
+func NewNodeTypeDataSource() datasource.DataSource {
+	return &NodeTypeDataSource{}
+}
+
+type NodeTypeDataSource struct {
+	api  *messageqapi.API
+	meta *meta.Meta
+}
+
+type nodeTypeDataSourceModel struct {
+	AvailableVolumeTypes types.List   `tfsdk:"available_volume_types"`
+	ID                   types.String `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Region               types.String `tfsdk:"region"`
+	Description          types.String `tfsdk:"description"`
+	StockStatus          types.String `tfsdk:"stock_status"`
+	InstanceRange        types.String `tfsdk:"instance_range"`
+	Vcpus                types.Int64  `tfsdk:"vcpus"`
+	MemorySizeInGB       types.Int64  `tfsdk:"memory_size_in_gb"`
+	Disabled             types.Bool   `tfsdk:"disabled"`
+	Beta                 types.Bool   `tfsdk:"beta"`
+}
+
+func availableVolumeTypeAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"type":             types.StringType,
+		"description":      types.StringType,
+		"min_size_in_gb":   types.Int64Type,
+		"max_size_in_gb":   types.Int64Type,
+		"chunk_size_in_gb": types.Int64Type,
+	}
+}
+
+func (d *NodeTypeDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_messageq_node_type"
+}
+
+func (d *NodeTypeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Gets information about a Scaleway MessageQ node type.",
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "The node type name",
 			},
-			"region": regional.Schema(),
-			"description": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Description of the node type",
+			"region": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The region the node type is available in.",
 			},
-			"vcpus": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Number of vCPUs available",
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The ID of the node type, in the `{region}/{name}` format.",
 			},
-			"memory_size_in_gb": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "Amount of memory available in GB",
+			"description": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Description of the node type",
 			},
-			"stock_status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Stock status of the node type",
+			"vcpus": schema.Int64Attribute{
+				Computed:            true,
+				MarkdownDescription: "Number of vCPUs available",
 			},
-			"disabled": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the node type is disabled",
+			"memory_size_in_gb": schema.Int64Attribute{
+				Computed:            true,
+				MarkdownDescription: "Amount of memory available in GB",
 			},
-			"beta": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "Whether the node type is in beta",
+			"stock_status": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Stock status of the node type",
 			},
-			"instance_range": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Instance range associated with the node type offer",
+			"disabled": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Whether the node type is disabled",
 			},
-			"available_volume_types": {
-				Type:        schema.TypeList,
-				Computed:    true,
-				Description: "Available storage options for the node type",
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"type": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Volume type",
+			"beta": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "Whether the node type is in beta",
+			},
+			"instance_range": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Instance range associated with the node type offer",
+			},
+			"available_volume_types": schema.ListNestedAttribute{
+				Computed:            true,
+				MarkdownDescription: "Available storage options for the node type",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"type": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Volume type",
 						},
-						"description": {
-							Type:        schema.TypeString,
-							Computed:    true,
-							Description: "Volume type description",
+						"description": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Volume type description",
 						},
-						"min_size_in_gb": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Minimum volume size in GB",
+						"min_size_in_gb": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Minimum volume size in GB",
 						},
-						"max_size_in_gb": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Maximum volume size in GB",
+						"max_size_in_gb": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Maximum volume size in GB",
 						},
-						"chunk_size_in_gb": {
-							Type:        schema.TypeInt,
-							Computed:    true,
-							Description: "Volume size increment in GB",
+						"chunk_size_in_gb": schema.Int64Attribute{
+							Computed:            true,
+							MarkdownDescription: "Volume size increment in GB",
 						},
 					},
 				},
@@ -94,19 +134,49 @@ func DataSourceNodeType() *schema.Resource {
 	}
 }
 
-func DataSourceNodeTypeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api, region, err := newAPIWithRegion(d, m)
-	if err != nil {
-		return diag.FromErr(err)
+func (d *NodeTypeDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
 	}
 
-	name := d.Get("name").(string)
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
 
-	res, err := api.ListNodeTypes(&messageqapi.ListNodeTypesRequest{
+		return
+	}
+
+	d.meta = m
+	d.api = messageqapi.NewAPI(d.meta.ScwClient())
+}
+
+func (d *NodeTypeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var config nodeTypeDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, err := meta.ExtractFrameworkRegion(config.Region, d.meta.ScwClient())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
+
+		return
+	}
+
+	name := config.Name.ValueString()
+
+	res, err := d.api.ListNodeTypes(&messageqapi.ListNodeTypesRequest{
 		Region: region,
 	}, scw.WithContext(ctx), scw.WithAllPages())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to list MessageQ node types", err.Error())
+
+		return
 	}
 
 	var found *messageqapi.NodeType
@@ -120,32 +190,53 @@ func DataSourceNodeTypeRead(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if found == nil {
-		return diag.FromErr(fmt.Errorf("messageq node type %q not found", name))
+		resp.Diagnostics.AddError("MessageQ node type not found", fmt.Sprintf("messageq node type %q not found", name))
+
+		return
 	}
 
-	d.SetId(regional.NewIDString(region, found.Name))
-	_ = d.Set("region", region.String())
-	_ = d.Set("name", found.Name)
-	_ = d.Set("description", found.Description)
-	_ = d.Set("vcpus", int(found.Vcpus))
-	_ = d.Set("memory_size_in_gb", bytesToGB(found.MemoryBytes))
-	_ = d.Set("stock_status", string(found.StockStatus))
-	_ = d.Set("disabled", found.Disabled)
-	_ = d.Set("beta", found.Beta)
-	_ = d.Set("instance_range", found.InstanceRange)
+	state := nodeTypeDataSourceModel{
+		ID:             types.StringValue(regional.NewIDString(region, found.Name)),
+		Region:         types.StringValue(region.String()),
+		Name:           types.StringValue(found.Name),
+		Description:    types.StringValue(found.Description),
+		Vcpus:          types.Int64Value(int64(found.Vcpus)),
+		MemorySizeInGB: types.Int64Value(int64(BytesToGB(found.MemoryBytes))),
+		StockStatus:    types.StringValue(string(found.StockStatus)),
+		Disabled:       types.BoolValue(found.Disabled),
+		Beta:           types.BoolValue(found.Beta),
+		InstanceRange:  types.StringValue(found.InstanceRange),
+	}
 
-	volumeTypes := make([]map[string]any, 0, len(found.AvailableVolumeTypes))
-	for _, volumeType := range found.AvailableVolumeTypes {
-		volumeTypes = append(volumeTypes, map[string]any{
-			"type":             string(volumeType.Type),
-			"description":      volumeType.Description,
-			"min_size_in_gb":   bytesToGB(volumeType.MinSizeBytes),
-			"max_size_in_gb":   bytesToGB(volumeType.MaxSizeBytes),
-			"chunk_size_in_gb": bytesToGB(volumeType.ChunkSizeBytes),
+	state.AvailableVolumeTypes = flattenAvailableVolumeTypes(found.AvailableVolumeTypes, &resp.Diagnostics)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func flattenAvailableVolumeTypes(volumeTypes []*messageqapi.NodeTypeVolumeType, diags *diag.Diagnostics) types.List {
+	elemType := types.ObjectType{AttrTypes: availableVolumeTypeAttrTypes()}
+
+	if len(volumeTypes) == 0 {
+		return types.ListNull(elemType)
+	}
+
+	values := make([]attr.Value, 0, len(volumeTypes))
+
+	for _, volumeType := range volumeTypes {
+		obj, d := types.ObjectValue(availableVolumeTypeAttrTypes(), map[string]attr.Value{
+			"type":             types.StringValue(string(volumeType.Type)),
+			"description":      types.StringValue(volumeType.Description),
+			"min_size_in_gb":   types.Int64Value(int64(BytesToGB(volumeType.MinSizeBytes))),
+			"max_size_in_gb":   types.Int64Value(int64(BytesToGB(volumeType.MaxSizeBytes))),
+			"chunk_size_in_gb": types.Int64Value(int64(BytesToGB(volumeType.ChunkSizeBytes))),
 		})
+		diags.Append(d...)
+
+		values = append(values, obj)
 	}
 
-	_ = d.Set("available_volume_types", volumeTypes)
+	listVal, d := types.ListValue(elemType, values)
+	diags.Append(d...)
 
-	return nil
+	return listVal
 }

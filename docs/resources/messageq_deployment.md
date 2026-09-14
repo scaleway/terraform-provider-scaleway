@@ -23,7 +23,7 @@ resource "scaleway_messageq_deployment" "main" {
   user_name  = "admin"
   password   = "ThisIsASecurePassword123!"
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -41,7 +41,7 @@ resource "scaleway_messageq_deployment" "prod" {
   user_name  = "admin"
   password   = var.admin_password
 
-  volume {
+  volume = {
     type       = "sbs_15k"
     size_in_gb = 20
   }
@@ -70,11 +70,11 @@ resource "scaleway_messageq_deployment" "main" {
   user_name  = "admin"
   password   = "ThisIsASecurePassword123!"
 
-  private_network {
+  private_network = {
     private_network_id = scaleway_vpc_private_network.pn.id
   }
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }

@@ -6,7 +6,7 @@ resource "scaleway_messageq_deployment" "prod" {
   user_name  = "admin"
   password   = var.admin_password
 
-  volume {
+  volume = {
     type       = "sbs_15k"
     size_in_gb = 20
   }

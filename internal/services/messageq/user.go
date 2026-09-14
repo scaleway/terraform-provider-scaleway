@@ -5,125 +5,245 @@ import (
 	_ "embed"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/cdf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	providertypes "github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 //go:embed descriptions/user.md
 var userDescription string
 
-func ResourceUser() *schema.Resource {
-	return &schema.Resource{
-		Description:   userDescription,
-		CreateContext: ResourceUserCreate,
-		ReadContext:   ResourceUserRead,
-		UpdateContext: ResourceUserUpdate,
-		DeleteContext: ResourceUserDelete,
-		Importer:      identity.CompositeRegionalImporter("region", "deployment_id", "name"),
-		Timeouts: &schema.ResourceTimeout{
-			Create:  schema.DefaultTimeout(defaultDeploymentTimeout),
-			Read:    schema.DefaultTimeout(defaultDeploymentTimeout),
-			Update:  schema.DefaultTimeout(defaultDeploymentTimeout),
-			Delete:  schema.DefaultTimeout(defaultDeploymentTimeout),
-			Default: schema.DefaultTimeout(defaultDeploymentTimeout),
+var (
+	_ resource.Resource                = (*UserResource)(nil)
+	_ resource.ResourceWithConfigure   = (*UserResource)(nil)
+	_ resource.ResourceWithImportState = (*UserResource)(nil)
+	_ resource.ResourceWithIdentity    = (*UserResource)(nil)
+)
+
+func NewUserResource() resource.Resource {
+	return &UserResource{}
+}
+
+type UserResource struct {
+	api  *messageqapi.API
+	meta *meta.Meta
+}
+
+type userResourceModel struct {
+	ID                types.String `tfsdk:"id"`
+	Region            types.String `tfsdk:"region"`
+	DeploymentID      types.String `tfsdk:"deployment_id"`
+	Name              types.String `tfsdk:"name"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWo        types.String `tfsdk:"password_wo"`
+	PasswordWoVersion types.Int64  `tfsdk:"password_wo_version"`
+}
+
+type userResourceIdentityModel struct {
+	Region       types.String `tfsdk:"region"`
+	DeploymentID types.String `tfsdk:"deployment_id"`
+	Name         types.String `tfsdk:"name"`
+}
+
+func (r *UserResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_messageq_user"
+}
+
+func (r *UserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: userDescription,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "The ID of the MessageQ user, in the `{region}/{deployment_id}/{name}` format.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"deployment_id": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Deployment on which the user is created",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					verify.IsStringUUIDOrUUIDWithRegion(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "MessageQ user name",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"password": schema.StringAttribute{
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: "MessageQ user password. Only one of `password` or `password_wo` should be specified.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("password"),
+						path.MatchRoot("password_wo"),
+					),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				MarkdownDescription: "MessageQ user password in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
+				Validators: []validator.String{
+					stringvalidator.ExactlyOneOf(
+						path.MatchRoot("password"),
+						path.MatchRoot("password_wo"),
+					),
+					stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
+				},
+			},
+			"password_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				MarkdownDescription: "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
+				Validators: []validator.Int64{
+					int64validator.AlsoRequires(path.MatchRoot("password_wo")),
+				},
+			},
+			"region": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The region of the MessageQ deployment.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
-		SchemaVersion: 0,
-		SchemaFunc:    userSchema,
-		CustomizeDiff: cdf.LocalityCheck("deployment_id"),
-		Identity:      identity.CompositeRegionalIdentity("deployment_id", "name"),
 	}
 }
 
-func userSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"deployment_id": {
-			Type:             schema.TypeString,
-			Required:         true,
-			ForceNew:         true,
-			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
-			Description:      "Deployment on which the user is created",
-		},
-		"name": {
-			Type:        schema.TypeString,
-			Description: "MessageQ user name",
-			Required:    true,
-			ForceNew:    true,
-		},
-		"password": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Sensitive:    true,
-			Description:  "MessageQ user password. Only one of `password` or `password_wo` should be specified.",
-			ExactlyOneOf: []string{"password", "password_wo"},
-		},
-		"password_wo": {
-			Type:         schema.TypeString,
-			Optional:     true,
-			Description:  "MessageQ user password in [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) mode. Only one of `password` or `password_wo` should be specified. `password_wo` will not be set in the Terraform state. To update the `password_wo`, you must also update the `password_wo_version`.",
-			WriteOnly:    true,
-			ExactlyOneOf: []string{"password", "password_wo"},
-			RequiredWith: []string{"password_wo_version"},
-		},
-		"password_wo_version": {
-			Type:         schema.TypeInt,
-			Optional:     true,
-			Description:  "The version of the [write-only](https://registry.terraform.io/providers/scaleway/scaleway/latest/docs/guides/using-write-only-arguments) password. To update the `password_wo`, you must also update the `password_wo_version`.",
-			RequiredWith: []string{"password_wo"},
-		},
-		"region": regional.Schema(),
-	}
+func (r *UserResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = framework.CompositeRegional("deployment_id", "name")
 }
 
-func ResourceUserCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewAPI(m)
-	regionalID := d.Get("deployment_id").(string)
+func (r *UserResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
 
-	region, deploymentID, err := regional.ParseID(regionalID)
+	m, ok := req.ProviderData.(*meta.Meta)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *meta.Meta, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.meta = m
+	r.api = messageqapi.NewAPI(r.meta.ScwClient())
+}
+
+func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan userResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var config userResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, deploymentID, err := regional.ParseID(plan.DeploymentID.ValueString())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to parse deployment_id", err.Error())
+
+		return
 	}
 
-	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutCreate))
+	if !plan.Region.IsNull() && !plan.Region.IsUnknown() && plan.Region.ValueString() != "" {
+		region = scw.Region(plan.Region.ValueString())
+	}
+
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment", err.Error())
+
+		return
 	}
 
-	var password string
-	if _, ok := d.GetOk("password_wo_version"); ok {
-		password = d.GetRawConfig().GetAttr("password_wo").AsString()
-	} else {
-		password = d.Get("password").(string)
+	password := plan.Password.ValueString()
+	if !config.PasswordWoVersion.IsNull() && !config.PasswordWoVersion.IsUnknown() {
+		password = config.PasswordWo.ValueString()
 	}
 
-	user, err := api.CreateUser(&messageqapi.CreateUserRequest{
+	user, err := r.api.CreateUser(&messageqapi.CreateUserRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
-		Username:     d.Get("name").(string),
+		Username:     plan.Name.ValueString(),
 		Password:     password,
 	}, scw.WithContext(ctx))
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to create MessageQ user", err.Error())
+
+		return
 	}
 
-	err = identity.SetMultiPartIdentity(d, map[string]string{
-		"region":        string(region),
-		"deployment_id": deploymentID,
-		"name":          user.Username,
-	}, "region", "deployment_id", "name")
+	// Match the former SDKv2 Create→Read wait so VCR cassettes stay aligned.
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment after user create", err.Error())
+
+		return
 	}
 
-	return ResourceUserRead(ctx, d, m)
+	_, err = r.api.ListUsers(&messageqapi.ListUsersRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+		Name:         providertypes.ExpandStringPtr(user.Username),
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read MessageQ user after create", err.Error())
+
+		return
+	}
+
+	state := userResourceModel{
+		ID:                types.StringValue(fmt.Sprintf("%s/%s/%s", region, deploymentID, user.Username)),
+		Region:            types.StringValue(region.String()),
+		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		Name:              types.StringValue(user.Username),
+		Password:          plan.Password,
+		PasswordWoVersion: plan.PasswordWoVersion,
+		PasswordWo:        types.StringNull(),
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, userResourceIdentityModel{
+		Region:       types.StringValue(region.String()),
+		DeploymentID: types.StringValue(deploymentID),
+		Name:         types.StringValue(user.Username),
+	})...)
 }
 
 // ResourceUserParseID extracts region, deployment ID and username from the resource
@@ -137,77 +257,137 @@ func ResourceUserParseID(resourceID string) (region scw.Region, deploymentID str
 	return scw.Region(idParts["region"]), idParts["deployment_id"], idParts["name"], nil
 }
 
-func ResourceUserRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewAPI(m)
+func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var (
+		state    userResourceModel
+		identity userResourceIdentityModel
+	)
 
-	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	identityAvailable := !resp.Diagnostics.HasError() &&
+		!identity.Region.IsNull() && !identity.Region.IsUnknown() &&
+		!identity.DeploymentID.IsNull() && !identity.DeploymentID.IsUnknown() &&
+		!identity.Name.IsNull() && !identity.Name.IsUnknown()
+
+	if !identityAvailable && resp.Diagnostics.HasError() {
+		resp.Diagnostics = nil
 	}
 
-	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutRead))
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var (
+		region       scw.Region
+		deploymentID string
+		userName     string
+		err          error
+	)
+
+	if identityAvailable {
+		region = scw.Region(identity.Region.ValueString())
+		deploymentID = identity.DeploymentID.ValueString()
+		userName = identity.Name.ValueString()
+	} else {
+		region, deploymentID, userName, err = ResourceUserParseID(state.ID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Failed to parse MessageQ user ID", err.Error())
+
+			return
+		}
+	}
+
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
 	if err != nil {
 		if httperrors.Is404(err) {
-			d.SetId("")
+			resp.State.RemoveResource(ctx)
 
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment", err.Error())
+
+		return
 	}
 
-	res, err := api.ListUsers(&messageqapi.ListUsersRequest{
+	res, err := r.api.ListUsers(&messageqapi.ListUsersRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
 		Name:         &userName,
 	}, scw.WithContext(ctx))
 	if err != nil {
 		if httperrors.Is404(err) {
-			d.SetId("")
+			resp.State.RemoveResource(ctx)
 
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to list MessageQ users", err.Error())
+
+		return
 	}
 
 	if len(res.Users) == 0 {
 		tflog.Warn(ctx, fmt.Sprintf("couldn't find user with name: [%s]", userName))
-		d.SetId("")
+		resp.State.RemoveResource(ctx)
 
-		return nil
+		return
 	}
 
 	user := res.Users[0]
 
-	err = identity.SetMultiPartIdentity(d, map[string]string{
-		"region":        string(region),
-		"deployment_id": deploymentID,
-		"name":          user.Username,
-	}, "region", "deployment_id", "name")
-	if err != nil {
-		return diag.FromErr(err)
+	newState := userResourceModel{
+		ID:                types.StringValue(fmt.Sprintf("%s/%s/%s", region, deploymentID, user.Username)),
+		Region:            types.StringValue(region.String()),
+		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		Name:              types.StringValue(user.Username),
+		Password:          state.Password,
+		PasswordWoVersion: state.PasswordWoVersion,
+		PasswordWo:        types.StringNull(),
 	}
 
-	// The API never returns the password, so whatever is already in state is kept as is.
-	_ = d.Set("deployment_id", regional.NewID(region, deploymentID).String())
-	_ = d.Set("name", user.Username)
-	_ = d.Set("region", string(region))
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, userResourceIdentityModel{
+		Region:       types.StringValue(region.String()),
+		DeploymentID: types.StringValue(deploymentID),
+		Name:         types.StringValue(user.Username),
+	})...)
 }
 
-func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewAPI(m)
+func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var (
+		plan  userResourceModel
+		state userResourceModel
+	)
 
-	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutUpdate))
+	var config userResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	region, deploymentID, userName, err := ResourceUserParseID(state.ID.ValueString())
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to parse MessageQ user ID", err.Error())
+
+		return
+	}
+
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment", err.Error())
+
+		return
 	}
 
 	// A write-only password is never in state, so its rotation is driven by the version.
@@ -215,57 +395,119 @@ func ResourceUserUpdate(ctx context.Context, d *schema.ResourceData, m any) diag
 	// new write-only value rather than the cleared `password`.
 	var newPassword *string
 
-	if d.HasChange("password_wo_version") {
-		passwordWO := d.GetRawConfig().GetAttr("password_wo")
-		if !passwordWO.IsNull() {
-			newPassword = types.ExpandStringPtr(passwordWO.AsString())
+	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
+		if !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() {
+			newPassword = providertypes.ExpandStringPtr(config.PasswordWo.ValueString())
 		}
 	}
 
-	if newPassword == nil && d.HasChange("password") {
-		newPassword = types.ExpandStringPtr(d.Get("password"))
+	if newPassword == nil && !plan.Password.Equal(state.Password) {
+		newPassword = providertypes.ExpandStringPtr(plan.Password.ValueString())
 	}
 
 	if newPassword != nil {
-		_, err = api.UpdateUser(&messageqapi.UpdateUserRequest{
+		_, err = r.api.UpdateUser(&messageqapi.UpdateUserRequest{
 			Region:       region,
 			DeploymentID: deploymentID,
 			Username:     userName,
 			Password:     newPassword,
 		}, scw.WithContext(ctx))
 		if err != nil {
-			return diag.FromErr(err)
+			resp.Diagnostics.AddError("Failed to update MessageQ user", err.Error())
+
+			return
 		}
 	}
 
-	return ResourceUserRead(ctx, d, m)
+	// Match the former SDKv2 Update→Read wait so VCR cassettes stay aligned.
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment after user update", err.Error())
+
+		return
+	}
+
+	_, err = r.api.ListUsers(&messageqapi.ListUsersRequest{
+		Region:       region,
+		DeploymentID: deploymentID,
+		Name:         &userName,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read MessageQ user after update", err.Error())
+
+		return
+	}
+
+	newState := userResourceModel{
+		ID:                state.ID,
+		Region:            types.StringValue(region.String()),
+		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		Name:              types.StringValue(userName),
+		Password:          plan.Password,
+		PasswordWoVersion: plan.PasswordWoVersion,
+		PasswordWo:        types.StringNull(),
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, userResourceIdentityModel{
+		Region:       types.StringValue(region.String()),
+		DeploymentID: types.StringValue(deploymentID),
+		Name:         types.StringValue(userName),
+	})...)
 }
 
-func ResourceUserDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	api := NewAPI(m)
+func (r *UserResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state userResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
-	region, deploymentID, userName, err := ResourceUserParseID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	_, err = waitForDeployment(ctx, api, region, deploymentID, d.Timeout(schema.TimeoutDelete))
+	region, deploymentID, userName, err := ResourceUserParseID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse MessageQ user ID", err.Error())
+
+		return
+	}
+
+	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
 	if err != nil {
 		if httperrors.Is404(err) {
-			return nil
+			return
 		}
 
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed waiting for MessageQ deployment", err.Error())
+
+		return
 	}
 
-	err = api.DeleteUser(&messageqapi.DeleteUserRequest{
+	err = r.api.DeleteUser(&messageqapi.DeleteUserRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
 		Username:     userName,
 	}, scw.WithContext(ctx))
 	if err != nil && !httperrors.Is404(err) {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("Failed to delete MessageQ user", err.Error())
+	}
+}
+
+func (r *UserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	region, deploymentID, userName, err := ResourceUserParseID(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import ID", err.Error())
+
+		return
 	}
 
-	return nil
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("region"), region.String())...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("deployment_id"), regional.NewIDString(region, deploymentID))...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), userName)...)
+
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, userResourceIdentityModel{
+		Region:       types.StringValue(region.String()),
+		DeploymentID: types.StringValue(deploymentID),
+		Name:         types.StringValue(userName),
+	})...)
 }

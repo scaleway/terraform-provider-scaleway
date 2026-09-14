@@ -1,11 +1,11 @@
-//nolint:testpackage // Tests need access to unexported messageq flatten/expand helpers.
-package messageq
+package messageq_test
 
 import (
 	"testing"
 
 	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,10 +14,10 @@ func TestVolumeSizeConversion(t *testing.T) {
 	t.Parallel()
 
 	// The MessageQ API expresses sizes in decimal bytes: 5 GB is 5e9 bytes, not 5 GiB.
-	assert.Equal(t, scw.Size(5_000_000_000), expandVolumeSizeBytes(5))
-	assert.Equal(t, 5, bytesToGB(5_000_000_000))
-	assert.Equal(t, 16, bytesToGB(16_000_000_000))
-	assert.Equal(t, 0, bytesToGB(0))
+	assert.Equal(t, scw.Size(5_000_000_000), messageq.ExpandVolumeSizeBytes(5))
+	assert.Equal(t, 5, messageq.BytesToGB(5_000_000_000))
+	assert.Equal(t, 16, messageq.BytesToGB(16_000_000_000))
+	assert.Equal(t, 0, messageq.BytesToGB(0))
 }
 
 func TestRegionAndIDFromAttr(t *testing.T) {
@@ -28,7 +28,7 @@ func TestRegionAndIDFromAttr(t *testing.T) {
 	t.Run("localized id overrides the fallback region", func(t *testing.T) {
 		t.Parallel()
 
-		region, id := regionAndIDFromAttr("nl-ams/"+uuid, scw.RegionFrPar)
+		region, id := messageq.RegionAndIDFromAttr("nl-ams/"+uuid, scw.RegionFrPar)
 		assert.Equal(t, scw.RegionNlAms, region)
 		assert.Equal(t, uuid, id)
 	})
@@ -36,7 +36,7 @@ func TestRegionAndIDFromAttr(t *testing.T) {
 	t.Run("bare uuid keeps the fallback region", func(t *testing.T) {
 		t.Parallel()
 
-		region, id := regionAndIDFromAttr(uuid, scw.RegionFrPar)
+		region, id := messageq.RegionAndIDFromAttr(uuid, scw.RegionFrPar)
 		assert.Equal(t, scw.RegionFrPar, region)
 		assert.Equal(t, uuid, id)
 	})
@@ -48,7 +48,7 @@ func TestExpandEndpointSpecsFromPrivateNetwork(t *testing.T) {
 	t.Run("no private network requests a public endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		specs := expandEndpointSpecsFromPrivateNetwork("")
+		specs := messageq.ExpandEndpointSpecsFromPrivateNetwork("")
 		require.Len(t, specs, 1)
 		require.NotNil(t, specs[0].Public)
 		assert.Nil(t, specs[0].PrivateNetwork)
@@ -57,7 +57,7 @@ func TestExpandEndpointSpecsFromPrivateNetwork(t *testing.T) {
 	t.Run("private network id requests a private endpoint", func(t *testing.T) {
 		t.Parallel()
 
-		specs := expandEndpointSpecsFromPrivateNetwork("pn-id")
+		specs := messageq.ExpandEndpointSpecsFromPrivateNetwork("pn-id")
 		require.Len(t, specs, 1)
 		require.NotNil(t, specs[0].PrivateNetwork)
 		assert.Equal(t, "pn-id", specs[0].PrivateNetwork.PrivateNetworkID)
@@ -68,7 +68,7 @@ func TestExpandEndpointSpecsFromPrivateNetwork(t *testing.T) {
 func TestFlattenEndpoints(t *testing.T) {
 	t.Parallel()
 
-	assert.Nil(t, flattenEndpoints(nil))
+	assert.Nil(t, messageq.FlattenEndpoints(nil))
 
 	endpoints := []*messageqapi.Endpoint{
 		{
@@ -84,7 +84,7 @@ func TestFlattenEndpoints(t *testing.T) {
 		},
 	}
 
-	flattened := flattenEndpoints(endpoints)
+	flattened := messageq.FlattenEndpoints(endpoints)
 	require.Len(t, flattened, 2)
 
 	assert.Equal(t, "public-endpoint", flattened[0]["id"])
@@ -103,7 +103,7 @@ func TestFlattenEndpoints(t *testing.T) {
 func TestResourceUserParseID(t *testing.T) {
 	t.Parallel()
 
-	region, deploymentID, userName, err := ResourceUserParseID("fr-par/deployment-id/my-user")
+	region, deploymentID, userName, err := messageq.ResourceUserParseID("fr-par/deployment-id/my-user")
 	require.NoError(t, err)
 	assert.Equal(t, scw.RegionFrPar, region)
 	assert.Equal(t, "deployment-id", deploymentID)
@@ -111,7 +111,7 @@ func TestResourceUserParseID(t *testing.T) {
 
 	// A malformed ID must surface an error instead of silently querying an empty region.
 	for _, malformed := range []string{"", "fr-par", "fr-par/deployment-id"} {
-		_, _, _, err := ResourceUserParseID(malformed)
+		_, _, _, err := messageq.ResourceUserParseID(malformed)
 		assert.Error(t, err, "expected an error for %q", malformed)
 	}
 }

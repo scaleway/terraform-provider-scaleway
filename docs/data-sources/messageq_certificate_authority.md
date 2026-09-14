@@ -18,7 +18,7 @@ resource "scaleway_messageq_deployment" "main" {
   user_name  = "admin"
   password   = "ThisIsASecurePassword123!"
 
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }

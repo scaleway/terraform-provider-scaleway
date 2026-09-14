@@ -37,7 +37,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -65,7 +65,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -115,7 +115,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -145,7 +145,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }
@@ -173,7 +173,7 @@ resource "scaleway_messageq_deployment" "main" {
   node_type  = "%s"
   user_name  = "%s"
   password   = "ThisIsASecurePassword123!"
-  volume {
+  volume = {
     type       = "sbs_5k"
     size_in_gb = 5
   }

@@ -226,6 +226,8 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		instance.NewTemplateResource,
 		autoscaling.NewAutoScalingGroupResource,
 		keymanager.NewKeyMaterialResource,
+		messageq.NewDeploymentResource,
+		messageq.NewUserResource,
 	}
 }
 
@@ -256,6 +258,9 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		iam.NewScimDataSource,
 		iam.NewScimTokenDataSource,
 		kafka.NewVersionDataSource,
+		messageq.NewCertificateAuthorityDataSource,
+		messageq.NewDeploymentDataSource,
+		messageq.NewNodeTypeDataSource,
 		messageq.NewVersionDataSource,
 	}
 }
