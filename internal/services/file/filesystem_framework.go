@@ -304,6 +304,7 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 	_, err = r.api.UpdateFileSystem(updateReq, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update File FileSystem", err.Error())
+
 		return
 	}
 
@@ -317,6 +318,7 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		}
 
 		resp.Diagnostics.AddError("Failed to wait for File FileSystem during Update", err.Error())
+
 		return
 	}
 
@@ -400,5 +402,6 @@ func flattenFilesystem(ctx context.Context, fs *file.FileSystem, reference any, 
 	diags.Append(d...)
 
 	model.Tags = tagsList
+
 	return model
 }
