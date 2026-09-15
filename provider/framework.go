@@ -214,6 +214,7 @@ func (p *ScalewayProvider) Resources(_ context.Context) []func() resource.Resour
 		annotations.NewAnnotationsKeyResource,
 		annotations.NewAnnotationsValueResource,
 		annotations.NewAnnotationsBindingResource,
+		applesilicon.NewServerResource,
 		billing.NewBudgetResource,
 		billing.NewBudgetAlertResource,
 		billing.NewBudgetAlertNotificationResource,
