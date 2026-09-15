@@ -17,7 +17,7 @@ func TestAccDataSourceDomainRegistration_Basic(t *testing.T) {
 	defer tt.Cleanup()
 
 	// Fixed domain and project_id to match cassette (VCR requires exact body match; project_id needed for CI)
-	domainName := "test-ds-reg-2-942430570701024891.com"
+	domainName := "test-ds-reg-2-9424305707010248911.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
@@ -78,7 +78,7 @@ func TestAccDataSourceDomainRegistration_WithProjectID(t *testing.T) {
 	defer tt.Cleanup()
 
 	// Fixed domain and project_id to match cassette (VCR requires exact body match; project_id needed for CI)
-	domainName := "test-ds-reg-project--576332352888738072.com"
+	domainName := "test-ds-reg-project--5763323528887380721.com"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
