@@ -194,8 +194,7 @@ func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// FIXME: how to handle timeout?
-	_, err = waitForFileSystem(ctx, r.api, region, fs.ID, time.Second*30)
+	_, err = waitForFileSystem(ctx, r.api, region, fs.ID, defaultFileSystemTimeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to wait for File FileSystem during Create", err.Error())
 
@@ -221,8 +220,7 @@ func (r *FileSystemResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// FIXME: how to handle timeout?
-	fs, err := waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	fs, err := waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil {
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
@@ -259,8 +257,7 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// FIXME: how to handle timeout?
-	_, err = waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	_, err = waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil {
 		// FIXME: Why this case?
 		if httperrors.Is404(err) {
@@ -310,7 +307,7 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	fs, err := waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	fs, err := waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil {
 		// FIXME: Why this case?
 		if httperrors.Is404(err) {
@@ -342,8 +339,7 @@ func (r *FileSystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// FIXME: how to handle timeout?
-	_, err = waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	_, err = waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil {
 		if httperrors.Is404(err) {
 			return
@@ -368,7 +364,7 @@ func (r *FileSystemResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	_, err = waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	_, err = waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil && !httperrors.Is404(err) {
 		resp.Diagnostics.AddError("Failed to wait for File FileSystem during Delete", err.Error())
 	}
