@@ -1,6 +1,7 @@
 package messageq
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -39,7 +40,7 @@ func NewAPIWithRegionAndID(m any, id string) (*messageqapi.API, scw.Region, stri
 // return an error instead of being silently expanded.
 func RegionAndIDFromAttr(value string, fallback scw.Region) (scw.Region, string, error) {
 	if value == "" {
-		return "", "", fmt.Errorf("id is empty")
+		return "", "", errors.New("id is empty")
 	}
 
 	region, id, err := regional.ParseID(value)

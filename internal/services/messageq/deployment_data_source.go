@@ -212,9 +212,11 @@ func (d *DeploymentDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	var deploymentID string
+	var (
+		deploymentID     string
+		deploymentIDAttr types.String
+	)
 
-	deploymentIDAttr := types.StringNull()
 	hasDeploymentID := !config.DeploymentID.IsNull() && !config.DeploymentID.IsUnknown() && config.DeploymentID.ValueString() != ""
 	hasName := !config.Name.IsNull() && !config.Name.IsUnknown() && config.Name.ValueString() != ""
 
