@@ -34,6 +34,13 @@ func IsStringUUIDOrUUIDWithZone() validator.String {
 	)
 }
 
+func IsStringEmail() validator.String {
+	return stringvalidator.RegexMatches(
+		regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`),
+		"must be a valid email address",
+	)
+}
+
 // MutuallyExclusiveStringConflicts builds a ConflictsWith validator listing every attribute in the group except `self`
 func MutuallyExclusiveStringConflicts(self string, group ...string) []validator.String {
 	conflicts := make([]path.Expression, 0, len(group))

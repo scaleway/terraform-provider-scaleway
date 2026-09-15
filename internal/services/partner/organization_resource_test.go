@@ -1,7 +1,6 @@
 package partner_test
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -216,7 +215,7 @@ func IsPartnerOrganizationLocked(tt *acctest.TestTools) resource.TestCheckFunc {
 
 			partnerAPI := partnerSDK.NewAPI(meta.ExtractScwClient(tt.Meta))
 
-			err := retry.RetryContext(context.Background(), DestroyWaitTimeout, func() *retry.RetryError {
+			err := retry.RetryContext(tt.T.Context(), DestroyWaitTimeout, func() *retry.RetryError {
 				_, err := partnerAPI.LockOrganization(&partnerSDK.LockOrganizationRequest{
 					OrganizationID: rs.Primary.ID,
 				})
