@@ -442,6 +442,14 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	// Second wait mirrors the former SDKv2 Create→Read path so VCR cassettes stay aligned.
+	deployment, err = waitForDeployment(ctx, r.api, region, deployment.ID, defaultDeploymentReadTimeout)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed reading MessageQ deployment after create", err.Error())
+
+		return
+	}
+
 	state := flattenDeployment(ctx, deployment, plan.PrivateNetwork, req, &resp.Diagnostics)
 	state.Password = plan.Password
 	state.PasswordWoVersion = plan.PasswordWoVersion
