@@ -32,9 +32,7 @@ func testSweepDomain(_ string) error {
 		}
 
 		for _, ns := range listDomains.Domains {
-			if ns.Name == "test.scaleway-terraform.com" {
-				logging.L.Debugf("sweeper: skipping deletion of domain %s", ns.Name)
-
+			if !acctest.IsTestResource(ns.Name) {
 				continue
 			}
 
@@ -72,7 +70,7 @@ func sweepTEMTestDNSZones() error {
 		}
 
 		for _, zone := range zones.DNSZones {
-			if !isTEMTestDNSZone(zone.Subdomain) {
+			if !acctest.IsTestResource(zone.Subdomain) {
 				continue
 			}
 
@@ -91,19 +89,4 @@ func sweepTEMTestDNSZones() error {
 
 		return nil
 	})
-}
-
-func isTEMTestDNSZone(subdomain string) bool {
-	switch subdomain {
-	case "test-blockedlist",
-		"test-autoconfig",
-		"test-autoconfig-update",
-		"webhook-test",
-		"test-reputation",
-		"validation-validation",
-		"validation-timeout":
-		return true
-	default:
-		return false
-	}
 }
