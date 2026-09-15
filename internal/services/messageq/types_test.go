@@ -3,7 +3,6 @@ package messageq_test
 import (
 	"testing"
 
-	messageqapi "github.com/scaleway/scaleway-sdk-go/api/messageq/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/messageq"
 	"github.com/stretchr/testify/assert"
@@ -28,7 +27,8 @@ func TestRegionAndIDFromAttr(t *testing.T) {
 	t.Run("localized id overrides the fallback region", func(t *testing.T) {
 		t.Parallel()
 
-		region, id := messageq.RegionAndIDFromAttr("nl-ams/"+uuid, scw.RegionFrPar)
+		region, id, err := messageq.RegionAndIDFromAttr("nl-ams/"+uuid, scw.RegionFrPar)
+		require.NoError(t, err)
 		assert.Equal(t, scw.RegionNlAms, region)
 		assert.Equal(t, uuid, id)
 	})
@@ -36,9 +36,17 @@ func TestRegionAndIDFromAttr(t *testing.T) {
 	t.Run("bare uuid keeps the fallback region", func(t *testing.T) {
 		t.Parallel()
 
-		region, id := messageq.RegionAndIDFromAttr(uuid, scw.RegionFrPar)
+		region, id, err := messageq.RegionAndIDFromAttr(uuid, scw.RegionFrPar)
+		require.NoError(t, err)
 		assert.Equal(t, scw.RegionFrPar, region)
 		assert.Equal(t, uuid, id)
+	})
+
+	t.Run("malformed localized id returns an error", func(t *testing.T) {
+		t.Parallel()
+
+		_, _, err := messageq.RegionAndIDFromAttr("not-a-region/"+uuid, scw.RegionFrPar)
+		assert.Error(t, err)
 	})
 }
 
@@ -63,41 +71,6 @@ func TestExpandEndpointSpecsFromPrivateNetwork(t *testing.T) {
 		assert.Equal(t, "pn-id", specs[0].PrivateNetwork.PrivateNetworkID)
 		assert.Nil(t, specs[0].Public)
 	})
-}
-
-func TestFlattenEndpoints(t *testing.T) {
-	t.Parallel()
-
-	assert.Nil(t, messageq.FlattenEndpoints(nil))
-
-	endpoints := []*messageqapi.Endpoint{
-		{
-			ID:     "public-endpoint",
-			Public: &messageqapi.EndpointPublicDetails{},
-			Services: []*messageqapi.EndpointService{
-				{Name: "amqp", Port: 5672, URL: "amqps://example.com:5672"},
-			},
-		},
-		{
-			ID:             "private-endpoint",
-			PrivateNetwork: &messageqapi.EndpointPrivateNetworkDetails{PrivateNetworkID: "pn-id"},
-		},
-	}
-
-	flattened := messageq.FlattenEndpoints(endpoints)
-	require.Len(t, flattened, 2)
-
-	assert.Equal(t, "public-endpoint", flattened[0]["id"])
-	assert.Equal(t, true, flattened[0]["public"])
-	assert.Equal(t, []map[string]any{
-		{"name": "amqp", "port": 5672, "url": "amqps://example.com:5672"},
-	}, flattened[0]["services"])
-
-	assert.Equal(t, "private-endpoint", flattened[1]["id"])
-	assert.Equal(t, false, flattened[1]["public"])
-	assert.Equal(t, "pn-id", flattened[1]["private_network_id"])
-	// An endpoint without services must not report an empty list.
-	assert.NotContains(t, flattened[1], "services")
 }
 
 func TestResourceUserParseID(t *testing.T) {

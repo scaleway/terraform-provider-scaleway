@@ -174,15 +174,18 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	region, deploymentID, err := regional.ParseID(plan.DeploymentID.ValueString())
+	fallbackRegion, err := meta.ExtractFrameworkRegion(plan.Region, r.meta.ScwClient())
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to parse deployment_id", err.Error())
+		resp.Diagnostics.AddError("Failed to resolve region", err.Error())
 
 		return
 	}
 
-	if !plan.Region.IsNull() && !plan.Region.IsUnknown() && plan.Region.ValueString() != "" {
-		region = scw.Region(plan.Region.ValueString())
+	region, deploymentID, err := RegionAndIDFromAttr(plan.DeploymentID.ValueString(), fallbackRegion)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse deployment_id", err.Error())
+
+		return
 	}
 
 	_, err = waitForDeployment(ctx, r.api, region, deploymentID, defaultDeploymentTimeout)
@@ -193,7 +196,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	password := plan.Password.ValueString()
-	if !config.PasswordWoVersion.IsNull() && !config.PasswordWoVersion.IsUnknown() {
+	if !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() && config.PasswordWo.ValueString() != "" {
 		password = config.PasswordWo.ValueString()
 	}
 
@@ -217,7 +220,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	_, err = r.api.ListUsers(&messageqapi.ListUsersRequest{
+	listRes, err := r.api.ListUsers(&messageqapi.ListUsersRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
 		Name:         providertypes.ExpandStringPtr(user.Username),
@@ -228,10 +231,19 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	if len(listRes.Users) == 0 {
+		resp.Diagnostics.AddError(
+			"Failed to read MessageQ user after create",
+			"user "+user.Username+" was not found after create",
+		)
+
+		return
+	}
+
 	state := userResourceModel{
 		ID:                types.StringValue(fmt.Sprintf("%s/%s/%s", region, deploymentID, user.Username)),
 		Region:            types.StringValue(region.String()),
-		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		DeploymentID:      plan.DeploymentID,
 		Name:              types.StringValue(user.Username),
 		Password:          plan.Password,
 		PasswordWoVersion: plan.PasswordWoVersion,
@@ -341,11 +353,15 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	newState := userResourceModel{
 		ID:                types.StringValue(fmt.Sprintf("%s/%s/%s", region, deploymentID, user.Username)),
 		Region:            types.StringValue(region.String()),
-		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		DeploymentID:      state.DeploymentID,
 		Name:              types.StringValue(user.Username),
 		Password:          state.Password,
 		PasswordWoVersion: state.PasswordWoVersion,
 		PasswordWo:        types.StringNull(),
+	}
+
+	if newState.DeploymentID.IsNull() || newState.DeploymentID.IsUnknown() || newState.DeploymentID.ValueString() == "" {
+		newState.DeploymentID = types.StringValue(regional.NewIDString(region, deploymentID))
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
@@ -427,7 +443,7 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	_, err = r.api.ListUsers(&messageqapi.ListUsersRequest{
+	listRes, err := r.api.ListUsers(&messageqapi.ListUsersRequest{
 		Region:       region,
 		DeploymentID: deploymentID,
 		Name:         &userName,
@@ -438,10 +454,19 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	if len(listRes.Users) == 0 {
+		resp.Diagnostics.AddError(
+			"Failed to read MessageQ user after update",
+			"user "+userName+" was not found after update",
+		)
+
+		return
+	}
+
 	newState := userResourceModel{
 		ID:                state.ID,
 		Region:            types.StringValue(region.String()),
-		DeploymentID:      types.StringValue(regional.NewIDString(region, deploymentID)),
+		DeploymentID:      plan.DeploymentID,
 		Name:              types.StringValue(userName),
 		Password:          plan.Password,
 		PasswordWoVersion: plan.PasswordWoVersion,

@@ -192,6 +192,7 @@ func (r *DeploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("password_wo")),
+					stringvalidator.AlsoRequires(path.MatchRoot("user_name")),
 				},
 			},
 			// WriteOnly is incompatible with RequiresReplace, so password_wo_version carries
@@ -203,6 +204,7 @@ func (r *DeploymentResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRoot("password")),
 					stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
+					stringvalidator.AlsoRequires(path.MatchRoot("user_name")),
 				},
 			},
 			"password_wo_version": schema.Int64Attribute{
@@ -377,7 +379,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		NodeType:  plan.NodeType.ValueString(),
 	}
 
-	createReq.Tags = expandStringList(ctx, plan.Tags, &resp.Diagnostics)
+	createReq.Tags = providertypes.ExpandStringList(ctx, plan.Tags, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -386,9 +388,11 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		createReq.UserName = providertypes.ExpandStringPtr(plan.UserName.ValueString())
 	}
 
-	password := plan.Password.ValueString()
-	if !config.PasswordWoVersion.IsNull() && !config.PasswordWoVersion.IsUnknown() {
+	password := ""
+	if !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() && config.PasswordWo.ValueString() != "" {
 		password = config.PasswordWo.ValueString()
+	} else if !plan.Password.IsNull() && !plan.Password.IsUnknown() {
+		password = plan.Password.ValueString()
 	}
 
 	if password != "" {
@@ -438,15 +442,7 @@ func (r *DeploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	// Match the former SDKv2 Create→Read wait so VCR cassettes stay aligned.
-	deployment, err = waitForDeployment(ctx, r.api, region, deployment.ID, defaultDeploymentReadTimeout)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed reading MessageQ deployment after create", err.Error())
-
-		return
-	}
-
-	state := flattenDeployment(ctx, deployment, plan.PrivateNetwork, &resp.Diagnostics)
+	state := flattenDeployment(ctx, deployment, plan.PrivateNetwork, req, &resp.Diagnostics)
 	state.Password = plan.Password
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.UserName = plan.UserName
@@ -500,11 +496,20 @@ func (r *DeploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	newState := flattenDeployment(ctx, deployment, state.PrivateNetwork, &resp.Diagnostics)
+	newState := flattenDeployment(ctx, deployment, state.PrivateNetwork, req, &resp.Diagnostics)
 	newState.Password = state.Password
 	newState.PasswordWoVersion = state.PasswordWoVersion
 	newState.UserName = state.UserName
 	newState.PrivateNetwork = state.PrivateNetwork
+
+	// Import (and any Read without PN in state) must rebuild private_network from
+	// the API endpoints, otherwise the next plan treats it as removed and deletes them.
+	if newState.PrivateNetwork.IsNull() {
+		newState.PrivateNetwork = privateNetworkFromEndpoints(deployment.Region, deployment.Endpoints, &resp.Diagnostics)
+		if !newState.PrivateNetwork.IsNull() {
+			newState.Endpoints = flattenFilteredEndpoints(ctx, deployment.Endpoints, newState.PrivateNetwork, &resp.Diagnostics)
+		}
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, framework.SetRegionalIdentity(deployment.Region, deployment.ID))...)
@@ -537,29 +542,28 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	if !plan.Name.Equal(state.Name) || !plan.Tags.Equal(state.Tags) {
-		updateReq := &messageqapi.UpdateDeploymentRequest{
-			Region:       region,
-			DeploymentID: id,
+	shouldUpdate := false
+	updateReq := &messageqapi.UpdateDeploymentRequest{
+		Region:       region,
+		DeploymentID: id,
+	}
+
+	if !plan.Name.Equal(state.Name) {
+		updateReq.Name = providertypes.ExpandStringPtr(plan.Name.ValueString())
+		shouldUpdate = true
+	}
+
+	if !plan.Tags.Equal(state.Tags) {
+		tags := providertypes.ExpandUpdatedStringList(ctx, plan.Tags, &resp.Diagnostics)
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
-		if !plan.Name.Equal(state.Name) {
-			updateReq.Name = providertypes.ExpandStringPtr(plan.Name.ValueString())
-		}
+		updateReq.Tags = &tags
+		shouldUpdate = true
+	}
 
-		if !plan.Tags.Equal(state.Tags) {
-			tags := expandStringList(ctx, plan.Tags, &resp.Diagnostics)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-
-			if tags == nil {
-				tags = []string{}
-			}
-
-			updateReq.Tags = &tags
-		}
-
+	if shouldUpdate {
 		_, err := r.api.UpdateDeployment(updateReq, scw.WithContext(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to update MessageQ deployment", err.Error())
@@ -639,7 +643,7 @@ func (r *DeploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	newState := flattenDeployment(ctx, deployment, plan.PrivateNetwork, &resp.Diagnostics)
+	newState := flattenDeployment(ctx, deployment, plan.PrivateNetwork, req, &resp.Diagnostics)
 	newState.Password = plan.Password
 	newState.PasswordWoVersion = plan.PasswordWoVersion
 	newState.UserName = plan.UserName
@@ -860,6 +864,7 @@ func flattenDeployment(
 	ctx context.Context,
 	deployment *messageqapi.Deployment,
 	privateNetwork types.Object,
+	reference any,
 	diags *diag.Diagnostics,
 ) deploymentResourceModel {
 	model := deploymentResourceModel{
@@ -873,7 +878,7 @@ func flattenDeployment(
 		Status:    types.StringValue(string(deployment.Status)),
 	}
 
-	tagList, d := flattenStringList(ctx, deployment.Tags)
+	tagList, d := providertypes.FlattenStringList(ctx, "tags", deployment.Tags, reference)
 	diags.Append(d...)
 
 	model.Tags = tagList
@@ -938,7 +943,6 @@ func flattenFilteredEndpoints(
 		}
 
 		desiredPNID := locality.ExpandID(pn.PrivateNetworkID.ValueString())
-		filteredEndpoints = nil
 
 		for _, ep := range allEndpoints {
 			if ep == nil || ep.PrivateNetwork == nil {
@@ -954,8 +958,6 @@ func flattenFilteredEndpoints(
 			filteredEndpoints = allEndpoints
 		}
 	} else {
-		filteredEndpoints = nil
-
 		for _, ep := range allEndpoints {
 			if ep == nil || ep.Public == nil || ep.PrivateNetwork != nil {
 				continue
@@ -1037,21 +1039,25 @@ func flattenEndpointsList(endpoints []*messageqapi.Endpoint, diags *diag.Diagnos
 	return listVal
 }
 
-func expandStringList(ctx context.Context, list types.List, diags *diag.Diagnostics) []string {
-	if list.IsNull() || list.IsUnknown() {
-		return nil
+// privateNetworkFromEndpoints rebuilds the private_network block from API endpoints
+// so Import/Read without prior state do not plan a PN removal.
+func privateNetworkFromEndpoints(
+	region scw.Region,
+	endpoints []*messageqapi.Endpoint,
+	diags *diag.Diagnostics,
+) types.Object {
+	for _, endpoint := range endpoints {
+		if endpoint == nil || endpoint.PrivateNetwork == nil || endpoint.PrivateNetwork.PrivateNetworkID == "" {
+			continue
+		}
+
+		obj, d := types.ObjectValue(privateNetworkAttrTypes(), map[string]attr.Value{
+			"private_network_id": types.StringValue(regional.NewIDString(region, endpoint.PrivateNetwork.PrivateNetworkID)),
+		})
+		diags.Append(d...)
+
+		return obj
 	}
 
-	var result []string
-	diags.Append(list.ElementsAs(ctx, &result, false)...)
-
-	return result
-}
-
-func flattenStringList(ctx context.Context, items []string) (types.List, diag.Diagnostics) {
-	if len(items) == 0 {
-		return types.ListNull(types.StringType), nil
-	}
-
-	return types.ListValueFrom(ctx, types.StringType, items)
+	return types.ObjectNull(privateNetworkAttrTypes())
 }

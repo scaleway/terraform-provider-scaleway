@@ -238,6 +238,12 @@ resource "scaleway_messageq_deployment" "pn" {
 				),
 			},
 			{
+				ResourceName:            "scaleway_messageq_deployment.pn",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password", "user_name", "password_wo", "password_wo_version"},
+			},
+			{
 				Config: fmt.Sprintf(`
 resource "scaleway_vpc" "main" {
   name = "tf-test-messageq-vpc"

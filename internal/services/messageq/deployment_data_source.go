@@ -2,6 +2,7 @@ package messageq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -17,6 +18,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/deployment_data_source.md
+var deploymentDataSourceDescription string
 
 var (
 	_ datasource.DataSource              = (*DeploymentDataSource)(nil)
@@ -55,7 +59,7 @@ func (d *DeploymentDataSource) Metadata(_ context.Context, req datasource.Metada
 
 func (d *DeploymentDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Gets information about a Scaleway MessageQ deployment.",
+		MarkdownDescription: deploymentDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"deployment_id": schema.StringAttribute{
 				Optional:            true,
@@ -210,12 +214,22 @@ func (d *DeploymentDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	var deploymentID string
 
+	deploymentIDAttr := types.StringNull()
 	hasDeploymentID := !config.DeploymentID.IsNull() && !config.DeploymentID.IsUnknown() && config.DeploymentID.ValueString() != ""
 	hasName := !config.Name.IsNull() && !config.Name.IsUnknown() && config.Name.ValueString() != ""
 
 	switch {
 	case hasDeploymentID:
-		region, deploymentID = RegionAndIDFromAttr(config.DeploymentID.ValueString(), region)
+		var parseErr error
+
+		region, deploymentID, parseErr = RegionAndIDFromAttr(config.DeploymentID.ValueString(), region)
+		if parseErr != nil {
+			resp.Diagnostics.AddError("Failed to parse deployment_id", parseErr.Error())
+
+			return
+		}
+
+		deploymentIDAttr = config.DeploymentID
 	case hasName:
 		deploymentName := config.Name.ValueString()
 		listReq := &messageqapi.ListDeploymentsRequest{
@@ -247,6 +261,7 @@ func (d *DeploymentDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		}
 
 		deploymentID = foundDeployment.ID
+		deploymentIDAttr = types.StringValue(regional.NewIDString(region, deploymentID))
 	default:
 		resp.Diagnostics.AddError(
 			"Missing lookup attribute",
@@ -263,11 +278,14 @@ func (d *DeploymentDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	flat := flattenDeployment(ctx, deployment, types.ObjectNull(privateNetworkAttrTypes()), &resp.Diagnostics)
+	flat := flattenDeployment(ctx, deployment, types.ObjectNull(privateNetworkAttrTypes()), nil, &resp.Diagnostics)
+	// Data sources must report every endpoint the API returns; resource filtering
+	// against private_network would hide private endpoints after a PN is attached.
+	flat.Endpoints = flattenEndpointsList(deployment.Endpoints, &resp.Diagnostics)
 
 	state := deploymentDataSourceModel{
 		ID:           flat.ID,
-		DeploymentID: types.StringValue(regional.NewIDString(region, deploymentID)),
+		DeploymentID: deploymentIDAttr,
 		Region:       flat.Region,
 		ProjectID:    flat.ProjectID,
 		Name:         flat.Name,

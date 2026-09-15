@@ -2,6 +2,7 @@ package messageq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 
@@ -15,6 +16,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
+
+//go:embed descriptions/certificate_authority_data_source.md
+var certificateAuthorityDataSourceDescription string
 
 var (
 	_ datasource.DataSource              = (*CertificateAuthorityDataSource)(nil)
@@ -43,7 +47,7 @@ func (d *CertificateAuthorityDataSource) Metadata(_ context.Context, req datasou
 
 func (d *CertificateAuthorityDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Gets the PEM-encoded certificate authority of a Scaleway MessageQ deployment.",
+		MarkdownDescription: certificateAuthorityDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"deployment_id": schema.StringAttribute{
 				Required:            true,
@@ -104,7 +108,12 @@ func (d *CertificateAuthorityDataSource) Read(ctx context.Context, req datasourc
 		return
 	}
 
-	region, deploymentID := RegionAndIDFromAttr(config.DeploymentID.ValueString(), region)
+	region, deploymentID, err := RegionAndIDFromAttr(config.DeploymentID.ValueString(), region)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to parse deployment_id", err.Error())
+
+		return
+	}
 
 	file, err := d.api.DownloadDeploymentCertificateAuthority(&messageqapi.DownloadDeploymentCertificateAuthorityRequest{
 		Region:       region,
@@ -135,7 +144,7 @@ func (d *CertificateAuthorityDataSource) Read(ctx context.Context, req datasourc
 	state := certificateAuthorityDataSourceModel{
 		ID:           types.StringValue(regional.NewIDString(region, deploymentID)),
 		Region:       types.StringValue(region.String()),
-		DeploymentID: types.StringValue(regional.NewIDString(region, deploymentID)),
+		DeploymentID: config.DeploymentID,
 		PEM:          types.StringValue(string(content)),
 	}
 

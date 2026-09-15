@@ -34,7 +34,7 @@ func fetchLatestVersion(tt *acctest.TestTools) string {
 
 	versionsResp, err := api.ListVersions(&messageqSDK.ListVersionsRequest{
 		Region: scw.RegionFrPar,
-	}, scw.WithAllPages())
+	}, scw.WithContext(tt.T.Context()), scw.WithAllPages())
 	if err != nil {
 		tt.T.Fatalf("unable to fetch messageq versions: %s", err)
 	}
@@ -57,7 +57,7 @@ func fetchAvailableNodeType(tt *acctest.TestTools) string {
 
 	nodeTypesResp, err := api.ListNodeTypes(&messageqSDK.ListNodeTypesRequest{
 		Region: scw.RegionFrPar,
-	}, scw.WithAllPages())
+	}, scw.WithContext(tt.T.Context()), scw.WithAllPages())
 	if err != nil {
 		tt.T.Fatalf("unable to fetch messageq node types: %s", err)
 	}

@@ -2,6 +2,7 @@ package messageq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,6 +15,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
+
+//go:embed descriptions/node_type_data_source.md
+var nodeTypeDataSourceDescription string
 
 var (
 	_ datasource.DataSource              = (*NodeTypeDataSource)(nil)
@@ -59,7 +63,7 @@ func (d *NodeTypeDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (d *NodeTypeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Gets information about a Scaleway MessageQ node type.",
+		MarkdownDescription: nodeTypeDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:            true,

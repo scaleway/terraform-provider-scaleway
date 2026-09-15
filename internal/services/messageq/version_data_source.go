@@ -2,6 +2,7 @@ package messageq
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -12,6 +13,9 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
+
+//go:embed descriptions/version_data_source.md
+var versionDataSourceDescription string
 
 var (
 	_ datasource.DataSource              = (*versionDataSource)(nil)
@@ -43,8 +47,7 @@ func (d *versionDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *versionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "The `scaleway_messageq_version` data source is used to retrieve information about an available MessageQ version.\n\n" +
-			"Refer to the [MessageQ API documentation](https://www.scaleway.com/en/developers/api/messageq) for more information.",
+		MarkdownDescription: versionDataSourceDescription,
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required:            true,
