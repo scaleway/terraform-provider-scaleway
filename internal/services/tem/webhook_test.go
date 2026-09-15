@@ -19,13 +19,13 @@ const (
 	updatedWebhookName = "terraform-webhook-updated"
 	organizationID     = "105bdce1-64c0-48ab-899d-868455867ecf"
 	webhookDomainName  = "scaleway-terraform.com"
-	DomainZone         = "webhook-test"
 )
 
 func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	subDomainName := temAccSubdomain("webhook-test", "tf-tem-wh")
 	initialEventTypes := []string{"email_delivered", "email_dropped"}
 	updatedEventTypes := []string{"email_queued"}
 
@@ -84,7 +84,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, organizationID, webhookDomainName, DomainZone, testAccTEMProjectID, webhookName, initialEventTypes[0], initialEventTypes[1]),
+				`, organizationID, webhookDomainName, subDomainName, testAccTEMProjectID, webhookName, initialEventTypes[0], initialEventTypes[1]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", webhookName),
@@ -143,7 +143,7 @@ func TestAccWebhook_BasicAndUpdate(t *testing.T) {
 						sns_arn     = scaleway_mnq_sns_topic.sns_topic.arn
 						depends_on = [scaleway_mnq_sns_topic.sns_topic]
 					}
-				`, organizationID, webhookDomainName, DomainZone, testAccTEMProjectID, updatedWebhookName, updatedEventTypes[0]),
+				`, organizationID, webhookDomainName, subDomainName, testAccTEMProjectID, updatedWebhookName, updatedEventTypes[0]),
 				Check: resource.ComposeTestCheckFunc(
 					isWebhookPresent(tt, "scaleway_tem_webhook.webhook"),
 					resource.TestCheckResourceAttr("scaleway_tem_webhook.webhook", "name", updatedWebhookName),
