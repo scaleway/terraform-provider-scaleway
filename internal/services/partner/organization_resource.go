@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	partner "github.com/scaleway/scaleway-sdk-go/api/partner/v1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
@@ -18,6 +19,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity/framework"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
 var (
@@ -75,6 +77,9 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 			"email": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The email of the new organization owner.",
+				Validators: []validator.String{
+					verify.IsStringEmail(),
+				},
 			},
 			"organization_name": schema.StringAttribute{
 				Required:            true,
@@ -87,6 +92,7 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{},
 			},
 			"owner_firstname": schema.StringAttribute{
 				Required:            true,
