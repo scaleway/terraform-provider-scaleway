@@ -11,10 +11,10 @@ func TestFlattenMXRecordValue(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		expectedPriority int
 		name             string
 		value            string
 		expectedExchange string
+		expectedPriority int
 	}{
 		{
 			name:             "priority and exchange",
