@@ -194,7 +194,7 @@ func (r *FileSystemResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	_, err = waitForFileSystem(ctx, r.api, region, fs.ID, defaultFileSystemTimeout)
+	fs, err = waitForFileSystem(ctx, r.api, region, fs.ID, defaultFileSystemTimeout)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to wait for File FileSystem during Create", err.Error())
 
