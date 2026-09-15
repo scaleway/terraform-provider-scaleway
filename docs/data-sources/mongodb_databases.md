@@ -12,8 +12,10 @@ For further information refer to the Managed Databases for MongoDB® [API docume
 ## Example Usage
 
 ```terraform
+## Example Usage
+
 resource "scaleway_mongodb_instance" "main" {
-  name        = "foobar"
+  name        = "test-mongodb-databases-datasource"
   version     = "7.0"
   node_type   = "MGDB-PLAY2-NANO"
   node_number = 1
@@ -21,13 +23,8 @@ resource "scaleway_mongodb_instance" "main" {
   password    = "thiZ_is_v&ry_s3cret"
 }
 
-data "scaleway_mongodb_databases" "db" {
+data "scaleway_mongodb_databases" "main" {
   instance_id = scaleway_mongodb_instance.main.id
-  region      = "fr-par"
-}
-
-output "database_names" {
-  value = [for database in data.scaleway_mongodb_databases.db.databases : database.name]
 }
 ```
 
