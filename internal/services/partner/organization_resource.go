@@ -107,6 +107,7 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 			},
 			"phone_number": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				MarkdownDescription: "The phone number of the new organization owner.",
 			},
 			"customer_id": schema.StringAttribute{
@@ -399,6 +400,8 @@ func convertOrganizationToState(organization *partner.Organization, partnerOrgan
 
 	if organization.LockedAt != nil {
 		data.LockedAt = types.StringValue(organization.LockedAt.String())
+	} else {
+		data.LockedAt = types.StringNull()
 	}
 
 	return data
