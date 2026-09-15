@@ -259,7 +259,6 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	_, err = waitForFileSystem(ctx, r.api, region, id, defaultFileSystemTimeout)
 	if err != nil {
-		// FIXME: Why this case?
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
 
