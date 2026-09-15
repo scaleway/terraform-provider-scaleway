@@ -395,8 +395,8 @@ func flattenFilesystem(ctx context.Context, fs *file.FileSystem, reference any, 
 		Region:              types.StringValue(fs.Region.String()),
 		Status:              types.StringValue(fs.Status.String()),
 		NumberOfAttachments: types.Int64Value(int64(fs.NumberOfAttachments)),
-		CreatedAt:           types.StringValue(fs.CreatedAt.String()),
-		UpdatedAt:           types.StringValue(fs.UpdatedAt.String()),
+		CreatedAt:           types.StringValue(fs.CreatedAt.Format(time.RFC3339)),
+		UpdatedAt:           types.StringValue(fs.UpdatedAt.Format(time.RFC3339)),
 		SRN:                 types.StringValue(fs.Srn),
 	}
 

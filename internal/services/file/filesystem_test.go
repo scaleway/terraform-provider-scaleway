@@ -39,6 +39,8 @@ func TestAccFileSystem_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "name", fileSystemName),
 					resource.TestCheckResourceAttr("scaleway_file_filesystem.fs", "size_in_gb", strconv.Itoa(sizeInGB)),
 					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "srn", regexp.MustCompile(`^srn://file\..+/regions/.+/file-systems/.+$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "created_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
+					resource.TestMatchResourceAttr("scaleway_file_filesystem.fs", "updated_at", regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`)),
 				),
 			},
 			{
