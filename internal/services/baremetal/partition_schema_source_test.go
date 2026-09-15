@@ -1,7 +1,8 @@
 package baremetal_test
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -455,8 +456,8 @@ func testAccCheckEasyPartitioning(tt *acctest.TestTools, serverName, dataSourceN
 		}
 
 		if !reflect.DeepEqual(&expectedSchema, server.Install.PartitioningSchema) {
-			expectedStr, _ := json.MarshalIndent(expectedSchema, "", "  ")
-			actualStr, _ := json.MarshalIndent(server.Install.PartitioningSchema, "", "  ")
+			expectedStr, _ := json.Marshal(expectedSchema, jsontext.WithIndent("  "))
+			actualStr, _ := json.Marshal(server.Install.PartitioningSchema, jsontext.WithIndent("  "))
 
 			return fmt.Errorf("partitioning schema mismatch:\nExpected:\n%s\nActual:\n%s", expectedStr, actualStr)
 		}
