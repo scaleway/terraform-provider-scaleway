@@ -202,6 +202,18 @@ func TestAccPartnerOrganizationResource_DefaultPartnerID(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_partner_organization.main", "customer_id", "customer-default"),
 				),
 			},
+			{
+				Config: fmt.Sprintf(`
+					resource "scaleway_partner_organization" "main" {
+						email           = "%s"
+						organization_name = "tf_test_partner_org_default"
+						owner_firstname = "John"
+						owner_lastname  = "Doe"
+						customer_id     = "customer-default"
+					}
+				`, email),
+				PlanOnly: true,
+			},
 		},
 	})
 }
