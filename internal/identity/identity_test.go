@@ -12,11 +12,11 @@ func TestUpgradeDefaultRegionalToComposite(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		partKeys []string
 		rawState map[string]any
 		want     map[string]any
 		name     string
 		wantErr  string
+		partKeys []string
 	}{
 		{
 			name:     "database from default regional",
