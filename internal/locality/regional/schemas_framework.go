@@ -33,7 +33,8 @@ func SchemaAttribute(description ...string) schema.StringAttribute {
 	}
 }
 
-// SchemaAttribute returns a Plugin Framework schema attribute for a region field
+// SchemaAttributeComputed returns a Plugin Framework schema attribute for a region field,
+// with the `Computed` field set to `true`.
 func SchemaAttributeComputed(description ...string) schema.StringAttribute {
 	desc := "The region you want to attach the resource to"
 	if len(description) > 0 {
