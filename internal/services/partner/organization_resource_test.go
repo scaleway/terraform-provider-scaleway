@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
+	sdkacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	partnerSDK "github.com/scaleway/scaleway-sdk-go/api/partner/v1"
@@ -23,10 +23,10 @@ func partnerEmail(t *testing.T) string {
 	t.Helper()
 
 	if *acctest.UpdateCassettes {
-		return uuid.NewString() + "@example.com"
+		return sdkacctest.RandomWithPrefix("tf_test") + "@example.com"
 	}
 
-	return "test@example.com"
+	return "tf_test@example.com"
 }
 
 func TestAccPartnerOrganizationResource_Basic(t *testing.T) {
