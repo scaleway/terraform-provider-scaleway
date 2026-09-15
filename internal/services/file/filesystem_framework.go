@@ -262,6 +262,7 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 	// FIXME: how to handle timeout?
 	_, err = waitForFileSystem(ctx, r.api, region, id, time.Second*30)
 	if err != nil {
+		// FIXME: Why this case?
 		if httperrors.Is404(err) {
 			resp.State.RemoveResource(ctx)
 
@@ -303,9 +304,22 @@ func (r *FileSystemResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	fs, err := r.api.UpdateFileSystem(updateReq, scw.WithContext(ctx))
+	_, err = r.api.UpdateFileSystem(updateReq, scw.WithContext(ctx))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to update File FileSystem", err.Error())
+		return
+	}
+
+	fs, err := waitForFileSystem(ctx, r.api, region, id, time.Second*30)
+	if err != nil {
+		// FIXME: Why this case?
+		if httperrors.Is404(err) {
+			resp.State.RemoveResource(ctx)
+
+			return
+		}
+
+		resp.Diagnostics.AddError("Failed to wait for File FileSystem during Update", err.Error())
 		return
 	}
 
