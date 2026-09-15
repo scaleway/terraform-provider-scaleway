@@ -12,10 +12,10 @@ func TestUpgradeDefaultRegionalToComposite(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name     string
 		partKeys []string
 		rawState map[string]any
 		want     map[string]any
+		name     string
 		wantErr  string
 	}{
 		{
