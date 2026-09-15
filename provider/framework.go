@@ -42,6 +42,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/sweeper"
 )
 
 var (
@@ -284,6 +285,7 @@ func (p *ScalewayProvider) Actions(_ context.Context) []func() action.Action {
 		rdb.NewReadReplicaResetAction,
 		s2svpn.NewConnectionEnableRoutePropagationAction,
 		s2svpn.NewConnectionDisableRoutePropagationAction,
+		sweeper.NewSweepResourcesAction,
 		vpcgw.NewRefreshSSHKeysAction,
 	}
 }
