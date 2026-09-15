@@ -304,8 +304,30 @@ func ResourceInstancePrivateNICDelete(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
-	zone, privateNICID, _, err := zonal.ParseNestedID(d.Id())
+	zone, privateNICID, serverID, err := zonal.ParseNestedID(d.Id())
 	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	_, err = waitForPrivateNIC(ctx, instanceAPI, zone, privateNICID, d.Timeout(schema.TimeoutDelete))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
+		return diag.FromErr(err)
+	}
+
+	_, err = instanceAPI.DetachServerPrivateNetworkInterface(&instance.DetachServerPrivateNetworkInterfaceRequest{
+		PrivateNetworkInterfaceID: privateNICID,
+		ServerID:                  serverID,
+		Zone:                      zone,
+	}, scw.WithContext(ctx))
+	if err != nil {
+		if httperrors.Is404(err) {
+			return nil
+		}
+
 		return diag.FromErr(err)
 	}
 
