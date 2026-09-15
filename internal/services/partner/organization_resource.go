@@ -93,7 +93,9 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				Validators: []validator.String{},
+				Validators: []validator.String{
+					verify.IsStringUUID(),
+				},
 			},
 			"owner_firstname": schema.StringAttribute{
 				Required:            true,
