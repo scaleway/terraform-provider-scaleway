@@ -102,16 +102,16 @@ func UpgradeDefaultRegionalToComposite(partKeys ...string) schema.ResourceIdenti
 
 		region, _ := rawState["region"].(string)
 
-		parts := strings.SplitN(id, "/", len(partKeys))
-		if len(parts) != len(partKeys) {
+		parsed := ParseMultiPartID(id, partKeys...)
+		if len(parsed) != len(partKeys) {
 			return nil, fmt.Errorf("identity id %q does not have %d parts for keys %v", id, len(partKeys), partKeys)
 		}
 
 		result := map[string]any{
 			"region": region,
 		}
-		for i, key := range partKeys {
-			result[key] = parts[i]
+		for _, key := range partKeys {
+			result[key] = parsed[key]
 		}
 
 		return result, nil
