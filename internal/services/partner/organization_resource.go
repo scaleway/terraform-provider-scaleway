@@ -91,6 +91,7 @@ func (r *PartnerOrganizationResource) Schema(ctx context.Context, req resource.S
 				MarkdownDescription: "Your personal partner_id. This is the same as your Organization ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{},
 			},
