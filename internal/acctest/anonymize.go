@@ -17,7 +17,7 @@ var SensitiveFields = map[string]any{
 	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
 	"password":      "xxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-	"email":         "test@example.com",
+	"email":         "tf_test@example.com",
 }
 
 // LeakCheckFields: fields checked on request body only (responses ignored).
@@ -27,7 +27,7 @@ var LeakCheckFields = map[string]any{
 	"secret":        "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
 	"token":         "xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxxxxxx",
 	"authorization": "Bearer xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-	"email":         "test@example.com",
+	"email":         "tf_test@example.com",
 }
 
 // FieldNamespaces restricts a sensitive field to a specific API namespace
