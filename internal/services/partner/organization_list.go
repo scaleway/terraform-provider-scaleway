@@ -152,13 +152,16 @@ func (r *PartnerOrganizationListResource) List(ctx context.Context, req list.Lis
 		return
 	}
 
-	partnerOrganizationID, err := resolvePartnerOrganizationID(data.PartnerID.ValueString(), r.meta)
-	if err != nil {
-		stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
-			diag.NewErrorDiagnostic("Listing Partner Organizations", err.Error()),
-		})
+	var partnerOrganizationID string
+	if req.IncludeResource {
+		partnerOrganizationID, err = resolvePartnerOrganizationID(data.PartnerID.ValueString(), r.meta)
+		if err != nil {
+			stream.Results = list.ListResultsStreamDiagnostics(diag.Diagnostics{
+				diag.NewErrorDiagnostic("Listing Partner Organizations", err.Error()),
+			})
 
-		return
+			return
+		}
 	}
 
 	stream.Results = func(push func(list.ListResult) bool) {
