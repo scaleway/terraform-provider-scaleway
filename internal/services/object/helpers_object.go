@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime"
 	"strings"
@@ -420,9 +421,9 @@ func ComputeObjectBucketURLs(
 		return fmt.Sprintf("%s/%s", apiEndpoint, bucketName), apiEndpoint
 	}
 
-	tab := strings.Split(apiEndpoint, "//")
-	if len(tab) == 2 {
-		return fmt.Sprintf("%s//%s.%s", tab[0], bucketName, tab[1]), apiEndpoint
+	parsed, err := url.Parse(apiEndpoint)
+	if err == nil && parsed.Scheme != "" && parsed.Host != "" {
+		return fmt.Sprintf("%s://%s.%s", parsed.Scheme, bucketName, parsed.Host), apiEndpoint
 	}
 
 	return fmt.Sprintf("%s.%s", bucketName, apiEndpoint), apiEndpoint

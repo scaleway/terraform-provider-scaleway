@@ -1,6 +1,7 @@
 package object_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -234,6 +235,7 @@ func TestComputeObjectBucketURLsProviderFalseNotOverriddenByEnv(t *testing.T) {
 		"SCW_CONFIG_PATH",
 	} {
 		t.Setenv(env, "")
+		require.NoError(t, os.Unsetenv(env))
 	}
 
 	// Build a Meta with s3_use_path_style explicitly set to false.
