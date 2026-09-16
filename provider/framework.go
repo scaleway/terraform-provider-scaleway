@@ -32,6 +32,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/instance"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/ipam"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/jobs"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/kafka"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/keymanager"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/lb"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/mongodb"
@@ -306,6 +307,7 @@ func (p *ScalewayProvider) DataSources(_ context.Context) []func() datasource.Da
 		iam.NewSamlCertificateDataSource,
 		iam.NewScimDataSource,
 		iam.NewScimTokenDataSource,
+		kafka.NewVersionDataSource,
 	}
 }
 
