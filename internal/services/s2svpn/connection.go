@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	s2s_vpn "github.com/scaleway/scaleway-sdk-go/api/s2s_vpn/v1alpha1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/dsf"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/identity"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/regional"
@@ -159,14 +160,20 @@ func connectionSchema() map[string]*schema.Schema {
 			Description: "The status of the VPN gateway",
 		},
 		"secret_id": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "The BGP peer IP on customer side",
+			Type:             schema.TypeString,
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			Description:      "The ID of a Secret Manager secret containing the PSK. Prefer creating a scaleway_secret (and scaleway_secret_version) yourself so Terraform manages its lifecycle",
+			DiffSuppressFunc: dsf.Locality,
+			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		},
 		"secret_version": {
 			Type:        schema.TypeInt,
+			Optional:    true,
 			Computed:    true,
-			Description: "The BGP peer IP on customer side",
+			ForceNew:    true,
+			Description: "The version of the secret containing the PSK. If omitted, the latest version is used",
 		},
 		"srn": {
 			Type:        schema.TypeString,
@@ -277,6 +284,7 @@ func ResourceConnectionCreate(ctx context.Context, d *schema.ResourceData, m any
 		CustomerGatewayID:      regional.ExpandID(d.Get("customer_gateway_id").(string)).ID,
 		Ikev2Ciphers:           expandConnectionCiphers(d.Get("ikev2_ciphers")),
 		EspCiphers:             expandConnectionCiphers(d.Get("esp_ciphers")),
+		Secret:                 expandConnectionSecret(d.Get("secret_id"), d.Get("secret_version")),
 	}
 
 	if bgpConfigIpv4Config != nil {

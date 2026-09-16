@@ -13,6 +13,8 @@ resource "scaleway_s2s_vpn_connection" "main" {
   customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
   initiation_policy        = "customer_gateway"
   enable_route_propagation = false
+  secret_id                = scaleway_secret.psk.id
+  secret_version           = scaleway_secret_version.psk.revision
 
   lifecycle {
     action_trigger {

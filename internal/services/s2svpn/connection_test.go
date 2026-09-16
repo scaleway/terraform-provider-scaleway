@@ -12,7 +12,23 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/s2svpn"
+	secrettestfuncs "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/secret/testfuncs"
 )
+
+func testAccConnectionPSKSecretConfig(name string) string {
+	return fmt.Sprintf(`
+					resource "scaleway_secret" "psk" {
+						name   = %[1]q
+						region = "fr-par"
+					}
+
+					resource "scaleway_secret_version" "psk" {
+						secret_id = scaleway_secret.psk.id
+						data      = "tf_test_s2s_vpn.psk"
+						region    = "fr-par"
+					}
+`, name)
+}
 
 func TestAccConnection_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
@@ -25,10 +41,11 @@ func TestAccConnection_Basic(t *testing.T) {
 			testAccCheckVPNGatewayDestroy(tt),
 			testAccCheckCustomerGatewayDestroy(tt),
 			testAccCheckRoutingPolicyDestroy(tt),
+			secrettestfuncs.CheckSecretDestroy(tt),
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: testAccConnectionPSKSecretConfig("tf-test-connection-psk") + `
 					resource "scaleway_vpc" "main" {
 						name = "tf-test-vpc-connection"
 					}
@@ -70,6 +87,8 @@ func TestAccConnection_Basic(t *testing.T) {
 						customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.main.id
 						initiation_policy        = "customer_gateway"
 						enable_route_propagation = true
+						secret_id                = scaleway_secret.psk.id
+						secret_version           = scaleway_secret_version.psk.revision
 						region                   = "fr-par"
 
 						bgp_config_ipv4 {
@@ -98,8 +117,8 @@ func TestAccConnection_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "enable_route_propagation", "true"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_connection.main", "id"),
 					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_connection.main", "status"),
-					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_connection.main", "secret_id"),
-					resource.TestCheckResourceAttrSet("scaleway_s2s_vpn_connection.main", "secret_version"),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_id", "scaleway_secret.psk", "id"),
+					resource.TestCheckResourceAttrPair("scaleway_s2s_vpn_connection.main", "secret_version", "scaleway_secret_version.psk", "revision"),
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "bgp_config_ipv4.0.private_ip", "169.254.0.1/30"),
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "bgp_config_ipv4.0.peer_private_ip", "169.254.0.2/30"),
 					resource.TestCheckResourceAttr("scaleway_s2s_vpn_connection.main", "ikev2_ciphers.0.encryption", "aes256"),

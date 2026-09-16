@@ -45,12 +45,23 @@ resource "scaleway_s2s_vpn_routing_policy" "policy" {
   prefix_filter_out = ["10.0.1.0/24"]
 }
 
+resource "scaleway_secret" "psk" {
+  name = "my-s2s-vpn-psk"
+}
+
+resource "scaleway_secret_version" "psk" {
+  secret_id = scaleway_secret.psk.id
+  data      = "your_s2s_vpn.psk"
+}
+
 resource "scaleway_s2s_vpn_connection" "main" {
   name                     = "my-vpn-connection"
   vpn_gateway_id           = scaleway_s2s_vpn_gateway.gateway.id
   customer_gateway_id      = scaleway_s2s_vpn_customer_gateway.customer_gw.id
   initiation_policy        = "customer_gateway"
   enable_route_propagation = true
+  secret_id                = scaleway_secret.psk.id
+  secret_version           = scaleway_secret_version.psk.revision
 
   bgp_config_ipv4 {
     routing_policy_id = scaleway_s2s_vpn_routing_policy.policy.id
@@ -87,6 +98,8 @@ The following arguments are supported:
 - `name` - (Optional) The name of the connection.
 - `tags` - (Optional) The list of tags to apply to the connection.
 - `is_ipv6` - (Optional) Defines IP version of the IPSec Tunnel. Defaults to `false` (IPv4).
+- `secret_id` - (Optional) The ID of a Secret Manager secret containing the pre-shared key (PSK). **Prefer creating a [`scaleway_secret`](secret.md) and [`scaleway_secret_version`](secret_version.md) yourself and passing the ID here**, so Terraform manages the secret's lifecycle.
+- `secret_version` - (Optional) The version of the secret containing the PSK. If omitted, the latest version is used.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the connection is associated with.
 
@@ -117,8 +130,6 @@ In addition to all arguments above, the following attributes are exported:
 - `bgp_status_ipv6` - The status of the BGP IPv6 session.
 - `bgp_session_ipv4` - The BGP IPv4 session information. See [BGP Session](#bgp-session) below.
 - `bgp_session_ipv6` - The BGP IPv6 session information. See [BGP Session](#bgp-session) below.
-- `secret_id` - The ID of the secret containing the pre-shared key (PSK) for the connection.
-- `secret_version` - The version of the secret containing the PSK.
 - `route_propagation_enabled` - Whether route propagation is enabled.
 - `created_at` - The date and time of the creation of the connection (RFC 3339 format).
 - `updated_at` - The date and time of the last update of the connection (RFC 3339 format).
@@ -135,11 +146,11 @@ The `bgp_session_ipv4` and `bgp_session_ipv6` blocks contain (read-only):
 
 ~> **Important:** Connections' IDs are [regional](../guides/regions_and_zones.md#resource-ids), which means they are of the form `{region}/{id}`, e.g. `fr-par/11111111-1111-1111-1111-111111111111`
 
-~> **Important:** The pre-shared key (PSK) is auto-generated when the connection is created and stored in Scaleway Secret Manager. You can retrieve it using the `scaleway_secret_version` datasource or via the API.
+~> **Important:** Create a `scaleway_secret` (and `scaleway_secret_version`) for the PSK and pass `secret_id` to the connection. Secrets auto-created by the API when `secret_id` is omitted are **not** removed when the connection is destroyed.
 
 ## Retrieving the Pre-Shared Key (PSK)
 
-The PSK is stored in Secret Manager and can be retrieved using:
+When you manage the secret with Terraform, read the PSK from `scaleway_secret_version`. If you used an auto-created secret, retrieve it with:
 
 ```terraform
 data "scaleway_secret_version" "s2s_psk" {

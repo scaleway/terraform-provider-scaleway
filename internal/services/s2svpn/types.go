@@ -108,6 +108,23 @@ func expandConnectionCiphers(raw any) []*s2s_vpn.ConnectionCipher {
 	return res
 }
 
+func expandConnectionSecret(rawID, rawRevision any) *s2s_vpn.CreateConnectionRequestSecret {
+	secretID, ok := rawID.(string)
+	if !ok || secretID == "" {
+		return nil
+	}
+
+	secret := &s2s_vpn.CreateConnectionRequestSecret{
+		ID: locality.ExpandID(secretID),
+	}
+
+	if revision, ok := rawRevision.(int); ok && revision > 0 {
+		secret.Revision = types.ExpandUint32Ptr(revision)
+	}
+
+	return secret
+}
+
 func flattenVPNGatewayPublicConfig(region scw.Region, config *s2s_vpn.VpnGatewayPublicConfig) any {
 	if config == nil {
 		return nil
