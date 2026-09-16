@@ -6,7 +6,7 @@ page_title: "Scaleway: scaleway_opensearch_user"
 # Resource: scaleway_opensearch_user
 
 Creates and manages OpenSearch users on a Scaleway OpenSearch deployment.
-For more information refer to the [product documentation](https://www.scaleway.com/en/docs/managed-opensearch/) and the [API documentation](https://www.scaleway.com/en/developers/api/cloud-essentials-for-opensearch/).
+For more information refer to the [product documentation](https://www.scaleway.com/en/docs/opensearch/) and the [API documentation](https://www.scaleway.com/en/developers/api/cloud-essentials-for-opensearch/).
 
 ## Example Usage
 
