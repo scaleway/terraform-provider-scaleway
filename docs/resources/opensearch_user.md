@@ -43,7 +43,7 @@ The following arguments are supported:
 - `password` - (Optional, Sensitive) Password for the OpenSearch user. Only one of `password` and `password_wo` should be specified.
 - `password_wo` - (Optional, Write-only) Password for the OpenSearch user in [write-only](../guides/using-write-only-arguments.md) mode. Only one of `password` and `password_wo` should be specified. `password_wo` is not stored in the Terraform state. To update it, also update `password_wo_version`.
 - `password_wo_version` - (Optional) Version of the write-only password. Required when `password_wo` is set; bump this value to rotate the password.
-- `region` - (Defaults to [provider](../index.md#region) `region`) The [region](../guides/regions_and_zones.md#regions) in which the user should be created.
+- `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the user should be created.
 
 ## Attributes Reference
 
