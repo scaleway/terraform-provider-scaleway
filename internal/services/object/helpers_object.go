@@ -321,6 +321,8 @@ func retrieveS3Endpoint(
 	if m != nil {
 		scwClient := meta.ExtractScwClient(m)
 		profileS3Endpoint, s3EndpointOk = scwClient.GetS3Endpoint()
+	} else if metaStruct != nil {
+		profileS3Endpoint, s3EndpointOk = metaStruct.ScwClient().GetS3Endpoint()
 	}
 
 	if s3EndpointOk && profileS3Endpoint != "" {
