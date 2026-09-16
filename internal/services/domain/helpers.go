@@ -9,6 +9,7 @@ import (
 	domain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/api/std"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 )
 
@@ -398,7 +399,11 @@ func FindTaskByDomain(ctx context.Context, registrarAPI *domain.RegistrarAPI, do
 		Domain: domainName,
 	}, scw.WithContext(ctx))
 	if domainErr != nil {
-		return nil, fmt.Errorf("no domain registration task found for domain %q", domainName)
+		if httperrors.Is404(domainErr) {
+			return nil, fmt.Errorf("no domain registration found for domain %q: %w", domainName, domainErr)
+		}
+
+		return nil, fmt.Errorf("failed to get domain %q: %w", domainName, domainErr)
 	}
 
 	// Return a synthetic task: the domain exists but has no task history.

@@ -656,14 +656,28 @@ func readRegistrationIntoState(ctx context.Context, d *schema.ResourceData, m an
 	_ = d.Set("project_id", projectID)
 
 	// When the ID segment is a task UUID (no dot), preserve it as task_id.
-	// In domain format, task_id is set during create and preserved.
+	// In domain format, look up the task when task_id is missing so import by
+	// domain name converges with create (task_id set when the task still exists).
 	idSegment := id
 	if i := strings.LastIndex(id, "/"); i != -1 {
 		idSegment = id[i+1:]
 	}
 
-	if idSegment != "" && !strings.Contains(idSegment, ".") {
+	switch {
+	case idSegment != "" && !strings.Contains(idSegment, "."):
 		_ = d.Set("task_id", idSegment)
+	case d.Get("task_id").(string) == "":
+		// Do not filter by project_id: domain names are globally unique and a
+		// project filter would change the ListTasks query shape (breaks VCR and
+		// is unnecessary for this lookup).
+		task, findErr := FindTaskByDomain(ctx, registrarAPI, firstDomain, nil)
+		if findErr != nil {
+			return diag.FromErr(findErr)
+		}
+
+		if task.ID != "" {
+			_ = d.Set("task_id", task.ID)
+		}
 	}
 
 	// The stable resource ID stores all domain names comma-separated so multi-domain
@@ -680,7 +694,12 @@ func resourceRegistrationUpdate(ctx context.Context, d *schema.ResourceData, m a
 
 	domainNames, err := ExtractDomainsFromTaskID(ctx, id, registrarAPI)
 	if err != nil {
-		return diag.FromErr(err)
+		// Task purged from ListTasks — fall back to domain_names already in state
+		// (same path as Read/Delete for archived registration tasks).
+		domainNames = registrationDomainNamesFromState(d)
+		if len(domainNames) == 0 {
+			return diag.FromErr(err)
+		}
 	}
 
 	if len(domainNames) == 0 {

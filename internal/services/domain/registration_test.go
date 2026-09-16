@@ -1,7 +1,6 @@
 package domain_test
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -188,7 +187,7 @@ func testAccCheckDomainStatus(tt *acctest.TestTools, expectedAutoRenew, expected
 
 			registrarAPI := domain.NewRegistrarDomainAPI(tt.Meta)
 
-			domainNames, err := domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
+			domainNames, err := domain.ExtractDomainsFromTaskID(tt.T.Context(), rs.Primary.ID, registrarAPI)
 			if err != nil {
 				return fmt.Errorf("error extracting domains: %w", err)
 			}
@@ -228,7 +227,7 @@ func testAccCheckDomainDestroy(tt *acctest.TestTools) resource.TestCheckFunc {
 			if len(domainNames) == 0 {
 				var err error
 
-				domainNames, err = domain.ExtractDomainsFromTaskID(context.TODO(), rs.Primary.ID, registrarAPI)
+				domainNames, err = domain.ExtractDomainsFromTaskID(tt.T.Context(), rs.Primary.ID, registrarAPI)
 				if err != nil {
 					return err
 				}
@@ -415,7 +414,7 @@ func TestAccDomainRegistration_ByDomainName(t *testing.T) {
 				ImportState:             true,
 				ImportStateId:           singleDomain,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"duration_in_years", "task_id"},
+				ImportStateVerifyIgnore: []string{"duration_in_years"},
 			},
 		},
 	})
