@@ -57,6 +57,7 @@ import (
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpc"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/vpcgw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/webhosting"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/verify"
 )
 
@@ -458,10 +459,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				}
 			}
 
-			s3UsePathStyle := false
-			if rawS3UsePathStyle, ok := data.GetOk("s3_use_path_style"); ok {
-				s3UsePathStyle = rawS3UsePathStyle.(bool)
-			}
+			s3UsePathStyle := types.ExpandBoolPtr(types.GetBool(data, "s3_use_path_style"))
 
 			m, err := meta.NewMeta(ctx, &meta.Config{
 				ProviderSchema:   data,

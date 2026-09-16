@@ -51,8 +51,10 @@ type Meta struct {
 	// endpoints from the provider configuration
 	// Possible keys are: "s3"
 	endpoints map[string]string
-	// s3UsePathStyle determines the format of bucket access endpoints
-	s3UsePathStyle bool
+	// s3UsePathStyle determines the format of bucket access endpoints.
+	// It is a pointer so that we can distinguish between "not set" (nil)
+	// and "explicitly set to false".
+	s3UsePathStyle *bool
 }
 
 // NewMeta creates the Meta object containing the SDK client.
@@ -110,7 +112,7 @@ func NewMetaFromFrameworkConfig(ctx context.Context, config *FrameworkProviderCo
 	return NewMetaFromProfile(ctx, profile, credentialsSource, config.Endpoints, config.S3UsePathStyle, terraformVersion, nil)
 }
 
-func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
+func NewMetaFromProfile(ctx context.Context, profile *scw.Profile, credentialsSource *CredentialsSource, endpoints map[string]string, s3UsePathStyle *bool, terraformVersion string, httpClient *http.Client) (*Meta, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{Transport: transport.NewRetryableTransport(http.DefaultTransport)}
 	}
@@ -172,7 +174,21 @@ func (m Meta) Endpoints() map[string]string {
 }
 
 func (m Meta) S3UsePathStyle() bool {
-	return m.s3UsePathStyle
+	if m.s3UsePathStyle == nil {
+		return false
+	}
+
+	return *m.s3UsePathStyle
+}
+
+// S3UsePathStyleOk returns the s3_use_path_style value and whether it was
+// explicitly set in the provider configuration.
+func (m Meta) S3UsePathStyleOk() (bool, bool) {
+	if m.s3UsePathStyle == nil {
+		return false, false
+	}
+
+	return *m.s3UsePathStyle, true
 }
 
 // HasMultipleVariableSources return an informative message during the Provider initialization
@@ -228,13 +244,13 @@ type Config struct {
 	ProviderSchema      *schema.ResourceData
 	HTTPClient          *http.Client
 	Endpoints           map[string]string
+	S3UsePathStyle      *bool
 	TerraformVersion    string
 	ForceZone           scw.Zone
 	ForceProjectID      string
 	ForceOrganizationID string
 	ForceAccessKey      string
 	ForceSecretKey      string
-	S3UsePathStyle      bool
 }
 
 func customizeUserAgent(providerVersion string, terraformVersion string) string {
@@ -249,6 +265,7 @@ func customizeUserAgent(providerVersion string, terraformVersion string) string 
 
 type FrameworkProviderConfig struct {
 	Endpoints      map[string]string
+	S3UsePathStyle *bool
 	AccessKey      string
 	SecretKey      string
 	ProfileName    string
@@ -257,7 +274,6 @@ type FrameworkProviderConfig struct {
 	Region         string
 	Zone           string
 	APIURL         string
-	S3UsePathStyle bool
 }
 
 func LoadProfileFromFrameworkConfig(ctx context.Context, config *FrameworkProviderConfig) (*scw.Profile, *CredentialsSource, error) {

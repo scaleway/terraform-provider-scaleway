@@ -7,9 +7,11 @@ import (
 	s3Types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -214,4 +216,44 @@ func TestComputeObjectBucketURLs(t *testing.T) {
 			assert.Equal(t, tt.expectedAPIEndpoint, apiEndpoint)
 		})
 	}
+}
+
+// TestComputeObjectBucketURLsProviderFalseNotOverriddenByEnv tests that when
+// the provider explicitly sets s3_use_path_style = false, the
+// SCW_S3_USE_PATH_STYLE environment variable does not override it.
+func TestComputeObjectBucketURLsProviderFalseNotOverriddenByEnv(t *testing.T) {
+	// Ensure a clean environment for the test.
+	for _, env := range []string{
+		scw.ScwS3UsePathStyleEnv,
+		scw.ScwAccessKeyEnv,
+		scw.ScwSecretKeyEnv,
+		scw.ScwDefaultProjectIDEnv,
+		scw.ScwDefaultOrganizationIDEnv,
+		scw.ScwDefaultRegionEnv,
+		scw.ScwDefaultZoneEnv,
+		"SCW_CONFIG_PATH",
+	} {
+		t.Setenv(env, "")
+	}
+
+	// Build a Meta with s3_use_path_style explicitly set to false.
+	m, err := meta.NewMeta(t.Context(), &meta.Config{
+		S3UsePathStyle: types.ExpandBoolPtr(false),
+	})
+	require.NoError(t, err)
+
+	// Now set the env var to true — it should NOT override the provider block.
+	t.Setenv(scw.ScwS3UsePathStyleEnv, "true")
+
+	// Use a resource schema that does NOT include s3_use_path_style,
+	// simulating a bucket resource (which doesn't have that field).
+	resourceSchema := map[string]*schema.Schema{}
+	d := schema.TestResourceDataRaw(t, resourceSchema, map[string]any{})
+
+	endpoint, apiEndpoint := object.ComputeObjectBucketURLs(d, m, "my-bucket", scw.RegionFrPar)
+
+	// With usePathStyle=false (from provider), the URL should be
+	// virtual-hosted-style, NOT path-style.
+	assert.Equal(t, "https://my-bucket.s3.fr-par.scw.cloud", endpoint)
+	assert.Equal(t, "https://s3.fr-par.scw.cloud", apiEndpoint)
 }

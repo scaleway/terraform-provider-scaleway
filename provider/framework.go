@@ -199,7 +199,8 @@ func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *
 	}
 
 	if !model.S3UsePathStyle.IsNull() && !model.S3UsePathStyle.IsUnknown() {
-		config.S3UsePathStyle = model.S3UsePathStyle.ValueBool()
+		s3UsePathStyle := model.S3UsePathStyle.ValueBool()
+		config.S3UsePathStyle = &s3UsePathStyle
 	}
 
 	return config

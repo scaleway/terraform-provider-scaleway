@@ -93,8 +93,8 @@ func ExtractS3UsePathStyle(d terraformResourceData, m any) (s3UsePathStyle, ok b
 			return false, false
 		}
 
-		if meta.S3UsePathStyle() {
-			return true, true
+		if usePathStyle, ok := meta.S3UsePathStyleOk(); ok {
+			return usePathStyle, true
 		}
 	}
 
