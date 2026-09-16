@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 // TestSDKv2ProviderConfigSources tests that the SDKv2 provider
@@ -258,7 +259,7 @@ func TestSDKv2ProviderMetaInitialization(t *testing.T) {
 			Endpoints: map[string]string{
 				"s3": s3Endpoint,
 			},
-			S3UsePathStyle: true,
+			S3UsePathStyle: types.ExpandBoolPtr(true),
 		}
 
 		m, err := meta.NewMeta(t.Context(), sdkv2Config)

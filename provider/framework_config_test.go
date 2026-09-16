@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 	"github.com/scaleway/terraform-provider-scaleway/v2/provider"
 )
 
@@ -274,7 +275,7 @@ func TestFrameworkProviderMetaInitialization(t *testing.T) {
 			Endpoints: map[string]string{
 				"s3": s3Endpoint,
 			},
-			S3UsePathStyle: true,
+			S3UsePathStyle: types.ExpandBoolPtr(true),
 		}
 
 		m, err := meta.NewMetaFromFrameworkConfig(t.Context(), frameworkConfig, "1.0.0")
