@@ -230,6 +230,7 @@ func SDKProvider(config *Config) plugin.ProviderFunc {
 				"scaleway_mongodb_user":                                       mongodb.ResourceUser(),
 				"scaleway_object":                                             object.ResourceObject(),
 				"scaleway_opensearch_deployment":                              opensearch.ResourceDeployment(),
+				"scaleway_opensearch_user":                                    opensearch.ResourceUser(),
 				"scaleway_object_bucket":                                      object.ResourceBucket(),
 				"scaleway_object_bucket_acl":                                  object.ResourceBucketACL(),
 				"scaleway_object_bucket_lock_configuration":                   object.ResourceLockConfiguration(),
