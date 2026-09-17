@@ -122,14 +122,14 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Description: "Import snapshot from a qcow",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "Bucket containing qcow",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
 					},
 					"key": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "Key of the qcow file in the specified bucket",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
@@ -144,11 +144,11 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Description: "Export snapshot to a qcow",
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "Bucket containing qcow",
 					},
 					"key": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "Key of the qcow file in the specified bucket",
 					},
 				},
