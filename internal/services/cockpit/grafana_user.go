@@ -2,6 +2,7 @@ package cockpit
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strconv"
 	"time"
@@ -106,6 +107,13 @@ func ResourceCockpitGrafanaUserCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.FromErr(err)
 	}
 
+	// Wait until the user is visible in ListGrafanaUsers before Read; a freshly created
+	// user can be missing briefly while cockpit metadata propagates.
+	_, err = waitForGrafanaUser(ctx, api, projectID, grafanaUser.ID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return ResourceCockpitGrafanaUserRead(ctx, d, m)
 }
 
@@ -115,7 +123,7 @@ func ResourceCockpitGrafanaUserRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	grafanaUser, err := findGrafanaUser(ctx, api, projectID, grafanaUserID)
+	grafanaUser, err := getGrafanaUser(ctx, api, projectID, grafanaUserID)
 	if err != nil {
 		if httperrors.Is404(err) {
 			d.SetId("")
@@ -182,10 +190,28 @@ func ResourceCockpitGrafanaUserDelete(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-// findGrafanaUser waits until the Grafana user appears in ListGrafanaUsers. A freshly created user
-// can be missing from the list while permissions and cockpit metadata propagate; clearing state in
-// that window makes Terraform report an inconsistent result after apply.
-func findGrafanaUser(ctx context.Context, api *cockpit.GlobalAPI, projectID string, grafanaUserID uint32) (*cockpit.GrafanaUser, error) {
+// getGrafanaUser returns the Grafana user from a single ListGrafanaUsers call, or nil if absent.
+func getGrafanaUser(ctx context.Context, api *cockpit.GlobalAPI, projectID string, grafanaUserID uint32) (*cockpit.GrafanaUser, error) {
+	res, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaUsersResponse, error) {
+		return api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
+			ProjectID: projectID,
+		}, scw.WithContext(ctx), scw.WithAllPages())
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, user := range res.GrafanaUsers {
+		if user.ID == grafanaUserID {
+			return user, nil
+		}
+	}
+
+	return nil, nil
+}
+
+// waitForGrafanaUser polls ListGrafanaUsers until the user appears or IAMPropagationTimeout elapses.
+func waitForGrafanaUser(ctx context.Context, api *cockpit.GlobalAPI, projectID string, grafanaUserID uint32) (*cockpit.GrafanaUser, error) {
 	wait := transport.RetryOn403WaitTime
 	if transport.DefaultWaitRetryInterval != nil {
 		wait = *transport.DefaultWaitRetryInterval
@@ -194,23 +220,17 @@ func findGrafanaUser(ctx context.Context, api *cockpit.GlobalAPI, projectID stri
 	deadline := time.Now().Add(transport.IAMPropagationTimeout)
 
 	for {
-		res, err := retryOn403Value(ctx, func() (*cockpit.ListGrafanaUsersResponse, error) {
-			return api.ListGrafanaUsers(&cockpit.GlobalAPIListGrafanaUsersRequest{ //nolint:staticcheck // legacy Grafana user resource uses deprecated API
-				ProjectID: projectID,
-			}, scw.WithContext(ctx), scw.WithAllPages())
-		})
+		user, err := getGrafanaUser(ctx, api, projectID, grafanaUserID)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, user := range res.GrafanaUsers {
-			if user.ID == grafanaUserID {
-				return user, nil
-			}
+		if user != nil {
+			return user, nil
 		}
 
 		if time.Now().After(deadline) {
-			return nil, nil
+			return nil, fmt.Errorf("grafana user %d not found in ListGrafanaUsers after %s", grafanaUserID, transport.IAMPropagationTimeout)
 		}
 
 		select {
