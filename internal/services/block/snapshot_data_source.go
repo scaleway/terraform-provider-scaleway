@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
@@ -55,12 +57,16 @@ func (d *SnapshotDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Description: "The ID of the snapshot",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithZone(),
+					stringvalidator.ConflictsWith(path.MatchRoot("name")),
 				},
 			},
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The snapshot name",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
+				},
 			},
 			"volume_id": schema.StringAttribute{
 				Optional:    true,

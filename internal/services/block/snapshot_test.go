@@ -12,6 +12,31 @@ import (
 	objectchecks "github.com/scaleway/terraform-provider-scaleway/v2/internal/services/object/testfuncs"
 )
 
+func TestAccSnapshot_ConflictVolumeAndImport(t *testing.T) {
+	tt := acctest.NewTestTools(t)
+	defer tt.Cleanup()
+
+	resource.ParallelTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: tt.ProviderFactories,
+		CheckDestroy:             blocktestfuncs.IsSnapshotDestroyed(tt),
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource scaleway_block_snapshot main {
+						name = "test-block-snapshot-conflict"
+						volume_id = "11111111-1111-1111-1111-111111111111"
+						import {
+							bucket = "some-bucket"
+							key = "some-key"
+						}
+					}
+				`,
+				ExpectError: regexp.MustCompile(`"import" cannot be specified when "volume_id" is specified`),
+			},
+		},
+	})
+}
+
 func TestAccSnapshot_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -87,6 +88,10 @@ func (r *SnapshotResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 				Description: "ID of the volume from which creates a snapshot",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithZone(),
+					stringvalidator.ConflictsWith(path.MatchRoot("import")),
+				},
+				PlanModifiers: []planmodifier.String{
+					zonal.LocalityPlanModifier(),
 				},
 			},
 			"tags": schema.ListAttribute{

@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/scaleway/scaleway-sdk-go/api/block/v1"
@@ -58,12 +60,16 @@ func (d *VolumeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "The ID of the volume",
 				Validators: []validator.String{
 					verify.IsStringUUIDOrUUIDWithZone(),
+					stringvalidator.ConflictsWith(path.MatchRoot("name")),
 				},
 			},
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The volume name",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("volume_id")),
+				},
 			},
 			"iops": schema.Int64Attribute{
 				Computed:    true,
@@ -215,6 +221,8 @@ func flattenVolumeDataSource(ctx context.Context, volume *block.Volume, config v
 
 	if volume.Specs != nil && volume.Specs.PerfIops != nil {
 		model.Iops = types.Int64Value(int64(*volume.Specs.PerfIops))
+	} else {
+		model.Iops = types.Int64Value(0)
 	}
 
 	if volume.ParentSnapshotID != nil {

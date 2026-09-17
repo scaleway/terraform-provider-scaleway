@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -104,19 +105,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 				Description: "The snapshot to create the volume from",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplaceIf(
-						func(_ context.Context, req planmodifier.StringRequest, resp *stringplanmodifier.RequiresReplaceIfFuncResponse) {
-							if req.StateValue.IsNull() || req.PlanValue.IsNull() {
-								return
-							}
-							if locality.ExpandID(req.StateValue.ValueString()) == locality.ExpandID(req.PlanValue.ValueString()) {
-								return
-							}
-							resp.RequiresReplace = true
-						},
-						"Force replacement when snapshot_id changes.",
-						"Force replacement when snapshot_id changes.",
-					),
+					zonal.LocalityPlanModifier(),
 				},
 			},
 			"instance_volume_id": schema.StringAttribute{
@@ -126,6 +115,9 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("snapshot_id")),
 				},
 			},
 			"tags": schema.ListAttribute{
@@ -490,6 +482,8 @@ func flattenVolume(ctx context.Context, volume *block.Volume, reference any, dia
 
 	if volume.Specs != nil && volume.Specs.PerfIops != nil {
 		model.Iops = types.Int64Value(int64(*volume.Specs.PerfIops))
+	} else {
+		model.Iops = types.Int64Value(0)
 	}
 
 	if volume.ParentSnapshotID != nil {
