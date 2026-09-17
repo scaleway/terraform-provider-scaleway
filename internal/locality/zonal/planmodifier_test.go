@@ -1,4 +1,4 @@
-package zonal
+package zonal_test
 
 import (
 	"context"
@@ -6,10 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/locality/zonal"
 )
 
 func TestLocalityPlanModifier_SuppressDiffSameUUID(t *testing.T) {
-	m := LocalityPlanModifier()
+	m := zonal.LocalityPlanModifier()
 
 	req := planmodifier.StringRequest{
 		StateValue: types.StringValue("fr-par-1/11111111-1111-1111-1111-111111111111"),
@@ -22,9 +23,11 @@ func TestLocalityPlanModifier_SuppressDiffSameUUID(t *testing.T) {
 	if resp.Diagnostics.HasError() {
 		t.Fatalf("unexpected diagnostics: %v", resp.Diagnostics)
 	}
+
 	if resp.RequiresReplace {
 		t.Error("expected no replacement when UUIDs match after expansion")
 	}
+
 	if resp.PlanValue.ValueString() != req.StateValue.ValueString() {
 		t.Errorf("expected plan value to be state value %q, got %q",
 			req.StateValue.ValueString(), resp.PlanValue.ValueString())
@@ -32,7 +35,7 @@ func TestLocalityPlanModifier_SuppressDiffSameUUID(t *testing.T) {
 }
 
 func TestLocalityPlanModifier_DifferentUUIDForcesReplace(t *testing.T) {
-	m := LocalityPlanModifier()
+	m := zonal.LocalityPlanModifier()
 
 	req := planmodifier.StringRequest{
 		StateValue: types.StringValue("fr-par-1/11111111-1111-1111-1111-111111111111"),
@@ -48,7 +51,7 @@ func TestLocalityPlanModifier_DifferentUUIDForcesReplace(t *testing.T) {
 }
 
 func TestLocalityPlanModifier_NullStateToValueForcesReplace(t *testing.T) {
-	m := LocalityPlanModifier()
+	m := zonal.LocalityPlanModifier()
 
 	req := planmodifier.StringRequest{
 		StateValue: types.StringNull(),
@@ -64,7 +67,7 @@ func TestLocalityPlanModifier_NullStateToValueForcesReplace(t *testing.T) {
 }
 
 func TestLocalityPlanModifier_ValueToNullNoReplace(t *testing.T) {
-	m := LocalityPlanModifier()
+	m := zonal.LocalityPlanModifier()
 
 	req := planmodifier.StringRequest{
 		StateValue: types.StringValue("fr-par-1/11111111-1111-1111-1111-111111111111"),
@@ -80,7 +83,7 @@ func TestLocalityPlanModifier_ValueToNullNoReplace(t *testing.T) {
 }
 
 func TestLocalityPlanModifier_BothNullNoReplace(t *testing.T) {
-	m := LocalityPlanModifier()
+	m := zonal.LocalityPlanModifier()
 
 	req := planmodifier.StringRequest{
 		StateValue: types.StringNull(),

@@ -43,16 +43,16 @@ type VolumeResource struct {
 }
 
 type volumeResourceModel struct {
+	Tags             types.List   `tfsdk:"tags"`
 	ID               types.String `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
-	Iops             types.Int64  `tfsdk:"iops"`
-	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
 	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
-	Tags             types.List   `tfsdk:"tags"`
 	SRN              types.String `tfsdk:"srn"`
 	Zone             types.String `tfsdk:"zone"`
 	ProjectID        types.String `tfsdk:"project_id"`
+	Iops             types.Int64  `tfsdk:"iops"`
+	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
 
 type volumeResourceIdentityModel = framework.ZonalIdentity
@@ -92,6 +92,7 @@ func (r *VolumeResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 							if req.StateValue.IsNull() || req.PlanValue.IsNull() {
 								return
 							}
+
 							if req.StateValue.ValueInt64() > req.PlanValue.ValueInt64() {
 								resp.RequiresReplace = true
 							}
@@ -195,6 +196,7 @@ func (r *VolumeResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	if !data.InstanceVolumeID.IsNull() && data.InstanceVolumeID.ValueString() != "" {
 		instanceAPI := instancehelpers.NewBlockAndInstanceAPI(r.meta.ScwClient())
+
 		volume, err = migrateInstanceToBlockVolume(ctx, instanceAPI, zone, locality.ExpandID(data.InstanceVolumeID.ValueString()), defaultBlockTimeout)
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to migrate instance volume to block volume", err.Error())
@@ -206,7 +208,7 @@ func (r *VolumeResource) Create(ctx context.Context, req resource.CreateRequest,
 			Zone:      zone,
 			Name:      scwtypes.ExpandOrGenerateString(data.Name.ValueString(), "volume"),
 			ProjectID: projectID,
-			PerfIops:  new(uint32(uint32(data.Iops.ValueInt64()))),
+			PerfIops:  new(uint32(data.Iops.ValueInt64())),
 		}
 
 		createReq.Tags = scwtypes.ExpandUpdatedStringList(ctx, data.Tags, &resp.Diagnostics)
@@ -289,6 +291,7 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 	} else {
 		zone, id, err = zonal.ParseID(state.ID.ValueString())
 	}
+
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse block volume ID", err.Error())
 
@@ -313,6 +316,7 @@ func (r *VolumeResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if state.InstanceVolumeID.ValueString() != "" {
 		newState.InstanceVolumeID = state.InstanceVolumeID
 	}
+
 	if state.SnapshotID.ValueString() != "" && newState.SnapshotID.ValueString() == "" {
 		newState.SnapshotID = state.SnapshotID
 	}
@@ -362,11 +366,7 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 	name := plan.Name.ValueString()
 	updateReq.Name = &name
 
-	hasChanges := false
-
-	if !plan.Name.Equal(state.Name) {
-		hasChanges = true
-	}
+	hasChanges := !plan.Name.Equal(state.Name)
 
 	if !plan.SizeInGB.Equal(state.SizeInGB) {
 		size := scw.Size(plan.SizeInGB.ValueInt64()) * scw.GB
@@ -379,6 +379,7 @@ func (r *VolumeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
 		updateReq.Tags = &tags
 		hasChanges = true
 	}
@@ -478,6 +479,7 @@ func flattenVolume(ctx context.Context, volume *block.Volume, reference any, dia
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", volume.Tags, reference)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if volume.Specs != nil && volume.Specs.PerfIops != nil {

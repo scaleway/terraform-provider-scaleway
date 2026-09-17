@@ -22,8 +22,8 @@ func (m localityPlanModifier) Description(_ context.Context) string {
 	return "Suppresses diffs between bare UUIDs and zonal IDs, and forces replacement when the UUID changes."
 }
 
-func (m localityPlanModifier) MarkdownDescription(_ context.Context) string {
-	return m.Description(context.Background())
+func (m localityPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
 }
 
 func (m localityPlanModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
@@ -31,6 +31,7 @@ func (m localityPlanModifier) PlanModifyString(_ context.Context, req planmodifi
 		if !req.PlanValue.IsNull() && req.PlanValue.ValueString() != "" {
 			resp.RequiresReplace = true
 		}
+
 		return
 	}
 
@@ -43,6 +44,7 @@ func (m localityPlanModifier) PlanModifyString(_ context.Context, req planmodifi
 
 	if stateID == planID {
 		resp.PlanValue = req.StateValue
+
 		return
 	}
 

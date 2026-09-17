@@ -237,6 +237,7 @@ func flattenVolumeForList(ctx context.Context, volume *blockSDK.Volume, diags *d
 
 	tagsList, d := types.ListValueFrom(ctx, types.StringType, volume.Tags)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if volume.Specs != nil && volume.Specs.PerfIops != nil {

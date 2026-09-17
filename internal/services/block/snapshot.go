@@ -221,6 +221,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			Name:      scwtypes.ExpandOrGenerateString(data.Name.ValueString(), "snapshot"),
 			VolumeID:  locality.ExpandID(data.VolumeID.ValueString()),
 		}
+
 		createReq.Tags = scwtypes.ExpandUpdatedStringList(ctx, data.Tags, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
@@ -235,6 +236,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	} else {
 		var importData snapshotImportExportModel
 		resp.Diagnostics.Append(data.Import.As(ctx, &importData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -246,6 +248,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 			Bucket:    regional.ExpandID(importData.Bucket.ValueString()).ID,
 			Key:       importData.Key.ValueString(),
 		}
+
 		importReq.Tags = scwtypes.ExpandUpdatedStringList(ctx, data.Tags, &resp.Diagnostics)
 		if resp.Diagnostics.HasError() {
 			return
@@ -269,6 +272,7 @@ func (r *SnapshotResource) Create(ctx context.Context, req resource.CreateReques
 	if !data.Export.IsNull() {
 		var exportData snapshotImportExportModel
 		resp.Diagnostics.Append(data.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -323,6 +327,7 @@ func (r *SnapshotResource) Read(ctx context.Context, req resource.ReadRequest, r
 	} else {
 		zone, id, err = zonal.ParseID(state.ID.ValueString())
 	}
+
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to parse block snapshot ID", err.Error())
 
@@ -402,6 +407,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 		if resp.Diagnostics.HasError() {
 			return
 		}
+
 		updateReq.Tags = &tags
 		hasChanges = true
 	}
@@ -418,6 +424,7 @@ func (r *SnapshotResource) Update(ctx context.Context, req resource.UpdateReques
 	if !plan.Export.Equal(state.Export) && !plan.Export.IsNull() {
 		var exportData snapshotImportExportModel
 		resp.Diagnostics.Append(plan.Export.As(ctx, &exportData, basetypes.ObjectAsOptions{})...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -518,6 +525,7 @@ func flattenSnapshot(ctx context.Context, snapshot *block.Snapshot, reference an
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", snapshot.Tags, reference)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if snapshot.ParentVolume != nil {

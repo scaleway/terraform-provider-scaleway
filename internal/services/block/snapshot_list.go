@@ -394,6 +394,7 @@ func flattenSnapshotForList(ctx context.Context, snapshot *blockSDK.Snapshot, di
 
 	tagsList, d := types.ListValueFrom(ctx, types.StringType, snapshot.Tags)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if snapshot.ParentVolume != nil {

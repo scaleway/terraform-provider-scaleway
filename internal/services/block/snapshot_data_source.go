@@ -138,6 +138,7 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	var snapshotID string
+
 	if config.SnapshotID.IsNull() || config.SnapshotID.ValueString() == "" {
 		name := config.Name.ValueString()
 
@@ -162,17 +163,18 @@ func (d *SnapshotDataSource) Read(ctx context.Context, req datasource.ReadReques
 			if snapshot.Name == name {
 				if snapshotID != "" {
 					resp.Diagnostics.AddError("Duplicate snapshot found",
-						fmt.Sprintf("More than 1 snapshot found with the same name %s", name))
+						"More than 1 snapshot found with the same name "+name)
 
 					return
 				}
+
 				snapshotID = snapshot.ID
 			}
 		}
 
 		if snapshotID == "" {
 			resp.Diagnostics.AddError("Snapshot not found",
-				fmt.Sprintf("No snapshot found with the name %s", name))
+				"No snapshot found with the name "+name)
 
 			return
 		}
@@ -206,6 +208,7 @@ func flattenSnapshotDataSource(ctx context.Context, snapshot *block.Snapshot, co
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", snapshot.Tags, config)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if snapshot.ParentVolume != nil {

@@ -34,17 +34,17 @@ type VolumeDataSource struct {
 }
 
 type volumeDataSourceModel struct {
+	Tags             types.List   `tfsdk:"tags"`
 	ID               types.String `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
-	Iops             types.Int64  `tfsdk:"iops"`
-	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 	SnapshotID       types.String `tfsdk:"snapshot_id"`
 	InstanceVolumeID types.String `tfsdk:"instance_volume_id"`
-	Tags             types.List   `tfsdk:"tags"`
 	SRN              types.String `tfsdk:"srn"`
 	Zone             types.String `tfsdk:"zone"`
 	ProjectID        types.String `tfsdk:"project_id"`
 	VolumeID         types.String `tfsdk:"volume_id"`
+	Iops             types.Int64  `tfsdk:"iops"`
+	SizeInGB         types.Int64  `tfsdk:"size_in_gb"`
 }
 
 func (d *VolumeDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -149,6 +149,7 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	var volumeID string
+
 	if config.VolumeID.IsNull() || config.VolumeID.ValueString() == "" {
 		name := config.Name.ValueString()
 
@@ -172,17 +173,18 @@ func (d *VolumeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			if volume.Name == name {
 				if volumeID != "" {
 					resp.Diagnostics.AddError("Duplicate volume found",
-						fmt.Sprintf("More than 1 volume found with the same name %s", name))
+						"More than 1 volume found with the same name "+name)
 
 					return
 				}
+
 				volumeID = volume.ID
 			}
 		}
 
 		if volumeID == "" {
 			resp.Diagnostics.AddError("Volume not found",
-				fmt.Sprintf("No volume found with the name %s", name))
+				"No volume found with the name "+name)
 
 			return
 		}
@@ -217,6 +219,7 @@ func flattenVolumeDataSource(ctx context.Context, volume *block.Volume, config v
 
 	tagsList, d := scwtypes.FlattenStringList(ctx, "tags", volume.Tags, config)
 	diags.Append(d...)
+
 	model.Tags = tagsList
 
 	if volume.Specs != nil && volume.Specs.PerfIops != nil {
