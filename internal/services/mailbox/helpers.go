@@ -1,88 +1,85 @@
 package mailbox
 
 import (
+	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	mailboxsdk "github.com/scaleway/scaleway-sdk-go/api/mailbox/v1alpha1"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/meta"
-	"github.com/scaleway/terraform-provider-scaleway/v2/internal/types"
 )
 
 const (
 	defaultDomainTimeout  = 5 * time.Minute
 	defaultMailboxTimeout = 5 * time.Minute
+	defaultRetryInterval  = 5 * time.Second
 )
 
-func newMailboxAPI(m any) *mailboxsdk.API {
-	return mailboxsdk.NewAPI(meta.ExtractScwClient(m))
+func localPartFromEmail(email string) string {
+	localPart, _, _ := strings.Cut(email, "@")
+
+	return localPart
 }
 
-// flattenDNSRecords converts a GetDomainRecordsResponse into a Terraform-compatible list.
-func flattenDNSRecords(resp *mailboxsdk.GetDomainRecordsResponse) []any {
+func flattenTime(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(t.Format(time.RFC3339))
+}
+
+func dnsRecordAttrTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"dns_type":  types.StringType,
+		"dns_name":  types.StringType,
+		"dns_value": types.StringType,
+		"status":    types.StringType,
+		"level":     types.StringType,
+		"error":     types.StringType,
+	}
+}
+
+func flattenDNSRecords(resp *mailboxsdk.GetDomainRecordsResponse, diags *diag.Diagnostics) types.List {
+	elemType := types.ObjectType{AttrTypes: dnsRecordAttrTypes()}
+
 	if resp == nil {
-		return nil
+		return types.ListNull(elemType)
 	}
 
 	records := []*mailboxsdk.DomainRecord{
 		resp.Autoconfig, resp.Autodiscover, resp.Caldav, resp.Carddav, resp.Dkim, resp.Dmarc,
-		resp.DomainValidation, resp.Imap, resp.Jmap, resp.Mx, resp.Pop3, resp.Spf, resp.Submission,
+		resp.DomainValidation, resp.Imap, resp.Mx, resp.Pop3, resp.Spf, resp.Submission,
 	}
 
-	result := make([]any, 0)
+	values := make([]attr.Value, 0)
 
 	for _, rec := range records {
 		if rec == nil {
 			continue
 		}
-		m := map[string]any{
-			"dns_type":  rec.DNSType.String(),
-			"dns_name":  rec.DNSName,
-			"dns_value": rec.DNSValue,
-			"status":    rec.Status.String(),
-			"level":     rec.Level.String(),
-			"error":     types.FlattenStringPtr(rec.Error),
+
+		errorVal := types.StringNull()
+		if rec.Error != nil {
+			errorVal = types.StringValue(*rec.Error)
 		}
-		result = append(result, m)
+
+		obj, d := types.ObjectValue(dnsRecordAttrTypes(), map[string]attr.Value{
+			"dns_type":  types.StringValue(rec.DNSType.String()),
+			"dns_name":  types.StringValue(rec.DNSName),
+			"dns_value": types.StringValue(rec.DNSValue),
+			"status":    types.StringValue(rec.Status.String()),
+			"level":     types.StringValue(rec.Level.String()),
+			"error":     errorVal,
+		})
+		diags.Append(d...)
+
+		values = append(values, obj)
 	}
 
-	return result
-}
+	listVal, d := types.ListValue(elemType, values)
+	diags.Append(d...)
 
-// dnsRecordSchema returns the schema for a single DNS record entry.
-func dnsRecordSchema() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"dns_type": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "DNS record type (e.g. TXT, MX, CNAME)",
-			},
-			"dns_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Fully qualified DNS name for this record",
-			},
-			"dns_value": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "DNS record value to set",
-			},
-			"status": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Validation status of this record (valid, invalid, not_found, validating)",
-			},
-			"level": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Requirement level (required, recommended, optional)",
-			},
-			"error": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Error detail when the record is invalid",
-			},
-		},
-	}
+	return listVal
 }

@@ -2,6 +2,7 @@ package mailboxtestfuncs
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	mailboxsdk "github.com/scaleway/scaleway-sdk-go/api/mailbox/v1alpha1"
@@ -36,6 +37,11 @@ func testSweepMailboxes(_ string) error {
 		}
 
 		for _, mb := range resp.Mailboxes {
+			_, domainName, ok := strings.Cut(mb.Email, "@")
+			if !ok || !acctest.IsTestResource(domainName) {
+				continue
+			}
+
 			_, err := api.DeleteMailbox(&mailboxsdk.DeleteMailboxRequest{MailboxID: mb.ID})
 			if err != nil {
 				logging.L.Debugf("sweeper: error deleting mailbox %s: %s", mb.ID, err)
@@ -58,6 +64,10 @@ func testSweepDomains(_ string) error {
 		}
 
 		for _, domain := range resp.Domains {
+			if !acctest.IsTestResource(domain.Name) {
+				continue
+			}
+
 			_, err := api.DeleteDomain(&mailboxsdk.DeleteDomainRequest{DomainID: domain.ID})
 			if err != nil {
 				logging.L.Debugf("sweeper: error deleting domain %s: %s", domain.ID, err)

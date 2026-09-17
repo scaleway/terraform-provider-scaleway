@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.DatasourceTemplateType */ -}}
 ---
 subcategory: "Mailbox"
 page_title: "Scaleway: scaleway_mailbox_mailbox"
@@ -15,11 +14,19 @@ or its full email address.
 
 ### By ID
 
-{{ tffile "examples/data-sources/scaleway_mailbox_mailbox/data-source.tf" }}
+```terraform
+data "scaleway_mailbox_mailbox" "by_id" {
+  mailbox_id = "11111111-1111-1111-1111-111111111111"
+}
+```
 
 ### By email
 
-{{ tffile "examples/data-sources/scaleway_mailbox_mailbox/data-source-by-email.tf" }}
+```terraform
+data "scaleway_mailbox_mailbox" "by_email" {
+  email = "john.doe@mail.example.com"
+}
+```
 
 ## Argument Reference
 

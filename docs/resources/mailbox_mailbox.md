@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "Mailbox"
 page_title: "Scaleway: scaleway_mailbox_mailbox"
@@ -17,15 +16,55 @@ A **mailbox** is a hosted email address (`local_part@domain`) that belongs to a
 
 ### Basic mailbox
 
-{{ tffile "examples/resources/scaleway_mailbox_mailbox/resource.tf" }}
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+
+resource "scaleway_mailbox_mailbox" "john" {
+  domain_id           = scaleway_mailbox_domain.main.id
+  local_part          = "john.doe"
+  password            = var.mailbox_password
+  subscription_period = "monthly"
+}
+```
 
 ### Write-only password
 
-{{ tffile "examples/resources/scaleway_mailbox_mailbox/password_wo.tf" }}
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+
+resource "scaleway_mailbox_mailbox" "support" {
+  domain_id           = scaleway_mailbox_domain.main.id
+  local_part          = "support"
+  password_wo         = var.mailbox_password
+  password_wo_version = 1
+  subscription_period = "monthly"
+}
+```
 
 ### Multiple mailboxes on one domain
 
-{{ tffile "examples/resources/scaleway_mailbox_mailbox/multiple.tf" }}
+```terraform
+resource "scaleway_mailbox_domain" "corp" {
+  name = "corp.example.com"
+}
+
+locals {
+  mailboxes = toset(["alice", "bob"])
+}
+
+resource "scaleway_mailbox_mailbox" "employees" {
+  for_each = local.mailboxes
+
+  domain_id           = scaleway_mailbox_domain.corp.id
+  local_part          = each.key
+  password            = var.mailbox_password
+  subscription_period = "monthly"
+}
+```
 
 ## Argument Reference
 

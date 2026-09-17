@@ -13,19 +13,21 @@ func TestAccMailboxDomain_Basic(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	const domainName = "tf-tests-mailbox-basic.example.com"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             mailboxtestfuncs.CheckDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mailbox_domain" "basic" {
-					  name = "terraform-test.example.com"
+					  name = %q
 					}
-				`,
+				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					mailboxtestfuncs.CheckDomainExists(tt, "scaleway_mailbox_domain.basic"),
-					resource.TestCheckResourceAttr("scaleway_mailbox_domain.basic", "name", "terraform-test.example.com"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_domain.basic", "name", domainName),
 					resource.TestCheckResourceAttrSet("scaleway_mailbox_domain.basic", "status"),
 					resource.TestCheckResourceAttrSet("scaleway_mailbox_domain.basic", "project_id"),
 					resource.TestCheckResourceAttrSet("scaleway_mailbox_domain.basic", "created_at"),
@@ -33,7 +35,6 @@ func TestAccMailboxDomain_Basic(t *testing.T) {
 				),
 			},
 			{
-				// Verify import by ID
 				ResourceName:      "scaleway_mailbox_domain.basic",
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -46,28 +47,28 @@ func TestAccMailboxDomain_WithProjectID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	projectID, ok := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !ok {
+		t.Skip("default project ID is required for this test")
+	}
+
+	const domainName = "tf-tests-mailbox-proj.example.com"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             mailboxtestfuncs.CheckDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					resource "scaleway_account_project" "mailbox_proj" {
-					  name = "tf-mailbox-test"
-					}
-
 					resource "scaleway_mailbox_domain" "with_project" {
-					  name       = "terraform-test.example.com"
-					  project_id = scaleway_account_project.mailbox_proj.id
+					  name       = %q
+					  project_id = %q
 					}
-				`),
+				`, domainName, projectID),
 				Check: resource.ComposeTestCheckFunc(
 					mailboxtestfuncs.CheckDomainExists(tt, "scaleway_mailbox_domain.with_project"),
-					resource.TestCheckResourceAttrPair(
-						"scaleway_mailbox_domain.with_project", "project_id",
-						"scaleway_account_project.mailbox_proj", "id",
-					),
-					resource.TestCheckResourceAttr("scaleway_mailbox_domain.with_project", "name", "terraform-test.example.com"),
+					resource.TestCheckResourceAttr("scaleway_mailbox_domain.with_project", "project_id", projectID),
+					resource.TestCheckResourceAttr("scaleway_mailbox_domain.with_project", "name", domainName),
 				),
 			},
 		},
@@ -78,19 +79,20 @@ func TestAccMailboxDomain_DNSRecordsExposed(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
+	const domainName = "tf-tests-mailbox-dns.example.com"
+
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,
 		CheckDestroy:             mailboxtestfuncs.CheckDomainDestroyed(tt),
 		Steps: []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 					resource "scaleway_mailbox_domain" "dns" {
-					  name = "terraform-dns-test.example.com"
+					  name = %q
 					}
-				`,
+				`, domainName),
 				Check: resource.ComposeTestCheckFunc(
 					mailboxtestfuncs.CheckDomainExists(tt, "scaleway_mailbox_domain.dns"),
-					// DNS records should be populated after domain creation
 					resource.TestCheckResourceAttrSet("scaleway_mailbox_domain.dns", "dns_records.#"),
 				),
 			},

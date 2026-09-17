@@ -2,15 +2,59 @@ package mailboxtestfuncs
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	mailboxsdk "github.com/scaleway/scaleway-sdk-go/api/mailbox/v1alpha1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/acctest"
 	"github.com/scaleway/terraform-provider-scaleway/v2/internal/httperrors"
+	"github.com/scaleway/terraform-provider-scaleway/v2/internal/transport"
 )
 
-// CheckMailboxDestroyed verifies that all mailbox resources in state have been deleted.
+// CreateTestDomain creates a mailbox domain via the API for mailbox resource tests.
+// Soft-deleted mailboxes block domain deletion, so the domain is not managed by Terraform.
+func CreateTestDomain(tt *acctest.TestTools, name string) string {
+	tt.T.Helper()
+
+	api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
+
+	projectID, ok := tt.Meta.ScwClient().GetDefaultProjectID()
+	if !ok {
+		tt.T.Fatal("default project ID is required to create a test mailbox domain")
+	}
+
+	domain, err := api.CreateDomain(&mailboxsdk.CreateDomainRequest{
+		ProjectID: projectID,
+		Name:      name,
+	}, scw.WithContext(tt.T.Context()))
+	if err != nil {
+		tt.T.Fatalf("failed to create test mailbox domain %q: %v", name, err)
+	}
+
+	retryInterval := 5 * time.Second
+	if transport.DefaultWaitRetryInterval != nil {
+		retryInterval = *transport.DefaultWaitRetryInterval
+	}
+
+	timeout := 5 * time.Minute
+	domain, err = api.WaitForDomain(&mailboxsdk.WaitForDomainRequest{
+		DomainID:      domain.ID,
+		Timeout:       &timeout,
+		RetryInterval: &retryInterval,
+	}, scw.WithContext(tt.T.Context()))
+	if err != nil {
+		tt.T.Fatalf("failed waiting for test mailbox domain %q: %v", name, err)
+	}
+
+	// Soft-deleted mailboxes block domain deletion until the API purge window
+	// elapses, so cleanup is best-effort via the sweeper rather than t.Cleanup.
+	return domain.ID
+}
+
+// CheckMailboxDestroyed verifies that all mailbox resources in state have been deleted
+// or soft-deleted (deletion_scheduled).
 func CheckMailboxDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 	return func(state *terraform.State) error {
 		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
@@ -20,13 +64,17 @@ func CheckMailboxDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			_, err := api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: rs.Primary.ID})
-			if err == nil {
-				return fmt.Errorf("mailbox %s still exists", rs.Primary.ID)
+			mb, err := api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
+			if err != nil {
+				if httperrors.Is404(err) {
+					continue
+				}
+
+				return fmt.Errorf("unexpected error checking mailbox %s: %w", rs.Primary.ID, err)
 			}
 
-			if !httperrors.Is404(err) {
-				return fmt.Errorf("unexpected error checking mailbox %s: %w", rs.Primary.ID, err)
+			if mb.Status != mailboxsdk.MailboxStatusDeletionScheduled {
+				return fmt.Errorf("mailbox %s still exists with status %s", rs.Primary.ID, mb.Status)
 			}
 		}
 
@@ -44,7 +92,7 @@ func CheckDomainDestroyed(tt *acctest.TestTools) resource.TestCheckFunc {
 				continue
 			}
 
-			_, err := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: rs.Primary.ID})
+			_, err := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
 			if err == nil {
 				return fmt.Errorf("mailbox domain %s still exists", rs.Primary.ID)
 			}
@@ -68,7 +116,7 @@ func CheckMailboxExists(tt *acctest.TestTools, n string) resource.TestCheckFunc 
 
 		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
 
-		_, err := api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: rs.Primary.ID})
+		_, err := api.GetMailbox(&mailboxsdk.GetMailboxRequest{MailboxID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
 		if err != nil {
 			return fmt.Errorf("error reading mailbox %s: %w", rs.Primary.ID, err)
 		}
@@ -87,7 +135,7 @@ func CheckDomainExists(tt *acctest.TestTools, n string) resource.TestCheckFunc {
 
 		api := mailboxsdk.NewAPI(tt.Meta.ScwClient())
 
-		_, err := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: rs.Primary.ID})
+		_, err := api.GetDomain(&mailboxsdk.GetDomainRequest{DomainID: rs.Primary.ID}, scw.WithContext(tt.T.Context()))
 		if err != nil {
 			return fmt.Errorf("error reading domain %s: %w", rs.Primary.ID, err)
 		}

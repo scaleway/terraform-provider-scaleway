@@ -1,4 +1,3 @@
-{{- /*gotype: github.com/hashicorp/terraform-plugin-docs/internal/provider.ResourceTemplateType */ -}}
 ---
 subcategory: "Mailbox"
 page_title: "Scaleway: scaleway_mailbox_domain"
@@ -18,15 +17,50 @@ provider. The domain `status` reflects validation progress.
 
 ### Minimal domain
 
-{{ tffile "examples/resources/scaleway_mailbox_domain/resource.tf" }}
+```terraform
+resource "scaleway_mailbox_domain" "main" {
+  name = "mail.example.com"
+}
+```
 
 ### Domain with DNS records configured via Scaleway DNS
 
-{{ tffile "examples/resources/scaleway_mailbox_domain/with_dns.tf" }}
+```terraform
+variable "domain_name" {
+  type = string
+}
+
+resource "scaleway_mailbox_domain" "main" {
+  name = var.domain_name
+}
+
+# Iterate over required DNS records and create them in Scaleway DNS.
+resource "scaleway_domain_record" "mailbox_dns" {
+  for_each = {
+    for rec in scaleway_mailbox_domain.main.dns_records :
+    "${rec.dns_type}-${rec.dns_name}" => rec
+    if rec.level == "required"
+  }
+
+  dns_zone = var.domain_name
+  name     = each.value.dns_name
+  type     = each.value.dns_type
+  data     = each.value.dns_value
+}
+```
 
 ### Domain in a specific project
 
-{{ tffile "examples/resources/scaleway_mailbox_domain/with_project.tf" }}
+```terraform
+resource "scaleway_account_project" "mail_project" {
+  name = "mail-project"
+}
+
+resource "scaleway_mailbox_domain" "project_domain" {
+  name       = "mail.example.com"
+  project_id = scaleway_account_project.mail_project.id
+}
+```
 
 ## Argument Reference
 
