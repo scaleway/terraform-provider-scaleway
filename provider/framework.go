@@ -188,13 +188,11 @@ func modelToFrameworkConfig(ctx context.Context, model *ScalewayProviderModel) *
 		var endpoints []EndpointModel
 
 		diags := model.Endpoints.ElementsAs(ctx, &endpoints, false)
-		if diags.HasError() {
-			return config
-		}
-
-		for _, endpoint := range endpoints {
-			if !endpoint.S3.IsNull() && !endpoint.S3.IsUnknown() {
-				config.Endpoints["s3"] = endpoint.S3.ValueString()
+		if !diags.HasError() {
+			for _, endpoint := range endpoints {
+				if !endpoint.S3.IsNull() && !endpoint.S3.IsUnknown() {
+					config.Endpoints["s3"] = endpoint.S3.ValueString()
+				}
 			}
 		}
 	}
