@@ -47,9 +47,16 @@ func TestAccMailboxDomain_WithProjectID(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	projectID, ok := tt.Meta.ScwClient().GetDefaultProjectID()
-	if !ok {
-		t.Skip("default project ID is required for this test")
+	// Fixed project_id must match the VCR cassette response body; CI's default
+	// project differs and would cause "inconsistent result after apply".
+	projectID := "46fd79d8-1a35-4548-bfb8-03df51a0ebae"
+	if *acctest.UpdateCassettes {
+		var ok bool
+
+		projectID, ok = tt.Meta.ScwClient().GetDefaultProjectID()
+		if !ok {
+			t.Skip("default project ID is required to record this test")
+		}
 	}
 
 	const domainName = "tf-tests-mailbox-proj.example.com"
