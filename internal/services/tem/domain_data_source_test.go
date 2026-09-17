@@ -49,7 +49,7 @@ func TestAccDataSourceDomain_Reputation(t *testing.T) {
 	tt := acctest.NewTestTools(t)
 	defer tt.Cleanup()
 
-	subDomainName := "test-reputation"
+	subDomainName := "tf-test-tem-reputation"
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: tt.ProviderFactories,

@@ -12,6 +12,7 @@ import (
 
 const (
 	defaultWaitRetryInterval = 30 * time.Second
+	defaultDeploymentTimeout = 30 * time.Minute
 )
 
 func NewAPI(m any) *searchdbapi.API {
