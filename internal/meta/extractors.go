@@ -77,12 +77,12 @@ func ExtractRegion(d terraformResourceData, m any) (scw.Region, error) {
 func ExtractS3UsePathStyle(d terraformResourceData, m any) (s3UsePathStyle, ok bool) {
 	if d != nil {
 		rawConfigS3UsePathStyle, ok := GetRawConfigForKey(d, "s3_use_path_style", cty.Bool)
-		if ok && rawConfigS3UsePathStyle != "" {
+		if ok && rawConfigS3UsePathStyle != nil {
 			return rawConfigS3UsePathStyle.(bool), true
 		}
 
 		rawConfigS3UsePathStyle, ok = d.GetOk("s3_use_path_style")
-		if ok && rawConfigS3UsePathStyle != "" {
+		if ok && rawConfigS3UsePathStyle != nil {
 			return rawConfigS3UsePathStyle.(bool), true
 		}
 	}
