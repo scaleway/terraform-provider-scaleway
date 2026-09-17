@@ -271,6 +271,7 @@ func TestSDKProvider_DataSourceExistForEachResource(t *testing.T) {
 		"scaleway_object_bucket_acl",
 		"scaleway_object_bucket_lock_configuration",
 		"scaleway_object_bucket_website_configuration",
+		"scaleway_opensearch_user",
 		"scaleway_rdb_read_replica",
 		"scaleway_rdb_snapshot",
 		"scaleway_rdb_user",
