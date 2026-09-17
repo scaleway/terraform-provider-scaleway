@@ -73,25 +73,25 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - Unique identifier of the domain (UUID).
 - `status` - Current status of the domain:
-  - `creating` – domain is being registered.
-  - `waiting_validation` – DNS records must be configured and validated.
-  - `validating` – validation is in progress.
-  - `validation_failed` – validation failed; check `dns_records[*].error`.
-  - `provisioning` – domain is being provisioned.
-  - `ready` – domain is ready and mailboxes can be created.
-  - `deleting` – domain is being deleted.
+    - `creating` – domain is being registered.
+    - `waiting_validation` – DNS records must be configured and validated.
+    - `validating` – validation is in progress.
+    - `validation_failed` – validation failed; check `dns_records[*].error`.
+    - `provisioning` – domain is being provisioned.
+    - `ready` – domain is ready and mailboxes can be created.
+    - `deleting` – domain is being deleted.
 - `mailbox_total_count` - Number of mailboxes currently provisioned on this domain.
 - `webmail_url` - URL of the domain's webmail interface.
 - `imap_url` - IMAP server URL for configuring email clients.
 - `pop3_url` - POP3 server URL for configuring email clients.
 - `smtp_url` - SMTP server URL for configuring email clients.
 - `dns_records` - List of DNS records to configure in your DNS zone. Each entry has:
-  - `dns_type` – Record type (TXT, MX, CNAME, SRV…).
-  - `dns_name` – Fully qualified name for this record.
-  - `dns_value` – Value to set for this record.
-  - `status` – Validation status (`valid`, `invalid`, `not_found`, `validating`).
-  - `level` – Requirement level (`required`, `recommended`, `optional`).
-  - `error` – Error detail when the record is invalid or not found.
+    - `dns_type` – Record type (TXT, MX, CNAME, SRV…).
+    - `dns_name` – Fully qualified name for this record.
+    - `dns_value` – Value to set for this record.
+    - `status` – Validation status (`valid`, `invalid`, `not_found`, `validating`).
+    - `level` – Requirement level (`required`, `recommended`, `optional`).
+    - `error` – Error detail when the record is invalid or not found.
 - `created_at` - Date and time of domain creation (RFC 3339 format).
 - `updated_at` - Date and time of last update (RFC 3339 format).
 

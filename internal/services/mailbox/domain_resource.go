@@ -36,18 +36,18 @@ type DomainResource struct {
 }
 
 type domainResourceModel struct {
+	DNSRecords        types.List   `tfsdk:"dns_records"`
 	ID                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
 	ProjectID         types.String `tfsdk:"project_id"`
 	Status            types.String `tfsdk:"status"`
-	MailboxTotalCount types.Int64  `tfsdk:"mailbox_total_count"`
 	WebmailURL        types.String `tfsdk:"webmail_url"`
 	ImapURL           types.String `tfsdk:"imap_url"`
 	Pop3URL           types.String `tfsdk:"pop3_url"`
 	SMTPURL           types.String `tfsdk:"smtp_url"`
-	DNSRecords        types.List   `tfsdk:"dns_records"`
 	CreatedAt         types.String `tfsdk:"created_at"`
 	UpdatedAt         types.String `tfsdk:"updated_at"`
+	MailboxTotalCount types.Int64  `tfsdk:"mailbox_total_count"`
 }
 
 type domainResourceIdentityModel = framework.GlobalIdentity
@@ -181,6 +181,7 @@ func (r *DomainResource) Create(ctx context.Context, req resource.CreateRequest,
 	var data domainResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -228,6 +229,7 @@ func (r *DomainResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -272,6 +274,7 @@ func (r *DomainResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	var state domainResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}

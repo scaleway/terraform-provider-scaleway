@@ -145,6 +145,7 @@ func (d *MailboxDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	var config mailboxDataSourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -169,7 +170,7 @@ func (d *MailboxDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		email := config.Email.ValueString()
 
 		listResp, err := d.api.ListMailboxes(&mailboxsdk.ListMailboxesRequest{
-			Search: scw.StringPtr(email),
+			Search: new(email),
 		}, scw.WithAllPages(), scw.WithContext(ctx))
 		if err != nil {
 			resp.Diagnostics.AddError("Failed to list mailboxes", err.Error())

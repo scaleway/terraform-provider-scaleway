@@ -22,7 +22,7 @@ func CreateTestDomain(tt *acctest.TestTools, name string) string {
 
 	projectID, ok := tt.Meta.ScwClient().GetDefaultProjectID()
 	if !ok {
-		tt.T.Fatal("default project ID is required to create a test mailbox domain")
+		tt.T.Skip("No default project ID found, skipping test")
 	}
 
 	domain, err := api.CreateDomain(&mailboxsdk.CreateDomainRequest{
@@ -39,6 +39,7 @@ func CreateTestDomain(tt *acctest.TestTools, name string) string {
 	}
 
 	timeout := 5 * time.Minute
+
 	domain, err = api.WaitForDomain(&mailboxsdk.WaitForDomainRequest{
 		DomainID:      domain.ID,
 		Timeout:       &timeout,

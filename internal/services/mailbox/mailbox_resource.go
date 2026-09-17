@@ -40,21 +40,21 @@ type MailboxResource struct {
 }
 
 type mailboxResourceModel struct {
-	ID                             types.String `tfsdk:"id"`
-	DomainID                       types.String `tfsdk:"domain_id"`
+	SubscriptionPeriod             types.String `tfsdk:"subscription_period"`
+	NextSubscriptionPeriod         types.String `tfsdk:"next_subscription_period"`
 	LocalPart                      types.String `tfsdk:"local_part"`
 	Password                       types.String `tfsdk:"password"`
 	PasswordWo                     types.String `tfsdk:"password_wo"`
-	PasswordWoVersion              types.Int64  `tfsdk:"password_wo_version"`
-	SubscriptionPeriod             types.String `tfsdk:"subscription_period"`
-	Email                          types.String `tfsdk:"email"`
+	UpdatedAt                      types.String `tfsdk:"updated_at"`
+	DomainID                       types.String `tfsdk:"domain_id"`
 	Status                         types.String `tfsdk:"status"`
+	ID                             types.String `tfsdk:"id"`
 	SubscriptionPeriodStartedAt    types.String `tfsdk:"subscription_period_started_at"`
-	NextSubscriptionPeriod         types.String `tfsdk:"next_subscription_period"`
+	Email                          types.String `tfsdk:"email"`
 	NextSubscriptionPeriodStartsAt types.String `tfsdk:"next_subscription_period_starts_at"`
 	DeletionScheduledAt            types.String `tfsdk:"deletion_scheduled_at"`
 	CreatedAt                      types.String `tfsdk:"created_at"`
-	UpdatedAt                      types.String `tfsdk:"updated_at"`
+	PasswordWoVersion              types.Int64  `tfsdk:"password_wo_version"`
 }
 
 type mailboxResourceIdentityModel = framework.GlobalIdentity
@@ -197,6 +197,7 @@ func (r *MailboxResource) Create(ctx context.Context, req resource.CreateRequest
 	var plan mailboxResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -204,6 +205,7 @@ func (r *MailboxResource) Create(ctx context.Context, req resource.CreateRequest
 	var config mailboxResourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -265,6 +267,7 @@ func (r *MailboxResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -314,6 +317,7 @@ func (r *MailboxResource) Update(ctx context.Context, req resource.UpdateRequest
 	var config mailboxResourceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -369,6 +373,7 @@ func (r *MailboxResource) Delete(ctx context.Context, req resource.DeleteRequest
 	var state mailboxResourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
