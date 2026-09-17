@@ -48,6 +48,7 @@ resource "scaleway_domain_record" "mx" {
   dns_zone = var.domain_name
   type     = "MX"
   data     = scaleway_tem_domain.main.mx_config
+  priority = scaleway_tem_domain.main.mx_priority
 }
 
 resource "scaleway_domain_record" "dmarc" {
@@ -151,7 +152,9 @@ In addition to all arguments above, the following attributes are exported:
 
 - `spf_value` - Complete SPF record value for the domain, as should be recorded in the DNS zone.
 
-- `mx_config` - MX record configuration for the domain blackhole.
+- `mx_config` - MX exchange hostname for the domain blackhole (without priority), suitable for `scaleway_domain_record.data`.
+
+- `mx_priority` - MX priority for the domain blackhole, suitable for `scaleway_domain_record.priority`.
 
 - `smtp_host` - The SMTP host to use to send emails.
 
