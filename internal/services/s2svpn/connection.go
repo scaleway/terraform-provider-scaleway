@@ -169,11 +169,12 @@ func connectionSchema() map[string]*schema.Schema {
 			ValidateDiagFunc: verify.IsUUIDorUUIDWithLocality(),
 		},
 		"secret_version": {
-			Type:        schema.TypeInt,
-			Optional:    true,
-			Computed:    true,
-			ForceNew:    true,
-			Description: "The version of the secret containing the PSK. If omitted, the latest version is used",
+			Type:         schema.TypeInt,
+			Optional:     true,
+			Computed:     true,
+			ForceNew:     true,
+			RequiredWith: []string{"secret_id"},
+			Description:  "The version of the secret containing the PSK. Requires secret_id. If omitted, the latest version is used",
 		},
 		"srn": {
 			Type:        schema.TypeString,

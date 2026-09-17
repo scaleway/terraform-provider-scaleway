@@ -99,7 +99,7 @@ The following arguments are supported:
 - `tags` - (Optional) The list of tags to apply to the connection.
 - `is_ipv6` - (Optional) Defines IP version of the IPSec Tunnel. Defaults to `false` (IPv4).
 - `secret_id` - (Optional) The ID of a Secret Manager secret containing the pre-shared key (PSK). **Prefer creating a [`scaleway_secret`](secret.md) and [`scaleway_secret_version`](secret_version.md) yourself and passing the ID here**, so Terraform manages the secret's lifecycle.
-- `secret_version` - (Optional) The version of the secret containing the PSK. If omitted, the latest version is used.
+- `secret_version` - (Optional) The version of the secret containing the PSK. Requires `secret_id`. If omitted, the latest version is used.
 - `region` - (Optional, Computed, Defaults to [provider](../index.md#arguments-reference) `region`) The [region](../guides/regions_and_zones.md#regions) in which the connection should be created.
 - `project_id` - (Defaults to [provider](../index.md#arguments-reference) `project_id`) The ID of the project the connection is associated with.
 

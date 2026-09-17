@@ -7,6 +7,15 @@ Refer to the [S2S VPN documentation](https://www.scaleway.com/en/docs/site-to-si
 ## Example Usage
 
 ```terraform
+resource "scaleway_secret" "psk" {
+  name = "my-s2s-vpn-psk"
+}
+
+resource "scaleway_secret_version" "psk" {
+  secret_id = scaleway_secret.psk.id
+  data      = "your_s2s_vpn.psk"
+}
+
 resource "scaleway_s2s_vpn_connection" "main" {
   name                     = "my-connection"
   vpn_gateway_id           = scaleway_s2s_vpn_gateway.main.id
